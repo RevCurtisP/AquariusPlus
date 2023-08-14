@@ -545,72 +545,17 @@ ST_CALL:
     include "espdos.asm"
 
 ;-----------------------------------------------------------------------------
-; String Handling Routines
+; Convert lower-case to upper-case
+; in-out; A = char
 ;-----------------------------------------------------------------------------
-    include "strings.asm"
+to_upper:
+    cp      'a'             ; >='a'?
+    ret     c
+    cp      'z'+1           ; <='z'?
+    ret     nc
+    sub     $20             ; a-z -> A-Z
+    ret
 
-
-ifdef debug:
-
-;-----------------------------------------------------------------------------
-; Rudimentary Debugger - Displays Registers and Stops
-;-----------------------------------------------------------------------------
-
-debug:
-    push    iy                    ; Save IY
-    push    ix                    ; Save IX
-    push    hl                    ; Save HL
-    push    de                    ; Save DE
-    push    bc                    ; Save BC
-    push    af                    ; Save AF
-    ld      hl,.text              ; Point to Text Strings
-    pop     bc                    ; Get AF
-    call    .print_register       ; and Print it
-    pop     bc                    ; Get BC
-    call    .print_register       ; and Print it
-    pop     bc                    ; Get DE
-    call    .print_register       ; and Print it
-    pop     bc                    ; Get HL
-    call    .print_register       ; and Print it
-    pop     bc                    ; Get IX
-    call    .print_register       ; and Print it
-    pop     bc                    ; Get IY
-    call    .print_register       ; and Print it
-    pop     bc                    ; Get Return Address
-    call    .print_register       ; and Print PC
-    ex      de,hl                 ; Save Text Pointer
-    ld      hl,0                  ;
-    add     hl,sp                 ; Get Stack Pointer
-    ld      b,h                   ; Put it in BC
-    ld      c,l
-    ex      de,hl                 ; Get Pointer Back
-    call    .print_register       ; and Print SP
-  
-.loop
-    jr      .loop
-
-
-.print_register:
-    call    print_string          ; Print Line
-    ld      a,b
-    call    print_hex             ; Print It
-    ld      a,c
-    call    print_hex             ; Print It
-    jp      CRDO                  ; Print C/R and Return
-    
-    
-.text:     
-    byte    "AF:  ",0
-    byte    "BC:  ",0
-    byte    "DE:  ",0
-    byte    "HL:  ",0
-    byte    "IX:  ",0
-    byte    "IY:  ",0
-    byte    "PC:  ",0
-    byte    "SP:  ",0
-    byte    0
-
-endif
 
 free_rom = $2C00 - $
 
