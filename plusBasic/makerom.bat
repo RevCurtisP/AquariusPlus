@@ -1,0 +1,1 @@
+copy /b "..\s3basic\s3basic-aqplus.cim"+zout\aqplusbas.cim+..\charroms\aqpluschar.rom zout\aquarius.rom

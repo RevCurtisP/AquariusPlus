@@ -176,8 +176,7 @@ _coldboot:
     db "Aquarius+ System ", 0
 
 .str_plus:
-    db $0D, $0A
-    db "PlusBasic Alpha ", 0
+    db " PlusBasic v0.1", 0
 
 ;-----------------------------------------------------------------------------
 ; Cartridge start entry point - A hold scramble value
