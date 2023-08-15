@@ -214,10 +214,10 @@ ST_MKDIR:
 ; With argument -> List given path
 ;-----------------------------------------------------------------------------
 ST_DIR:
-    .tmp0: equ FILNAM+1
-    .tmp1: equ FILNAM+2
-    .tmp2: equ FILNAM+3
-    .tmp3: equ FILNAM+4
+    _tmp0: equ FILNAM+1
+    _tmp1: equ FILNAM+2
+    _tmp2: equ FILNAM+3
+    _tmp3: equ FILNAM+4
 
     ; Preserve BASIC text pointer
     push    hl
@@ -267,9 +267,9 @@ ST_DIR:
 .ok2:
     ;-- Date -----------------------------------------------------------------
     call    esp_get_byte
-    ld      (.tmp0), a
+    ld      (XTEMP0), a
     call    esp_get_byte
-    ld      (.tmp1), a
+    ld      (XTEMP1), a
 
     ; Extract year
     srl     a
@@ -280,58 +280,47 @@ ST_DIR:
     call    TTYCHR
 
     ; Extract month
-    ld      a, (.tmp1)
+    ld      a, (XTEMP1)
     rra                     ; Lowest bit in carry
-    ld      a, (.tmp0)
+    ld      a, (XTEMP0)
     rra
-    srl     a
-    srl     a
-    srl     a
-    srl     a
-    call    out_number_2digits
+    call    srl4out
 
     ld      a, '-'
     call    TTYCHR
 
     ; Extract day
-    ld      a, (.tmp0)
+    ld      a, (XTEMP0)
     and     $1F
     call    out_number_2digits
 
-    ld      a, ' '
-    call    TTYCHR
+    call    print_space
 
     ;-- Time -----------------------------------------------------------------
     ; Get time (hhhhhmmm mmmsssss)
     call    esp_get_byte
-    ld      (.tmp0), a
+    ld      (XTEMP0), a
     call    esp_get_byte
-    ld      (.tmp1), a
+    ld      (XTEMP1), a
 
     ; Hours
-    srl     a
-    srl     a
-    srl     a
-    call    out_number_2digits
+    call    srl3out
 
     ld      a, ':'
     call    TTYCHR
 
     ; Minutes
-    ld      a, (.tmp1)
+    ld      a, (XTEMP1)
     and     $07
     ld      c, a
-    ld      a, (.tmp0)
-    srl     c
-    rra
-    srl     c
-    rra
-    srl     c
-    rra
-    srl     c
-    rra
-    srl     c
-    rra
+    ld      a, (XTEMP0)
+
+    ld      b,5
+.srlrra    
+    srl     c   
+    rra         
+    djnz    .srlrra 
+
     call    out_number_2digits
 
     ;-- Attributes -----------------------------------------------------------
@@ -344,10 +333,7 @@ ST_DIR:
     byte    " <DIR>",0
 
     ; Skip length bytes
-    call    esp_get_byte
-    call    esp_get_byte
-    call    esp_get_byte
-    call    esp_get_byte
+    call    esp_get_long
 
     jr      .get_filename
 
@@ -355,36 +341,43 @@ ST_DIR:
 .no_dir:
     ; aaaaaaaa bbbbbbbb cccccccc dddddddd
 
-    call    esp_get_byte
-    ld      (.tmp0), a
-    call    esp_get_byte
-    ld      (.tmp1), a
-    call    esp_get_byte
-    ld      (.tmp2), a
-    call    esp_get_byte
-    ld      (.tmp3), a
+     call    esp_get_long 
+
+;    call    esp_get_byte
+;    ld      (XTEMP0), a    c
+;    call    esp_get_byte
+;    ld      (XTEMP1), a    b
+;    call    esp_get_byte
+;    ld      (XTEMP2), a    e
+;    call    esp_get_byte
+;    ld      (XTEMP3), a    d
 
     ; Megabytes range?
     or      a
     jr      nz, .mb
-    ld      a, (.tmp2)
+    ld      a, e
+;    ld      a, (XTEMP2)
     and     $F0
     jr      nz, .mb
 
     ; Kilobytes range?
-    ld      a, (.tmp2)
+    ld      a, e
+;    ld      a, (XTEMP2)
     or      a
     jr      nz, .kb
-    ld      a, (.tmp1)
+    ld      a, b
+;    ld      a, (XTEMP1)
     and     $FC
     jr      nz, .kb
 
     ; Bytes range (aaaaaaaa bbbbbbbb ccccccCC DDDDDDDD)
 .bytes:
-    ld      a, (.tmp1)
-    ld      h, a
-    ld      a, (.tmp0)
-    ld      l, a
+    ld      h,b
+;    ld      a, (XTEMP1)
+;    ld      h, a
+    ld      l,c
+;    ld      a, (XTEMP0)
+;    ld      l, a
     call    out_number_4digits
     ld      a, 'B'
     call    TTYCHR
@@ -392,43 +385,36 @@ ST_DIR:
 
     ; Kilobytes range: aaaaaaaa bbbbBBBB CCCCCCcc dddddddd
 .kb:
-    ld      a, (.tmp2)
+    ld      a,e
+;    ld      a, (XTEMP2)
     and     a, $0F
     ld      h, a
-    ld      a, (.tmp1)
+    ld      a,b
+;    ld      a, (XTEMP1)
     ld      l, a
-    srl     h
-    rr      l
-    srl     h
-    rr      l
-    call    out_number_4digits
+    ld      b, 2
+    call    srlh_rrl_out
     ld      a, 'K'
     call    TTYCHR
     jr      .get_filename
 
     ; Megabytes range: AAAAAAAA BBBBbbbb cccccccc dddddddd
 .mb:
-    ld      a, (.tmp3)
-    ld      h, a
-    ld      a, (.tmp2)
-    ld      l, a
-    srl     h
-    rr      l
-    srl     h
-    rr      l
-    srl     h
-    rr      l
-    srl     h
-    rr      l
-    call    out_number_4digits
+    ld      h,d
+;    ld      a, (XTEMP3)
+;    ld      h, a
+    ld      h,e
+;    ld      a, (XTEMP2)
+;    ld      l, a
+    ld      b, 4
+    call    srlh_rrl_out
     ld      a, 'M'
     call    TTYCHR
     jr      .get_filename
 
     ;-- Filename -------------------------------------------------------------
 .get_filename:
-    ld      a, ' '
-    call    TTYCHR
+    call    print_space
 
 .filename:
     call    esp_get_byte
@@ -538,6 +524,27 @@ esp_cmd:
     pop     a
     jp      esp_send_byte
 
+
+;-----------------------------------------------------------------------------
+; Read 32-bit long from ESP32 into BC,DE
+;-----------------------------------------------------------------------------
+
+esp_get_long:
+    call    esp_get_word
+    ld      c,e
+    ld      b,d
+
+;-----------------------------------------------------------------------------
+; Read 16-bit word from ESP32 into DE
+;-----------------------------------------------------------------------------
+
+esp_get_word:
+    call    esp_get_byte       ; Read LSB
+    ld      e,a                   ; into C
+    call    esp_get_byte       ; Read MSB
+    ld      d,a                   ; into B
+    ret
+
 ;-----------------------------------------------------------------------------
 ; Wait for data from ESP
 ;-----------------------------------------------------------------------------
@@ -568,6 +575,13 @@ esp_send_byte:
 ; Output 2 number digit in A
 ;-----------------------------------------------------------------------------
 
+srl4out:
+    srl     a
+srl3out:
+    srl     a
+    srl     a
+    srl     a
+
 ;;; Previously 31 bytes, now 28 bytes
 out_number_2digits:
     cp      100
@@ -584,7 +598,7 @@ out_number_2digits:
 .print
     jp      BYTPRT
 
-_space:
+print_space:
     ld      a,' '
     jp      TTYOUT
 
@@ -592,33 +606,28 @@ _space:
 ; Output 4 number digit in HL
 ;-----------------------------------------------------------------------------
 
-;;; Previously 58 bytes, now 41 bytes
+;Enter with B = Number of times to rotate
+srlh_rrl_out:
+    srl     h
+    rr      l
+    djnz    srlh_rrl_out
+
+;;; Previously 58 bytes, now 31 bytes
 out_number_4digits:
-    ld      bc,-10000
-.loop:
-    add     hl,bc
-    jr      c,.loop
-    sbc     hl,bc
-    push    hl
-    ld      de,_tens
-.spaces:
-    ld      a,(de)
-    or      a
-    jr      z,.print
-    ld      c,a
-    inc     de
-    ld      a,(de)
-    ld      b,a
-    inc     de
-    add     hl,bc
-    call    c,_space
-    jr      .spaces
-.print
-    pop     hl
+    ld      de,10000
+    rst     COMPAR
+    call    c,print_space
+    ld      de,1000
+    rst     COMPAR
+    call    c,print_space
+    ld      de,100
+    rst     COMPAR
+    call    c,print_space
+    ld      de,10
+    rst     COMPAR
+    call    c,print_space
     jp      LINPRT
 
-_tens
-    word    -10000,-1000,-100,-10,0
     
 ;-----------------------------------------------------------------------------
 ; Initialize BASIC Program
@@ -810,10 +819,7 @@ esp_read_bytes:
     call    esp_get_result
 
     ; Get number of bytes actual read
-    call    esp_get_byte
-    ld      e, a
-    call    esp_get_byte
-    ld      d, a
+    call    esp_get_word
 
     push    de
 

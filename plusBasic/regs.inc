@@ -35,10 +35,10 @@ RNDCNT:     equ $381F   ;
 ;               $3820   ;
 
 ;        $3821 - $3840  ; (S3BASIC) Deprecated RND Permutation Table
-XTEMP1      equ $3830   ; Temporary Variables
-XTEMP2      equ $3831   ;
-XTEMP3      equ $3832   ;
-XTEMP4      equ $3833   ;
+XTEMP0      equ $3830   ; Temporary Variables
+XTEMP1      equ $3831   ;
+XTEMP2      equ $3832   ;
+XTEMP3      equ $3833   ;
 RNDX:       equ $3841   ; [M80] LAST RANDOM NUMBER GENERATED, BETWEEN 0 AND 1
 LPTPOS:     equ $3846   ; [M80] POSITION OF LPT PRINT HEAD
 PRTFLG:     equ $3847   ; [M80] WHETHER OUTPUT GOES TO LPT
@@ -125,7 +125,17 @@ BINLEN:     equ $BFFE   ; 16-bit binary file length
 ;-----------------------------------------------------------------------------
 ; System ROM functions
 ;-----------------------------------------------------------------------------
-CHRGET      equ $0010   ; RST 2 - Get Next Character
+;RST
+START       equ $00     ; 0 Start/Reboot
+SYNCHK      equ $08     ; 1 SN Error if next character does not match
+CHRGET      equ $10     ; 2 Get Next Character
+OUTCHR      equ $18     ; 3 Output Character
+COMPAR      equ $20     ; 4 Compare HL with DE
+FSIGN       equ $28     ; 5 Get sign of Floating Point Argument
+HOOKDO      equ $30     ; 6 Extended BASIC Hook Dispatch
+INTRPT      equ $38     ; 7 (S3BASIC) Execute Interrupt Routine
+
+;CALL
 MAKUPR      equ $0112   ; (S3BASIC) Convert A to Upper Case
 STRPRZ      equ $011B   ; (S3BASIC) Print null terminated string - Faster than STROUT
 STRPRI      equ $0122   ; (S3BASIC) Print inline null terminated string 
