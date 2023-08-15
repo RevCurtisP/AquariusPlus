@@ -340,8 +340,8 @@ ST_DIR:
     jr      z, .no_dir
 
     ;-- Directory ------------------------------------------------------------
-    ld      hl, .str_dir
-    call    STROUT
+    call    STRPRI
+    byte    " <DIR>",0
 
     ; Skip length bytes
     call    esp_get_byte
@@ -440,8 +440,6 @@ ST_DIR:
 .name_done:
     call    CRDO
     jp      .next_entry
-
-.str_dir: db " <DIR>",0
 
 .done:
     ; Close directory
@@ -553,7 +551,7 @@ esp_get_byte:
 
 ;-----------------------------------------------------------------------------
 ; Write data to ESP
-;-----------------------------------------------------------------------------
+;------------b-----------------------------------------------------------------
 esp_send_byte:
     push    a
 
@@ -569,70 +567,59 @@ esp_send_byte:
 ;-----------------------------------------------------------------------------
 ; Output 2 number digit in A
 ;-----------------------------------------------------------------------------
+
+;;; Previously 31 bytes, now 28 bytes
 out_number_2digits:
     cp      100
-    jr      c, .l0
-    sub     a, 100
+    jp      c,.check10s
+    sub     a,100
     jr      out_number_2digits
-.l0:
-    ld      c, 0
-.l1:
-    inc     c
-    sub     a, 10
-    jr      nc, .l1
-    add     a, 10
-    push    a
+.check10s
+    cp      10
+    jr      nc,.print
+    ex      af,af'
+    ld      a,'0'
+    call    TTYOUT
+    ex      af,af'
+.print
+    jp      BYTPRT
 
-    ld      a, c
-    add     '0'-1
-    call    TTYCHR
-    pop     a
-    add     '0'
-    call    TTYCHR
-    ret
+_space:
+    ld      a,' '
+    jp      TTYOUT
 
 ;-----------------------------------------------------------------------------
 ; Output 4 number digit in HL
 ;-----------------------------------------------------------------------------
+
+;;; Previously 58 bytes, now 41 bytes
 out_number_4digits:
-    ld      d, 1
-
-    ld      bc, -10000
-    call    .num1
-    ld      bc, -1000
-    call    .num1
-    ld      bc, -100
-    call    .num1
-    ld      c, -10
-    call    .num1
-
-    ld      d, 0
-    ld      c, -1
-.num1:
-    ld      a, -1
-.num2:
-    inc     a
-    add     hl, bc
-    jr      c, .num2
-    sbc     hl, bc
-
+    ld      bc,-10000
+.loop:
+    add     hl,bc
+    jr      c,.loop
+    sbc     hl,bc
+    push    hl
+    ld      de,_tens
+.spaces:
+    ld      a,(de)
     or      a
-    jr      z, .zero
+    jr      z,.print
+    ld      c,a
+    inc     de
+    ld      a,(de)
+    ld      b,a
+    inc     de
+    add     hl,bc
+    call    c,_space
+    jr      .spaces
+.print
+    pop     hl
+    jp      LINPRT
 
-    ld      d, 0
-
-.normal:
-    add     '0'
-    call    TTYCHR
-    ret
-
-.zero:
-    bit     0, d
-    jr      z, .normal
-    ld      a, ' '
-    call    TTYCHR
-    ret
-
+_tens
+    word    -10000,-1000,-100,-10,0
+    
 ;-----------------------------------------------------------------------------
 ; Initialize BASIC Program
 ;
@@ -1195,7 +1182,7 @@ run_file:
 
 .cmp:
     ld      a, (de)         ; Get char from string 2
-    call    to_upper
+    call    MAKUPR          ; Cobvert to Upper Case
     inc     de
     cp      (hl)            ; Compare to char in string 1
     inc     hl

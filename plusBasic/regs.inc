@@ -33,8 +33,12 @@ FDIVG:      equ $381B   ;
 ;               $381E   ; {M80} RND FUNCTION PERTUBATION COUNT
 RNDCNT:     equ $381F   ;
 ;               $3820   ;
-RNDTAB:     equ $3821   ; Unused Random Number TABLE
-                        ; The exact same table exists in CP/M Basic where it is unused
+
+;        $3821 - $3840  ; (S3BASIC) Deprecated RND Permutation Table
+XTEMP1      equ $3830   ; Temporary Variables
+XTEMP2      equ $3831   ;
+XTEMP3      equ $3832   ;
+XTEMP4      equ $3833   ;
 RNDX:       equ $3841   ; [M80] LAST RANDOM NUMBER GENERATED, BETWEEN 0 AND 1
 LPTPOS:     equ $3846   ; [M80] POSITION OF LPT PRINT HEAD
 PRTFLG:     equ $3847   ; [M80] WHETHER OUTPUT GOES TO LPT
@@ -121,7 +125,14 @@ BINLEN:     equ $BFFE   ; 16-bit binary file length
 ;-----------------------------------------------------------------------------
 ; System ROM functions
 ;-----------------------------------------------------------------------------
-CHRGET      EQU $0010   ; RST 2 - Get Next Character
+CHRGET      equ $0010   ; RST 2 - Get Next Character
+MAKUPR      equ $0112   ; (S3BASIC) Convert A to Upper Case
+STRPRZ      equ $011B   ; (S3BASIC) Print null terminated string - Faster than STROUT
+STRPRI      equ $0122   ; (S3BASIC) Print inline null terminated string 
+FREADL      equ $0127   ; (S3BASIC) Free String, Return Address in DE, Length in BC
+STRADL      equ $012A   ; (S3BASIC) Return String Address in DE, Length in BC from Descriptor in HL
+BYTPRT      equ $0132   ; (S3BASIC) Print A as Decimal Number
+WRDPRT      equ $0138   ; (S3BASIC) Print HL as Decimal Number
 INITFF:     equ $0153   ; Initialize I/O Port 255
 SNERR:      equ $03C4   ; Syntax error
 MOERR:      equ $03D6   ; Missing Operand error
@@ -150,6 +161,7 @@ STKINI:     equ $0BE5
 STROUT:     equ $0E9D   ; Print null-terminated string in HL
 LEN1:       equ $0FF7   ; Get string length (in: (FPREG) = string block, out: HL = string block, A = length)
 PTRGET:     equ $10D1   ; Get variable (out: BC = addr, DE = len)
+LINPRT      equ $1675   ; Print Two Byte Number in HL as Decimal - Alters all Registers
 CRDO:       equ $19EA   ; Print CR+LF
 WRMCON:     equ $1A40
 TTYCHR:     equ $1D72   ; Print character in A with pause/break at end of page

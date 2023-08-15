@@ -152,8 +152,9 @@ _coldboot:
 
     ; Show our copyright message
     call    PRNTIT              ; Print copyright string in ROM
-    ld      hl, .str_basic      ; Print ROM version
-    call    STROUT
+    call    STRPRI
+    db $0D, $0A
+    db "Aquarius+ System ", 0
     ld      a, ESPCMD_VERSION
     call    esp_cmd
 .print_version:
@@ -163,20 +164,12 @@ _coldboot:
     call    TTYCHR
     jr      .print_version
 .print_done:
-    ld      hl, .str_plus      ; Print ROM version
-    call    STROUT
+    call    STRPRI
+    db " PlusBasic v0.1", 0
     call    CRDO
     call    CRDO
-
 
     jp      INITFF              ; Continue in ROM
-
-.str_basic:
-    db $0D, $0A
-    db "Aquarius+ System ", 0
-
-.str_plus:
-    db " PlusBasic v0.1", 0
 
 ;-----------------------------------------------------------------------------
 ; Cartridge start entry point - A hold scramble value
@@ -331,6 +324,8 @@ ST_LOCATE:
     ret
 
 .goto_hl:
+
+;;;This separate routine MOVEIT in Extended BASIC
     push    af
 
     ; Restore character behind cursor
@@ -542,19 +537,6 @@ ST_CALL:
 ; DOS commands
 ;-----------------------------------------------------------------------------
     include "espdos.asm"
-
-;-----------------------------------------------------------------------------
-; Convert lower-case to upper-case
-; in-out; A = char
-;-----------------------------------------------------------------------------
-to_upper:
-    cp      'a'             ; >='a'?
-    ret     c
-    cp      'z'+1           ; <='z'?
-    ret     nc
-    sub     $20             ; a-z -> A-Z
-    ret
-
 
 free_rom = $2C00 - $
 
