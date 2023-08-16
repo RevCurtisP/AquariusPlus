@@ -14,6 +14,9 @@
 ;   Add -Daddkeyrows to support extended 64 key keyboard.
 ;   (Requires new key decode tables in Extended ROM).
 ;
+;   Add -Daltkeytab to replace the embedded key decode tables.
+;   The replacemnt key table should be in a file named "keytabs.asm"
+;
 ;   Add -Daqlus to include Aquarius+ Mods
 ;   This will also turn on noreskeys and addkeyrows
 ;
@@ -21,6 +24,8 @@ ifdef aqplus
 noreskeys   equ   1
 addkeyrows  equ   1
 endif
+
+
 
 ifdef fastbltu
     assert !(1) ;Fast BLTU code is broken. Do not use this switch.
@@ -114,8 +119,13 @@ FBUFFR  equ     $38E8   ;[M80] BUFFER FOR FOUT
 RESHO   equ     $38F6   ;[M65] RESULT OF MULTIPLIER AND DIVIDER
 RESMO   equ     $38F7   ;;RESMO and RESLO are loaded into and stored from HL
 SAVSTK  equ     $38F9   ;[M80] NEWSTT SAVES STACK HERE BEFORE SO THAT ERROR REVERY CAN
-INTJMP  equ     $38FB   ;;RST 7 Interrupt JMP
+INTJMP  equ     $38FB   ;;RST 7 Interrupt JMP 3 Bytes)
+ifdef addkeyrows
+;;;Code Change: Address of Expanded Key Tables, stored in extended BASIC ROM area
+KEYADR  equ     $38FE   ;;Extended Key Tables Base Address minus 1
+else
 ;;        $38FE-$38FF   ;;??Unused
+endif
 ;;              $3900   ;;This is always 0
 BASTXT  equ     $3901   ;;Start of Basic Program
 ifdef aqplus
@@ -127,10 +137,6 @@ endif
 EXTBAS  equ     $2000   ;;Start of Extended Basic
 XSTART  equ     $2010   ;;Extended BASIC Startup Routine
 XINIT   equ     $E010   ;;ROM Cartridge Initialization Entry Point
-ifdef addkeyrows
-;;;Code Change: Address of Expanded Key Tables, stored in the last 256 bytes of Extended BASIC.
-KEYADR  equ     $2F00   ;;Key Tables for 64 key matrix
-endif
         org     $0000   ;;Starting Address of Standard BASIC
 ifdef aqplus
 ;;;Aquarius+ I/O Port Assignments
@@ -5439,7 +5445,7 @@ KEYALP: rl      b                 ;;Rotate Bits Left                          1F
                                   ;;                                          1F1F ld      ix,SHFTAB-1
         jr      nz,KEYALP         ;;Loopif not first table                    1F10
                                   ;;                                          1F11
-KEYLUX: ld      ix,KEYADR-1       ;;Point to Start of Lookup Tables           1F12
+KEYLUX: ld      ix,(KEYADR)       ;;Point to Start of Lookup Tables           1F12
                                   ;;                                          1F13 jr      z,KEYLUP
                                   ;;                                          1F14
                                   ;;                                          1F15 ld      ix,KEYTAB-1
@@ -5481,6 +5487,9 @@ KEYRES: inc     hl                ;;Bump pointer
 KEYRET: exx                       ;;Restore Registers
         ret
 ;;Key Lookup Tables - 46 bytes each
+ifdef altkeytab
+        include "keytabs.asm"
+else
 ;;Unmodified Key Lookup Table
 KEYTAB: byte    '=',$08,':',$0D,';','.' ;;Backspace and Return
         byte    '-','/','0','p','l',','
@@ -5519,7 +5528,8 @@ else
         byte    $88,$84,$A5,$12,$86,$18 ;;GOTO INPUT THEN ^R READ ^X
         byte    $8A,$85,$13,$9A,$C6,$9B ;;IF DIM ^S CLOAD CHR$ CSAVE
         byte    $97,$8E,$89,$11         ;;LIST REM RUN ^Q
-endif
+endif   ;noreskeys
+endif   ;altkeytab
 ;;Check for Ctrl-C, called from NEWSTT
 INCNTC: push    hl                ;;Save text pointer
         ld      hl,4              ;

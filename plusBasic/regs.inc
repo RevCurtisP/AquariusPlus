@@ -107,7 +107,8 @@ RESMO:      equ $38F7   ; RESMO and RESLO are loaded into and stored from HL
 RESLO:      equ $38F8   ;
 SAVSTK:     equ $38F9   ; [M80] NEWSTT SAVES STACK HERE BEFORE SO THAT ERROR REVERY CAN
                         ; [M80] CAN DATPTR THE STACK WHEN AN ERROR OCCURS
-INTJMP  equ     $38FB   ; RST 7 Interrupt JMP
+INTJMP  equ     $38FB   ; RST 7 Interrupt JMP (3 bytes)
+KEYADR  equ     $38FE   ;;Extended Key Tables Base Address minus 1
 ;               $3900   ; This is always 0
 BASTXT:     equ $3901   ; Start of Basic Program
 

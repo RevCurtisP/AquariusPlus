@@ -88,6 +88,16 @@ _reset:
     ld      a, ESPCMD_RESET
     call    esp_cmd
 
+    ; Install Interrupt Handler
+    ld      a,$C3               ; Jump Instruction
+    ld      (INTJMP),a          ; 
+    ld      hl,_interrupt       ; Interrupt Address
+    ld      (INTJMP+1), hl
+
+    ; Set Extended Key Table Address
+    ld      hl,key_table-1
+    ld      (KEYADR), hl
+
     ; Back to system ROM init
     jp      JMPINI
 
@@ -144,11 +154,6 @@ _coldboot:
     ld      hl,fast_hook_handler
     ld      (HOOK), hl
 
-    ; Install Interrupt Handler
-    ld      a,$C3               ; Jump Instruction
-    ld      (INTJMP),a          ; 
-    ld      hl,_interrupt       ; Interrupt Address
-    ld      (INTJMP+1), hl
 
     ; Show our copyright message
     call    PRNTIT              ; Print copyright string in ROM
