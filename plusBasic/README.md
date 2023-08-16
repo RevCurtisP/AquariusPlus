@@ -32,7 +32,8 @@ be the token for IN followed by the token for STR$.
   - CLOSE(fd) 
     - CLOSE(\*) to close all files
   - PRINT# fd, ...
-  - INPUT# fd, var$
+  - INPUT# fd, var$, ...
+  - LINE INPUT# fd, var$
   - GET# fd, var$, len
   - PUT# fd, var$, len
     - will pad or truncate contents of var$ to len
@@ -48,14 +49,29 @@ be the token for IN followed by the token for STR$.
   - CIRCLE 
   - DRAW
   
+#### Strings
+
+  - STRING$(char$, count)
+  - INSTR$(str$, str$ [,pos])
+  - MIDS$(var$, pos [,len]) = string expression
+
+#### Miscellaneous
+  
+  - ARGS and ARGS$()
+  - DATE$
+  - TIME$
+  - VARPTR
+
 ### Enhancements to existing Statements and Functions
  
   - CLS [fgcolor [, bgcolor]]
-  - POKE [!page,] addr, byte
-  - POKE [!page,] addr, string$
-  - PEEK([!page,] addr)
-  - PEEK$([!page], addr, length)
-  - COPY [!page], addr, length TO [!page], addr
+  - PEEK([@page,] addr)
+  - PEEK!([@page,] addr) returns 16-bit word
+  - PEEK$([@page], addr, length)
+  - POKE [@page,] addr, byte
+  - POKE! [@page,] addr, word
+  - POKE [@page,] addr, string$
+  - COPY [@page], addr, length TO [@page], addr
   - COPY srcfile$ TO dstfile$
-  - SAVE file$, [!page,] addr, length
-  - LOAD file$, [!page,] addr
+  - SAVE file$, [@page,] addr, length
+  - LOAD file$, [@page,] addr
