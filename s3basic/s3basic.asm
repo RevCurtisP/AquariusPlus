@@ -22,10 +22,6 @@ noreskeys   equ   1
 addkeyrows  equ   1
 endif
 
-ifdef cartkeys
-noreskeys   equ   1
-endif
-
 ifdef fastbltu
     assert !(1) ;Fast BLTU code is broken. Do not use this switch.
 endif
@@ -51,7 +47,6 @@ FDIVB   equ     $3814   ;
 FDIVA   equ     $3818   ;
 FDIVG   equ     $381B   ;
 RNDCNT  equ     $381F   ;
-if aqplus
 RNDTAB  equ     $3821   ;;Random Number TABLE - This Area May be Reused
 RNDX    equ     $3841   ;[M80] LAST RANDOM NUMBER GENERATED, BETWEEN 0 AND 1
 CLMWID  equ     $3845   ;;Comma Column Width
@@ -231,23 +226,15 @@ CRTCH1: dec     de                ;
         ld      a,(hl)            ;
         or      a                 ;
         jr      nz,RESET          ;;ROM not found, start Basic
-ifdef cartkeys
-        call    CRTCTL            ;;Check Control Key
-else
         ex      de,hl             ;
         ld      b,$0C             ;
-endif     
 CRTCH2: add     a,(hl)            ;
         inc     hl                ;
         add     a,b               ;
         dec     b                 ;
         jr      nz,CRTCH2         ;
-ifdef cartkeys
-        call    CRTSHF            ;;Check for Shift Key
-else
         xor     (hl)              ;
         out     ($FF),a           ;;Write Scramble Byte to Port 255
-endif
         ld      (SCRMBL),a        ;;Save Scramble Byte
 ifdef aqplus
         jp      XCART             ;;Run Extended Cart Initialization Routine
@@ -5495,41 +5482,10 @@ KEYRET: exx                       ;;Restore Registers
         ret
 ;;Key Lookup Tables - 46 bytes each
 ;;Unmodified Key Lookup Table
-ifdef cartkeys                                                              
-;Bypass Cartridge Execution if SHIFT is pressed                                      
-CRTSHF: xor     (hl)              ;;Write Scramble Byte to Port 255
-        out     ($FF),a           ;;Save Scramble Byte
-
-        ld      e,$10             ;;SHIFT Key Mask in e
-
-        jr      CRTKEY
-
-;Bypass Decryption if CTL is pressed                                      
-CRTCTL: ex      af,af'            ;;Save AF                                   
-        ld      l,$20             ;;CTL Key Mask will go into DE
-
-        ex      de,hl             ;;Key Address into HL
-        
-CRTKEY: ld      b,$7F             ;;Reading Column 7                          
-
-        in      a,(c)             ;;Read rows                                 
-
-        and     e                 ;;Apply Key Mask
-        jp      z,RESET           ;;If Pressed, Enter Start BASIC             
-
-
-        ex      af,af'            ;;Restore AF                                
-        ld      b,$0C             ;
-      
-        ret                                                                   
-        byte    'b'               ;;Keep Byte the Same
-KEYTAB  equ     CRTSHF
-else
 KEYTAB: byte    '=',$08,':',$0D,';','.' ;;Backspace and Return
         byte    '-','/','0','p','l',','
         byte    '9','o','k','m','n','j'
         byte    '8','i','7','u','h','b'
-endif
         byte    '6','y','g','v','c','f'
         byte    '5','t','4','r','d','x'
         byte    '3','e','s','z',' ','a'
