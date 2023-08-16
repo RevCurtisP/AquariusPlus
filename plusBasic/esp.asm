@@ -63,6 +63,27 @@ esp_get_result:
     ret
 
 ;-----------------------------------------------------------------------------
+; Close any open file/directory descriptor
+;
+; Clobbered registers: A
+;-----------------------------------------------------------------------------
+esp_close_all:
+    ld      a, ESPCMD_CLOSEALL
+    call    esp_cmd
+    jp      esp_get_result
+
+;-----------------------------------------------------------------------------
+; Create file from string descriptor in HL
+;-----------------------------------------------------------------------------
+esp_create:
+    ld      a, ESPCMD_OPEN
+    call    esp_cmd
+    ld      a, FO_WRONLY | FO_CREATE | FO_TRUNC
+    call    esp_send_byte
+    call    esp_send_strdesc
+    jp      esp_get_result
+
+;-----------------------------------------------------------------------------
 ; Read 32-bit long from ESP32 into BC,DE
 ;-----------------------------------------------------------------------------
 
