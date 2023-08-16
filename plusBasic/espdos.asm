@@ -12,76 +12,6 @@ get_string_arg:
     jp      (IX)                  ; Fast Return
 
 
-;-----------------------------------------------------------------------------
-; LOAD
-;
-; LOAD "filename"        Load BASIC program
-; LOAD "filename",12345  Load file as raw binary to address 12345
-; LOAD "filename",*a     Load data into numeric array a
-;-----------------------------------------------------------------------------
-ST_LOAD:
-    ; Close any open files
-    call    esp_close_all
-
-    ; Get string parameter with path
-    call    get_string_arg        ; Get FileSpec pointer in HL
-    ex      (sp),hl               ; HL = Text Pointer, Stack = String Descriptor
-
-    ; Check for second parameter
-    call    get_arg
-    cp      ','
-    jr      nz, .basic              ; No parameter -> load as basic program
-    call    get_next
-    cp      $AA                     ; Token for '*'
-    jr      z, .array               ; Array parameter -> load as array
-
-    ; Load as binary to address
-    call    FRMNUM                  ; Get number
-    call    FRCINT                  ; Convert to 16 bit integer
-    ld      (BINSTART), de
-    jp      load_binary
-
-    ; Load into array
-.array:
-    call    get_array_argument
-    jp      load_caq_array
-
-.basic:
-    ex      (sp),hl               ; HL = String Descriptor, Stack = Text Pointer
-    jp      load_basic_program
-
-;-----------------------------------------------------------------------------
-; Get array argument
-;-----------------------------------------------------------------------------
-get_array_argument:
-    ; Skip '*' token
-    inc     hl
-
-    ; Get pointer to array variable
-    ld      a, 1
-    ld      (SUBFLG), a         ; Set array flag
-    call    PTRGET              ; Get array (out: BC = pointer to number of dimensions, DE = next array entry)
-    ld      (SUBFLG), a         ; Clear array flag
-    jp      nz, FCERR           ; FC Error if array not found
-    call    CHKNUM              ; TM error if not numeric
-
-    ; Get start address and length of array
-    push    hl                  ; Push BASIC text pointer
-    ld      h, b
-    ld      l, c                ; HL = address
-    ld      c, (hl)
-    ld      b, 0                ; BC = index
-    add     hl, bc
-    add     hl, bc
-    inc     hl                  ; HL = array data
-    ld      (BINSTART), hl
-    dec     de
-    dec     de                  ; Subtract array header to get data length
-    dec     de
-    ld      (BINLEN), de
-    pop     hl                  ; Pop text pointer
-
-    ret
 
 ;-----------------------------------------------------------------------------
 ; SAVE
@@ -98,10 +28,10 @@ ST_SAVE:
     ex      (sp),hl               ; HL = Text Pointer, Stack = String Descriptor
 
     ; Check for second parameter
-    call    get_arg
+    call    CHRGT2
     cp      ','
     jp      nz, save_basic_program
-    call    get_next
+    rst     CHRGET
     cp      $AA                     ; Token for '*'
     jr      z, .array               ; Array parameter -> save array
 
@@ -113,7 +43,7 @@ ST_SAVE:
     ld      (BINSTART), de
 
     ; Expect comma
-    call    get_arg
+    call    CHRGT2
     cp      ','
     jp      nz, MOERR
     inc     hl
@@ -725,22 +655,6 @@ esp_seek:
     ; Get result
     call    esp_get_result
     ret
-
-;-----------------------------------------------------------------------------
-; Get next character, skipping spaces
-;  in: HL = text pointer
-; out: NZ, A = next non-space char, HL = address of char in text
-;      Z,  A = 0, HL = end of text
-;-----------------------------------------------------------------------------
-get_next:                   ; Starting at next location
-    inc     hl
-get_arg:                    ; Starting at current location
-    ld      a, (hl)
-    or      a
-    ret     z               ; Return Z if NULL
-    cp      ' '
-    ret     nz              ; Return NZ if not SPACE
-    jr      get_next
 
 ;-----------------------------------------------------------------------------
 ; Check for sync sequence (12x$FF, 1x$00)

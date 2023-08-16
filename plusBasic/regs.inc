@@ -149,6 +149,7 @@ CHEAD       equ $0489   ; Link Lines
 CRUNCX      equ $04F9   ; Tokenize text at [HL]
 RESSRC:     equ $05A8
 NEWSTT:     equ $062C
+CHRGT2      equ $066C   ; Get Current Character and Set Flags
 FRCINT:     equ $0682   ; Convert fp number to 16 bit signed integer in DE
 FCERR:      equ $0697   ; Function call error
 RUNC2:      equ $06DB
