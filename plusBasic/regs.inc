@@ -37,7 +37,7 @@ RNDCNT:     equ $381F   ;
 ;        $3821 - $383B  ; Unused
 BINSTART:   equ $383C   ; binary file load/save address
 BINLEN:     equ $383E   ; 16-bit binary file length
-;               $3840   ; Unused
+SAVEPAGE:   equ $3840   ; Page that was banked into RAM
 
 RNDX:       equ $3841   ; [M80] LAST RANDOM NUMBER GENERATED, BETWEEN 0 AND 1
 LPTPOS:     equ $3846   ; [M80] POSITION OF LPT PRINT HEAD
