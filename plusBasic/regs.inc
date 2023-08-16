@@ -35,10 +35,7 @@ RNDCNT:     equ $381F   ;
 ;               $3820   ;
 
 ;        $3821 - $3840  ; (S3BASIC) Deprecated RND Permutation Table
-XTEMP0      equ $3830   ; Temporary Variables
-XTEMP1      equ $3831   ;
-XTEMP2      equ $3832   ;
-XTEMP3      equ $3833   ;
+
 RNDX:       equ $3841   ; [M80] LAST RANDOM NUMBER GENERATED, BETWEEN 0 AND 1
 LPTPOS:     equ $3846   ; [M80] POSITION OF LPT PRINT HEAD
 PRTFLG:     equ $3847   ; [M80] WHETHER OUTPUT GOES TO LPT
@@ -116,8 +113,7 @@ BASTXT:     equ $3901   ; Start of Basic Program
 ;-----------------------------------------------------------------------------
 BASIC_RAM_END: equ $BEFF    ; End of BASIC RAM, $BF00-$BFFF is reserved for our extensions
 
-PATHLEN:    equ $BF00   ; Length byte
-PATHBUF:    equ $BF01   ; Path buffer
+;      $BF00 -  $BF01   ; Unused
 TMPBUF:     equ $BFEC   ; 16-byte temporary buffer
 BINSTART:   equ $BFFC   ; binary file load/save address
 BINLEN:     equ $BFFE   ; 16-bit binary file length
@@ -127,7 +123,7 @@ BINLEN:     equ $BFFE   ; 16-bit binary file length
 ;-----------------------------------------------------------------------------
 ;RST
 START       equ $00     ; 0 Start/Reboot
-SYNCHK      equ $08     ; 1 SN Error if next character does not match
+SYNCHR      equ $08     ; 1 SN Error if next character does not match
 CHRGET      equ $10     ; 2 Get Next Character
 OUTCHR      equ $18     ; 3 Output Character
 COMPAR      equ $20     ; 4 Compare HL with DE
@@ -141,14 +137,16 @@ STRPRZ      equ $011B   ; (S3BASIC) Print null terminated string - Faster than S
 STRPRI      equ $0122   ; (S3BASIC) Print inline null terminated string 
 FREADL      equ $0127   ; (S3BASIC) Free String, Return Address in DE, Length in BC
 STRADL      equ $012A   ; (S3BASIC) Return String Address in DE, Length in BC from Descriptor in HL
-BYTPRT      equ $0132   ; (S3BASIC) Print A as Decimal Number
-WRDPRT      equ $0138   ; (S3BASIC) Print HL as Decimal Number
+BYTPRT      equ $0135   ; (S3BASIC) Print A as Decimal Number
+UPRCMP      equ $013B   ; (S3BASIC) Compare B byets of uppercased String [HL] to String [DE] 
 INITFF:     equ $0153   ; Initialize I/O Port 255
 SNERR:      equ $03C4   ; Syntax error
 MOERR:      equ $03D6   ; Missing Operand error
 ERROR:      equ $03DB   ; Process error code, E = code (offset to 2 char error name)
 ERRFN1:     equ $03F4
 READY:      equ $0402
+MAIN        equ $0414   ; Immediate Mode loop     
+CHEAD       equ $0489   ; Link Lines
 CRUNCX      equ $04F9   ; Tokenize text at [HL]
 RESSRC:     equ $05A8
 NEWSTT:     equ $062C
@@ -169,9 +167,11 @@ RUNC:       equ $0BCB
 CLEARC:     equ $0BCF
 STKINI:     equ $0BE5
 STROUT:     equ $0E9D   ; Print null-terminated string in HL
+FRESTR      equ $0FC6   ; Free tempory string, return string descriptor address in HL
 LEN1:       equ $0FF7   ; Get string length (in: (FPREG) = string block, out: HL = string block, A = length)
 PTRGET:     equ $10D1   ; Get variable (out: BC = addr, DE = len)
 LINPRT      equ $1675   ; Print Two Byte Number in HL as Decimal - Alters all Registers
+OUTDO       equ $198A   ; Output a Character
 CRDO:       equ $19EA   ; Print CR+LF
 WRMCON:     equ $1A40
 TTYCHR:     equ $1D72   ; Print character in A with pause/break at end of page
@@ -282,9 +282,6 @@ SYNCHK macro value
     db      'value'
 endm
 
-OUTCHR macro
-    rst     $18
-endm
 
 ;-----------------------------------------------------------------------------
 ; ESP32 commands

@@ -1,6 +1,16 @@
 ;-----------------------------------------------------------------------------
-; espdos.asm
+; Parse string at text pointer 
+; Returns: HL = String Descriptor
+;               Text Pointer on Stack
 ;-----------------------------------------------------------------------------
+
+get_string_arg:
+    call    FRMEVL                ; Get Path
+    pop     IX                    ; IX = Return Address
+    push    hl                    ; Text Pointer on stack
+    call    FRESTR                ; Free Temporary String
+    jp      (IX)                  ; Fast Return
+
 
 ;-----------------------------------------------------------------------------
 ; LOAD
@@ -14,12 +24,13 @@ ST_LOAD:
     call    esp_close_all
 
     ; Get string parameter with path
-    call    get_string_parameter
+    call    get_string_arg        ; Get FileSpec pointer in HL
+    ex      (sp),hl               ; HL = Text Pointer, Stack = String Descriptor
 
     ; Check for second parameter
     call    get_arg
     cp      ','
-    jp      nz, load_basic_program  ; No parameter -> load as basic program
+    jr      nz, .basic              ; No parameter -> load as basic program
     call    get_next
     cp      $AA                     ; Token for '*'
     jr      z, .array               ; Array parameter -> load as array
@@ -34,6 +45,10 @@ ST_LOAD:
 .array:
     call    get_array_argument
     jp      load_caq_array
+
+.basic:
+    ex      (sp),hl               ; HL = String Descriptor, Stack = Text Pointer
+    jp      load_basic_program
 
 ;-----------------------------------------------------------------------------
 ; Get array argument
@@ -79,8 +94,8 @@ ST_SAVE:
     ; Close any open files
     call    esp_close_all
 
-    ; Get string parameter with path
-    call    get_string_parameter
+    call    get_string_arg        ; Get FileSpec pointer in HL
+    ex      (sp),hl               ; HL = Text Pointer, Stack = String Descriptor
 
     ; Check for second parameter
     call    get_arg
@@ -114,24 +129,29 @@ ST_SAVE:
     call    get_array_argument
     jp      save_caq_array
 
+
+;-----------------------------------------------------------------------------
+; MKDIR - Create directory
+;-----------------------------------------------------------------------------
+ST_MKDIR:
+
+    ld      a, ESPCMD_MKDIR       ; Set ESP Command
+    jr      _do_string_arg_cmd    ; Get FileSpec and Do Command
+
 ;-----------------------------------------------------------------------------
 ; DEL - Delete file/directory
 ;-----------------------------------------------------------------------------
 ST_DEL:
-    ; Get string parameter
-    call    get_string_parameter
 
-    ; Save BASIC text pointer
-    push    hl
-
-    ; Issue ESP command
-    ld      a, ESPCMD_DELETE
-    call    esp_cmd
-    call    esp_send_pathbuf
-    call    esp_get_result
-
-    ; Restore BASIC text pointer
-    pop     hl
+    ld      a, ESPCMD_DELETE      ; Set ESP Command
+_do_string_arg_cmd:
+    push    af                    ; Save it
+    call    get_string_arg        ; Get FileSped
+    pop     hl                    ; Get Back Text Point
+    ex      (sp),hl               ; Swap with ESP Command
+    ld      a,h                   ; ESP Command inro A
+    call    esp_cmd_strdesc       ; Issue ESP command
+    pop     hl                    ; Restore BASIC text pointer
     ret
 
 ;-----------------------------------------------------------------------------
@@ -159,7 +179,7 @@ ST_CD:
     call    esp_get_byte
     or      a
     jr      z, .print_done
-    call    TTYCHR
+    rst     OUTCHR
     jr      .print_cwd
 .print_done:
     call    CRDO
@@ -171,41 +191,9 @@ ST_CD:
 
     ; -- Argument given -> change directory ----------------------------------
 .change_dir:
-    ; Restore BASIC text pointer
-    pop     hl
-
-    ; Get string parameter
-    call    get_string_parameter
-
-    ; Save BASIC text pointer
-    push    hl
-
-    ; Issue ESP command
-    ld      a, ESPCMD_CHDIR
-    call    esp_cmd
-    call    esp_send_pathbuf
-    call    esp_get_result
-    jr      .done
-
-;-----------------------------------------------------------------------------
-; MKDIR - Create directory
-;-----------------------------------------------------------------------------
-ST_MKDIR:
-    ; Get string parameter
-    call    get_string_parameter
-
-    ; Save BASIC text pointer
-    push    hl
-
-    ; Issue ESP command
-    ld      a, ESPCMD_MKDIR
-    call    esp_cmd
-    call    esp_send_pathbuf
-    call    esp_get_result
-
-    ; Restore BASIC text pointer
-    pop     hl
-    ret
+    pop     hl                    ; Pop BASIC text pointer
+    ld      a, ESPCMD_CHDIR       ; Set ESP Command
+    jr      _do_string_arg_cmd    ; Get FileSpec and Do Command
 
 ;-----------------------------------------------------------------------------
 ; DIR - Directory listing
@@ -214,36 +202,25 @@ ST_MKDIR:
 ; With argument -> List given path
 ;-----------------------------------------------------------------------------
 ST_DIR:
-    _tmp0: equ FILNAM+1
-    _tmp1: equ FILNAM+2
-    _tmp2: equ FILNAM+3
-    _tmp3: equ FILNAM+4
 
     ; Preserve BASIC text pointer
-    push    hl
 
     ; Argument given?
     or      a
     jr      nz, .witharg     ; Yes
 
-    xor     a
-    ld      (PATHLEN), a
-    ld      (PATHBUF), a
+    push    hl                    ; Save Text Pointer
+    ld      hl,0
     jr      .esp_command
 
 .witharg:
-    pop     hl                  ; Pop BASIC text pointer
-    call    get_string_parameter
-    push    hl
+    call    get_string_arg        ; Get FileSpec pointer in HL
 
 .esp_command:
     call    esp_close_all
 
-    ; Issue ESP command
-    ld      a, ESPCMD_OPENDIR
-    call    esp_cmd
-    call    esp_send_pathbuf
-    call    esp_get_result
+    ld      a, ESPCMD_OPENDIR     ; Set ESP Command
+    call    esp_cmd_strdesc       ; Get FileSpec and Do Command
 
     ; Set initial number of lines per page
     ld      a, 24
@@ -266,10 +243,7 @@ ST_DIR:
 
 .ok2:
     ;-- Date -----------------------------------------------------------------
-    call    esp_get_byte
-    ld      (XTEMP0), a
-    call    esp_get_byte
-    ld      (XTEMP1), a
+    call    esp_get_word
 
     ; Extract year
     srl     a
@@ -277,20 +251,20 @@ ST_DIR:
     call    out_number_2digits
 
     ld      a, '-'
-    call    TTYCHR
+    rst     OUTCHR
 
     ; Extract month
-    ld      a, (XTEMP1)
+    ld      a, d
     rra                     ; Lowest bit in carry
-    ld      a, (XTEMP0)
+    ld      a, e
     rra
     call    srl4out
 
     ld      a, '-'
-    call    TTYCHR
+    rst     OUTCHR
 
     ; Extract day
-    ld      a, (XTEMP0)
+    ld      a, e
     and     $1F
     call    out_number_2digits
 
@@ -298,22 +272,19 @@ ST_DIR:
 
     ;-- Time -----------------------------------------------------------------
     ; Get time (hhhhhmmm mmmsssss)
-    call    esp_get_byte
-    ld      (XTEMP0), a
-    call    esp_get_byte
-    ld      (XTEMP1), a
+    call    esp_get_word
 
     ; Hours
     call    srl3out
 
     ld      a, ':'
-    call    TTYCHR
+    rst     OUTCHR
 
     ; Minutes
-    ld      a, (XTEMP1)
+    ld      a, d
     and     $07
     ld      c, a
-    ld      a, (XTEMP0)
+    ld      a, e
 
     ld      b,5
 .srlrra    
@@ -343,15 +314,6 @@ ST_DIR:
 
      call    esp_get_long 
 
-;    call    esp_get_byte
-;    ld      (XTEMP0), a    c
-;    call    esp_get_byte
-;    ld      (XTEMP1), a    b
-;    call    esp_get_byte
-;    ld      (XTEMP2), a    e
-;    call    esp_get_byte
-;    ld      (XTEMP3), a    d
-
     ; Megabytes range?
     or      a
     jr      nz, .mb
@@ -380,7 +342,7 @@ ST_DIR:
 ;    ld      l, a
     call    out_number_4digits
     ld      a, 'B'
-    call    TTYCHR
+    rst     OUTCHR
     jr      .get_filename
 
     ; Kilobytes range: aaaaaaaa bbbbBBBB CCCCCCcc dddddddd
@@ -395,7 +357,7 @@ ST_DIR:
     ld      b, 2
     call    srlh_rrl_out
     ld      a, 'K'
-    call    TTYCHR
+    rst     OUTCHR
     jr      .get_filename
 
     ; Megabytes range: AAAAAAAA BBBBbbbb cccccccc dddddddd
@@ -409,7 +371,7 @@ ST_DIR:
     ld      b, 4
     call    srlh_rrl_out
     ld      a, 'M'
-    call    TTYCHR
+    rst     OUTCHR
     jr      .get_filename
 
     ;-- Filename -------------------------------------------------------------
@@ -420,7 +382,7 @@ ST_DIR:
     call    esp_get_byte
     or      a
     jr      z, .name_done
-    call    TTYCHR
+    rst     OUTCHR
     jr      .filename
 
 .name_done:
@@ -465,7 +427,7 @@ esp_error:
 
     ; Print error message
     ld      a, '?'
-    OUTCHR
+    rst     OUTCHR
     jp      ERRFN1
 
 .error_msgs:
@@ -495,81 +457,11 @@ err_bad_file:
 
     ; Print error message
     ld      a, '?'
-    OUTCHR
+    rst     OUTCHR
     jp      ERRFN1
 
 .msg_bad_file:       db "Bad file",0
 
-
-;-----------------------------------------------------------------------------
-; Issue command to ESP
-;-----------------------------------------------------------------------------
-esp_cmd:
-    push    a
-
-    ; Drain RX FIFO
-.drain:
-    in      a, (IO_ESPCTRL)
-    and     a, 1
-    jr      z, .done
-    in      a, (IO_ESPDATA)
-    jr      .drain
-.done:
-
-    ; Issue start of command
-    ld      a, $80
-    out     (IO_ESPCTRL), a
-
-    ; Issue command
-    pop     a
-    jp      esp_send_byte
-
-
-;-----------------------------------------------------------------------------
-; Read 32-bit long from ESP32 into BC,DE
-;-----------------------------------------------------------------------------
-
-esp_get_long:
-    call    esp_get_word
-    ld      c,e
-    ld      b,d
-
-;-----------------------------------------------------------------------------
-; Read 16-bit word from ESP32 into DE
-;-----------------------------------------------------------------------------
-
-esp_get_word:
-    call    esp_get_byte       ; Read LSB
-    ld      e,a                   ; into C
-    call    esp_get_byte       ; Read MSB
-    ld      d,a                   ; into B
-    ret
-
-;-----------------------------------------------------------------------------
-; Wait for data from ESP
-;-----------------------------------------------------------------------------
-esp_get_byte:
-.wait:
-    in      a, (IO_ESPCTRL)
-    and     a, 1
-    jr      z, .wait
-    in      a, (IO_ESPDATA)
-    ret
-
-;-----------------------------------------------------------------------------
-; Write data to ESP
-;------------b-----------------------------------------------------------------
-esp_send_byte:
-    push    a
-
-.wait:
-    in      a, (IO_ESPCTRL)
-    and     a, 2
-    jr      nz, .wait
-
-    pop     a
-    out     (IO_ESPDATA), a
-    ret
 
 ;-----------------------------------------------------------------------------
 ; Output 2 number digit in A
@@ -584,23 +476,27 @@ srl3out:
 
 ;;; Previously 31 bytes, now 28 bytes
 out_number_2digits:
+    push    de
+.loop
     cp      100
     jp      c,.check10s
     sub     a,100
-    jr      out_number_2digits
+    jr      .loop
 .check10s
     cp      10
     jr      nc,.print
-    ex      af,af'
+    push    a
     ld      a,'0'
-    call    TTYOUT
-    ex      af,af'
+    rst     OUTCHR
+    pop     a
 .print
-    jp      BYTPRT
+    call    BYTPRT
+    pop     de
+    ret
 
 print_space:
     ld      a,' '
-    jp      TTYOUT
+    jp      OUTDO
 
 ;-----------------------------------------------------------------------------
 ; Output 4 number digit in HL
@@ -671,92 +567,17 @@ init_basic_program:
     ; Clear array pointer???
     ld      (VARNAM), hl
 
+
     ; Fix up next line addresses in loaded BASIC program
 .link_lines:
     ld      de, (TXTTAB)        ; DE = start of BASIC program
-.next_line:
-    ld      h, d
-    ld      l, e                ; HL = DE
-    ld      a, (hl)
-    inc     hl                  ; Test nextline address
-    or      (hl)
-    jr      z, .init_done       ; If $0000 then done
-    inc     hl
-    inc     hl                  ; Skip line number
-    inc     hl
-    xor     a                   ; End of line = $00
-.find_eol:
-    cp      (hl)                ; Search for end of line
-    inc     hl
-    jr      nz, .find_eol
-    ex      de, hl              ; HL = current line, DE = next line
-    ld      (hl), e
-    inc     hl                  ; Set address of next line
-    ld      (hl), d
-    jr      .next_line
-.init_done:
-    ret
+    jp      CHEAD
 
-;-----------------------------------------------------------------------------
-; Get string parameter and store it in PATHLEN/PATHBUF
-;-----------------------------------------------------------------------------
-get_string_parameter:
-    ; Evaluate expression
-    call    FRMEVL
-
-    ; Save BASIC text pointer
-    push    hl
-
-    ; Get string length (this will check for string type)
-    call    LEN1
-
-    ; Save length
-    ld      (PATHLEN), a
-
-    ; Get string pointer into HL
-    inc     hl
-    inc     hl
-    ld      b, (hl)
-    inc     hl
-    ld      h, (hl)
-    ld      l, b
-
-    ; Copy string to PATHBUF
-    ld      de, PATHBUF
-    ld      b, 0
-    ld      c, a
-    or      a
-    jr      z, .copy_done
-    ldir
-.copy_done:
-
-    ; Zero-terminate string
-    xor     a
-    ld      (de), a
-
-    ; Restore BASIC text pointer
-    pop     hl
-    ret
-
-;-----------------------------------------------------------------------------
-; Send PATHBUF including zero termination to ESPDATA
-;-----------------------------------------------------------------------------
-esp_send_pathbuf:
-    ld      hl, PATHBUF
-    ld      d, 0
-    ld      a, (PATHLEN)
-    inc     a               ; Include zero termination
-    ld      e, a
-    jp      esp_send_bytes
-
-;-----------------------------------------------------------------------------
-; Get first result byte, and jump to error handler if it was an error
-;-----------------------------------------------------------------------------
-esp_get_result:
-    call    esp_get_byte
-    or      a
-    jp      m, esp_error
-    ret
+; Set Return Address for CHEAD (callable in aqplus S3BASIC)
+set_chead_return:
+    ld      bc,MAIN             ; Make CHEAD return to MAIN
+    push    bc
+    jmp     HOOK5+1
 
 ;-----------------------------------------------------------------------------
 ; Close any open file/directory descriptor
@@ -768,28 +589,16 @@ esp_close_all:
     call    esp_cmd
     jp      esp_get_result
 
-;-----------------------------------------------------------------------------
-; Open file in PATHBUF
-;
-; Clobbered registers: A, HL, DE
-;-----------------------------------------------------------------------------
-esp_open:
-    ld      a, ESPCMD_OPEN
-    call    esp_cmd
-    ld      a, FO_RDONLY
-    call    esp_send_byte
-    call    esp_send_pathbuf
-    jp      esp_get_result
 
 ;-----------------------------------------------------------------------------
-; Create file in PATHBUF
+; Create file from string descriptor in HL
 ;-----------------------------------------------------------------------------
 esp_create:
     ld      a, ESPCMD_OPEN
     call    esp_cmd
     ld      a, FO_WRONLY | FO_CREATE | FO_TRUNC
     call    esp_send_byte
-    call    esp_send_pathbuf
+    call    esp_send_strdesc
     jp      esp_get_result
 
 ;-----------------------------------------------------------------------------
@@ -838,6 +647,7 @@ esp_read_bytes:
 .done:
     pop     de
     ret
+
 
 ;-----------------------------------------------------------------------------
 ; Send bytes
@@ -975,12 +785,12 @@ check_sync_bytes:
     ret
 
 ;-----------------------------------------------------------------------------
-; Load binary data in PATHBUF into BINSTART;
-;
+; Load binary data from File into BINSTART
+; Input: HL: String descriptor address
 ; Clobbered registers: A, DE
 ;-----------------------------------------------------------------------------
 load_binary:
-    push    hl
+    ex      (sp),hl               ; HL = String Descriptor, Stack = Text Pointer
 
     ; Load file into memory
     call    esp_open
@@ -989,14 +799,16 @@ load_binary:
     call    esp_read_bytes
     call    esp_close_all
 
-    pop     hl
+    pop     hl                    ; Get Back Text Pointer
     ret
 
 ;-----------------------------------------------------------------------------
-; Load CAQ array file in PATHBUF into BINSTART (BINLEN length)
+; Load CAQ array file in File into BINSTART (BINLEN length)
+; Input: HL: String descriptor address
+; Clobbered registers: A, DE
 ;-----------------------------------------------------------------------------
 load_caq_array:
-    push    hl
+    ex      (sp),hl               ; HL = String Descriptor, Stack = Text Pointer
 
     ; Open file
     call    esp_open
@@ -1028,13 +840,13 @@ load_caq_array:
     ret
 
 ;-----------------------------------------------------------------------------
-; Load CAQ/BAS file in PATHBUF
+; Load CAQ/BAS file 
+; Input: HL: String descriptor address
+; Clobbered registers: A, DE
 ;-----------------------------------------------------------------------------
 load_basic_program:
-    push    hl
-
     ; Open file
-    call    esp_open            
+    call    esp_open
 
     ; Check CAQ header
     call    check_sync_bytes    ; Sync bytes
@@ -1070,7 +882,7 @@ load_basic_program:
     ; Initialize BASIC program
     call    init_basic_program
 
-    pop     hl
+    pop     hl                    ; Discard Callers Return Address
     ret
 
 sync_bytes:
@@ -1080,10 +892,8 @@ sync_bytes:
 ; Save basic program
 ;-----------------------------------------------------------------------------
 save_basic_program:
-    push    hl
-
-    ; Create file
-    call    esp_create
+    ex      (sp),hl               ; HL = String Descriptor, Stack = Text Pointer
+    call    esp_create            ; Create file
 
     ; Write CAQ header
     ld      hl, sync_bytes      ; Sync bytes
@@ -1115,10 +925,8 @@ save_basic_program:
 ; Save array
 ;-----------------------------------------------------------------------------
 save_caq_array:
-    push    hl
-
-    ; Create file
-    call    esp_create
+    ex      (sp),hl               ; HL = String Descriptor, Stack = Text Pointer
+    call    esp_create            ; Create file
 
     ; Write CAQ header
     ld      hl, sync_bytes      ; Sync bytes
@@ -1168,34 +976,30 @@ run_file:
     ; Close any open files
     call    esp_close_all
 
-    ; Get string parameter with path
-    call    get_string_parameter
+    call    get_string_arg        ; Get FileSpec
+    push    hl                    ; Save String Descriptor
 
     ; Check for .ROM extension
-    ld      a, (PATHLEN)
-    cp      a, 5
-    jr      c, .load_basic      ; Too short to have ROM extension
-    sub     a, 3
-    ld      d, PATHBUF >> 8
-    ld      e, a
-    ld      hl, .romext
-    call    .cmp
+    call    STRADL                ; Get String Length in BC, Address in DE
+    ld      a, c                  ; A = String Length
+    cp      a, 5                  ; If less thsn 5
+    jr      c, .load_basic        ; Too short to have ROM extension
+    sub     a, 4                  ; Position of last four characters of String
+    ld      c, a
+    ex      de,hl                 ; HL = String Address
+    add     hl,bc                 ; Point tho last four characters
+    ex      de,hl                 ; DE = String Address
+    ld      hl,.romext            ; HL = ".ROM"
+    ld      b,4                   ; Comparing 4 bytes
+    call    UPRCMP                ; Compare Them
+    pop     hl                    ; Get String Descriptor
     jr      z, load_rom
 
 .load_basic:
+    pop     bc                    ; Discard Text Pointer
+    ld      bc,RUNC
+    push    bc                    ; Return to RUNC     
     call    load_basic_program
-    jp      RUNC
-
-.cmp:
-    ld      a, (de)         ; Get char from string 2
-    call    MAKUPR          ; Cobvert to Upper Case
-    inc     de
-    cp      (hl)            ; Compare to char in string 1
-    inc     hl
-    ret     nz              ; Return NZ if not equal
-    or      a
-    jr      nz, .cmp        ; Loop until end of strings
-    ret                     ; Return Z
 
 .romext: db ".ROM",0
 

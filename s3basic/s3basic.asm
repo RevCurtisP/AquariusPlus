@@ -51,7 +51,8 @@ FDIVB   equ     $3814   ;
 FDIVA   equ     $3818   ;
 FDIVG   equ     $381B   ;
 RNDCNT  equ     $381F   ;
-RNDTAB  equ     $3821   ;;Random Number TABLE
+if aqplus
+RNDTAB  equ     $3821   ;;Random Number TABLE - This Area May be Reused
 RNDX    equ     $3841   ;[M80] LAST RANDOM NUMBER GENERATED, BETWEEN 0 AND 1
 CLMWID  equ     $3845   ;;Comma Column Width
 LPTPOS  equ     $3846   ;[M80] POSITION OF LPT PRINT HEAD
@@ -195,8 +196,8 @@ FSIGN:  ld      a,(FAC)           ;
 HOOKDO: ld      ix,(HOOK)         ;;Get hook routine address
 JUMPIX: jp      (ix)              ;;and jump to it
         byte    0,0               ;;Pad out RST routine
-;;RST 7 - Execute USR Routine
-USRFN:  jp      INTJMP            ;;Execute Interrupt routine
+;;RST 7 - Interrupt 
+INTRPT:  jp      INTJMP            ;;Execute Interrupt routine
 ;;Default Extended BASIC Hook Routine
 NOHOOK: exx                       ;;Save BC, DE, and HL
         pop     hl                ;;Get return address off stack
@@ -329,34 +330,64 @@ MAKUPR: cp      'a'               ;;                                          01
 
 ;;Print Null Terminated String pointed to by [HL] - Faster than STROUT
 ;;On return [HL] points to byte after 0 terminator
-LISPRX: ld      a,(hl)            ;;Get Byte                                  011B  cpl             
+STRPRZ: ld      a,(hl)            ;;Get Byte                                  011B  cpl             
         inc     hl                ;;Point to Next Byte                        011C  ld      (hl),a  
         or      a                 ;;If Zero                                   011D  ld      a,(hl)  
         ret     z                 ;;  Return                                  011E  cpl             
         rst     OUTCHR            ;;Output Byte                               011F  ld      (hl),c  
-        jr      LISPRX            ;;and Do it Again                           0120  cp      b       
+        jr      STRPRZ            ;;and Do it Again                           0120  cp      b       
                                   ;;                                          0121  jr      z,MEMTST
-        byte    $EF               ;;                                          0122
+;;Print Null Terminated inline string after CALL
+;;On return [HL] points to byte after 0 terminator
+STRPRI: pop     hl                ;; Get String Address off Stack             0122   
+        call    STRPRZ            ;; Print the String                         0123  dec     hl  
+                                  ;;                                          0124  ld      de,BASTXT+299
+                                  ;;                                          0125
+        jp      (hl)              ;; Fast Return                              0126
 
-;;Negate HL
-NEGHL:  xor       a               ;[GWB] STANDARD [H,L] NEGATE                0123  dec     hl             
-        sub       l               ;;                                          0124    
-        ld        l,a             ;;                                          0125    
-        sbc       a,h             ;;                                          0126  ld      de,BASTXT+299  
-        sub       l               ;;                                          0127  rst     COMPAR       
-        ld        h,a             ;;                                          0128  jp      c,OMERR      
-        scf                       ;;                                          0129
-        ret                       ;;                                          012A
+;; Call FRESTR and Return String Length in BC and Text Address in DE          
+;; Destroys HL
+FREADL: call    FRESTR            ;; Free Temporary String                    0127  rst     COMPAR 
+                                  ;;                                          0128  jp      c,OMERR
+                                  ;;                                          0129
+;; Return String Lengh in BC and Text Address in DE from Descriptor in HL.                           
+STRADL: push    hl                ;; Save Descriptor Address                  012A                    
+        ld      c,(hl)            ;; Get Length LSB                           012B ld      de,$FFCE 
+        inc     hl                ;;                                          012C      
+        ld      b,0               ;; Get Length MSB (0 for BASIC strings)     012D  
+                                  ;;                                          012E ld      (MEMSIZ),hl
+        inc     hl                ;;                                          012F  
+        ld      e,(hl)            ;; Get Text Address LSB                     0130   
+        inc hl                    ;;                                          0131  add     hl,de 
+        ld      d,(hl)            ;; Get Text Address LSB                     0132  ld      (TOPMEM),hl
+        pop     hl                ;;                                          0133   
+        ret                       ;;                                          0134
+                                                                               
+;;Print number in A as Decimal                                                  
+BYTPRT: ld      h,0               ;; Put A in HL                              0135  call    SCRTCH  
+                                  ;;                                          0136     
+        ld      l,a               ;;                                          0137
+        jp      LINPRT            ;; Print HL                                 0138  call    PRNTIT
+                                  ;;                                          0139
+                                  ;;                                          013A    
+                                                                                     
+;;Compare B bytes of upper-cased string in HL to string in DE                 
+UPRCMP: ld      a,(de)            ;; Get char from First String               013B  ld      sp,OLDSTK  
+        call    MAKUPR            ;; Convert to Upper Case                    013C  
+                                  ;;                                          013D
+                                  ;;                                          013E  call    STKINI
+        inc     de                ;;                                          013F
+        cp      (hl)              ;; Compare to char in Second String         0140
+        inc     hl                ;;                                          0141  ld      hl,EXTBAS+5
+        ret     nz                ;; Return NZ if not equal                   0142
+        djnz    UPRCMP            ;;                                          0143
+                                  ;;                                          0144  ld      de,CRTSIG
+        xor     a                 ;;                                          0145
+        ret                       ;; Return 0 = Equal                         0146  
                                                                               
-;;Negate DE
-NEGDE:  ex      de,hl             ;;DE = 0 - DE                               012B  ld      de,$FFCE
-        call    NEGHL             ;;                                          012C
-                                  ;;                                          012D
-                                  ;;                                          012E  ld      (MEMSIZ),hl
-        ex      de,hl             ;;                                          012F
-        ret                       ;;                                          0130
-
+        
 ;;INITFF is at 0153
+
 else                              ;;
 ;;Test Memory to Find Top of RAM  ;;
         ld      hl,BASTXT+99      ;;Set RAM Test starting address
@@ -382,17 +413,17 @@ MEMCHK: dec     hl                ;;Back up to last good address
         jp      c,OMERR           ;;No, Out of Memory error
         ld      de,$FFCE
         ld      (MEMSIZ),hl       ;;Set MEMSIZ to last RAM location
-endif
-;;Set Top of memory
         add     hl,de
         ld      (TOPMEM),hl       ;;Set TOPMEM t0 MEMSIZ-50
         call    SCRTCH            ;;Perform NEW
         call    PRNTIT            ;;Print copyright message
-        ld      sp,OLDSTK         ;;Top of of stack used to be here
         call    STKINI            ;;Set stack pointer to TOPMEM
-;;Check for Extended BASIC
         ld      hl,EXTBAS+5       ;;End of signature in Extended BASIC
         ld      de,CRTSIG         ;;Text to check signature against
+;;Set Top of memory
+        ld      sp,OLDSTK         ;;Top of of stack used to be here
+endif
+;;Check for Extended BASIC
 EXTCHK: ld      a,(de)            ;;Get byte from signature
         or      a                 ;;Did we reach a terminator?
         jp      z,XBASIC          ;;Yes, start Extended BASIC
@@ -930,7 +961,7 @@ MLOOPR: ld      a,(de)            ;[M80] NOW TRANSFERING LINE IN FROM BUF
 FINI:   rst     HOOKDO            ;
         byte    4                 ;
         call    RUNC              ;[M80] DO CLEAR & SET UP STACK
-        rst     HOOKDO            ;
+LINKER: rst     HOOKDO            ;
         byte    5                 ;
         inc     hl                ;;HL=TXTTAB
         ex      de,hl             ;;DE=TXTTAB
@@ -940,7 +971,13 @@ CHEAD:  ld      h,d               ;[H,L]=[D,E]
         ld      a,(hl)            ;[M80] SEE IF END OF CHAIN
         inc     hl                ;[M80] BUMP POINTER
         or      (hl)              ;[M80] 2ND BYTE
+ifdef aqplus
+;;;Code Change: Make CHEAD callable
+;;;For this to work, Hook 5 must push aa return address onto the stack
+        jp      z,POPHRT+1        ;RET
+else
         jp      z,MAIN            ;
+endif
         inc     hl                ;[M80] FIX HL TO START OF TEXT
         inc     hl                ;
         inc     hl                ;

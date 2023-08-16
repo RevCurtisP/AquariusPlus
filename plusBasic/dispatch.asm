@@ -316,7 +316,7 @@ hook_table:                     ; ## caller   addr  performing function
     dw      HOOK2+1             ;  2 READY    0402  BASIC command line (immediate mode)
     dw      HOOK3+1             ;  3 EDENT    0428  Save Tokenized Line  
     dw      HOOK4+1             ;  4 FINI     0480  Finish Adding/Removing Line or Loading Program
-    dw      HOOK5+1             ;  5 LINKER   0485  Update BASIC Program Line Links
+    dw      set_chead_return    ;  5 LINKER   0485  Update BASIC Program Line Links
     dw      HOOK6+1             ;  6 PRINT    07BC  Execute PRINT Statement
     dw      HOOK7+1             ;  7 FINPRT   0866  End of PRINT Statement
     dw      HOOK8+1             ;  8 TRMNOK   0880  Improperly Formatted INPUT or DATA handler
