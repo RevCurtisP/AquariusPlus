@@ -33,8 +33,11 @@ FDIVG:      equ $381B   ;
 ;               $381E   ; {M80} RND FUNCTION PERTUBATION COUNT
 RNDCNT:     equ $381F   ;
 ;               $3820   ;
-
-;        $3821 - $3840  ; (S3BASIC) Deprecated RND Permutation Table
+                        ; (S3BASIC) Deprecated RND Permutation Table
+;        $3821 - $383B  ; Unused
+BINSTART:   equ $383C   ; binary file load/save address
+BINLEN:     equ $383E   ; 16-bit binary file length
+;               $3840   ; Unused
 
 RNDX:       equ $3841   ; [M80] LAST RANDOM NUMBER GENERATED, BETWEEN 0 AND 1
 LPTPOS:     equ $3846   ; [M80] POSITION OF LPT PRINT HEAD
@@ -111,12 +114,7 @@ BASTXT:     equ $3901   ; Start of Basic Program
 ;-----------------------------------------------------------------------------
 ; Variables
 ;-----------------------------------------------------------------------------
-BASIC_RAM_END: equ $BEFF    ; End of BASIC RAM, $BF00-$BFFF is reserved for our extensions
-
-;      $BF00 -  $BF01   ; Unused
-TMPBUF:     equ $BFEC   ; 16-byte temporary buffer
-BINSTART:   equ $BFFC   ; binary file load/save address
-BINLEN:     equ $BFFE   ; 16-bit binary file length
+BASIC_RAM_END: equ $BFFF    ; End of BASIC RAM, $BF00-$BFFF is reserved for our extensions
 
 ;-----------------------------------------------------------------------------
 ; System ROM functions

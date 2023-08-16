@@ -146,10 +146,10 @@ ST_DEL:
     ld      a, ESPCMD_DELETE      ; Set ESP Command
 _do_string_arg_cmd:
     push    af                    ; Save it
-    call    get_string_arg        ; Get FileSped
-    pop     hl                    ; Get Back Text Point
-    ex      (sp),hl               ; Swap with ESP Command
-    ld      a,h                   ; ESP Command inro A
+    call    get_string_arg        ; Get FileSpec
+    pop     bc                    ; Text Pointer off Stack
+    pop     af                    ; Get ESP Command
+    push    bc                    ; Text Pointer Back on Stack
     call    esp_cmd_strdesc       ; Issue ESP command
     pop     hl                    ; Restore BASIC text pointer
     ret
@@ -318,28 +318,21 @@ ST_DIR:
     or      a
     jr      nz, .mb
     ld      a, e
-;    ld      a, (XTEMP2)
     and     $F0
     jr      nz, .mb
 
     ; Kilobytes range?
     ld      a, e
-;    ld      a, (XTEMP2)
     or      a
     jr      nz, .kb
     ld      a, b
-;    ld      a, (XTEMP1)
     and     $FC
     jr      nz, .kb
 
     ; Bytes range (aaaaaaaa bbbbbbbb ccccccCC DDDDDDDD)
 .bytes:
     ld      h,b
-;    ld      a, (XTEMP1)
-;    ld      h, a
     ld      l,c
-;    ld      a, (XTEMP0)
-;    ld      l, a
     call    out_number_4digits
     ld      a, 'B'
     rst     OUTCHR
@@ -348,11 +341,9 @@ ST_DIR:
     ; Kilobytes range: aaaaaaaa bbbbBBBB CCCCCCcc dddddddd
 .kb:
     ld      a,e
-;    ld      a, (XTEMP2)
     and     a, $0F
     ld      h, a
     ld      a,b
-;    ld      a, (XTEMP1)
     ld      l, a
     ld      b, 2
     call    srlh_rrl_out
@@ -363,11 +354,7 @@ ST_DIR:
     ; Megabytes range: AAAAAAAA BBBBbbbb cccccccc dddddddd
 .mb:
     ld      h,d
-;    ld      a, (XTEMP3)
-;    ld      h, a
     ld      h,e
-;    ld      a, (XTEMP2)
-;    ld      l, a
     ld      b, 4
     call    srlh_rrl_out
     ld      a, 'M'
@@ -759,9 +746,9 @@ get_arg:                    ; Starting at current location
 ; Check for sync sequence (12x$FF, 1x$00)
 ;-----------------------------------------------------------------------------
 check_sync_bytes:
-    ; Read 13 bytes into TMPBUF
+    ; Read 13 bytes into FBUFFR
     ld      de, 13
-    ld      hl, TMPBUF
+    ld      hl, FBUFFR
     call    esp_read_bytes
     ld      a, e
     cp      13
@@ -769,7 +756,7 @@ check_sync_bytes:
 
     ; Check for 12x$FF
     ld      c, 12
-    ld      hl, TMPBUF
+    ld      hl, FBUFFR
 .loop:
     ld      a, (hl)
     cp      $FF
@@ -816,10 +803,10 @@ load_caq_array:
     ; Check CAQ header
     call    check_sync_bytes    ; Sync bytes
     ld      de, 6               ; Check that filename is '######'
-    ld      hl, TMPBUF
+    ld      hl, FILNAM
     call    esp_read_bytes
     ld      c, 6
-    ld      hl, TMPBUF
+    ld      hl, FILNAM
 .loop:
     ld      a, (hl)
     cp      '#'
@@ -850,8 +837,8 @@ load_basic_program:
 
     ; Check CAQ header
     call    check_sync_bytes    ; Sync bytes
-    ld      de, 6               ; Skip filename
-    ld      hl, TMPBUF
+    ld      de, 6               ; Read filename
+    ld      hl, FILNAM
     call    esp_read_bytes
     call    check_sync_bytes    ; Sync bytes
     
