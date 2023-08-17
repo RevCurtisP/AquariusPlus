@@ -1,63 +1,75 @@
 ;-----------------------------------------------------------------------------
-; esp_error
+; dos_change_dir - Change Directory
+; Input: BC: String Length
+;        DE: Address of Byte after String
+; Output:  A: Result
+; Clobbered: BC, DE
 ;-----------------------------------------------------------------------------
-esp_error:
-    neg
-    dec     a
-    cp      -ERR_NOT_EMPTY
-    jr      c, .ok
-    ld      a, -ERR_OTHER - 1
+dos_change_dir:
+    ld      a, ESPCMD_CHDIR      ; Set ESP Command
+    jp      esp_cmd_string        ; Issue ESP command
 
-.ok:
-    ld      hl, .error_msgs
-    add     a,a
-    add     l
-    ld      l, a
-    ld      a, h
-    adc     a, 0
-    ld      h, a
-    ld      a, (hl)
-    inc     hl
-    ld      h, (hl)
-    ld      l, a
-
-    ; Print error message
-    ld      a, '?'
-    rst     OUTCHR
-    jp      ERRFN1
-
-.error_msgs:
-    dw .msg_err_not_found     ; -1: File / directory not found
-    dw .msg_err_too_many_open ; -2: Too many open files / directories
-    dw .msg_err_param         ; -3: Invalid parameter
-    dw .msg_err_eof           ; -4: End of file / directory
-    dw .msg_err_exists        ; -5: File already exists
-    dw .msg_err_other         ; -6: Other error
-    dw .msg_err_no_disk       ; -7: No disk
-    dw .msg_err_not_empty     ; -8: Not empty
-
-.msg_err_not_found:     db "Not found",0
-.msg_err_too_many_open: db "Too many open",0
-.msg_err_param:         db "Invalid param",0
-.msg_err_eof:           db "EOF",0
-.msg_err_exists:        db "Already exists",0
-.msg_err_other:         db "Unknown error",0
-.msg_err_no_disk:       db "No disk",0
-.msg_err_not_empty:     db "Not empty",0
 
 ;-----------------------------------------------------------------------------
-; Bad file error
+; dos_delete_file - Delete file/directory
+; Input: BC: String Length
+;        DE: Address of Byte after String
+; Output:  A: Result
+; Clobbered: BC, DE
 ;-----------------------------------------------------------------------------
-err_bad_file:
-    ld      hl, .msg_bad_file
+dos_delete_file:
+    ld      a, ESPCMD_DELETE      ; Set ESP Command
+    jp      esp_cmd_string        ; Issue ESP command
 
-    ; Print error message
-    ld      a, '?'
-    rst     OUTCHR
-    jp      ERRFN1
+;-----------------------------------------------------------------------------
+; dos_create_dir - Delete file/directory
+; Input: BC: String Length
+;        DE: Address of Byte after String
+; Output:  A: Result
+; Clobbered: BC, DE
+;-----------------------------------------------------------------------------
+dos_create_dir:
+    ld      a, ESPCMD_MKDIR       ; Set ESP Command
+    jp      esp_cmd_string        ; Issue ESP command
 
-.msg_bad_file:       db "Bad file",0
 
+;-----------------------------------------------------------------------------
+; dos_get_cwd - Get Current Directory
+; Sets: string_buff: Current Directory
+; Output:  A: Result, E: String Length, DE = End of String, HL = Buffer Address
+;-----------------------------------------------------------------------------
+dos_get_cwd:
+    ld      a,ESPCMD_GETCWD       ; Issue CWD command
+    call    esp_cmd
+    call    esp_get_result
+    ret     m                     ; Return if Error
+
+;-----------------------------------------------------------------------------
+; dos_read_to_buff - Get Current Directory
+; Assumes string_buff is on a 256 byte boundary
+; Sets: string_buff: Current Directory
+; Output:  E: String Length, DE = End of String, HL = Buffer Address
+;-----------------------------------------------------------------------------
+dos_read_to_buff:
+    push    af                    ; Save A
+    ld      b,255                 ; Maximum Length, Length Counter
+    ld      hl,string_buff        ; BASIC String BUFFER
+    ld      d,h
+    ld      e,l
+.loop
+    call    esp_get_byte          ; Get character
+    ld      (de),a                ; Store in Buffer
+    inc     de
+    or      a
+    jr      z,.done               ; Return if end of String
+    djnz    .loop     
+    xor     a
+    ld      (de),a                ; Add Null Terminator
+.done
+    ld      a,e
+    ld      (buff_strlen),a
+    pop     af                    ; Restore Result
+    ret
 
 ;-----------------------------------------------------------------------------
 ; Initialize BASIC Program
@@ -115,144 +127,6 @@ set_chead_return:
     push    bc
     jmp     HOOK5+1
 
-
-;-----------------------------------------------------------------------------
-; Read bytes
-; Input:  HL: destination address
-;         DE: number of bytes to read
-; Output: HL: next address (start address if no bytes read)
-;         DE: number of bytes actually read
-;
-; Clobbered registers: A, HL, DE
-;-----------------------------------------------------------------------------
-esp_read_bytes:
-    ld      a, ESPCMD_READ
-    call    esp_cmd
-
-    ; Send file descriptor
-    xor     a
-    call    esp_send_byte
-
-    ; Send read size
-    ld      a, e
-    call    esp_send_byte
-    ld      a, d
-    call    esp_send_byte
-
-    ; Get result
-    call    esp_get_result
-
-    ; Get number of bytes actual read
-    call    esp_get_word
-
-    push    de
-
-.loop:
-    ; Done reading? (DE=0)
-    ld      a, d
-    or      a, e
-    jr      z, .done
-
-    call    esp_get_byte
-    ld      (hl), a
-    inc     hl
-    dec     de
-    jr      .loop
-
-.done:
-    pop     de
-    ret
-
-
-;-----------------------------------------------------------------------------
-; Send bytes
-; Input:  HL: source address
-;         DE: number of bytes to write
-; Output: HL: next address
-;         DE: number of bytes actually written
-;-----------------------------------------------------------------------------
-esp_send_bytes:
-    push    de
-
-.loop:
-    ; Done sending? (DE=0)
-    ld      a, d
-    or      a, e
-    jr      z, .done
-
-    ld      a, (hl)
-    call    esp_send_byte
-    inc     hl
-    dec     de
-    jr      .loop
-
-.done:
-    pop     de
-    ret
-
-;-----------------------------------------------------------------------------
-; Write bytes
-; Input:  HL: source address
-;         DE: number of bytes to write
-; Output: HL: next address
-;         DE: number of bytes actually written
-;
-; Clobbered registers: A, HL, DE
-;-----------------------------------------------------------------------------
-esp_write_bytes:
-    ld      a, ESPCMD_WRITE
-    call    esp_cmd
-
-    ; Send file descriptor
-    xor     a
-    call    esp_send_byte
-
-    ; Send write size
-    ld      a, e
-    call    esp_send_byte
-    ld      a, d
-    call    esp_send_byte
-
-    ; Send bytes
-    call    esp_send_bytes
-
-    ; Get result
-    call    esp_get_result
-
-    ; Get number of bytes actual written
-    call    esp_get_byte
-    ld      e, a
-    call    esp_get_byte
-    ld      d, a
-
-    ret
-
-;-----------------------------------------------------------------------------
-; Seek
-; Input:  DE: offset
-;
-; Clobbered registers: A, DE
-;-----------------------------------------------------------------------------
-esp_seek:
-    ld      a, ESPCMD_SEEK
-    call    esp_cmd
-
-    ; Send file descriptor
-    xor     a
-    call    esp_send_byte
-
-    ; Send offset
-    ld      a, e
-    call    esp_send_byte
-    ld      a, d
-    call    esp_send_byte
-    xor     a
-    call    esp_send_byte
-    call    esp_send_byte
-
-    ; Get result
-    call    esp_get_result
-    ret
 
 ;-----------------------------------------------------------------------------
 ; Check for sync sequence (12x$FF, 1x$00)

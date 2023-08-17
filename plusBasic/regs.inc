@@ -34,10 +34,16 @@ FDIVG:      equ $381B   ;
 RNDCNT:     equ $381F   ;
 ;               $3820   ;
                         ; (S3BASIC) Deprecated RND Permutation Table
-;        $3821 - $383B  ; Unused
-BINSTART:   equ $383C   ; binary file load/save address
+;        $3821 - $3837  ; Unused
+                        ; Extended BASIC Graphics Routine Variables
+
+BANK0PAGE   equ $3838   ; Page that was banked into RAM
+BANK1PAGE   equ $3839   ; Page that was banked into RAM
+BANK2PAGE   equ $383A   ; Page that was banked into RAM
+BANK3PAGE   equ $383B   ; Page that was banked into RAM
+BINSTART:   equ $383C   ; Binary file load/save address
 BINLEN:     equ $383E   ; 16-bit binary file length
-SAVEPAGE:   equ $3840   ; Page that was banked into RAM
+ESP_FDESC   equ $3840   ; ESP file descriptor to close on Error or Ctrl-C
 
 RNDX:       equ $3841   ; [M80] LAST RANDOM NUMBER GENERATED, BETWEEN 0 AND 1
 LPTPOS:     equ $3846   ; [M80] POSITION OF LPT PRINT HEAD
@@ -113,6 +119,16 @@ KEYADR  equ     $38FE   ;;Extended Key Tables Base Address minus 1
 BASTXT:     equ $3901   ; Start of Basic Program
 
 ;-----------------------------------------------------------------------------
+; BASIC Extended System Variables and Buffers
+; Page 36, swapped into Bank 3
+;-----------------------------------------------------------------------------
+
+;               $C000   ; Extended BASIC Graphics System Variables
+buff_strlen equ $C0FF   ; Length of String in Buffer
+string_buff equ $C100   ; String Buffer  - up to 255 chars plus null terminator 
+                        ; Must be on 256 byte boundary
+
+;-----------------------------------------------------------------------------
 ; Variables
 ;-----------------------------------------------------------------------------
 BASIC_RAM_END: equ $BFFF    ; End of BASIC RAM, $BF00-$BFFF is reserved for our extensions
@@ -139,6 +155,7 @@ STRADL      equ $012A   ; (S3BASIC) Return String Address in DE, Length in BC fr
 BYTPRT      equ $0135   ; (S3BASIC) Print A as Decimal Number
 UPRCMP      equ $013B   ; (S3BASIC) Compare B byets of uppercased String [HL] to String [DE] 
 INITFF:     equ $0153   ; Initialize I/O Port 255
+TIMSTR      equ $0E2F   ; Create tempory string from null-terminated string
 SNERR:      equ $03C4   ; Syntax error
 MOERR:      equ $03D6   ; Missing Operand error
 ERROR:      equ $03DB   ; Process error code, E = code (offset to 2 char error name)
@@ -281,7 +298,6 @@ SYNCHK macro value
     rst     $08
     db      'value'
 endm
-
 
 ;-----------------------------------------------------------------------------
 ; ESP32 commands

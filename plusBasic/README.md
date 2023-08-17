@@ -25,16 +25,24 @@ Based on and replaces Aquarius+ System ROM
 Some statements will use compound tokens, for example INSTR$ would
 be the token for IN followed by the token for STR$.
 
+### Error Handling
+
+  - ON ERROR GOTO line
+  - ERR$ pseudo-variable
+  - ERRLINE$ pseudo-variable
+  - RESUME
+
 #### File I/O
 
-  - fd = OPEN(filename$, mode$)
+  - fd = OPEN(filename$ [, mode$])
+  - fd = OPEN("tcp://address[,port]")
   - fd = OPENDIR(path$) 
   - CLOSE(fd) 
     - CLOSE(\*) to close all files
   - PRINT# fd, ...
   - INPUT# fd, var$, ...
   - LINE INPUT# fd, var$
-  - GET# fd, var$, len
+  - GET# fd, var$ [, len]
   - PUT# fd, var$, len
     - will pad or truncate contents of var$ to len
   - CD$ pseudo-variable returns current directory
@@ -58,9 +66,9 @@ be the token for IN followed by the token for STR$.
 #### Miscellaneous
   
   - ARGS and ARGS$()
-  - DATE$
-  - TIME$
-  - VARPTR
+  - DATE$ pseudo-variable
+  - TIME$ pseudo-variable
+  - VARPTR(variable)
 
 ### Enhancements to existing Statements and Functions
  

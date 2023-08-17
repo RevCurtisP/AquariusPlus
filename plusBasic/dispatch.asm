@@ -195,10 +195,10 @@ FNJUMPS:
     dw      SNERR                 ;$DD DIR    
     dw      SNERR                 ;$DE CAT    
     dw      SNERR                 ;$DF DEL    
-    dw      SNERR                 ;$E0 CD     
-    dw      FN_IN                 ;$E1 IN
-    dw      FN_JOY                ;$E2 JOY
-    dw      FN_HEX                ;$E3 HEX
+    dw      FN_CD                 ;$E0 CD$()     
+    dw      FN_IN                 ;$E1 IN()
+    dw      FN_JOY                ;$E2 JOY()
+    dw      FN_HEX                ;$E3 HEX()
     dw      SNERR                 ;$E4 
     dw      SNERR                 ;$E5 
     dw      SNERR                 ;$E6 

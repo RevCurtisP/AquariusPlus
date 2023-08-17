@@ -34,6 +34,14 @@
 ; To assemble:
 ;   zmac --zmac -o aqplusbas.cim -o aqplusbas.lst aqplusbas.asm
 
+; RAM Page Usage
+; Page 0  - Systm ROM with overlay
+; Page 33 - RAM in BANK 1
+; Page 34 - RAM in BANK 2
+; Page 35 - RAM in BANK 3 
+;   If a cartrige is present, it is copied here unencrypted 
+; Page 36 - BASIC Extended System Variables and Buffers, swapped in BANK 3
+;   See regs.inc
 
     include "regs.inc"
 
@@ -60,7 +68,7 @@ _reset:
     out     (IO_BANK1), a
     ld      a, 34
     out     (IO_BANK2), a
-    ld      a, 19
+    ld      a, 19                 ; Cartridge Port
     out     (IO_BANK3), a
 
     ; Init video mode
@@ -138,6 +146,11 @@ init_charram:
 ; Cold boot entry point
 ;-----------------------------------------------------------------------------
 _coldboot:
+    ; No Cartridge - Map RAM into Bank 3
+    ld      a, 35               ; Third RAM Page
+    out     (IO_BANK3), a
+
+
     ; Set memory size
     ld      hl, BASIC_RAM_END   ; Top of public RAM
     ld      (MEMSIZ), hl        ; MEMSIZ, Contains the highest RAM location
@@ -154,7 +167,8 @@ _coldboot:
     ld      hl,fast_hook_handler
     ld      (HOOK), hl
 
-
+    call    clear_esp_fdesc
+    
     ; Show our copyright message
     call    PRNTIT              ; Print copyright string in ROM
     call    STRPRI
@@ -170,7 +184,7 @@ _coldboot:
     jr      .print_version
 .print_done:
     call    STRPRI
-    db " PlusBasic v0.1", 0
+    db " PlusBasic v0.2", 0
     call    CRDO
     call    CRDO
 
@@ -208,6 +222,47 @@ _start_cart:
 _interrupt:
     ret
 
+;-----------------------------------------------------------------------------
+; Hook 2 - READY (Enter Direct Mode
+;-----------------------------------------------------------------------------
+direct_mode:
+    ld      a,(ESP_FDESC)         ; Get File Descriptor in Use
+    or      a
+    jp      m,.no_fdesc           ; If Valid Descriptor
+    call    esp_close             ;   Close the File
+    call    clear_esp_fdesc       ;   
+.no_fdesc
+    jp      HOOK2+1
+    
+clear_esp_fdesc:
+    ld      a,255
+    ld      (ESP_FDESC),a         ; Set to No File
+    ret
+
+;-----------------------------------------------------------------------------
+; Memory Management routines
+;-----------------------------------------------------------------------------
+
+swap_basic_buffs:
+    ld      b,36
+
+; Swap Page B into Bank 3
+; Puts Current Page on Stack
+; Clobbers: A, IX
+swap_bank3:
+    pop     ix                    ; Get Return Address
+    ld      a,(IO_BANK3)          ; Get current Page
+    push    af                    ; Save It
+    ld      a,b
+    ld      (IO_BANK3),a          ; Bank in Page
+
+; Restore Bank3
+restore_bank3:
+    pop     ix                    ; Get Return Address
+    pop     af                    ; Get S
+    ld      (IO_BANK3),a          ; Bank in Page
+    jp      (IX)                  ; Fast Return
+    
 
 ;-----------------------------------------------------------------------------
 ; Our commands and functions
@@ -330,7 +385,7 @@ ST_LOCATE:
 
 .goto_hl:
 
-;;;This separate routine MOVEIT in Extended BASIC
+;;;This is separate routine MOVEIT in Extended BASIC
     push    af
 
     ; Restore character behind cursor
@@ -501,7 +556,7 @@ FN_HEX:
     ld      (hl), 0         ; Null-terminate string
     ld      hl, FPSTR
 .create_string:
-    jp      $0E2F           ; Create BASIC string
+    jp      TIMSTR                ; Create BASIC string
 
 .hexbyte:
     ld      b, a
