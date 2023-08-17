@@ -304,6 +304,7 @@ endm
 ;-----------------------------------------------------------------------------
 ESPCMD_RESET:      equ $01     ; Reset ESP
 ESPCMD_VERSION:    equ $02     ; Get version string
+ESPCMD_DATETIME    equ $03     ; Get current date and time
 ESPCMD_OPEN:       equ $10     ; Open / create file
 ESPCMD_CLOSE:      equ $11     ; Close open file
 ESPCMD_READ:       equ $12     ; Read from file
@@ -329,6 +330,7 @@ ERR_EXISTS:        equ -5   ; File already exists
 ERR_OTHER:         equ -6   ; Other error
 ERR_NO_DISK:       equ -7   ; No disk
 ERR_NOT_EMPTY:     equ -8   ; Not empty
+ERR_TIMEOUT        equ -9   ; Not empty
 
 FO_RDONLY:      equ 0x00    ; Open for reading only
 FO_WRONLY:      equ 0x01    ; Open for writing only

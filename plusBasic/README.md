@@ -8,13 +8,18 @@ Based on and replaces Aquarius+ System ROM
   - Optimized Hook, Statement, and Function Dispatch routines
   - Added Extended Keyboard decode tables used by S3 BASIC
   - Calls STRPRI instead of STROUT for null terminated strings
+  - Added 1500 ms timeout to esp_read_byte
+  - Added ESP error -9, "ESP times out"
 
 ## Additions
 
 
 ### BASIC
   - CD$ pseudo-variable returns current path
-
+  - DATE$ pseudo-variable returns current date "YYYYMMDD"
+  - TIME$ pseudo-variable returns current time "HHmmss"
+  - DATETIME$ pseudo-variable returns date and time "YYYYMMDD"
+  
 ### Assembly Ruutines
   - dos_change_dir
   - dos_delete_file
@@ -44,6 +49,8 @@ be the token for IN followed by the token for STR$.
 
 ### Error Handling
 
+  - Make ESP and DOS errors generate BASIC errors
+    - Start at 50 like CP/M BASIC does with disk erros
   - ON ERROR GOTO line
   - ERR$ pseudo-variable
   - ERRLINE$ pseudo-variable

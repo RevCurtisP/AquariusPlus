@@ -37,15 +37,6 @@ esp_cmd:
 esp_cmd_string:
     call    esp_cmd
     jp      esp_send_string
-    ;jp      esp_get_result
-
-;-----------------------------------------------------------------------------
-; Get first result byte, and jump to error handler if it was an error
-;-----------------------------------------------------------------------------
-_esp_get_result:
-    call    esp_get_byte
-    or      a
-    ret
 
 ;-----------------------------------------------------------------------------
 ; Issue command to ESP and Send string with Descriptor in HL
@@ -114,6 +105,7 @@ esp_create:
     call    esp_send_strdesc
     jp      esp_get_result
 
+
 ;-----------------------------------------------------------------------------
 ; Read 32-bit long from ESP32 into BC,DE
 ;-----------------------------------------------------------------------------
@@ -123,7 +115,7 @@ esp_get_long:
     ld      c,e
     ld      b,d
 
-;-----------------------------------------------------------------------------
+;-----------------------------------------------------------------------------t
 ; Read 16-bit word from ESP32 into DE
 ; Returns with MSB in A
 ;-----------------------------------------------------------------------------
@@ -137,15 +129,26 @@ esp_get_word:
 
 ;-----------------------------------------------------------------------------
 ; Wait for data from ESP
+; Time Out = 1500 milliseconds - (43 + 82 * 65536) / 3.579545 microseconds
 ;-----------------------------------------------------------------------------
 esp_get_byte:
-.wait:
-    in      a, (IO_ESPCTRL)
-    and     a, 1
-    jr      z, .wait
-    in      a, (IO_ESPDATA)
-    ret
-
+    push    bc                    ;+11	
+                                  	
+.wait:                            
+    dec     bc                    ;+6	
+    ld      a,b                   ;+4	
+    or      c                     ;+4	
+    jr      z,.timeout            ;+7+5
+    in      a, (IO_ESPCTRL)       ;+11	
+    and     a, 1                  ;+7	
+    jr      z, .wait              ;+7+5
+    in      a, (IO_ESPDATA)       ;+11	
+    pop     bc                    ;+10	
+    ret                           ;+10	
+.timeout                          
+    ld      a,-9                  ;+7	
+    pop     bc                    ;+10	
+    ret                           ;+10	
 ;-----------------------------------------------------------------------------
 ; Read bytes
 ; Input:  HL: destination address
@@ -190,6 +193,49 @@ esp_read_bytes:
     pop     de
     ret
 
+;-----------------------------------------------------------------------------
+; esp_get_datetime - Read Date and Time String BASIC string buffer
+; Assumes string_buff is on a 256 byte boundary
+; Sets: string_buff: Date and Time in format YYYYMMDDHHmmss
+; Output:  E: String Length, DE = End of String, HL = Buffer Address
+;-----------------------------------------------------------------------------
+esp_get_datetime:
+    ld      a,ESPCMD_DATETIME     ; Issue CWD command
+    call    esp_cmd
+    call    esp_get_result
+    ret     m                     ; Return if Error
+    xor     a     
+    call    esp_send_byte         ; Response Type ($00)
+    ret     m                     ; Fall into esp_read_to_buff
+
+;-----------------------------------------------------------------------------
+; esp_read_to_buff - Read String from ESP to BASIC string buffer
+; Assumes string_buff is on a 256 byte boundary
+; Sets: string_buff: Current Directory
+; Output:  E: String Length, DE = End of String, HL = Buffer Address
+;-----------------------------------------------------------------------------
+esp_read_to_buff:
+    push    af                    ; Save A
+    ld      b,255                 ; Maximum Length, Length Counter
+    ld      hl,string_buff        ; BASIC String BUFFER
+    ld      d,h
+    ld      e,l
+.loop
+    call    esp_get_byte          ; Get character
+    jp      m,.error              ; If Error, terminate string and return
+    ld      (de),a                ; Store in Buffer
+    inc     de
+    or      a
+    jr      z,.done               ; Return if end of String
+    djnz    .loop     
+.error
+    xor     a
+    ld      (de),a                ; Add Null Terminator
+.done
+    ld      a,e
+    ld      (buff_strlen),a
+    pop     af                    ; Restore Result
+    ret
 
 ;-----------------------------------------------------------------------------
 ; Write 32-bit long in BC,DE to ESP32
@@ -342,7 +388,7 @@ esp_seek:
 esp_error:
     neg
     dec     a
-    cp      -ERR_NOT_EMPTY
+    cp      -ERR_TIMEOUT
     jr      c, .ok
     ld      a, -ERR_OTHER - 1
 
@@ -373,6 +419,7 @@ esp_error:
     dw .msg_err_other         ; -6: Other error
     dw .msg_err_no_disk       ; -7: No disk
     dw .msg_err_not_empty     ; -8: Not empty
+    dw .msg_err_timeout       ; -9: ESP32 timed out
 
 .msg_err_not_found:     db "Not found",0
 .msg_err_too_many_open: db "Too many open",0
@@ -382,6 +429,7 @@ esp_error:
 .msg_err_other:         db "Unknown error",0
 .msg_err_no_disk:       db "No disk",0
 .msg_err_not_empty:     db "Not empty",0
+.msg_err_timeout:       db "ESP32 timed out",0
 
 ;-----------------------------------------------------------------------------
 ; Bad file error

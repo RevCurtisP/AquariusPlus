@@ -182,7 +182,7 @@ FNJUMPS:
     dw      SNERR                 ;$D0   
     dw      SNERR                 ;$D1   
     dw      SNERR                 ;$D2   
-    dw      SNERR                 ;$D3   
+    dw      FN_DATE               ;$D3 DATE$
     dw      SNERR                 ;$D4 EDIT   
     dw      SNERR                 ;$D5 CLS    
     dw      SNERR                 ;$D6 LOCATE 
@@ -200,7 +200,7 @@ FNJUMPS:
     dw      FN_JOY                ;$E2 JOY()
     dw      FN_HEX                ;$E3 HEX()
     dw      SNERR                 ;$E4 
-    dw      SNERR                 ;$E5 
+    dw      FN_TIME               ;$E5 TIME$
     dw      SNERR                 ;$E6 
     dw      SNERR                 ;$E7 
     dw      SNERR                 ;$E8 
@@ -363,5 +363,38 @@ fast_hook_handler:
     ex      af,af'              ; Restore AF
     jp      (ix)
 
+;-----------------------------------------------------------------------------
+; plusBASIC keyword list
+;-----------------------------------------------------------------------------
+BTOKEN:     equ $D3             ; Our first token number
+
+TBLCMDS:
+    db $80 + 'D',"ATE"            ; $D3
+    db $80 + 'E',"DIT"            ; $D4
+    db $80 + 'C',"LS"             ; $D5
+    db $80 + 'L',"OCATE"          ; $D6
+    db $80 + 'O',"UT"             ; $D7
+    db $80 + 'P',"SG"             ; $D8
+    db $80 + 'D',"EBUG"           ; $D9
+    db $80 + 'C',"ALL"            ; $DA
+    db $80 + 'L',"OAD"            ; $DB
+    db $80 + 'S',"AVE"            ; $DC
+    db $80 + 'D',"IR"             ; $DD
+    db $80 + 'M',"KDIR"           ; $DE
+    db $80 + 'D',"EL"             ; $DF
+    db $80 + 'C',"D"              ; $E0
+    db $80 + 'I',"N"              ; $E1
+    db $80 + 'J',"OY"             ; $E2
+    db $80 + 'H',"EX$"            ; $E3
+    db $80 + ' '                  ; $E4
+    db $80 + 'T',"IME"            ; $E5
+    db $80             ; End of table marker
+    
+;-----------------------------------------------------------------------------
+; plusBASIC tokens
+;-----------------------------------------------------------------------------
+TKTIME    equ     $E5    
+
+    
 
 ;;; Extended Error Message Table can go here

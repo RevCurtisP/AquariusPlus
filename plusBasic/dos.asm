@@ -43,33 +43,7 @@ dos_get_cwd:
     call    esp_cmd
     call    esp_get_result
     ret     m                     ; Return if Error
-
-;-----------------------------------------------------------------------------
-; dos_read_to_buff - Get Current Directory
-; Assumes string_buff is on a 256 byte boundary
-; Sets: string_buff: Current Directory
-; Output:  E: String Length, DE = End of String, HL = Buffer Address
-;-----------------------------------------------------------------------------
-dos_read_to_buff:
-    push    af                    ; Save A
-    ld      b,255                 ; Maximum Length, Length Counter
-    ld      hl,string_buff        ; BASIC String BUFFER
-    ld      d,h
-    ld      e,l
-.loop
-    call    esp_get_byte          ; Get character
-    ld      (de),a                ; Store in Buffer
-    inc     de
-    or      a
-    jr      z,.done               ; Return if end of String
-    djnz    .loop     
-    xor     a
-    ld      (de),a                ; Add Null Terminator
-.done
-    ld      a,e
-    ld      (buff_strlen),a
-    pop     af                    ; Restore Result
-    ret
+    jp      esp_read_to_buff      ; Get current directory and write to buffer
 
 ;-----------------------------------------------------------------------------
 ; Initialize BASIC Program

@@ -265,48 +265,6 @@ restore_bank3:
     
 
 ;-----------------------------------------------------------------------------
-; Our commands and functions
-;-----------------------------------------------------------------------------
-BTOKEN:     equ $D4             ; Our first token number
-
-TBLCMDS:
-    db $80 + 'E'
-    db "DIT"
-    db $80 + 'C'
-    db "LS"
-    db $80 + 'L'
-    db "OCATE"
-    db $80 + 'O'
-    db "UT"
-    db $80 + 'P'
-    db "SG"
-    db $80 + 'D'
-    db "EBUG"
-    db $80 + 'C'
-    db "ALL"
-    db $80 + 'L'
-    db "OAD"
-    db $80 + 'S'
-    db "AVE"
-    db $80 + 'D'
-    db "IR"
-    db $80 + 'M'
-    db "KDIR"
-    db $80 + 'D'
-    db "EL"
-    db $80 + 'C'
-    db "D"
-
-    ; Functions
-    db $80 + 'I'
-    db "N"
-    db $80 + 'J'
-    db "OY"
-    db $80 + 'H'
-    db "EX$"
-    db $80             ; End of table marker
-
-;-----------------------------------------------------------------------------
 ; RUN command - hook 24
 ;-----------------------------------------------------------------------------
 run_cmd:
@@ -592,6 +550,12 @@ ST_CALL:
     call    FRCINT           ; Convert to 16 bit integer
     push    de
     ret                      ; Jump to user code, HL = BASIC text pointer
+
+
+;-----------------------------------------------------------------------------
+; plusBASIC specific statements and functions
+;-----------------------------------------------------------------------------
+    include "plus.asm"
 
 ;-----------------------------------------------------------------------------
 ; DOS routines
