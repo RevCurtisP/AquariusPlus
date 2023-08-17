@@ -5,19 +5,28 @@ Requires S3 BASIC assembled with "aqplus" switch
 Based on and replaces Aquarius+ System ROM
 
 ## Internal Code Changes:
-
   - Optimized Hook, Statement, and Function Dispatch routines
   - Added Extended Keyboard decode tables used by S3 BASIC
   - Calls STRPRI instead of STROUT for null terminated strings
 
 ## Additions
 
-### BASIC
 
+### BASIC
   - CD$ pseudo-variable returns current path
 
-### Assembly
+### Assembly Ruutines
+  - dos_change_dir
+  - dos_delete_file
+  - dos_create_dir
+  - dos_get_cwd
 
+## ToDo:
+  - Make dos_create_dir and MKDIR use buffer in page 35
+  - Extricate dos code from statement code and make dos routines callable from assembly.
+  - Move BASIC statement and function code to ROM bank 1.
+  - Kernal/BIOS jump table. Jumps start at $FFED and go down from there.
+  
 ## Proposed Additions and Enhancements
 
 ### Direct Mode Enhancements
