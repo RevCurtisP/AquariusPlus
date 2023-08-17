@@ -10,6 +10,14 @@ Based on and replaces Aquarius+ System ROM
   - Added Extended Keyboard decode tables used by S3 BASIC
   - Calls STRPRI instead of STROUT for null terminated strings
 
+## Additions
+
+### BASIC
+
+  - CD$ pseudo-variable returns current path
+
+### Assembly
+
 ## Proposed Additions and Enhancements
 
 ### Direct Mode Enhancements
@@ -45,7 +53,6 @@ be the token for IN followed by the token for STR$.
   - GET# fd, var$ [, len]
   - PUT# fd, var$, len
     - will pad or truncate contents of var$ to len
-  - CD$ pseudo-variable returns current directory
   - GOTO# fd, position
     - SEEK but reusing an existing token
   - Possibly READ# and OUTPUT# 
