@@ -11,6 +11,11 @@ Based on and replaces Aquarius+ System ROM
   - Added 1500 ms timeout to esp_read_byte
   - Added ESP error -9, "ESP times out"
 
+
+## In Process
+  - ST_ and FN_ routines from aqplusbas.asm to plus.asm
+
+
 ## Additions
 
 
