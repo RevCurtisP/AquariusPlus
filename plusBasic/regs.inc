@@ -183,9 +183,12 @@ SCRTCH:     equ $0BBE
 RUNC:       equ $0BCB
 CLEARC:     equ $0BCF
 STKINI:     equ $0BE5
+STRLIT      equ $0E5F   ; Build Descriptor for String Litersl
+PUTNEW      equ $0E7E   ; Set Pointer to Temporary String
 STROUT:     equ $0E9D   ; Print null-terminated string in HL
 FRESTR      equ $0FC6   ; Free tempory string, return string descriptor address in HL
 LEN1:       equ $0FF7   ; Get string length (in: (FPREG) = string block, out: HL = string block, A = length)
+FINBCK      equ $101D   ; Return a String
 PTRGET:     equ $10D1   ; Get variable (out: BC = addr, DE = len)
 LINPRT      equ $1675   ; Print Two Byte Number in HL as Decimal - Alters all Registers
 OUTDO       equ $198A   ; Output a Character

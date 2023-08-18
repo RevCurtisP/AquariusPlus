@@ -98,7 +98,7 @@ STJUMPS:
     dw      SNERR                 ;$D0  
     dw      SNERR                 ;$D1  
     dw      SNERR                 ;$D2  
-    dw      SNERR                 ;$D3  
+    dw      SNERR                 ;$D3 TIME 
     dw      SNERR                 ;$D4 EDIT   
     dw      ST_CLS                ;$D5 CLS    
     dw      ST_LOCATE             ;$D6 LOCATE 
@@ -115,10 +115,10 @@ STJUMPS:
     dw      SNERR                 ;$E1 IN
     dw      SNERR                 ;$E2 JOY
     dw      SNERR                 ;$E3 HEX
-    dw      SNERR                 ;$E4 VER
-    dw      SNERR                 ;$E5 DTM
-    dw      SNERR                 ;$E6 DEC
-    dw      SNERR                 ;$E7 KEY
+    dw      SNERR                 ;$E4 
+    dw      SNERR                 ;$E5 DATE
+    dw      SNERR                 ;$E6 
+    dw      SNERR                 ;$E7 
     dw      SNERR                 ;$E8 
     dw      SNERR                 ;$E9 
     dw      SNERR                 ;$EA 
@@ -182,7 +182,7 @@ FNJUMPS:
     dw      SNERR                 ;$D0   
     dw      SNERR                 ;$D1   
     dw      SNERR                 ;$D2   
-    dw      FN_DATE               ;$D3 DATE$
+    dw      FN_TIME               ;$D3 TIME$
     dw      SNERR                 ;$D4 EDIT   
     dw      SNERR                 ;$D5 CLS    
     dw      SNERR                 ;$D6 LOCATE 
@@ -200,7 +200,7 @@ FNJUMPS:
     dw      FN_JOY                ;$E2 JOY()
     dw      FN_HEX                ;$E3 HEX()
     dw      SNERR                 ;$E4 
-    dw      FN_TIME               ;$E5 TIME$
+    dw      FN_DATE               ;$E5 DATE$
     dw      SNERR                 ;$E6 
     dw      SNERR                 ;$E7 
     dw      SNERR                 ;$E8 
@@ -229,6 +229,8 @@ FNJUMPS:
     dw      SNERR                 ;$FF
 
 
+    dc $C1A0-$,$FF
+
 ; ------------------------------------------------------------------------------
 ;  Execute Statement with Token in A
 ; ------------------------------------------------------------------------------
@@ -247,6 +249,8 @@ exec_next_statement:
     exx                         ; Restore BC,DE,HL
     rst     CHRGET              ; Skip Token and Eat Spaces
     jp      (ix)                ; Go Do It
+
+    dc $C1C0-$,$FF
 
 ; ------------------------------------------------------------------------------
 ;  Hook 27 - Execute Function
@@ -267,134 +271,3 @@ execute_function:
     pop     af                  ; Restore A
     jp      (ix)                ; Go Do It
 
-;-----------------------------------------------------------------------------
-; Convert keyword to token - hook 10
-;-----------------------------------------------------------------------------
-keyword_to_token:
-    ld      a, b               ; A = current index
-
-    cp      $CB                ; If < $CB then keyword was found in BASIC table
-    ld      IX,HOOK10+1        ;   CRUNCX will also return here when done
-    push    IX
-    ret     nz                 ;   so return
-    ; Set our own keyword table and let BASIC code use that instead
-    ex      de, hl             ; HL = Line buffer
-    ld      de, TBLCMDS - 1    ; DE = our keyword table
-    ld      b, BTOKEN - 1      ; B = our first token
-    
-    jp      CRUNCX             ; Continue searching using our keyword table
-
-;-----------------------------------------------------------------------------
-; Convert token to keyword - hook 22
-;
-; This function will check if the passed token is one of the stock BASIC or
-; our extra commands. If it one of our commands, we pass our command table
-; to the ROM code.
-;-----------------------------------------------------------------------------
-token_to_keyword:
-    cp      BTOKEN              ; Is it one of our tokens?
-    jr      nc, .expand_token   ; Yes, expand it
-    jp      HOOK22+1            ; No, return to system for expansion
-
-.expand_token:
-    sub     BTOKEN - 1
-    ld      c, a                ; C = offset to AquBASIC command
-    ld      de, TBLCMDS         ; DE = table of AquBASIC command names
-    jp      RESSRC              ; Print keyword indexed by C
-
-; ------------------------------------------------------------------------------
-;  Hook Jump Table
-; ------------------------------------------------------------------------------
-
-    org ($ & $FF00) + 256
-
-; BASIC Hook Jump Table
-; 58 Bytes
-hook_table:                     ; ## caller   addr  performing function
-    dw      HOOK0+1             ;  0 ERROR    03DB  Initialize Stack, Display Error, and Stop Program
-    dw      HOOK1+1             ;  1 ERRCRD   03E0  Print Error Message
-    dw      HOOK2+1             ;  2 READY    0402  BASIC command line (immediate mode)
-    dw      HOOK3+1             ;  3 EDENT    0428  Save Tokenized Line  
-    dw      HOOK4+1             ;  4 FINI     0480  Finish Adding/Removing Line or Loading Program
-    dw      set_chead_return    ;  5 LINKER   0485  Update BASIC Program Line Links
-    dw      HOOK6+1             ;  6 PRINT    07BC  Execute PRINT Statement
-    dw      HOOK7+1             ;  7 FINPRT   0866  End of PRINT Statement
-    dw      HOOK8+1             ;  8 TRMNOK   0880  Improperly Formatted INPUT or DATA handler
-    dw      HOOK9+1             ;  9 EVAL     09FD  Evaluate Number or String
-    dw      keyword_to_token    ; 10 NOTGOS   0536  Converting Keyword to Token
-    dw      HOOK11+1            ; 11 CLEAR    0CCD  Execute CLEAR Statement
-    dw      HOOK12+1            ; 12 SCRTCH   0BBE  Execute NEW Statement
-    dw      HOOK13+1            ; 13 OUTDO    198A  Execute OUTCHR
-    dw      HOOK14+1            ; 14 ATN      1985  ATN() function
-    dw      HOOK15+1            ; 15 DEF      0B3B  DEF statement
-    dw      HOOK16+1            ; 16 FNDOER   0B40  FNxx() call
-    dw      HOOK17+1            ; 17 LPTOUT   1AE8  Print Character to Printer
-    dw      HOOK18+1            ; 18 INCHRH   1E7E  Read Character from Keyboard
-    dw      HOOK19+1            ; 19 TTYCHR   1D72  Print Character to Screen
-    dw      HOOK20+1            ; 20 CLOAD    1C2C  Load File from Tape
-    dw      HOOK21+1            ; 21 CSAVE    1C09  Save File to Tape
-    dw      token_to_keyword    ; 22 LISPRT   0598  expanding a token
-    dw      exec_next_statement ; 23 GONE2    064B  interpreting next BASIC statement
-    dw      run_cmd             ; 24 RUN      06BE  starting BASIC program
-    dw      HOOK25+1            ; 25 ONGOTO   0780  ON statement
-    dw      HOOK26+1            ; 26 INPUT    0893  Execute INPUT, bypassing Direct Mode check
-    dw      execute_function    ; 27 ISFUN    0A5F  Executing a Function
-    dw      HOOK28+1            ; 28 DATBK    08F1  Doing a READ from DATA
-    dw      HOOK29+1            ; 29 NOTSTV   099E  Evaluate Operator (S3 BASIC Only)
-
-; ------------------------------------------------------------------------------
-;  Execute Hook Routine
-; ------------------------------------------------------------------------------
-
-fast_hook_handler:
-    ex      af,af'              ; save AF
-    exx                         ; save BC,DE,HL
-    pop     hl                  ; get hook return address
-    ld      a,(hl)              ; A = byte (RST $30 parameter)
-    add     a,a                 ; A * 2 to index WORD size vectors
-    ld      l,a
-    ld      h,high(hook_table)
-    ld      a,(hl)
-    ld      ixl,a
-    inc     hl
-    ld      a,(hl)
-    ld      ixh,a
-    exx                         ; Restore BC,DE,HL
-    ex      af,af'              ; Restore AF
-    jp      (ix)
-
-;-----------------------------------------------------------------------------
-; plusBASIC keyword list
-;-----------------------------------------------------------------------------
-BTOKEN:     equ $D3             ; Our first token number
-
-TBLCMDS:
-    db $80 + 'D',"ATE"            ; $D3
-    db $80 + 'E',"DIT"            ; $D4
-    db $80 + 'C',"LS"             ; $D5
-    db $80 + 'L',"OCATE"          ; $D6
-    db $80 + 'O',"UT"             ; $D7
-    db $80 + 'P',"SG"             ; $D8
-    db $80 + 'D',"EBUG"           ; $D9
-    db $80 + 'C',"ALL"            ; $DA
-    db $80 + 'L',"OAD"            ; $DB
-    db $80 + 'S',"AVE"            ; $DC
-    db $80 + 'D',"IR"             ; $DD
-    db $80 + 'M',"KDIR"           ; $DE
-    db $80 + 'D',"EL"             ; $DF
-    db $80 + 'C',"D"              ; $E0
-    db $80 + 'I',"N"              ; $E1
-    db $80 + 'J',"OY"             ; $E2
-    db $80 + 'H',"EX$"            ; $E3
-    db $80 + ' '                  ; $E4
-    db $80 + 'T',"IME"            ; $E5
-    db $80             ; End of table marker
-    
-;-----------------------------------------------------------------------------
-; plusBASIC tokens
-;-----------------------------------------------------------------------------
-TKTIME    equ     $E5    
-
-    
-
-;;; Extended Error Message Table can go here

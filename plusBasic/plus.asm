@@ -18,13 +18,19 @@ FN_DATE:
     push    hl
     ld      de,LABBCK
     push    de
-    call    esp_get_datetime      ; Read current directory into buffer
+    ld      ix,esp_get_datetime   ; Read Date and Time into buffer
+    call    bas_read_to_buff      ; Set buffer address and call routine
     inc     c                     ; 0 = DATETIME$, 1=DATE$
     jr      z,.done
+    ld      de,8
+    add     hl,de                 ; Start of Time substring
     xor     a
-    ld      (string_buff+8),a     ; Terminate date portion of string
+    ld      (hl),a                ; Terminate Date substring
+    sbc     hl,de                 ; Set HL back to Buffer address 
 .done
     jp      TIMSTR                ; Create and return temporary string
+
+
 
 ;-----------------------------------------------------------------------------
 ; JOY() function
@@ -134,7 +140,9 @@ FN_TIME:
     push    hl
     ld      bc,LABBCK
     push    bc
-    call    esp_get_datetime      ; Read current directory into buffer
-    ld      hl,string_buff+8      ; Point to time portion of string
-    jp      TIMSTR                ; Create and return temporary string
+    ld      ix,esp_get_datetime   ; Read Date and Time into buffer
+    call    bas_read_to_buff      ; Set buffer address and call routine
+    ld      bc,8
+    add     hl,bc                 ; Start of Date String
+    jp      TIMSTR
 

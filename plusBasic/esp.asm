@@ -193,47 +193,58 @@ esp_read_bytes:
     pop     de
     ret
 
+;esp_open:
+    ld      a, ESPCMD_OPEN
+    call    esp_cmd
+    ld      a, FO_RDONLY
+    call    esp_send_byte
+    call    esp_send_strdesc
+    jp      esp_get_result
+
 ;-----------------------------------------------------------------------------
-; esp_get_datetime - Read Date and Time String BASIC string buffer
-; Assumes string_buff is on a 256 byte boundary
+; esp_get_datetime - Read Date and Time String into 256 byte buffer
+; Input: HL = Buffer Address
 ; Sets: string_buff: Date and Time in format YYYYMMDDHHmmss
 ; Output:  E: String Length, DE = End of String, HL = Buffer Address
 ;-----------------------------------------------------------------------------
 esp_get_datetime:
     ld      a,ESPCMD_DATETIME     ; Issue CWD command
     call    esp_cmd
-    call    esp_get_result
-    ret     m                     ; Return if Error
     xor     a     
     call    esp_send_byte         ; Response Type ($00)
+    call    esp_get_result
     ret     m                     ; Fall into esp_read_to_buff
 
+
+
 ;-----------------------------------------------------------------------------
-; esp_read_to_buff - Read String from ESP to BASIC string buffer
-; Assumes string_buff is on a 256 byte boundary
-; Sets: string_buff: Current Directory
-; Output:  E: String Length, DE = End of String, HL = Buffer Address
+; esp_read_to_buff - Read String from ESP to 256 byte buffer
+; Input: HL: Address of String Buffer
+; Output: E: String Length, 
+;        DE: Address of Terminator
+;        HL: Buffer Address
+; Clobbers: B
 ;-----------------------------------------------------------------------------
 esp_read_to_buff:
     push    af                    ; Save A
     ld      b,255                 ; Maximum Length, Length Counter
-    ld      hl,string_buff        ; BASIC String BUFFER
     ld      d,h
     ld      e,l
 .loop
     call    esp_get_byte          ; Get character
     jp      m,.error              ; If Error, terminate string and return
     ld      (de),a                ; Store in Buffer
-    inc     de
     or      a
     jr      z,.done               ; Return if end of String
+    inc     de
     djnz    .loop     
 .error
     xor     a
     ld      (de),a                ; Add Null Terminator
 .done
-    ld      a,e
-    ld      (buff_strlen),a
+    ex      de,hl                 ; HL = Terminator Address, DE = Buffer Address
+    sbc     hl,de                 ; HL = Length
+    ex      de,hl                 ; DE = Length, HL = Buffer Address
     pop     af                    ; Restore Result
     ret
 

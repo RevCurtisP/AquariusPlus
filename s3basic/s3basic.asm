@@ -129,10 +129,11 @@ endif
 ;;              $3900   ;;This is always 0
 BASTXT  equ     $3901   ;;Start of Basic Program
 ifdef aqplus
-XPLUS   equ     $2000   ;;Extended BASIC Reset
-XCOLD   equ     $2003   ;;Extended BASIC Cold Start`
-XCART   equ     $2006   ;;Extended BASIC Start Cartridge
-XINTR   equ     $2009   ;;Interrupt Handler Routine
+XPLUS   equ     $2000   ;;plusBASIC Reset
+XCOLD   equ     $2003   ;;plusBASIC Cold Start`
+XCART   equ     $2006   ;;plusBASIC Start Cartridge
+XINTR   equ     $2009   ;;plusBASIC  Interrupt Handler
+XWARM   equ     $200C   ;;plusBASIC Warm Start`
 endif
 EXTBAS  equ     $2000   ;;Start of Extended Basic
 XSTART  equ     $2010   ;;Extended BASIC Startup Routine
@@ -294,7 +295,11 @@ WARMST: ld      a,11              ;
         ld      a,(SCRMBL)        ;
         out     ($FF),a           ;;Reset I/O Port 255
         call    STKINI            ;;Initialize stack
+ifdef aqplus
+        call    XWARM
+else
         call    WRMCON            ;;Finish Up
+endif
 COLDST: ld      hl,DEFALT         ;Set System Variable Default Values
         ld      bc,81             ;
         ld      de,USRPOK         ;;Copy 80 bytes starting at DEFALT
@@ -1199,12 +1204,14 @@ LPFORM: call    LOOPER            ;[M80] MUST HAVE VARIABLE POINTER IN [D,E]
         ld      hl,(ENDFOR)       ;[M80] GET ENDING TEXT POINTER FOR THIS "FOR"
         rst     COMPAR            ;[M80] SEE IF THEY MATCH
         pop     hl                ;[M80] GET BACK THE STACK POINTER
-        pop     de                ;
+        nop
+;       pop     de                ;
         jr      nz,LPFORM         ;;[M80] KEEP SEARCHING IF NO MATCH
         pop     de                ;[M80] GET BACK THE TEXT POINTER
         ld      sp,hl             ;[M80] DO THE ELIMINATION
         inc     c                 ;
-NOTOL:  pop     de                ;
+NOTOL:  nop
+;        pop     de                ;
         ex      de,hl             ;[M80] [H,L]=TEXT POINTER
         ld      c,8               ;[M80] MAKE SURE 16 BYTES ARE AVAILABLE
         call    GETSTK            ;[M80] OFF OF THE STACK
@@ -1247,8 +1254,7 @@ NXTCON: ld      b,FORTK           ;[M80] PUT A 'FOR' TOKEN ONTO THE STACK
         push    bc                ;
         inc     sp                ;[M80] THE "TOKEN" ONLY TAKES ONE BYTE OF STACK SPACE
 ;[M80] NEW STATEMENT FETCHER
-NEWSTT:
-        ld      (SAVTXT),hl       ;USED BY CONTINUE AND INPUT AND CLEAR AND PRINT USING
+NEWSTT: ld      (SAVTXT),hl       ;USED BY CONTINUE AND INPUT AND CLEAR AND PRINT USING
         call    INCNTC            ;;*** might be [M65] ISCNTC
         ld      a,(hl)            ;;Get Terminator
         cp      ':'               ;[M80] IS IT A COLON?
@@ -1276,7 +1282,7 @@ GONE3:  ret     z                 ;[M80] IF A TERMINATOR TRY AGAIN
 GONE2:  sub     $80               ;[M80] "ON ... GOTO" AND "ON ... GOSUB" COME HERE
         jp      c,LET             ;[M80] MUST BE A LET
         cp      TABTK-$80         ;;End of Statement Tokens
-        rst     HOOKDO            ;;Handle Extended BASIC Statement Tokens
+        rst     HOOKDO            ;;Handle Extended BASIC Statement Tokens`
         byte    23                ;
         jp      nc,SNERR          ;;Not a Statement Token
         rlca                      ;[M80] MULTIPLY BY 2

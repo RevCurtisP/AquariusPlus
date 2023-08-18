@@ -35,15 +35,19 @@ dos_create_dir:
 
 ;-----------------------------------------------------------------------------
 ; dos_get_cwd - Get Current Directory
-; Sets: string_buff: Current Directory
+; Input: Buffer address
 ; Output:  A: Result, E: String Length, DE = End of String, HL = Buffer Address
 ;-----------------------------------------------------------------------------
 dos_get_cwd:
+;    call    swap_basic_buffs      ; Swap in Extended Work Area
     ld      a,ESPCMD_GETCWD       ; Issue CWD command
     call    esp_cmd
     call    esp_get_result
-    ret     m                     ; Return if Error
-    jp      esp_read_to_buff      ; Get current directory and write to buffer
+    jp      m,.done               ; Return if Error
+    call    esp_read_to_buff      ; Get current directory and write to buffer
+.done
+;    jp     restore_bank3         ; Back to Original Bank 3
+    ret
 
 ;-----------------------------------------------------------------------------
 ; Initialize BASIC Program

@@ -38,18 +38,21 @@
 ; Page 0  - Systm ROM with overlay
 ; Page 33 - RAM in BANK 1
 ; Page 34 - RAM in BANK 2
-; Page 35 - RAM in BANK 3 
+; Page 34 - RAM in BANK 3
 ;   If a cartrige is present, it is copied here unencrypted 
+; Page 1 -  ROM Page 1 in BANK 3 
+;   After BASIC cold boots
 ; Page 36 - BASIC Extended System Variables and Buffers, swapped in BANK 3
 ;   See regs.inc
 
     include "regs.inc"
 
     org     $2000
-    jp      _reset          ; Called from main ROM at reset vector
-    jp      _coldboot       ; Called from main ROM for cold boot
-    jp      _start_cart
-    jp      _interrupt      
+    jp      _reset          ; $2000 Called from main ROM at reset vector
+    jp      _coldboot       ; $2003 Called from main ROM for cold boot
+    jp      _start_cart     ; $2006
+    jp      _interrupt      ; $2009
+    jp      _warm_boot      ; $200C Called from main ROM for warm boot
 
 ;-----------------------------------------------------------------------------
 ; Reset vector
@@ -147,7 +150,7 @@ init_charram:
 ;-----------------------------------------------------------------------------
 _coldboot:
     ; No Cartridge - Map RAM into Bank 3
-    ld      a, 35               ; Third RAM Page
+    ld      a, 1 ; Page 1 ROM
     out     (IO_BANK3), a
 
 
@@ -223,6 +226,14 @@ _interrupt:
     ret
 
 ;-----------------------------------------------------------------------------
+; Intercept WRMCON call
+;-----------------------------------------------------------------------------
+_warm_boot:
+    ld      a, 1                  ; Page 1 ROM
+    out     (IO_BANK3), a         ; into Bank 3
+    jp      WRMCON                ; Go back to S3 BASIC
+
+;-----------------------------------------------------------------------------
 ; Hook 2 - READY (Enter Direct Mode
 ;-----------------------------------------------------------------------------
 direct_mode:
@@ -237,7 +248,25 @@ direct_mode:
 clear_esp_fdesc:
     ld      a,255
     ld      (ESP_FDESC),a         ; Set to No File
-    ret
+    reti
+
+;-----------------------------------------------------------------------------
+; Hook 23 - GONE2 (Handle Extended BASIC Statement Tokens)
+;-----------------------------------------------------------------------------
+_next_statement:
+    push    af                    ; Save Token and Flags
+    in      a,(IO_BANK3)          ; Get Current Page
+    ld      (BANK3PAGE),a         ; Save It
+    ld      a,1                   ; Page 1 - Extended BASIC 
+    out     (IO_BANK3),a          ; Page it in
+    pop     af                    ; Restore Token and Flags
+    jp      exec_next_statement   ; Go do the Statement
+
+statement_ret:
+    ld      a,(BANK3PAGE)         ; Get Saved Page
+    out     (IO_BANK3),a          ; Bank it Back in
+    ret                           ; Return to NEWSTT
+    
 
 ;-----------------------------------------------------------------------------
 ; Memory Management routines
@@ -251,19 +280,38 @@ swap_basic_buffs:
 ; Clobbers: A, IX
 swap_bank3:
     pop     ix                    ; Get Return Address
-    ld      a,(IO_BANK3)          ; Get current Page
+    in      a,(IO_BANK3)          ; Get current Page
     push    af                    ; Save It
     ld      a,b
-    ld      (IO_BANK3),a          ; Bank in Page
+    out      (IO_BANK3),a          ; Bank in Page
 
 ; Restore Bank3
 restore_bank3:
     pop     ix                    ; Get Return Address
     pop     af                    ; Get S
-    ld      (IO_BANK3),a          ; Bank in Page
+    out      (IO_BANK3),a          ; Bank in Page
     jp      (IX)                  ; Fast Return
-    
 
+buff_to_temp_string:
+    call    STRLIT
+    ret
+
+
+
+;-----------------------------------------------------------------------------
+; bas_read_to_buff - Read String from ESP to BASIC String Buffer
+; Input: IX: DOS or ESP routine to call
+; Output: E: String Length
+;        DE: Address of Terminator
+;        HL: Buffer Address
+; Clobbers: B
+;-----------------------------------------------------------------------------
+bas_read_to_buff:
+    ld      hl,FBUFFR             ; Use FBUFFR for now
+    jp      (ix)                  ; Execute routine and return
+
+    
+    
 ;-----------------------------------------------------------------------------
 ; RUN command - hook 24
 ;-----------------------------------------------------------------------------
@@ -345,32 +393,77 @@ byte_to_hex:
 ;-----------------------------------------------------------------------------
     include "esp.asm"
 
-;-----------------------------------------------------------------------------
-; Statements from ExtendedBASIC
-;-----------------------------------------------------------------------------
-    include "extended.asm"
-
-;-----------------------------------------------------------------------------
-; BASIC file I/O Statements
-;-----------------------------------------------------------------------------
-    include "fileio.asm"
-
-;-----------------------------------------------------------------------------
-; plusBASIC specific statements and functions
-;-----------------------------------------------------------------------------
-    include "plus.asm"
-
 free_rom = $2C00 - $
 
 ;------------------------------------------------------------------------------
-; Statement, BASIC Hook, and Function Dispatch Tables and Handlers
-; $2C00 - $2EFF
+; Hook, Dispatch Tables and Handlers
 ;------------------------------------------------------------------------------
+
+; ------------------------------------------------------------------------------
+;  Hook Jump Table
+; ------------------------------------------------------------------------------
+
+    org ($ & $FF00) + 256
+
+; BASIC Hook Jump Table
+; 58 Bytes
+hook_table:                     ; ## caller   addr  performing function
+    dw      HOOK0+1             ;  0 ERROR    03DB  Initialize Stack, Display Error, and Stop Program
+    dw      HOOK1+1             ;  1 ERRCRD   03E0  Print Error Message
+    dw      HOOK2+1             ;  2 READY    0402  BASIC command line (immediate mode)
+    dw      HOOK3+1             ;  3 EDENT    0428  Save Tokenized Line  
+    dw      HOOK4+1             ;  4 FINI     0480  Finish Adding/Removing Line or Loading Program
+    dw      set_chead_return    ;  5 LINKER   0485  Update BASIC Program Line Links
+    dw      HOOK6+1             ;  6 PRINT    07BC  Execute PRINT Statement
+    dw      HOOK7+1             ;  7 FINPRT   0866  End of PRINT Statement
+    dw      HOOK8+1             ;  8 TRMNOK   0880  Improperly Formatted INPUT or DATA handler
+    dw      HOOK9+1             ;  9 EVAL     09FD  Evaluate Number or String
+    dw      keyword_to_token    ; 10 NOTGOS   0536  Converting Keyword to Token
+    dw      HOOK11+1            ; 11 CLEAR    0CCD  Execute CLEAR Statement
+    dw      HOOK12+1            ; 12 SCRTCH   0BBE  Execute NEW Statement
+    dw      HOOK13+1            ; 13 OUTDO    198A  Execute OUTCHR
+    dw      HOOK14+1            ; 14 ATN      1985  ATN() function
+    dw      HOOK15+1            ; 15 DEF      0B3B  DEF statement
+    dw      HOOK16+1            ; 16 FNDOER   0B40  FNxx() call
+    dw      HOOK17+1            ; 17 LPTOUT   1AE8  Print Character to Printer
+    dw      HOOK18+1            ; 18 INCHRH   1E7E  Read Character from Keyboard
+    dw      HOOK19+1            ; 19 TTYCHR   1D72  Print Character to Screen
+    dw      HOOK20+1            ; 20 CLOAD    1C2C  Load File from Tape
+    dw      HOOK21+1            ; 21 CSAVE    1C09  Save File to Tape
+    dw      token_to_keyword    ; 22 LISPRT   0598  expanding a token
+    dw      _next_statement     ; 23 GONE2    064B  interpreting next BASIC statement
+    dw      run_cmd             ; 24 RUN      06BE  starting BASIC program
+    dw      HOOK25+1            ; 25 ONGOTO   0780  ON statement
+    dw      HOOK26+1            ; 26 INPUT    0893  Execute INPUT, bypassing Direct Mode check
+    dw      execute_function    ; 27 ISFUN    0A5F  Executing a Function
+    dw      HOOK28+1            ; 28 DATBK    08F1  Doing a READ from DATA
+    dw      HOOK29+1            ; 29 NOTSTV   099E  Evaluate Operator (S3 BASIC Only)
+
+; ------------------------------------------------------------------------------
+;  Execute Hook Routine
+; ------------------------------------------------------------------------------
+
+fast_hook_handler:
+    ex      af,af'              ; save AF
+    exx                         ; save BC,DE,HL
+    pop     hl                  ; get hook return address
+    ld      a,(hl)              ; A = byte (RST $30 parameter)
+    add     a,a                 ; A * 2 to index WORD size vectors
+    ld      l,a
+    ld      h,high(hook_table)
+    ld      a,(hl)
+    ld      ixl,a
+    inc     hl
+    ld      a,(hl)
+    ld      ixh,a
+    exx                         ; Restore BC,DE,HL
+    ex      af,af'              ; Restore AF
+    jp      (ix)
+
+
 
     assert !($2BFF<$)   ; ROM full!
     dc $2BFF-$+1,$FF
-
-    include "dispatch.asm"
 
 ;-----------------------------------------------------------------------------
 ; Keyboard Decode Tables for S3 BASIC with Extended Keyboard Support
@@ -388,4 +481,17 @@ free_rom = $2C00 - $
 
     assert !($3000<>$)   ; Incorrect ROM! length
 
+;-----------------------------------------------------------------------------
+; plusBASIC Statements, Functions, and Operators
+;-----------------------------------------------------------------------------
+
+    phase   $C000     ;Assemble in ROM Page 1 which will be in Bank 3
+
+    include "dispatch.asm"      ; Statement/Function dispatch tables and routiness
+    include "tokens.asm"        ; Keyword list and tokenize/expand routines-
+    include "extended.asm"      ; Extended BASIC statements and functions
+    include "fileio.asm"        ; Disk and File I/O statements and functions
+    include "plus.asm"          ; plusBASIC unique statements and functions
+
     end
+
