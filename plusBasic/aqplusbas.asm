@@ -283,65 +283,7 @@ run_cmd:
     ld      bc, NEWSTT
     jp      RUNC2              ; GOTO line number
 
-;-----------------------------------------------------------------------------
-; Not implemented statement - do nothing
-;-----------------------------------------------------------------------------
-ST_reserved:
-    ret
-
-;-----------------------------------------------------------------------------
-; CLS statement
-;-----------------------------------------------------------------------------
-ST_CLS:
-    ; Clear screen
-    ld      a, 11
-    rst     OUTCHR
-    ret
-
-;-----------------------------------------------------------------------------
-; OUT statement
-; syntax: OUT port, data
-;-----------------------------------------------------------------------------
-ST_OUT:
-    call    FRMNUM              ; Get/evaluate port
-    call    FRCINT              ; Convert number to 16 bit integer (result in DE)
-    push    de                  ; Stored to be used in BC
-
-    ; Expect comma
-    SYNCHK  ","
-
-    call    GETBYT              ; Get/evaluate data
-    pop     bc                  ; BC = port
-    out     (c), a              ; Out data to port
-    ret
-
-;-----------------------------------------------------------------------------
-; LOCATE statement
-; Syntax: LOCATE col, row
-;-----------------------------------------------------------------------------
-ST_LOCATE:
-    call    GETBYT              ; Read number from command line (column). Stored in A and E
-    push    af                  ; Column store on stack for later use
-    dec     a
-    cp      38                  ; Compare with 38 decimal (max cols on screen)
-    jp      nc, FCERR           ; If higher then 38 goto FC error
-
-    ; Expect comma
-    SYNCHK  ','
-
-    call    GETBYT              ; Read number from command line (row). Stored in A and E
-    cp      $18                 ; Compare with 24 decimal (max rows on screen)
-    jp      nc,FCERR            ; If higher then 24 goto FC error
-
-    inc     e
-    pop     af                  ; Restore column from store
-    ld      d, a                ; Column in register D, row in register E
-    ex      de, hl              ; Switch DE with HL
-    call    .goto_hl            ; Cursor to screen location HL (H=col, L=row)
-    ex      de, hl
-    ret
-
-.goto_hl:
+move_cursor:
 
 ;;;This is separate routine MOVEIT in Extended BASIC
     push    af
@@ -374,149 +316,7 @@ ST_LOCATE:
     add     hl, de              ; Putting it all together
     jp      TTYFIS              ; Save cursor position and return
 
-;-----------------------------------------------------------------------------
-; PSG statement
-; syntax: PSG register, value [, ... ]
-;-----------------------------------------------------------------------------
-ST_PSG:
-    cp      $00
-    jp      z, MOERR         ; MO error if no args
-
-.psgloop:
-    ; Get PSG register to write to
-    call    GETBYT           ; Get/evaluate register
-    cp      16
-    jr      nc, .psg2
-
-    out     (IO_PSG1ADDR), a ; Set the PSG register
-
-    ; Expect comma
-    SYNCHK  ','
-
-    ; Get value to write to PSG register
-    call    GETBYT           ; Get/evaluate value
-    out     (IO_PSG1DATA), a ; Send data to the selected PSG register
-
-.check_comma:
-    ; Check for a comma
-    ld      a, (hl)          ; Get next character on command line
-    cp      ','              ; Compare with ','
-    ret     nz               ; No comma = no more parameters -> return
-
-    inc     hl               ; next character on command line
-    jr      .psgloop         ; parse next register & value
-
-.psg2:
-    sub     16
-    out     (IO_PSG2ADDR), a ; Set the PSG register
-
-    ; Expect comma
-    SYNCHK  ','
-
-    ; Get value to write to PSG register
-    call    GETBYT           ; Get/evaluate value
-    out     (IO_PSG2DATA), a ; Send data to the selected PSG register
-
-    jr      .check_comma
-
-;-----------------------------------------------------------------------------
-; IN() function
-; syntax: var = IN(port)
-;-----------------------------------------------------------------------------
-FN_IN:
-    rst     CHRGET                ; Skip Token and Eat Spaces
-    call    PARCHK
-    push    hl
-    ld      bc,LABBCK
-    push    bc
-    call    FRCINT           ; Evaluate formula pointed by HL, result in DE
-    ld      b, d
-    ld      c, e             ; BC = port
-
-    ; Read from port
-    in      a, (c)           ; A = in(port)
-    jp      SNGFLT           ; Return with 8 bit input value in variable var
-
-;-----------------------------------------------------------------------------
-; JOY() function
-; syntax: var = JOY(stick)
-;    stick - 0 will read left or right
-;          - 1 will read left joystick only
-;          - 2 will read right joystick only
-;-----------------------------------------------------------------------------
-FN_JOY:
-    rst     CHRGET            ; Skip Token and Eat Spaces
-    call    PARCHK
-    push    hl
-    ld      bc,LABBCK
-    push    bc
-    call    FRCINT         ; FRCINT - evalute formula pointed by HL result in DE
-
-    ld      a, e  
-    or      a
-    jr      nz, .joy01
-    ld      a, $03
-
-.joy01:
-    ld      e, a
-    ld      bc, $00F7
-    ld      a, $FF
-    bit     0, e
-    jr      z, .joy03
-    ld      a, $0e
-    out     (c), a
-    dec     c
-    ld      b, $FF
-
-.joy02:
-    in      a,(c)
-    djnz    .joy02
-    cp      $FF
-    jr      nz, .joy05
-
-.joy03:
-    bit     1,e
-    jr      z, .joy05
-    ld      bc, $00F7
-    ld      a, $0F
-    out     (c), a
-    dec     c
-    ld      b, $FF
-
-.joy04:
-    in      a, (c)
-    djnz    .joy04
-
-.joy05:
-    cpl
-    jp      SNGFLT
-
-;-----------------------------------------------------------------------------
-; HEX$() function
-; eg. A$=HEX$(B)
-;-----------------------------------------------------------------------------
-FN_HEX:
-    rst     CHRGET            ; Skip Token and Eat Spaces
-    call    PARCHK
-    push    hl
-    ld      bc,LABBCK
-    push    bc
-    call    FRCINT          ; Evaluate formula @HL, result in DE
-    ld      hl, FPSTR       ; HL = temp string
-    ld      a, d
-    or      a               ; > zero ?
-    jr      z, .lower_byte
-    ld      a, d
-    call    .hexbyte        ; Yes, convert byte in D to hex string
-.lower_byte:
-    ld      a, e
-    call    .hexbyte        ; Convert byte in E to hex string
-    ld      (hl), 0         ; Null-terminate string
-    ld      hl, FPSTR
-.create_string:
-    jp      TIMSTR                ; Create BASIC string
-
-.hexbyte:
+byte_to_hex:
     ld      b, a
     rra
     rra
@@ -536,28 +336,6 @@ FN_HEX:
     ret
 
 ;-----------------------------------------------------------------------------
-; ST_CALL
-;
-; syntax: CALL address
-; address is signed integer, 0 to 32767   = $0000-$7FFF
-;                            -32768 to -1 = $8000-$FFFF
-;
-; on entry to user code, HL = text after address
-; on exit from user code, HL should point to end of statement
-;-----------------------------------------------------------------------------
-ST_CALL:
-    call    FRMNUM           ; Get number from BASIC text
-    call    FRCINT           ; Convert to 16 bit integer
-    push    de
-    ret                      ; Jump to user code, HL = BASIC text pointer
-
-
-;-----------------------------------------------------------------------------
-; plusBASIC specific statements and functions
-;-----------------------------------------------------------------------------
-    include "plus.asm"
-
-;-----------------------------------------------------------------------------
 ; DOS routines
 ;-----------------------------------------------------------------------------
     include "dos.asm"
@@ -568,9 +346,19 @@ ST_CALL:
     include "esp.asm"
 
 ;-----------------------------------------------------------------------------
+; Statements from ExtendedBASIC
+;-----------------------------------------------------------------------------
+    include "extended.asm"
+
+;-----------------------------------------------------------------------------
 ; BASIC file I/O Statements
 ;-----------------------------------------------------------------------------
     include "fileio.asm"
+
+;-----------------------------------------------------------------------------
+; plusBASIC specific statements and functions
+;-----------------------------------------------------------------------------
+    include "plus.asm"
 
 free_rom = $2C00 - $
 
