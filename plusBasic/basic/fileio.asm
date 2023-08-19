@@ -371,6 +371,139 @@ ST_LOAD:
     jp      load_basic_program
 
 ;-----------------------------------------------------------------------------
+; Load CAQ/BAS file 
+; Input: HL: String descriptor address
+; Clobbered registers: A, DE
+;-----------------------------------------------------------------------------
+load_basic_program:
+    ; Open file
+    call    esp_open
+
+    ; Check CAQ header
+    call    check_sync_bytes    ; Sync bytes
+    ld      bc, 6               ; Read filename
+    ld      de, FILNAM
+    call    esp_read_bytes
+    call    check_sync_bytes    ; Sync bytes
+    
+    ; Load actual program
+    ld      de, (TXTTAB)
+    ld      bc, $FFFF
+    call    esp_read_bytes
+
+    ; Close file
+    call    esp_close_all
+
+    ; Back up to last line of BASIC program
+.loop:
+    dec     hl
+    xor     a
+    cp      (hl)
+    jr      z, .loop
+    inc     hl
+
+    ; Skip past 3 zeros at end of BASIC program
+    inc     hl
+    inc     hl
+    inc     hl
+
+    ; Set end of BASIC program
+    ld      (VARTAB), hl
+
+    ; Initialize BASIC program
+    call    init_basic_program
+
+    pop     hl                    ; Discard Callers Return Address
+    ret
+
+sync_bytes:
+    db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$00
+
+;-----------------------------------------------------------------------------
+; Initialize BASIC Program
+;
+; Resets variables, arrays, string space etc.
+; Updates nextline pointers to match location of BASIC program in RAM
+;-----------------------------------------------------------------------------
+init_basic_program:
+    ; Set next statement to start of program
+    ld      hl, (TXTTAB)
+    dec     hl
+    ld      (SAVTXT), hl
+
+    ; Set DATPTR to start of program
+    ld      (DATPTR), hl
+
+    ; Clear string space
+    ld      hl, (MEMSIZ)
+    ld      (FRETOP), hl
+
+    ; Clear simple variables
+    ld      hl, (VARTAB)
+    ld      (ARYTAB), hl
+
+    ; Clear array table
+    ld      (STREND), hl
+
+    ; Clear string buffer
+    ld      hl, TEMPPT + 2
+    ld      (TEMPPT), hl
+
+    ; Set CONTinue position to 0
+    xor     a
+    ld      l, a
+    ld      h, a
+    ld      (OLDTXT), hl
+
+    ; Clear locator flag
+    ld      (SUBFLG), a
+
+    ; Clear array pointer???
+    ld      (VARNAM), hl
+
+
+    ; Fix up next line addresses in loaded BASIC program
+.link_lines:
+    ld      de, (TXTTAB)        ; DE = start of BASIC program
+    jp      CHEAD
+
+;-----------------------------------------------------------------------------
+; Load CAQ array file in File into BINSTART (BINLEN length)
+; Input: HL: String descriptor address
+; Clobbered registers: A, DE
+;-----------------------------------------------------------------------------
+load_caq_array:
+    ex      (sp),hl               ; HL = String Descriptor, Stack = Text Pointer
+
+    ; Open file
+    call    esp_open
+
+    ; Check CAQ header
+    call    check_sync_bytes    ; Sync bytes
+    ld      bc, 6               ; Check that filename is '######'
+    ld      de, FILNAM
+    call    esp_read_bytes
+    ld      b, 6
+    ld      de,FILNAM
+.loop:
+    ld      a, (de)
+    cp      '#'
+    jp      nz, err_bad_file
+    inc     de
+    djnz    .loop
+
+    ; Load data into array
+    ld      de, (BINSTART)
+    ld      bc, (BINLEN)
+    call    esp_read_bytes
+
+    ; Close file
+    call    esp_close_all
+
+    pop     hl
+    ret
+
+;-----------------------------------------------------------------------------
 ; Get array argument
 ;-----------------------------------------------------------------------------
 get_array_argument:
@@ -487,6 +620,96 @@ ST_SAVE:
 .array:
     call    get_array_argument
     jp      save_caq_array
+
+;-----------------------------------------------------------------------------
+; Save basic program
+;-----------------------------------------------------------------------------
+save_basic_program:
+    ex      (sp),hl               ; HL = String Descriptor, Stack = Text Pointer
+    call    esp_create            ; Create file
+
+    ; Write CAQ header
+    ld      de, sync_bytes      ; Sync bytes
+    ld      bc, 13
+    call    esp_write_bytes
+    ld      de, .caq_filename   ; Filename
+    ld      bc, 6
+    call    esp_write_bytes
+    ld      de, sync_bytes      ; Sync bytes
+    ld      bc, 13
+    call    esp_write_bytes
+
+    ; Write BASIC data
+    ld      de, (TXTTAB)            ; DE = start of BASIC program
+    ld      hl, (VARTAB)            ; HL = end of BASIC program
+    sbc     hl, de
+    ld      b,h                     ; BC = length of BASIC program
+    ld      c,l                     
+    call    esp_write_bytes
+
+    ; Close file
+    call    esp_close_all
+
+    pop     hl
+    ret
+
+.caq_filename: db "BASPRG"
+
+;-----------------------------------------------------------------------------
+; Save array
+;-----------------------------------------------------------------------------
+save_caq_array:
+    ex      (sp),hl               ; HL = String Descriptor, Stack = Text Pointer
+    call    esp_create            ; Create file
+
+    ; Write CAQ header
+    ld      de, sync_bytes      ; Sync bytes
+    ld      bc, 13
+    call    esp_write_bytes
+    ld      de, .array_filename ; Filename
+    ld      bc, 6
+    call    esp_write_bytes
+
+    ; Write array data
+    ld      de, (BINSTART)
+    ld      bc, (BINLEN)
+    call    esp_write_bytes
+
+    ; Close file
+    call    esp_close_all
+
+    pop     hl
+    ret
+
+.array_filename: db "######"
+
+;-----------------------------------------------------------------------------
+; Check for sync sequence (12x$FF, 1x$00)
+;-----------------------------------------------------------------------------
+check_sync_bytes:
+    ; Read 13 bytes into FBUFFR
+    ld      bc, 13
+    ld      de, FBUFFR
+    call    esp_read_bytes
+    ld      a, c
+    cp      13
+    jp      nz, err_bad_file
+
+    ; Check for 12x$FF
+    ld      b, 12
+    ld      de, FBUFFR
+.loop:
+    ld      a, (de)
+    cp      $FF
+    jp      nz, err_bad_file
+    inc     de
+    djnz    .loop
+
+    ; Check for $00
+    ld      a, (de)
+    or      a
+    jp      nz, err_bad_file
+    ret
 
 ;-----------------------------------------------------------------------------
 ; Parse string at text pointer, return String Length and Text Address

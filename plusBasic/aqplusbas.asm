@@ -187,7 +187,7 @@ _coldboot:
     jr      .print_version
 .print_done:
     call    STRPRI
-    db " PlusBasic v0.4b", 0
+    db " PlusBasic v0.4c", 0
     call    CRDO
     call    CRDO
 
@@ -249,6 +249,14 @@ clear_esp_fdesc:
     ld      a,255
     ld      (ESP_FDESC),a         ; Set to No File
     reti
+
+;-----------------------------------------------------------------------------
+; HOOK 5 - Set Return Address for CHEAD when executed from S3BASIC
+;-----------------------------------------------------------------------------
+set_chead_return:
+    ld      bc,MAIN             ; Make CHEAD return to MAIN
+    push    bc
+    jmp     HOOK5+1
 
 ;-----------------------------------------------------------------------------
 ; Hook 23 - GONE2 (Handle Extended BASIC Statement Tokens)
