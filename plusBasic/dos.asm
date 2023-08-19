@@ -1,19 +1,19 @@
 ;-----------------------------------------------------------------------------
 ; dos_change_dir - Change Directory
 ; Input: BC: String Length
-;        DE: Address of Byte after String
+;        DE: String Address
 ; Output:  A: Result
 ; Clobbered: BC, DE
 ;-----------------------------------------------------------------------------
 dos_change_dir:
-    ld      a, ESPCMD_CHDIR      ; Set ESP Command
+    ld      a, ESPCMD_CHDIR       ; Set ESP Command
     jp      esp_cmd_string        ; Issue ESP command
 
 
 ;-----------------------------------------------------------------------------
 ; dos_delete_file - Delete file/directory
 ; Input: BC: String Length
-;        DE: Address of Byte after String
+;        DE: String Address
 ; Output:  A: Result
 ; Clobbered: BC, DE
 ;-----------------------------------------------------------------------------
@@ -24,7 +24,7 @@ dos_delete_file:
 ;-----------------------------------------------------------------------------
 ; dos_create_dir - Delete file/directory
 ; Input: BC: String Length
-;        DE: Address of Byte after String
+;        DE: String Address
 ; Output:  A: Result
 ; Clobbered: BC, DE
 ;-----------------------------------------------------------------------------
@@ -48,6 +48,33 @@ dos_get_cwd:
 .done
 ;    jp     restore_bank3         ; Back to Original Bank 3
     ret
+
+
+;-----------------------------------------------------------------------------
+; dos_create_dir - Delete file/directory
+; Input: BC: String Length
+;        DE: String Address
+; Output:  A: Result
+; Clobbered: BC, DE
+;-----------------------------------------------------------------------------
+dos_get_filestat:
+    ld      a, ESPCMD_STAT       ; Set ESP Command
+    jp      esp_cmd_string        ; Issue ESP command
+    jp      m,.done               ; Return if Error
+    call    esp_get_word
+    ld      (FILEDATE),de
+    call    esp_get_word
+    ld      (FILETIME),de
+    call    esp_get_byte
+    ld      (FILEATTR),de
+    call    esp_get_long
+    ld      (FILESIZE),bc
+    ld      (FILESIZE+2),de
+    call    esp_get_result
+.done
+    ret
+
+
 
 ;-----------------------------------------------------------------------------
 ; Initialize BASIC Program
@@ -135,6 +162,22 @@ check_sync_bytes:
     jp      nz, err_bad_file
     ret
 
+
+page_set_binvars:
+    ld      de,(BINSTART)
+    call    page_set_address
+    ld      (BINSTART),de
+    ret
+
+;-----------------------------------------------------------------------------
+; Load binary data from File into BINSTART in page A
+; Input: A: Page
+;        HL: String descriptor address
+; Clobbered registers: A, DE
+;-----------------------------------------------------------------------------
+page_load_binary:
+    call    page_set_binvars
+
 ;-----------------------------------------------------------------------------
 ; Load binary data from File into BINSTART
 ; Input: HL: String descriptor address
@@ -142,14 +185,13 @@ check_sync_bytes:
 ;-----------------------------------------------------------------------------
 load_binary:
     ex      (sp),hl               ; HL = String Descriptor, Stack = Text Pointer
-
     ; Load file into memory
     call    esp_open
     ld      hl, (BINSTART)
     ld      de, $FFFF
     call    esp_read_bytes
     call    esp_close_all
-
+    call    page_restore_plus
     pop     hl                    ; Get Back Text Pointer
     ret
 
@@ -300,11 +342,21 @@ save_caq_array:
 
 .array_filename: db "######"
 
+
+;-----------------------------------------------------------------------------
+; Load binary data of length BINSIIZE from BINSTART in page A to file
+; Input: A: Page
+;        HL: String descriptor address
+; Clobbered registers: A, DE
+;-----------------------------------------------------------------------------
+page_save_binary:
+    call    page_set_binvars
+ 
 ;-----------------------------------------------------------------------------
 ; Save binary
 ;-----------------------------------------------------------------------------
 save_binary:
-    push    hl
+    ex      (sp),hl               ; HL = String Descriptor, Stack = Text Pointer
 
     ; Create file
     call    esp_create
@@ -316,7 +368,7 @@ save_binary:
 
     ; Close file
     call    esp_close_all
-
+    call    page_restore_plus
     pop     hl
     ret
 

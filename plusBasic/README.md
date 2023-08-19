@@ -8,28 +8,29 @@ Based on and replaces Aquarius+ System ROM
   - Optimized Hook, Statement, and Function Dispatch routines
   - Added Extended Keyboard decode tables used by S3 BASIC
   - Calls STRPRI instead of STROUT for null terminated strings
+  - Added standalone callable assembly routines
   - Added 1500 ms timeout to esp_read_byte
+    - Timeout appears to be too short on harware, disabled
   - Added ESP error -9, "ESP times out"
-
-
-## In Process
-  - ST_ and FN_ routines from aqplusbas.asm to plus.asm
-
-
-## Additions
-
-
-### BASIC
+  - Moved all ST_ and FN_ routines out of main assembly flie
+ 
+## BASIC Language Enhancements 
   - CD$ pseudo-variable returns current path
   - DATE$ pseudo-variable returns current date "YYYYMMDD"
   - TIME$ pseudo-variable returns current time "HHmmss"
   - DATETIME$ pseudo-variable returns date and time "YYYYMMDD"
+
+## Assembly Language Code Changes
+  - New callable routines
+    - dos_change_dir
+    - dos_delete_file
+    - dos_create_dir
+    - dos_get_cwd
+
+
+
   
 ### Assembly Ruutines
-  - dos_change_dir
-  - dos_delete_file
-  - dos_create_dir
-  - dos_get_cwd
 
 ## ToDo:
   - Make dos_create_dir and MKDIR use buffer in page 35

@@ -78,11 +78,16 @@ token_to_keyword:
     ld      de, TBLCMDS         ; DE = table of AquBASIC command names
     jp      RESSRC              ; Print keyword indexed by C
 
-; * = Likely to Change
+; * = Likely to be replaced
 ;
-;     plusBASIC   MX-BASIC          Conversion
+;     plusBASIC   MX-BASIC             Conversion
+; $CB             INSTR            IN STR <--> INSTR  
+; $CC             PUT    
+; $CD             GET    
+; $CE             DRAW   
+; $CF             CIRCLE  
 ; $D1             SWAP   
-; $D2             DOKE   
+; $D2             DOKE              POKE! <--> DOKE
 ; $D3 TIME        SDTM   
 ; $D4             EDIT   
 ; $D5             CLS    
@@ -95,7 +100,7 @@ token_to_keyword:
 ; $DC SAVE        SAVE   
 ; $DD DIR         DIR    
 ; $DE CAT         MKDIR    
-; $DF DEL         DEL    
+; $DF DEL         DEL                  compatible
 ; $E0 CD          CD                   compatible
 ; $E1 IN          IN                   compatible
 ; $E2 JOY         JOY                  compatible
@@ -103,8 +108,8 @@ token_to_keyword:
 ; $E4             VER
 ; $E5 DATE        DTM           DATETIME$ <--> DTM$(0)
 ; $E6             DEC
-; $E7             KEY
-; $E8             DEEK
+; $E7             KEY             
+; $E8             DEEK              PEEK! <--> DEEK
 ; $E9             ERR OR
 ; $EA             STRING
 ; $EB             XOR           (a XOR b) <--> XOR(a,b)
@@ -112,7 +117,7 @@ token_to_keyword:
 ; $ED             EVAL
 ; $EE             SLEEP
 ; $EF             MKDIR
-; $F0             RMDIR
+; $F0             RMDIR               DEL <--> RMDIR
 ; $F1             OFF
 ; $F2             WAIT
 ; $F3             FILE

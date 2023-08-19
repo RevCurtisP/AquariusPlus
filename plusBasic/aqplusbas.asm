@@ -38,7 +38,7 @@
 ; Page 0  - Systm ROM with overlay
 ; Page 33 - RAM in BANK 1
 ; Page 34 - RAM in BANK 2
-; Page 34 - RAM in BANK 3
+; Page 35 - RAM in BANK 3
 ;   If a cartrige is present, it is copied here unencrypted 
 ; Page 1 -  ROM Page 1 in BANK 3 
 ;   After BASIC cold boots
@@ -150,7 +150,7 @@ init_charram:
 ;-----------------------------------------------------------------------------
 _coldboot:
     ; No Cartridge - Map RAM into Bank 3
-    ld      a, 1 ; Page 1 ROM
+    ld      a, plus_page        ; plusBASIC extended ROM
     out     (IO_BANK3), a
 
 
@@ -229,7 +229,7 @@ _interrupt:
 ; Intercept WRMCON call
 ;-----------------------------------------------------------------------------
 _warm_boot:
-    ld      a, 1                  ; Page 1 ROM
+    ld      a, plus_page          ; Page 1 ROM
     out     (IO_BANK3), a         ; into Bank 3
     jp      WRMCON                ; Go back to S3 BASIC
 
@@ -257,7 +257,7 @@ _next_statement:
     push    af                    ; Save Token and Flags
     in      a,(IO_BANK3)          ; Get Current Page
     ld      (BANK3PAGE),a         ; Save It
-    ld      a,1                   ; Page 1 - Extended BASIC 
+    ld      a,plus_page           ; Page 1 - Extended BASIC 
     out     (IO_BANK3),a          ; Page it in
     pop     af                    ; Restore Token and Flags
     jp      exec_next_statement   ; Go do the Statement
@@ -269,34 +269,70 @@ statement_ret:
     
 
 ;-----------------------------------------------------------------------------
-; Memory Management routines
+; Paged Memory Management routines
 ;-----------------------------------------------------------------------------
 
-swap_basic_buffs:
-    ld      b,36
+; Input: A=Page, DE=Address
+; Output: C = Byte
+; Clobbered: A
+page_read_byte:
+    call    page_set_address
+    ld      a,(de)
+    ld      c,a
+    jr      page_restore_plus
 
-; Swap Page B into Bank 3
-; Puts Current Page on Stack
-; Clobbers: A, IX
-swap_bank3:
-    pop     ix                    ; Get Return Address
-    in      a,(IO_BANK3)          ; Get current Page
-    push    af                    ; Save It
+; Input: A: Page, DE: Address
+; Output: BC: Word
+; Clobbered: A
+page_read_word:
+    call    page_set_address
+    ld      a,(de)
+    ld      c,a
+    inc     de
+    ld      a,(de)
+    ld      b,a
+    dec     de                    ;Restore DE
+    jr      page_restore_plus
+
+
+; Input: A: Page, DE: Address, C: Byte
+page_write_byte:
+    call    page_set_address
+    ld      a,c
+    ld      (de),a
+    jr      page_restore_plus
+
+
+; Input: A: Page, DE: Address, BC: Word
+page_write_word:
+    call    page_set_address
+    ld      a,c
+    ld      (de),a
+    inc     de
     ld      a,b
-    out      (IO_BANK3),a          ; Bank in Page
+    ld      (de),a
+    dec     de                    ;Restore DE
 
-; Restore Bank3
-restore_bank3:
-    pop     ix                    ; Get Return Address
-    pop     af                    ; Get S
-    out      (IO_BANK3),a          ; Bank in Page
-    jp      (IX)                  ; Fast Return
+page_restore_plus:
+    ld      a,plus_page
+    out     (IO_BANK3),a
+    ret
+
+; Bank in page, Coerce address
+; Input: A = Page, DE = Address
+; Output: DE= Coerced address
+; Clobbered: A
+page_set_address:
+    out     (IO_BANK3),a          ; Bank in Page
+    ld      a,d                   ; Address MSB
+    or      $C0                   ; Make 49152 - 65535
+    ld      d,a                   ; Put back
+    ret
+    
 
 buff_to_temp_string:
     call    STRLIT
     ret
-
-
 
 ;-----------------------------------------------------------------------------
 ; bas_read_to_buff - Read String from ESP to BASIC String Buffer
@@ -309,6 +345,7 @@ buff_to_temp_string:
 bas_read_to_buff:
     ld      hl,FBUFFR             ; Use FBUFFR for now
     jp      (ix)                  ; Execute routine and return
+
 
     
     
@@ -489,6 +526,7 @@ fast_hook_handler:
 
     include "dispatch.asm"      ; Statement/Function dispatch tables and routiness
     include "tokens.asm"        ; Keyword list and tokenize/expand routines-
+    include "enhanced.asm"      ; Enhanced stardard BASIC statements and functions
     include "extended.asm"      ; Extended BASIC statements and functions
     include "fileio.asm"        ; Disk and File I/O statements and functions
     include "plus.asm"          ; plusBASIC unique statements and functions

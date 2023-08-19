@@ -37,12 +37,19 @@ RNDCNT:     equ $381F   ;
 ;        $3821 - $3837  ; Unused
                         ; Extended BASIC Graphics Routine Variables
 
-BANK0PAGE   equ $3838   ; Page that was banked into RAM
-BANK1PAGE   equ $3839   ; Page that was banked into RAM
-BANK2PAGE   equ $383A   ; Page that was banked into RAM
-BANK3PAGE   equ $383B   ; Page that was banked into RAM
+BANK0PAGE   equ $3830   ; Page that was banked into RAM
+BANK1PAGE   equ $3831   ; Page that was banked into RAM
+BANK2PAGE   equ $3832   ; Page that was banked into RAM
+BANK3PAGE   equ $3833   ; Page that was banked into RAM
+;               $3834   ; unused
+;               $3835   ; unused
+FILEDATE    equ $3836
+FILETIME    equ $3838
+FILEATTR    equ $383A
+BINPAGE     equ $383B   ; Binary file load/save page
 BINSTART:   equ $383C   ; Binary file load/save address
 BINLEN:     equ $383E   ; 16-bit binary file length
+FILESIZE    equ $383B   ; File Size (32-bits $383C-$383F)
 ESP_FDESC   equ $3840   ; ESP file descriptor to close on Error or Ctrl-C
 
 RNDX:       equ $3841   ; [M80] LAST RANDOM NUMBER GENERATED, BETWEEN 0 AND 1
@@ -119,14 +126,17 @@ KEYADR  equ     $38FE   ;;Extended Key Tables Base Address minus 1
 BASTXT:     equ $3901   ; Start of Basic Program
 
 ;-----------------------------------------------------------------------------
-; BASIC Extended System Variables and Buffers
+; BASIC Extended System Constants, Variables and Buffers
 ; Page 36, swapped into Bank 3
-;-----------------------------------------------------------------------------
+  ;-----------------------------------------------------------------------------
 
+plus_page   equ 1       ; plusBASIC ROM BANK3 page
 ;               $C000   ; Extended BASIC Graphics System Variables
 buff_strlen equ $C0FF   ; Length of String in Buffer
 string_buff equ $C100   ; String Buffer  - up to 255 chars plus null terminator 
                         ; Must be on 256 byte boundary
+screen_buff equ $F7FF   ; For saving screen memory or double-buffering
+
 
 ;-----------------------------------------------------------------------------
 ; Variables
@@ -183,6 +193,7 @@ SCRTCH:     equ $0BBE
 RUNC:       equ $0BCB
 CLEARC:     equ $0BCF
 STKINI:     equ $0BE5
+;FRMINT         $0B7F   ; Deprecated in S3BASIC, use GETINT instead
 STRLIT      equ $0E5F   ; Build Descriptor for String Litersl
 PUTNEW      equ $0E7E   ; Set Pointer to Temporary String
 STROUT:     equ $0E9D   ; Print null-terminated string in HL
@@ -194,6 +205,7 @@ LINPRT      equ $1675   ; Print Two Byte Number in HL as Decimal - Alters all Re
 OUTDO       equ $198A   ; Output a Character
 CRDO:       equ $19EA   ; Print CR+LF
 WRMCON:     equ $1A40
+GETINT      equ $1AD0   ; Parse and Integer
 TTYCHR:     equ $1D72   ; Print character in A with pause/break at end of page
 TTYOUT:     equ $1D94   ; Print character in A
 TTYFIS:     equ $1DE7   ; Save Column and Position

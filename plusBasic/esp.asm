@@ -396,6 +396,10 @@ esp_seek:
 ; esp_error
 ;-----------------------------------------------------------------------------
 esp_error:
+    push    af
+    call    page_restore_plus     ; In case of paged LOAD or SAVE
+    pop     af
+    
     neg
     dec     a
     cp      -ERR_TIMEOUT

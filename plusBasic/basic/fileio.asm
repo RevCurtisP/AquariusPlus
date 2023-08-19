@@ -352,9 +352,13 @@ ST_LOAD:
     jr      z, .array               ; Array parameter -> load as array
 
     ; Load as binary to address
+    call    parse_page_arg          ; Check for page specifier
+    push    af                      ; Save it
     call    FRMNUM                  ; Get number
     call    FRCINT                  ; Convert to 16 bit integer
     ld      (BINSTART), de
+    pop     af                      ; Get back page
+    jp      nz,page_load_binary 
     jp      load_binary
 
     ; Load into array
@@ -458,6 +462,8 @@ ST_SAVE:
     ; Save binary data
     
     ; Get first parameter: address
+    call    parse_page_arg          ; Check for page specifier
+    push    af                      ; Save it
     call    FRMNUM                  ; Get number
     call    FRCINT                  ; Convert to 16 bit integer
     ld      (BINSTART), de
@@ -472,8 +478,10 @@ ST_SAVE:
     call    FRMNUM                  ; Get number
     call    FRCINT                  ; Convert to 16 bit integer
     ld      (BINLEN), de
-    ex      (sp),hl                 ; HL = String Descriptor, Stack = Text Pointer
+    pop     af                      ; Get back page
+    jp      nz,page_save_binary 
     jp      save_binary
+
 
     ; Save array
 .array:

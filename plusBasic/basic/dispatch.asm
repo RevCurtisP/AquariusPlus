@@ -21,7 +21,7 @@ STJUMPS:
     dw      $0731                 ;$87 LET               
     dw      $06DC                 ;$88 GOTO              
     dw      $06BE                 ;$89 RUN               
-    dw      $079C                 ;$8A IFS               
+    dw      $079C                 ;$8A IF               
     dw      $0C05                 ;$8B RESTOR            
     dw      $06CB                 ;$8C GOSUB             
     dw      $06F8                 ;$8D RETURN            
@@ -31,7 +31,7 @@ STJUMPS:
     dw      $07B5                 ;$91 LPRINT            
     dw      $1B15                 ;$92 COPY              
     dw      $0B3B                 ;$93 DEF               
-    dw      $0B6D                 ;$94 POKE              
+    dw      ST_POKE               ;$94 POKE              
     dw      $07BC                 ;$95 PRINT             
     dw      $0C4B                 ;$96 CONT              
     dw      $056C                 ;$97 LIST              
@@ -163,7 +163,7 @@ FNJUMPS:
     dw      HOOK27+1              ;$BE SIN     
     dw      HOOK27+1              ;$BF TAN     
     dw      HOOK27+1              ;$C0 ATN     
-    dw      HOOK27+1              ;$C1 PEEK    
+    dw      FN_PEEK               ;$C1 PEEK    
     dw      HOOK27+1              ;$C2 LEN     
     dw      HOOK27+1              ;$C3 STR$     
     dw      HOOK27+1              ;$C4 VAL     
