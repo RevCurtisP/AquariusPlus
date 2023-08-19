@@ -187,7 +187,7 @@ _coldboot:
     jr      .print_version
 .print_done:
     call    STRPRI
-    db " PlusBasic v0.4", 0
+    db " PlusBasic v0.4a", 0
     call    CRDO
     call    CRDO
 
@@ -289,6 +289,9 @@ page_read_word:
     ld      a,(de)
     ld      c,a
     inc     de
+    ld      a,d
+    or      e 
+    call    z,page_next_address
     ld      a,(de)
     ld      b,a
     dec     de                    ;Restore DE
@@ -309,6 +312,9 @@ page_write_word:
     ld      a,c
     ld      (de),a
     inc     de
+    ld      a,d
+    or      e 
+    call    z,page_next_address
     ld      a,b
     ld      (de),a
     dec     de                    ;Restore DE
@@ -317,6 +323,14 @@ page_restore_plus:
     ld      a,plus_page
     out     (IO_BANK3),a
     ret
+
+
+; Bank in next page, Coerce address
+; Input: DE = Address
+; Output: DE= Coerced address
+; Clobbered: A
+page_next_address:
+    call    page_next
 
 ; Bank in page, Coerce address
 ; Input: A = Page, DE = Address
@@ -329,6 +343,15 @@ page_set_address:
     ld      d,a                   ; Put back
     ret
     
+; Bank in next page
+; Output: A: New page number
+; Clobbered: A
+page_next:
+    in      a,(IO_BANK3)
+    inc     a
+    out     (IO_BANK3),a
+    ret
+
 
 buff_to_temp_string:
     call    STRLIT

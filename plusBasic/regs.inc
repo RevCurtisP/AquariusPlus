@@ -186,6 +186,7 @@ CHKSTR:     equ $0976   ; Error if evaluated expression not string
 FRMEVL:     equ $0985   ; Evaluate formula
 PARCHK:     equ $0A37   ; Evaluate expression in brackets
 LABBCK:     equ $0A49
+GIVINT      equ $0B21   ; Float Integer MSB=[A], LSB=[C]
 SNGFLT:     equ $0B36   ; Store variable 8 bit (out: B = value)
 GETBYT:     equ $0B54   ; Evaluate numeric expression (integer 0-255)
 OMERR:      equ $0BB7   ; Out of memory error
