@@ -960,7 +960,7 @@ FINI:   rst     HOOKDO            ;
         byte    4                 ;
         call    RUNC              ;[M80] DO CLEAR & SET UP STACK
 LINKER: rst     HOOKDO            ;
-        byte    5                 ;
+HOOK5:  byte    5                 ;
         inc     hl                ;;HL=TXTTAB
         ex      de,hl             ;;DE=TXTTAB
 ;;Fix Basic Line Links
