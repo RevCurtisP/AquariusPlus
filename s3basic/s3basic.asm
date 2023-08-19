@@ -1204,14 +1204,12 @@ LPFORM: call    LOOPER            ;[M80] MUST HAVE VARIABLE POINTER IN [D,E]
         ld      hl,(ENDFOR)       ;[M80] GET ENDING TEXT POINTER FOR THIS "FOR"
         rst     COMPAR            ;[M80] SEE IF THEY MATCH
         pop     hl                ;[M80] GET BACK THE STACK POINTER
-        nop
-;       pop     de                ;
-        jr      nz,LPFORM         ;;[M80] KEEP SEARCHING IF NO MATCH
+        pop     de                ;
+        jr      nz,LPFORM         ;[M80] KEEP SEARCHING IF NO MATCH
         pop     de                ;[M80] GET BACK THE TEXT POINTER
         ld      sp,hl             ;[M80] DO THE ELIMINATION
         inc     c                 ;
-NOTOL:  nop
-;        pop     de                ;
+NOTOL:  pop     de                ;
         ex      de,hl             ;[M80] [H,L]=TEXT POINTER
         ld      c,8               ;[M80] MAKE SURE 16 BYTES ARE AVAILABLE
         call    GETSTK            ;[M80] OFF OF THE STACK
