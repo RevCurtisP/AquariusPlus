@@ -10,17 +10,17 @@ BTOKEN:     equ $D3             ; Our first token number
 
 TBLCMDS:
     db $80 + 'T',"IME"            ; $D3   Replaces MX-BASIC keyword SDTM
-    db $80 + 'E',"DIT"            ; $D4
+    db $80 + 'E',"DIT"            ; $D4   Not Implemented
     db $80 + 'C',"LS"             ; $D5
     db $80 + 'L',"OCATE"          ; $D6
     db $80 + 'O',"UT"             ; $D7
     db $80 + 'P',"SG"             ; $D8
-    db $80 + 'D',"EBUG"           ; $D9
+    db $80 + 'D',"EBUG"           ; $D9   Not Implemented
     db $80 + 'C',"ALL"            ; $DA
     db $80 + 'L',"OAD"            ; $DB
     db $80 + 'S',"AVE"            ; $DC
     db $80 + 'D',"IR"             ; $DD
-    db $80 + 'M',"KDIR"           ; $DE  Replaces USB-BASIC/MX-BASIC keyword CAT
+    db $80 + 'M',"KDIR"           ; $DE   Replaces USB-BASIC/MX-BASIC keyword CAT
     db $80 + 'D',"EL"             ; $DF
     db $80 + 'C',"D"              ; $E0
     db $80 + 'I',"N"              ; $E1
@@ -33,7 +33,6 @@ TBLCMDS:
     db $80 + ' '                  ; $E8             
     db $80 + ' '                  ; $E9             
     db $80 + ' '                  ; $EA             
-    db $80 + 'X',"OR"             ; $EB   Replaces MX-BASIC keyword DTM$
 
     db $80             ; End of table marker
     

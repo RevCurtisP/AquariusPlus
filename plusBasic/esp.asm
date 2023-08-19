@@ -132,18 +132,18 @@ esp_get_word:
 ; Time Out = 1500 milliseconds - (43 + 82 * 65536) / 3.579545 microseconds
 ;-----------------------------------------------------------------------------
 esp_get_byte:
-    push    bc                    ;+11	
+;    push    bc                    ;+11	
                                   	
 .wait:                            
-    dec     bc                    ;+6	
-    ld      a,b                   ;+4	
-    or      c                     ;+4	
-    jr      z,.timeout            ;+7+5
+;    dec     bc                    ;+6	
+;    ld      a,b                   ;+4	
+;    or      c                     ;+4	
+;    jr      z,.timeout            ;+7+5
     in      a, (IO_ESPCTRL)       ;+11	
     and     a, 1                  ;+7	
     jr      z, .wait              ;+7+5
     in      a, (IO_ESPDATA)       ;+11	
-    pop     bc                    ;+10	
+ ;   pop     bc                    ;+10	
     ret                           ;+10	
 .timeout                          
     ld      a,-9                  ;+7	
@@ -368,7 +368,6 @@ esp_write_bytes:
 
     ; Get number of bytes actual written
     call    esp_get_word
-    ld      e, a
 
     ret
 

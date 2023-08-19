@@ -472,6 +472,7 @@ ST_SAVE:
     call    FRMNUM                  ; Get number
     call    FRCINT                  ; Convert to 16 bit integer
     ld      (BINLEN), de
+    ex      (sp),hl                 ; HL = String Descriptor, Stack = Text Pointer
     jp      save_binary
 
     ; Save array
