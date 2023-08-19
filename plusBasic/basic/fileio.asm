@@ -121,7 +121,7 @@ ST_DIR:
 
 .ok2:
     ;-- Date -----------------------------------------------------------------
-    call    esp_get_word
+    call    esp_get_de
 
     ; Extract year
     srl     a
@@ -150,7 +150,7 @@ ST_DIR:
 
     ;-- Time -----------------------------------------------------------------
     ; Get time (hhhhhmmm mmmsssss)
-    call    esp_get_word
+    call    esp_get_de
 
     ; Hours
     call    srl3out

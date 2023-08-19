@@ -111,20 +111,30 @@ esp_create:
 ;-----------------------------------------------------------------------------
 
 esp_get_long:
-    call    esp_get_word
-    ld      c,e
-    ld      b,d
+    call    esp_get_bc
 
 ;-----------------------------------------------------------------------------t
 ; Read 16-bit word from ESP32 into DE
 ; Returns with MSB in A
 ;-----------------------------------------------------------------------------
 
-esp_get_word:
+esp_get_de:
     call    esp_get_byte       ; Read LSB
     ld      e,a                   ; into E
     call    esp_get_byte       ; Read MSB
     ld      d,a                   ; into D
+    ret
+
+;-----------------------------------------------------------------------------t
+; Read 16-bit word from ESP32 into BC
+; Returns with MSB in A
+;-----------------------------------------------------------------------------
+
+esp_get_bc:
+    call    esp_get_byte       ; Read LSB
+    ld      c,a                   ; into E
+    call    esp_get_byte       ; Read MSB
+    ld      b,a                   ; into D
     ret
 
 ;-----------------------------------------------------------------------------
@@ -151,10 +161,10 @@ esp_get_byte:
     ret                           ;+10	
 ;-----------------------------------------------------------------------------
 ; Read bytes
-; Input:  HL: destination address
-;         DE: number of bytes to read
-; Output: HL: next address (start address if no bytes read)
-;         DE: number of bytes actually read
+; Input:  DE: destination address
+;         BC: number of bytes to read
+; Output: DE: next address (start address if no bytes read)
+;         BC: number of bytes actually read
 ;
 ; Clobbered registers: A, HL, DE
 ;-----------------------------------------------------------------------------
@@ -167,30 +177,30 @@ esp_read_bytes:
     call    esp_send_byte
 
     ; Send read size
-    call    esp_send_word
+    call    esp_send_bc
     
     ; Get result
     call    esp_get_result
 
     ; Get number of bytes actual read
-    call    esp_get_word
+    call    esp_get_bc
 
-    push    de
+    push    bc
 
 .loop:
     ; Done reading? (DE=0)
-    ld      a, d
-    or      a, e
+    ld      a, b
+    or      a, c
     jr      z, .done
 
     call    esp_get_byte
-    ld      (hl), a
-    inc     hl
-    dec     de
+    ld      (de), a
+    inc     de
+    dec     bc
     jr      .loop
 
 .done:
-    pop     de
+    pop     bc
     ret
 
 ;esp_open:
@@ -249,20 +259,26 @@ esp_read_to_buff:
     ret
 
 ;-----------------------------------------------------------------------------
+; Write 16-bit word in BC to ESP32
+; Returns with MSB in A
+;-----------------------------------------------------------------------------
+esp_send_bc:
+    ld      a,c
+    call    esp_send_byte
+    ld      a,b
+    jr      esp_send_byte
+
+;-----------------------------------------------------------------------------
 ; Write 32-bit long in BC,DE to ESP32
 ; Returns with MSB in A
 ;-----------------------------------------------------------------------------
 esp_send_long:
-    ld      a,c
-    call    esp_send_byte
-    ld      a,b
-    call    esp_send_byte
-
+    call    esp_send_bc
 ;-----------------------------------------------------------------------------
 ; Write 16-bit word in DE to ESP32
 ; Returns with MSB in A
 ;-----------------------------------------------------------------------------
-esp_send_word:
+esp_send_de:
     ld      a,e
     call    esp_send_byte
     ld      a,d
@@ -301,51 +317,47 @@ esp_send_strdesc:
 ; Send String
 ; Input:  DE: String Address
 ;         BC: String Length
-; Output: HL: Address of Byte after String
-;         DE: Bytes Written
-;         BC: String Length
+; Output: DE: Address of Byte after String
+;         BC: Bytes Written
 ; Destroys: HL
 ;-----------------------------------------------------------------------------
 esp_send_string: 
-    ex      de,hl                 ; Address into HL
-    ld      d,b                   ; Length into DE
-    ld      e,c
     call    esp_send_bytes        ; Send Command String  
     xor     a 
     jp      esp_send_byte         ; Send String Terminator
 
 ;-----------------------------------------------------------------------------
 ; Send bytes
-; Input:  HL: source address
-;         DE: number of bytes to write
-; Output: HL: next address
-;         DE: number of bytes actually written
+; Input:  DE: source address
+;         BC: number of bytes to write
+; Output: DE: next address
+;         BC: number of bytes actually written
 ;-----------------------------------------------------------------------------
 esp_send_bytes:
-    push    de
+    push    bc
 
 .loop:
     ; Done sending? (DE=0)
-    ld      a, d
-    or      a, e
+    ld      a, b
+    or      a, c
     jr      z, .done
 
-    ld      a, (hl)
+    ld      a, (de)
     call    esp_send_byte
-    inc     hl
-    dec     de
+    inc     de
+    dec     bc
     jr      .loop
 
 .done:
-    pop     de
+    pop     bc
     ret
 
 ;-----------------------------------------------------------------------------
 ; Write bytes
-; Input:  HL: source address
-;         DE: number of bytes to write
-; Output: HL: next address
-;         DE: number of bytes actually written
+; Input:  DE: source address
+;         BC: number of bytes to write
+; Output: DE: next address
+;         BC: number of bytes actually written
 ;
 ; Clobbered registers: A, HL, DE
 ;-----------------------------------------------------------------------------
@@ -358,7 +370,7 @@ esp_write_bytes:
     call    esp_send_byte
 
     ; Send write size
-    call    esp_send_word
+    call    esp_send_bc
 
     ; Send bytes
     call    esp_send_bytes
@@ -367,7 +379,7 @@ esp_write_bytes:
     call    esp_get_result
 
     ; Get number of bytes actual written
-    call    esp_get_word
+    call    esp_get_bc
 
     ret
 

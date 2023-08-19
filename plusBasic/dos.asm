@@ -61,9 +61,9 @@ dos_get_filestat:
     ld      a, ESPCMD_STAT       ; Set ESP Command
     jp      esp_cmd_string        ; Issue ESP command
     jp      m,.done               ; Return if Error
-    call    esp_get_word
+    call    esp_get_de
     ld      (FILEDATE),de
-    call    esp_get_word
+    call    esp_get_de
     ld      (FILETIME),de
     call    esp_get_byte
     ld      (FILEATTR),de
@@ -138,26 +138,25 @@ set_chead_return:
 ;-----------------------------------------------------------------------------
 check_sync_bytes:
     ; Read 13 bytes into FBUFFR
-    ld      de, 13
-    ld      hl, FBUFFR
+    ld      bc, 13
+    ld      de, FBUFFR
     call    esp_read_bytes
-    ld      a, e
+    ld      a, c
     cp      13
     jp      nz, err_bad_file
 
     ; Check for 12x$FF
-    ld      c, 12
-    ld      hl, FBUFFR
+    ld      b, 12
+    ld      de, FBUFFR
 .loop:
-    ld      a, (hl)
+    ld      a, (de)
     cp      $FF
     jp      nz, err_bad_file
-    inc     hl
-    dec     c
-    jr      nz, .loop
+    inc     de
+    djnz    .loop
 
     ; Check for $00
-    ld      a, (hl)
+    ld      a, (de)
     or      a
     jp      nz, err_bad_file
     ret
@@ -187,8 +186,8 @@ load_binary:
     ex      (sp),hl               ; HL = String Descriptor, Stack = Text Pointer
     ; Load file into memory
     call    esp_open
-    ld      hl, (BINSTART)
-    ld      de, $FFFF
+    ld      de, (BINSTART)
+    ld      bc, $FFFF
     call    esp_read_bytes
     call    esp_close_all
     call    page_restore_plus
@@ -208,22 +207,21 @@ load_caq_array:
 
     ; Check CAQ header
     call    check_sync_bytes    ; Sync bytes
-    ld      de, 6               ; Check that filename is '######'
-    ld      hl, FILNAM
+    ld      bc, 6               ; Check that filename is '######'
+    ld      de, FILNAM
     call    esp_read_bytes
-    ld      c, 6
-    ld      hl, FILNAM
+    ld      b, 6
+    ld      de,FILNAM
 .loop:
-    ld      a, (hl)
+    ld      a, (de)
     cp      '#'
     jp      nz, err_bad_file
-    inc     hl
-    dec     c
-    jr      nz, .loop
+    inc     de
+    djnz    .loop
 
     ; Load data into array
-    ld      hl, (BINSTART)
-    ld      de, (BINLEN)
+    ld      de, (BINSTART)
+    ld      bc, (BINLEN)
     call    esp_read_bytes
 
     ; Close file
@@ -243,14 +241,14 @@ load_basic_program:
 
     ; Check CAQ header
     call    check_sync_bytes    ; Sync bytes
-    ld      de, 6               ; Read filename
-    ld      hl, FILNAM
+    ld      bc, 6               ; Read filename
+    ld      de, FILNAM
     call    esp_read_bytes
     call    check_sync_bytes    ; Sync bytes
     
     ; Load actual program
-    ld      hl, (TXTTAB)
-    ld      de, $FFFF
+    ld      de, (TXTTAB)
+    ld      bc, $FFFF
     call    esp_read_bytes
 
     ; Close file
@@ -289,21 +287,22 @@ save_basic_program:
     call    esp_create            ; Create file
 
     ; Write CAQ header
-    ld      hl, sync_bytes      ; Sync bytes
-    ld      de, 13
+    ld      de, sync_bytes      ; Sync bytes
+    ld      bc, 13
     call    esp_write_bytes
-    ld      hl, .caq_filename   ; Filename
-    ld      de, 6
+    ld      de, .caq_filename   ; Filename
+    ld      bc, 6
     call    esp_write_bytes
-    ld      hl, sync_bytes      ; Sync bytes
-    ld      de, 13
+    ld      de, sync_bytes      ; Sync bytes
+    ld      bc, 13
     call    esp_write_bytes
 
     ; Write BASIC data
     ld      de, (TXTTAB)            ; DE = start of BASIC program
     ld      hl, (VARTAB)            ; HL = end of BASIC program
     sbc     hl, de
-    ex      de, hl                  ; HL = start, DE = length of BASIC program
+    ld      b,h                     ; BC = length of BASIC program
+    ld      c,l                     
     call    esp_write_bytes
 
     ; Close file
@@ -322,16 +321,16 @@ save_caq_array:
     call    esp_create            ; Create file
 
     ; Write CAQ header
-    ld      hl, sync_bytes      ; Sync bytes
-    ld      de, 13
+    ld      de, sync_bytes      ; Sync bytes
+    ld      bc, 13
     call    esp_write_bytes
-    ld      hl, .array_filename ; Filename
-    ld      de, 6
+    ld      de, .array_filename ; Filename
+    ld      bc, 6
     call    esp_write_bytes
 
     ; Write array data
-    ld      hl, (BINSTART)
-    ld      de, (BINLEN)
+    ld      de, (BINSTART)
+    ld      bc, (BINLEN)
     call    esp_write_bytes
 
     ; Close file
@@ -362,8 +361,8 @@ save_binary:
     call    esp_create
 
     ; Write binary data
-    ld      hl, (BINSTART)
-    ld      de, (BINLEN)
+    ld      de, (BINSTART)
+    ld      bc, (BINLEN)
     call    esp_write_bytes
 
     ; Close file
@@ -384,8 +383,8 @@ load_rom:
     out     (IO_BANK3), a
 
     ; Load file
-    ld      hl, $C000
-    ld      de, $4000
+    ld      de, $C000
+    ld      bc, $4000
     call    esp_read_bytes
 
     ; Check length
