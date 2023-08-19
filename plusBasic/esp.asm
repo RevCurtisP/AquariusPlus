@@ -34,9 +34,9 @@ esp_cmd:
 ;         BC: String Length
 ;-----------------------------------------------------------------------------
 
-esp_cmd_string:
+esp_cmd_strdesc:
     call    esp_cmd
-    jp      esp_send_string
+    call    esp_send_strdesc
 
 ;-----------------------------------------------------------------------------
 ; Issue command to ESP and Send string with Descriptor in HL
@@ -47,9 +47,9 @@ esp_cmd_string:
 ;         BC: String Length
 ;-----------------------------------------------------------------------------
 
-esp_cmd_strdesc:
+esp_cmd_string:
     call    esp_cmd
-    call    esp_send_strdesc
+    jp      esp_send_string
 
 ;-----------------------------------------------------------------------------
 ; Get first result byte, and jump to error handler if it was an error
@@ -82,6 +82,82 @@ esp_close:
     ld      a, ESPCMD_CLOSEALL
     call    esp_cmd
     jp      esp_get_result
+
+;-----------------------------------------------------------------------------
+; esp_read_to_buff - Read String from ESP to 256 byte buffer
+; Input: HL: Address of String Buffer
+; Output: E: String Length, 
+;        DE: Address of Terminator
+;        HL: Buffer Address
+; Clobbers: B
+;-----------------------------------------------------------------------------
+esp_read_to_buff:
+    push    af                    ; Save A
+    ld      b,255                 ; Maximum Length, Length Counter
+    ld      d,h
+    ld      e,l
+.loop
+    call    esp_get_byte          ; Get character
+    jp      m,.error              ; If Error, terminate string and return
+    ld      (de),a                ; Store in Buffer
+    or      a
+    jr      z,.done               ; Return if end of String
+    inc     de
+    djnz    .loop     
+.error
+    xor     a
+    ld      (de),a                ; Add Null Terminator
+.done
+    ex      de,hl                 ; HL = Terminator Address, DE = Buffer Address
+    sbc     hl,de                 ; HL = Length
+    ex      de,hl                 ; DE = Length, HL = Buffer Address
+    pop     af                    ; Restore Result
+    ret
+
+;-----------------------------------------------------------------------------
+; Read bytes
+; Input:  DE: destination address
+;         BC: number of bytes to read
+; Output: DE: next address (start address if no bytes read)
+;         BC: number of bytes actually read
+;
+; Clobbered registers: A, HL, DE
+;-----------------------------------------------------------------------------
+esp_read_bytes:
+    ld      a, ESPCMD_READ
+    call    esp_cmd
+
+    ; Send file descriptor
+    xor     a
+    call    esp_send_byte
+
+    ; Send read size
+    call    esp_send_bc
+    
+    ; Get result
+    call    esp_get_result
+
+    ; Get number of bytes actual read
+    call    esp_get_bc
+
+    push    bc
+
+.loop:
+    ; Done reading? (DE=0)
+    ld      a, b
+    or      a, c
+    jr      z, .done
+
+    call    esp_get_byte
+    ld      (de), a
+    inc     de
+    dec     bc
+    jr      .loop
+
+.done:
+    pop     bc
+    ret
+
 
 
 ;-----------------------------------------------------------------------------
@@ -159,103 +235,90 @@ esp_get_byte:
     ld      a,-9                  ;+7	
     pop     bc                    ;+10	
     ret                           ;+10	
+
+
 ;-----------------------------------------------------------------------------
-; Read bytes
-; Input:  DE: destination address
-;         BC: number of bytes to read
-; Output: DE: next address (start address if no bytes read)
-;         BC: number of bytes actually read
+; Send String from String Descriptor
+; Input:    HL: String Descriptor Address
+; Output:   DE: Address of Byte after String
+;           BC: String Length
+; Destroys: HL
+;-----------------------------------------------------------------------------
+
+esp_send_strdesc: 
+    ld      a,h                   ; If HL is 0
+    or      l
+    jp      z,esp_send_byte       ; Send Null Terminator
+    call    STRADL                ; Get Text Address in DE and Length in BC
+
+;-----------------------------------------------------------------------------
+; Send String
+; Input:  DE: String Address
+;         BC: String Length
+; Output: DE: Address of Byte after String
+;         BC: Bytes Written
+; Destroys: HL
+;-----------------------------------------------------------------------------
+esp_send_string: 
+    call    esp_send_bytes        ; Send Command String  
+    xor     a 
+    jp      esp_send_byte         ; Send String Terminator
+
+;-----------------------------------------------------------------------------
+; Write bytes
+; Input:  DE: source address
+;         BC: number of bytes to write
+; Output: DE: next address
+;         BC: number of bytes actually written
 ;
 ; Clobbered registers: A, HL, DE
 ;-----------------------------------------------------------------------------
-esp_read_bytes:
-    ld      a, ESPCMD_READ
+esp_write_bytes:
+    ld      a, ESPCMD_WRITE
     call    esp_cmd
 
     ; Send file descriptor
     xor     a
     call    esp_send_byte
 
-    ; Send read size
+    ; Send write size
     call    esp_send_bc
-    
+
+    ; Send bytes
+    call    esp_send_bytes
+
     ; Get result
     call    esp_get_result
 
-    ; Get number of bytes actual read
+    ; Get number of bytes actual written
     call    esp_get_bc
 
+    ret
+
+;-----------------------------------------------------------------------------
+; Send bytes
+; Input:  DE: source address
+;         BC: number of bytes to write
+; Output: DE: next address
+;         BC: number of bytes actually written
+;-----------------------------------------------------------------------------
+esp_send_bytes:
     push    bc
 
 .loop:
-    ; Done reading? (DE=0)
+    ; Done sending? (DE=0)
     ld      a, b
     or      a, c
     jr      z, .done
 
-    call    esp_get_byte
-    ld      (de), a
+    ld      a, (de)
+    call    esp_send_byte
     inc     de
     dec     bc
     jr      .loop
 
 .done:
     pop     bc
-    ret
-
-;esp_open:
-    ld      a, ESPCMD_OPEN
-    call    esp_cmd
-    ld      a, FO_RDONLY
-    call    esp_send_byte
-    call    esp_send_strdesc
-    jp      esp_get_result
-
-;-----------------------------------------------------------------------------
-; esp_get_datetime - Read Date and Time String into 256 byte buffer
-; Input: HL = Buffer Address
-; Sets: string_buff: Date and Time in format YYYYMMDDHHmmss
-; Output:  E: String Length, DE = End of String, HL = Buffer Address
-;-----------------------------------------------------------------------------
-esp_get_datetime:
-    ld      a,ESPCMD_DATETIME     ; Issue CWD command
-    call    esp_cmd
-    xor     a     
-    call    esp_send_byte         ; Response Type ($00)
-    call    esp_get_result
-    ret     m                     ; Fall into esp_read_to_buff
-
-
-
-;-----------------------------------------------------------------------------
-; esp_read_to_buff - Read String from ESP to 256 byte buffer
-; Input: HL: Address of String Buffer
-; Output: E: String Length, 
-;        DE: Address of Terminator
-;        HL: Buffer Address
-; Clobbers: B
-;-----------------------------------------------------------------------------
-esp_read_to_buff:
-    push    af                    ; Save A
-    ld      b,255                 ; Maximum Length, Length Counter
-    ld      d,h
-    ld      e,l
-.loop
-    call    esp_get_byte          ; Get character
-    jp      m,.error              ; If Error, terminate string and return
-    ld      (de),a                ; Store in Buffer
-    or      a
-    jr      z,.done               ; Return if end of String
-    inc     de
-    djnz    .loop     
-.error
-    xor     a
-    ld      (de),a                ; Add Null Terminator
-.done
-    ex      de,hl                 ; HL = Terminator Address, DE = Buffer Address
-    sbc     hl,de                 ; HL = Length
-    ex      de,hl                 ; DE = Length, HL = Buffer Address
-    pop     af                    ; Restore Result
     ret
 
 ;-----------------------------------------------------------------------------
@@ -298,91 +361,6 @@ esp_send_byte:
     out     (IO_ESPDATA), a
     ret
 
-
-;-----------------------------------------------------------------------------
-; Send String from String Descriptor
-; Input:    HL: String Descriptor Address
-; Output:   DE: Address of Byte after String
-;           BC: String Length
-; Destroys: HL
-;-----------------------------------------------------------------------------
-
-esp_send_strdesc: 
-    ld      a,h                   ; If HL is 0
-    or      l
-    jp      z,esp_send_byte       ; Send Null Terminator
-    call    STRADL                ; Get Text Address in DE and Length in BC
-
-;-----------------------------------------------------------------------------
-; Send String
-; Input:  DE: String Address
-;         BC: String Length
-; Output: DE: Address of Byte after String
-;         BC: Bytes Written
-; Destroys: HL
-;-----------------------------------------------------------------------------
-esp_send_string: 
-    call    esp_send_bytes        ; Send Command String  
-    xor     a 
-    jp      esp_send_byte         ; Send String Terminator
-
-;-----------------------------------------------------------------------------
-; Send bytes
-; Input:  DE: source address
-;         BC: number of bytes to write
-; Output: DE: next address
-;         BC: number of bytes actually written
-;-----------------------------------------------------------------------------
-esp_send_bytes:
-    push    bc
-
-.loop:
-    ; Done sending? (DE=0)
-    ld      a, b
-    or      a, c
-    jr      z, .done
-
-    ld      a, (de)
-    call    esp_send_byte
-    inc     de
-    dec     bc
-    jr      .loop
-
-.done:
-    pop     bc
-    ret
-
-;-----------------------------------------------------------------------------
-; Write bytes
-; Input:  DE: source address
-;         BC: number of bytes to write
-; Output: DE: next address
-;         BC: number of bytes actually written
-;
-; Clobbered registers: A, HL, DE
-;-----------------------------------------------------------------------------
-esp_write_bytes:
-    ld      a, ESPCMD_WRITE
-    call    esp_cmd
-
-    ; Send file descriptor
-    xor     a
-    call    esp_send_byte
-
-    ; Send write size
-    call    esp_send_bc
-
-    ; Send bytes
-    call    esp_send_bytes
-
-    ; Get result
-    call    esp_get_result
-
-    ; Get number of bytes actual written
-    call    esp_get_bc
-
-    ret
-
 ;-----------------------------------------------------------------------------
 ; Seek
 ; Input:  BC = Offset low 16 bits
@@ -403,6 +381,20 @@ esp_seek:
     ; Get result
     call    esp_get_result
     ret
+
+;-----------------------------------------------------------------------------
+; esp_get_datetime - Read Date and Time String into 256 byte buffer
+; Input: HL = Buffer Address
+; Sets: string_buff: Date and Time in format YYYYMMDDHHmmss
+; Output:  E: String Length, DE = End of String, HL = Buffer Address
+;-----------------------------------------------------------------------------
+esp_get_datetime:
+    ld      a,ESPCMD_DATETIME     ; Issue CWD command
+    call    esp_cmd
+    xor     a     
+    call    esp_send_byte         ; Response Type ($00)
+    call    esp_get_result
+    ret     m                     ; Fall into esp_read_to_buff
 
 ;-----------------------------------------------------------------------------
 ; esp_error

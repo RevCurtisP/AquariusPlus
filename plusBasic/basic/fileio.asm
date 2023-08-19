@@ -61,17 +61,17 @@ FN_CD:
 ; DEL - Delete file/directory
 ;-----------------------------------------------------------------------------
 ST_DEL:
-    call    get_string_arg        
+    call    get_string_arg
     call    dos_delete_file
-    jr      _done                  
+    jr      _done
 
 ;-----------------------------------------------------------------------------
 ; MKDIR - Create directory
 ;-----------------------------------------------------------------------------
 ST_MKDIR:
-    call    get_string_arg        
+    call    get_string_arg
     call    dos_create_dir
-    jr      _done                  
+    jr      _done
 
 ;-----------------------------------------------------------------------------
 ; DIR - Directory listing
@@ -165,10 +165,10 @@ ST_DIR:
     ld      a, e
 
     ld      b,5
-.srlrra    
-    srl     c   
-    rra         
-    djnz    .srlrra 
+.srlrra
+    srl     c
+    rra
+    djnz    .srlrra
 
     call    out_number_2digits
 
@@ -190,7 +190,7 @@ ST_DIR:
 .no_dir:
     ; aaaaaaaa bbbbbbbb cccccccc dddddddd
 
-     call    esp_get_long 
+     call    esp_get_long
 
     ; Megabytes range?
     or      a
@@ -358,7 +358,7 @@ ST_LOAD:
     call    FRCINT                  ; Convert to 16 bit integer
     ld      (BINSTART), de
     pop     af                      ; Get back page
-    jp      nz,page_load_binary 
+    jp      nz,page_load_binary
     jp      load_binary
 
     ; Load into array
@@ -371,7 +371,7 @@ ST_LOAD:
     jp      load_basic_program
 
 ;-----------------------------------------------------------------------------
-; Load CAQ/BAS file 
+; Load CAQ/BAS file
 ; Input: HL: String descriptor address
 ; Clobbered registers: A, DE
 ;-----------------------------------------------------------------------------
@@ -385,7 +385,7 @@ load_basic_program:
     ld      de, FILNAM
     call    esp_read_bytes
     call    check_sync_bytes    ; Sync bytes
-    
+
     ; Load actual program
     ld      de, (TXTTAB)
     ld      bc, $FFFF
@@ -565,7 +565,7 @@ run_file:
 .load_basic:
     pop     bc                    ; Discard Text Pointer
     ld      bc,RUNC
-    push    bc                    ; Return to RUNC     
+    push    bc                    ; Return to RUNC
     call    load_basic_program
 
 .romext: db ".ROM",0
@@ -593,7 +593,7 @@ ST_SAVE:
     jr      z, .array               ; Array parameter -> save array
 
     ; Save binary data
-    
+
     ; Get first parameter: address
     call    parse_page_arg          ; Check for page specifier
     push    af                      ; Save it
@@ -612,7 +612,7 @@ ST_SAVE:
     call    FRCINT                  ; Convert to 16 bit integer
     ld      (BINLEN), de
     pop     af                      ; Get back page
-    jp      nz,page_save_binary 
+    jp      nz,page_save_binary
     jp      save_binary
 
 
@@ -644,7 +644,7 @@ save_basic_program:
     ld      hl, (VARTAB)            ; HL = end of BASIC program
     sbc     hl, de
     ld      b,h                     ; BC = length of BASIC program
-    ld      c,l                     
+    ld      c,l
     call    esp_write_bytes
 
     ; Close file
@@ -715,7 +715,7 @@ check_sync_bytes:
 ; Parse string at text pointer, return String Length and Text Address
 ; Input: HL = Text Pointee
 ; Output: BC = String Length
-;         DE = String Address 
+;         DE = String Address
 ;         HL = String Descriptor
 ;         Text Pointer on Stack
 ;-----------------------------------------------------------------------------
