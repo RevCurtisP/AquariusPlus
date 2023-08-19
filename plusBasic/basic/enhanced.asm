@@ -3,18 +3,25 @@
 ;======================================================================================
 
 ST_POKE
+;    cp      '!'                   ; If POKE!
+;    call    z,CHRGET              ;   Eat the !
+;    ex      af,af'                ;   Save without PUSH
     call    parse_page_arg        ; Parse page
     push    af                    ; Save it
     call    GETINT                ; Parse Address
     push    de                    ; Save It
     SYNCHK  ','                   ; Require comma
-    call    GETBYT                ; Parse Byte
-    ld      c,a                   ; and put into C
-    pop     de                    ; Get address
-    pop     af                    ; Get page
-    jp      nz,page_write_byte    ; If specified, write to page
-    ld      a,c                   ; Write byte
-    ld      (de),a                ; to address
+;    ex      af,af'                ; 
+;    jr      z,.pokeword           ; If not POKE!
+    call    GETBYT                ;   Parse Byte
+    ld      c,a                   ;   and put into C
+    pop     de                    ;   Get address
+    pop     af                    ;   Get page
+    jp      nz,page_write_byte    ;   If specified, write to page
+    ld      a,c                   ;   Write byte
+    ld      (de),a                ;   to address
+    ret
+.pokeword    
     ret
     
 FN_PEEK:
@@ -48,7 +55,6 @@ parse_page_arg:
     call    GETBYT                ;   Parse byte into E
     SYNCHK  ','                   ;   Require comma
 .notat
-    
     ld      a,e                   ; A = page
     or      a                     ; Set Flags
     ret     
