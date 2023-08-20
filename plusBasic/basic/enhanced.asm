@@ -14,7 +14,7 @@ ST_POKE
     ld      c,a                   ; and put into C
     pop     de                    ; Get address
     pop     af                    ; Get page
-    jp      nz,page_write_byte    ; If page specified, write to it
+    jp      c,page_write_byte     ; If page specified, write to it
     ld      a,c                   ; Write byte
     ld      (de),a                ; to address
     ret
@@ -30,7 +30,7 @@ ST_POKE
     ld      c,e                   ;   
     pop     de                    ; Get address
     pop     af                    ; Get page
-    jp      nz,page_write_word    ; If page specified, write to it
+    jp      c,page_write_word     ; If page specified, write to it
     ld      a,c                   ; Write byte
     ld      (de),a                ; to address
     inc     de
@@ -52,7 +52,7 @@ FN_PEEK:
     push    hl                    ; Save text pointer
     ld      bc,LABBCK             ; Return address for SNGFLT
     push    bc
-    jp      nz,.get_page_byte     ; If not specified
+    jp      c,.get_page_byte      ; If not specified
     ld      a,(de)                ;   Get Byte
 .float_it:
     jp      SNGFLT                ; and float it
@@ -73,13 +73,13 @@ FN_PEEK:
     push    hl                    ; Save text pointer
     ld      bc,LABBCK             ; Return address for SNGFLT
     push    bc
-    jr      nz,.read_word         ; If not specified
+    jr      c,.read_page_word     ; If not specified
     ld      a,(de)                ;   Get LSB
     ld      c,a
     inc     de
     ld      a,(de)
     jr      .float_it
-.read_word
+.read_page_word
     call    page_read_word
     ld      a,b 
     jp      GIVINT
@@ -87,13 +87,14 @@ FN_PEEK:
 ; Check for and parse @page,
 ; Output: A, E = Page (0 if not specified)
 parse_page_arg:
-    ld      e,0                   ; Default to Page 0
     cp      '@'                   
     jr      nz,.notat             ; If page prefix
     rst     CHRGET                ;   Skip '@'
     call    GETBYT                ;   Parse byte into E
     SYNCHK  ','                   ;   Require comma
+    ld      a,e
+    scf
+    ret
 .notat
-    ld      a,e                   ; A = page
     or      a                     ; Set Flags
     ret     
