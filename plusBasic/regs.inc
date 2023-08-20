@@ -199,6 +199,7 @@ STRLIT      equ $0E5F   ; Build Descriptor for String Litersl
 PUTNEW      equ $0E7E   ; Set Pointer to Temporary String
 STROUT:     equ $0E9D   ; Print null-terminated string in HL
 FRESTR      equ $0FC6   ; Free tempory string, return string descriptor address in HL
+FRETM2      equ $0FCC   ; Free up tem in FACLO
 LEN1:       equ $0FF7   ; Get string length (in: (FPREG) = string block, out: HL = string block, A = length)
 FINBCK      equ $101D   ; Return a String
 PTRGET:     equ $10D1   ; Get variable (out: BC = addr, DE = len)

@@ -59,6 +59,7 @@ FN_CD:
 
 ;-----------------------------------------------------------------------------
 ; DEL - Delete file/directory
+; Syntax: DEL filespec$
 ;-----------------------------------------------------------------------------
 ST_DEL:
     call    get_string_arg
@@ -67,11 +68,37 @@ ST_DEL:
 
 ;-----------------------------------------------------------------------------
 ; MKDIR - Create directory
+; Syntax: MKDIR dirname$
 ;-----------------------------------------------------------------------------
 ST_MKDIR:
     call    get_string_arg
     call    dos_create_dir
     jr      _done
+
+;-----------------------------------------------------------------------------
+; RENAME - Rename a file
+; Syntax: RENAME oldfile$ TO newfile$
+;-----------------------------------------------------------------------------
+ST_RENAME:
+    call    FRMEVL                ; Parse oldname                                                     
+    call    CHKSTR                ; Gotta be a string
+    call    SYNCHR                ; Require TO token
+    byte    TOTK                    
+    push    hl                    ; Stack = textptr
+    ld      hl,(FACLO)            ; HL = olddesc
+    ex      (sp),hl               ; HL = textptr, HL = olddesc
+    call    FRMEVL                ; Parse newname
+    push    hl                    ; Stack = textptr, olddesc
+    call    FRESTR                ; HL = newdesc
+    ex      de,hl                 ; DE = newdesc. 
+    pop     bc                    ; BC = textptr, Stack = olddesc
+    pop     hl                    ; HL = olddesc
+    push    bc                    ; Stack = textptr
+    push    de                    ; Stack = newdesc, txtptr
+    call    FRETM2                ; HL = olddesc
+    pop     de                    ; DE = newdesc, Stack = txptr
+    call    dos_rename_file       ; Do the rename
+    jr      _done                 ; Restore textptr and check for error
 
 ;-----------------------------------------------------------------------------
 ; DIR - Directory listing
@@ -88,17 +115,17 @@ ST_DIR:
     jr      nz, .witharg     ; Yes
 
     push    hl                    ; Save Text Pointer
-    ld      hl,0
+    ld      bc,0                  ; Empty String
     jr      .esp_command
 
 .witharg:
-    call    get_strdesc_arg        ; Get FileSpec pointer in HL
+    call    get_string_arg        ; Get FileSpec pointer in HL
 
 .esp_command:
     call    esp_close_all
 
     ld      a, ESPCMD_OPENDIR     ; Set ESP Command
-    call    esp_cmd_strdesc       ; Get FileSpec and Do Command
+    call    esp_cmd_string        ; Get FileSpec and Do Command
 
     ; Set initial number of lines per page
     ld      a, 24

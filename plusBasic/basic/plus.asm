@@ -9,7 +9,7 @@
 FN_DATE:
     rst     CHRGET                ; Skip Token
     ld      c,0                   ; Return Just Date
-    cp      TKTIME                ; If followed by TIME token
+    cp      TIMETK                ; If followed by TIME token
     jr      nz,.notime
     rst     CHRGET                ;   Skip TIME token
     dec     c                     ;   Return Date and Time

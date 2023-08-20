@@ -50,6 +50,22 @@ dos_get_cwd:
     ret
 
 ;-----------------------------------------------------------------------------
+; dos_create_dir - Delete file/directory
+; Input: DE: New name string descriptor
+;        HL: Old name string descriptor
+; Output:  A: Result
+; Clobbered: BC, DE
+;-----------------------------------------------------------------------------
+dos_rename_file:
+    push    de                    ; Save new name descriptor
+    ld      a, ESPCMD_RENAME      ; Set ESP Command
+    call    esp_cmd               ; Issue ESP command and send old name
+    call    esp_send_strdesc      ; Send old name    
+    pop     hl                    ; HL = new name descriptor
+    call    esp_send_strdesc      ; Send new name
+    jp      esp_get_result        ; Get result and return
+
+;-----------------------------------------------------------------------------
 ; dos_get_file_stat - Return File Status
 ; Input: BC: String Length
 ;        DE: String Address

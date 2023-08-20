@@ -115,7 +115,7 @@ STJUMPS:
     dw      SNERR                 ;$E1 IN
     dw      SNERR                 ;$E2 JOY
     dw      SNERR                 ;$E3 HEX
-    dw      SNERR                 ;$E4 
+    dw      ST_RENAME             ;$E4 RENAME
     dw      SNERR                 ;$E5 DATE
     dw      SNERR                 ;$E6 
     dw      SNERR                 ;$E7 
@@ -199,7 +199,7 @@ FNJUMPS:
     dw      FN_IN                 ;$E1 IN()
     dw      FN_JOY                ;$E2 JOY()
     dw      FN_HEX                ;$E3 HEX()
-    dw      SNERR                 ;$E4 
+    dw      SNERR                 ;$E4 RENAME
     dw      FN_DATE               ;$E5 DATE$
     dw      SNERR                 ;$E6 
     dw      SNERR                 ;$E7 

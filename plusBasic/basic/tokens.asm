@@ -26,7 +26,7 @@ TBLCMDS:
     db $80 + 'I',"N"              ; $E1
     db $80 + 'J',"OY"             ; $E2
     db $80 + 'H',"EX$"            ; $E3
-    db $80 + ' '                  ; $E4
+    db $80 + 'R',"ENAME"          ; $E4
     db $80 + 'D',"ATE"            ; $E5   Replaces MX-BASIC keyword DTM$
     db $80 + ' '                  ; $E6             
     db $80 + ' '                  ; $E7             
@@ -39,7 +39,9 @@ TBLCMDS:
 ;-----------------------------------------------------------------------------
 ; plusBASIC tokens
 ;-----------------------------------------------------------------------------
-TKTIME    equ     $D3    
+TOTK      equ     $A1
+TIMETK    equ     $D3    
+
 
 ;;; Extended Error Message Table can go here
 
@@ -105,7 +107,7 @@ token_to_keyword:
 ; $E1 IN          IN                   compatible
 ; $E2 JOY         JOY                  compatible
 ; $E3 HEX         HEX                  compatible
-; $E4             VER
+; $E4 RENAME      VER
 ; $E5 DATE        DTM           DATETIME$ <--> DTM$(0)
 ; $E6             DEC
 ; $E7             KEY             

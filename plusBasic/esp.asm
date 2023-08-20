@@ -26,20 +26,7 @@ esp_cmd:
     jp      esp_send_byte
 
 ;-----------------------------------------------------------------------------
-; Issue command to ESP and Send string with Descriptor in HL
-; Input:   A: Command
-;         HL: String Descriptor
-; Output:  A: Result
-;         DE: Address of Byte after String
-;         BC: String Length
-;-----------------------------------------------------------------------------
-
-esp_cmd_strdesc:
-    call    esp_cmd
-    call    esp_send_strdesc
-
-;-----------------------------------------------------------------------------
-; Issue command to ESP and Send string with Descriptor in HL
+; Issue command with string to ESP and return result
 ; Input:   A: Command
 ;         HL: String Descriptor
 ; Output:  A: Result
@@ -71,6 +58,16 @@ esp_open:
     ld      a, FO_RDONLY
     call    esp_send_byte
     call    esp_send_strdesc
+    jp      esp_get_result
+
+;-----------------------------------------------------------------------------
+; Close file or directory
+; Input: A: File Descriptor
+; Output: A: Result 
+;-----------------------------------------------------------------------------
+esp_close_all:
+    ld      a, ESPCMD_CLOSEALL
+    call    esp_cmd
     jp      esp_get_result
 
 ;-----------------------------------------------------------------------------
@@ -157,18 +154,6 @@ esp_read_bytes:
 .done:
     pop     bc
     ret
-
-
-
-;-----------------------------------------------------------------------------
-; Close any open file/directory descriptor
-;
-; Clobbered registers: A
-;-----------------------------------------------------------------------------
-esp_close_all:
-    ld      a, ESPCMD_CLOSEALL
-    call    esp_cmd
-    jp      esp_get_result
 
 ;-----------------------------------------------------------------------------
 ; Create file from string descriptor in HL
