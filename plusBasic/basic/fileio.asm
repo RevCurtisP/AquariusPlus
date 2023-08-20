@@ -126,6 +126,7 @@ ST_DIR:
 
     ld      a, ESPCMD_OPENDIR     ; Set ESP Command
     call    esp_cmd_string        ; Get FileSpec and Do Command
+    call    esp_get_result
 
     ; Set initial number of lines per page
     ld      a, 24
@@ -153,7 +154,7 @@ ST_DIR:
     ; Extract year
     srl     a
     add     80
-    call    out_number_2digits
+    call    print_a_2digits
 
     ld      a, '-'
     rst     OUTCHR
@@ -171,9 +172,10 @@ ST_DIR:
     ; Extract day
     ld      a, e
     and     $1F
-    call    out_number_2digits
+    call    print_a_2digits
 
-    call    print_space
+    ld      a,' '
+    rst     OUTCHR
 
     ;-- Time -----------------------------------------------------------------
     ; Get time (hhhhhmmm mmmsssss)
@@ -197,7 +199,7 @@ ST_DIR:
     rra
     djnz    .srlrra
 
-    call    out_number_2digits
+    call    print_a_2digits
 
     ;-- Attributes -----------------------------------------------------------
     call    esp_get_byte
@@ -238,7 +240,7 @@ ST_DIR:
 .bytes:
     ld      h,b
     ld      l,c
-    call    out_number_4digits
+    call    print_hl_4digits
     ld      a, 'B'
     rst     OUTCHR
     jr      .get_filename
@@ -268,7 +270,8 @@ ST_DIR:
 
     ;-- Filename -------------------------------------------------------------
 .get_filename:
-    call    print_space
+    ld      a,' '
+    rst     OUTCHR
 
 .filename:
     call    esp_get_byte
@@ -305,29 +308,32 @@ srl3out:
     srl     a
     srl     a
 
-;;; Previously 31 bytes, now 28 bytes
-out_number_2digits:
-    push    de
-.loop
+
+;-----------------------------------------------------------------------------
+; Output 2 number digit in A
+;-----------------------------------------------------------------------------
+print_a_2digits:
     cp      100
-    jp      c,.check10s
-    sub     a,100
-    jr      .loop
-.check10s
-    cp      10
-    jr      nc,.print
+    jr      c, .l0
+    sub     a, 100
+    jr      print_a_2digits
+.l0:
+    ld      c, 0
+.l1:
+    inc     c
+    sub     a, 10
+    jr      nc, .l1
+    add     a, 10
     push    a
-    ld      a,'0'
-    rst     OUTCHR
+
+    ld      a, c
+    add     '0'-1
+    call    TTYCHR
     pop     a
-.print
-    call    BYTPRT
-    pop     de
+    add     '0'
+    call    TTYCHR
     ret
 
-print_space:
-    ld      a,' '
-    jp      OUTDO
 
 ;-----------------------------------------------------------------------------
 ; Output 4 number digit in HL
@@ -339,21 +345,33 @@ srlh_rrl_out:
     rr      l
     djnz    srlh_rrl_out
 
-;;; Previously 58 bytes, now 31 bytes
-out_number_4digits:
-    ld      de,10000
-    rst     COMPAR
-    call    c,print_space
-    ld      de,1000
-    rst     COMPAR
-    call    c,print_space
-    ld      de,100
-    rst     COMPAR
-    call    c,print_space
-    ld      de,10
-    rst     COMPAR
-    call    c,print_space
-    jp      LINPRT
+print_hl_4digits:
+    ld      e,'0'                
+    ld	    bc,-10000
+    call	  .num1
+    ld	    bc,-1000
+    call	  .num1
+    ld	    bc,-100
+    call	  .num1
+    ld	    c,-10
+    call	  .num1
+    ld	    c,-1
+.num1:	
+    ld	    a,-1
+.num2:	
+    inc	    a
+    add	    hl,bc
+    jr	    c,.num2
+    sbc	    hl,bc
+    add     a,'0'
+    cp      e
+    jr      nz,.num3
+    add     a,' '-'0'
+    byte    $16                   ; LD D over DEC E
+.num3
+    dec     e
+    rst     OUTCHR
+    ret 
 
 ;-----------------------------------------------------------------------------
 ; LOAD
