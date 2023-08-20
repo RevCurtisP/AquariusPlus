@@ -184,8 +184,10 @@ FRMNUM:     equ $0972   ; Evaluate numeric expression
 CHKNUM:     equ $0975   ; Error if evaluated expression not a number
 CHKSTR:     equ $0976   ; Error if evaluated expression not string
 FRMEVL:     equ $0985   ; Evaluate formula
+QDOT:       equ $0A14   ; Continue EVAL routine
 PARCHK:     equ $0A37   ; Evaluate expression in brackets
 LABBCK:     equ $0A49
+ISVAR       equ $0A4E   ; Get variable value or string pointer
 GIVINT      equ $0B21   ; Float Integer MSB=[A], LSB=[C]
 SNGFLT:     equ $0B36   ; Store variable 8 bit (out: B = value)
 GETBYT:     equ $0B54   ; Evaluate numeric expression (integer 0-255)
@@ -195,7 +197,9 @@ RUNC:       equ $0BCB
 CLEARC:     equ $0BCF
 STKINI:     equ $0BE5
 ;FRMINT         $0B7F   ; Deprecated in S3BASIC, use GETINT instead
-STRLIT      equ $0E5F   ; Build Descriptor for String Litersl
+ISLETC:     equ $0CC6   ; Test for a letter
+STRLIT      equ $0E5F   ; Build descriptor for string litersl
+STRLTI      equ $0E60   ; Do STRLIT, without decrementing HL
 PUTNEW      equ $0E7E   ; Set Pointer to Temporary String
 STROUT:     equ $0E9D   ; Print null-terminated string in HL
 FRESTR      equ $0FC6   ; Free tempory string, return string descriptor address in HL
@@ -203,6 +207,7 @@ FRETM2      equ $0FCC   ; Free up tem in FACLO
 LEN1:       equ $0FF7   ; Get string length (in: (FPREG) = string block, out: HL = string block, A = length)
 FINBCK      equ $101D   ; Return a String
 PTRGET:     equ $10D1   ; Get variable (out: BC = addr, DE = len)
+FIN         equ $15E5   ; Parse floating point number
 LINPRT      equ $1675   ; Print Two Byte Number in HL as Decimal - Alters all Registers
 OUTDO       equ $198A   ; Output a Character
 CRDO:       equ $19EA   ; Print CR+LF
@@ -220,6 +225,9 @@ FPSTR:      equ $38E9   ; Floating point string
 
 XINIT:      equ $E010   ; Cartridge entry point
 RESET:      equ $0089
+
+; Standard BASIC Tokens
+PLUSTK      equ $A8
 
 ;Adddress of Byte following Hook RST
 HOOK0       = $03DF

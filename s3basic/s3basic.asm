@@ -1867,7 +1867,7 @@ EVAL:   rst     HOOKDO            ;
         jp      nc,ISVAR          ;[M80] AN ALPHABETIC CHARACTER MEANS YES
         cp      PLUSTK            ;[M80] IGNORE "+"
         jr      z,EVAL            ;
-        cp      '.'               ;[M65] LEADING CHARACTER OF CONSTANT?
+QDOT:   cp      '.'               ;[M65] LEADING CHARACTER OF CONSTANT?
         jp      z,FIN             ;
         cp      MINUTK            ;[M80] NEGATION?
         jp      z,DOMIN           ;[M65] SHO IS.

@@ -217,27 +217,33 @@ ST_DIR:
 
     ;-- Regular file: file size ----------------------------------------------
 .no_dir:
-    ; aaaaaaaa bbbbbbbb cccccccc dddddddd
 
     call    esp_get_long
 
     ; Megabytes range?
-    or      a
-    jr      nz, .mb
-    ld      a, e
-    and     $F0
-    jr      nz, .mb
+    ld      a,d           
+    or      a                     
+    jr      nz,.mb
+    ld      a,e
+    cp      $9C                   ; If >=10,240,000 show Megabytes
+    jr      c,.notmb              
+    ld      a,b
+    cp      $40
+    jr      nc, .mb
 
+.notmb
     ; Kilobytes range?
-    ld      a, e
+    ld      a,e
     or      a
-    jr      nz, .kb
-    ld      a, b
-    and     $FC
-    jr      nz, .kb
+    jr      nz,.kb
+    ld      a,b
+    cp      $27                   ; If >=10,000 show Kilobytes
+    jr      c,.notkb
+    cp      $10
+    jr      nc,.kb
 
-    ; Bytes range (aaaaaaaa bbbbbbbb ccccccCC DDDDDDDD)
-.bytes:
+.notkb
+    ; Bytes range (<10,000)
     ld      h,b
     ld      l,c
     call    print_hl_4digits
@@ -245,10 +251,9 @@ ST_DIR:
     rst     OUTCHR
     jr      .get_filename
 
-    ; Kilobytes range: aaaaaaaa bbbbBBBB CCCCCCcc dddddddd
 .kb:
     ld      a,e
-    and     a, $0F
+    ;and     a, $0F
     ld      h, a
     ld      a,b
     ld      l, a
@@ -257,7 +262,6 @@ ST_DIR:
     rst     OUTCHR
     jr      .get_filename
 
-    ; Megabytes range: AAAAAAAA BBBBbbbb cccccccc dddddddd
 .mb:
     ld      h,d
     ld      l,e

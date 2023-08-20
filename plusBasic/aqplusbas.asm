@@ -187,7 +187,7 @@ _coldboot:
     jr      .print_version
 .print_done:
     call    STRPRI
-    db " PlusBasic v0.5d", 0
+    db " PlusBasic v0.6", 0
     call    CRDO
     call    CRDO
 
@@ -334,8 +334,8 @@ page_restore_plus:
 
 
 ; Bank in next page, Coerce address
-; Input: DE = Address
-; Output: DE= Coerced address
+; Input: DE: Address
+; Output: DE: Coerced address
 ; Clobbered: A
 page_next_address:
     call    page_next
@@ -375,11 +375,9 @@ buff_to_temp_string:
 ;-----------------------------------------------------------------------------
 bas_read_to_buff:
     ld      hl,FBUFFR             ; Use FBUFFR for now
+jump_ix:
     jp      (ix)                  ; Execute routine and return
 
-
-    
-    
 ;-----------------------------------------------------------------------------
 ; RUN command - hook 24
 ;-----------------------------------------------------------------------------
@@ -449,6 +447,18 @@ byte_to_hex:
     add     '0'
     ld      (hl), a
     inc     hl
+    ret
+
+FLOAT_BC:
+    ld      d,b                   ;  Copy into DE
+    ld      e,c                   ;  
+FLOAT_DE:
+    push    hl
+    xor     a                     ; Set HO to 0
+    ld      (VALTYP),a            ; Force Return Type to numeric
+    ld      b,$98                 ; Exponent = 2^24
+    call    FLOATR                ; Float It
+    pop     hl
     ret
 
 ;-----------------------------------------------------------------------------
