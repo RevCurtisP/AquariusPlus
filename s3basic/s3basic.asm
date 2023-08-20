@@ -25,12 +25,6 @@ noreskeys   equ   1
 addkeyrows  equ   1
 endif
 
-
-
-ifdef fastbltu
-    assert !(1) ;Fast BLTU code is broken. Do not use this switch.
-endif
-
 ;BASIC Constants
 LPTSIZ  equ     132     ;{M80} WIDTH OF PRINTER
 SCREEN  equ     $3000   ;;Screen Character Matrix
@@ -120,12 +114,7 @@ RESHO   equ     $38F6   ;[M65] RESULT OF MULTIPLIER AND DIVIDER
 RESMO   equ     $38F7   ;;RESMO and RESLO are loaded into and stored from HL
 SAVSTK  equ     $38F9   ;[M80] NEWSTT SAVES STACK HERE BEFORE SO THAT ERROR REVERY CAN
 INTJMP  equ     $38FB   ;;RST 7 Interrupt JMP 3 Bytes)
-ifdef addkeyrows
-;;;Code Change: Address of Expanded Key Tables, stored in extended BASIC ROM area
-KEYADR  equ     $38FE   ;;Extended Key Tables Base Address minus 1
-else
 ;;        $38FE-$38FF   ;;??Unused
-endif
 ;;              $3900   ;;This is always 0
 BASTXT  equ     $3901   ;;Start of Basic Program
 ifdef aqplus
@@ -138,14 +127,11 @@ endif
 EXTBAS  equ     $2000   ;;Start of Extended Basic
 XSTART  equ     $2010   ;;Extended BASIC Startup Routine
 XINIT   equ     $E010   ;;ROM Cartridge Initialization Entry Point
-        org     $0000   ;;Starting Address of Standard BASIC
-ifdef aqplus
-;;;Aquarius+ I/O Port Assignments
-XBANK0  equ     $F0     ;;Bank 0 ($0000-$3FFF) Page (0-63)
-XBANK1  equ     $F1     ;;Bank 1 ($4000-$7FFF) Page (0-63)
-XBANK2  equ     $F2     ;;Bank 1 ($8000-$BFFF) Page (0-63)
-XBANK3  equ     $F3     ;;Bank 1 ($C000-$FFFF) Page (0-63)
+ifdef addkeyrows
+KEYADR  equ     $2F00   ;;Extended Key Tables Base Address minus 1
 endif
+
+        org     $0000   ;;Starting Address of Standard BASIC
 
 ;;RST 0 - Startup
 START:
@@ -383,7 +369,20 @@ UPRCMP: ld      a,(de)            ;; Get char from First String               01
         xor     a                 ;;                                          0145
         ret                       ;; Return 0 = Equal                         0146  
                                                                               
-        
+;;Patch to not uppercase characters between single quotes                     
+STRNGX: jp      z,STRNG           ;; Special Handling for Double Quote        0147  ld      a,(de)     
+                                  ;;                                          0148  or      a          
+                                  ;;                                          0149  jp      z,XBASIC   
+        cp      $27               ;;                                          014A
+                                  ;;                                          014B
+        jp      z,STRNG           ;; Do the same for Single Quote             014C  cp      (hl)    
+                                  ;;                                          014D  jp      nz,READY
+                                  ;;                                          014E
+        jp      STRNGR            ;;                                          014F  dec     hl 
+                                  ;;                                          0150  inc     de 
+                                  ;;                                          0151  jr      EXTCHK
+        byte    $F4               ;;                                          0152  
+
 ;;INITFF is at 0153
 
 else                              ;;
@@ -420,7 +419,6 @@ MEMCHK: dec     hl                ;;Back up to last good address
         ld      de,CRTSIG         ;;Text to check signature against
 ;;Set Top of memory
         ld      sp,OLDSTK         ;;Top of of stack used to be here
-endif
 ;;Check for Extended BASIC
 EXTCHK: ld      a,(de)            ;;Get byte from signature
         or      a                 ;;Did we reach a terminator?
@@ -430,6 +428,7 @@ EXTCHK: ld      a,(de)            ;;Get byte from signature
         dec     hl                ;;Move backward in Extended BASIC
         inc     de                ;;and forward in test signature
         jr      EXTCHK            ;;Compare next character
+endif
 ;;Initialize I/O Port 255
 INITFF: ld      a,r               ;;Read random number from Refresh Register
         rla                       ;;Rotate left
@@ -1025,8 +1024,8 @@ KLOOP:  ld      a,(hl)            ;GET CHARACTER FROM BUF
         jp      z,STUFFH          ;JUST STUFF AWAY
         ld      b,a               ;SETUP B WITH A QUOTE IF IT IS A STRING
         cp      '"'               ;QUOTE SIGN?
-        jp      z,STRNG           ;YES, GO TO SPECIAL STRING HANDLING
-        or      a                 ;END OF LINE?
+        jp      STRNGX            ;;Patch to handle both " and '
+STRNGR: or      a                 ;END OF LINE?
         jp      z,CRDONE          ;YES, DONE CRUNCHING
         ld      a,(DORES)         ;IN DATA STATEMENT AND NO CRUNCH?
         or      a
@@ -2134,38 +2133,6 @@ USRDO:  call    FRCINT            ;;Convert Argument to Int in DE             0B
         jp      (IX)              ;;Jump to it                                0B86  pop     hl
                                   ;;                                          0B87  ret
                                   
-ifdef fastbltu
-;; Code Change: Do the Block Transfer and return same values as original BLTU routine
-;;; Replaces Deprecated Routine: PROMEM - 10 Bytes
-BLTUDO: inc     bc                ;;6    Byte Count                  PROMEM:  0B88 push    hl
-        lddr                      ;;16+5 Do the Memory Move                   0B89 ld      hl,$2FFF       
-                                  ;;4	  BC = End Destination                  0B8A
-        ld      b,d               ;;                                          0B8B
-        ld      c,e               ;;4	                                        0B8C
-        inc     bc                ;;6	  Bump it up                            0B8D rst     COMPAR  
-        inc     hl                ;;6	  Bump up End Source                    0B8E pop     hl      
-        ld      d,h               ;;4	  Copy into DE                          0B8F jp      nc,FCERR
-        ld      e,l               ;;4	                                        0B90 
-        ret                       ;;10	                                      0B91
-                           
-;;; Code Change: Replace Loop with LDDR
-;;; Original Code: 46 + byte count * 54 cycles - 207 millseconds per kilobyte (57780 * 3.579545 / 1000) 
-;;; Updated Code: 113 + byte count * 21 cycles - 85 millseconds per kilobyte (23877 * 3.579545 / 1000) 
-BLTU:   call    REASON            ;[M80] CHECK DESTINATION TO MAKE SURE STACK WON'T BE OVERRUN
-;;Execute Block Transfer
-;;REASON returned with Carry Set which will be used in the cause sbc hl,de to 
-BLTUC:  push    bc                ; +11 [M80] EXCHANGE [B,C] AND [H,L]        Original Code      +11      Setup: 40 cycles
-        ex      (sp),hl           ;;+19 HL = Source, Stack = Destination                         +19  
-        ld      a,l               ;;+4  Stack = Source, Destination           pop     bc         +10              
-        sub     a,e               ;;+4  BC = HL - DE (Byte Delta)     BLTLOP: rst     COMPAR     +11      Copy Loop: 54 cycles
-        ld      c,a               ;;+4                                        ld      a,(hl)     +7  
-        ld      a,h               ;;+4  BC = Number of Bytes                  ld      (bc),a     +7  
-        sbc     a,d               ;;+4                                        ret     z          +5+6     Finish: 6 cycles
-        ld      b,a               ;;+4  HL = Source                           dec     bc         +6  
-        jp      BLTUDO            ;;+10 Do the LDIR                           dec     hl         +6  
-                                  ;;                                          jr      BLTLOP     +12  
-                                  ;;Setup: 80 cycles 
-else
 PROMEM: push    hl                ;
         ld      hl,$2FFF          ;
         rst     COMPAR            ;{M80} IS [D.E] LESS THAN 3000H?
@@ -2185,7 +2152,6 @@ BLTLOP: rst     COMPAR            ;[M80] SEE IF WE ARE DONE
         dec     bc                ;
         dec     hl                ;[M80] BACKUP FOR NEXT GUY
         jr      BLTLOP            ;
-endif
 
 ;;Check Stack Size
 GETSTK: push    hl                ;[M80] SAVE [H,L]
@@ -5449,7 +5415,7 @@ KEYALP: rl      b                 ;;Rotate Bits Left                          1F
                                   ;;                                          1F1F ld      ix,SHFTAB-1
         jr      nz,KEYALP         ;;Loopif not first table                    1F10
                                   ;;                                          1F11
-KEYLUX: ld      ix,(KEYADR)       ;;Point to Start of Lookup Tables           1F12
+KEYLUX: ld      ix,KEYADR-1        ;;Point to Start of Lookup Tables           1F12
                                   ;;                                          1F13 jr      z,KEYLUP
                                   ;;                                          1F14
                                   ;;                                          1F15 ld      ix,KEYTAB-1
