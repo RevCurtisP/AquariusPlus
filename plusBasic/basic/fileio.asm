@@ -219,7 +219,7 @@ ST_DIR:
 .no_dir:
     ; aaaaaaaa bbbbbbbb cccccccc dddddddd
 
-     call    esp_get_long
+    call    esp_get_long
 
     ; Megabytes range?
     or      a
@@ -252,8 +252,7 @@ ST_DIR:
     ld      h, a
     ld      a,b
     ld      l, a
-    ld      b, 2
-    call    srlh_rrl_out
+    call    srlh_rrl_out2
     ld      a, 'K'
     rst     OUTCHR
     jr      .get_filename
@@ -261,9 +260,8 @@ ST_DIR:
     ; Megabytes range: AAAAAAAA BBBBbbbb cccccccc dddddddd
 .mb:
     ld      h,d
-    ld      h,e
-    ld      b, 4
-    call    srlh_rrl_out
+    ld      l,e
+    call    srlh_rrl_out4
     ld      a, 'M'
     rst     OUTCHR
     jr      .get_filename
@@ -340,10 +338,16 @@ print_a_2digits:
 ;-----------------------------------------------------------------------------
 
 ;Enter with B = Number of times to rotate
-srlh_rrl_out:
+srlh_rrl_out4:
     srl     h
     rr      l
-    djnz    srlh_rrl_out
+    srl     h
+    rr      l
+srlh_rrl_out2:
+    srl     h
+    rr      l
+    srl     h
+    rr      l
 
 print_hl_4digits:
     ld      e,'0'                

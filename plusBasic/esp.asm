@@ -193,9 +193,9 @@ esp_get_de:
 
 esp_get_bc:
     call    esp_get_byte       ; Read LSB
-    ld      c,a                   ; into E
+    ld      c,a                   ; into C
     call    esp_get_byte       ; Read MSB
-    ld      b,a                   ; into D
+    ld      b,a                   ; into B
     ret
 
 ;-----------------------------------------------------------------------------
@@ -216,10 +216,10 @@ esp_get_byte:
     in      a, (IO_ESPDATA)       ;+11	
  ;   pop     bc                    ;+10	
     ret                           ;+10	
-.timeout                          
-    ld      a,-9                  ;+7	
-    pop     bc                    ;+10	
-    ret                           ;+10	
+;.timeout                          
+;    ld      a,-9                  ;+7	
+;    pop     bc                    ;+10	
+;    ret                           ;+10	
 
 
 ;-----------------------------------------------------------------------------
@@ -244,6 +244,7 @@ esp_send_strdesc:
 ;         BC: Bytes Written
 ; Destroys: HL
 ;-----------------------------------------------------------------------------
+
 esp_send_string: 
     call    esp_send_bytes        ; Send Command String  
     xor     a 
@@ -379,7 +380,8 @@ esp_get_datetime:
     xor     a     
     call    esp_send_byte         ; Response Type ($00)
     call    esp_get_result
-    ret     m                     ; Fall into esp_read_to_buff
+    ret     m                     
+    jp      esp_read_to_buff      
 
 ;-----------------------------------------------------------------------------
 ; esp_error
