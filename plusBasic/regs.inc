@@ -166,7 +166,9 @@ BYTPRT      equ $0135   ; (S3BASIC) Print A as Decimal Number
 UPRCMP      equ $013B   ; (S3BASIC) Compare B byets of uppercased String [HL] to String [DE] 
 INITFF:     equ $0153   ; Initialize I/O Port 255
 TIMSTR      equ $0E2F   ; Create tempory string from null-terminated string
+REDDY       equ $036E   ; Text "Ok"
 SNERR:      equ $03C4   ; Syntax error
+OVERR       equ $03D3   ; Overflow error
 MOERR:      equ $03D6   ; Missing Operand error
 ERROR:      equ $03DB   ; Process error code, E = code (offset to 2 char error name)
 ERRFN1:     equ $03F4
@@ -198,6 +200,7 @@ CLEARC:     equ $0BCF
 STKINI:     equ $0BE5
 ;FRMINT         $0B7F   ; Deprecated in S3BASIC, use GETINT instead
 ISLETC:     equ $0CC6   ; Test for a letter
+STRINI      equ $0E50   ; Reserve space for new string and create descriptor
 STRLIT      equ $0E5F   ; Build descriptor for string litersl
 STRLTI      equ $0E60   ; Do STRLIT, without decrementing HL
 PUTNEW      equ $0E7E   ; Set Pointer to Temporary String
@@ -216,6 +219,7 @@ GETINT      equ $1AD0   ; Parse and Integer
 TTYCHR:     equ $1D72   ; Print character in A with pause/break at end of page
 TTYOUT:     equ $1D94   ; Print character in A
 TTYFIS:     equ $1DE7   ; Save Column and Position
+FLOATR      equ $14FB   ; Float signed number in B,A,D,E
 JMPINI:     equ $1FE1   ; Power Up/Reset Routine: Jumped to from RST 0
 PRNTIT:     equ $1FF2   ; Print copyright message and return
 

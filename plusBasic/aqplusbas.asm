@@ -187,7 +187,7 @@ _coldboot:
     jr      .print_version
 .print_done:
     call    STRPRI
-    db " PlusBasic v0.6", 0
+    db " PlusBasic v0.7", 0
     call    CRDO
     call    CRDO
 
@@ -365,6 +365,18 @@ buff_to_temp_string:
     call    STRLIT
     ret
 
+FLOAT_BC:
+    ld      d,b                   ;  Copy into DE
+    ld      e,c                   ;  
+FLOAT_DE:
+    push    hl
+    xor     a                     ; Set HO to 0
+    ld      (VALTYP),a            ; Force Return Type to numeric
+    ld      b,$98                 ; Exponent = 2^24
+    call    FLOATR                ; Float It
+    pop     hl
+    ret
+
 ;-----------------------------------------------------------------------------
 ; bas_read_to_buff - Read String from ESP to BASIC String Buffer
 ; Input: IX: DOS or ESP routine to call
@@ -449,17 +461,7 @@ byte_to_hex:
     inc     hl
     ret
 
-FLOAT_BC:
-    ld      d,b                   ;  Copy into DE
-    ld      e,c                   ;  
-FLOAT_DE:
-    push    hl
-    xor     a                     ; Set HO to 0
-    ld      (VALTYP),a            ; Force Return Type to numeric
-    ld      b,$98                 ; Exponent = 2^24
-    call    FLOATR                ; Float It
-    pop     hl
-    ret
+
 
 ;-----------------------------------------------------------------------------
 ; DOS routines
@@ -495,7 +497,7 @@ hook_table:                     ; ## caller   addr  performing function
     dw      HOOK6+1             ;  6 PRINT    07BC  Execute PRINT Statement
     dw      HOOK7+1             ;  7 FINPRT   0866  End of PRINT Statement
     dw      HOOK8+1             ;  8 TRMNOK   0880  Improperly Formatted INPUT or DATA handler
-    dw      HOOK9+1             ;  9 EVAL     09FD  Evaluate Number or String
+    dw      eval_extension      ;  9 EVAL     09FD  Evaluate Number or String
     dw      keyword_to_token    ; 10 NOTGOS   0536  Converting Keyword to Token
     dw      HOOK11+1            ; 11 CLEAR    0CCD  Execute CLEAR Statement
     dw      HOOK12+1            ; 12 SCRTCH   0BBE  Execute NEW Statement
@@ -568,6 +570,7 @@ fast_hook_handler:
     include "dispatch.asm"      ; Statement/Function dispatch tables and routiness
     include "tokens.asm"        ; Keyword list and tokenize/expand routines-
     include "enhanced.asm"      ; Enhanced stardard BASIC statements and functions
+    include "evalext.asm"       ; EVAL extension - hook 9 
     include "extended.asm"      ; Extended BASIC statements and functions
     include "fileio.asm"        ; Disk and File I/O statements and functions
     include "plus.asm"          ; plusBASIC unique statements and functions

@@ -41,7 +41,7 @@ TBLCMDS:
 ;-----------------------------------------------------------------------------
 TOTK      equ     $A1
 TIMETK    equ     $D3    
-
+CDTK      equ     $E0
 
 ;;; Extended Error Message Table can go here
 
