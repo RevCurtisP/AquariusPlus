@@ -384,9 +384,10 @@ print_hl_4digits:
 ;-----------------------------------------------------------------------------
 ; LOAD
 ;
-; LOAD "filename"        Load BASIC program
-; LOAD "filename",12345  Load file as raw binary to address 12345
-; LOAD "filename",*a     Load data into numeric array a
+; LOAD "filename"                 Load BASIC program
+; LOAD "filename",address         Load file as raw binary to address
+; LOAD "filename",@page,address   Load file as raw binary to address in page
+; LOAD "filename",*a              Load data into numeric array a
 ;-----------------------------------------------------------------------------
 ST_LOAD:
     ; Close any open files
@@ -411,8 +412,8 @@ ST_LOAD:
     call    FRCINT                  ; Convert to 16 bit integer
     ld      (BINSTART), de
     pop     af                      ; Get back page
-    jp      nz,page_load_binary
-    jp      load_binary
+    jp      nz,dos_load_paged
+    jp      dos_load_binary
 
     ; Load into array
 .array:
@@ -449,9 +450,9 @@ load_basic_program:
 
     ; Back up to last line of BASIC program
 .loop:
-    dec     hl
+    dec     hl                    ; Back up to last byte loaded
     xor     a
-    cp      (hl)
+    cp      (hl)                  ; Back up to last non-zero byte
     jr      z, .loop
     inc     hl
 
@@ -461,7 +462,7 @@ load_basic_program:
     inc     hl
 
     ; Set end of BASIC program
-    ld      (VARTAB), hl
+    ld      (VARTAB), de
 
     ; Initialize BASIC program
     call    init_basic_program
@@ -511,14 +512,34 @@ init_basic_program:
     ; Clear locator flag
     ld      (SUBFLG), a
 
-    ; Clear array pointer???
+    ; Clear Variable Name
     ld      (VARNAM), hl
-
 
     ; Fix up next line addresses in loaded BASIC program
 .link_lines:
     ld      de, (TXTTAB)        ; DE = start of BASIC program
-    jp      CHEAD
+.next_line:
+    ld      h, d
+    ld      l, e                ; HL = DE
+    ld      a, (hl)
+    inc     hl                  ; Test nextline address
+    or      (hl)
+    jr      z, .init_done       ; If $0000 then done
+    inc     hl
+    inc     hl                  ; Skip line number
+    inc     hl
+    xor     a                   ; End of line = $00
+.find_eol:
+    cp      (hl)                ; Search for end of line
+    inc     hl
+    jr      nz, .find_eol
+    ex      de, hl              ; HL = current line, DE = next line
+    ld      (hl), e
+    inc     hl                  ; Set address of next line
+    ld      (hl), d
+    jr      .next_line
+.init_done:
+    ret
 
 ;-----------------------------------------------------------------------------
 ; Load CAQ array file in File into BINSTART (BINLEN length)
@@ -613,7 +634,7 @@ run_file:
     ld      b,4                   ; Comparing 4 bytes
     call    UPRCMP                ; Compare Them
     pop     hl                    ; Get String Descriptor
-    jp      z, load_rom
+    jp      z, dos_load_rom
 
 .load_basic:
     pop     bc                    ; Discard Text Pointer
@@ -626,9 +647,10 @@ run_file:
 ;-----------------------------------------------------------------------------
 ; SAVE
 ;
-; SAVE "filename"             Save BASIC program
-; SAVE "filename",addr,len    Save binary data
-; SAVE "filename",*a          Save numeric array a
+; SAVE "filename"                 Save BASIC program
+; SAVE "filename",addr,len        Save binary data
+; SAVE "filename",@page,addr,len  Save paged binary data
+; SAVE "filename",*a              Save numeric array a
 ;-----------------------------------------------------------------------------
 ST_SAVE:
     ; Close any open files
@@ -665,8 +687,8 @@ ST_SAVE:
     call    FRCINT                  ; Convert to 16 bit integer
     ld      (BINLEN), de
     pop     af                      ; Get back page
-    jp      nz,page_save_binary
-    jp      save_binary
+    jp      nz,dos_save_paged
+    jp      dos_save_binary
 
 
     ; Save array

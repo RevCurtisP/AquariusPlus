@@ -113,12 +113,12 @@ esp_read_to_buff:
 
 ;-----------------------------------------------------------------------------
 ; Read bytes
-; Input:  DE: destination address
-;         BC: number of bytes to read
-; Output: DE: next address (start address if no bytes read)
-;         BC: number of bytes actually read
-;
-; Clobbered registers: A, HL, DE
+; Input:  BC: number of bytes to read
+;         DE: destination address
+; Output: BC: number of bytes actually read
+;      DE,HL: next address (start address if no bytes read)
+;         
+; Clobbered registers: A
 ;-----------------------------------------------------------------------------
 esp_read_bytes:
     ld      a, ESPCMD_READ
@@ -152,6 +152,8 @@ esp_read_bytes:
     jr      .loop
 
 .done:
+    ld      h,d
+    ld      l,e
     pop     bc
     ret
 

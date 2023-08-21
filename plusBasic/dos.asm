@@ -101,7 +101,7 @@ page_set_binvars:
 ;        HL: String descriptor address
 ; Clobbered registers: A, DE
 ;-----------------------------------------------------------------------------
-page_load_binary:
+dos_load_paged:
     call    page_set_binvars
 
 ;-----------------------------------------------------------------------------
@@ -109,7 +109,7 @@ page_load_binary:
 ; Input: HL: String descriptor address
 ; Clobbered registers: A, DE
 ;-----------------------------------------------------------------------------
-load_binary:
+dos_load_binary:
     ex      (sp),hl               ; HL = String Descriptor, Stack = Text Pointer
     ; Load file into memory
     call    esp_open
@@ -128,13 +128,13 @@ load_binary:
 ;        HL: String descriptor address
 ; Clobbered registers: A, DE
 ;-----------------------------------------------------------------------------
-page_save_binary:
+dos_save_paged:
     call    page_set_binvars
 
 ;-----------------------------------------------------------------------------
 ; Save binary
 ;-----------------------------------------------------------------------------
-save_binary:
+dos_save_binary:
     ex      (sp),hl               ; HL = String Descriptor, Stack = Text Pointer
 
     ; Create file
@@ -154,7 +154,7 @@ save_binary:
 ;-----------------------------------------------------------------------------
 ; Load ROM file
 ;-----------------------------------------------------------------------------
-load_rom:
+dos_load_rom:
     ; Open file
     call    esp_open
 
@@ -180,46 +180,5 @@ load_rom:
 .ok:
     call    esp_close_all
 
-descramble_rom:
-    ; Determine scramble value
-    xor     a
-    ld      hl, $E003
-    ld      b, 12
-.loop:
-    add     a, (hl)
-    inc     hl
-    add     a, b
-    dec     b
-    jr      nz, .loop
-    xor     (hl)
-    ld      b, a
-
-    ; Descramble ROM
-    ld      hl, $C000
-    ld      de, $4000
-.loop2:
-    ld      a, b
-    xor     (hl)
-    ld      (hl), a
-
-    inc     hl
-    dec     de
-    ld      a, d
-    or      e
-    jr      nz, .loop2
-
-    ; Reinit banks
-    ld      a, 33
-    out     (IO_BANK1), a
-    ld      a, 34
-    out     (IO_BANK2), a
-
-    ; Bank3 -> readonly
-    ld      a, 35 | BANK_READONLY
-    out     (IO_BANK3), a
-
-    ; Reinit stack pointer
-    ld      sp, $38A0
-
-    ; Start ROM
-    jp      $E010
+    ; Descramble and start ROM
+    jp      descramble_rom

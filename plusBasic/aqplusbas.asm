@@ -187,7 +187,7 @@ _coldboot:
     jr      .print_version
 .print_done:
     call    STRPRI
-    db " PlusBasic v0.7a", 0
+    db " PlusBasic v0.7d", 0
     call    CRDO
     call    CRDO
 
@@ -216,8 +216,49 @@ _start_cart:
     ld      a, 35
     out     (IO_BANK3), a
 
-    ; Descramble and start ROM
-    jp      descramble_rom
+descramble_rom:
+    ; Determine scramble value
+    xor     a
+    ld      hl, $E003
+    ld      b, 12
+.loop:
+    add     a, (hl)
+    inc     hl
+    add     a, b
+    dec     b
+    jr      nz, .loop
+    xor     (hl)
+    ld      b, a
+
+    ; Descramble ROM
+    ld      hl, $C000
+    ld      de, $4000
+.loop2:
+    ld      a, b
+    xor     (hl)
+    ld      (hl), a
+
+    inc     hl
+    dec     de
+    ld      a, d
+    or      e
+    jr      nz, .loop2
+
+    ; Reinit banks
+    ld      a, 33
+    out     (IO_BANK1), a
+    ld      a, 34
+    out     (IO_BANK2), a
+
+    ; Bank3 -> readonly
+    ld      a, 35 | BANK_READONLY
+    out     (IO_BANK3), a
+
+    ; Reinit stack pointer
+    ld      sp, $38A0
+
+    ; Start ROM
+    jp      $E010
 
 ;-----------------------------------------------------------------------------
 ; VBLANK Interrupt Handler
@@ -473,7 +514,7 @@ byte_to_hex:
 ;-----------------------------------------------------------------------------
     include "esp.asm"
 
-free_rom = $2C00 - $
+free_rom_2k = $2C00 - $
 
 ;------------------------------------------------------------------------------
 ; Hook, Dispatch Tables and Handlers
@@ -493,7 +534,7 @@ hook_table:                     ; ## caller   addr  performing function
     dw      HOOK2+1             ;  2 READY    0402  BASIC command line (immediate mode)
     dw      HOOK3+1             ;  3 EDENT    0428  Save Tokenized Line  
     dw      HOOK4+1             ;  4 FINI     0480  Finish Adding/Removing Line or Loading Program
-    dw      set_chead_return    ;  5 LINKER   0485  Update BASIC Program Line Links
+    dw      HOOK5+1             ;  5 LINKER   0485  Update BASIC Program Line Links
     dw      HOOK6+1             ;  6 PRINT    07BC  Execute PRINT Statement
     dw      HOOK7+1             ;  7 FINPRT   0866  End of PRINT Statement
     dw      HOOK8+1             ;  8 TRMNOK   0880  Improperly Formatted INPUT or DATA handler
@@ -574,6 +615,8 @@ fast_hook_handler:
     include "extended.asm"      ; Extended BASIC statements and functions
     include "fileio.asm"        ; Disk and File I/O statements and functions
     include "plus.asm"          ; plusBASIC unique statements and functions
+
+free_rom_16k = $10000 - $
 
     end
 
