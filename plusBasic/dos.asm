@@ -89,11 +89,6 @@ dos_get_filestat:
 .done
     ret
 
-page_set_binvars:
-    ld      de,(BINSTART)
-    call    page_set_address
-    ld      (BINSTART),de
-    ret
 
 ;-----------------------------------------------------------------------------
 ; Load binary data from File into BINSTART in page A
@@ -102,7 +97,9 @@ page_set_binvars:
 ; Clobbered registers: A, DE
 ;-----------------------------------------------------------------------------
 dos_load_paged:
-    call    page_set_binvars
+    ld      de,(BINSTART)
+    call    page_set4read_coerce
+    ld      (BINSTART),de
 
 ;-----------------------------------------------------------------------------
 ; Load binary data from File into BINSTART
@@ -129,7 +126,10 @@ dos_load_binary:
 ; Clobbered registers: A, DE
 ;-----------------------------------------------------------------------------
 dos_save_paged:
-    call    page_set_binvars
+    ld      de,(BINSTART)
+    call    page_set4write_coerce
+    ld      (BINSTART),de
+    ret
 
 ;-----------------------------------------------------------------------------
 ; Save binary

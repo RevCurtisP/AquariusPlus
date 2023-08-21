@@ -168,8 +168,13 @@ INITFF:     equ $0153   ; Initialize I/O Port 255
 TIMSTR      equ $0E2F   ; Create tempory string from null-terminated string
 REDDY       equ $036E   ; Text "Ok"
 SNERR:      equ $03C4   ; Syntax error
-OVERR       equ $03D3   ; Overflow error
+DV0ERR:     equ $03C7   ; Division by zero error
+NFERR:      equ $03CA   ; Next without for error
+DDERR:      equ $03CD   ; redimensioned array error
+UFERR:      equ $03D0   ; Undefined function error
+OVERR:      equ $03D3   ; Overflow Error
 MOERR:      equ $03D6   ; Missing Operand error
+TMERR:      equ $03D9   ; Type mismatch error
 ERROR:      equ $03DB   ; Process error code, E = code (offset to 2 char error name)
 ERRFN1:     equ $03F4
 READY:      equ $0402

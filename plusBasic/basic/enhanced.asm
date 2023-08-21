@@ -2,7 +2,7 @@
 ; Enhanced BASIC Statements and Functions
 ;======================================================================================
 
-ST_POKE
+ST_POKE:
     cp      '!'                   ; If POKE!
     jr      z,.pokeword           ;   Poke a word
     call    parse_page_arg        ; Parse page
@@ -14,7 +14,7 @@ ST_POKE
     ld      c,a                   ; and put into C
     pop     de                    ; Get address
     pop     af                    ; Get page
-    jp      c,page_write_byte     ; If page specified, write to it
+    jr      c,.write_paged_byte   ; If page specified, write to it
     ld      a,c                   ; Write byte
     ld      (de),a                ; to address
     ret
@@ -29,14 +29,24 @@ ST_POKE
     ld      b,d                       
     ld      c,e                   ;   
     pop     de                    ; Get address
-    pop     af                    ; Get page
-    jp      c,page_write_word     ; If page specified, write to it
-    ld      a,c                   ; Write byte
-    ld      (de),a                ; to address
+    pop     af                    ; Get page number
+    jr      c,.write_paged_word   ; If page specified, write to it
+    ld      a,c                   ; Get LSB
+    ld      (de),a                ; Write to address
     inc     de
-    ld      a,b                   ; Write byte
-    ld      (de),a                ; to address
+    ld      a,b                   ; Get MSV
+    ld      (de),a                ; Write to address
     ret
+
+.write_paged_byte:
+    call    page_write_byte     ; If page specified, write to it
+    jp      z,FCERR             ; FC error if illegal page
+    ret
+
+.write_paged_word  
+    call    page_write_word       ; If page specified, write to it
+    jp      z,FCERR               ; FC error if illegal page
+    jp      c,OVERR               ; Return overflow error if end of RAM 
     ret
     
 FN_PEEK:
@@ -52,13 +62,14 @@ FN_PEEK:
     push    hl                    ; Save text pointer
     ld      bc,LABBCK             ; Return address for SNGFLT
     push    bc
-    jp      c,.get_page_byte      ; If not specified
+    jp      c,.get_page_byte      ; If page not specified
     ld      a,(de)                ;   Get Byte
 .float_it:
     jp      SNGFLT                ; and float it
 
 .get_page_byte:
     call    page_read_byte        ; Read byte into C
+    jp      z,FCERR               ; FC error if illegal page
     ld      a,c
     jr      .float_it
 
@@ -78,14 +89,18 @@ FN_PEEK:
     ld      c,a
     inc     de
     ld      a,(de)
-    jr      .float_it
+    ld      b,c
+    jp      FLOAT_DE
+
 .read_page_word
     call    page_read_word
-    ld      a,b 
-    jp      GIVINT
+    jp      z,FCERR               ; FC error if illegal page
+    jp      c,OVERR               ; Return overflow error if end of RAM 
+    jp      FLOAT_BC              ; Float word and return
 
 ; Check for and parse @page,
-; Output: A, E = Page (0 if not specified)
+; Output: A, E = Page number`
+;  Carry: Set if page specified
 parse_page_arg:
     cp      '@'                   
     jr      nz,.notat             ; If page prefix

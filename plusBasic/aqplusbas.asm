@@ -187,7 +187,7 @@ _coldboot:
     jr      .print_version
 .print_done:
     call    STRPRI
-    db " PlusBasic v0.7d", 0
+    db " PlusBasic v0.7f", 0
     call    CRDO
     call    CRDO
 
@@ -317,95 +317,6 @@ statement_ret:
     ret                           ; Return to NEWSTT
     
 
-;-----------------------------------------------------------------------------
-; Paged Memory Management routines
-;-----------------------------------------------------------------------------
-
-; Input: A=Page, DE=Address
-; Output: C = Byte
-; Clobbered: A
-page_read_byte:
-    call    page_set_address
-    ld      a,(de)
-    ld      c,a
-    jr      page_restore_plus
-
-; Input: A: Page, DE: Address
-; Output: BC: Word
-; Clobbered: A
-page_read_word:
-    call    page_set_address
-    ld      a,(de)
-    ld      c,a
-    inc     de
-    ld      a,d
-    or      e 
-    call    z,page_next_address
-    ld      a,(de)
-    ld      b,a
-    dec     de                    ;Restore DE
-    jr      page_restore_plus
-
-
-; Input: A: Page, DE: Address, C: Byte
-page_write_byte:
-    call    page_set_address
-    ld      a,c
-    ld      (de),a
-    jr      page_restore_plus
-
-
-; Input: A: Page, DE: Address, BC: Word
-page_write_word:
-    call    page_set_address
-    ld      a,c
-    ld      (de),a
-    inc     de
-    ld      a,d
-    or      e 
-    call    z,page_next_address
-    ld      a,b
-    ld      (de),a
-    dec     de                    ;Restore DE
-
-page_restore_plus:
-    ld      a,plus_page
-    out     (IO_BANK3),a
-    ret
-
-
-; Bank in next page, Coerce address
-; Input: DE: Address
-; Output: DE: Coerced address
-; Clobbered: A
-page_next_address:
-    call    page_next
-
-; Bank in page, Coerce address
-; Input: A = Page, DE = Address
-; Output: DE= Coerced address
-; Clobbered: A
-page_set_address:
-    out     (IO_BANK3),a          ; Bank in Page
-    ld      a,d                   ; Address MSB
-    or      $C0                   ; Make 49152 - 65535
-    ld      d,a                   ; Put back
-    ret
-    
-; Bank in next page
-; Output: A: New page number
-; Clobbered: A
-page_next:
-    in      a,(IO_BANK3)
-    inc     a
-    out     (IO_BANK3),a
-    ret
-
-
-buff_to_temp_string:
-    call    STRLIT
-    ret
-
 FLOAT_BC:
     ld      d,b                   ;  Copy into DE
     ld      e,c                   ;  
@@ -502,6 +413,10 @@ byte_to_hex:
     inc     hl
     ret
 
+;-----------------------------------------------------------------------------
+; Paged memory routines
+;-----------------------------------------------------------------------------
+    include "paged.asm"
 
 
 ;-----------------------------------------------------------------------------
@@ -513,6 +428,13 @@ byte_to_hex:
 ; ESP routines
 ;-----------------------------------------------------------------------------
     include "esp.asm"
+
+;-----------------------------------------------------------------------------
+; Primitive debugger
+;-----------------------------------------------------------------------------
+    include "debug.asm"
+
+
 
 free_rom_2k = $2C00 - $
 
