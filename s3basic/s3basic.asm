@@ -968,13 +968,7 @@ CHEAD:  ld      h,d               ;[H,L]=[D,E]
         ld      a,(hl)            ;[M80] SEE IF END OF CHAIN
         inc     hl                ;[M80] BUMP POINTER
         or      (hl)              ;[M80] 2ND BYTE
-ifdef aqplus
-;;;Code Change: Make CHEAD callable
-;;;For this to work, Hook 5 must push aa return address onto the stack
-        jp      z,POPHRT+1        ;RET
-else
         jp      z,MAIN            ;
-endif
         inc     hl                ;[M80] FIX HL TO START OF TEXT
         inc     hl                ;
         inc     hl                ;
@@ -3022,9 +3016,9 @@ DIMCON: dec     hl                ;[M80] SEE IF COMMA ENDED THIS VARIABLE
         rst     SYNCHK            ;
         byte    ','               ;[M80] MUST BE COMMA
 ;{M80} DIMENSION
-DIM:    ld      bc,DIMCON       ;[M80] PLACE TO COME BACK TO
-        push    bc              ;
-        byte    $F6             ;;"OR" to skip next instruction
+DIM:    ld      bc,DIMCON         ;[M80] PLACE TO COME BACK TO
+        push    bc                ;
+        byte    $F6               ;;"OR" to skip next instruction
 ;{M80} VARIABLE SEARCHING
 ;;Get Pointer to Variable
 PTRGET: xor      a                ;[M80] MAKE [A]=0
