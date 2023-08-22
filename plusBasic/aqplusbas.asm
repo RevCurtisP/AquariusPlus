@@ -187,7 +187,7 @@ _coldboot:
     jr      .print_version
 .print_done:
     call    STRPRI
-    db " PlusBasic v0.7f", 0
+    db " PlusBasic v0.7g", 0
     call    CRDO
     call    CRDO
 

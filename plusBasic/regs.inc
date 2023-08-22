@@ -186,6 +186,7 @@ NEWSTT:     equ $062C
 CHRGT2      equ $066C   ; Get Current Character and Set Flags
 FRCINT:     equ $0682   ; Convert fp number to 16 bit signed integer in DE
 FCERR:      equ $0697   ; Function call error
+IQERR       equ FCERR   ; Illegal quantity error (future expansion)
 RUNC2:      equ $06DB
 FRMNUM:     equ $0972   ; Evaluate numeric expression
 CHKNUM:     equ $0975   ; Error if evaluated expression not a number
