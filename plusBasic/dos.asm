@@ -92,17 +92,22 @@ dos_get_filestat:
 
 
 ;-----------------------------------------------------------------------------
-; Load binary data from File into BINSTART in page A
+; Load paged binary data from File into BINSTART in page A
 ; Input: A: Page
 ;        HL: String descriptor address
 ; Clobbered registers: A, DE
 ;-----------------------------------------------------------------------------
 dos_load_paged:
-    ld      de,(BINSTART)
-    call    page_set4read_coerce
-    jp      z,page_restore_plus     ; Return Illegal Page Error
-    ld      (BINSTART),de
-
+    push    af                    
+    call    esp_open
+    pop     af
+    ld      de, (BINSTART)
+    ld      bc, $FFFF
+    call    esp_read_paged
+    push    af
+    call    esp_close_all
+    pop     af
+    ret
 
 ;-----------------------------------------------------------------------------
 ; Load binary data from File into BINSTART
@@ -115,7 +120,6 @@ dos_load_binary:
     ld      bc, $FFFF
     call    esp_read_bytes
     call    esp_close_all
-    call    page_restore_plus
     or      $FF                   ; Clear zero and carry flags
     ret
 
@@ -128,10 +132,16 @@ dos_load_binary:
 ; Clobbered registers: A, DE
 ;-----------------------------------------------------------------------------
 dos_save_paged:
-    ld      de,(BINSTART)
-    call    page_set4write_coerce
-    jp      z,page_restore_plus     ; Return Illegal Page Error
-    ld      (BINSTART),de
+    push    af                    
+    call    esp_create
+    pop     af
+    ld      de, (BINSTART)
+    ld      bc, (BINLEN)
+    call    esp_write_paged
+    push    af
+    call    esp_close_all
+    pop     af
+    ret
 
 ;-----------------------------------------------------------------------------
 ; Save binary
@@ -147,7 +157,6 @@ dos_save_binary:
 
     ; Close file
     call    esp_close_all
-    call    page_restore_plus
     or      $FF                   ; Clear zero and carry flags
     ret
 

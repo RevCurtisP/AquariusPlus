@@ -140,7 +140,7 @@ esp_read_bytes:
     push    bc
 
 .loop:
-    ; Done reading? (DE=0)
+    ; Done reading? (BC=0)
     ld      a, b
     or      a, c
     jr      z, .done
@@ -152,10 +152,73 @@ esp_read_bytes:
     jr      .loop
 
 .done:
-    ld      h,d
+    ld      h,d                   ; Return end address in DE and HL
     ld      l,e
     pop     bc
     ret
+
+
+;-----------------------------------------------------------------------------
+; Read paged bytes
+; Input:   A: page
+;         BC: number of bytes to read
+;         DE: destination address
+; Output: BC: number of bytes actually read
+;      DE,HL: next address (start address if no bytes read)
+;         
+; Clobbered registers: A
+;-----------------------------------------------------------------------------
+esp_read_paged:
+    call    page_set4write_coerce
+    jp      z,page_restore_plus  ; Return if illegal page
+
+    ld      a, ESPCMD_READ
+    call    esp_cmd
+
+    ; Send file descriptor
+    xor     a
+    call    esp_send_byte
+
+    ; Send read size
+    call    esp_send_bc
+    
+    ; Get result
+    call    esp_get_result
+
+    ; Get number of bytes actual read
+    call    esp_get_bc
+
+    push    bc
+
+.loop:
+    ; Done reading? (BC=0)
+    ld      a, b
+    or      a, c
+    jr      z, .done
+
+    call    esp_get_byte
+    ld      (de), a
+    inc     de
+    ld      a,d
+    or      a,e
+    jr      nz,.not_end
+    call    page_next_address
+    jr      c,.error              ; Return if overflow
+.not_end
+    dec     bc
+    jr      .loop
+
+.done:
+    
+    ld      h,a
+    or      $FF                   ; Clear zero and carry flags
+    ld      a,h
+    ld      h,d                   ; Return end address in DE and HL
+    ld      l,e
+.error
+    pop     bc
+    jp      page_restore_plus     ; Restore original page
+
 
 ;-----------------------------------------------------------------------------
 ; Create file from string descriptor in HL
@@ -294,7 +357,7 @@ esp_send_bytes:
     push    bc
 
 .loop:
-    ; Done sending? (DE=0)
+    ; Done sending? (BC=0)
     ld      a, b
     or      a, c
     jr      z, .done
@@ -308,6 +371,63 @@ esp_send_bytes:
 .done:
     pop     bc
     ret
+
+;-----------------------------------------------------------------------------
+; Write paged bytes
+; Input:   A: page
+;         DE: source address
+;         BC: number of bytes to write
+; Output: DE: next address
+;         BC: number of bytes actually written
+;
+; Clobbered registers: A, HL, DE
+;-----------------------------------------------------------------------------
+esp_write_paged:
+    call    page_set4read_coerce
+    jp      z,page_restore_plus  ; Return if illegal page
+    ld      a, ESPCMD_WRITE
+    call    esp_cmd
+
+    ; Send file descriptor
+    xor     a
+    call    esp_send_byte
+
+    ; Send write size
+    call    esp_send_bc
+
+    ; Send bytes
+
+.loop:
+    ; Done sending? (BC=0)
+    ld      a, b
+    or      a, c
+    jr      z, .done
+
+    ld      a, (de)
+    call    esp_send_byte
+    inc     de
+    ld      a,d
+    or      a,e
+    jr      nz,.not_end
+    call    page_next_address
+    jr      c,.error              ; Return if overflow
+.not_end
+    dec     bc
+    jr      .loop
+
+.done:
+
+    ; Get result
+    call    esp_get_result
+
+    ; Get number of bytes actual written
+    call    esp_get_bc
+
+    ld      h,a
+    or      $FF                   ; Clear zero and carry flags
+    ld      a,h
+.error
+    jp      page_restore_plus     ; Restore original page
 
 ;-----------------------------------------------------------------------------
 ; Write 16-bit word in BC to ESP32
