@@ -59,7 +59,7 @@ dos_get_cwd:
 dos_rename_file:
     push    de                    ; Save new name descriptor
     ld      a, ESPCMD_RENAME      ; Set ESP Command
-    call    esp_cmd               ; Issue ESP command and send old name
+    call    esp_cmd               ; Issue ESP command 
     call    esp_send_strdesc      ; Send old name    
     pop     hl                    ; HL = new name descriptor
     call    esp_send_strdesc      ; Send new name
@@ -73,9 +73,10 @@ dos_rename_file:
 ; Clobbered: BC, DE
 ;-----------------------------------------------------------------------------
 dos_get_filestat:
-    ld      a, ESPCMD_STAT       ; Set ESP Command
-    jp      esp_cmd_string        ; Issue ESP command
+    ld      a, ESPCMD_STAT        ; Set ESP Command
+    call    esp_cmd               ; Issue ESP command 
     jp      m,.done               ; Return if Error
+    call    esp_send_string       ; Send filename  
     call    esp_get_de
     ld      (FILEDATE),de
     call    esp_get_de
@@ -99,7 +100,9 @@ dos_get_filestat:
 dos_load_paged:
     ld      de,(BINSTART)
     call    page_set4read_coerce
+    jp      z,page_restore_plus     ; Return Illegal Page Error
     ld      (BINSTART),de
+
 
 ;-----------------------------------------------------------------------------
 ; Load binary data from File into BINSTART
@@ -107,15 +110,13 @@ dos_load_paged:
 ; Clobbered registers: A, DE
 ;-----------------------------------------------------------------------------
 dos_load_binary:
-    ex      (sp),hl               ; HL = String Descriptor, Stack = Text Pointer
-    ; Load file into memory
     call    esp_open
     ld      de, (BINSTART)
     ld      bc, $FFFF
     call    esp_read_bytes
     call    esp_close_all
     call    page_restore_plus
-    pop     hl                    ; Get Back Text Pointer
+    or      $FF                   ; Clear zero and carry flags
     ret
 
 
@@ -123,20 +124,19 @@ dos_load_binary:
 ; Load binary data of length BINSIIZE from BINSTART in page A to file
 ; Input: A: Page
 ;        HL: String descriptor address
+; Uses: BINSTART: Load address
 ; Clobbered registers: A, DE
 ;-----------------------------------------------------------------------------
 dos_save_paged:
     ld      de,(BINSTART)
     call    page_set4write_coerce
+    jp      z,page_restore_plus     ; Return Illegal Page Error
     ld      (BINSTART),de
-    ret
 
 ;-----------------------------------------------------------------------------
 ; Save binary
 ;-----------------------------------------------------------------------------
 dos_save_binary:
-    ex      (sp),hl               ; HL = String Descriptor, Stack = Text Pointer
-
     ; Create file
     call    esp_create
 
@@ -148,7 +148,7 @@ dos_save_binary:
     ; Close file
     call    esp_close_all
     call    page_restore_plus
-    pop     hl
+    or      $FF                   ; Clear zero and carry flags
     ret
 
 ;-----------------------------------------------------------------------------

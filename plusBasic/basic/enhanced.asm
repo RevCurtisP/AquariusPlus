@@ -39,19 +39,22 @@ ST_POKE:
     ret
 
 .write_paged_byte:
-    call   _check_paged_address
+    call    check_paged_address
     call    page_write_byte     ; If page specified, write to it
     jp      z,IQERR             ; FC error if illegal page
     ret
 
 .write_paged_word  
-    call   _check_paged_address
+    call    check_paged_address   ; Verify pages addres is between 0 and 16383
     call    page_write_word       ; If page specified, write to it
     jp      z,IQERR               ; FC error if illegal page
     jp      c,OVERR               ; Return overflow error if end of RAM 
     ret
     
-_check_paged_address:
+;-----------------------------------------------------------------------------
+; Generate Illegal Quantity error if address in DE is not between 0 and 16383
+;-----------------------------------------------------------------------------
+check_paged_address:
     push    a                     ; Save Page
     ld      a,$C0
     and     d                     ; If address is not 0 - 16383
@@ -78,7 +81,7 @@ FN_PEEK:
     jp      SNGFLT                ; and float it
 
 .get_page_byte:
-    call   _check_paged_address
+    call    check_paged_address
     call    page_read_byte        ; Read byte into C
     jp      z,IQERR               ; FC error if illegal page
     ld      a,c
@@ -104,7 +107,7 @@ FN_PEEK:
     jp      FLOAT_DE
 
 .read_page_word
-    call   _check_paged_address
+    call    check_paged_address
     call    page_read_word
     jp      z,IQERR               ; FC error if illegal page
     jp      c,OVERR               ; Return overflow error if end of RAM 

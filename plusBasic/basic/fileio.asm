@@ -395,7 +395,8 @@ ST_LOAD:
 
     ; Get string parameter with path
     call    get_strdesc_arg        ; Get FileSpec pointer in HL
-    ex      (sp),hl               ; HL = Text Pointer, Stack = String Descriptor
+
+    ex      (sp),hl                 ; HL = Text Pointer, Stack = String Descriptor
 
     ; Check for second parameter
     call    CHRGT2
@@ -403,18 +404,33 @@ ST_LOAD:
     jr      nz, .basic              ; No parameter -> load as basic program
     rst     CHRGET
     cp      $AA                     ; Token for '*'
-    jr      z, .array               ; Array parameter -> load as array
+    jp      z, .array               ; Array parameter -> load as array
 
     ; Load as binary to address
     call    parse_page_arg          ; Check for page specifier
-    push    af                      ; Save it
+    push    af                      ; Stack = Page, String Descriptor
     call    FRMNUM                  ; Get number
     call    FRCINT                  ; Convert to 16 bit integer
     ld      (BINSTART), de
-    pop     af                      ; Get back page
-    jp      nz,dos_load_paged
-    jp      dos_load_binary
 
+    ; Get back page filespec
+    pop     af                      ; AF = Page, Stack = String Descriptor
+    ex      (sp),hl                 ; HL = String Descriptor, Stack = Text Pointer
+
+
+    jr      c,.load_paged
+    call    dos_load_binary
+    pop     hl                    ; Get Back Text Pointer
+    ret
+    
+.load_paged    
+    call    check_paged_address     ; Verify pages addres is between 0 and 16383
+    call    dos_load_paged
+    jp      z,IQERR
+    jp      c,OVERR
+    pop     hl
+    ret
+    
     ; Load into array
 .array:
     call    get_array_argument
@@ -624,7 +640,7 @@ run_file:
     call    STRADL                ; Get String Length in BC, Address in DE
     ld      a, c                  ; A = String Length
     cp      a, 5                  ; If less thsn 5
-    jr      c, .load_basic        ; Too short to have ROM extension
+    jr      c, .load_basic        ; Too short to ha3ve ROM extension
     sub     a, 4                  ; Position of last four characters of String
     ld      c, a
     ex      de,hl                 ; HL = String Address
@@ -665,13 +681,13 @@ ST_SAVE:
     jp      nz, save_basic_program
     rst     CHRGET
     cp      $AA                     ; Token for '*'
-    jr      z, .array               ; Array parameter -> save array
+    jp      z, .array               ; Array parameter -> save array
 
     ; Save binary data
 
     ; Get first parameter: address
     call    parse_page_arg          ; Check for page specifier
-    push    af                      ; Save it
+    push    af                      ; Stack = Page, String Descriptor
     call    FRMNUM                  ; Get number
     call    FRCINT                  ; Convert to 16 bit integer
     ld      (BINSTART), de
@@ -686,10 +702,24 @@ ST_SAVE:
     call    FRMNUM                  ; Get number
     call    FRCINT                  ; Convert to 16 bit integer
     ld      (BINLEN), de
-    pop     af                      ; Get back page
-    jp      nz,dos_save_paged
-    jp      dos_save_binary
 
+     ; Get back page filespec
+    pop     af                      ; AF = Page, Stack = String Descriptor
+    ex      (sp),hl                 ; HL = String Descriptor, Stack = Text Pointer
+
+    ; Do the save
+    jr      c,.save_paged
+    call    dos_save_binary
+    pop     hl
+    ret
+
+.save_paged
+    call    check_paged_address   ; Verify pages addres is between 0 and 16383
+    call    dos_save_paged
+    jp      z,IQERR
+    jp      c,OVERR
+    pop     hl
+    ret
 
     ; Save array
 .array:
