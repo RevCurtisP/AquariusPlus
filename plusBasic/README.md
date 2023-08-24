@@ -34,9 +34,11 @@ Based on and replaces Aquarius+ System ROM
 
 ## ToDo:
   - Make dos_create_dir and MKDIR use buffer in page 35
-  - Extricate dos code from statement code and make dos routines callable from assembly.
-  - Move BASIC statement and function code to ROM bank 1.
-  - Kernal/BIOS jump table. Jumps start at $FFED and go down from there.
+  - Move common code in esp__bytes and esp__paged into callable routines
+  - Move esp_open, esp_create, esp_close, esp_closeall and rename to dos_
+  - Kernal/BIOS jump table. Jumps start at $2100
+  - Update txt2bas.py and bas2txt.py
+  - Create USB-BASIC/MX-BASIC to plusBASIC conversion utility
   
 ## Proposed Additions and Enhancements
 
@@ -95,8 +97,8 @@ be the token for IN followed by the token for STR$.
 #### Miscellaneous
   
   - ARGS and ARGS$()
-  - DATE$ pseudo-variable
-  - TIME$ pseudo-variable
+    - ARGS$() will be a function instead of an array
+    - Argument strings will be stored in BASIC buffers page
   - VARPTR(variable)
 
 ### Enhancements to existing Statements and Functions

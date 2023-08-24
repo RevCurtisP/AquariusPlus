@@ -321,8 +321,7 @@ esp_send_string:
 ;         BC: number of bytes to write
 ; Output: DE: next address
 ;         BC: number of bytes actually written
-;
-; Clobbered registers: A, HL, DE
+; Clobbered registers: A, HL
 ;-----------------------------------------------------------------------------
 esp_write_bytes:
     ld      a, ESPCMD_WRITE
@@ -338,6 +337,46 @@ esp_write_bytes:
     ; Send bytes
     call    esp_send_bytes
 
+    ; Get result
+    call    esp_get_result
+
+    ; Get number of bytes actual written
+    call    esp_get_bc
+
+    ret
+
+;-----------------------------------------------------------------------------
+; Write byte repeatedly
+; Input:  E: byte to write
+;         BC: number of times to write write it
+; Output: BC: number of bytes actually written
+; Clobbered registers: A, HL
+;-----------------------------------------------------------------------------
+esp_write_repbyte:
+    ld      a, ESPCMD_WRITE
+    call    esp_cmd
+
+    ; Send file descriptor
+    xor     a
+    call    esp_send_byte
+
+    ; Send write size
+    call    esp_send_bc
+
+    ; Send bytes
+    
+.loop:
+    ; Done sending? (BC=0)
+    ld      a, b
+    or      a, c
+    jr      z, .done
+
+    ld      a, e
+    call    esp_send_byte
+    dec     bc
+    jr      .loop
+
+.done:
     ; Get result
     call    esp_get_result
 

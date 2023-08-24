@@ -465,20 +465,23 @@ load_basic_program:
     call    esp_close_all
 
     ; Back up to last line of BASIC program
-.loop:
+.backup:
     dec     hl                    ; Back up to last byte loaded
     xor     a
     cp      (hl)                  ; Back up to last non-zero byte
-    jr      z, .loop
+    jr      z, .backup
     inc     hl
 
     ; Skip past 3 zeros at end of BASIC program
+    ld      b,3
+.zeros
+    cp      (hl)
+    jp      nz,err_bad_file
     inc     hl
-    inc     hl
-    inc     hl
+    djnz    .zeros
 
     ; Set end of BASIC program
-    ld      (VARTAB), de
+    ld      (VARTAB), hl
 
     ; Initialize BASIC program
     call    init_basic_program
@@ -575,12 +578,12 @@ load_caq_array:
     call    esp_read_bytes
     ld      b, 6
     ld      de,FILNAM
-.loop:
+.backup:
     ld      a, (de)
     cp      '#'
     jp      nz, err_bad_file
     inc     de
-    djnz    .loop
+    djnz    .backup
 
     ; Load data into array
     ld      de, (BINSTART)
@@ -752,6 +755,12 @@ save_basic_program:
     ld      c,l
     call    esp_write_bytes
 
+    
+    ; Write trailer
+    ld      bc,15
+    ld      e,0
+    call    esp_write_repbyte
+    
     ; Close file
     call    esp_close_all
 
@@ -780,6 +789,11 @@ save_caq_array:
     ld      bc, (BINLEN)
     call    esp_write_bytes
 
+    ; Write trailer
+    ld      bc,15
+    ld      e,0
+    call    esp_write_repbyte
+
     ; Close file
     call    esp_close_all
 
@@ -803,12 +817,12 @@ check_sync_bytes:
     ; Check for 12x$FF
     ld      b, 12
     ld      de, FBUFFR
-.loop:
+.backup:
     ld      a, (de)
     cp      $FF
     jp      nz, err_bad_file
     inc     de
-    djnz    .loop
+    djnz    .backup
 
     ; Check for $00
     ld      a, (de)

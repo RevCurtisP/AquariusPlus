@@ -54,6 +54,11 @@
     jp      _interrupt      ; $2009
     jp      _warm_boot      ; $200C Called from main ROM for warm boot
 
+ifdef _____   ; Waiting for modules to stablize
+    org     $2100
+    include "kernel.asm"    ; Kernal jump table
+endif
+
 ;-----------------------------------------------------------------------------
 ; Reset vector
 ;
@@ -187,7 +192,7 @@ _coldboot:
     jr      .print_version
 .print_done:
     call    STRPRI
-    db " PlusBasic v0.7h", 0
+    db "  +Basic v0.7j", 0
     call    CRDO
     call    CRDO
 
@@ -531,6 +536,9 @@ fast_hook_handler:
     phase   $C000     ;Assemble in ROM Page 1 which will be in Bank 3
 
     include "dispatch.asm"      ; Statement/Function dispatch tables and routiness
+ifdef _____    ; Not ready for primetime
+    include "error.asm"         ; Error lookup table, messages and handling routines
+endif
     include "tokens.asm"        ; Keyword list and tokenize/expand routines-
     include "enhanced.asm"      ; Enhanced stardard BASIC statements and functions
     include "evalext.asm"       ; EVAL extension - hook 9 

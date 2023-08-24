@@ -91,27 +91,28 @@ FN_PEEK:
     rst     CHRGET                ; Skip token
     SYNCHK  '('                   ; Require open paren
     call    parse_page_arg        ; Parse page
-    push    af                    ; Save it
+    push    af                    ; Save itj
     call    GETINT                ; Parse Integer
     SYNCHK  ')'                   ; Require close paren
     pop     af                    ; Get page
     push    hl                    ; Save text pointer
-    ld      bc,LABBCK             ; Return address for SNGFLT
+    ld      bc,LABBCK             ; Return address for GIVINT
     push    bc
     jr      c,.read_page_word     ; If not specified
     ld      a,(de)                ;   Get LSB
     ld      c,a
     inc     de
     ld      a,(de)
-    ld      b,c
-    jp      FLOAT_DE
+    jp      GIVINT
 
 .read_page_word
     call    check_paged_address
     call    page_read_word
     jp      z,IQERR               ; FC error if illegal page
     jp      c,OVERR               ; Return overflow error if end of RAM 
-    jp      FLOAT_BC              ; Float word and return
+    ld      a,b
+    jp      GIVINT
+
 
 ; Check for and parse @page,
 ; Output: A, E = Page number`

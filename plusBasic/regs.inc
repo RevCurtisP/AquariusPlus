@@ -125,17 +125,19 @@ KEYADR  equ     $38FE   ;;Extended Key Tables Base Address minus 1
 ;               $3900   ; This is always 0
 BASTXT:     equ $3901   ; Start of Basic Program
 
+
+plus_page   equ 1       ; plusBASIC ROM BANK3 page
+
 ;-----------------------------------------------------------------------------
 ; BASIC Extended System Constants, Variables and Buffers
 ; Page 36, swapped into Bank 3
-  ;-----------------------------------------------------------------------------
-
-plus_page   equ 1       ; plusBASIC ROM BANK3 page
-;               $C000   ; Extended BASIC Graphics System Variables
+;-----------------------------------------------------------------------------
+gfx_sysvars equ $8000   ; Extended BASIC Graphics System Variables
+                        ; defined in gfx/gfx.asm
 buff_strlen equ $C0FF   ; Length of String in Buffer
 string_buff equ $C100   ; String Buffer  - up to 255 chars plus null terminator 
                         ; Must be on 256 byte boundary
-screen_buff equ $F7FF   ; For saving screen memory or double-buffering
+screen_buff equ $F800   ; For saving screen memory or double-buffering
 
 
 ;-----------------------------------------------------------------------------
@@ -221,7 +223,8 @@ LINPRT      equ $1675   ; Print Two Byte Number in HL as Decimal - Alters all Re
 OUTDO       equ $198A   ; Output a Character
 CRDO:       equ $19EA   ; Print CR+LF
 WRMCON:     equ $1A40
-GETINT      equ $1AD0   ; Parse and Integer
+BITTAB      equ $1ACA   ; Semigraphic Pixel Index to Bit Mask Table
+GETINT      equ $1AD0   ; Parse an Integer
 TTYCHR:     equ $1D72   ; Print character in A with pause/break at end of page
 TTYOUT:     equ $1D94   ; Print character in A
 TTYFIS:     equ $1DE7   ; Save Column and Position
