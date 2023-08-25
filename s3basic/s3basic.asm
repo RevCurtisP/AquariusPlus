@@ -149,10 +149,10 @@ ifdef aqplus
 else        
         jp      JMPINI            ;;Start Initialization
 endif
-        byte    $82,$06,$22       ;;Revision Date 1982-06-22                  Original Code
+        byte    $23,$08,$25       ;;Revision Date 1982-06-22                  Original Code
 ;;RST 1 - Syntax Check
 
-        byte    11                ;;Revision Number?
+        byte    0                 ;;Revision Number?
         nop                       ;;Pad out the RST routine
 SYNCHK: ld      a,(hl)
         ex      (sp),hl
