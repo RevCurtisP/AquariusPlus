@@ -36,7 +36,7 @@ esp_cmd:
 
 esp_cmd_string:
     call    esp_cmd
-    jp      esp_send_string
+    call    esp_send_string
 
 ;-----------------------------------------------------------------------------
 ; Get first result byte, and jump to error handler if it was an error

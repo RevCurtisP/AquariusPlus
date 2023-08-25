@@ -3,6 +3,8 @@
 ;-----------------------------------------------------------------------------
 ; By Curtis F Kaylor and Frank van den Hoef
 ;
+; ToDo: Map page 36 into BANK3 as underlay RAM, move system buffers to page 37
+;
 ; Based on AQUBASIC source code by Bruce Abbott:
 ; http://bhabbott.net.nz/micro_expander.html
 ;
@@ -35,15 +37,16 @@
 ;   zmac --zmac -o aqplusbas.cim -o aqplusbas.lst aqplusbas.asm
 
 ; RAM Page Usage
-; Page 0  - Systm ROM with overlay
-; Page 33 - RAM in BANK 1
-; Page 34 - RAM in BANK 2
-; Page 35 - RAM in BANK 3
-;   If a cartrige is present, it is copied here unencrypted 
-; Page 1 -  ROM Page 1 in BANK 3 
-;   After BASIC cold boots
-; Page 36 - BASIC Extended System Variables and Buffers, swapped in BANK 3
-;   See regs.inc
+ROM_SYS_PG = 0        ; Main System ROM, mapped into Bank 0 with overlay from $3000-$3FFF
+ROM_EXT_PG = 1        ; plusBASIC extended ROM, mapped into Bank 3 
+ROM_AUX_PG = 1        ; plusBASIC auxillary ROM, mapped into Bank 3 as needed
+
+RAM_BAS_1 = 33        ; RAM for BASIC mapped into Bank 1
+RAM_BAS_2 = 34        ; RAM for BASIC mapped into Bank 2
+RAM_BAS_3 = 35        ; RAM for BASIC mapped into Bank 3, switched in as needed
+                      ; If a cartrige is present, it is copied here unencrypted, then executed
+RAM_BUFFS = 36        ; plusBASIC extended system variables and buffers, mapped in bank 3 as needed
+                      ; See regs.inc for details
 
     include "regs.inc"
 
@@ -53,6 +56,8 @@
     jp      _start_cart     ; $2006
     jp      _interrupt      ; $2009
     jp      _warm_boot      ; $200C Called from main ROM for warm boot
+    jp      _inlin_hook     ; $200F Jump from INLIN for command history recall
+    jp      _inlin_done     ; $2002 Jumped from FININL to save command to history
 
 ifdef _____   ; Waiting for modules to stablize
     org     $2100
@@ -184,15 +189,29 @@ _coldboot:
     db "Aquarius+ System ", 0
     ld      a, ESPCMD_VERSION
     call    esp_cmd
+    ld      b,0
 .print_version:
     call    esp_get_byte
     or      a
     jr      z, .print_done
     call    TTYCHR
+    inc     b
     jr      .print_version
 .print_done:
+    ld      a,21-.plus_len        ; Print spaces to right justify +BASIC text
+    sub     b
+    jr      z,.print_basic
+    ld      b,a
+    ld      a,' '
+.space_loop
+    call    TTYCHR
+    djnz    .space_loop
+.print_basic
     call    STRPRI
-    db "  +Basic v0.7j", 0
+.plus_text
+    db "+BASIC v0.8b", 0
+.plus_len   equ   $ - .plus_text
+
     call    CRDO
     call    CRDO
 
@@ -278,6 +297,14 @@ _warm_boot:
     ld      a, plus_page          ; Page 1 ROM
     out     (IO_BANK3), a         ; into Bank 3
     jp      WRMCON                ; Go back to S3 BASIC
+
+;-----------------------------------------------------------------------------
+; INLIN enhancement stubs
+;-----------------------------------------------------------------------------
+_inlin_hook:
+_inlin_done:
+    ret
+
 
 ;-----------------------------------------------------------------------------
 ; Hook 2 - READY (Enter Direct Mode

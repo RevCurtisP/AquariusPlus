@@ -368,7 +368,6 @@ ERR_EXISTS:        equ -5   ; File already exists
 ERR_OTHER:         equ -6   ; Other error
 ERR_NO_DISK:       equ -7   ; No disk
 ERR_NOT_EMPTY:     equ -8   ; Not empty
-ERR_TIMEOUT        equ -9   ; Not empty
 
 FO_RDONLY:      equ 0x00    ; Open for reading only
 FO_WRONLY:      equ 0x01    ; Open for writing only

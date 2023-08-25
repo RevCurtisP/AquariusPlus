@@ -126,7 +126,6 @@ ST_DIR:
 
     ld      a, ESPCMD_OPENDIR     ; Set ESP Command
     call    esp_cmd_string        ; Get FileSpec and Do Command
-    call    esp_get_result
 
     ; Set initial number of lines per page
     ld      a, 24
