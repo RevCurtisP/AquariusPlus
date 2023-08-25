@@ -2439,11 +2439,11 @@ QINLIN: ld      a,'?'             ;
         ld      a,' '             ;
         rst     OUTCHR            ;
         jp      INLIN             ;;;For relative jumps
-ifdef fixbs
+
+RUBOUT:                           ;;So deprecated code will compile
 ;;; Code Change: Replace Ancient DELETE code with Improve BS code
-;;; Same name, different purpose
 BSFIX:  or      a                 ;;If not at position 0                      ; 0D64
-        jr      nz,BSFIN         ;;Do the backspace                          ; 0D65  
+        jr      nz,BSFIN          ;;Do the backspace                          ; 0D65  
                                                                               ; 0D66   
         ld      c,a                                                           ; 0D67
         ld      a,l                                                           ; 0D68 
@@ -2460,24 +2460,12 @@ BSFIX:  or      a                 ;;If not at position 0                      ; 
 BSFIN:  jp       DOBS             ;;Do the backspace                          ; 0D73  inc     b     
                                                                               ; 0D74  dec     b  
                                                                               ; 0D75  dec     hl 
-RUBOUT  equ     BSFIX
-else
-RUBOUT: ld      a,(RUBSW)         ;[M80] ARE WE ALREADY RUBBING OUT?
-        or      a                 ;[M80] SET CC'S
-        ld      a,'\'             ;[M80] GET READY TO TYPE BACKSLASH
-        ld      (RUBSW),a         ;[M80] MAKE RUBSW NON-ZERO IF NOT ALREADY
-        jr      nz,NOTBEG         ;[M80] NOT RUBBING BACK TO BEGGINING
-        dec     b                 ;[M80] AT BEGINNING OF LINE?
-        jr      z,INLIN           ;[M80] SET FIRST BYTE IN BUF TO ZERO
-        rst     OUTCHR            ;[M80] SEND BACKSLASH
-        inc     b                 ;[M80] EFFECTIVELY SKIP NEXT INSTRUCTION
-NOTBEG: dec     b                 ;[M80] BACK UP CHAR COUNT BY 1
-        dec     hl                ;[M80] AND LINE POSIT
-endif
+;; Deprecated code - 7 bytes
         jr      z,INLINN          ;[M80] AND RE-SET UP INPUT
         ld      a,(hl)            ;[M80] OTHERWISE GET CHAR TO ECHO
         rst     OUTCHR            ;[M80] SEND IT
         jr      INLINC            ;[M80] AND GET NEXT CHAR
+;; End deprecated code
 LINLIN: dec     b                 ;[M80] AT START OF LINE?
         dec     hl                ;[M65] BACKARROW SO BACKUP PNTR AND
         rst     OUTCHR            ;[M80] SEND BACKSPACE
@@ -2490,13 +2478,10 @@ INLIN:  ld      hl,BUF            ;
         ld      (RUBSW),a         ;[M80] LIKE SO
 INLINC: call    INCHR             ;[M80] GET A CHAR
 INLNC1: ld      c,a               ;[M80] SAVE CURRENT CHAR IN [C]
-ifdef fixbs
 ;;;Code Change: Remove ancient TTY Delete code
-        jr      NORUB                                                         ; 0D92  cp      127
+        jr      CHKFUN                                                        ; 0D92  cp      127
                                                                               ; 0D93    
-else
-        cp      127
-endif
+;;; Deprecated code - 16 bytes
         jr      z,RUBOUT          ;[M80] DO IT
         ld      a,(RUBSW)         ;[M80] BEEN DOING A RUBOUT?
         or      a                 ;[M80] SET CC'S
@@ -2506,10 +2491,8 @@ endif
         xor     a                 ;[M80] CLEAR RUBSW
         ld      (RUBSW),a         ;[M80] LIKE SO
 NOTRUB: ld      a,c               ;[M80] GET BACK CURRENT CHAR
-ifdef fixbs
-;;; End of deprecated code - ~19 bytes
-endif
-NORUB:  cp      7                 ;[M80] IS IT BOB ALBRECHT RINGING THE BELL
+;;; End of deprecated code
+CHKFUN: cp      7                 ;[M80] IS IT BOB ALBRECHT RINGING THE BELL
         jr      z,GOODCH          ;[M80] FOR SCHOOL KIDS?
         cp      3                 ;[M80] CONTROL-C?
         call    z,CRDO            ;[M80] TYPE CHAR, AND CRLFT
@@ -5191,15 +5174,10 @@ LFS:    call    SCROLL            ;;Scroll Up and Keep Screen Position
         jr      TTYFIN            ;
 ;;Back Space: Move Cursor Left and Delete Character
 BS:     ld      a,(TTYPOS)        ;
-ifdef fixbs
 ;; Code Change: BackSpace moves to previous line                              Original Code
         jp      BSFIX             ; Check for Backspace                       ; 1DE0  or      a         
                                                                               ; 1DE1  jr      z,NOBS    
                                                                               ; 1DE2
-else
-        or      a               
-        jr      z,NOBS          
-endif
 DOBS:   dec     hl                ;;No, Move One to the Left
         dec     a                 ;
 NOBS:   ld      (hl),' '          ;;Erase Character at Position
