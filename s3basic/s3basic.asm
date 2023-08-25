@@ -14,9 +14,6 @@
 ;   Add -Daddkeyrows to support extended 64 key keyboard.
 ;   (Requires new key decode tables in Extended ROM).
 ;
-;   Add -Daltkeytab to replace the embedded key decode tables.
-;   The replacemnt key table should be in a file named "keytabs.asm"
-;
 ;   Add -Daqlus to include Aquarius+ Mods
 ;   This will also turn on noreskeys and addkeyrows
 ;
@@ -113,7 +110,7 @@ FBUFFR  equ     $38E8   ;[M80] BUFFER FOR FOUT
 RESHO   equ     $38F6   ;[M65] RESULT OF MULTIPLIER AND DIVIDER
 RESMO   equ     $38F7   ;;RESMO and RESLO are loaded into and stored from HL
 SAVSTK  equ     $38F9   ;[M80] NEWSTT SAVES STACK HERE BEFORE SO THAT ERROR REVERY CAN
-INTJMP  equ     $38FB   ;;RST 7 Interrupt JMP 3 Bytes)
+INTJMP  equ     $38FB   ;;RST 7 Interrupt JMP
 ;;        $38FE-$38FF   ;;??Unused
 ;;              $3900   ;;This is always 0
 BASTXT  equ     $3901   ;;Start of Basic Program
@@ -128,10 +125,17 @@ EXTBAS  equ     $2000   ;;Start of Extended Basic
 XSTART  equ     $2010   ;;Extended BASIC Startup Routine
 XINIT   equ     $E010   ;;ROM Cartridge Initialization Entry Point
 ifdef addkeyrows
-KEYADR  equ     $2F00   ;;Extended Key Tables Base Address minus 1
+;;;Code Change: Address of Expanded Key Tables, stored in the last 256 bytes of Extended BASIC.
+KEYADR  equ     $2F00   ;;Key Tables for 64 key matrix
 endif
-
         org     $0000   ;;Starting Address of Standard BASIC
+ifdef aqplus
+;;;Aquarius+ I/O Port Assignments
+XBANK0  equ     $F0     ;;Bank 0 ($0000-$3FFF) Page (0-63)
+XBANK1  equ     $F1     ;;Bank 1 ($4000-$7FFF) Page (0-63)
+XBANK2  equ     $F2     ;;Bank 1 ($8000-$BFFF) Page (0-63)
+XBANK3  equ     $F3     ;;Bank 1 ($C000-$FFFF) Page (0-63)
+endif
 
 ;;RST 0 - Startup
 START:
@@ -184,8 +188,8 @@ FSIGN:  ld      a,(FAC)           ;
 HOOKDO: ld      ix,(HOOK)         ;;Get hook routine address
 JUMPIX: jp      (ix)              ;;and jump to it
         byte    0,0               ;;Pad out RST routine
-;;RST 7 - Interrupt 
-INTRPT:  jp      INTJMP            ;;Execute Interrupt routine
+;;RST 7 - Execute USR Routine
+USRFN:  jp      INTJMP            ;;Execute Interrupt routine
 ;;Default Extended BASIC Hook Routine
 NOHOOK: exx                       ;;Save BC, DE, and HL
         pop     hl                ;;Get return address off stack
@@ -402,23 +406,23 @@ MEMTST: inc     hl                ;;Bump pointer
         cpl                       ;;and revert back
         ld      (hl),c            ;;Write original byte to location
         cp      b                 ;;Did reads match writes?
-        jr      z,MEMTST          ;;Yes, check next location
+        jr      z,MEMTST          ;;Yes, check next locationn
 ;;Check Memory Size               ;
 MEMCHK: dec     hl                ;;Back up to last good address
         ld      de,BASTXT+299     ;
         rst     COMPAR            ;;Is there enough RAM?
         jp      c,OMERR           ;;No, Out of Memory error
+;;Set Top of memory
         ld      de,$FFCE
         ld      (MEMSIZ),hl       ;;Set MEMSIZ to last RAM location
         add     hl,de
         ld      (TOPMEM),hl       ;;Set TOPMEM t0 MEMSIZ-50
         call    SCRTCH            ;;Perform NEW
         call    PRNTIT            ;;Print copyright message
+        ld      sp,OLDSTK         ;;Top of of stack used to be here
         call    STKINI            ;;Set stack pointer to TOPMEM
         ld      hl,EXTBAS+5       ;;End of signature in Extended BASIC
         ld      de,CRTSIG         ;;Text to check signature against
-;;Set Top of memory
-        ld      sp,OLDSTK         ;;Top of of stack used to be here
 ;;Check for Extended BASIC
 EXTCHK: ld      a,(de)            ;;Get byte from signature
         or      a                 ;;Did we reach a terminator?
@@ -957,7 +961,7 @@ MLOOPR: ld      a,(de)            ;[M80] NOW TRANSFERING LINE IN FROM BUF
         jr      nz,MLOOPR         ;
 FINI:   rst     HOOKDO            ;
         byte    4                 ;
-        call    RUNC              ;[M80] DO CLEAR & SET UP STACK
+HOOK4:  call    RUNC              ;[M80] DO CLEAR & SET UP STACK
 LINKER: rst     HOOKDO            ;
 HOOK5:  byte    5                 ;
         inc     hl                ;;HL=TXTTAB
@@ -1018,7 +1022,11 @@ KLOOP:  ld      a,(hl)            ;GET CHARACTER FROM BUF
         jp      z,STUFFH          ;JUST STUFF AWAY
         ld      b,a               ;SETUP B WITH A QUOTE IF IT IS A STRING
         cp      '"'               ;QUOTE SIGN?
+ifdef aqplus
         jp      STRNGX            ;;Patch to handle both " and '
+else
+        jp      z,STRNG           ;YES, GO TO SPECIAL STRING HANDLING
+endif
 STRNGR: or      a                 ;END OF LINE?
         jp      z,CRDONE          ;YES, DONE CRUNCHING
         ld      a,(DORES)         ;IN DATA STATEMENT AND NO CRUNCH?
@@ -1245,7 +1253,8 @@ NXTCON: ld      b,FORTK           ;[M80] PUT A 'FOR' TOKEN ONTO THE STACK
         push    bc                ;
         inc     sp                ;[M80] THE "TOKEN" ONLY TAKES ONE BYTE OF STACK SPACE
 ;[M80] NEW STATEMENT FETCHER
-NEWSTT: ld      (SAVTXT),hl       ;USED BY CONTINUE AND INPUT AND CLEAR AND PRINT USING
+NEWSTT:
+        ld      (SAVTXT),hl       ;USED BY CONTINUE AND INPUT AND CLEAR AND PRINT USING
         call    INCNTC            ;;*** might be [M65] ISCNTC
         ld      a,(hl)            ;;Get Terminator
         cp      ':'               ;[M80] IS IT A COLON?
@@ -1273,7 +1282,7 @@ GONE3:  ret     z                 ;[M80] IF A TERMINATOR TRY AGAIN
 GONE2:  sub     $80               ;[M80] "ON ... GOTO" AND "ON ... GOSUB" COME HERE
         jp      c,LET             ;[M80] MUST BE A LET
         cp      TABTK-$80         ;;End of Statement Tokens
-        rst     HOOKDO            ;;Handle Extended BASIC Statement Tokens`
+        rst     HOOKDO            ;;Handle Extended BASIC Statement Tokens
         byte    23                ;
         jp      nc,SNERR          ;;Not a Statement Token
         rlca                      ;[M80] MULTIPLY BY 2
@@ -1860,7 +1869,7 @@ EVAL:   rst     HOOKDO            ;
         jp      nc,ISVAR          ;[M80] AN ALPHABETIC CHARACTER MEANS YES
         cp      PLUSTK            ;[M80] IGNORE "+"
         jr      z,EVAL            ;
-QDOT:   cp      '.'               ;[M65] LEADING CHARACTER OF CONSTANT?
+        cp      '.'               ;[M65] LEADING CHARACTER OF CONSTANT?
         jp      z,FIN             ;
         cp      MINUTK            ;[M80] NEGATION?
         jp      z,DOMIN           ;[M65] SHO IS.
@@ -2430,6 +2439,29 @@ QINLIN: ld      a,'?'             ;
         ld      a,' '             ;
         rst     OUTCHR            ;
         jp      INLIN             ;;;For relative jumps
+ifdef fixbs
+;;; Code Change: Replace Ancient DELETE code with Improve BS code
+;;; Same name, different purpose
+BSFIX:  or      a                 ;;If not at position 0                      ; 0D64
+        jr      nz,BSFIN         ;;Do the backspace                          ; 0D65  
+                                                                              ; 0D66   
+        ld      c,a                                                           ; 0D67
+        ld      a,l                                                           ; 0D68 
+        cp      41                ;;If at home position                       ; 0D69 
+                                                                              ; 0D6A
+        ld      a,c                                                           ; 0D6B 
+        jp      z,NOBS            ;;  Don't backspace                         ; 0D6C
+                                                                              ; 0D6D
+                                                                              ; 0D6E
+        dec      hl               ;;Backup to end of previous line            ; 0D6F
+        dec      hl                                                           ; 0D70  jr     z,INLIN 
+        ld       a,38                                                         ; 0D71  
+                                                                              ; 0D72  rst     OUTCHR
+BSFIN:  jp       DOBS             ;;Do the backspace                          ; 0D73  inc     b     
+                                                                              ; 0D74  dec     b  
+                                                                              ; 0D75  dec     hl 
+RUBOUT  equ     BSFIX
+else
 RUBOUT: ld      a,(RUBSW)         ;[M80] ARE WE ALREADY RUBBING OUT?
         or      a                 ;[M80] SET CC'S
         ld      a,'\'             ;[M80] GET READY TO TYPE BACKSLASH
@@ -2441,6 +2473,7 @@ RUBOUT: ld      a,(RUBSW)         ;[M80] ARE WE ALREADY RUBBING OUT?
         inc     b                 ;[M80] EFFECTIVELY SKIP NEXT INSTRUCTION
 NOTBEG: dec     b                 ;[M80] BACK UP CHAR COUNT BY 1
         dec     hl                ;[M80] AND LINE POSIT
+endif
         jr      z,INLINN          ;[M80] AND RE-SET UP INPUT
         ld      a,(hl)            ;[M80] OTHERWISE GET CHAR TO ECHO
         rst     OUTCHR            ;[M80] SEND IT
@@ -2456,8 +2489,14 @@ INLIN:  ld      hl,BUF            ;
         xor     a                 ;[M80] CLEAR TYPE AHEAD CHAR
         ld      (RUBSW),a         ;[M80] LIKE SO
 INLINC: call    INCHR             ;[M80] GET A CHAR
-        ld      c,a               ;[M80] SAVE CURRENT CHAR IN [C]
-        cp      127               ;[M80] CHARACTER DELETE?
+INLNC1: ld      c,a               ;[M80] SAVE CURRENT CHAR IN [C]
+ifdef fixbs
+;;;Code Change: Remove ancient TTY Delete code
+        jr      NORUB                                                         ; 0D92  cp      127
+                                                                              ; 0D93    
+else
+        cp      127
+endif
         jr      z,RUBOUT          ;[M80] DO IT
         ld      a,(RUBSW)         ;[M80] BEEN DOING A RUBOUT?
         or      a                 ;[M80] SET CC'S
@@ -2467,7 +2506,10 @@ INLINC: call    INCHR             ;[M80] GET A CHAR
         xor     a                 ;[M80] CLEAR RUBSW
         ld      (RUBSW),a         ;[M80] LIKE SO
 NOTRUB: ld      a,c               ;[M80] GET BACK CURRENT CHAR
-        cp      7                 ;[M80] IS IT BOB ALBRECHT RINGING THE BELL
+ifdef fixbs
+;;; End of deprecated code - ~19 bytes
+endif
+NORUB:  cp      7                 ;[M80] IS IT BOB ALBRECHT RINGING THE BELL
         jr      z,GOODCH          ;[M80] FOR SCHOOL KIDS?
         cp      3                 ;[M80] CONTROL-C?
         call    z,CRDO            ;[M80] TYPE CHAR, AND CRLFT
@@ -3016,9 +3058,9 @@ DIMCON: dec     hl                ;[M80] SEE IF COMMA ENDED THIS VARIABLE
         rst     SYNCHK            ;
         byte    ','               ;[M80] MUST BE COMMA
 ;{M80} DIMENSION
-DIM:    ld      bc,DIMCON         ;[M80] PLACE TO COME BACK TO
-        push    bc                ;
-        byte    $F6               ;;"OR" to skip next instruction
+DIM:    ld      bc,DIMCON       ;[M80] PLACE TO COME BACK TO
+        push    bc              ;
+        byte    $F6             ;;"OR" to skip next instruction
 ;{M80} VARIABLE SEARCHING
 ;;Get Pointer to Variable
 PTRGET: xor      a                ;[M80] MAKE [A]=0
@@ -5149,9 +5191,16 @@ LFS:    call    SCROLL            ;;Scroll Up and Keep Screen Position
         jr      TTYFIN            ;
 ;;Back Space: Move Cursor Left and Delete Character
 BS:     ld      a,(TTYPOS)        ;
-        or      a                 ;;At First Column?
-        jr      z,NOBS            ;
-        dec     hl                ;;No, Move One to the Left
+ifdef fixbs
+;; Code Change: BackSpace moves to previous line                              Original Code
+        jp      BSFIX             ; Check for Backspace                       ; 1DE0  or      a         
+                                                                              ; 1DE1  jr      z,NOBS    
+                                                                              ; 1DE2
+else
+        or      a               
+        jr      z,NOBS          
+endif
+DOBS:   dec     hl                ;;No, Move One to the Left
         dec     a                 ;
 NOBS:   ld      (hl),' '          ;;Erase Character at Position
 ;;Save Character and Display Cursor
@@ -5409,7 +5458,7 @@ KEYALP: rl      b                 ;;Rotate Bits Left                          1F
                                   ;;                                          1F1F ld      ix,SHFTAB-1
         jr      nz,KEYALP         ;;Loopif not first table                    1F10
                                   ;;                                          1F11
-KEYLUX: ld      ix,KEYADR-1        ;;Point to Start of Lookup Tables           1F12
+KEYLUX: ld      ix,KEYADR-1       ;;Point to Start of Lookup Tables           1F12
                                   ;;                                          1F13 jr      z,KEYLUP
                                   ;;                                          1F14
                                   ;;                                          1F15 ld      ix,KEYTAB-1
@@ -5454,7 +5503,6 @@ KEYRET: exx                       ;;Restore Registers
 ifdef altkeytab
         include "keytabs.asm"
 else
-;;Unmodified Key Lookup Table
 KEYTAB: byte    '=',$08,':',$0D,';','.' ;;Backspace and Return
         byte    '-','/','0','p','l',','
         byte    '9','o','k','m','n','j'
