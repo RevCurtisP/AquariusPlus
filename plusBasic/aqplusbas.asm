@@ -3,8 +3,6 @@
 ;-----------------------------------------------------------------------------
 ; By Curtis F Kaylor and Frank van den Hoef
 ;
-; ToDo: Map page 36 into BANK3 as underlay RAM, move system buffers to page 37
-;
 ; Based on AQUBASIC source code by Bruce Abbott:
 ; http://bhabbott.net.nz/micro_expander.html
 ;
@@ -209,7 +207,7 @@ _coldboot:
 .print_basic
     call    STRPRI
 .plus_text
-    db "+BASIC v0.8b", 0
+    db "+BASIC v0.8c", 0
 .plus_len   equ   $ - .plus_text
 
     call    CRDO

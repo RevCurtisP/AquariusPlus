@@ -475,7 +475,7 @@ load_basic_program:
     ld      b,3
 .zeros
     cp      (hl)
-    jp      nz,err_bad_file
+    ;jp      nz,err_bad_file
     inc     hl
     djnz    .zeros
 
