@@ -179,7 +179,7 @@ _coldboot:
     
     ; Show our copyright message
     call    PRNTIT              ; Print copyright string in ROM
-    call    STRPRI
+    call    print_string_immd
     db $0D, $0A
     db "Aquarius+ System ", 0
     ld      a, ESPCMD_VERSION
@@ -191,8 +191,8 @@ _coldboot:
     call    TTYCHR
     jr      .print_version
 .print_done:
-    call    STRPRI
-    db "  +Basic v0.7j", 0
+    call    print_string_immd
+    db "  +Basic v0.X", 0
     call    CRDO
     call    CRDO
 
@@ -419,6 +419,12 @@ byte_to_hex:
     ret
 
 ;-----------------------------------------------------------------------------
+; Utility routines
+;-----------------------------------------------------------------------------
+    include "util.asm"
+
+
+;-----------------------------------------------------------------------------
 ; Paged memory routines
 ;-----------------------------------------------------------------------------
     include "paged.asm"
@@ -434,10 +440,12 @@ byte_to_hex:
 ;-----------------------------------------------------------------------------
     include "esp.asm"
 
+
+
 ;-----------------------------------------------------------------------------
 ; Primitive debugger
 ;-----------------------------------------------------------------------------
-    include "debug.asm"
+;    include "debug.asm"
 
 
 

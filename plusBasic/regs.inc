@@ -158,14 +158,6 @@ FSIGN       equ $28     ; 5 Get sign of Floating Point Argument
 HOOKDO      equ $30     ; 6 Extended BASIC Hook Dispatch
 INTRPT      equ $38     ; 7 (S3BASIC) Execute Interrupt Routine
 
-;CALL
-MAKUPR      equ $0112   ; (S3BASIC) Convert A to Upper Case
-STRPRZ      equ $011B   ; (S3BASIC) Print null terminated string - Faster than STROUT
-STRPRI      equ $0122   ; (S3BASIC) Print inline null terminated string 
-FREADL      equ $0127   ; (S3BASIC) Free String, Return Address in DE, Length in BC
-STRADL      equ $012A   ; (S3BASIC) Return String Address in DE, Length in BC from Descriptor in HL
-BYTPRT      equ $0135   ; (S3BASIC) Print A as Decimal Number
-UPRCMP      equ $013B   ; (S3BASIC) Compare B byets of uppercased String [HL] to String [DE] 
 INITFF:     equ $0153   ; Initialize I/O Port 255
 TIMSTR      equ $0E2F   ; Create tempory string from null-terminated string
 REDDY       equ $036E   ; Text "Ok"
