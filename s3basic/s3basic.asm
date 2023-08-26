@@ -20,9 +20,9 @@
 ;   Add -Daqlus to include Aquarius+ Mods
 ;   This will also turn on noreskeys and addkeyrows
 ;
-ifdef aqplus
-noreskeys   equ   1
-addkeyrows  equ   1
+ifdef aqplus                
+noreskeys   equ   1               ;; |
+addkeyrows  equ   1               ;; |
 endif
 
 ;BASIC Constants
@@ -117,33 +117,33 @@ INTJMP  equ     $38FB   ;;RST 7 Interrupt JMP 3 Bytes)
 ;;        $38FE-$38FF   ;;??Unused
 ;;              $3900   ;;This is always 0
 BASTXT  equ     $3901   ;;Start of Basic Program
-ifdef aqplus
-XPLUS   equ     $2000   ;;plusBASIC Reset
-XCOLD   equ     $2003   ;;plusBASIC Cold Start`
-XCART   equ     $2006   ;;plusBASIC Start Cartridge
-XINTR   equ     $2009   ;;plusBASIC  Interrupt Handler
-XWARM   equ     $200C   ;;plusBASIC Warm Start`
-endif
+ifdef aqplus            
+XPLUS   equ     $2000   ;; | plusBASIC Reset
+XCOLD   equ     $2003   ;; | plusBASIC Cold Start`
+XCART   equ     $2006   ;; | plusBASIC Start Cartridge
+XINTR   equ     $2009   ;; | plusBASIC  Interrupt Handler
+XWARM   equ     $200C   ;; | plusBASIC Warm Start`
+endif                   
 EXTBAS  equ     $2000   ;;Start of Extended Basic
 XSTART  equ     $2010   ;;Extended BASIC Startup Routine
 XINIT   equ     $E010   ;;ROM Cartridge Initialization Entry Point
-ifdef addkeyrows
-KEYADR  equ     $2F00   ;;Extended Key Tables Base Address minus 1
-endif
+ifdef addkeyrows        
+KEYADR  equ     $2F00   ;; | Extended Key Tables Base Address minus 1
+endif                   
 
         org     $0000   ;;Starting Address of Standard BASIC
 
 ;;RST 0 - Startup
 START:
 ifdef aqplus
-  ;;; Code Change: Aquarius+ only
-  ;;; Instead of checking for the Extended BASIC signature
-  ;;; jump straight into Extended BASIC init                                  Original Code
-        jp      XPLUS             ;;Start Extended BASIC                      0000  jp      JMPINI
-                                  ;;                                          0001
-                                  ;;                                          0002
+;;; Code Change: Aquarius+ only
+;;; Instead of checking for the Extended BASIC signature
+;;; jump straight into Extended BASIC init                                  Original Code
+        jp      XPLUS             ;; | Start Extended BASIC                      0000  jp      JMPINI
+                                  ;; |                                           0001
+                                  ;; |                                           0002
 else        
-        jp      JMPINI            ;;Start Initialization
+        jp      JMPINI            ;; \ Start Initialization
 endif
         byte    $82,$06,$22       ;;Revision Date 1982-06-22                  Original Code
 ;;RST 1 - Syntax Check
@@ -230,9 +230,9 @@ CRTCH2: add     a,(hl)            ;
         out     ($FF),a           ;;Write Scramble Byte to Port 255
         ld      (SCRMBL),a        ;;Save Scramble Byte
 ifdef aqplus
-        jp      XCART             ;;Run Extended Cart Initialization Routine
-else        
-        jp      XINIT             ;;Execute Cartridge Code
+        jp      XCART             ;; | Run Extended Cart Initialization Routine
+else                                  
+        jp      XINIT             ;; | Execute Cartridge Code
 endif
 CRTSIG: byte    "+7$$3,",0        ;;$A000 Cartridge Signature
 ;;Display Startup Screen
@@ -282,9 +282,9 @@ WARMST: ld      a,11              ;
         out     ($FF),a           ;;Reset I/O Port 255
         call    STKINI            ;;Initialize stack
 ifdef aqplus
-        call    XWARM
+        call    XWARM             ;; | 
 else
-        call    WRMCON            ;;Finish Up
+        call    WRMCON            ;; | Finish Up
 endif
 COLDST: ld      hl,DEFALT         ;Set System Variable Default Values
         ld      bc,81             ;
@@ -296,109 +296,92 @@ COLDST: ld      hl,DEFALT         ;Set System Variable Default Values
 ifdef aqplus
 ;;; Code Change: Execute Aquarius+ Extended BASIC Cold Start
 ;;; On the Aquarius+ From MEMTST to before INITFF is deprecated: 68 bytes     Original Code
-        jp      XCOLD             ;;Do Extended BASIC Cold Start              010F  ld      hl,BASTXT+99
-                                  ;;                                          0110  
-                                  ;;                                          0111
-;; Utility Routines from Aquarius Extended BASIC                              
-
-;; Convert A to Upper Case                                                    
-MAKUPR: cp      'a'               ;;                                          0112  inc     hl      
-                                  ;;                                          0113  ld      c,(hl)  
-        ret     c                 ;;If >= 'a'                                 0114  ld      a,h     
-        cp      '{'               ;;                                          0115  or      l       
-                                  ;;                                          0116  jr      z,MEMCHK
-        ret     nc                ;;and less than <'{'                        0117   
-        and     $5F               ;;Clear Bit 5                               0118  xor     c       
-                                  ;;                                          0119  ld      (hl),a  
-        ret                       ;;                                          011A  ld      b,(hl)              
-
-;;Print Null Terminated String pointed to by [HL] - Faster than STROUT
-;;On return [HL] points to byte after 0 terminator
-STRPRZ: ld      a,(hl)            ;;Get Byte                                  011B  cpl             
-        inc     hl                ;;Point to Next Byte                        011C  ld      (hl),a  
-        or      a                 ;;If Zero                                   011D  ld      a,(hl)  
-        ret     z                 ;;  Return                                  011E  cpl             
-        rst     OUTCHR            ;;Output Byte                               011F  ld      (hl),c  
-        jr      STRPRZ            ;;and Do it Again                           0120  cp      b       
-                                  ;;                                          0121  jr      z,MEMTST
-;;Print Null Terminated inline string after CALL
-;;On return [HL] points to byte after 0 terminator
-STRPRI: pop     hl                ;; Get String Address off Stack             0122   
-        call    STRPRZ            ;; Print the String                         0123  dec     hl  
-                                  ;;                                          0124  ld      de,BASTXT+299
-                                  ;;                                          0125
-        jp      (hl)              ;; Fast Return                              0126
-
-;; Call FRESTR and Return String Length in BC and Text Address in DE          
-;; Destroys HL
-FREADL: call    FRESTR            ;; Free Temporary String                    0127  rst     COMPAR 
-                                  ;;                                          0128  jp      c,OMERR
-                                  ;;                                          0129
-;; Return String Lengh in BC and Text Address in DE from Descriptor in HL.                           
-STRADL: push    hl                ;; Save Descriptor Address                  012A                    
-        ld      c,(hl)            ;; Get Length LSB                           012B ld      de,$FFCE 
-        inc     hl                ;;                                          012C      
-        ld      b,0               ;; Get Length MSB (0 for BASIC strings)     012D  
-                                  ;;                                          012E ld      (MEMSIZ),hl
-        inc     hl                ;;                                          012F  
-        ld      e,(hl)            ;; Get Text Address LSB                     0130   
-        inc hl                    ;;                                          0131  add     hl,de 
-        ld      d,(hl)            ;; Get Text Address LSB                     0132  ld      (TOPMEM),hl
-        pop     hl                ;;                                          0133   
-        ret                       ;;                                          0134
-                                                                               
-;;Print number in A as Decimal                                                  
-BYTPRT: ld      h,0               ;; Put A in HL                              0135  call    SCRTCH  
-                                  ;;                                          0136     
-        ld      l,a               ;;                                          0137
-        jp      LINPRT            ;; Print HL                                 0138  call    PRNTIT
-                                  ;;                                          0139
-                                  ;;                                          013A    
-                                                                                     
-;;Compare B bytes of upper-cased string in HL to string in DE                 
-UPRCMP: ld      a,(de)            ;; Get char from First String               013B  ld      sp,OLDSTK  
-        call    MAKUPR            ;; Convert to Upper Case                    013C  
-                                  ;;                                          013D
-                                  ;;                                          013E  call    STKINI
-        inc     de                ;;                                          013F
-        cp      (hl)              ;; Compare to char in Second String         0140
-        inc     hl                ;;                                          0141  ld      hl,EXTBAS+5
-        ret     nz                ;; Return NZ if not equal                   0142
-        djnz    UPRCMP            ;;                                          0143
-                                  ;;                                          0144  ld      de,CRTSIG
-        xor     a                 ;;                                          0145
-        ret                       ;; Return 0 = Equal                         0146  
-                                                                              
+        jp      XCOLD             ;; |Do Extended BASIC Cold Start            010F  ld      hl,BASTXT+99
+                                  ;; |                                        0110  
+                                  ;; |                                        0111
 ;;Patch to not uppercase characters between single quotes                     
-STRNGX: jp      z,STRNG           ;; Special Handling for Double Quote        0147  ld      a,(de)     
-                                  ;;                                          0148  or      a          
-                                  ;;                                          0149  jp      z,XBASIC   
-        cp      $27               ;;                                          014A
-                                  ;;                                          014B
-        jp      z,STRNG           ;; Do the same for Single Quote             014C  cp      (hl)    
-                                  ;;                                          014D  jp      nz,READY
-                                  ;;                                          014E
-        jp      STRNGR            ;;                                          014F  dec     hl 
-                                  ;;                                          0150  inc     de 
-                                  ;;                                          0151  jr      EXTCHK
-        byte    $F4               ;;                                          0152  
-
-;;INITFF is at 0153
-
+MEMTST                            ;; | For deprecated jumps
+STRNGX: jp      z,STRNG           ;; | Special Handling for Double Quote      0112  inc     hl      
+                                  ;; |                                        0113  ld      c,(hl)  
+                                  ;; |                                        0114  ld      a,h     
+        cp      $27               ;; |                                        0115  or      l       
+                                  ;; |                                        0116  jr      z,MEMCHK
+        jp      z,STRNG           ;; | Do the same for Single Quote           0117   
+                                  ;; |                                        0118  xor     c       
+                                  ;; |                                        0119  ld      (hl),a  
+        jp      STRNGR            ;; |                                        011A  ld      b,(hl)  
+                                  ;; |                                        011B  cpl             
+                                  ;; |                                        011C  ld      (hl),a  
+; -------------------------------------------------------------------------------------------------------------
+                                  ;; |                                        011D  ld      a,(hl)  
+                                  ;; |                                        011E  cpl             
+                                  ;; |                                        011F  ld      (hl),c  
+                                  ;; |                                        0120  cp      b       
+                                  ;; |                                        0121  jr      z,MEMTST   
+                                  ;; |                                        0123  dec     hl  
+                                  ;; |                                        0124  ld      de,BASTXT+299
+                                  ;; |                                        0125
+                                  ;; |                                        0126
+                                  ;; |                                        0127  rst     COMPAR 
+                                  ;; |                                        0128  jp      c,OMERR
+                                  ;; |                                        0129
+                                  ;; |                                        012A                    
+                                  ;; |                                        012B ld      de,$FFCE 
+                                  ;; |                                        012C      
+                                  ;; |                                        012D  
+                                  ;; |                                        012E ld      (MEMSIZ),hl
+                                  ;; |                                        012F  
+                                  ;; |                                        0130   
+                                  ;; |                                        0131  add     hl,de 
+                                  ;; |                                        0132  ld      (TOPMEM),hl
+                                  ;; |                                        0133   
+                                  ;; |                                        0134
+                                  ;; |                                        0135  call    SCRTCH  
+                                  ;; |                                        0136     
+                                  ;; |                                        0137
+                                  ;; |                                        0138  call    PRNTIT
+                                  ;; |                                        0139
+                                  ;; |                                        013A    
+                                  ;; |                                        013B  ld      sp,OLDSTK  
+                                  ;; |                                        013C  
+                                  ;; |                                        013D
+                                  ;; |                                        013E  call    STKINI
+                                  ;; |                                        013F
+                                  ;; |                                        0140
+                                  ;; |                                        0141  ld      hl,EXTBAS+5
+                                  ;; |                                        0142
+                                  ;; |                                        0143
+                                  ;; |                                        0144  ld      de,CRTSIG
+                                  ;; |                                        0145
+                                  ;; |                                        0146  
+                                  ;; |                                        0147  ld      a,(de)     
+                                  ;; |                                        0148  or      a          
+                                  ;; |                                        0149  jp      z,XBASIC   
+                                  ;; |                                        014A
+                                  ;; |                                        014B
+                                  ;; |                                        014C  cp      (hl)    
+                                  ;; |                                        014D  jp      nz,READY
+                                  ;; |                                        014E
+                                  ;; |                                        014F  dec     hl 
+                                  ;; |                                        0150  inc     de 
+                                  ;; |                                        0151  jr      EXTCHK
+                                  ;; |                                        0152  
+                                  ;; | INITFF is at 0153
 else                              ;;
 ;;Test Memory to Find Top of RAM  ;;
-        ld      hl,BASTXT+99      ;;Set RAM Test starting address
-MEMTST: inc     hl                ;;Bump pointer
-        ld      c,(hl)            ;;Save contents of location
-        ld      a,h               ;
-        or      l                 ;;Wrapped around to $0000?
-        jr      z,MEMCHK          ;;Yes, go on to check memory
-        xor     c                 ;;Scramble bits into A
-        ld      (hl),a            ;;and write to location
-        ld      b,(hl)            ;;Read back into B
-        cpl                       ;;Invert scrambled bits
-        ld      (hl),a            ;;Write to location
-        ld      a,(hl)            ;;read it back
+        ld      hl,BASTXT+99      ;; \ Set RAM Test starting address
+MEMTST: inc     hl                ;; \ Bump pointer
+        ld      c,(hl)            ;; \ Save contents of location
+        ld      a,h               ;  \ 
+        or      l                 ;; \ Wrapped around to $0000?
+        jr      z,MEMCHK          ;; \ Yes, go on to check memory
+        xor     c                 ;; \ Scramble bits into A
+        ld      (hl),a            ;; \ and write to location
+        ld      b,(hl)            ;; \ Read back into B
+        cpl                       ;; \ Invert scrambled bits
+        ld      (hl),a            ;; \ Write to location
+endif 
+        ld      a,(hl)            ;; \ read it back
         cpl                       ;;and revert back
         ld      (hl),c            ;;Write original byte to location
         cp      b                 ;;Did reads match writes?
@@ -428,14 +411,13 @@ EXTCHK: ld      a,(de)            ;;Get byte from signature
         dec     hl                ;;Move backward in Extended BASIC
         inc     de                ;;and forward in test signature
         jr      EXTCHK            ;;Compare next character
-endif
 ;;Initialize I/O Port 255
 INITFF: ld      a,r               ;;Read random number from Refresh Register
         rla                       ;;Rotate left
 ifdef aqplus
-        xor     a
+        xor     a                 ;; | No scrambling
 else 
-        add     a,c               ;;Copy in bit that was rotated out
+        add     a,c               ;; | Copy in bit that was rotated out
 endif
         out     ($FF),a           ;;Write it to I/O Port 255
         ld      (SCRMBL),a        ;;and save it for later
@@ -1018,7 +1000,11 @@ KLOOP:  ld      a,(hl)            ;GET CHARACTER FROM BUF
         jp      z,STUFFH          ;JUST STUFF AWAY
         ld      b,a               ;SETUP B WITH A QUOTE IF IT IS A STRING
         cp      '"'               ;QUOTE SIGN?
-        jp      STRNGX            ;;Patch to handle both " and '
+ifdef aqplus
+        jp      STRNGX            ; | Patch to handle both " and '
+else                                
+        jp      z,STRNG           ; | YES, GO TO SPECIAL STRING HANDLING
+endif
 STRNGR: or      a                 ;END OF LINE?
         jp      z,CRDONE          ;YES, DONE CRUNCHING
         ld      a,(DORES)         ;IN DATA STATEMENT AND NO CRUNCH?
@@ -5267,9 +5253,9 @@ INCHRI: ld      hl,(RESPTR)
         or      a
 ifdef noreskeys
 ;;;Stop auto-styping when ASCII null is encountered
-        jp      z,KEYRET                                                      
+        jp      z,KEYRET          ;; |                                            
 else
-        jp      p,KEYRET                                                      
+        jp      p,KEYRET          ;; |                                        
 endif
         xor     a                                                             
         ld      (RESPTR+1),a                                                  
@@ -5319,13 +5305,13 @@ ifdef addkeyrows
 ;;; SHIFT      Z   X   C   V   B   N   M   ,   .   /    INS           
 ;;; CTL  SPACE  PRS PSE PUP PUD HOM END CUL CUD CUP CUR DEL
 ;;;
-ROWMSK  equ     $FF               ;;Checking All 8 Rows`
-ROWCNT  equ     8                 
-CSHMSK  equ     $8F               ;;Check Rows 0 through 3 plus 7
+ROWMSK  equ     $FF               ;; | Checking All 8 Rows`
+ROWCNT  equ     8                 ;; | 
+CSHMSK  equ     $8F               ;; | Check Rows 0 through 3 plus 7
 else
-ROWMSK  equ     $3F               ;;Check Rows 0 through 5
-ROWCNT  equ     6                 
-CSHMSK  equ     $0F               ;;Check rows 0 through 3 - %00001111
+ROWMSK  equ     $3F               ;; | Check Rows 0 through 5
+ROWCNT  equ     6                 ;; | 
+CSHMSK  equ     $0F               ;; | Check rows 0 through 3 - %00001111
 endif
 KEYSCN: ld      bc,$00FF          ;;B=0 to scan all columns
         in      a,(c)             ;;Read rows from I/O Port 255
@@ -5391,51 +5377,51 @@ KEYCLR: ld      (hl),0            ;;Clear KCOUNT
 ifdef addkeyrows
 ;;; KEYASC replacement 25/25 bytes
 ;;; Meta, Alt, Control, and Shift are bits 7, 6, 5, and 4 of Column 7.        Original Code
-KEYASC: inc     (hl)              ;;Increment KCOUNT                          1F00 inc     (hl)        
-        ld      bc,$7FFF          ;;Read column 7                             1F01 ld      b,$7F
-                                  ;;                                          1F02 
-                                  ;;                                          1F03 in      a,(c)        
-        in      b,(c)             ;;Get row                                   1F04  
-                                  ;;                                          1F05 bit     5,a         
-        ld      a,192             ;;Meta Table Offset                         1F06 
-                                  ;;                                          1F07 ld      ix,CTLTAB-1 
-        rl      b                 ;;Get rid of GUI Bit                        1F08
-                                  ;;                                          1F09
-KEYALP: rl      b                 ;;Rotate Bits Left                          1F0A
-                                  ;;                                          1F0B jr      z,KEYLUP
-        jr      nc,KEYLUX         ;;If key pressed, go do lookup              1F0C
-                                  ;;                                          1F0D bit     4,a
-        sub     a,64              ;;Offset to Previous TABLE                  1F0E
-                                  ;;                                          1F1F ld      ix,SHFTAB-1
-        jr      nz,KEYALP         ;;Loopif not first table                    1F10
-                                  ;;                                          1F11
-KEYLUX: ld      ix,KEYADR-1        ;;Point to Start of Lookup Tables           1F12
-                                  ;;                                          1F13 jr      z,KEYLUP
-                                  ;;                                          1F14
-                                  ;;                                          1F15 ld      ix,KEYTAB-1
-        add     ix,de             ;;Add Scan Code (Key Offset)                1F16
-                                  ;;                                          1F17
-        ld      e,a               ;;DE = Table Offet                          1F18
+KEYASC: inc     (hl)              ;; | Increment KCOUNT                       1F00 inc     (hl)        
+        ld      bc,$7FFF          ;; | Read column 7                          1F01 ld      b,$7F
+                                  ;; |                                        1F02 
+                                  ;; |                                        1F03 in      a,(c)        
+        in      b,(c)             ;; | Get row                                1F04  
+                                  ;; |                                        1F05 bit     5,a         
+        ld      a,192             ;; | Meta Table Offset                      1F06 
+                                  ;; |                                        1F07 ld      ix,CTLTAB-1 
+        rl      b                 ;; | Get rid of GUI Bit                     1F08
+                                  ;; |                                        1F09
+KEYALP: rl      b                 ;; | Rotate Bits Left                       1F0A
+                                  ;; |                                        1F0B jr      z,KEYLUP
+        jr      nc,KEYLUX         ;; | If key pressed, go do lookup           1F0C
+                                  ;; |                                        1F0D bit     4,a
+        sub     a,64              ;; | Offset to Previous TABLE               1F0E
+                                  ;; |                                        1F1F ld      ix,SHFTAB-1
+        jr      nz,KEYALP         ;; | Loopif not first table                 1F10
+                                  ;; |                                        1F11
+KEYLUX: ld      ix,KEYADR-1       ;; | Point to Start of Lookup Tables        1F12
+                                  ;; |                                        1F13 jr      z,KEYLUP
+                                  ;; |                                        1F14
+                                  ;; |                                        1F15 ld      ix,KEYTAB-1
+        add     ix,de             ;; | Add Scan Code (Key Offset)             1F16
+                                  ;; |                                        1F17
+        ld      e,a               ;; | DE = Table Offet                       1F18
 else                              ;;
-KEYASC: inc     (hl)              ;;Increment KCOUNT
-        ld      b,$7F             ;;Read column 7
-        in      a,(c)             ;;Get row
-        bit     5,a               ;;Check Control key
-        ld      ix,CTLTAB-1       ;;Point to control table
-        jr      z,KEYLUP          ;;Control? Do lookup
-        bit     4,a               ;;Check Shift key
-        ld      ix,SHFTAB-1       ;;Point to shift table
-        jr      z,KEYLUP          ;;Shift? Do lookup
-        ld      ix,KEYTAB-1         
+KEYASC: inc     (hl)              ;; \ Increment KCOUNT
+        ld      b,$7F             ;; \ Read column 7
+        in      a,(c)             ;; \ Get row
+        bit     5,a               ;; \ Check Control key
+        ld      ix,CTLTAB-1       ;; \ Point to control table
+        jr      z,KEYLUP          ;; \ Control? Do lookup
+        bit     4,a               ;; \ Check Shift key
+        ld      ix,SHFTAB-1       ;; \ Point to shift table
+        jr      z,KEYLUP          ;; \ Shift? Do lookup
+        ld      ix,KEYTAB-1       ;; \
 endif
 KEYLUP: add     ix,de             ;;Get pointer into table
         ld      a,(ix+0)          ;;Load ASCII value
         or      a                 ;;Reserved Word? 
 ifdef noreskeys
 ;;;Code Change: Do not expand CTRL-KEYS into Reserved Words                   Original Code
-        jp      KEYRET            ;;                                          1F1F  jp      p,KEYRET
+        jp      KEYRET            ;; |                                        1F1F  jp      p,KEYRET
 else
-        jp      p,KEYRET          ;;No, loop
+        jp      p,KEYRET          ;; \ No, loop
 endif
         sub     $7F               ;;Convert to Reserved Word Count             
         ld      c,a               ;;and copy to C                             
@@ -5452,46 +5438,46 @@ KEYRET: exx                       ;;Restore Registers
         ret
 ;;Key Lookup Tables - 46 bytes each
 ifdef altkeytab
-        include "keytabs.asm"
+        include "keytabs.asm"           ;; |
 else
 ;;Unmodified Key Lookup Table
-KEYTAB: byte    '=',$08,':',$0D,';','.' ;;Backspace and Return
-        byte    '-','/','0','p','l',','
-        byte    '9','o','k','m','n','j'
-        byte    '8','i','7','u','h','b'
-        byte    '6','y','g','v','c','f'
-        byte    '5','t','4','r','d','x'
-        byte    '3','e','s','z',' ','a'
-        byte    '2','w','1','q'
+KEYTAB: byte    '=',$08,':',$0D,';','.' ; \ Backspace and Return
+        byte    '-','/','0','p','l',',' ; \
+        byte    '9','o','k','m','n','j' ; \
+        byte    '8','i','7','u','h','b' ; \
+        byte    '6','y','g','v','c','f' ; \
+        byte    '5','t','4','r','d','x' ; \
+        byte    '3','e','s','z',' ','a' ; \
+        byte    '2','w','1','q'         ; \
 ;;Shifted Key Lookup Table
-SHFTAB: byte    '+',$5C,'*',$0D,'@','>' ;;Backslash, Return
-        byte    '_','^','?','P','L','<'
-        byte    ')','O','K','M','N','J'
-        byte    '(','I',$27,'U','H','B' ;;Apostrophe
-        byte    '&','Y','G','V','C','F'
-        byte    '%','T','$','R','D','X'
-        byte    '#','E','S','Z',' ','A'
-        byte    $22,'W','!','Q'         ;;Quotation Mark
+SHFTAB: byte    '+',$5C,'*',$0D,'@','>' ; \ Backslash, Return
+        byte    '_','^','?','P','L','<' ; \ 
+        byte    ')','O','K','M','N','J' ; \ 
+        byte    '(','I',$27,'U','H','B' ; \ Apostrophe
+        byte    '&','Y','G','V','C','F' ; \ 
+        byte    '%','T','$','R','D','X' ; \ 
+        byte    '#','E','S','Z',' ','A' ; \ 
+        byte    $22,'W','!','Q'         ; \ Quotation Mark
 ;;Control Key Lookup Table
 CTLTAB:
 ifdef noreskeys
-        byte    $1B,$7F,$1D, 0 ,$A0,$7D ;ESC DEL GS      NUL  }   
-        byte    $1F,$1E,$1C,$10,$0C,$7B ;GS  RS  FS  DLE FF   {   
-        byte    $5D,$0F,$0B,$0D,$0E,$0A ; ]  SI  VT  CR  SO  LF   
-        byte    $5B,$09,$60,$15,$08,$02 ; [  Tab  `  NAK BS  SOH  
-        byte    $8E,$19,$07,$16,$03,$06 ;rt  EM  BEL SYN ETX ACK  
-        byte    $9F,$14,$8F,$12,$04,$18 ;dn  DC4 up  DC2 EOT CAN  
-        byte    $9E,$05,$13,$1A, 0 ,$01 ;lft ENC DC3 SUB     SOH  
-        byte    $7E,$17,$7C,$11         ; ~  ETB  |  DC1
+        byte    $1B,$7F,$1D, 0 ,$A0,$7D ; \ | ESC DEL GS      NUL  }   
+        byte    $1F,$1E,$1C,$10,$0C,$7B ; \ | GS  RS  FS  DLE FF   {   
+        byte    $5D,$0F,$0B,$0D,$0E,$0A ; \ |  ]  SI  VT  CR  SO  LF   
+        byte    $5B,$09,$60,$15,$08,$02 ; \ |  [  Tab  `  NAK BS  SOH  
+        byte    $8E,$19,$07,$16,$03,$06 ; \ | rt  EM  BEL SYN ETX ACK  
+        byte    $9F,$14,$8F,$12,$04,$18 ; \ | dn  DC4 up  DC2 EOT CAN  
+        byte    $9E,$05,$13,$1A, 0 ,$01 ; \ | lft ENC DC3 SUB     SOH  
+        byte    $7E,$17,$7C,$11         ; \ |  ~  ETB  |  DC1
 else
-        byte    $82,$1C,$C1,$0D,$94,$C4 ;;NEXT ^\ PEEK Return POKE VAL
-        byte    $81,$1E,$30,$10,$CA,$C3 ;;FOR ^^ 0 ^P POINT STR$
-        byte    $92,$0F,$9D,$0D,$C8,$9C ;;COPY ^O PRESET ^M RIGHT$ PSET
-        byte    $8D,$09,$8C,$15,$08,$C9 ;;RETURN ^I GOSUB ^U ^H MID$
-        byte    $90,$19,$07,$C7,$03,$83 ;;ON ^Y ^G LEFT$ ^C DATA
-        byte    $88,$84,$A5,$12,$86,$18 ;;GOTO INPUT THEN ^R READ ^X
-        byte    $8A,$85,$13,$9A,$C6,$9B ;;IF DIM ^S CLOAD CHR$ CSAVE
-        byte    $97,$8E,$89,$11         ;;LIST REM RUN ^Q
+        byte    $82,$1C,$C1,$0D,$94,$C4 ; \ \ NEXT ^\ PEEK Return POKE VAL
+        byte    $81,$1E,$30,$10,$CA,$C3 ; \ \ FOR ^^ 0 ^P POINT STR$
+        byte    $92,$0F,$9D,$0D,$C8,$9C ; \ \ COPY ^O PRESET ^M RIGHT$ PSET
+        byte    $8D,$09,$8C,$15,$08,$C9 ; \ \ RETURN ^I GOSUB ^U ^H MID$
+        byte    $90,$19,$07,$C7,$03,$83 ; \ \ ON ^Y ^G LEFT$ ^C DATA
+        byte    $88,$84,$A5,$12,$86,$18 ; \ \ GOTO INPUT THEN ^R READ ^X
+        byte    $8A,$85,$13,$9A,$C6,$9B ; \ \ IF DIM ^S CLOAD CHR$ CSAVE
+        byte    $97,$8E,$89,$11         ; \ \ LIST REM RUN ^Q
 endif   ;noreskeys
 endif   ;altkeytab
 ;;Check for Ctrl-C, called from NEWSTT
