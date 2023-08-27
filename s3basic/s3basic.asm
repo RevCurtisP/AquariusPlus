@@ -123,6 +123,7 @@ XCOLD   equ     $2003   ;; | plusBASIC Cold Start`
 XCART   equ     $2006   ;; | plusBASIC Start Cartridge
 XINTR   equ     $2009   ;; | plusBASIC  Interrupt Handler
 XWARM   equ     $200C   ;; | plusBASIC Warm Start`
+SCNLBL  equ     $200F   ;; | Line label hook for GOTO, GOSUB, and RESTORE
 endif                   
 EXTBAS  equ     $2000   ;;Start of Extended Basic
 XSTART  equ     $2010   ;;Extended BASIC Startup Routine
@@ -299,79 +300,77 @@ ifdef aqplus
         jp      XCOLD             ;; |Do Extended BASIC Cold Start            010F  ld      hl,BASTXT+99
                                   ;; |                                        0110  
                                   ;; |                                        0111
-;;Patch to not uppercase characters between single quotes                     
-STRNGX: jp      z,STRNG           ;; | Special Handling for Double Quote      0112  inc     hl      
+;; If label at beginning of line: don't tokenize, just stuff it                                  
+STFLBL: ld      de,BUF            ;; | Setup destination pointer              0112  inc     hl      
                                   ;; |                                        0113  ld      c,(hl)  
                                   ;; |                                        0114  ld      a,h     
-        cp      $27               ;; |                                        0115  or      l       
-                                  ;; |                                        0116  jr      z,MEMCHK
-        jp      z,STRNG           ;; | Do the same for Single Quote           0117   
-                                  ;; |                                        0118  xor     c       
-                                  ;; |                                        0119  ld      (hl),a  
-        jp      STRNGR            ;; |                                        011A  ld      b,(hl)  
+        ld      a,(hl)            ;; | Get character from buf                 0115  or      l       
+        cp      '.'               ;; | If not a period                        0116  jr      z,MEMCHK
+                                  ;; |                                        0117   
+        ret     nz                ;; |   Return                               0118  xor     c       
+        call    STUFFS            ;; | Stuff character in KRUNCH buffer       0119  ld      (hl),a  
+                                  ;; |                                        011A  ld      b,(hl)  
                                   ;; |                                        011B  cpl             
-                                  ;; |                                        011C  ld      (hl),a  
-;; If label at beginning of line: don't tokenize, just stuff it
-STFLBL: ld      de,BUF            ;; | Setup destination pointer              011D  ld      a,(hl)  
-                                  ;; |                                        011E  cpl             
-                                  ;; |                                        011F  ld      (hl),c  
-        ld      a,(hl)            ;; | Get character from buf                 0120  cp      b       
-        cp      ':'               ;; | If not a colon                         0121  jr      z,MEMTST   
+STLOOP: ld      a,(hl)            ;; | Get character from buf                 011C  ld      (hl),a
+        or      a                 ;; | If end of linw                         011D  ld      a,(hl)  
+        ret     z                 ;; |   All done                             011E  cpl             
+        cp      ' '               ;; | If Space                               011F  ld      (hl),c  
+                                  ;; |                                        0120  cp      b       
+        jr      z,SSTUFF          ;; |   Stuff it and keep going              0121  jr      z,MEMTST   
                                   ;; |                                        0122
-        ret     nz                ;; |   Return                               0123  dec     hl  
-        call    STUFFS            ;; | Stuff character in KRUNCH buffer       0124  ld      de,BASTXT+299
-                                  ;; |                                        0125
+        cp      ':'               ;; | If colon                               0123  dec     hl  
+                                  ;; |                                        0124  ld      de,BASTXT+299
+        jr      z,STUFFU          ;; |   Stuff it and return                  0125
                                   ;; |                                        0126
-STLOOP: ld      a,(hl)            ;; | Get character from buf                 0127  rst     COMPAR 
-        or      a                 ;; | If end of linw                         0128  jp      c,OMERR
-        ret     z                 ;; |   All done                             0129
-        cp      ':'               ;; | If colon                               012A                   
+SSTUFF: call    STUFFU            ;; | Stuff character in KRUNCH buffer       0127  rst     COMPAR      
+                                  ;; |                                        0128  jp      c,OMERR
+                                  ;; |                                        0129
+        jr      STLOOP            ;; | Next character                         012A                   
                                   ;; |                                        012B ld      de,$FFCE 
-        jr      z,STUFFU          ;; |   Stuff it and return                  012C       
-                                  ;; |                                        012D    
-        call    STUFFU            ;; | Stuff character in KRUNCH buffer       012E ld      (MEMSIZ),hl     
-                                  ;; |                                        012F  
-                                  ;; |                                        0130   
-        jr      STLOOP            ;; | Next character                         0131  add     hl,de 
-                                  ;; |                                        0132  ld      (TOPMEM),hl
 ;; Uppercase and stuff character  ;; |                                        
-STUFFU: call    MAKUPR            ;; |                                        0133
-                                  ;; |                                        0134 
-                                  ;; |                                        0135  call    SCRTCH
+STUFFU: call    MAKUPR            ;; |                                        012C       
+                                  ;; |                                        012D    
+                                  ;; |                                        012E ld      (MEMSIZ),hl
 ;; Stuff char in KRUNCH buffer    ;; |                                        
-STUFFS: inc     hl                ;; | Bump BUF pointer                       0136
-        ld      (de),a            ;; | Save byte in KRUNCH buffer             0137       
-        inc     de                ;; | Bump KRUNCH pointer                    0138  call    PRNTIT
-        inc     c                 ;; | Increment buffer count                 0139
-        ret                       ;; |                                        013A
+STUFFS: inc     hl                ;; | Bump BUF pointer                       012F  
+        ld      (de),a            ;; | Save byte in KRUNCH buffer             0130   
+        inc     de                ;; | Bump KRUNCH pointer                    0131  add     hl,de 
+        inc     c                 ;; | Increment buffer count                 0132  ld      (TOPMEM),hl
+        ret                       ;; |                                        0133
+                                  ;; |                                        
 ;; Convert A to Upper Case        ;; |                                           
-MAKUPR: cp      'a'               ;; |                                        013B  ld      sp,OLDSTK  
-                                  ;; |                                        013C  
-        ret     c                 ;; | If >= 'a'                              013D
-        cp      '{'               ;; |                                        013E  call    STKINI
+MAKUPR: cp      'a'               ;; |                                        0134 
+                                  ;; |                                        0135  call    SCRTCH
+        ret     c                 ;; | If >= 'a'                              0136
+        cp      '{'               ;; |                                        0137       
+                                  ;; |                                        0138  call    PRNTIT
+        ret     nc                ;; | and less than <'{'                     0139
+        and     $5F               ;; | Clear Bit 5                            013A
+                                  ;; |                                        013B  ld      sp,OLDSTK  
+        ret                       ;; |                                        013C  
+        byte    $38               ;; | Fill in byte                           013D
+        byte    $CD,$E5,$0B       ;; | A little breathing room                013E  call    STKINI
                                   ;; |                                        013F
-        ret     nc                ;; | and less than <'{'                     0140
-        and     $5F               ;; | Clear Bit 5                            0141  ld      hl,EXTBAS+5
-                                  ;; |                                        0142            
-        ret                       ;; |                                        0143
+                                  ;; |                                        0140
 ;; Skip label at begin of line    ;; |
-SKPLBL: ex      de,hl             ;; | DE = Line#, HL = Text Pointer          0144  ld      de,CRTSIG
-        rst     CHRGET            ;; | Get first character                    0145
-        cp      ':'               ;; | If not a colon                         0146  
-                                  ;; |                                        0147  ld      a,(de)     
-        jr      nz,SKPGO          ;; |   Execute rest of line                 0148  or      a          
-                                  ;; |                                        0149  jp      z,XBASIC   
-SKLOOP: rst     CHRGET            ;; | Get next charcter                      014A
+SKPLBL: ex      de,hl             ;; | DE = Line#, HL = Text Pointer          0141  ld      hl,EXTBAS+5
+        rst     CHRGET            ;; | Get first character                    0142            
+        cp      '.'               ;; | If not a period                        0143
+                                  ;; |                                        0144  ld      de,CRTSIG
+        jr      nz,SKPGO          ;; |   Execute rest of line                 0145
+                                  ;; |                                        0146  
+SKLOOP: rst     CHRGET            ;; | Get next charcter                      0147  ld      a,(de)     
+        or      a                 ;; | If end of line                         0148  or      a          
+        jr      z,SKPGO           ;; |   done                                 0149  jp      z,XBASIC   
+                                  ;; |                                        014A
         cp      ':'               ;; | If not a colon                         014B
                                   ;; |                                        014C  cp      (hl)    
-        jr      nz,SKLOOP         ;; |   Keep going                           014D  jp      nz,READY
-                                  ;; |                                        014E
-SKPGO:  dec     hl                ;; | Back up text pointer                   014F  dec     hl 
-        jp      GONE              ;; | Execute rest of line                   0150  inc     de 
+        jr      nz,SKLOOP         ;; |   Keep going                           014D  jr      nz,INITFF
+                                  ;; |                                        014E 
+SKPGO:  dec     hl                ;; | Back up text pointer                   0150  inc     de  
+        jp      GONE              ;; | Execute rest of line                   014F  dec     hl 
                                   ;; |                                        0151  jr      EXTCHK
                                   ;; |                                        0152  
-; -------------------------------------------------------------------------------------------------------------
-                                  ;; | INITFF is at 0153
 else                              ;;
 ;;Test Memory to Find Top of RAM  ;;
         ld      hl,BASTXT+99      ;; \ Set RAM Test starting address
@@ -1381,7 +1380,8 @@ GOSUB:  ld      c,3               ;[M80] "GOSUB" ENTRIES ARE 5 BYTES LONG
         push    af                ;[M80] PUT GOSUB TOKEN ON THE STACK
         inc     sp                ;[M80] THE GOSUB TOKEN TAKES ONLY ONE BYTE
 RUNC2:  push    bc                ;[M80] RESTORE RETURN ADDRESS OF "NEWSTT"
-GOTO:   call    SCNLIN            ;[M80] PICK UP THE LINE # AND PUT IT IN [D,E]
+GOTO:   
+        call    SCNLIN            ;[M80] PICK UP THE LINE # AND PUT IT IN [D,E]
         call    REM               ;[M80] SKIP TO THE END OF THIS LINE
         inc     hl                ;[M80] POINT AT THE LINK BEYOND IT
         push    hl                ;[M80] SAVE THE POINTER
@@ -5442,11 +5442,26 @@ endif
 KEYRES: inc     hl                ;;Bump pointer                              
         ld      a,(hl)            ;;Get next character                        
         or      a                 ;;First letter of reserved word?            
-        jp      p,KEYRES          ;;No, loop                                  
-        dec     c                 ;;Decrement Count                           
-        jr      nz,KEYRES         ;;Not 0? Find next word                     
-        ld      (RESPTR),hl       ;;Save Keyword Address                      
-        and     $7F               ;;Strip high bit from first character       
+ifdef aqplus
+;;; Code Change: Patch to not uppercase characters between single quotes                     
+STRNGX: jp      z,STRNG           ;; | Special Handling for Double Quote      1F2B  jp      p,KEYRES
+                                  ;; |                                        1F2C
+                                  ;; |                                        1F2D  
+        cp      $27               ;; |                                        1F2E  dec     c             
+                                  ;; |                                        1F2F  jr      nz,KEYRES   
+        jp      z,STRNG           ;; | Do the same for Single Quote           1F30
+                                  ;; |                                        1F31  ld      (RESPTR),hl
+                                  ;; |                                        1F32  
+        jp      STRNGR            ;; |                                        1F33
+                                  ;; |                                        1F34 and     $7F
+                                  ;; |                                        1F35  
+else
+        jp      p,KEYRES          ;; / `No, loop                                  
+        dec     c                 ;; / `Decrement Count                           
+        jr      nz,KEYRES         ;; / `Not 0? Find next word                     
+        ld      (RESPTR),hl       ;; / `Save Keyword Address                      
+        and     $7F               ;; / `Strip high bit from first character       
+endif
 KEYRET: exx                       ;;Restore Registers
         ret
 ;;Key Lookup Tables - 46 bytes each
