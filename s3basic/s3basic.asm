@@ -145,10 +145,10 @@ ifdef aqplus
 else        
         jp      JMPINI            ;; \ Start Initialization
 endif
-        byte    $82,$06,$22       ;;Revision Date 1982-06-22                  Original Code
+        byte    $23,$08,$26       ;;Revision Date 1982-06-22                  Original Code
 ;;RST 1 - Syntax Check
 
-        byte    11                ;;Revision Number?
+        byte    1                 ;;Revision Number?
         nop                       ;;Pad out the RST routine
 SYNCHK: ld      a,(hl)
         ex      (sp),hl
@@ -300,7 +300,6 @@ ifdef aqplus
                                   ;; |                                        0110  
                                   ;; |                                        0111
 ;;Patch to not uppercase characters between single quotes                     
-MEMTST                            ;; | For deprecated jumps
 STRNGX: jp      z,STRNG           ;; | Special Handling for Double Quote      0112  inc     hl      
                                   ;; |                                        0113  ld      c,(hl)  
                                   ;; |                                        0114  ld      a,h     
@@ -312,60 +311,66 @@ STRNGX: jp      z,STRNG           ;; | Special Handling for Double Quote      01
         jp      STRNGR            ;; |                                        011A  ld      b,(hl)  
                                   ;; |                                        011B  cpl             
                                   ;; |                                        011C  ld      (hl),a  
-; -------------------------------------------------------------------------------------------------------------
-                                  ;; |                                        011D  ld      a,(hl)  
+;; If label at beginning of line: don't tokenize, just stuff it
+STFLBL: ld      de,BUF            ;; | Setup destination pointer              011D  ld      a,(hl)  
                                   ;; |                                        011E  cpl             
                                   ;; |                                        011F  ld      (hl),c  
-                                  ;; |                                        0120  cp      b       
-                                  ;; |                                        0121  jr      z,MEMTST   
-                                  ;; |                                        0123  dec     hl  
-                                  ;; |                                        0124  ld      de,BASTXT+299
+        ld      a,(hl)            ;; | Get character from buf                 0120  cp      b       
+        cp      ':'               ;; | If not a colon                         0121  jr      z,MEMTST   
+                                  ;; |                                        0122
+        ret     nz                ;; |   Return                               0123  dec     hl  
+        call    STUFFS            ;; | Stuff character in KRUNCH buffer       0124  ld      de,BASTXT+299
                                   ;; |                                        0125
                                   ;; |                                        0126
-                                  ;; |                                        0127  rst     COMPAR 
-                                  ;; |                                        0128  jp      c,OMERR
-                                  ;; |                                        0129
-                                  ;; |                                        012A                    
+STLOOP: ld      a,(hl)            ;; | Get character from buf                 0127  rst     COMPAR 
+        or      a                 ;; | If end of linw                         0128  jp      c,OMERR
+        ret     z                 ;; |   All done                             0129
+        cp      ':'               ;; | If colon                               012A                   
                                   ;; |                                        012B ld      de,$FFCE 
-                                  ;; |                                        012C      
-                                  ;; |                                        012D  
-                                  ;; |                                        012E ld      (MEMSIZ),hl
+        jr      z,STUFFU          ;; |   Stuff it and return                  012C       
+                                  ;; |                                        012D    
+        call    STUFFU            ;; | Stuff character in KRUNCH buffer       012E ld      (MEMSIZ),hl     
                                   ;; |                                        012F  
                                   ;; |                                        0130   
-                                  ;; |                                        0131  add     hl,de 
+        jr      STLOOP            ;; | Next character                         0131  add     hl,de 
                                   ;; |                                        0132  ld      (TOPMEM),hl
-                                  ;; |                                        0133   
-                                  ;; |                                        0134
-                                  ;; |                                        0135  call    SCRTCH  
-                                  ;; |                                        0136     
-                                  ;; |                                        0137
-                                  ;; |                                        0138  call    PRNTIT
-                                  ;; |                                        0139
-                                  ;; |                                        013A    
-                                  ;; |                                        013B  ld      sp,OLDSTK  
+;; Uppercase and stuff character  ;; |                                        
+STUFFU: call    MAKUPR            ;; |                                        0133
+                                  ;; |                                        0134 
+                                  ;; |                                        0135  call    SCRTCH
+;; Stuff char in KRUNCH buffer    ;; |                                        
+STUFFS: inc     hl                ;; | Bump BUF pointer                       0136
+        ld      (de),a            ;; | Save byte in KRUNCH buffer             0137       
+        inc     de                ;; | Bump KRUNCH pointer                    0138  call    PRNTIT
+        inc     c                 ;; | Increment buffer count                 0139
+        ret                       ;; |                                        013A
+;; Convert A to Upper Case        ;; |                                           
+MAKUPR: cp      'a'               ;; |                                        013B  ld      sp,OLDSTK  
                                   ;; |                                        013C  
-                                  ;; |                                        013D
-                                  ;; |                                        013E  call    STKINI
+        ret     c                 ;; | If >= 'a'                              013D
+        cp      '{'               ;; |                                        013E  call    STKINI
                                   ;; |                                        013F
-                                  ;; |                                        0140
-                                  ;; |                                        0141  ld      hl,EXTBAS+5
-                                  ;; |                                        0142
-                                  ;; |                                        0143
-                                  ;; |                                        0144  ld      de,CRTSIG
-                                  ;; |                                        0145
-                                  ;; |                                        0146  
+        ret     nc                ;; | and less than <'{'                     0140
+        and     $5F               ;; | Clear Bit 5                            0141  ld      hl,EXTBAS+5
+                                  ;; |                                        0142            
+        ret                       ;; |                                        0143
+;; Skip label at begin of line    ;; |
+SKPLBL: ex      de,hl             ;; | DE = Line#, HL = Text Pointer          0144  ld      de,CRTSIG
+        rst     CHRGET            ;; | Get first character                    0145
+        cp      ':'               ;; | If not a colon                         0146  
                                   ;; |                                        0147  ld      a,(de)     
-                                  ;; |                                        0148  or      a          
+        jr      nz,SKPGO          ;; |   Execute rest of line                 0148  or      a          
                                   ;; |                                        0149  jp      z,XBASIC   
-                                  ;; |                                        014A
-                                  ;; |                                        014B
+SKLOOP: rst     CHRGET            ;; | Get next charcter                      014A
+        cp      ':'               ;; | If not a colon                         014B
                                   ;; |                                        014C  cp      (hl)    
-                                  ;; |                                        014D  jp      nz,READY
+        jr      nz,SKLOOP         ;; |   Keep going                           014D  jp      nz,READY
                                   ;; |                                        014E
-                                  ;; |                                        014F  dec     hl 
-                                  ;; |                                        0150  inc     de 
+SKPGO:  dec     hl                ;; | Back up text pointer                   014F  dec     hl 
+        jp      GONE              ;; | Execute rest of line                   0150  inc     de 
                                   ;; |                                        0151  jr      EXTCHK
                                   ;; |                                        0152  
+; -------------------------------------------------------------------------------------------------------------
                                   ;; | INITFF is at 0153
 else                              ;;
 ;;Test Memory to Find Top of RAM  ;;
@@ -380,37 +385,37 @@ MEMTST: inc     hl                ;; \ Bump pointer
         ld      b,(hl)            ;; \ Read back into B
         cpl                       ;; \ Invert scrambled bits
         ld      (hl),a            ;; \ Write to location
-endif 
         ld      a,(hl)            ;; \ read it back
-        cpl                       ;;and revert back
-        ld      (hl),c            ;;Write original byte to location
-        cp      b                 ;;Did reads match writes?
-        jr      z,MEMTST          ;;Yes, check next location
-;;Check Memory Size               ;
-MEMCHK: dec     hl                ;;Back up to last good address
-        ld      de,BASTXT+299     ;
-        rst     COMPAR            ;;Is there enough RAM?
-        jp      c,OMERR           ;;No, Out of Memory error
-        ld      de,$FFCE
-        ld      (MEMSIZ),hl       ;;Set MEMSIZ to last RAM location
-        add     hl,de
-        ld      (TOPMEM),hl       ;;Set TOPMEM t0 MEMSIZ-50
-        call    SCRTCH            ;;Perform NEW
-        call    PRNTIT            ;;Print copyright message
-        call    STKINI            ;;Set stack pointer to TOPMEM
-        ld      hl,EXTBAS+5       ;;End of signature in Extended BASIC
-        ld      de,CRTSIG         ;;Text to check signature against
-;;Set Top of memory
-        ld      sp,OLDSTK         ;;Top of of stack used to be here
-;;Check for Extended BASIC
-EXTCHK: ld      a,(de)            ;;Get byte from signature
-        or      a                 ;;Did we reach a terminator?
-        jp      z,XBASIC          ;;Yes, start Extended BASIC
-        cp      (hl)              ;;Does it match byte in ROM?
-        jr      nz,INITFF         ;;No, move on
-        dec     hl                ;;Move backward in Extended BASIC
-        inc     de                ;;and forward in test signature
-        jr      EXTCHK            ;;Compare next character
+        cpl                       ;; \ and revert back
+        ld      (hl),c            ;; \ Write original byte to location
+        cp      b                 ;; \ Did reads match writes?
+        jr      z,MEMTST          ;; \ Yes, check next location
+;;Check Memory Size               ;; \ 
+MEMCHK: dec     hl                ;; \ Back up to last good address
+        ld      de,BASTXT+299     ;; \ 
+        rst     COMPAR            ;; \ Is there enough RAM?
+        jp      c,OMERR           ;; \ No, Out of Memory error
+;;Set Top of memory               ;; \ 
+        ld      de,$FFCE          ;; \ 
+        ld      (MEMSIZ),hl       ;; \ Set MEMSIZ to last RAM location
+        add     hl,de             ;; \ 
+        ld      (TOPMEM),hl       ;; \ Set TOPMEM t0 MEMSIZ-50
+        call    SCRTCH            ;; \ Perform NEW
+        call    PRNTIT            ;; \ Print copyright message
+        ld      sp,OLDSTK         ;; \ Top of of stack used to be here
+        call    STKINI            ;; \ Set stack pointer to TOPMEM
+        ld      hl,EXTBAS+5       ;; \ End of signature in Extended BASIC
+        ld      de,CRTSIG         ;; \ Text to check signature against
+;;Check for Extended BASIC        ;; \ 
+EXTCHK: ld      a,(de)            ;; \ Get byte from signature
+        or      a                 ;; \ Did we reach a terminator?
+        jp      z,XBASIC          ;; \ Yes, start Extended BASIC
+        cp      (hl)              ;; \ Does it match byte in ROM?
+        jr      nz,INITFF         ;; \ No, move on
+        dec     hl                ;; \ Move backward in Extended BASIC
+        inc     de                ;; \ and forward in test signature
+        jr      EXTCHK            ;; \ Compare next character
+endif                             
 ;;Initialize I/O Port 255
 INITFF: ld      a,r               ;;Read random number from Refresh Register
         rla                       ;;Rotate left
@@ -994,7 +999,11 @@ LOOP:   ld      b,h               ;[M80] IF EXITING BECAUSE OF END OF PROGRAM,
 CRUNCH: xor     a                 ;SAY EXPECTING FLOATING NUMBERS
         ld      (DORES),a         ;ALLOW CRUNCHING
         ld      c,5               ;LENGTH OF KRUNCH BUFFER
-        ld      de,BUF            ;SETUP DESTINATION POINTER
+ifdef aqplus
+        call    STFLBL            ; | Don't tokenize labels
+else
+        ld      de,BUF            ; \ SETUP DESTINATION POINTER
+endif
 KLOOP:  ld      a,(hl)            ;GET CHARACTER FROM BUF
         cp      ' '               ;SPACE?
         jp      z,STUFFH          ;JUST STUFF AWAY
@@ -1248,7 +1257,11 @@ GONE4:  ld      a,(hl)            ;[M80] IF POINTER IS ZERO, END OF PROGRAM
         inc     hl                ;
         ld      d,(hl)            ;[M80] GET LINE # IN [D,E]
         ex      de,hl             ;[M80] [H,L]=LINE #
-        ld      (CURLIN),hl       ;[M80] SETUP CURLIN WITH THE CURRENT LINE #
+ifdef aqplus
+        jp      SKPLBL            ; | Skip label at beginning of line 
+else
+        ld      (CURLIN),hl       ; \ [M80] SETUP CURLIN WITH THE CURRENT LINE #
+endif
         ex      de,hl             ;;DE=Line#, HL=Text Pointer
 
 GONE:   rst     CHRGET            ;[M80] GET THE STATEMENT TYPE
@@ -2517,7 +2530,7 @@ STRCMP: push    de
         pop     af                ;
         ld      d,a               ;
         pop     hl                ;[M80] GET BACK 2ND CHARACTER POINTER
-CSLOOP: ld      a,e               ;[M80] BOTH STRINGS ENDED
+CSTLOOP: ld      a,e               ;[M80] BOTH STRINGS ENDED
         or      d                 ;[M80] TEST BY OR'ING THE LENGTHS TOGETHER
         ret     z                 ;[M80] IF SO, RETURN WITH A ZERO
         ld      a,d               ;[M80] GET FACLO STRING LENGTH
@@ -2534,7 +2547,7 @@ CSLOOP: ld      a,e               ;[M80] BOTH STRINGS ENDED
         inc     bc                ;
         cp      (hl)              ;[M80] COMPARE WITH FACLO STRING
         inc     hl                ;[M80] BUMP POINTERS (INX DOESNT CLOBBER CC'S)
-        jr      z,CSLOOP          ;[M80] IF BOTH THE SAME, MUST BE MORE TO STRINGS
+        jr      z,CSTLOOP          ;[M80] IF BOTH THE SAME, MUST BE MORE TO STRINGS
         ccf                       ;[M80] HERE WHEN STRINGS DIFFER
         jp      SIGNS             ;[M80] SET [A] ACCORDING TO CARRY
 ;;CONVERT NUMBER TO STRING
