@@ -84,7 +84,7 @@ TEMPPT:     equ $38AF   ; [M80] POINTER AT FIRST FREE TEMP DESCRIPTOR. INITIALIZ
 TEMPST:     equ $38B1   ; [M80] STORAGE FOR NUMTMP TEMP DESCRIPTORS
 DSCTMP:     equ $38BD   ; [M80] STRING FUNCTIONS BUILD ANSWER DESCRIPTOR HERE
 FRETOP:     equ $38C1   ; [M80] TOP OF STRING FREE SPACE
-TENP3:      equ $38C3   ; [M80] USED MOMENTARILY BY FRMEVL. USED IN EXTENDED BY FOUT AND
+TEMP3:      equ $38C3   ; [M80] USED MOMENTARILY BY FRMEVL. USED IN EXTENDED BY FOUT AND
                         ; [M80] USER DEFINED FUNCTIONS ARRAY VARIABLE HANDLING TEMPORARY
 TEMP8:      equ $38C5   ; [M80] USED TO STORE THE ADDRESS OF THE END OF STRING ARRAYS IN GARBAGE COLLECTION
 ENDFOR:     equ $38C7   ; [M80] SAVED TEXT POINTER AT END OF "FOR" STATEMENT
@@ -180,8 +180,11 @@ NEWSTT:     equ $062C
 CHRGT2      equ $066C   ; Get Current Character and Set Flags
 FRCINT:     equ $0682   ; Convert fp number to 16 bit signed integer in DE
 FCERR:      equ $0697   ; Function call error
+SCNLIN      equ $069C   ; Get line number from text at (HL)
 IQERR       equ FCERR   ; Illegal quantity error (future expansion)
 RUNC2:      equ $06DB
+GOTOSL
+USERR       equ $06F3   ; Undefined line error
 FRMNUM:     equ $0972   ; Evaluate numeric expression
 CHKNUM:     equ $0975   ; Error if evaluated expression not a number
 CHKSTR:     equ $0976   ; Error if evaluated expression not string
@@ -199,6 +202,7 @@ RUNC:       equ $0BCB
 CLEARC:     equ $0BCF
 STKINI:     equ $0BE5
 ;FRMINT         $0B7F   ; Deprecated in S3BASIC, use GETINT instead
+BGNRST      equ $0C19   ; Finish up RESTORE
 ISLETC:     equ $0CC6   ; Test for a letter
 STRINI      equ $0E50   ; Reserve space for new string and create descriptor
 STRLIT      equ $0E5F   ; Build descriptor for string litersl
@@ -232,7 +236,8 @@ XINIT:      equ $E010   ; Cartridge entry point
 RESET:      equ $0089
 
 ; Standard BASIC Tokens
-PLUSTK      equ $A8
+GOSUTK      equ $8C     ; GOSUB
+PLUSTK      equ $A8     ; +
 
 ;Adddress of Byte following Hook RST
 HOOK0       = $03DF

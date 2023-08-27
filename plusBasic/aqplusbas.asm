@@ -53,6 +53,7 @@
     jp      _start_cart     ; $2006
     jp      _interrupt      ; $2009
     jp      _warm_boot      ; $200C Called from main ROM for warm boot
+    jp      _scan_label     ; $200F Called from GOTO and RESTORE
 
 ifdef _____   ; Waiting for modules to stablize
     org     $2100
@@ -292,17 +293,9 @@ direct_mode:
     jp      HOOK2+1
     
 clear_esp_fdesc:
-    ld      a,255
+    ld      a,128
     ld      (ESP_FDESC),a         ; Set to No File
     reti
-
-;-----------------------------------------------------------------------------
-; HOOK 5 - Set Return Address for CHEAD when executed from S3BASIC
-;-----------------------------------------------------------------------------
-set_chead_return:
-    ld      bc,MAIN             ; Make CHEAD return to MAIN
-    push    bc
-    jmp     HOOK5+1
 
 ;-----------------------------------------------------------------------------
 ; Hook 23 - GONE2 (Handle Extended BASIC Statement Tokens)
@@ -321,6 +314,75 @@ statement_ret:
     out     (IO_BANK3),a          ; Bank it Back in
     ret                           ; Return to NEWSTT
     
+; run "progs/lbltest.bas"
+
+; run "progs/restest.bas"
+
+;-----------------------------------------------------------------------------
+; GOTO and RESUME hack
+; Check for label at beginning of line, then search for it's line
+;-----------------------------------------------------------------------------
+_scan_label:
+    ld      a,(hl)                ; Reget current character
+    cp      '_'
+    jr      nz,.not_label         ; If not underscore
+    ex      de,hl                 ; DE = Text Pointer
+    ld      (TEMP8),de            ; Save it
+    ld      hl,(TXTTAB)           ; HL = start of program,
+.line_loop:
+    ld      c,(hl)                ; BC = link to next line
+    inc     hl
+    ld      b,(hl)
+    inc     hl  
+    ld      (TEMP3),bc            ; Save for later
+    inc     hl                    ; Skip line number
+    inc     hl                    ; 
+    ld      a,(hl)                ; Get first character
+    cp      '_'                   ; If not underscore
+    jr      nz,.next_line         ;   Skip to next lines
+.label_loop:
+    ld      a,(de)                ; Next character from label
+    cp      ' '                   ; If space
+    jr      z,.label_loop         ;   Skip it
+    call    .check_colon          ; Treat colon as terminator
+    ld      b,a             ; Put in B for compare
+.text_loop:
+    ld      a,(hl)                ; Get character from line
+    cp      ' '                   ; If space
+    jr      z,.text_loop          ;   Skip it
+    call    .check_colon          ; Treat colon as terminator
+    cp      b                     ; If characters don't match
+    jp      nz,.no_match          ;
+    or      a                     ; If both are terminators
+    jr      z,.found_it           ;   Finish up
+    inc     de                    ; Move it on up
+    inc     hl                    ; HL is Text Pointer
+    jr      .label_loop           ; Check next character
+.no_match
+    ld      de,(TEMP8)            ; Restore pointer to label
+.next_line
+    ld      hl,(TEMP3)            ; Get Link to next linr
+    ld      a,h                   ; If link to next line is $0000
+    or      l                     ;   End of program
+    jp      z,USERR               ;   So Undefined Line error
+    jr      .line_loop            ; Scan the next line
+.found_it
+    pop     af                    ; Get return address
+    cp      $06                   ; If we came from GOTO 
+    ret     z                     ;   Return to NEWSTT
+    jp      BGNRST                ; Load DATPTR, HL = Text Pointer, and Return
+.not_label:
+;    pop     af                    ; Get return address
+;    push    af                    ; and put it back for return
+;    cp      $06                   ; If we came from GOTO 
+    jp      SCNLIN                ;   Scan line number and return to GOTO
+
+.check_colon
+    cp      ':'                   ; Check A
+    ret     nz                    ; If colon
+    xor     a                     ;   Treat like terminator
+    ret
+
 
 FLOAT_BC:
     ld      d,b                   ;  Copy into DE
