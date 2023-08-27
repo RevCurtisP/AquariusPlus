@@ -146,11 +146,10 @@ ifdef aqplus
 else        
         jp      JMPINI            ;; \ Start Initialization
 endif
-        byte    $23,$08,$26       ;;Revision Date 1982-06-22                  Original Code
-;;RST 1 - Syntax Check
-
+        byte    $23,$08,$27       ;;Revision Date 
         byte    1                 ;;Revision Number?
         nop                       ;;Pad out the RST routine
+;;RST 1 - Syntax Check
 SYNCHK: ld      a,(hl)
         ex      (sp),hl
         cp      (hl)              ;[M65] CHARACTERS EQUAL?
