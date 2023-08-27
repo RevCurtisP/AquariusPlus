@@ -998,11 +998,7 @@ LOOP:   ld      b,h               ;[M80] IF EXITING BECAUSE OF END OF PROGRAM,
 CRUNCH: xor     a                 ;SAY EXPECTING FLOATING NUMBERS
         ld      (DORES),a         ;ALLOW CRUNCHING
         ld      c,5               ;LENGTH OF KRUNCH BUFFER
-ifdef aqplus
-        call    STFLBL            ; | Don't tokenize labels
-else
         ld      de,BUF            ; \ SETUP DESTINATION POINTER
-endif
 KLOOP:  ld      a,(hl)            ;GET CHARACTER FROM BUF
         cp      ' '               ;SPACE?
         jp      z,STUFFH          ;JUST STUFF AWAY
