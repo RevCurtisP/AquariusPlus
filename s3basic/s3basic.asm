@@ -301,61 +301,62 @@ ifdef aqplus
                                   ;; |                                        0110  
                                   ;; |                                        0111
 ;; If label at beginning of line: don't tokenize, just stuff it                                  
-STFLBL: ld      de,BUF            ;; | Setup destination pointer              0112  inc     hl      
+STFLBL: cp      '_'               ;; | If not a period                        0112  inc     hl      
                                   ;; |                                        0113  ld      c,(hl)  
-                                  ;; |                                        0114  ld      a,h     
-        ld      a,(hl)            ;; | Get character from buf                 0115  or      l       
-        cp      '.'               ;; | If not a period                        0116  jr      z,MEMCHK
-                                  ;; |                                        0117   
-        ret     nz                ;; |   Return                               0118  xor     c       
-        call    STUFFS            ;; | Stuff character in KRUNCH buffer       0119  ld      (hl),a  
-                                  ;; |                                        011A  ld      b,(hl)  
-                                  ;; |                                        011B  cpl             
-STLOOP: ld      a,(hl)            ;; | Get character from buf                 011C  ld      (hl),a
-        or      a                 ;; | If end of linw                         011D  ld      a,(hl)  
-        ret     z                 ;; |   All done                             011E  cpl             
+        jp      nz,STRNGR         ;; |   Keep on truckin'                     0114  ld      a,h     
+                                  ;; |                                        0115  or      l       
+                                  ;; |                                        0116  jr      z,MEMCHK
+        call    STUFFS            ;; | Stuff character in KRUNCH buffer       0117   
+                                  ;; |                                        0118  xor     c       
+                                  ;; |                                        0119  ld      (hl),a  
+STLOOP: ld      a,(hl)            ;; | Get character from buf                 011A  ld      b,(hl)  
+        or      a                 ;; | If end of linw                         011B  cpl             
+        jp      z,CRDONE          ;; |   Finish it up                         011C  ld      (hl),a
+                                  ;; |                                        011D  ld      a,(hl)  
+                                  ;; |                                        011E  cpl             
         cp      ' '               ;; | If Space                               011F  ld      (hl),c  
                                   ;; |                                        0120  cp      b       
         jr      z,SSTUFF          ;; |   Stuff it and keep going              0121  jr      z,MEMTST   
                                   ;; |                                        0122
         cp      ':'               ;; | If colon                               0123  dec     hl  
                                   ;; |                                        0124  ld      de,BASTXT+299
-        jr      z,STUFFU          ;; |   Stuff it and return                  0125
+        jp      z,STRNGR          ;; |   Stuff it and return                  0125
                                   ;; |                                        0126
-SSTUFF: call    STUFFU            ;; | Stuff character in KRUNCH buffer       0127  rst     COMPAR      
-                                  ;; |                                        0128  jp      c,OMERR
+                                  ;; |                                        0127  rst     COMPAR  
+SSTUFF: call    STUFFU            ;; | Stuff character in KRUNCH buffer       0128  jp      c,OMERR    
                                   ;; |                                        0129
-        jr      STLOOP            ;; | Next character                         012A                   
-                                  ;; |                                        012B ld      de,$FFCE 
+                                  ;; |                                        012A                  
+        jr      STLOOP            ;; | Next character                         012B ld      de,$FFCE  
+                                  ;; |                                        012C
 ;; Uppercase and stuff character  ;; |                                        
-STUFFU: call    MAKUPR            ;; |                                        012C       
-                                  ;; |                                        012D    
+STUFFU: call    MAKUPR            ;; |                                        012D           
                                   ;; |                                        012E ld      (MEMSIZ),hl
+                                  ;; |                                        012F
 ;; Stuff char in KRUNCH buffer    ;; |                                        
-STUFFS: inc     hl                ;; | Bump BUF pointer                       012F  
-        ld      (de),a            ;; | Save byte in KRUNCH buffer             0130   
-        inc     de                ;; | Bump KRUNCH pointer                    0131  add     hl,de 
-        inc     c                 ;; | Increment buffer count                 0132  ld      (TOPMEM),hl
-        ret                       ;; |                                        0133
+STUFFS: inc     hl                ;; | Bump BUF pointer                       0130     
+        ld      (de),a            ;; | Save byte in KRUNCH buffer             0131  add     hl,de 
+        inc     de                ;; | Bump KRUNCH pointer                    0132  ld      (TOPMEM),hl
+        inc     c                 ;; | Increment buffer count                 0133
+        ret                       ;; |                                        0134 
                                   ;; |                                        
 ;; Convert A to Upper Case        ;; |                                           
-MAKUPR: cp      'a'               ;; |                                        0134 
-                                  ;; |                                        0135  call    SCRTCH
-        ret     c                 ;; | If >= 'a'                              0136
-        cp      '{'               ;; |                                        0137       
-                                  ;; |                                        0138  call    PRNTIT
-        ret     nc                ;; | and less than <'{'                     0139
-        and     $5F               ;; | Clear Bit 5                            013A
-                                  ;; |                                        013B  ld      sp,OLDSTK  
-        ret                       ;; |                                        013C  
-        byte    $38               ;; | Fill in byte                           013D
-        byte    $CD,$E5,$0B       ;; | A little breathing room                013E  call    STKINI
+MAKUPR: cp      'a'               ;; |                                        0135  call    SCRTCH
+                                  ;; |                                        0136
+        ret     c                 ;; | If >= 'a'                              0137       
+        cp      '{'               ;; |                                        0138  call    PRNTIT
+                                  ;; |                                        0139
+        ret     nc                ;; | and less than <'{'                     013A
+        and     $5F               ;; | Clear Bit 5                            013B  ld      sp,OLDSTK 
+                                  ;; |                                        013C   
+        ret                       ;; |                                        013D
+                                  ;; |
+;; Skip label at begin of line    ;; |
+SKPLBL: ld      (CURLIN),hl       ;; | Save the Line #                        013E  call    STKINI
                                   ;; |                                        013F
                                   ;; |                                        0140
-;; Skip label at begin of line    ;; |
-SKPLBL: ex      de,hl             ;; | DE = Line#, HL = Text Pointer          0141  ld      hl,EXTBAS+5
+        ex      de,hl             ;; | DE = Line#, HL = Text Pointer          0141  ld      hl,EXTBAS+5
         rst     CHRGET            ;; | Get first character                    0142            
-        cp      '.'               ;; | If not a period                        0143
+        cp      '_'               ;; | If not a period                        0143
                                   ;; |                                        0144  ld      de,CRTSIG
         jr      nz,SKPGO          ;; |   Execute rest of line                 0145
                                   ;; |                                        0146  
@@ -492,7 +493,7 @@ STMDSP: ;MARKS START OF STATEMENT LIST
         word    IFS               ;;$079C
         word    RESTOR            ;;$0C05
         word    GOSUB             ;;$06CB
-        word    RETURN            ;;$06F8
+        word    RETURN            ;;$ 
         word    REM               ;;$071E
         word    STOP              ;;$0C1F
         word    ONGOTO            ;;$0780
@@ -1377,7 +1378,13 @@ GOSUB:  ld      c,3               ;[M80] "GOSUB" ENTRIES ARE 5 BYTES LONG
         inc     sp                ;[M80] THE GOSUB TOKEN TAKES ONLY ONE BYTE
 RUNC2:  push    bc                ;[M80] RESTORE RETURN ADDRESS OF "NEWSTT"
 GOTO:   
-        call    SCNLIN            ;[M80] PICK UP THE LINE # AND PUT IT IN [D,E]
+ifdef aqplus
+;; Code Change: Allow GOTO and GOSUB to line label
+
+        call    SCNLBL            ; | See if it's a label                     
+else
+        call    SCNLIN            ; / [M80] PICK UP THE LINE # AND PUT IT IN [D,E]
+endif
         call    REM               ;[M80] SKIP TO THE END OF THIS LINE
         inc     hl                ;[M80] POINT AT THE LINK BEYOND IT
         push    hl                ;[M80] SAVE THE POINTER
@@ -2210,7 +2217,12 @@ RESTOR: ex      de,hl             ;[M80] SAVE [H,L] IN [D,E]
         ld      hl,(TXTTAB)       ;
         jr      z,BGNRST          ;[M80] RESTORE DATA POINTER TO BEGINNING OF PROGRAM
         ex      de,hl             ;[M80] TEXT POINTER BACK TO [H,L]
-        call    SCNLIN            ;[M80] GET THE FOLLOWING LINE NUMBER
+ifdef aqplus
+;; Code Change: Allow RESTORE to line label
+        call    SCNLBL            ;; | Check for label
+else
+        call    SCNLIN            ;  \ [M80] GET THE FOLLOWING LINE NUMBER
+endif
         push    hl                ;[M80] SAVE TEXT POINTER
         call    FNDLIN            ;[M80] FIND THE LINE NUMBER
         ld      h,b               ;[M80] GET POINTER TO LINE IN [H,L]
@@ -5448,7 +5460,7 @@ STRNGX: jp      z,STRNG           ;; | Special Handling for Double Quote      1F
         jp      z,STRNG           ;; | Do the same for Single Quote           1F30
                                   ;; |                                        1F31  ld      (RESPTR),hl
                                   ;; |                                        1F32  
-        jp      STRNGR            ;; |                                        1F33
+        jp      STFLBL            ;; | Otherwise, see if it's a label         1F33
                                   ;; |                                        1F34 and     $7F
                                   ;; |                                        1F35  
 else
