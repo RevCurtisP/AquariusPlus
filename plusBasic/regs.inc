@@ -159,7 +159,6 @@ HOOKDO      equ $30     ; 6 Extended BASIC Hook Dispatch
 INTRPT      equ $38     ; 7 (S3BASIC) Execute Interrupt Routine
 
 INITFF:     equ $0153   ; Initialize I/O Port 255
-TIMSTR      equ $0E2F   ; Create tempory string from null-terminated string
 REDDY       equ $036E   ; Text "Ok"
 SNERR:      equ $03C4   ; Syntax error
 DV0ERR:     equ $03C7   ; Division by zero error
@@ -204,6 +203,7 @@ STKINI:     equ $0BE5
 ;FRMINT         $0B7F   ; Deprecated in S3BASIC, use GETINT instead
 BGNRST      equ $0C19   ; Finish up RESTORE
 ISLETC:     equ $0CC6   ; Test for a letter
+TIMSTR      equ $0E2F   ; Create tempory string from null-terminated string
 STRINI      equ $0E50   ; Reserve space for new string and create descriptor
 STRLIT      equ $0E5F   ; Build descriptor for string litersl
 STRLTI      equ $0E60   ; Do STRLIT, without decrementing HL
@@ -212,9 +212,11 @@ STROUT:     equ $0E9D   ; Print null-terminated string in HL
 FRESTR      equ $0FC6   ; Free tempory string, return string descriptor address in HL
 FRETM2      equ $0FCC   ; Free up tem in FACLO
 LEN1:       equ $0FF7   ; Get string length (in: (FPREG) = string block, out: HL = string block, A = length)
+CHR         equ $1013   ; CHR$ Function
 FINBCK      equ $101D   ; Return a String
 PTRGET:     equ $10D1   ; Get variable (out: BC = addr, DE = len)
 FIN         equ $15E5   ; Parse floating point number
+FIN0        equ $15EE   ; Parse floating point number wihout leading + or -
 LINPRT      equ $1675   ; Print Two Byte Number in HL as Decimal - Alters all Registers
 OUTDO       equ $198A   ; Output a Character
 CRDO:       equ $19EA   ; Print CR+LF
