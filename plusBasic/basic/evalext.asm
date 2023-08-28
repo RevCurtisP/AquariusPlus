@@ -14,10 +14,6 @@ eval_extension:
     jr      z,.eval_hex     
     cp      $27                   ; Apostrophe                       
     jp      z,eval_ascii     
-if eval_char
-    cp      '\'                   ; Not working yet
-    jp      z,eval_char     
-endif
     cp      PLUSTK                ; IGNORE "+"
     jp      z,eval_extension      ;
     jp      QDOT     
@@ -145,20 +141,3 @@ eval_ascii:
     pop     hl
     ret
 
-;-------------------------------------------------------------------------
-; Evaluate string character constant in the form of \number
-;-------------------------------------------------------------------------
-
-eval_char:
-    inc     hl              ; Skip backslash
-    call    CHRGT2          ; Evaluate character
-    jr      c,.decimal      ; Got a Decimal
-    cp      '$'             ; If not HEX
-    jp      nz,SNERR        ;   Error out
-    call    eval_hex_int    ; Convert 
-    jr      .char
-.decimal:
-    call    FIN0            ; Evaluate Decimal Number
-.char
-    push    bc              ; Dummy return address for FINBCK to discared
-    jp      CHR             ; Turn it into a string
