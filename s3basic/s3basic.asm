@@ -129,8 +129,17 @@ EXTBAS  equ     $2000   ;;Start of Extended Basic
 XSTART  equ     $2010   ;;Extended BASIC Startup Routine
 XINIT   equ     $E010   ;;ROM Cartridge Initialization Entry Point
 ifdef addkeyrows        
+;;;Code Change: Address of Expanded Key Tables, stored in the last 256 bytes of Extended BASIC.                                                         
 KEYADR  equ     $2F00   ;; | Extended Key Tables Base Address minus 1
 endif                   
+
+ifdef aqplus
+;;;Aquarius+ I/O Port Assignments
+XBANK0  equ     $F0     ;;Bank 0 ($0000-$3FFF) Page (0-63)
+XBANK1  equ     $F1     ;;Bank 1 ($4000-$7FFF) Page (0-63)
+XBANK2  equ     $F2     ;;Bank 1 ($8000-$BFFF) Page (0-63)
+XBANK3  equ     $F3     ;;Bank 1 ($C000-$FFFF) Page (0-63)
+endif
 
         org     $0000   ;;Starting Address of Standard BASIC
 
@@ -284,7 +293,7 @@ WARMST: ld      a,11              ;
 ifdef aqplus
         call    XWARM             ;; | 
 else
-        call    WRMCON            ;; | Finish Up
+        call    WRMCON            ;; \ Finish Up
 endif
 COLDST: ld      hl,DEFALT         ;Set System Variable Default Values
         ld      bc,81             ;
@@ -296,7 +305,7 @@ COLDST: ld      hl,DEFALT         ;Set System Variable Default Values
 ifdef aqplus
 ;;; Code Change: Execute Aquarius+ Extended BASIC Cold Start
 ;;; On the Aquarius+ From MEMTST to before INITFF is deprecated: 68 bytes     Original Code
-        jp      XCOLD             ;; |Do Extended BASIC Cold Start            010F  ld      hl,BASTXT+99
+        jp      XCOLD             ;; | Do Extended BASIC Cold Start            010F  ld      hl,BASTXT+99
                                   ;; |                                        0110  
                                   ;; |                                        0111
 ;; If label at beginning of line: don't tokenize, just stuff it                                  
@@ -492,7 +501,7 @@ STMDSP: ;MARKS START OF STATEMENT LIST
         word    IFS               ;;$079C
         word    RESTOR            ;;$0C05
         word    GOSUB             ;;$06CB
-        word    RETURN            ;;$ 
+        word    RETURN            ;;$06F8
         word    REM               ;;$071E
         word    STOP              ;;$0C1F
         word    ONGOTO            ;;$0780
@@ -943,7 +952,7 @@ MLOOPR: ld      a,(de)            ;[M80] NOW TRANSFERING LINE IN FROM BUF
         jr      nz,MLOOPR         ;
 FINI:   rst     HOOKDO            ;
         byte    4                 ;
-        call    RUNC              ;[M80] DO CLEAR & SET UP STACK
+HOOK4:  call    RUNC              ;[M80] DO CLEAR & SET UP STACK
 LINKER: rst     HOOKDO            ;
 HOOK5:  byte    5                 ;
         inc     hl                ;;HL=TXTTAB
@@ -998,7 +1007,7 @@ LOOP:   ld      b,h               ;[M80] IF EXITING BECAUSE OF END OF PROGRAM,
 CRUNCH: xor     a                 ;SAY EXPECTING FLOATING NUMBERS
         ld      (DORES),a         ;ALLOW CRUNCHING
         ld      c,5               ;LENGTH OF KRUNCH BUFFER
-        ld      de,BUF            ; \ SETUP DESTINATION POINTER
+        ld      de,BUF            ;SETUP DESTINATION POINTER
 KLOOP:  ld      a,(hl)            ;GET CHARACTER FROM BUF
         cp      ' '               ;SPACE?
         jp      z,STUFFH          ;JUST STUFF AWAY
@@ -1007,7 +1016,7 @@ KLOOP:  ld      a,(hl)            ;GET CHARACTER FROM BUF
 ifdef aqplus
         jp      STRNGX            ; | Patch to handle both " and '
 else                                
-        jp      z,STRNG           ; | YES, GO TO SPECIAL STRING HANDLING
+        jp      z,STRNG           ; \ YES, GO TO SPECIAL STRING HANDLING
 endif
 STRNGR: or      a                 ;END OF LINE?
         jp      z,CRDONE          ;YES, DONE CRUNCHING
@@ -1268,7 +1277,7 @@ GONE2:  sub     $80               ;[M80] "ON ... GOTO" AND "ON ... GOSUB" COME H
         jp      c,LET             ;[M80] MUST BE A LET
         cp      TABTK-$80         ;;End of Statement Tokens
         rst     HOOKDO            ;;Handle Extended BASIC Statement Tokens`
-        byte    23                ;
+HOOK23: byte    23                ;
         jp      nc,SNERR          ;;Not a Statement Token
         rlca                      ;[M80] MULTIPLY BY 2
         ld      c,a               ;
@@ -2436,21 +2445,32 @@ QINLIN: ld      a,'?'             ;
         ld      a,' '             ;
         rst     OUTCHR            ;
         jp      INLIN             ;;;For relative jumps
-RUBOUT: ld      a,(RUBSW)         ;[M80] ARE WE ALREADY RUBBING OUT?
-        or      a                 ;[M80] SET CC'S
-        ld      a,'\'             ;[M80] GET READY TO TYPE BACKSLASH
-        ld      (RUBSW),a         ;[M80] MAKE RUBSW NON-ZERO IF NOT ALREADY
-        jr      nz,NOTBEG         ;[M80] NOT RUBBING BACK TO BEGGINING
-        dec     b                 ;[M80] AT BEGINNING OF LINE?
-        jr      z,INLIN           ;[M80] SET FIRST BYTE IN BUF TO ZERO
-        rst     OUTCHR            ;[M80] SEND BACKSLASH
-        inc     b                 ;[M80] EFFECTIVELY SKIP NEXT INSTRUCTION
-NOTBEG: dec     b                 ;[M80] BACK UP CHAR COUNT BY 1
-        dec     hl                ;[M80] AND LINE POSIT
+RUBOUT:                           ;;So deprecated code will compile
+;;; Code Change: Replace Ancient DELETE code with improve backspace code
+BSFIX:  or      a                 ;;If not at position 0                      ; 0D64
+        jr      nz,BSFIN          ;;Do the backspace                          ; 0D65  
+                                                                              ; 0D66   
+        ld      c,a                                                           ; 0D67
+        ld      a,l                                                           ; 0D68 
+        cp      41                ;;If at home position                       ; 0D69 
+                                                                              ; 0D6A
+        ld      a,c                                                           ; 0D6B 
+        jp      z,NOBS            ;;  Don't backspace                         ; 0D6C
+                                                                              ; 0D6D
+                                                                              ; 0D6E
+        dec      hl               ;;Backup to end of previous line            ; 0D6F
+        dec      hl                                                           ; 0D70  jr     z,INLIN 
+        ld       a,38                                                         ; 0D71  
+                                                                              ; 0D72  rst     OUTCHR
+BSFIN:  jp       DOBS             ;;Do the backspace                          ; 0D73  inc     b     
+                                                                              ; 0D74  dec     b  
+                                                                              ; 0D75  dec     hl 
+;; Deprecated code - 7 bytes
         jr      z,INLINN          ;[M80] AND RE-SET UP INPUT
         ld      a,(hl)            ;[M80] OTHERWISE GET CHAR TO ECHO
         rst     OUTCHR            ;[M80] SEND IT
         jr      INLINC            ;[M80] AND GET NEXT CHAR
+;; End deprecated code
 LINLIN: dec     b                 ;[M80] AT START OF LINE?
         dec     hl                ;[M65] BACKARROW SO BACKUP PNTR AND
         rst     OUTCHR            ;[M80] SEND BACKSPACE
@@ -2463,7 +2483,10 @@ INLIN:  ld      hl,BUF            ;
         ld      (RUBSW),a         ;[M80] LIKE SO
 INLINC: call    INCHR             ;[M80] GET A CHAR
         ld      c,a               ;[M80] SAVE CURRENT CHAR IN [C]
-        cp      127               ;[M80] CHARACTER DELETE?
+;;;Code Change: Remove ancient TTY Delete code
+        jr      CHKFUN                                                        ; 0D92  cp      127
+                                                                              ; 0D93    
+;;; Deprecated code - 16 bytes
         jr      z,RUBOUT          ;[M80] DO IT
         ld      a,(RUBSW)         ;[M80] BEEN DOING A RUBOUT?
         or      a                 ;[M80] SET CC'S
@@ -2473,7 +2496,8 @@ INLINC: call    INCHR             ;[M80] GET A CHAR
         xor     a                 ;[M80] CLEAR RUBSW
         ld      (RUBSW),a         ;[M80] LIKE SO
 NOTRUB: ld      a,c               ;[M80] GET BACK CURRENT CHAR
-        cp      7                 ;[M80] IS IT BOB ALBRECHT RINGING THE BELL
+;;; End of deprecated code
+CHKFUN: cp      7                 ;[M80] IS IT BOB ALBRECHT RINGING THE BELL
         jr      z,GOODCH          ;[M80] FOR SCHOOL KIDS?
         cp      3                 ;[M80] CONTROL-C?
         call    z,CRDO            ;[M80] TYPE CHAR, AND CRLFT
@@ -2537,7 +2561,7 @@ STRCMP: push    de
         pop     af                ;
         ld      d,a               ;
         pop     hl                ;[M80] GET BACK 2ND CHARACTER POINTER
-CSTLOOP: ld      a,e               ;[M80] BOTH STRINGS ENDED
+CSLOOP: ld      a,e               ;[M80] BOTH STRINGS ENDED
         or      d                 ;[M80] TEST BY OR'ING THE LENGTHS TOGETHER
         ret     z                 ;[M80] IF SO, RETURN WITH A ZERO
         ld      a,d               ;[M80] GET FACLO STRING LENGTH
@@ -2554,7 +2578,7 @@ CSTLOOP: ld      a,e               ;[M80] BOTH STRINGS ENDED
         inc     bc                ;
         cp      (hl)              ;[M80] COMPARE WITH FACLO STRING
         inc     hl                ;[M80] BUMP POINTERS (INX DOESNT CLOBBER CC'S)
-        jr      z,CSTLOOP          ;[M80] IF BOTH THE SAME, MUST BE MORE TO STRINGS
+        jr      z,CSLOOP          ;[M80] IF BOTH THE SAME, MUST BE MORE TO STRINGS
         ccf                       ;[M80] HERE WHEN STRINGS DIFFER
         jp      SIGNS             ;[M80] SET [A] ACCORDING TO CARRY
 ;;CONVERT NUMBER TO STRING
@@ -5155,9 +5179,11 @@ LFS:    call    SCROLL            ;;Scroll Up and Keep Screen Position
         jr      TTYFIN            ;
 ;;Back Space: Move Cursor Left and Delete Character
 BS:     ld      a,(TTYPOS)        ;
-        or      a                 ;;At First Column?
-        jr      z,NOBS            ;
-        dec     hl                ;;No, Move One to the Left
+;; Code Change: BackSpace moves to previous line                              Original Code
+        jp      BSFIX             ; Check for Backspace                       ; 1DE0  or      a         
+                                                                              ; 1DE1  jr      z,NOBS    
+                                                                              ; 1DE2
+DOBS:   dec     hl                ;;No, Move One to the Left
         dec     a                 ;
 NOBS:   ld      (hl),' '          ;;Erase Character at Position
 ;;Save Character and Display Cursor
@@ -5275,7 +5301,7 @@ ifdef noreskeys
 ;;;Stop auto-styping when ASCII null is encountered
         jp      z,KEYRET          ;; |                                            
 else
-        jp      p,KEYRET          ;; |                                        
+        jp      p,KEYRET          ;; \                                        
 endif
         xor     a                                                             
         ld      (RESPTR+1),a                                                  
@@ -5329,9 +5355,9 @@ ROWMSK  equ     $FF               ;; | Checking All 8 Rows`
 ROWCNT  equ     8                 ;; | 
 CSHMSK  equ     $8F               ;; | Check Rows 0 through 3 plus 7
 else
-ROWMSK  equ     $3F               ;; | Check Rows 0 through 5
-ROWCNT  equ     6                 ;; | 
-CSHMSK  equ     $0F               ;; | Check rows 0 through 3 - %00001111
+ROWMSK  equ     $3F               ;; \ Check Rows 0 through 5
+ROWCNT  equ     6                 ;; \ 
+CSHMSK  equ     $0F               ;; \ Check rows 0 through 3 - %00001111
 endif
 KEYSCN: ld      bc,$00FF          ;;B=0 to scan all columns
         in      a,(c)             ;;Read rows from I/O Port 255
