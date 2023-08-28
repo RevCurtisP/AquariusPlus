@@ -155,7 +155,7 @@ ifdef aqplus
 else        
         jp      JMPINI            ;; \ Start Initialization
 endif
-        byte    $23,$08,$27       ;;Revision Date 
+        byte    $23,$08,$28       ;;Revision Date 
         byte    1                 ;;Revision Number?
         nop                       ;;Pad out the RST routine
 ;;RST 1 - Syntax Check
@@ -1200,8 +1200,9 @@ LPFORM: call    LOOPER            ;[M80] MUST HAVE VARIABLE POINTER IN [D,E]
         jr      nz,LPFORM         ;[M80] KEEP SEARCHING IF NO MATCH
         pop     de                ;[M80] GET BACK THE TEXT POINTER
         ld      sp,hl             ;[M80] DO THE ELIMINATION
-        inc     c                 ;
-NOTOL:  pop     de                ;
+;BUG Fix: This was the byte $0C which is an INC C. It should be $0E, forming the LD C to bypass the POP DE
+        byte    $0E               ;;LD C over POP DE
+NOTOL:  pop     de                ;;Should only happen if we came from jr after CALL LOOPER
         ex      de,hl             ;[M80] [H,L]=TEXT POINTER
         ld      c,8               ;[M80] MAKE SURE 16 BYTES ARE AVAILABLE
         call    GETSTK            ;[M80] OFF OF THE STACK

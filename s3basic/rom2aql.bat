@@ -1,5 +1,5 @@
 @REM Move Assembled ROM to AquaLite ROMs Directory
 @REM Requires environment variable "AquaLite" SET to 
 @REM   AquaLite base directory
-copy s3basic.cim %AquaLite%\roms\aqubasic.rom
+copy s3basic.cim %AquaLite%\roms\s3basic.rom
 
