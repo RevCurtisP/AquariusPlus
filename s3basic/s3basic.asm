@@ -1394,7 +1394,7 @@ ifdef aqplus
 else
         call    SCNLIN            ; / [M80] PICK UP THE LINE # AND PUT IT IN [D,E]
 endif
-        call    REM               ;[M80] SKIP TO THE END OF THIS LINE
+GOTOLN: call    REM               ;[M80] SKIP TO THE END OF THIS LINE
         inc     hl                ;[M80] POINT AT THE LINK BEYOND IT
         push    hl                ;[M80] SAVE THE POINTER
         ld      hl,(CURLIN)       ;[M80] GET THE CURRENT LINE #
@@ -1498,9 +1498,9 @@ COPNUM: push    hl
 ;{M80} ON..GOTO, ON GOSUB CODE
 ONGOTO: rst     HOOKDO            ;
         byte    25                ;
-        call    GETBYT            ;[M80] GET VALUE INTO [E]
+NTOERR: call    GETBYT            ;[M80] GET VALUE INTO [E]
 ;;Execute ON..GOTO
-OMGOTO  ld      a,(hl)            ;[M80] GET THE TERMINATOR BACK
+OMGOTO: ld      a,(hl)            ;[M80] GET THE TERMINATOR BACK
         ld      b,a               ;[M80] SAVE THIS CHARACTER FOR LATER
         cp      GOSUTK            ;[M80] AN "ON ... GOSUB" PERHAPS?
         jr      z,ISGOSU          ;[M80] YES, SOME FEATURE USE
@@ -2066,7 +2066,8 @@ FLOATB: ld      d,b               ;;Float Integer MSB=[A], LSB=[B]
 FLOATD: ld      e,0               ;;Float Integer MSB=[A], LSB=[D]
         ld      hl,VALTYP         ;
         ld      (hl),e            ;[M80] SET VALTYP TO "FLOATING POINT"
-        ld      b,144             ;{M80} SET EXPONENT
+        ld      b,145             ;{M80} SET EXPONENT
+;        ld      b,144             ;{M80} SET EXPONENT
         jp      FLOATR            ;[M80] GO FLOAT THE NUMBER
 LPOS:   ld      a,(LPTPOS)        ;{M80} GET PRINT HEAD POSITION
         jr      SNGFLT            ;
