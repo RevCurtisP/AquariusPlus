@@ -95,7 +95,7 @@ STJUMPS:
     dw      SNERR                 ;$CD  
     dw      SNERR                 ;$CE  
     dw      SNERR                 ;$CF  
-    dw      SNERR                 ;$D0  
+    dw      GSERR                 ;$D0 LINE
     dw      SNERR                 ;$D1  
     dw      SNERR                 ;$D2  
     dw      SNERR                 ;$D3 TIME 
@@ -120,7 +120,7 @@ STJUMPS:
     dw      SNERR                 ;$E6 
     dw      SNERR                 ;$E7 
     dw      SNERR                 ;$E8 
-    dw      SNERR                 ;$E9 
+    dw      SNERR                 ;$E9 ERR
     dw      SNERR                 ;$EA 
     dw      SNERR                 ;$EB 
     dw      SNERR                 ;$EC 
@@ -131,7 +131,7 @@ STJUMPS:
     dw      SNERR                 ;$F1 
     dw      SNERR                 ;$F2 
     dw      SNERR                 ;$F3 
-    dw      SNERR                 ;$F4 
+    dw      ST_RESUME             ;$F4 
     dw      SNERR                 ;$F5 
     dw      SNERR                 ;$F6
     dw      SNERR                 ;$F7
@@ -179,7 +179,7 @@ FNJUMPS:
     dw      SNERR                 ;$CD   
     dw      SNERR                 ;$CE   
     dw      SNERR                 ;$CF   
-    dw      SNERR                 ;$D0   
+    dw      SNERR                 ;$D0 LINE
     dw      SNERR                 ;$D1   
     dw      SNERR                 ;$D2   
     dw      FN_TIME               ;$D3 TIME$
@@ -271,3 +271,10 @@ execute_function:
     pop     af                  ; Restore A
     jp      (ix)                ; Go Do It
 
+; ------------------------------------------------------------------------------
+;  Issue Statement not implemented err
+; ------------------------------------------------------------------------------
+
+GSERR:
+    ld    e,ERRGS
+    jp    force_error    

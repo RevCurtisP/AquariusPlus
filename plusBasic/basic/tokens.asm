@@ -6,9 +6,13 @@
 ;-----------------------------------------------------------------------------
 ; plusBASIC keyword list
 ;-----------------------------------------------------------------------------
-BTOKEN:     equ $D3             ; Our first token number
+BTOKEN:     equ $D0             ; Our first token number
 
 TBLCMDS:
+
+    db $80 + 'L',"INE"            ; $D0             
+    db $80 + ' '                  ; $D1            
+    db $80 + ' '                  ; $D2             
     db $80 + 'T',"IME"            ; $D3   Replaces MX-BASIC keyword SDTM
     db $80 + 'E',"DIT"            ; $D4   Not Implemented
     db $80 + 'C',"LS"             ; $D5
@@ -31,8 +35,18 @@ TBLCMDS:
     db $80 + ' '                  ; $E6             
     db $80 + ' '                  ; $E7             
     db $80 + ' '                  ; $E8             
-    db $80 + ' '                  ; $E9             
+    db $80 + 'E',"RR"             ; $E9             
     db $80 + ' '                  ; $EA             
+    db $80 + ' '                  ; $EB             
+    db $80 + ' '                  ; $EC             
+    db $80 + ' '                  ; $ED             
+    db $80 + ' '                  ; $EE             
+    db $80 + ' '                  ; $EF             
+    db $80 + ' '                  ; $E0             
+    db $80 + ' '                  ; $E1             
+    db $80 + ' '                  ; $E2             
+    db $80 + ' '                  ; $E3             
+    db $80 + 'R',"ESUME"          ; $E4             
 
     db $80             ; End of table marker
     
@@ -42,6 +56,7 @@ TBLCMDS:
 TOTK      equ     $A1
 TIMETK    equ     $D3    
 CDTK      equ     $E0
+ERRTK     equ     $E9
 
 ;;; Extended Error Message Table can go here
 
@@ -88,6 +103,7 @@ token_to_keyword:
 ; $CD             GET    
 ; $CE             DRAW   
 ; $CF             CIRCLE  
+; $D0             LINE                compatible
 ; $D1             SWAP   
 ; $D2             DOKE              POKE! <--> DOKE
 ; $D3 TIME        SDTM   
@@ -112,7 +128,7 @@ token_to_keyword:
 ; $E6             DEC
 ; $E7             KEY             
 ; $E8             DEEK              PEEK! <--> DEEK
-; $E9             ERR OR
+; $E9 ERR         ERR [OR]            ERR <--> ERR(0), ERRLINE <--> ERR(1), ERR$ <--> ERR$(1)
 ; $EA             STRING
 ; $EB             XOR           (a XOR b) <--> XOR(a,b)
 ; $EC             MENU
@@ -124,7 +140,7 @@ token_to_keyword:
 ; $F2             WAIT
 ; $F3             FILE
 ; $F4             RESUME
-; $F5             COL OR
+; $F5             COL [OR]
 ; $F6
 ; $F7
 ; $F8
