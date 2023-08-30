@@ -841,14 +841,14 @@ TMERR:  ld      e,ERRTM           ;[M80] TYPE MISMATCH ERROR
 ;;; Code Change: Call HOOKDO before STKINI (instead of after), 
 ;;; allowing the Hook Routine to preserve STKSAV for ON ERROR GOTO            Original Code
 ERROR:  rst     HOOKDO            ;;call Hook Service Routine                 03DB  call    STKINI
-        byte    0                 ;;                                          03DC  
+HOOK0:  byte    0                 ;;                                          03DC  
 ERRINI: call    STKINI            ;;                                          03DD  
                                   ;;                                          03DE  rst     HOOKDO   
                                   ;;                                          03DF  byte    0        
 ERRCRD: call    CRDONZ            ;;
         ld      hl,ERRTAB         ;;
         rst     HOOKDO            ;;call Hook Service Routine
-        byte    1                 ;
+HOOK1:  byte    1                 ;
         ld      d,a               ;;Add Error Offset
         add     hl,de             ;
         ld      a,'?'             ;[M65] PRINT A QUESTION MARK
@@ -869,7 +869,7 @@ ERRFN1: call    STROUT            ;[M80] PRINT MESSAGE
 STPRDY: pop     bc
 ;;Enter Immediate Mode
 READY:  rst     HOOKDO            ;;Call hook routine
-        byte    2                 ;
+HOOK2:  byte    2                 ;
         call    FINLPT            ;[M80] PRINT ANY LEFT OVERS
         xor     a                 ;
         ld      (CNTOFL),a        ;[M80] FORCE OUTPUT
@@ -894,7 +894,7 @@ EDENT:  push    de                ;[M80] SAVE LINE #
         pop     de                ;[M80] RESTORE LINE #
         pop     af                ;[M80] WAS THERE A LINE #?
         rst     HOOKDO            ;;Call Hook Dispatch Routine
-        byte    3                 ;
+HOOK3:  byte    3                 ;
         jp      nc,GONE           ;
         push    de                ;
         push    bc                ;[M80] SAVE LINE # AND CHARACTER COUNT
@@ -951,8 +951,8 @@ MLOOPR: ld      a,(de)            ;[M80] NOW TRANSFERING LINE IN FROM BUF
         or      a                 ;;If not line terminator, keep going
         jr      nz,MLOOPR         ;
 FINI:   rst     HOOKDO            ;
-        byte    4                 ;
-HOOK4:  call    RUNC              ;[M80] DO CLEAR & SET UP STACK
+HOOK4:  byte    4                 ;
+        call    RUNC              ;[M80] DO CLEAR & SET UP STACK
 LINKER: rst     HOOKDO            ;
 HOOK5:  byte    5                 ;
         inc     hl                ;;HL=TXTTAB
@@ -1083,7 +1083,7 @@ NOTFNT: ld      c,b               ;
         ex      de,hl             ;
         ret                       ;
 NOTGOS: rst     HOOKDO            ;
-        byte    10                ;
+HOOK10: byte    10                ;
         ex      de,hl             ;;HL=text pointer, DE=krunch pointer
         ld      a,c               ;;Get token
         pop     bc                ;
@@ -1155,7 +1155,7 @@ LISPRT: ld      a,(hl)            ;;Detokenize and Print Line
         jr      z,LIST4           ;[M80] IF =0 THEN END OF LINE
         jp      p,PLOOP           ;
         rst     HOOKDO            ;;Handle Extended BASIC Tokens
-        byte    22                ;
+HOOK22: byte    22                ;
         sub     $7F               ;
         ld      c,a               ;
         ld      de,RESLST         ;[M80] GET PTR TO START OF RESERVED WORD LIST
@@ -1369,7 +1369,7 @@ POPHSR: pop     af                ;[M80] GET OFF TERMINATING DIGIT
         pop     hl                ;[M80] GET BACK OLD TEXT POINTER
         ret                       ;
 RUN:    rst     HOOKDO            ;Call Hook Routine
-        byte    24                ;
+HOOK24: byte    24                ;
         jp      z,RUNC            ;[M80] NO LINE # ARGUMENT
         call    CLEARC            ;RESET THE STACK,DATPTR,VARIABLES ...
         ld      bc,NEWSTT         ;
@@ -1497,7 +1497,7 @@ COPNUM: push    hl
         ret
 ;{M80} ON..GOTO, ON GOSUB CODE
 ONGOTO: rst     HOOKDO            ;
-        byte    25                ;
+HOOK25: byte    25                ;
 NTOERR: call    GETBYT            ;[M80] GET VALUE INTO [E]
 ;;Execute ON..GOTO
 OMGOTO: ld      a,(hl)            ;[M80] GET THE TERMINATOR BACK
@@ -1537,7 +1537,7 @@ NEWCHR: dec     hl                ;
 ;;; To change the column width, POKE the width into 14405 and the last comma position into 14409
 ;;; The latter affects PRINT only. LPRINT has a hard coded last comma position of 112.
 PRINT:  rst     HOOKDO            ;
-        byte    6                 ;
+HOOK6:  byte    6                 ;
         call    z,CRDO            ;[M80] PRINT CRLF IF END WITHOUT PUNCTUATION
 PRINTC: jp      z,FINPRT          ;{M80} FINISH BY RESETTING FLAGS, TERMINATOR SHOULD NOY CRLF
         cp      TABTK             ;
@@ -1625,14 +1625,14 @@ NOTABR: pop     hl                ;[M80] PICK UP TEXT POINTER
         rst     CHRGET            ;[M80] AND THE NEXT CHARACTER
         jp      PRINTC            ;{M80} WE JUST PRINTED SPACES, DON'T CALL CRDO IF END OF THE LINE
 FINPRT: rst     HOOKDO            ;
-        byte    7                 ;
+HOOK7:  byte    7                 ;
         xor     a                 ;
         ld      (PRTFLG),a        ;[M80] ZERO OUT PTRFIL
         ret                       ;
 TRYAGN: byte    "?Redo from start",13,10,0
 ;[M80]  HERE WHEN THE DATA THAT WAS TYPED IN OR IN "DATA" STATEMENTS
 TRMNOK: rst     HOOKDO            ;
-        byte    8                 ;
+HOOK8:  byte    8                 ;
         ld      a,(FLGINP)        ;[M80] WAS IT READ OR INPUT?
         or      a                 ;[M80] ZERO=INPUT
         jp      nz,DATSNE         ;[M80] GIVE ERROR AT DATA LINE
@@ -1641,7 +1641,7 @@ TRMNOK: rst     HOOKDO            ;
         call    STROUT            ;
         jp      GTMPRT            ;
 INPUT:  rst     HOOKDO            ;
-        byte    26                ;
+HOOK26: byte    26                ;
         call    ERRDIR            ;[M65] DIRECT IS NOT OK
         ld      a,(hl)            ;
         cp      '"'               ;[M80] IS IT A QUOTE?
@@ -1700,7 +1700,7 @@ LOPDT2: rst     SYNCHK
         jp      z,DATAH
         push    de                ;{M80} SAVE THE POINTER TO THE VARIABLE
 DATBK:  rst     HOOKDO            ;;Call Extended Hook 28
-        byte    28                ;
+HOOK28: byte    28                ;
         ld      a,(VALTYP)        ;[M80] IS IT A STRING?
         or      a                 ;
         jr      z,NUMINS          ;[M80] IF NUMERIC, USE FIN TO GET IT
@@ -1803,7 +1803,7 @@ RETAOP: ld      hl,(TEMP2)        ;[M80] RESTORE TEXT PTR
         ld      a,(hl)            ;[M80] GET NEXT CHARACTER
         ld      (TEMP3),hl        ;[M80] SAVE UPDATED CHARACTER POINTER       Original Code
         rst     HOOKDO            ;;                                          09A2  cp      PLUSTK     
-        byte    29                ;;                                          09A3  
+HOOK29: byte    29                ;;                                          09A3  
         call    CHKOP             ;;If it's not an Operator                   09A4  ret     c                 
                                   ;;                                          09A5  cp      LESSTK+1          
                                   ;;                                          09A6   
@@ -1861,7 +1861,7 @@ LOPREL: sub     GREATK            ;[M80] IS THIS ONE RELATION?
         jr      LOPREL            ;
 ;[M80] EVALUATE VARIABLE, CONSTANT, FUNCTION CALL
 EVAL:   rst     HOOKDO            ;
-        byte    9                 ;
+HOOK9:  byte    9                 ;
         xor     a                 ;
         ld      (VALTYP),a        ;[M65] ASSUME VALUE WILL BE NUMERIC
         rst     CHRGET            ;
@@ -1929,7 +1929,7 @@ RETVAR: push    hl                ;[M80] SAVE THE TEXT POINTER
 ;
 NUMGFN  =       (CHRTK-ONEFUN)*2+1
 ISFUN:  rst     HOOKDO            ;
-        byte    27                ;
+HOOK27: byte    27                ;
         cp      POINTK-ONEFUN     ;;Is it POINT()
         jp      z,POINT           ;;Yes, go do it
         ld      b,0               ;
@@ -2077,11 +2077,11 @@ SNGFLT: ld      b,a               ;[M80] MAKE [A] AN UNSIGNED INTEGER
         jp      FLOATB            ;
 ;;DEF FNx Stub
 DEF:    rst     HOOKDO            ;;If not hooked
-        byte    15
+HOOK15: byte    15
         jp      SNERR             ;;Syntax Error
 ;;FNx Stub
 FNDOER: rst     HOOKDO            ;;If not hooked
-        byte    16
+HOOK16: byte    16
         jp      SNERR             ;;Syntax Error
 ;[M65] SUBROUTINE TO SEE IF WE ARE IN DIRECT MODE AND COMPLAIN IF SO.
 ERRDIR: push    hl                ;
@@ -2185,7 +2185,7 @@ OMERR:  ld      de,ERROM          ;;"OUT OF MEMORY" Error
 SCRATH: ret     nz                ;[M80] MAKE SURE THERE IS A TERMINATOR
 ;;Execute NEW Command
 SCRTCH: rst     HOOKDO            ;Call Hook Dispatch Routine
-        byte    12                ;
+HOOK12: byte    12                ;
         ld      hl,(TXTTAB)       ;[M80] GET POINTER TO START OF TEXT
         xor     a                 ;[M80] SET [A]=0
         ld      (hl),a            ;[M80] SAVE AT END OFF TEXT
@@ -2351,7 +2351,7 @@ ISLETC: cp      'A'
 ;
 ;[M80] THIS CODE IS FOR THE "CLEAR" COMMAND WITH AN ARGUMENT
 CLEAR:  rst     HOOKDO            ;;Call Hook Dispatch Routine
-        byte    11                ;
+HOOK11: byte    11                ;
         jp      z,CLEARC          ;[M80] IF NO FORMULA JUST CLEAR
         call    INTID2            ;[M80] GET AN INTEGER INTO [D,E]
         dec     hl                ;;Back up text pointer
@@ -4514,11 +4514,11 @@ TAN:    call    PUSHF             ;[M80] SAVE ARG
         jp      FDIVT             ;
 ;ARCTANGENT FUNCTION
 ATN:    rst     HOOKDO            ;;execute hook routine 15 (ATN)
-        byte    14                ;;if not implemented
+HOOK14: byte    14                ;;if not implemented
         jp      SNERR             ;;  generate SYNTAX error
 ;;Execute OUTCHR
 OUTDO:  rst     HOOKDO            ;;execute hook routine 13 (OUTDOX)
-        byte    13                ;
+HOOK13: byte    13                ;
 OUTCON: push    af                ;
         ld      a,(PRTFLG)        ;[M80] SEE IF WE WANT TO TALK TO LPT
         or      a                 ;[M80] TEST BITS
@@ -4738,7 +4738,7 @@ LPCRLF: ld      a,13              ;;Send CR to printer
         ld      a,10              ;;Send LF to printer
 LPTOUT: ;Primitive print character to printer routine
         rst     HOOKDO            ;;Call Extended ROM Hook Routine
-        byte    17                ;
+HOOK17: byte    17                ;
         push    af                ;;Save character
         push    af                ;;Save Registers
         exx                       ;
@@ -4915,7 +4915,7 @@ RDSYN4: pop     bc                ;
 PLAYT:  byte    "Press <PLAY>",13,10,0          ;
 RECORT: byte    "Press <RECORD>",13,10,0        ;
 CSAVE:  rst     HOOKDO            ;
-        byte    21                ;
+HOOK21: byte    21                ;
         cp      MULTK             ;;If * Token
         jp      z,CSARY           ;;Do CSAVE*
         call    NAMFIL            ;;Scan filename
@@ -4932,7 +4932,7 @@ CSAVE3: call    WRBYTE            ;
         pop     hl                ;;Restore Text Pointer
         ret                       ;
 CLOAD:  rst     HOOKDO
-        byte    20
+HOOK20: byte    20
         cp      MULTK             ;;Check for token after CLOAD
         jp      z,CLARY           ;;If *, CLOAD variable
         sub     PRINTK            ;
@@ -5124,7 +5124,7 @@ CLOADN: call    RDBYTE            ;;Get Byte
         ret
 TTYCHR: ;Print character to screen
         rst     HOOKDO            ;;Call Extended BASIC Hook Routine
-        byte    19                ;
+HOOK19: byte    19                ;
 TTYCH:  push    af                ;;Save character
         cp      10                ;[M80] LINE FEED?
         jr      z,ISLF            ;
@@ -5280,7 +5280,7 @@ SDELAL: ld      a,h               ;
         jr      SDELAL            ;;Decrement and loop
 ;;INCHRH, INCHRC, and INCHRI - Get Character from Keyboard
 INCHRH: rst     HOOKDO
-        byte    18
+HOOK18: byte    18
 ;;Check for keypress
 INCHRC: exx                       ;;Save Registers
 INCHRI: ld      hl,(RESPTR)
