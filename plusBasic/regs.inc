@@ -99,6 +99,7 @@ SUBFLG:     equ $38CB   ; [M80] FLAG WHETHER SUBSCRIPTED VARIABLE ALLOWED "FOR" 
 USFLG:      equ $38CC   ; Direct Mode Flag
 FLGINP:     equ $38CD   ; [M80] FLAGS WHETHER WE ARE DOING "INPUT" OR A READ
 SAVTXT:     equ $38CE   ; [M80] PLACE WHERE NEWSTT SAVES TEXT POINTER
+STREND      equ $38DA   ; [M80] END OF STORAGE IN USE. INCREASED WHENEVER A NEW ARRAY/VAR IS ADDED
 TEMP2:      equ $38D0   ; [M80] FORMULA EVALUATOR TEMP MUST BE PRESERVED BY OPERATORS
                         ; [M80] USED IN EXTENDED BY FOUT AND USER-DEFINED FUNCTIONS
 OLDLIN:     equ $38D2   ; [M80] OLD LINE NUMBER (SETUP BY ^C,"STOP" OR "END" IN A PROGRAM)
@@ -166,6 +167,7 @@ INTRPT      equ $38     ; 7 (S3BASIC) Execute Interrupt Routine
 RESET:      equ $0089
 INITFF:     equ $0153   ; Initialize I/O Port 255
 REDDY       equ $036E   ; Text "Ok"
+FNDFOR      equ $039F   ; Find FOR/GOSUB entry on stack
 SNERR:      equ $03C4   ; Syntax error
 DV0ERR:     equ $03C7   ; Division by zero error
 NFERR:      equ $03CA   ; Next without for error
@@ -178,16 +180,20 @@ ERROR:      equ $03DB   ; Process error code, E = code (offset to 2 char error n
 ERRCRD      equ $03E0   ; Print Error Message and Return to Immediate Mode
 ERRPRT      equ $03EA   ; Print Error pointed to by HL and Return to Immediate Mode
 ERRFN1:     equ $03F4   ; Print String in HL + " in " + line number, Return to Immediate mode 
+STPRDY      equ $0401   ; For LIST command stopping
 READY:      equ $0402
 MAIN        equ $0414   ; Immediate Mode loop     
 CHEAD       equ $0489   ; Link Lines
 FNDLIN      equ $049F   ; Find BASIC line wirh line number in [DE]
+KLOOP       equ $04C5   ; Keyword to token loop
 CRUNCX      equ $04F9   ; Tokenize text at [HL]
 RESSRC:     equ $05A8
 NEWSTT:     equ $062C
+CHRGTR      equ $066B   ; CALLable CHRGET
 CHRGT2      equ $066C   ; Get Current Character and Set Flags
 GONE4       equ $063C   ; Execute next line
 FRCINT:     equ $0682   ; Convert fp number to 16 bit signed integer in DE
+RETURN      equ $06F8   ; Execute RETURN statement
 FCERR:      equ $0697   ; Function call error
 SCNLIN      equ $069C   ; Get line number from text at (HL)
 IQERR       equ FCERR   ; Illegal quantity error (future expansion)
@@ -195,6 +201,7 @@ RUNC2:      equ $06DB
 GOTO        equ $06DC   ; Execute GOTO Statement
 GOTOLN      equ $06DF   ; GOTO line# in DE
 USERR       equ $06F3   ; Undefined line error
+LETDO       equ $0736   ; Execute LET, bypassing PTRGET and SYNCHK '='
 NTOERR      equ $0782   ; Execute ON ... GOTO
 FRMNUM:     equ $0972   ; Evaluate numeric expression
 CHKNUM:     equ $0975   ; Error if evaluated expression not a number
@@ -206,6 +213,7 @@ LABBCK:     equ $0A49
 ISVAR       equ $0A4E   ; Get variable value or string pointer
 GIVINT      equ $0B21   ; Float Integer MSB=[A], LSB=[C]
 SNGFLT:     equ $0B36   ; Store variable 8 bit (out: B = value)
+ERRDIR      equ $0B45   ; Error if in direct mode
 GETBYT:     equ $0B54   ; Evaluate numeric expression (integer 0-255)
 OMERR:      equ $0BB7   ; Out of memory error
 SCRTCH:     equ $0BBE

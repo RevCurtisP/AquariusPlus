@@ -146,3 +146,36 @@ FN_TIME:
     add     hl,bc                 ; Start of Date String
     jp      TIMSTR
 
+;----------------------------------------------------------------------------
+; EVAL - Evaluate string
+;----------------------------------------------------------------------------
+FN_EVAL:
+    call    ERRDIR            ; Issue Error if in Direct Mode
+    rst     CHRGET            ; Skip Token
+    call    PARCHK            ; Get Argument
+    push    hl                ; Save Text Pointer
+    call    FRESTR            ; Free up temporary and get descriptor address
+    call    string_addr_len   ; Get Argument String Length in BC, Address in HL
+    ld      a,ENDBUF-BUF      ;
+    cp      c
+    jr      c,LSERR           ; Error if longer than 127 bytes
+    ex      de,hl             ; Text address into HL
+    ld      de,BUF            ;
+    ldir                      ; Copy String to Buffer
+    xor     a
+    ld      (de),a            ; Terminate String
+    ld      hl,BUF            ; Reading Line Buffer
+    ld      d,h               ; Writing Line Buffers
+    ld      e,l 
+    xor     a                 ; Tokenize String
+    ld      (DORES),a         ; 
+    ld      c,5               ; 
+    call    KLOOP             ; 
+    ld      hl,BUF            ; Point to Line Buffer
+    call    FRMEVL            ; Evaluate Formula
+    pop     hl                ; Restore Text Pointer
+    ret
+
+LSERR:
+    ld      e,ERRLS
+    jp      ERROR

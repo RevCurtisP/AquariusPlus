@@ -54,7 +54,7 @@
     jp      _interrupt      ; $2009
     jp      _warm_boot      ; $200C Called from main ROM for warm boot
     jp      _scan_label     ; $200F Called from GOTO and RESTORE
-
+    
 ifdef _____   ; Waiting for modules to stablize
     org     $2100
     include "kernel.asm"    ; Kernal jump table
@@ -202,7 +202,7 @@ _coldboot:
     jr      .print_version
 .print_done:
     call    print_string_immd
-    db "  +Basic v0.X", 0
+    db "  +Basic v0.9", 0
     call    CRDO
     call    CRDO
 
@@ -631,6 +631,7 @@ fast_hook_handler:
     ; dispatch.asm and error.asm must be first and second because of aligned tables 
     include "dispatch.asm"      ; Statement/Function dispatch tables and routiness
     include "error.asm"         ; Error lookup table, messages and handling routines
+    include "args.asm"          ; ARGS statement and function
     include "basic80.asm"       ; Statements and Functions from MBASIC 80
     include "enhanced.asm"      ; Enhanced stardard BASIC statements and functions
     include "evalext.asm"       ; EVAL extension - hook 9 
