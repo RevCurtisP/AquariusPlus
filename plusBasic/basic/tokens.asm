@@ -149,8 +149,8 @@ token_to_keyword:
 ; $F3             FILE
 ; $F4             RESUME
 ; $F5             COL [OR]
-; $F6
-; $F7
+; $F6 OPEN
+; $F7 CLOSE
 ; $F8
 ; $F9
 ; $FA
