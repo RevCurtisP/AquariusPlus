@@ -54,8 +54,9 @@ RAM_BUFFS = 36        ; plusBASIC extended system variables and buffers, mapped 
     jp      _start_cart     ; $2006
     jp      _interrupt      ; $2009
     jp      _warm_boot      ; $200C Called from main ROM for warm boot
-    jp      _inlin_hook     ; $200F Jump from INLIN for command history recall
-    jp      _inlin_done     ; $2002 Jumped from FININL to save command to history
+    jp      _scan_label     ; $200F Called from GOTO and RESTORE
+    jp      _inlin_hook     ; $2012 Jump from INLIN for command history recall
+    jp      _inlin_done     ; $2015 Jumped from FININL to save command to history
 
 ifdef _____   ; Waiting for modules to stablize
     org     $2100
@@ -178,11 +179,20 @@ _coldboot:
     ld      hl,fast_hook_handler
     ld      (HOOK), hl
 
+    ; Zero out plusBASIC system vars
+    xor     a
+    ld      b,ESP_FDESC-RNDTAB
+    ld      hl,RNDTAB
+.sysvar_loop    
+    ld      (hl),a
+    inc     hl
+    djnz    .sysvar_loop
+
     call    clear_esp_fdesc
     
     ; Show our copyright message
     call    PRNTIT              ; Print copyright string in ROM
-    call    STRPRI
+    call    print_string_immd
     db $0D, $0A
     db "Aquarius+ System ", 0
     ld      a, ESPCMD_VERSION
@@ -205,9 +215,9 @@ _coldboot:
     call    TTYCHR
     djnz    .space_loop
 .print_basic
-    call    STRPRI
+    call    print_string_immd
 .plus_text
-    db "+BASIC v0.8c", 0
+    db "  +Basic v0.9", 0
 .plus_len   equ   $ - .plus_text
 
     call    CRDO
@@ -317,17 +327,16 @@ direct_mode:
     jp      HOOK2+1
     
 clear_esp_fdesc:
-    ld      a,255
+    ld      a,128
     ld      (ESP_FDESC),a         ; Set to No File
     reti
 
 ;-----------------------------------------------------------------------------
-; HOOK 5 - Set Return Address for CHEAD when executed from S3BASIC
+; Hook 12 - SCRTCH (Execute NEW statement)
 ;-----------------------------------------------------------------------------
-set_chead_return:
-    ld      bc,MAIN             ; Make CHEAD return to MAIN
-    push    bc
-    jmp     HOOK5+1
+_scratch:
+    call  clear_all_errvars
+    jp      HOOK12+1
 
 ;-----------------------------------------------------------------------------
 ; Hook 23 - GONE2 (Handle Extended BASIC Statement Tokens)
@@ -346,6 +355,82 @@ statement_ret:
     out     (IO_BANK3),a          ; Bank it Back in
     ret                           ; Return to NEWSTT
     
+; run "progs/lbltest.bas"
+
+; run "progs/restest.bas"
+
+;-----------------------------------------------------------------------------
+; GOTO and RESUME hack
+; Check for label at beginning of line, then search for it's line
+;-----------------------------------------------------------------------------
+_scan_label:
+    ld      a,(hl)                ; Reget current character
+    cp      '_'
+    jr      nz,.not_label         ; If not underscore
+    ex      de,hl                 ; DE = Text Pointer
+    ld      (TEMP8),de            ; Save it
+    ld      hl,(TXTTAB)           ; HL = start of program,
+.line_loop:
+    ld      (TEMP2),hl            ; Save pointer to line
+    ld      c,(hl)                ; BC = link to next line
+    inc     hl
+    ld      b,(hl)
+    inc     hl  
+    ld      (TEMP3),bc            ; Save for later
+    inc     hl                    ; Skip line number
+    inc     hl                    ; 
+    ld      a,(hl)                ; Get first character
+    cp      '_'                   ; If not underscore
+    jr      nz,.next_line         ;   Skip to next lines
+.label_loop:
+    ld      a,(de)                ; Next character from label
+    cp      ' '                   ; If space
+    jr      z,.label_loop         ;   Skip it
+    call    .check_colon          ; Treat colon as terminator
+    ld      b,a                   ; Put in B for compare
+.text_loop:
+    ld      a,(hl)                ; Get character from line
+    cp      ' '                   ; If space
+    jr      z,.text_loop          ;   Skip it
+    call    .check_colon          ; Treat colon as terminator
+    cp      b                     ; If characters don't match
+    jp      nz,.no_match          ;
+    or      a                     ; If both are terminators
+    jr      z,.found_it           ;   Finish up
+    inc     de                    ; Move it on up
+    inc     hl                    ; HL is Text Pointer
+    jr      .label_loop           ; Check next character
+.no_match
+    ld      de,(TEMP8)            ; Restore pointer to label
+.next_line
+    ld      hl,(TEMP3)            ; Get Link to next linr
+    ld      a,h                   ; If link to next line is $0000
+    or      l                     ;   End of program
+    jp      z,ULERR               ;   So Undefined Line error
+    jr      .line_loop            ; Scan the next line
+.found_it
+    pop     af                    ; Get return address
+    cp      $06                   ; If we came from GOTO 
+    ret     z                     ;   Return to NEWSTT
+    cp      $0C                   ; If we came from RESTORE
+    jp      z,BGNRST              ;   Load DATPTR, HL = Text Pointer, and Return
+    ex      de,hl                 ; HL = New text pointer
+    ld      de,(TEMP2)            ; DE = Pointer to Line
+    jp      reset_trap            ; Finish ON ERROR GOTO
+    
+.not_label:
+    jp      SCNLIN                ;   Scan line number and return to GOTO
+
+.check_colon
+    cp      ':'                   ; Check A
+    ret     nz                    ; If colon
+    xor     a                     ;   Treat like terminator
+    ret
+
+ULERR:
+    ld      e,ERRUL
+    jp      force_error
+
 
 FLOAT_BC:
     ld      d,b                   ;  Copy into DE
@@ -444,6 +529,12 @@ byte_to_hex:
     ret
 
 ;-----------------------------------------------------------------------------
+; Utility routines
+;-----------------------------------------------------------------------------
+    include "util.asm"
+
+
+;-----------------------------------------------------------------------------
 ; Paged memory routines
 ;-----------------------------------------------------------------------------
     include "paged.asm"
@@ -459,10 +550,12 @@ byte_to_hex:
 ;-----------------------------------------------------------------------------
     include "esp.asm"
 
+
+
 ;-----------------------------------------------------------------------------
 ; Primitive debugger
 ;-----------------------------------------------------------------------------
-    include "debug.asm"
+;    include "debug.asm"
 
 
 
@@ -481,8 +574,8 @@ free_rom_2k = $2C00 - $
 ; BASIC Hook Jump Table
 ; 58 Bytes
 hook_table:                     ; ## caller   addr  performing function
-    dw      HOOK0+1             ;  0 ERROR    03DB  Initialize Stack, Display Error, and Stop Program
-    dw      HOOK1+1             ;  1 ERRCRD   03E0  Print Error Message
+    dw      trap_error          ;  0 ERROR    03DB  Initialize Stack, Display Error, and Stop Program
+    dw      force_error         ;  1 ERRCRD   03E0  Print Error Message
     dw      HOOK2+1             ;  2 READY    0402  BASIC command line (immediate mode)
     dw      HOOK3+1             ;  3 EDENT    0428  Save Tokenized Line  
     dw      HOOK4+1             ;  4 FINI     0480  Finish Adding/Removing Line or Loading Program
@@ -493,7 +586,7 @@ hook_table:                     ; ## caller   addr  performing function
     dw      eval_extension      ;  9 EVAL     09FD  Evaluate Number or String
     dw      keyword_to_token    ; 10 NOTGOS   0536  Converting Keyword to Token
     dw      HOOK11+1            ; 11 CLEAR    0CCD  Execute CLEAR Statement
-    dw      HOOK12+1            ; 12 SCRTCH   0BBE  Execute NEW Statement
+    dw      _scratch            ; 12 SCRTCH   0BBE  Execute NEW Statement
     dw      HOOK13+1            ; 13 OUTDO    198A  Execute OUTCHR
     dw      HOOK14+1            ; 14 ATN      1985  ATN() function
     dw      HOOK15+1            ; 15 DEF      0B3B  DEF statement
@@ -506,7 +599,7 @@ hook_table:                     ; ## caller   addr  performing function
     dw      token_to_keyword    ; 22 LISPRT   0598  expanding a token
     dw      _next_statement     ; 23 GONE2    064B  interpreting next BASIC statement
     dw      run_cmd             ; 24 RUN      06BE  starting BASIC program
-    dw      HOOK25+1            ; 25 ONGOTO   0780  ON statement
+    dw      on_error            ; 25 ONGOTO   0780  ON statement
     dw      HOOK26+1            ; 26 INPUT    0893  Execute INPUT, bypassing Direct Mode check
     dw      execute_function    ; 27 ISFUN    0A5F  Executing a Function
     dw      HOOK28+1            ; 28 DATBK    08F1  Doing a READ from DATA
@@ -560,16 +653,17 @@ fast_hook_handler:
 
     phase   $C000     ;Assemble in ROM Page 1 which will be in Bank 3
 
+    ; dispatch.asm and error.asm must be first and second because of aligned tables 
     include "dispatch.asm"      ; Statement/Function dispatch tables and routiness
-ifdef _____    ; Not ready for primetime
     include "error.asm"         ; Error lookup table, messages and handling routines
-endif
-    include "tokens.asm"        ; Keyword list and tokenize/expand routines-
+    include "args.asm"          ; ARGS statement and function
+    include "basic80.asm"       ; Statements and Functions from MBASIC 80
     include "enhanced.asm"      ; Enhanced stardard BASIC statements and functions
     include "evalext.asm"       ; EVAL extension - hook 9 
-    include "extended.asm"      ; Extended BASIC statements and functions
     include "fileio.asm"        ; Disk and File I/O statements and functions
     include "plus.asm"          ; plusBASIC unique statements and functions
+    include "tokens.asm"        ; Keyword list and tokenize/expand routines-
+    include "usbbas.asm"        ; Statements and functions from USB BASIC
 
 free_rom_16k = $10000 - $
 

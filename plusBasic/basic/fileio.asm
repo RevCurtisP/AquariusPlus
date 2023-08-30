@@ -206,7 +206,7 @@ ST_DIR:
     jr      z, .no_dir
 
     ;-- Directory ------------------------------------------------------------
-    call    STRPRI
+    call    print_string_immd
     byte    " <DIR>",0
 
     ; Skip length bytes
@@ -635,11 +635,11 @@ run_file:
     ; Close any open files
     call    esp_close_all
 
-    call    get_strdesc_arg        ; Get FileSpec
+    call    get_strdesc_arg       ; Get FileSpec
     push    hl                    ; Save String Descriptor
 
     ; Check for .ROM extension
-    call    STRADL                ; Get String Length in BC, Address in DE
+    call    string_addr_len       ; Get String Length in BC, Address in DE
     ld      a, c                  ; A = String Length
     cp      a, 5                  ; If less thsn 5
     jr      c, .load_basic        ; Too short to ha3ve ROM extension
@@ -650,11 +650,12 @@ run_file:
     ex      de,hl                 ; DE = String Address
     ld      hl,.romext            ; HL = ".ROM"
     ld      b,4                   ; Comparing 4 bytes
-    call    UPRCMP                ; Compare Them
+    call    string_cmp_upper      ; Compare Them
     pop     hl                    ; Get String Descriptor
     jp      z, dos_load_rom
 
 .load_basic:
+    call    clear_all_errvars     ; Clear ON ERROR sytem variables
     pop     bc                    ; Discard Text Pointer
     ld      bc,RUNC
     push    bc                    ; Return to RUNC
@@ -843,7 +844,7 @@ get_string_arg:
     pop     IX                    ; IX = Return Address
     push    hl                    ; Text Pointer on stack
     call    FRESTR                ; Free Temporary String
-    call    STRADL                ; Get Length and Text Pointer
+    call    string_addr_len                ; Get Length and Text Pointer
     jp      (IX)                  ; Fast Return
 
 ;-----------------------------------------------------------------------------

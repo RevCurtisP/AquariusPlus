@@ -17,9 +17,9 @@
 ;   Add -Daqlus to include Aquarius+ Mods
 ;   This will also turn on noreskeys and addkeyrows
 ;
-ifdef aqplus
-noreskeys   equ   1
-addkeyrows  equ   1
+ifdef aqplus                
+noreskeys   equ   1               ;; |
+addkeyrows  equ   1               ;; |
 endif
 
 ;BASIC Constants
@@ -114,46 +114,49 @@ INTJMP  equ     $38FB   ;;RST 7 Interrupt JMP
 ;;        $38FE-$38FF   ;;??Unused
 ;;              $3900   ;;This is always 0
 BASTXT  equ     $3901   ;;Start of Basic Program
-ifdef aqplus
-XPLUS   equ     $2000   ;;plusBASIC Reset
-XCOLD   equ     $2003   ;;plusBASIC Cold Start`
-XCART   equ     $2006   ;;plusBASIC Start Cartridge
-XINTR   equ     $2009   ;;plusBASIC  Interrupt Handler
-XWARM   equ     $200C   ;;plusBASIC Warm Start`
-endif
+ifdef aqplus            
+XPLUS   equ     $2000   ;; | plusBASIC Reset
+XCOLD   equ     $2003   ;; | plusBASIC Cold Start`
+XCART   equ     $2006   ;; | plusBASIC Start Cartridge
+XINTR   equ     $2009   ;; | plusBASIC  Interrupt Handler
+XWARM   equ     $200C   ;; | plusBASIC Warm Start`
+SCNLBL  equ     $200F   ;; | Line label hook for GOTO, GOSUB, and RESTORE
+endif                   
 EXTBAS  equ     $2000   ;;Start of Extended Basic
 XSTART  equ     $2010   ;;Extended BASIC Startup Routine
 XINIT   equ     $E010   ;;ROM Cartridge Initialization Entry Point
-ifdef addkeyrows
-;;;Code Change: Address of Expanded Key Tables, stored in the last 256 bytes of Extended BASIC.
-KEYADR  equ     $2F00   ;;Key Tables for 64 key matrix
-endif
-        org     $0000   ;;Starting Address of Standard BASIC
+ifdef addkeyrows        
+;;;Code Change: Address of Expanded Key Tables, stored in the last 256 bytes of Extended BASIC.                                                         
+KEYADR  equ     $2F00   ;; | Extended Key Tables Base Address minus 1
+endif                   
+
 ifdef aqplus
-;;;Aquarius+ I/O Port Assignments
 XBANK0  equ     $F0     ;;Bank 0 ($0000-$3FFF) Page (0-63)
 XBANK1  equ     $F1     ;;Bank 1 ($4000-$7FFF) Page (0-63)
 XBANK2  equ     $F2     ;;Bank 1 ($8000-$BFFF) Page (0-63)
 XBANK3  equ     $F3     ;;Bank 1 ($C000-$FFFF) Page (0-63)
 endif
 
+        org     $0000   ;;Starting Address of Standard BASIC
+
 ;;RST 0 - Startup
 START:
 ifdef aqplus
-  ;;; Code Change: Aquarius+ only
-  ;;; Instead of checking for the Extended BASIC signature
-  ;;; jump straight into Extended BASIC init                                  Original Code
-        jp      XPLUS             ;;Start Extended BASIC                      0000  jp      JMPINI
-                                  ;;                                          0001
-                                  ;;                                          0002
+;;; Code Change: Aquarius+ only
+;;; Instead of checking for the Extended BASIC signature
+;;; jump straight into Extended BASIC init                                  Original Code
+        jp      XPLUS             ;; | Start Extended BASIC                      0000  jp      JMPINI
+                                  ;; |                                           0001
+                                  ;; |                                           0002
 else        
-        jp      JMPINI            ;;Start Initialization
+        jp      JMPINI            ;; \ Start Initialization
 endif
-        byte    $23,$08,$25       ;;Revision Date 1982-06-22                  Original Code
 ;;RST 1 - Syntax Check
 
-        byte    0                 ;;Revision Number?
+        byte    $23,$08,$28       ;;Revision Date 
+        byte    1                 ;;Revision Number?
         nop                       ;;Pad out the RST routine
+;;RST 1 - Syntax Check
 SYNCHK: ld      a,(hl)
         ex      (sp),hl
         cp      (hl)              ;[M65] CHARACTERS EQUAL?
@@ -234,9 +237,9 @@ CRTCH2: add     a,(hl)            ;
         out     ($FF),a           ;;Write Scramble Byte to Port 255
         ld      (SCRMBL),a        ;;Save Scramble Byte
 ifdef aqplus
-        jp      XCART             ;;Run Extended Cart Initialization Routine
-else        
-        jp      XINIT             ;;Execute Cartridge Code
+        jp      XCART             ;; | Run Extended Cart Initialization Routine
+else                                  
+        jp      XINIT             ;; | Execute Cartridge Code
 endif
 CRTSIG: byte    "+7$$3,",0        ;;$A000 Cartridge Signature
 ;;Display Startup Screen
@@ -286,9 +289,9 @@ WARMST: ld      a,11              ;
         out     ($FF),a           ;;Reset I/O Port 255
         call    STKINI            ;;Initialize stack
 ifdef aqplus
-        call    XWARM
+        call    XWARM             ;; | 
 else
-        call    WRMCON            ;;Finish Up
+        call    WRMCON            ;; \ Finish Up
 endif
 COLDST: ld      hl,DEFALT         ;Set System Variable Default Values
         ld      bc,81             ;
@@ -300,146 +303,132 @@ COLDST: ld      hl,DEFALT         ;Set System Variable Default Values
 ifdef aqplus
 ;;; Code Change: Execute Aquarius+ Extended BASIC Cold Start
 ;;; On the Aquarius+ From MEMTST to before INITFF is deprecated: 68 bytes     Original Code
-        jp      XCOLD             ;;Do Extended BASIC Cold Start              010F  ld      hl,BASTXT+99
-                                  ;;                                          0110  
-                                  ;;                                          0111
-;; Utility Routines from Aquarius Extended BASIC                              
-
-;; Convert A to Upper Case                                                    
-MAKUPR: cp      'a'               ;;                                          0112  inc     hl      
-                                  ;;                                          0113  ld      c,(hl)  
-        ret     c                 ;;If >= 'a'                                 0114  ld      a,h     
-        cp      '{'               ;;                                          0115  or      l       
-                                  ;;                                          0116  jr      z,MEMCHK
-        ret     nc                ;;and less than <'{'                        0117   
-        and     $5F               ;;Clear Bit 5                               0118  xor     c       
-                                  ;;                                          0119  ld      (hl),a  
-        ret                       ;;                                          011A  ld      b,(hl)              
-
-;;Print Null Terminated String pointed to by [HL] - Faster than STROUT
-;;On return [HL] points to byte after 0 terminator
-STRPRZ: ld      a,(hl)            ;;Get Byte                                  011B  cpl             
-        inc     hl                ;;Point to Next Byte                        011C  ld      (hl),a  
-        or      a                 ;;If Zero                                   011D  ld      a,(hl)  
-        ret     z                 ;;  Return                                  011E  cpl             
-        rst     OUTCHR            ;;Output Byte                               011F  ld      (hl),c  
-        jr      STRPRZ            ;;and Do it Again                           0120  cp      b       
-                                  ;;                                          0121  jr      z,MEMTST
-;;Print Null Terminated inline string after CALL
-;;On return [HL] points to byte after 0 terminator
-STRPRI: pop     hl                ;; Get String Address off Stack             0122   
-        call    STRPRZ            ;; Print the String                         0123  dec     hl  
-                                  ;;                                          0124  ld      de,BASTXT+299
-                                  ;;                                          0125
-        jp      (hl)              ;; Fast Return                              0126
-
-;; Call FRESTR and Return String Length in BC and Text Address in DE          
-;; Destroys HL
-FREADL: call    FRESTR            ;; Free Temporary String                    0127  rst     COMPAR 
-                                  ;;                                          0128  jp      c,OMERR
-                                  ;;                                          0129
-;; Return String Lengh in BC and Text Address in DE from Descriptor in HL.                           
-STRADL: push    hl                ;; Save Descriptor Address                  012A                    
-        ld      c,(hl)            ;; Get Length LSB                           012B ld      de,$FFCE 
-        inc     hl                ;;                                          012C      
-        ld      b,0               ;; Get Length MSB (0 for BASIC strings)     012D  
-                                  ;;                                          012E ld      (MEMSIZ),hl
-        inc     hl                ;;                                          012F  
-        ld      e,(hl)            ;; Get Text Address LSB                     0130   
-        inc hl                    ;;                                          0131  add     hl,de 
-        ld      d,(hl)            ;; Get Text Address LSB                     0132  ld      (TOPMEM),hl
-        pop     hl                ;;                                          0133   
-        ret                       ;;                                          0134
-                                                                               
-;;Print number in A as Decimal                                                  
-BYTPRT: ld      h,0               ;; Put A in HL                              0135  call    SCRTCH  
-                                  ;;                                          0136     
-        ld      l,a               ;;                                          0137
-        jp      LINPRT            ;; Print HL                                 0138  call    PRNTIT
-                                  ;;                                          0139
-                                  ;;                                          013A    
-                                                                                     
-;;Compare B bytes of upper-cased string in HL to string in DE                 
-UPRCMP: ld      a,(de)            ;; Get char from First String               013B  ld      sp,OLDSTK  
-        call    MAKUPR            ;; Convert to Upper Case                    013C  
-                                  ;;                                          013D
-                                  ;;                                          013E  call    STKINI
-        inc     de                ;;                                          013F
-        cp      (hl)              ;; Compare to char in Second String         0140
-        inc     hl                ;;                                          0141  ld      hl,EXTBAS+5
-        ret     nz                ;; Return NZ if not equal                   0142
-        djnz    UPRCMP            ;;                                          0143
-                                  ;;                                          0144  ld      de,CRTSIG
-        xor     a                 ;;                                          0145
-        ret                       ;; Return 0 = Equal                         0146  
-                                                                              
-;;Patch to not uppercase characters between single quotes                     
-STRNGX: jp      z,STRNG           ;; Special Handling for Double Quote        0147  ld      a,(de)     
-                                  ;;                                          0148  or      a          
-                                  ;;                                          0149  jp      z,XBASIC   
-        cp      $27               ;;                                          014A
-                                  ;;                                          014B
-        jp      z,STRNG           ;; Do the same for Single Quote             014C  cp      (hl)    
-                                  ;;                                          014D  jp      nz,READY
-                                  ;;                                          014E
-        jp      STRNGR            ;;                                          014F  dec     hl 
-                                  ;;                                          0150  inc     de 
-                                  ;;                                          0151  jr      EXTCHK
-        byte    $F4               ;;                                          0152  
-
-;;INITFF is at 0153
-
+        jp      XCOLD             ;; | Do Extended BASIC Cold Start            010F  ld      hl,BASTXT+99
+                                  ;; |                                        0110  
+                                  ;; |                                        0111
+;; If label at beginning of line: don't tokenize, just stuff it                                  
+STFLBL: cp      '_'               ;; | If not a period                        0112  inc     hl      
+                                  ;; |                                        0113  ld      c,(hl)  
+        jp      nz,STRNGR         ;; |   Keep on truckin'                     0114  ld      a,h     
+                                  ;; |                                        0115  or      l       
+                                  ;; |                                        0116  jr      z,MEMCHK
+        call    STUFFS            ;; | Stuff character in KRUNCH buffer       0117   
+                                  ;; |                                        0118  xor     c       
+                                  ;; |                                        0119  ld      (hl),a  
+STLOOP: ld      a,(hl)            ;; | Get character from buf                 011A  ld      b,(hl)  
+        or      a                 ;; | If end of linw                         011B  cpl             
+        jp      z,CRDONE          ;; |   Finish it up                         011C  ld      (hl),a
+                                  ;; |                                        011D  ld      a,(hl)  
+                                  ;; |                                        011E  cpl             
+        cp      ' '               ;; | If Space                               011F  ld      (hl),c  
+                                  ;; |                                        0120  cp      b       
+        jr      z,SSTUFF          ;; |   Stuff it and keep going              0121  jr      z,MEMTST   
+                                  ;; |                                        0122
+        cp      ':'               ;; | If colon                               0123  dec     hl  
+                                  ;; |                                        0124  ld      de,BASTXT+299
+        jp      z,STRNGR          ;; |   Stuff it and return                  0125
+                                  ;; |                                        0126
+                                  ;; |                                        0127  rst     COMPAR  
+SSTUFF: call    STUFFU            ;; | Stuff character in KRUNCH buffer       0128  jp      c,OMERR    
+                                  ;; |                                        0129
+                                  ;; |                                        012A                  
+        jr      STLOOP            ;; | Next character                         012B ld      de,$FFCE  
+                                  ;; |                                        012C
+;; Uppercase and stuff character  ;; |                                        
+STUFFU: call    MAKUPR            ;; |                                        012D           
+                                  ;; |                                        012E ld      (MEMSIZ),hl
+                                  ;; |                                        012F
+;; Stuff char in KRUNCH buffer    ;; |                                        
+STUFFS: inc     hl                ;; | Bump BUF pointer                       0130     
+        ld      (de),a            ;; | Save byte in KRUNCH buffer             0131  add     hl,de 
+        inc     de                ;; | Bump KRUNCH pointer                    0132  ld      (TOPMEM),hl
+        inc     c                 ;; | Increment buffer count                 0133
+        ret                       ;; |                                        0134 
+                                  ;; |                                        
+;; Convert A to Upper Case        ;; |                                           
+MAKUPR: cp      'a'               ;; |                                        0135  call    SCRTCH
+                                  ;; |                                        0136
+        ret     c                 ;; | If >= 'a'                              0137       
+        cp      '{'               ;; |                                        0138  call    PRNTIT
+                                  ;; |                                        0139
+        ret     nc                ;; | and less than <'{'                     013A
+        and     $5F               ;; | Clear Bit 5                            013B  ld      sp,OLDSTK 
+                                  ;; |                                        013C   
+        ret                       ;; |                                        013D
+                                  ;; |
+;; Skip label at begin of line    ;; |
+SKPLBL: ld      (CURLIN),hl       ;; | Save the Line #                        013E  call    STKINI
+                                  ;; |                                        013F
+                                  ;; |                                        0140
+        ex      de,hl             ;; | DE = Line#, HL = Text Pointer          0141  ld      hl,EXTBAS+5
+        rst     CHRGET            ;; | Get first character                    0142            
+        cp      '_'               ;; | If not a period                        0143
+                                  ;; |                                        0144  ld      de,CRTSIG
+        jr      nz,SKPGO          ;; |   Execute rest of line                 0145
+                                  ;; |                                        0146  
+SKLOOP: rst     CHRGET            ;; | Get next charcter                      0147  ld      a,(de)     
+        or      a                 ;; | If end of line                         0148  or      a          
+        jr      z,SKPGO           ;; |   done                                 0149  jp      z,XBASIC   
+                                  ;; |                                        014A
+        cp      ':'               ;; | If not a colon                         014B
+                                  ;; |                                        014C  cp      (hl)    
+        jr      nz,SKLOOP         ;; |   Keep going                           014D  jr      nz,INITFF
+                                  ;; |                                        014E 
+SKPGO:  dec     hl                ;; | Back up text pointer                   0150  inc     de  
+        jp      GONE              ;; | Execute rest of line                   014F  dec     hl 
+                                  ;; |                                        0151  jr      EXTCHK
+                                  ;; |                                        0152  
 else                              ;;
-;;Test Memory to Find Top of RAM  ;;
-        ld      hl,BASTXT+99      ;;Set RAM Test starting address
-MEMTST: inc     hl                ;;Bump pointer
-        ld      c,(hl)            ;;Save contents of location
-        ld      a,h               ;
-        or      l                 ;;Wrapped around to $0000?
-        jr      z,MEMCHK          ;;Yes, go on to check memory
-        xor     c                 ;;Scramble bits into A
-        ld      (hl),a            ;;and write to location
-        ld      b,(hl)            ;;Read back into B
-        cpl                       ;;Invert scrambled bits
-        ld      (hl),a            ;;Write to location
-        ld      a,(hl)            ;;read it back
-        cpl                       ;;and revert back
-        ld      (hl),c            ;;Write original byte to location
-        cp      b                 ;;Did reads match writes?
-        jr      z,MEMTST          ;;Yes, check next locationn
-;;Check Memory Size               ;
-MEMCHK: dec     hl                ;;Back up to last good address
-        ld      de,BASTXT+299     ;
-        rst     COMPAR            ;;Is there enough RAM?
-        jp      c,OMERR           ;;No, Out of Memory error
-;;Set Top of memory
-        ld      de,$FFCE
-        ld      (MEMSIZ),hl       ;;Set MEMSIZ to last RAM location
-        add     hl,de
-        ld      (TOPMEM),hl       ;;Set TOPMEM t0 MEMSIZ-50
-        call    SCRTCH            ;;Perform NEW
-        call    PRNTIT            ;;Print copyright message
-        ld      sp,OLDSTK         ;;Top of of stack used to be here
-        call    STKINI            ;;Set stack pointer to TOPMEM
-        ld      hl,EXTBAS+5       ;;End of signature in Extended BASIC
-        ld      de,CRTSIG         ;;Text to check signature against
-;;Check for Extended BASIC
-EXTCHK: ld      a,(de)            ;;Get byte from signature
-        or      a                 ;;Did we reach a terminator?
-        jp      z,XBASIC          ;;Yes, start Extended BASIC
-        cp      (hl)              ;;Does it match byte in ROM?
-        jr      nz,INITFF         ;;No, move on
-        dec     hl                ;;Move backward in Extended BASIC
-        inc     de                ;;and forward in test signature
-        jr      EXTCHK            ;;Compare next character
-endif
+        ld      hl,BASTXT+99      ;; \ Set RAM Test starting address
+MEMTST: inc     hl                ;; \ Bump pointer
+        ld      c,(hl)            ;; \ Save contents of location
+        ld      a,h               ;  \ 
+        or      l                 ;; \ Wrapped around to $0000?
+        jr      z,MEMCHK          ;; \ Yes, go on to check memory
+        xor     c                 ;; \ Scramble bits into A
+        ld      (hl),a            ;; \ and write to location
+        ld      b,(hl)            ;; \ Read back into B
+        cpl                       ;; \ Invert scrambled bits
+        ld      (hl),a            ;; \ Write to location
+        ld      a,(hl)            ;; \ read it back
+        cpl                       ;; \ and revert back
+        ld      (hl),c            ;; \ Write original byte to location
+        cp      b                 ;; \ Did reads match writes?
+        jr      z,MEMTST          ;; \ Yes, check next location
+;;Check Memory Size               ;; \ 
+MEMCHK: dec     hl                ;; \ Back up to last good address
+        ld      de,BASTXT+299     ;; \ 
+        rst     COMPAR            ;; \ Is there enough RAM?
+        jp      c,OMERR           ;; \ No, Out of Memory error
+;;Set Top of memory               ;; \ 
+        ld      de,$FFCE          ;; \ 
+        ld      (MEMSIZ),hl       ;; \ Set MEMSIZ to last RAM location
+        add     hl,de             ;; \ 
+        ld      (TOPMEM),hl       ;; \ Set TOPMEM t0 MEMSIZ-50
+        call    SCRTCH            ;; \ Perform NEW
+        call    PRNTIT            ;; \ Print copyright message
+        ld      sp,OLDSTK         ;; \ Top of of stack used to be here
+        call    STKINI            ;; \ Set stack pointer to TOPMEM
+        ld      hl,EXTBAS+5       ;; \ End of signature in Extended BASIC
+        ld      de,CRTSIG         ;; \ Text to check signature against
+;;Check for Extended BASIC        ;; \ 
+EXTCHK: ld      a,(de)            ;; \ Get byte from signature
+        or      a                 ;; \ Did we reach a terminator?
+        jp      z,XBASIC          ;; \ Yes, start Extended BASIC
+        cp      (hl)              ;; \ Does it match byte in ROM?
+        jr      nz,INITFF         ;; \ No, move on
+        dec     hl                ;; \ Move backward in Extended BASIC
+        inc     de                ;; \ and forward in test signature
+        jr      EXTCHK            ;; \ Compare next character
+endif                             
+
 ;;Initialize I/O Port 255
 INITFF: ld      a,r               ;;Read random number from Refresh Register
         rla                       ;;Rotate left
 ifdef aqplus
-        xor     a
+        xor     a                 ;; | No scrambling
 else 
-        add     a,c               ;;Copy in bit that was rotated out
+        add     a,c               ;; | Copy in bit that was rotated out
 endif
         out     ($FF),a           ;;Write it to I/O Port 255
         ld      (SCRMBL),a        ;;and save it for later
@@ -850,14 +839,14 @@ TMERR:  ld      e,ERRTM           ;[M80] TYPE MISMATCH ERROR
 ;;; Code Change: Call HOOKDO before STKINI (instead of after), 
 ;;; allowing the Hook Routine to preserve STKSAV for ON ERROR GOTO            Original Code
 ERROR:  rst     HOOKDO            ;;call Hook Service Routine                 03DB  call    STKINI
-        byte    0                 ;;                                          03DC  
+HOOK0:  byte    0                 ;;                                          03DC  
 ERRINI: call    STKINI            ;;                                          03DD  
                                   ;;                                          03DE  rst     HOOKDO   
                                   ;;                                          03DF  byte    0        
 ERRCRD: call    CRDONZ            ;;
         ld      hl,ERRTAB         ;;
         rst     HOOKDO            ;;call Hook Service Routine
-        byte    1                 ;
+HOOK1:  byte    1                 ;
         ld      d,a               ;;Add Error Offset
         add     hl,de             ;
         ld      a,'?'             ;[M65] PRINT A QUESTION MARK
@@ -878,7 +867,7 @@ ERRFN1: call    STROUT            ;[M80] PRINT MESSAGE
 STPRDY: pop     bc
 ;;Enter Immediate Mode
 READY:  rst     HOOKDO            ;;Call hook routine
-        byte    2                 ;
+HOOK2:  byte    2                 ;
         call    FINLPT            ;[M80] PRINT ANY LEFT OVERS
         xor     a                 ;
         ld      (CNTOFL),a        ;[M80] FORCE OUTPUT
@@ -903,7 +892,7 @@ EDENT:  push    de                ;[M80] SAVE LINE #
         pop     de                ;[M80] RESTORE LINE #
         pop     af                ;[M80] WAS THERE A LINE #?
         rst     HOOKDO            ;;Call Hook Dispatch Routine
-        byte    3                 ;
+HOOK3:  byte    3                 ;
         jp      nc,GONE           ;
         push    de                ;
         push    bc                ;[M80] SAVE LINE # AND CHARACTER COUNT
@@ -960,8 +949,8 @@ MLOOPR: ld      a,(de)            ;[M80] NOW TRANSFERING LINE IN FROM BUF
         or      a                 ;;If not line terminator, keep going
         jr      nz,MLOOPR         ;
 FINI:   rst     HOOKDO            ;
-        byte    4                 ;
-HOOK4:  call    RUNC              ;[M80] DO CLEAR & SET UP STACK
+HOOK4:  byte    4                 ;
+        call    RUNC              ;[M80] DO CLEAR & SET UP STACK
 LINKER: rst     HOOKDO            ;
 HOOK5:  byte    5                 ;
         inc     hl                ;;HL=TXTTAB
@@ -1023,9 +1012,9 @@ KLOOP:  ld      a,(hl)            ;GET CHARACTER FROM BUF
         ld      b,a               ;SETUP B WITH A QUOTE IF IT IS A STRING
         cp      '"'               ;QUOTE SIGN?
 ifdef aqplus
-        jp      STRNGX            ;;Patch to handle both " and '
-else
-        jp      z,STRNG           ;YES, GO TO SPECIAL STRING HANDLING
+        jp      STRNGX            ; | Patch to handle both " and '
+else                                
+        jp      z,STRNG           ; \ YES, GO TO SPECIAL STRING HANDLING
 endif
 STRNGR: or      a                 ;END OF LINE?
         jp      z,CRDONE          ;YES, DONE CRUNCHING
@@ -1092,7 +1081,7 @@ NOTFNT: ld      c,b               ;
         ex      de,hl             ;
         ret                       ;
 NOTGOS: rst     HOOKDO            ;
-        byte    10                ;
+HOOK10: byte    10                ;
         ex      de,hl             ;;HL=text pointer, DE=krunch pointer
         ld      a,c               ;;Get token
         pop     bc                ;
@@ -1164,7 +1153,7 @@ LISPRT: ld      a,(hl)            ;;Detokenize and Print Line
         jr      z,LIST4           ;[M80] IF =0 THEN END OF LINE
         jp      p,PLOOP           ;
         rst     HOOKDO            ;;Handle Extended BASIC Tokens
-        byte    22                ;
+HOOK22: byte    22                ;
         sub     $7F               ;
         ld      c,a               ;
         ld      de,RESLST         ;[M80] GET PTR TO START OF RESERVED WORD LIST
@@ -1209,8 +1198,9 @@ LPFORM: call    LOOPER            ;[M80] MUST HAVE VARIABLE POINTER IN [D,E]
         jr      nz,LPFORM         ;[M80] KEEP SEARCHING IF NO MATCH
         pop     de                ;[M80] GET BACK THE TEXT POINTER
         ld      sp,hl             ;[M80] DO THE ELIMINATION
-        inc     c                 ;
-NOTOL:  pop     de                ;
+;BUG Fix: This was the byte $0C which is an INC C. It should be $0E, forming the LD C to bypass the POP DE
+        byte    $0E               ;;LD C over POP DE
+NOTOL:  pop     de                ;;Should only happen if we came from jr after CALL LOOPER
         ex      de,hl             ;[M80] [H,L]=TEXT POINTER
         ld      c,8               ;[M80] MAKE SURE 16 BYTES ARE AVAILABLE
         call    GETSTK            ;[M80] OFF OF THE STACK
@@ -1271,7 +1261,11 @@ GONE4:  ld      a,(hl)            ;[M80] IF POINTER IS ZERO, END OF PROGRAM
         inc     hl                ;
         ld      d,(hl)            ;[M80] GET LINE # IN [D,E]
         ex      de,hl             ;[M80] [H,L]=LINE #
-        ld      (CURLIN),hl       ;[M80] SETUP CURLIN WITH THE CURRENT LINE #
+ifdef aqplus
+        jp      SKPLBL            ; | Skip label at beginning of line 
+else
+        ld      (CURLIN),hl       ; \ [M80] SETUP CURLIN WITH THE CURRENT LINE #
+endif
         ex      de,hl             ;;DE=Line#, HL=Text Pointer
 
 GONE:   rst     CHRGET            ;[M80] GET THE STATEMENT TYPE
@@ -1282,8 +1276,8 @@ GONE3:  ret     z                 ;[M80] IF A TERMINATOR TRY AGAIN
 GONE2:  sub     $80               ;[M80] "ON ... GOTO" AND "ON ... GOSUB" COME HERE
         jp      c,LET             ;[M80] MUST BE A LET
         cp      TABTK-$80         ;;End of Statement Tokens
-        rst     HOOKDO            ;;Handle Extended BASIC Statement Tokens
-        byte    23                ;
+        rst     HOOKDO            ;;Handle Extended BASIC Statement Tokens`
+HOOK23: byte    23                ;
         jp      nc,SNERR          ;;Not a Statement Token
         rlca                      ;[M80] MULTIPLY BY 2
         ld      c,a               ;
@@ -1374,7 +1368,7 @@ POPHSR: pop     af                ;[M80] GET OFF TERMINATING DIGIT
         pop     hl                ;[M80] GET BACK OLD TEXT POINTER
         ret                       ;
 RUN:    rst     HOOKDO            ;Call Hook Routine
-        byte    24                ;
+HOOK24: byte    24                ;
         jp      z,RUNC            ;[M80] NO LINE # ARGUMENT
         call    CLEARC            ;RESET THE STACK,DATPTR,VARIABLES ...
         ld      bc,NEWSTT         ;
@@ -1391,8 +1385,15 @@ GOSUB:  ld      c,3               ;[M80] "GOSUB" ENTRIES ARE 5 BYTES LONG
         push    af                ;[M80] PUT GOSUB TOKEN ON THE STACK
         inc     sp                ;[M80] THE GOSUB TOKEN TAKES ONLY ONE BYTE
 RUNC2:  push    bc                ;[M80] RESTORE RETURN ADDRESS OF "NEWSTT"
-GOTO:   call    SCNLIN            ;[M80] PICK UP THE LINE # AND PUT IT IN [D,E]
-        call    REM               ;[M80] SKIP TO THE END OF THIS LINE
+GOTO:   
+ifdef aqplus
+;; Code Change: Allow GOTO and GOSUB to line label
+
+        call    SCNLBL            ; | See if it's a label                     
+else
+        call    SCNLIN            ; / [M80] PICK UP THE LINE # AND PUT IT IN [D,E]
+endif
+GOTOLN: call    REM               ;[M80] SKIP TO THE END OF THIS LINE
         inc     hl                ;[M80] POINT AT THE LINK BEYOND IT
         push    hl                ;[M80] SAVE THE POINTER
         ld      hl,(CURLIN)       ;[M80] GET THE CURRENT LINE #
@@ -1495,10 +1496,10 @@ COPNUM: push    hl
         ret
 ;{M80} ON..GOTO, ON GOSUB CODE
 ONGOTO: rst     HOOKDO            ;
-        byte    25                ;
-        call    GETBYT            ;[M80] GET VALUE INTO [E]
+HOOK25: byte    25                ;
+NTOERR: call    GETBYT            ;[M80] GET VALUE INTO [E]
 ;;Execute ON..GOTO
-OMGOTO  ld      a,(hl)            ;[M80] GET THE TERMINATOR BACK
+OMGOTO: ld      a,(hl)            ;[M80] GET THE TERMINATOR BACK
         ld      b,a               ;[M80] SAVE THIS CHARACTER FOR LATER
         cp      GOSUTK            ;[M80] AN "ON ... GOSUB" PERHAPS?
         jr      z,ISGOSU          ;[M80] YES, SOME FEATURE USE
@@ -1535,7 +1536,7 @@ NEWCHR: dec     hl                ;
 ;;; To change the column width, POKE the width into 14405 and the last comma position into 14409
 ;;; The latter affects PRINT only. LPRINT has a hard coded last comma position of 112.
 PRINT:  rst     HOOKDO            ;
-        byte    6                 ;
+HOOK6:  byte    6                 ;
         call    z,CRDO            ;[M80] PRINT CRLF IF END WITHOUT PUNCTUATION
 PRINTC: jp      z,FINPRT          ;{M80} FINISH BY RESETTING FLAGS, TERMINATOR SHOULD NOY CRLF
         cp      TABTK             ;
@@ -1623,14 +1624,14 @@ NOTABR: pop     hl                ;[M80] PICK UP TEXT POINTER
         rst     CHRGET            ;[M80] AND THE NEXT CHARACTER
         jp      PRINTC            ;{M80} WE JUST PRINTED SPACES, DON'T CALL CRDO IF END OF THE LINE
 FINPRT: rst     HOOKDO            ;
-        byte    7                 ;
+HOOK7:  byte    7                 ;
         xor     a                 ;
         ld      (PRTFLG),a        ;[M80] ZERO OUT PTRFIL
         ret                       ;
 TRYAGN: byte    "?Redo from start",13,10,0
 ;[M80]  HERE WHEN THE DATA THAT WAS TYPED IN OR IN "DATA" STATEMENTS
 TRMNOK: rst     HOOKDO            ;
-        byte    8                 ;
+HOOK8:  byte    8                 ;
         ld      a,(FLGINP)        ;[M80] WAS IT READ OR INPUT?
         or      a                 ;[M80] ZERO=INPUT
         jp      nz,DATSNE         ;[M80] GIVE ERROR AT DATA LINE
@@ -1639,7 +1640,7 @@ TRMNOK: rst     HOOKDO            ;
         call    STROUT            ;
         jp      GTMPRT            ;
 INPUT:  rst     HOOKDO            ;
-        byte    26                ;
+HOOK26: byte    26                ;
         call    ERRDIR            ;[M65] DIRECT IS NOT OK
         ld      a,(hl)            ;
         cp      '"'               ;[M80] IS IT A QUOTE?
@@ -1698,7 +1699,7 @@ LOPDT2: rst     SYNCHK
         jp      z,DATAH
         push    de                ;{M80} SAVE THE POINTER TO THE VARIABLE
 DATBK:  rst     HOOKDO            ;;Call Extended Hook 28
-        byte    28                ;
+HOOK28: byte    28                ;
         ld      a,(VALTYP)        ;[M80] IS IT A STRING?
         or      a                 ;
         jr      z,NUMINS          ;[M80] IF NUMERIC, USE FIN TO GET IT
@@ -1801,7 +1802,7 @@ RETAOP: ld      hl,(TEMP2)        ;[M80] RESTORE TEXT PTR
         ld      a,(hl)            ;[M80] GET NEXT CHARACTER
         ld      (TEMP3),hl        ;[M80] SAVE UPDATED CHARACTER POINTER       Original Code
         rst     HOOKDO            ;;                                          09A2  cp      PLUSTK     
-        byte    29                ;;                                          09A3  
+HOOK29: byte    29                ;;                                          09A3  
         call    CHKOP             ;;If it's not an Operator                   09A4  ret     c                 
                                   ;;                                          09A5  cp      LESSTK+1          
                                   ;;                                          09A6   
@@ -1859,7 +1860,7 @@ LOPREL: sub     GREATK            ;[M80] IS THIS ONE RELATION?
         jr      LOPREL            ;
 ;[M80] EVALUATE VARIABLE, CONSTANT, FUNCTION CALL
 EVAL:   rst     HOOKDO            ;
-        byte    9                 ;
+HOOK9:  byte    9                 ;
         xor     a                 ;
         ld      (VALTYP),a        ;[M65] ASSUME VALUE WILL BE NUMERIC
         rst     CHRGET            ;
@@ -1927,7 +1928,7 @@ RETVAR: push    hl                ;[M80] SAVE THE TEXT POINTER
 ;
 NUMGFN  =       (CHRTK-ONEFUN)*2+1
 ISFUN:  rst     HOOKDO            ;
-        byte    27                ;
+HOOK27: byte    27                ;
         cp      POINTK-ONEFUN     ;;Is it POINT()
         jp      z,POINT           ;;Yes, go do it
         ld      b,0               ;
@@ -2064,7 +2065,8 @@ FLOATB: ld      d,b               ;;Float Integer MSB=[A], LSB=[B]
 FLOATD: ld      e,0               ;;Float Integer MSB=[A], LSB=[D]
         ld      hl,VALTYP         ;
         ld      (hl),e            ;[M80] SET VALTYP TO "FLOATING POINT"
-        ld      b,144             ;{M80} SET EXPONENT
+        ld      b,145             ;{M80} SET EXPONENT
+;        ld      b,144             ;{M80} SET EXPONENT
         jp      FLOATR            ;[M80] GO FLOAT THE NUMBER
 LPOS:   ld      a,(LPTPOS)        ;{M80} GET PRINT HEAD POSITION
         jr      SNGFLT            ;
@@ -2074,11 +2076,11 @@ SNGFLT: ld      b,a               ;[M80] MAKE [A] AN UNSIGNED INTEGER
         jp      FLOATB            ;
 ;;DEF FNx Stub
 DEF:    rst     HOOKDO            ;;If not hooked
-        byte    15
+HOOK15: byte    15
         jp      SNERR             ;;Syntax Error
 ;;FNx Stub
 FNDOER: rst     HOOKDO            ;;If not hooked
-        byte    16
+HOOK16: byte    16
         jp      SNERR             ;;Syntax Error
 ;[M65] SUBROUTINE TO SEE IF WE ARE IN DIRECT MODE AND COMPLAIN IF SO.
 ERRDIR: push    hl                ;
@@ -2182,7 +2184,7 @@ OMERR:  ld      de,ERROM          ;;"OUT OF MEMORY" Error
 SCRATH: ret     nz                ;[M80] MAKE SURE THERE IS A TERMINATOR
 ;;Execute NEW Command
 SCRTCH: rst     HOOKDO            ;Call Hook Dispatch Routine
-        byte    12                ;
+HOOK12: byte    12                ;
         ld      hl,(TXTTAB)       ;[M80] GET POINTER TO START OF TEXT
         xor     a                 ;[M80] SET [A]=0
         ld      (hl),a            ;[M80] SAVE AT END OFF TEXT
@@ -2224,7 +2226,12 @@ RESTOR: ex      de,hl             ;[M80] SAVE [H,L] IN [D,E]
         ld      hl,(TXTTAB)       ;
         jr      z,BGNRST          ;[M80] RESTORE DATA POINTER TO BEGINNING OF PROGRAM
         ex      de,hl             ;[M80] TEXT POINTER BACK TO [H,L]
-        call    SCNLIN            ;[M80] GET THE FOLLOWING LINE NUMBER
+ifdef aqplus
+;; Code Change: Allow RESTORE to line label
+        call    SCNLBL            ;; | Check for label
+else
+        call    SCNLIN            ;  \ [M80] GET THE FOLLOWING LINE NUMBER
+endif
         push    hl                ;[M80] SAVE TEXT POINTER
         call    FNDLIN            ;[M80] FIND THE LINE NUMBER
         ld      h,b               ;[M80] GET POINTER TO LINE IN [H,L]
@@ -2343,7 +2350,7 @@ ISLETC: cp      'A'
 ;
 ;[M80] THIS CODE IS FOR THE "CLEAR" COMMAND WITH AN ARGUMENT
 CLEAR:  rst     HOOKDO            ;;Call Hook Dispatch Routine
-        byte    11                ;
+HOOK11: byte    11                ;
         jp      z,CLEARC          ;[M80] IF NO FORMULA JUST CLEAR
         call    INTID2            ;[M80] GET AN INTEGER INTO [D,E]
         dec     hl                ;;Back up text pointer
@@ -2441,7 +2448,7 @@ QINLIN: ld      a,'?'             ;
         jp      INLIN             ;;;For relative jumps
 
 RUBOUT:                           ;;So deprecated code will compile
-;;; Code Change: Replace Ancient DELETE code with Improve BS code
+;;; Code Change: Replace Ancient DELETE code with improve backspace code
 BSFIX:  or      a                 ;;If not at position 0                      ; 0D64
         jr      nz,BSFIN          ;;Do the backspace                          ; 0D65  
                                                                               ; 0D66   
@@ -4507,11 +4514,11 @@ TAN:    call    PUSHF             ;[M80] SAVE ARG
         jp      FDIVT             ;
 ;ARCTANGENT FUNCTION
 ATN:    rst     HOOKDO            ;;execute hook routine 15 (ATN)
-        byte    14                ;;if not implemented
+HOOK14: byte    14                ;;if not implemented
         jp      SNERR             ;;  generate SYNTAX error
 ;;Execute OUTCHR
 OUTDO:  rst     HOOKDO            ;;execute hook routine 13 (OUTDOX)
-        byte    13                ;
+HOOK13: byte    13                ;
 OUTCON: push    af                ;
         ld      a,(PRTFLG)        ;[M80] SEE IF WE WANT TO TALK TO LPT
         or      a                 ;[M80] TEST BITS
@@ -4731,7 +4738,7 @@ LPCRLF: ld      a,13              ;;Send CR to printer
         ld      a,10              ;;Send LF to printer
 LPTOUT: ;Primitive print character to printer routine
         rst     HOOKDO            ;;Call Extended ROM Hook Routine
-        byte    17                ;
+HOOK17: byte    17                ;
         push    af                ;;Save character
         push    af                ;;Save Registers
         exx                       ;
@@ -4908,7 +4915,7 @@ RDSYN4: pop     bc                ;
 PLAYT:  byte    "Press <PLAY>",13,10,0          ;
 RECORT: byte    "Press <RECORD>",13,10,0        ;
 CSAVE:  rst     HOOKDO            ;
-        byte    21                ;
+HOOK21: byte    21                ;
         cp      MULTK             ;;If * Token
         jp      z,CSARY           ;;Do CSAVE*
         call    NAMFIL            ;;Scan filename
@@ -4925,7 +4932,7 @@ CSAVE3: call    WRBYTE            ;
         pop     hl                ;;Restore Text Pointer
         ret                       ;
 CLOAD:  rst     HOOKDO
-        byte    20
+HOOK20: byte    20
         cp      MULTK             ;;Check for token after CLOAD
         jp      z,CLARY           ;;If *, CLOAD variable
         sub     PRINTK            ;
@@ -5117,7 +5124,7 @@ CLOADN: call    RDBYTE            ;;Get Byte
         ret
 TTYCHR: ;Print character to screen
         rst     HOOKDO            ;;Call Extended BASIC Hook Routine
-        byte    19                ;
+HOOK19: byte    19                ;
 TTYCH:  push    af                ;;Save character
         cp      10                ;[M80] LINE FEED?
         jr      z,ISLF            ;
@@ -5273,7 +5280,7 @@ SDELAL: ld      a,h               ;
         jr      SDELAL            ;;Decrement and loop
 ;;INCHRH, INCHRC, and INCHRI - Get Character from Keyboard
 INCHRH: rst     HOOKDO
-        byte    18
+HOOK18: byte    18
 ;;Check for keypress
 INCHRC: exx                       ;;Save Registers
 INCHRI: ld      hl,(RESPTR)
@@ -5294,9 +5301,9 @@ INCHRI: ld      hl,(RESPTR)
         or      a
 ifdef noreskeys
 ;;;Stop auto-styping when ASCII null is encountered
-        jp      z,KEYRET                                                      
+        jp      z,KEYRET          ;; |                                            
 else
-        jp      p,KEYRET                                                      
+        jp      p,KEYRET          ;; \                                        
 endif
         xor     a                                                             
         ld      (RESPTR+1),a                                                  
@@ -5346,13 +5353,13 @@ ifdef addkeyrows
 ;;; SHIFT      Z   X   C   V   B   N   M   ,   .   /    INS           
 ;;; CTL  SPACE  PRS PSE PUP PUD HOM END CUL CUD CUP CUR DEL
 ;;;
-ROWMSK  equ     $FF               ;;Checking All 8 Rows`
-ROWCNT  equ     8                 
-CSHMSK  equ     $8F               ;;Check Rows 0 through 3 plus 7
+ROWMSK  equ     $FF               ;; | Checking All 8 Rows`
+ROWCNT  equ     8                 ;; | 
+CSHMSK  equ     $8F               ;; | Check Rows 0 through 3 plus 7
 else
-ROWMSK  equ     $3F               ;;Check Rows 0 through 5
-ROWCNT  equ     6                 
-CSHMSK  equ     $0F               ;;Check rows 0 through 3 - %00001111
+ROWMSK  equ     $3F               ;; \ Check Rows 0 through 5
+ROWCNT  equ     6                 ;; \ 
+CSHMSK  equ     $0F               ;; \ Check rows 0 through 3 - %00001111
 endif
 KEYSCN: ld      bc,$00FF          ;;B=0 to scan all columns
         in      a,(c)             ;;Read rows from I/O Port 255
@@ -5418,51 +5425,51 @@ KEYCLR: ld      (hl),0            ;;Clear KCOUNT
 ifdef addkeyrows
 ;;; KEYASC replacement 25/25 bytes
 ;;; Meta, Alt, Control, and Shift are bits 7, 6, 5, and 4 of Column 7.        Original Code
-KEYASC: inc     (hl)              ;;Increment KCOUNT                          1F00 inc     (hl)        
-        ld      bc,$7FFF          ;;Read column 7                             1F01 ld      b,$7F
-                                  ;;                                          1F02 
-                                  ;;                                          1F03 in      a,(c)        
-        in      b,(c)             ;;Get row                                   1F04  
-                                  ;;                                          1F05 bit     5,a         
-        ld      a,192             ;;Meta Table Offset                         1F06 
-                                  ;;                                          1F07 ld      ix,CTLTAB-1 
-        rl      b                 ;;Get rid of GUI Bit                        1F08
-                                  ;;                                          1F09
-KEYALP: rl      b                 ;;Rotate Bits Left                          1F0A
-                                  ;;                                          1F0B jr      z,KEYLUP
-        jr      nc,KEYLUX         ;;If key pressed, go do lookup              1F0C
-                                  ;;                                          1F0D bit     4,a
-        sub     a,64              ;;Offset to Previous TABLE                  1F0E
-                                  ;;                                          1F1F ld      ix,SHFTAB-1
-        jr      nz,KEYALP         ;;Loopif not first table                    1F10
-                                  ;;                                          1F11
-KEYLUX: ld      ix,KEYADR-1       ;;Point to Start of Lookup Tables           1F12
-                                  ;;                                          1F13 jr      z,KEYLUP
-                                  ;;                                          1F14
-                                  ;;                                          1F15 ld      ix,KEYTAB-1
-        add     ix,de             ;;Add Scan Code (Key Offset)                1F16
-                                  ;;                                          1F17
-        ld      e,a               ;;DE = Table Offet                          1F18
+KEYASC: inc     (hl)              ;; | Increment KCOUNT                       1F00 inc     (hl)        
+        ld      bc,$7FFF          ;; | Read column 7                          1F01 ld      b,$7F
+                                  ;; |                                        1F02 
+                                  ;; |                                        1F03 in      a,(c)        
+        in      b,(c)             ;; | Get row                                1F04  
+                                  ;; |                                        1F05 bit     5,a         
+        ld      a,192             ;; | Meta Table Offset                      1F06 
+                                  ;; |                                        1F07 ld      ix,CTLTAB-1 
+        rl      b                 ;; | Get rid of GUI Bit                     1F08
+                                  ;; |                                        1F09
+KEYALP: rl      b                 ;; | Rotate Bits Left                       1F0A
+                                  ;; |                                        1F0B jr      z,KEYLUP
+        jr      nc,KEYLUX         ;; | If key pressed, go do lookup           1F0C
+                                  ;; |                                        1F0D bit     4,a
+        sub     a,64              ;; | Offset to Previous TABLE               1F0E
+                                  ;; |                                        1F1F ld      ix,SHFTAB-1
+        jr      nz,KEYALP         ;; | Loopif not first table                 1F10
+                                  ;; |                                        1F11
+KEYLUX: ld      ix,KEYADR-1       ;; | Point to Start of Lookup Tables        1F12
+                                  ;; |                                        1F13 jr      z,KEYLUP
+                                  ;; |                                        1F14
+                                  ;; |                                        1F15 ld      ix,KEYTAB-1
+        add     ix,de             ;; | Add Scan Code (Key Offset)             1F16
+                                  ;; |                                        1F17
+        ld      e,a               ;; | DE = Table Offet                       1F18
 else                              ;;
-KEYASC: inc     (hl)              ;;Increment KCOUNT
-        ld      b,$7F             ;;Read column 7
-        in      a,(c)             ;;Get row
-        bit     5,a               ;;Check Control key
-        ld      ix,CTLTAB-1       ;;Point to control table
-        jr      z,KEYLUP          ;;Control? Do lookup
-        bit     4,a               ;;Check Shift key
-        ld      ix,SHFTAB-1       ;;Point to shift table
-        jr      z,KEYLUP          ;;Shift? Do lookup
-        ld      ix,KEYTAB-1         
+KEYASC: inc     (hl)              ;; \ Increment KCOUNT
+        ld      b,$7F             ;; \ Read column 7
+        in      a,(c)             ;; \ Get row
+        bit     5,a               ;; \ Check Control key
+        ld      ix,CTLTAB-1       ;; \ Point to control table
+        jr      z,KEYLUP          ;; \ Control? Do lookup
+        bit     4,a               ;; \ Check Shift key
+        ld      ix,SHFTAB-1       ;; \ Point to shift table
+        jr      z,KEYLUP          ;; \ Shift? Do lookup
+        ld      ix,KEYTAB-1       ;; \
 endif
 KEYLUP: add     ix,de             ;;Get pointer into table
         ld      a,(ix+0)          ;;Load ASCII value
         or      a                 ;;Reserved Word? 
 ifdef noreskeys
 ;;;Code Change: Do not expand CTRL-KEYS into Reserved Words                   Original Code
-        jp      KEYRET            ;;                                          1F1F  jp      p,KEYRET
+        jp      KEYRET            ;; |                                        1F1F  jp      p,KEYRET
 else
-        jp      p,KEYRET          ;;No, loop
+        jp      p,KEYRET          ;; \ No, loop
 endif
         sub     $7F               ;;Convert to Reserved Word Count             
         ld      c,a               ;;and copy to C                             
@@ -5470,54 +5477,70 @@ endif
 KEYRES: inc     hl                ;;Bump pointer                              
         ld      a,(hl)            ;;Get next character                        
         or      a                 ;;First letter of reserved word?            
-        jp      p,KEYRES          ;;No, loop                                  
-        dec     c                 ;;Decrement Count                           
-        jr      nz,KEYRES         ;;Not 0? Find next word                     
-        ld      (RESPTR),hl       ;;Save Keyword Address                      
-        and     $7F               ;;Strip high bit from first character       
+ifdef aqplus
+;;; Code Change: Patch to not uppercase characters between single quotes                     
+STRNGX: jp      z,STRNG           ;; | Special Handling for Double Quote      1F2B  jp      p,KEYRES
+                                  ;; |                                        1F2C
+                                  ;; |                                        1F2D  
+        cp      $27               ;; |                                        1F2E  dec     c             
+                                  ;; |                                        1F2F  jr      nz,KEYRES   
+        jp      z,STRNG           ;; | Do the same for Single Quote           1F30
+                                  ;; |                                        1F31  ld      (RESPTR),hl
+                                  ;; |                                        1F32  
+        jp      STFLBL            ;; | Otherwise, see if it's a label         1F33
+                                  ;; |                                        1F34 and     $7F
+                                  ;; |                                        1F35  
+else
+        jp      p,KEYRES          ;; / `No, loop                                  
+        dec     c                 ;; / `Decrement Count                           
+        jr      nz,KEYRES         ;; / `Not 0? Find next word                     
+        ld      (RESPTR),hl       ;; / `Save Keyword Address                      
+        and     $7F               ;; / `Strip high bit from first character       
+endif
 KEYRET: exx                       ;;Restore Registers
         ret
 ;;Key Lookup Tables - 46 bytes each
 ifdef altkeytab
-        include "keytabs.asm"
+        include "keytabs.asm"           ;; |
 else
-KEYTAB: byte    '=',$08,':',$0D,';','.' ;;Backspace and Return
-        byte    '-','/','0','p','l',','
-        byte    '9','o','k','m','n','j'
-        byte    '8','i','7','u','h','b'
-        byte    '6','y','g','v','c','f'
-        byte    '5','t','4','r','d','x'
-        byte    '3','e','s','z',' ','a'
-        byte    '2','w','1','q'
+;;Unmodified Key Lookup Table
+KEYTAB: byte    '=',$08,':',$0D,';','.' ; \ Backspace and Return
+        byte    '-','/','0','p','l',',' ; \
+        byte    '9','o','k','m','n','j' ; \
+        byte    '8','i','7','u','h','b' ; \
+        byte    '6','y','g','v','c','f' ; \
+        byte    '5','t','4','r','d','x' ; \
+        byte    '3','e','s','z',' ','a' ; \
+        byte    '2','w','1','q'         ; \
 ;;Shifted Key Lookup Table
-SHFTAB: byte    '+',$5C,'*',$0D,'@','>' ;;Backslash, Return
-        byte    '_','^','?','P','L','<'
-        byte    ')','O','K','M','N','J'
-        byte    '(','I',$27,'U','H','B' ;;Apostrophe
-        byte    '&','Y','G','V','C','F'
-        byte    '%','T','$','R','D','X'
-        byte    '#','E','S','Z',' ','A'
-        byte    $22,'W','!','Q'         ;;Quotation Mark
+SHFTAB: byte    '+',$5C,'*',$0D,'@','>' ; \ Backslash, Return
+        byte    '_','^','?','P','L','<' ; \ 
+        byte    ')','O','K','M','N','J' ; \ 
+        byte    '(','I',$27,'U','H','B' ; \ Apostrophe
+        byte    '&','Y','G','V','C','F' ; \ 
+        byte    '%','T','$','R','D','X' ; \ 
+        byte    '#','E','S','Z',' ','A' ; \ 
+        byte    $22,'W','!','Q'         ; \ Quotation Mark
 ;;Control Key Lookup Table
 CTLTAB:
 ifdef noreskeys
-        byte    $1B,$7F,$1D, 0 ,$A0,$7D ;ESC DEL GS      NUL  }   
-        byte    $1F,$1E,$1C,$10,$0C,$7B ;GS  RS  FS  DLE FF   {   
-        byte    $5D,$0F,$0B,$0D,$0E,$0A ; ]  SI  VT  CR  SO  LF   
-        byte    $5B,$09,$60,$15,$08,$02 ; [  Tab  `  NAK BS  SOH  
-        byte    $8E,$19,$07,$16,$03,$06 ;rt  EM  BEL SYN ETX ACK  
-        byte    $9F,$14,$8F,$12,$04,$18 ;dn  DC4 up  DC2 EOT CAN  
-        byte    $9E,$05,$13,$1A, 0 ,$01 ;lft ENC DC3 SUB     SOH  
-        byte    $7E,$17,$7C,$11         ; ~  ETB  |  DC1
+        byte    $1B,$7F,$1D, 0 ,$A0,$7D ; \ | ESC DEL GS      NUL  }   
+        byte    $1F,$1E,$1C,$10,$0C,$7B ; \ | GS  RS  FS  DLE FF   {   
+        byte    $5D,$0F,$0B,$0D,$0E,$0A ; \ |  ]  SI  VT  CR  SO  LF   
+        byte    $5B,$09,$60,$15,$08,$02 ; \ |  [  Tab  `  NAK BS  SOH  
+        byte    $8E,$19,$07,$16,$03,$06 ; \ | rt  EM  BEL SYN ETX ACK  
+        byte    $9F,$14,$8F,$12,$04,$18 ; \ | dn  DC4 up  DC2 EOT CAN  
+        byte    $9E,$05,$13,$1A, 0 ,$01 ; \ | lft ENC DC3 SUB     SOH  
+        byte    $7E,$17,$7C,$11         ; \ |  ~  ETB  |  DC1
 else
-        byte    $82,$1C,$C1,$0D,$94,$C4 ;;NEXT ^\ PEEK Return POKE VAL
-        byte    $81,$1E,$30,$10,$CA,$C3 ;;FOR ^^ 0 ^P POINT STR$
-        byte    $92,$0F,$9D,$0D,$C8,$9C ;;COPY ^O PRESET ^M RIGHT$ PSET
-        byte    $8D,$09,$8C,$15,$08,$C9 ;;RETURN ^I GOSUB ^U ^H MID$
-        byte    $90,$19,$07,$C7,$03,$83 ;;ON ^Y ^G LEFT$ ^C DATA
-        byte    $88,$84,$A5,$12,$86,$18 ;;GOTO INPUT THEN ^R READ ^X
-        byte    $8A,$85,$13,$9A,$C6,$9B ;;IF DIM ^S CLOAD CHR$ CSAVE
-        byte    $97,$8E,$89,$11         ;;LIST REM RUN ^Q
+        byte    $82,$1C,$C1,$0D,$94,$C4 ; \ \ NEXT ^\ PEEK Return POKE VAL
+        byte    $81,$1E,$30,$10,$CA,$C3 ; \ \ FOR ^^ 0 ^P POINT STR$
+        byte    $92,$0F,$9D,$0D,$C8,$9C ; \ \ COPY ^O PRESET ^M RIGHT$ PSET
+        byte    $8D,$09,$8C,$15,$08,$C9 ; \ \ RETURN ^I GOSUB ^U ^H MID$
+        byte    $90,$19,$07,$C7,$03,$83 ; \ \ ON ^Y ^G LEFT$ ^C DATA
+        byte    $88,$84,$A5,$12,$86,$18 ; \ \ GOTO INPUT THEN ^R READ ^X
+        byte    $8A,$85,$13,$9A,$C6,$9B ; \ \ IF DIM ^S CLOAD CHR$ CSAVE
+        byte    $97,$8E,$89,$11         ; \ \ LIST REM RUN ^Q
 endif   ;noreskeys
 endif   ;altkeytab
 ;;Check for Ctrl-C, called from NEWSTT

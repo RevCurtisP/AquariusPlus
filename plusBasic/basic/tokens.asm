@@ -6,9 +6,18 @@
 ;-----------------------------------------------------------------------------
 ; plusBASIC keyword list
 ;-----------------------------------------------------------------------------
-BTOKEN:     equ $D3             ; Our first token number
+BTOKEN:     equ $CB               ; Our first token number
 
 TBLCMDS:
+
+    db $80 + ' '                  ; $CB            
+    db $80 + ' '                  ; $CC            
+    db $80 + 'G',"ET"             ; $CD             
+    db $80 + ' '                  ; $CE            
+    db $80 + ' '                  ; $CF             
+    db $80 + 'L',"INE"            ; $D0             
+    db $80 + ' '                  ; $D1            
+    db $80 + ' '                  ; $D2             
     db $80 + 'T',"IME"            ; $D3   Replaces MX-BASIC keyword SDTM
     db $80 + 'E',"DIT"            ; $D4   Not Implemented
     db $80 + 'C',"LS"             ; $D5
@@ -30,18 +39,32 @@ TBLCMDS:
     db $80 + 'D',"ATE"            ; $E5   Replaces MX-BASIC keyword DTM$
     db $80 + ' '                  ; $E6             
     db $80 + ' '                  ; $E7             
-    db $80 + ' '                  ; $E8             
-    db $80 + ' '                  ; $E9             
+    db $80 + 'A',"RGS"            ; $E8             
+    db $80 + 'E',"RR"             ; $E9             
     db $80 + ' '                  ; $EA             
+    db $80 + ' '                  ; $EB             
+    db $80 + ' '                  ; $EC             
+    db $80 + 'E',"VAL"            ; $ED             
+    db $80 + ' '                  ; $EE             
+    db $80 + ' '                  ; $EF             
+    db $80 + ' '                  ; $F0             
+    db $80 + ' '                  ; $F1             
+    db $80 + ' '                  ; $F2             
+    db $80 + ' '                  ; $F3             
+    db $80 + 'R',"ESUME"          ; $F4             
 
     db $80             ; End of table marker
     
 ;-----------------------------------------------------------------------------
 ; plusBASIC tokens
 ;-----------------------------------------------------------------------------
+RETTK     equ     $8D
 TOTK      equ     $A1
 TIMETK    equ     $D3    
 CDTK      equ     $E0
+ARGSTK    equ     $E8
+ERRTK     equ     $E9
+LINETK    equ     $D0
 
 ;;; Extended Error Message Table can go here
 
@@ -85,9 +108,10 @@ token_to_keyword:
 ;     plusBASIC   MX-BASIC             Conversion
 ; $CB             INSTR            IN STR <--> INSTR  
 ; $CC             PUT    
-; $CD             GET    
+; $CD GET         GET    
 ; $CE             DRAW   
 ; $CF             CIRCLE  
+; $D0             LINE                compatible
 ; $D1             SWAP   
 ; $D2             DOKE              POKE! <--> DOKE
 ; $D3 TIME        SDTM   
@@ -111,12 +135,12 @@ token_to_keyword:
 ; $E5 DATE        DTM           DATETIME$ <--> DTM$(0)
 ; $E6             DEC
 ; $E7             KEY             
-; $E8             DEEK              PEEK! <--> DEEK
-; $E9             ERR OR
+; $E8 ARGS        DEEK              PEEK! <--> DEEK
+; $E9 ERR         ERR [OR]            ERR <--> ERR(0), ERRLINE <--> ERR(1), ERR$ <--> ERR$(1)
 ; $EA             STRING
 ; $EB             XOR           (a XOR b) <--> XOR(a,b)
 ; $EC             MENU
-; $ED             EVAL
+; $ED             EVAL                 compatible
 ; $EE             SLEEP
 ; $EF             MKDIR
 ; $F0             RMDIR               DEL <--> RMDIR
@@ -124,9 +148,9 @@ token_to_keyword:
 ; $F2             WAIT
 ; $F3             FILE
 ; $F4             RESUME
-; $F5             COL OR
-; $F6
-; $F7
+; $F5             COL [OR]
+; $F6 OPEN
+; $F7 CLOSE
 ; $F8
 ; $F9
 ; $FA

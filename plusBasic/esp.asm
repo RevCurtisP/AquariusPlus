@@ -257,9 +257,9 @@ esp_get_de:
 ;-----------------------------------------------------------------------------
 
 esp_get_bc:
-    call    esp_get_byte       ; Read LSB
+    call    esp_get_byte          ; Read LSB
     ld      c,a                   ; into C
-    call    esp_get_byte       ; Read MSB
+    call    esp_get_byte          ; Read MSB
     ld      b,a                   ; into B
     ret
 
@@ -299,7 +299,7 @@ esp_send_strdesc:
     ld      a,h                   ; If HL is 0
     or      l
     jp      z,esp_send_byte       ; Send Null Terminator
-    call    STRADL                ; Get Text Address in DE and Length in BC
+    call    string_addr_len       ; Get Text Address in DE and Length in BC
 
 ;-----------------------------------------------------------------------------
 ; Send String

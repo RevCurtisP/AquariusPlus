@@ -33,10 +33,14 @@ FDIVG:      equ $381B   ;
 ;               $381E   ; {M80} RND FUNCTION PERTUBATION COUNT
 RNDCNT:     equ $381F   ;
 ;               $3820   ;
-                        ; (S3BASIC) Deprecated RND Permutation Table
-;        $3821 - $3837  ; Unused
-                        ; Extended BASIC Graphics Routine Variables
-
+RNDTAB      equ $3821   ; RND Permutation Table - Deprecated in S3BASIC and available for reuse
+;               $3821   ; Unused
+;Used by ON ERROR. Must be in in consecutive order: ERRLIN,ERRFLG,ONEFLG,ONELIN
+ERRLIN      equ $3822   ; LINE NUMBER WHERE LAST ERROR OCCURED.
+ERRFLG      equ $3824   ; USED TO SAVE THE ERROR NUMBER SO EDIT CAN BE
+ONEFLG      equ $3825   ; ONEFLG=1 IF WERE ARE EXECUTING AN ERROR TRAP ROUTINE
+ONELIN      equ $3826   ; THE pointer to the LINE TO GOTO WHEN AN ERROR OCCURS
+;        $3828 - $382F  ; Unused
 BANK0PAGE   equ $3830   ; Page that was banked into RAM
 BANK1PAGE   equ $3831   ; Page that was banked into RAM
 BANK2PAGE   equ $3832   ; Page that was banked into RAM
@@ -84,7 +88,7 @@ TEMPPT:     equ $38AF   ; [M80] POINTER AT FIRST FREE TEMP DESCRIPTOR. INITIALIZ
 TEMPST:     equ $38B1   ; [M80] STORAGE FOR NUMTMP TEMP DESCRIPTORS
 DSCTMP:     equ $38BD   ; [M80] STRING FUNCTIONS BUILD ANSWER DESCRIPTOR HERE
 FRETOP:     equ $38C1   ; [M80] TOP OF STRING FREE SPACE
-TENP3:      equ $38C3   ; [M80] USED MOMENTARILY BY FRMEVL. USED IN EXTENDED BY FOUT AND
+TEMP3:      equ $38C3   ; [M80] USED MOMENTARILY BY FRMEVL. USED IN EXTENDED BY FOUT AND
                         ; [M80] USER DEFINED FUNCTIONS ARRAY VARIABLE HANDLING TEMPORARY
 TEMP8:      equ $38C5   ; [M80] USED TO STORE THE ADDRESS OF THE END OF STRING ARRAYS IN GARBAGE COLLECTION
 ENDFOR:     equ $38C7   ; [M80] SAVED TEXT POINTER AT END OF "FOR" STATEMENT
@@ -95,7 +99,8 @@ SUBFLG:     equ $38CB   ; [M80] FLAG WHETHER SUBSCRIPTED VARIABLE ALLOWED "FOR" 
 USFLG:      equ $38CC   ; Direct Mode Flag
 FLGINP:     equ $38CD   ; [M80] FLAGS WHETHER WE ARE DOING "INPUT" OR A READ
 SAVTXT:     equ $38CE   ; [M80] PLACE WHERE NEWSTT SAVES TEXT POINTER
-TENP2:      equ $38D0   ; [M80] FORMULA EVALUATOR TEMP MUST BE PRESERVED BY OPERATORS
+STREND      equ $38DA   ; [M80] END OF STORAGE IN USE. INCREASED WHENEVER A NEW ARRAY/VAR IS ADDED
+TEMP2:      equ $38D0   ; [M80] FORMULA EVALUATOR TEMP MUST BE PRESERVED BY OPERATORS
                         ; [M80] USED IN EXTENDED BY FOUT AND USER-DEFINED FUNCTIONS
 OLDLIN:     equ $38D2   ; [M80] OLD LINE NUMBER (SETUP BY ^C,"STOP" OR "END" IN A PROGRAM)
 OLDTXT:     equ $38D4   ; [M80] OLD TEXT POINTER
@@ -115,6 +120,7 @@ FACMO:      equ $38E5   ; [M80] MIDDLE ORDER OF MANTISSA
 FACHO:      equ $38E6   ; [M80] HIGH ORDER OF MANTISSA
 FAC:        equ $38E7   ; [M80] EXPONENT
 FBUFFR:     equ $38E8   ; [M80[ BUFFER FOR FOUT
+FPSTR:      equ $38E9   ; Floating point string
 RESHO:      equ $38F6   ; [M65] RESULT OF MULTIPLIER AND DIVIDER
 RESMO:      equ $38F7   ; RESMO and RESLO are loaded into and stored from HL
 RESLO:      equ $38F8   ;
@@ -158,17 +164,10 @@ FSIGN       equ $28     ; 5 Get sign of Floating Point Argument
 HOOKDO      equ $30     ; 6 Extended BASIC Hook Dispatch
 INTRPT      equ $38     ; 7 (S3BASIC) Execute Interrupt Routine
 
-;CALL
-MAKUPR      equ $0112   ; (S3BASIC) Convert A to Upper Case
-STRPRZ      equ $011B   ; (S3BASIC) Print null terminated string - Faster than STROUT
-STRPRI      equ $0122   ; (S3BASIC) Print inline null terminated string 
-FREADL      equ $0127   ; (S3BASIC) Free String, Return Address in DE, Length in BC
-STRADL      equ $012A   ; (S3BASIC) Return String Address in DE, Length in BC from Descriptor in HL
-BYTPRT      equ $0135   ; (S3BASIC) Print A as Decimal Number
-UPRCMP      equ $013B   ; (S3BASIC) Compare B byets of uppercased String [HL] to String [DE] 
+RESET:      equ $0089
 INITFF:     equ $0153   ; Initialize I/O Port 255
-TIMSTR      equ $0E2F   ; Create tempory string from null-terminated string
 REDDY       equ $036E   ; Text "Ok"
+FNDFOR      equ $039F   ; Find FOR/GOSUB entry on stack
 SNERR:      equ $03C4   ; Syntax error
 DV0ERR:     equ $03C7   ; Division by zero error
 NFERR:      equ $03CA   ; Next without for error
@@ -178,18 +177,32 @@ OVERR:      equ $03D3   ; Overflow Error
 MOERR:      equ $03D6   ; Missing Operand error
 TMERR:      equ $03D9   ; Type mismatch error
 ERROR:      equ $03DB   ; Process error code, E = code (offset to 2 char error name)
-ERRFN1:     equ $03F4
+ERRCRD      equ $03E0   ; Print Error Message and Return to Immediate Mode
+ERRPRT      equ $03EA   ; Print Error pointed to by HL and Return to Immediate Mode
+ERRFN1:     equ $03F4   ; Print String in HL + " in " + line number, Return to Immediate mode 
+STPRDY      equ $0401   ; For LIST command stopping
 READY:      equ $0402
 MAIN        equ $0414   ; Immediate Mode loop     
 CHEAD       equ $0489   ; Link Lines
+FNDLIN      equ $049F   ; Find BASIC line wirh line number in [DE]
+KLOOP       equ $04C5   ; Keyword to token loop
 CRUNCX      equ $04F9   ; Tokenize text at [HL]
 RESSRC:     equ $05A8
 NEWSTT:     equ $062C
+CHRGTR      equ $066B   ; CALLable CHRGET
 CHRGT2      equ $066C   ; Get Current Character and Set Flags
+GONE4       equ $063C   ; Execute next line
 FRCINT:     equ $0682   ; Convert fp number to 16 bit signed integer in DE
+RETURN      equ $06F8   ; Execute RETURN statement
 FCERR:      equ $0697   ; Function call error
+SCNLIN      equ $069C   ; Get line number from text at (HL)
 IQERR       equ FCERR   ; Illegal quantity error (future expansion)
 RUNC2:      equ $06DB
+GOTO        equ $06DC   ; Execute GOTO Statement
+GOTOLN      equ $06DF   ; GOTO line# in DE
+USERR       equ $06F3   ; Undefined line error
+LETDO       equ $0736   ; Execute LET, bypassing PTRGET and SYNCHK '='
+NTOERR      equ $0782   ; Execute ON ... GOTO
 FRMNUM:     equ $0972   ; Evaluate numeric expression
 CHKNUM:     equ $0975   ; Error if evaluated expression not a number
 CHKSTR:     equ $0976   ; Error if evaluated expression not string
@@ -200,6 +213,7 @@ LABBCK:     equ $0A49
 ISVAR       equ $0A4E   ; Get variable value or string pointer
 GIVINT      equ $0B21   ; Float Integer MSB=[A], LSB=[C]
 SNGFLT:     equ $0B36   ; Store variable 8 bit (out: B = value)
+ERRDIR      equ $0B45   ; Error if in direct mode
 GETBYT:     equ $0B54   ; Evaluate numeric expression (integer 0-255)
 OMERR:      equ $0BB7   ; Out of memory error
 SCRTCH:     equ $0BBE
@@ -207,7 +221,9 @@ RUNC:       equ $0BCB
 CLEARC:     equ $0BCF
 STKINI:     equ $0BE5
 ;FRMINT         $0B7F   ; Deprecated in S3BASIC, use GETINT instead
+BGNRST      equ $0C19   ; Finish up RESTORE
 ISLETC:     equ $0CC6   ; Test for a letter
+TIMSTR      equ $0E2F   ; Create tempory string from null-terminated string
 STRINI      equ $0E50   ; Reserve space for new string and create descriptor
 STRLIT      equ $0E5F   ; Build descriptor for string litersl
 STRLTI      equ $0E60   ; Do STRLIT, without decrementing HL
@@ -216,10 +232,13 @@ STROUT:     equ $0E9D   ; Print null-terminated string in HL
 FRESTR      equ $0FC6   ; Free tempory string, return string descriptor address in HL
 FRETM2      equ $0FCC   ; Free up tem in FACLO
 LEN1:       equ $0FF7   ; Get string length (in: (FPREG) = string block, out: HL = string block, A = length)
+CHR         equ $1013   ; CHR$ Function
 FINBCK      equ $101D   ; Return a String
 PTRGET:     equ $10D1   ; Get variable (out: BC = addr, DE = len)
 FIN         equ $15E5   ; Parse floating point number
+FIN0        equ $15EE   ; Parse floating point number wihout leading + or -
 LINPRT      equ $1675   ; Print Two Byte Number in HL as Decimal - Alters all Registers
+INT2STR:    equ $1679   ; Convert 16 bit integer in HL to text at FPSTR (starts with ' ')
 OUTDO       equ $198A   ; Output a Character
 CRDO:       equ $19EA   ; Print CR+LF
 WRMCON:     equ $1A40
@@ -233,14 +252,17 @@ JMPINI:     equ $1FE1   ; Power Up/Reset Routine: Jumped to from RST 0
 PRNTIT:     equ $1FF2   ; Print copyright message and return
 
 ; Extra variables / functions
-INT2STR:    equ $1679   ; Convert 16 bit integer in HL to text at FPSTR (starts with ' ')
-FPSTR:      equ $38E9   ; Floating point string
+
+; plusBASIC system jump points
+SCNLBL  equ     $200F   ;; | Line label hook for GOTO, GOSUB, and RESTORE
 
 XINIT:      equ $E010   ; Cartridge entry point
-RESET:      equ $0089
 
 ; Standard BASIC Tokens
-PLUSTK      equ $A8
+GOTOTK      equ $88     ; GOTO
+GOSUTK      equ $8C     ; GOSUB
+PLUSTK      equ $A8     ; +
+ORTK        equ $AE     ; OR
 
 ;Adddress of Byte following Hook RST
 HOOK0       = $03DF

@@ -25,24 +25,21 @@
 #-----------------------------------------------------------------------------
 #
 # Prerequisites: Python3 installed and executable defined in PATH
-#       Caveats: Line numbers cannot be less than 0 or greater than 65529
-#                Characters per line should be 72 or less
-#                KILL and DEL commands resolve to same token code
-#         Usage: python3 txt2bas.py progname.txt progname.bas
+#       Caveats: Byte code for line number cannot be greater than 0xFFF9
+#                KILL and DEL tokens resolve to DEL command (your text KILL command will become a DEL command)
+#         Usage: python3 bas2txt.py progname.bas progname.txt
 #
 #-----------------------------------------------------------------------------
 
 import argparse
 import struct
 import sys
-import re
-from xmlrpc.client import TRANSPORT_ERROR
 
 parser = argparse.ArgumentParser(
-    description="Convert text file to Aquarius BASIC .BAS file"
+    description="Convert Aquarius BASIC .BAS file to text file"
 )
-parser.add_argument("input", help="Input file", type=argparse.FileType("r"))
-parser.add_argument("output", help="Output file", type=argparse.FileType("wb"))
+parser.add_argument("input", help="Input file")
+parser.add_argument("output", help="Output file", type=argparse.FileType("w"))
 
 args = parser.parse_args()
 
@@ -122,7 +119,8 @@ tokens = {
     0xC8: "RIGHT$",
     0xC9: "MID$",
     0xCA: "POINT",
-    # Start of supplemental USB BASIC commands
+    # Start of plusBASIC keywords
+    0xD0: "LINE",
     0xD3: "TIME",
     0xD4: "EDIT",
     0xD5: "CLS",
@@ -141,89 +139,55 @@ tokens = {
     0xE2: "JOY",
     0xE3: "HEX$",
     0xE4: "RENAME",
-    0xE5: "DATE"  
+    0xE5: "DATE", 
+    0xE9: "ERR",
+    0xED: "EVAL",
+    0xF4: "RESUME"
 }
 
-def error(idx, message):
-    print(f"{args.input.name}:{idx+1} {message}", file=sys.stderr)
-    exit(1)
+with open(args.input, "rb") as f:
+    data = f.read()
 
+    def check_header():
+        for i in range(0, 12):
+            if data[i] != 0xFF:
+                return False
+        if data[12] != 0:
+            return False
+        for i in range(19, 31):
+            if data[i] != 0xFF:
+                return False
+        if data[31] != 0:
+            return False
 
-# Write header
-args.output.write(
-    12 * b"\xFF"
-    + b"\x00"
-    + (args.input.name.upper() + "      ")[0:6].encode()
-    + 12 * b"\xFF"
-    + b"\x00"
-)
+        print(f"Embedded filename: {data[13:19].decode()}")
+        return True
 
+    if not check_header():
+        print("Incorrect format")
+        exit(1)
 
-last_linenr = -1
-addr = 0x3903
+    idx = 32
 
-# Tokenize lines
-for idx, line in enumerate(args.input.readlines()):
-    line = line.strip()
-    if not line:
-        continue
+    while True:
+        (nextline) = struct.unpack("<H", data[idx : idx + 2])[0]
+        idx += 2
+        if nextline == 0:
+            break
 
-    result = re.search("^([0-9]+)(.*)$", line)
-    if result == None:
-        error(idx, "Syntax error")
+        (linenr) = struct.unpack("<H", data[idx : idx + 2])[0]
+        idx += 2
+        linedata = bytearray()
+        while data[idx] != 0:
+            ch = data[idx]
+            if ch & 0x80 == 0:
+                linedata.append(data[idx])
+            else:
+                tokenVal = tokens.get(ch)
+                if tokenVal == None:
+                    print(f"Unknown token: 0x{ch:02X}")
+                linedata += tokenVal.encode()
+            idx += 1
+        idx += 1
 
-    linenr = int(result.group(1))
-    line = result.group(2).strip()
-
-    if linenr <= last_linenr or linenr > 65000:
-        error(idx, "Invalid line number")
-
-    buf = bytearray()
-    buf += struct.pack("<H", linenr)
-
-    in_str = False
-    in_rem = False
-
-    while len(line) > 0:
-        upper = line.upper()
-
-        if line[0] == '"':
-            in_str = not in_str
-
-        if not (in_str or in_rem) and line[0] != " ":
-            found = False
-            for (token, keyword) in tokens.items():
-                if upper.startswith(keyword):
-                    buf.append(token)
-                    line = line[len(keyword) :]
-                    found = True
-
-                    if keyword in ["REM", "DATA"]:
-                        in_rem = True
-
-                    break
-
-            if found:
-                continue
-
-            buf.append(upper[0].encode()[0])
-
-        else:
-            buf.append(line[0].encode()[0])
-        
-        line = line[1:]
-
-    buf.append(0)
-
-    buf = struct.pack("<H", addr + len(buf)) + buf
-    addr += len(buf)
-    last_linenr = linenr
-
-    args.output.write(buf)
-
-args.output.write(struct.pack("<H", 0))
-    
-# Write trailer
-args.output.write(
-    15 *  b"\x00"
-)
+        print(f"{linenr} {linedata.decode()}", file=args.output)

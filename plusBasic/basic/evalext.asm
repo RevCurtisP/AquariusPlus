@@ -13,7 +13,7 @@ eval_extension:
     cp      '$'                       
     jr      z,.eval_hex     
     cp      $27                   ; Apostrophe                       
-    jp      z,eval_char     
+    jp      z,eval_ascii     
     cp      PLUSTK                ; IGNORE "+"
     jp      z,eval_extension      ;
     jp      QDOT     
@@ -73,7 +73,7 @@ _eval_hex:
 
 hex_to_asc:
     ld      hl,(FACLO)      ; Get String Descriptor Address
-    call    STRADL          ; Get Arg Length in C, Address in DE
+    call    string_addr_len          ; Get Arg Length in C, Address in DE
     ld      a,c             ; A = String Length
     sra     a               ; Divide Length by 2
     jp      c,FCERR         ;   Error if Length was Odd
@@ -129,7 +129,7 @@ null_string:
 ; Evaluate numeric character constant in the form of 'C'
 ;-------------------------------------------------------------------------
 
-eval_char:
+eval_ascii:
     inc     hl              ; Skip single quote
     ld      c,(hl)          ; Get character
     inc     hl              ; Move on
@@ -140,3 +140,4 @@ eval_char:
     call    SNGFLT          ; Float it
     pop     hl
     ret
+
