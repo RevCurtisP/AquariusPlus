@@ -384,21 +384,27 @@ _scan_label:
     jr      nz,.next_line         ;   Skip to next lines
 .label_loop:
     ld      a,(de)                ; Next character from label
-    cp      ' '                   ; If space
-    jr      z,.label_loop         ;   Skip it
+;    cp      ' '                   ; If space
+;    jr      nz,.not_lspace        ;   Skip it
+;    inc     de
+;    jr      .label_loop
+.not_lspace
     call    .check_colon          ; Treat colon as terminator
     ld      b,a                   ; Put in B for compare
 .text_loop:
     ld      a,(hl)                ; Get character from line
-    cp      ' '                   ; If space
-    jr      z,.text_loop          ;   Skip it
+;    cp      ' '                   ; If space
+;    jr      nz,.not_tspace        ;   Skip it
+;    inc     hl
+;    jr      .text_loop
+.not_tspace
     call    .check_colon          ; Treat colon as terminator
     cp      b                     ; If characters don't match
     jp      nz,.no_match          ;
     or      a                     ; If both are terminators
     jr      z,.found_it           ;   Finish up
-    inc     de                    ; Move it on up
     inc     hl                    ; HL is Text Pointer
+    inc     de                    ; Move it on up
     jr      .label_loop           ; Check next character
 .no_match
     ld      de,(TEMP8)            ; Restore pointer to label
@@ -421,11 +427,15 @@ _scan_label:
 .not_label:
     jp      SCNLIN                ;   Scan line number and return to GOTO
 
-.check_colon
+.check_colon:
+    cp      ' '                   ; Check A
+    jr      z,.ret_zero           ; If colon
     cp      ':'                   ; Check A
-    ret     nz                    ; If colon
+    ret     nz
+.ret_zero
     xor     a                     ;   Treat like terminator
     ret
+
 
 ULERR:
     ld      e,ERRUL

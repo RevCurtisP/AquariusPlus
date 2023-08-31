@@ -38,7 +38,7 @@ TBLCMDS:
     db $80 + 'R',"ENAME"          ; $E4
     db $80 + 'D',"ATE"            ; $E5   Replaces MX-BASIC keyword DTM$
     db $80 + ' '                  ; $E6             
-    db $80 + ' '                  ; $E7             
+    db $80 + 'K',"EY"             ; $E7             
     db $80 + 'A',"RGS"            ; $E8             
     db $80 + 'E',"RR"             ; $E9             
     db $80 + ' '                  ; $EA             
@@ -58,10 +58,9 @@ TBLCMDS:
 ;-----------------------------------------------------------------------------
 ; plusBASIC tokens
 ;-----------------------------------------------------------------------------
-RETTK     equ     $8D
-TOTK      equ     $A1
 TIMETK    equ     $D3    
 CDTK      equ     $E0
+KEYTK     equ     $E7
 ARGSTK    equ     $E8
 ERRTK     equ     $E9
 LINETK    equ     $D0
@@ -134,7 +133,7 @@ token_to_keyword:
 ; $E4 RENAME      VER
 ; $E5 DATE        DTM           DATETIME$ <--> DTM$(0)
 ; $E6             DEC
-; $E7             KEY             
+; $E7 KEY         KEY             
 ; $E8 ARGS        DEEK              PEEK! <--> DEEK
 ; $E9 ERR         ERR [OR]            ERR <--> ERR(0), ERRLINE <--> ERR(1), ERR$ <--> ERR$(1)
 ; $EA             STRING

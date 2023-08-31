@@ -241,6 +241,8 @@ LINPRT      equ $1675   ; Print Two Byte Number in HL as Decimal - Alters all Re
 INT2STR:    equ $1679   ; Convert 16 bit integer in HL to text at FPSTR (starts with ' ')
 OUTDO       equ $198A   ; Output a Character
 CRDO:       equ $19EA   ; Print CR+LF
+BUFCIN      equ $1A02   ; Return A as string from function 
+CHARCG      equ $1A18   ; Get keypress, check for Ctrl-C
 WRMCON:     equ $1A40
 BITTAB      equ $1ACA   ; Semigraphic Pixel Index to Bit Mask Table
 GETINT      equ $1AD0   ; Parse an Integer
@@ -262,6 +264,8 @@ XINIT:      equ $E010   ; Cartridge entry point
 GOTOTK      equ $88     ; GOTO
 GOSUTK      equ $8C     ; GOSUB
 PLUSTK      equ $A8     ; +
+RETTK       equ $8D     ; RETURN
+TOTK        equ $A1     ; TO
 ORTK        equ $AE     ; OR
 
 ;Adddress of Byte following Hook RST

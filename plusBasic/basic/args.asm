@@ -1,13 +1,12 @@
 ;-----------------------------------------------------------------------------
-; GET statement
+; args.asm - Passing arguments into and results out of subroutines
+; GOSUB line#/label : ARGS vallist [RETURN varlist]
+; GETARGS varlist
+; RETURN vallist
 ;-----------------------------------------------------------------------------
-ST_GET:
-    rst     SYNCHR
-    byte    ARGSTK
-
 
 ;-----------------------------------------------------------------------------
-; GET ARGS statement
+; GETARGS statement
 ;-----------------------------------------------------------------------------
 ST_GETARGS:
     jp      z,MOERR               ; "Missing operand" if end of state
@@ -25,11 +24,18 @@ ST_GETARGS:
     inc     hl
     ld      h,(hl)                
     ld      l,a                   ; HL = ArgVals Pointer
-.find_argstk:
+; Look for colon before ARGS
+.find_colon:
+    inc     hl
+    ld      a,(hl)
+    or      a
+    jp      z,MOERR               
+    cp      ':'
+    jr      nz,.find_colon
+; Skip Colo and Check for ARGS token
     rst     CHRGET                ; Get next character
-    jp      z,MOERR               ; No ARGS token found, Error Out
     cp      ARGSTK                ; If not ARGS token
-    jr      nz,.find_argstk       ;   Check Next Character
+    jp      nz,MOERR
     rst     CHRGET                ; Skip the ARGS Token
     push    hl                    ; Save *ArgVals                             Stack: *ArgVals, ra_ptr
     ex      de,hl                 ; HL = *ArgVars

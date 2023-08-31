@@ -92,7 +92,7 @@ STJUMPS:
 ;PlusBASIC Statements and Functions
     dw      SNERR                 ;$CB 
     dw      SNERR                 ;$CC  
-    dw      ST_GET                ;$CD  
+    dw      ST_GET                ;$CD  GET
     dw      SNERR                 ;$CE  
     dw      SNERR                 ;$CF  
     dw      GSERR                 ;$D0 LINE
@@ -118,7 +118,7 @@ STJUMPS:
     dw      ST_RENAME             ;$E4 RENAME
     dw      SNERR                 ;$E5 DATE
     dw      SNERR                 ;$E6 
-    dw      SNERR                 ;$E7 
+    dw      SNERR                 ;$E7 KEY
     dw      SNERR                 ;$E8 ARGS
     dw      SNERR                 ;$E9 ERR
     dw      SNERR                 ;$EA 
@@ -176,7 +176,7 @@ FNJUMPS:
 ; PlusBASIC Statements and Functions
     dw      SNERR                 ;$CB  
     dw      SNERR                 ;$CC   
-    dw      SNERR                 ;$CD   
+    dw      FN_GET                ;$CD GET   
     dw      SNERR                 ;$CE   
     dw      SNERR                 ;$CF   
     dw      SNERR                 ;$D0 LINE
@@ -202,7 +202,7 @@ FNJUMPS:
     dw      SNERR                 ;$E4 RENAME
     dw      FN_DATE               ;$E5 DATE$
     dw      SNERR                 ;$E6 
-    dw      SNERR                 ;$E7 
+    dw      SNERR                 ;$E7 KEY
     dw      SNERR                 ;$E8 ARGS
     dw      FN_ERR                ;$E9 ERR
     dw      SNERR                 ;$EA 

@@ -30,7 +30,54 @@ FN_DATE:
 .done
     jp      TIMSTR                ; Create and return temporary string
 
+;-----------------------------------------------------------------------------
+; GET functions stub
+;-----------------------------------------------------------------------------
+FN_GET:
+    rst     CHRGET                ; Skip GET Token
+    rst     SYNCHR                ; Only GETKEY for now
+    byte    KEYTK
 
+;-----------------------------------------------------------------------------
+; GETKEY - Wait for key an return ASCII code
+; GETKEY$  - Wait for key and return as string
+;-----------------------------------------------------------------------------
+FN_GETKEY:
+    call    CHARCG                ; Wait for keypress
+    jr      z,FN_GETKEY
+    ld      e,a                   ; Save ASCII Code
+    ld      a,(hl)                ; Get character after KEY
+    cp      '$'                   ; Check for GETKEY$
+    push    af                    ; Save Flags
+    call    z,CHRGTR              ; If GETKEY$, skip $
+    pop     af                    ; Restore Flags
+    push    hl                    ; Do the function stuff
+    ld      bc,LABBCK
+    push    bc
+    ld      a,e                   ; Get ASCII back, Flags are from CP '$'
+    jp      nz,SNGFLT             ; If not GETKEY$, Float it
+    pop     bc                    ; Get rid of dummy return address
+    jp      BUFCIN                ; Else Return String
+    
+;-----------------------------------------------------------------------------
+; GET statements stub
+;-----------------------------------------------------------------------------
+ST_GET:
+    cp      ARGSTK
+    rst     SYNCHR
+    byte    ARGSTK
+    jp      ST_GETARGS
+
+;-----------------------------------------------------------------------------
+; INKEY - Return ASCII code of currently pressed key
+;-----------------------------------------------------------------------------
+FN_INKEY:
+    rst     CHRGET                ; Skip KEY Token
+    push    hl                    ; Do the function stuff
+    ld      bc,LABBCK
+    push    bc
+    call    CHARCG                ; Get Keypress
+    jp      SNGFLT                ; and Float it
 
 ;-----------------------------------------------------------------------------
 ; JOY() function
