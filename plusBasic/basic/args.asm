@@ -45,6 +45,8 @@ ST_GETARGS:
     call    PTRGET                ; DE = VarPtr
     ex      (sp),hl               ; HL = *ArgVals                             Stack: *ArgVars, ra_ptr
     call    LETDO                 ; Evaluate ArgVal into ArgVar
+    ld      bc,TEMPST             ; Reset the Temporary String LIst
+    ld      (TEMPPT),bc           ; to Avoid ST errors
     ld      a,(hl)                ; Get Char after ArgVal
     cp      ','                                   
     jr      nz,.not_comma          ; If it's a comma
