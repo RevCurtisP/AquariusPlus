@@ -123,6 +123,7 @@ tokens = {
     0xC9: "MID$",
     0xCA: "POINT",
     # Start of plusBASIC keywords
+    0xCD: "GET",
     0xD0: "LINE",
     0xD3: "TIME",
     0xD4: "EDIT",
@@ -143,6 +144,8 @@ tokens = {
     0xE3: "HEX$",
     0xE4: "RENAME",
     0xE5: "DATE", 
+    0XE7: "KEY",
+    0xE8: "ARGS",
     0xE9: "ERR",
     0xED: "EVAL",
     0xF4: "RESUME"
