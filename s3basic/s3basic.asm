@@ -153,7 +153,7 @@ else
 endif
 ;;RST 1 - Syntax Check
 
-        byte    $23,$08,$28       ;;Revision Date 
+        byte    $23,$08,$31       ;;Revision Date 
         byte    1                 ;;Revision Number?
         nop                       ;;Pad out the RST routine
 ;;RST 1 - Syntax Check
@@ -1451,7 +1451,7 @@ REMER:  ld      a,(hl)            ;[M80] GET A CHAR
 LET:    call    PTRGET            ;[M80] GET POINTER TO VARIABLE INTO [D,E]
         rst     SYNCHK            ;[M80]
         byte    EQUATK            ;[M80] CHECK FOR "="
-        push    de                ;[M80] SAVE THE VARIABLE POINTER
+LETDO:  push    de                ;[M80] SAVE THE VARIABLE POINTER
         ld      a,(VALTYP)        ;{M80} REMEMBER THE VARIABLE TYPE
         push    af                ;
         call    FRMEVL            ;[M80] GET THE VALUE OF THE FORMULA
