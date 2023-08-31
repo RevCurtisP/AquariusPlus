@@ -1,0 +1,56 @@
+100 REM Program Description
+110 QU=0:REM 0=Screen,1=Printer
+130 GOSUB _init
+
+190 REM Tests
+
+200 GOSUB _title:ARGS "POKE & PEEK"
+210 FOR I=1 TO 3:A=$3000+I:GOSUB _poke:ARGS A,I:NEXT
+220 FOR I=1 TO 3:A=$3000+I:GOSUB _peek:ARGS A,I:NEXT I
+222 GOSUB _peek_err:ARGS -65536,5
+224 GOSUB _peek_err:ARGS 65536,5
+226 GOSUB _peek_err:ARGS 65536,5
+228 GOSUB _assert_err:ARGS "PEEK(`string`)",13
+
+290 GOTO 300
+292 _poke:GET ARGS PA,PB:GOSUB _output:ARGS "POKE"+STR$(PA)+","+STR$(PB):POKE PA,PB:RETURN
+294 _peek:GET ARGS PA,PB:GOSUB _assert:ARGS "PEEK("+STR$(PA)+")="+STR$(PB):RETURN
+296 _peek_err:GET ARGS PA,PE:GOSUB _assert_err:ARGS "PEEK("+STR$(PA)+")",PE:RETURN
+
+300 REM
+
+890 _finish
+892 _passed: GOSUB _output:ARGS "Passed:"+STR$(QR(1))
+894 _failed: GOSUB _output:ARGS "Failed:"+STR$(QR(0))
+896 END
+
+900 _init:GOSUB _output:ARGS "Running Tests":QR$(0)="Fail: ":QR$(1)="Pass: ":RETURN
+
+910 _title:GET ARGS QT$:GOSUB _output:ARGS "Testing "+QT$:RETURN
+
+920 _assert:GET ARGS QA$:GOSUB _quotes
+922 ON ERROR GOTO 926:QV=-EVAL(QA$):ON ERROR GOTO 0
+924 GOSUB _output:ARGS QR$(QV)+QA$:QR(QV)=QR(QV)+1:RETURN
+926 GOSUB _output:ARGS ERR$+" "+QA$:RESUME:ON ERROR GOTO 0:RETURN
+
+940 _assert_err:GETARGS QA$,QE:GOSUB _quotes
+942 ON ERROR GOTO 946:QV=EVAL(QA$):ON ERROR GOTO 0
+944 GOSUB _output:ARGS "No Error in "+QA$:QR(0)=QR(0)+1:RETURN
+946 QU$=ERR$+" in "+QA$:QV=-(ERR=QE):QR(QV)=QR(QV)+1:GOSUB _output:ARGS QR$(QV)+QU$
+948 RESUME:ON ERROR GOTO 0:RETURN
+
+960 _outquoted:GOSUB _quotes:QU$=QA$:GOTO _output QU$
+
+970 _quotes:QX$=""
+972 FOR QI=1 TO LEN(QA$):QC$=MID$(QA$,QI,1)
+974 IF QC$="`" THEN QC$=CHR$(34)
+976 QX$=QX$+QC$
+978 NEXT:QA$=QX$:RETURN
+
+980 _output: GET ARGS QU$:IF QU GOTO _lprint
+982 IF QL>20 THEN GOSUB _pause
+984 PRINT QU$:QL=QL+1:RETURN
+986 _lprint:LPRINT QU$:RETURN
+
+990 _pause:IF QU THEN RETURN
+992 PRINT "...Press a key...":QL=0:Z=GETKEY:RETURN
