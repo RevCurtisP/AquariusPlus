@@ -362,7 +362,7 @@ SKPLBL: ld      (CURLIN),hl       ;; | Save the Line #                        01
                                   ;; |                                        0140
         ex      de,hl             ;; | DE = Line#, HL = Text Pointer          0141  ld      hl,EXTBAS+5
         rst     CHRGET            ;; | Get first character                    0142            
-        cp      '_'               ;; | If not a period                        0143
+        cp      '_'               ;; | If not underscore                      0143
                                   ;; |                                        0144  ld      de,CRTSIG
         jr      nz,SKPGO          ;; |   Execute rest of line                 0145
                                   ;; |                                        0146  
@@ -2065,8 +2065,7 @@ FLOATB: ld      d,b               ;;Float Integer MSB=[A], LSB=[B]
 FLOATD: ld      e,0               ;;Float Integer MSB=[A], LSB=[D]
         ld      hl,VALTYP         ;
         ld      (hl),e            ;[M80] SET VALTYP TO "FLOATING POINT"
-        ld      b,145             ;{M80} SET EXPONENT
-;        ld      b,144             ;{M80} SET EXPONENT
+        ld      b,144             ;{M80} SET EXPONENT
         jp      FLOATR            ;[M80] GO FLOAT THE NUMBER
 LPOS:   ld      a,(LPTPOS)        ;{M80} GET PRINT HEAD POSITION
         jr      SNGFLT            ;
@@ -4588,7 +4587,7 @@ INKEY:  rst     CHRGET            ;
         push    hl                ;[M80] SAVE THE TEXT POINTER
         call    CHARCG            ;[M80] GET CHARC AND CLEAR IF SET
         jr      z,NULRT           ;{M80} NO CHAR, RETURN NULL STRING
-        push    af                ;
+BUFCIN: push    af                ;Jump here to Return A as a string
         call    STRIN1            ;[M80] MAKE ONE CHAR STRING
         pop     af                ;
         ld      e,a               ;[M80] CHAR TO [D]
@@ -4722,8 +4721,8 @@ SCALEC: ld      a,(hl)            ;;Get character at screen offset
 ;;Semigraphic Pixel Index to Bit Mask Table
 BITTAB: byte    00000001b,00000010b,00000100b
         byte    00001000b,00010000b,01000000b
-;;Parse an Integer
-GETINT: call    FRMEVL            ;;Get a number
+;; Code Change: Call FRMNUM instead of FRMEVL, to get TM error for string args
+GETINT: call    FRMNUM            ;;Get a number
         jp      FRCINT            ;;Convert to an Integer
 SOUND:  push    de
         call    SCAND
