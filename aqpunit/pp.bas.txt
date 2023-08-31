@@ -6,51 +6,69 @@
 
 200 GOSUB _title:ARGS "POKE & PEEK"
 210 FOR I=1 TO 3:A=$3000+I:GOSUB _poke:ARGS A,I:NEXT
-220 FOR I=1 TO 3:A=$3000+I:GOSUB _peek:ARGS A,I:NEXT I
-222 GOSUB _peek_err:ARGS -65536,5
-224 GOSUB _peek_err:ARGS 65536,5
-226 GOSUB _peek_err:ARGS 65536,5
-228 GOSUB _assert_err:ARGS "PEEK(`string`)",13
+212 FOR I=1 TO 3:A=$3000+I:GOSUB _peek:ARGS A,I:NEXT I
+214 GOSUB _poke_err:ARGS $3008,-1,5
+216 GOSUB _poke_err:ARGS $3008,256,5
+220 GOSUB _poke_err:ARGS 65536,0,5
+222 GOSUB _poke_err:ARGS -65536,0,5
+230 GOSUB _peek_err:ARGS -65536,5
+232 GOSUB _peek_err:ARGS 65536,5
+234 GOSUB _assert_err:ARGS "PEEK(`string`)",13
 
-290 GOTO 300
-292 _poke:GET ARGS PA,PB:GOSUB _output:ARGS "POKE"+STR$(PA)+","+STR$(PB):POKE PA,PB:RETURN
-294 _peek:GET ARGS PA,PB:GOSUB _assert:ARGS "PEEK("+STR$(PA)+")="+STR$(PB):RETURN
-296 _peek_err:GET ARGS PA,PE:GOSUB _assert_err:ARGS "PEEK("+STR$(PA)+")",PE:RETURN
+280 GOTO 300
+282 _poke:GETARGS PA,PB:GOSUB _output:ARGS "POKE"+STR$(PA)+","+STR$(PB):POKE PA,PB:RETURN
+284 _peek:GETARGS PA,PB:GOSUB _assert:ARGS "PEEK("+STR$(PA)+")="+STR$(PB):RETURN
+286 _peek_err:GETARGS PA,PE:GOSUB _assert_err:ARGS "PEEK("+STR$(PA)+")",PE:RETURN
+288 _poke_err:GETARGS PA,PB,QE:QA$="POKE"+STR$(PA)+","+STR$(PB):ON ERROR GOTO _yes_err:POKE PA,PB:GOTO _no_err
 
-300 REM
+300 GOSUB _title:ARGS "POKE! & PEEK!"
+310 GOSUB _pokew:ARGS $3008,$0607
+312 GOSUB _peek:ARGS $3008,7
+314 GOSUB _peek:ARGS $3009,6
+316 GOSUB _peekw:ARGS $3008,1543
+
+330 GOSUB _peekw_err:ARGS -65536,5
+332 GOSUB _peekw_err:ARGS 65536,5
+334 GOSUB _assert_err:ARGS "PEEK!(`string`)",13
+
+380 GOTO 400
+382 _pokew:GETARGS PA,PB:GOSUB _output:ARGS "POKE!"+STR$(PA)+","+STR$(PB):POKE! PA,PB:RETURN
+384 _peekw:GETARGS PA,PB:GOSUB _assert:ARGS "PEEK!("+STR$(PA)+")="+STR$(PB):RETURN
+386 _peekw_err:GETARGS PA,PE:GOSUB _assert_err:ARGS "PEEK!("+STR$(PA)+")",PE:RETURN
+
+400 REM
 
 890 _finish
 892 _passed: GOSUB _output:ARGS "Passed:"+STR$(QR(1))
 894 _failed: GOSUB _output:ARGS "Failed:"+STR$(QR(0))
 896 END
 
-900 _init:GOSUB _output:ARGS "Running Tests":QR$(0)="Fail: ":QR$(1)="Pass: ":RETURN
+900 _init:IF QU=0 THEN CLS
+902 GOSUB _output:ARGS "Running Tests":QR$(0)="Fail: ":QR$(1)="Pass: ":RETURN
 
-910 _title:GET ARGS QT$:GOSUB _output:ARGS "Testing "+QT$:RETURN
+910 _title:GETARGS QT$:GOSUB _output:ARGS "":GOSUB _output:ARGS "Testing "+QT$:RETURN
 
-920 _assert:GET ARGS QA$:GOSUB _quotes
+920 _assert:GETARGS QA$:GOSUB _quotes:ARGS QA$ RETURN QA$
 922 ON ERROR GOTO 926:QV=-EVAL(QA$):ON ERROR GOTO 0
 924 GOSUB _output:ARGS QR$(QV)+QA$:QR(QV)=QR(QV)+1:RETURN
 926 GOSUB _output:ARGS ERR$+" "+QA$:RESUME:ON ERROR GOTO 0:RETURN
 
-940 _assert_err:GETARGS QA$,QE:GOSUB _quotes
-942 ON ERROR GOTO 946:QV=EVAL(QA$):ON ERROR GOTO 0
-944 GOSUB _output:ARGS "No Error in "+QA$:QR(0)=QR(0)+1:RETURN
-946 QU$=ERR$+" in "+QA$:QV=-(ERR=QE):QR(QV)=QR(QV)+1:GOSUB _output:ARGS QR$(QV)+QU$
+940 _assert_err:GETARGS QA$,QE:GOSUB _quotes:ARGS QA$ RETURN QA$
+942 ON ERROR GOTO _yes_err:QV=EVAL(QA$)
+944 _no_err:ON ERROR GOTO 0:GOSUB _output:ARGS "No Error in "+QA$:QR(0)=QR(0)+1:RETURN
+946 _yes_err:QV=-(ERR=QE):QR(QV)=QR(QV)+1:GOSUB _output:ARGS QR$(QV)+"Error"+STR$(ERR)+" in "+QA$
 948 RESUME:ON ERROR GOTO 0:RETURN
 
-960 _outquoted:GOSUB _quotes:QU$=QA$:GOTO _output QU$
+960 _outquoted:GOSUB GOSUB _quotes:ARGS QA$ RETURN QU$:GOTO _outputl:ARGS QU$
 
-970 _quotes:QX$=""
-972 FOR QI=1 TO LEN(QA$):QC$=MID$(QA$,QI,1)
-974 IF QC$="`" THEN QC$=CHR$(34)
-976 QX$=QX$+QC$
-978 NEXT:QA$=QX$:RETURN
+970 _quotes:QX$="":GETARGS QS$
+972 FOR QI=1 TO LEN(QS$):QC$=MID$(QA$,QI,1):IF QC$="`" THEN QC$=CHR$(34)
+976 QX$=QX$+QC$:NEXT:RETURN QX$
 
-980 _output: GET ARGS QU$:IF QU GOTO _lprint
+980 _output: GETARGS QU$:IF QU GOTO _lprint
 982 IF QL>20 THEN GOSUB _pause
 984 PRINT QU$:QL=QL+1:RETURN
 986 _lprint:LPRINT QU$:RETURN
 
 990 _pause:IF QU THEN RETURN
-992 PRINT "...Press a key...":QL=0:Z=GETKEY:RETURN
+992 PRINT:PRINT "...Press a key...":QL=0:QK=GETKEY:PRINT:RETURN
