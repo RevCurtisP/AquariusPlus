@@ -32,7 +32,7 @@ ST_GETARGS:
     jp      z,MOERR               
     cp      ':'
     jr      nz,.find_colon
-; Skip Colo and Check for ARGS token
+; Skip Colon and Check for ARGS token
     rst     CHRGET                ; Get next character
     cp      ARGSTK                ; If not ARGS token
     jp      nz,MOERR
@@ -59,7 +59,16 @@ ST_GETARGS:
 
 .done
     ex      de,hl                 ; DE = *ArgVars
-    pop     bc                    ; BC = *ArgVals                             Stack: ra_ptr
+;    pop     bc                    ; BC = *ArgVals                             Stack: ra_ptr
+; Check for junk after argvals    
+    pop     hl                    ; HL = *ArgVals                             Stack: ra_ptr
+    call    CHRGT2                ; Reget char after last Arg
+    jr      z,.is_term            ; Terminator OK
+    cp      RETTK                 ; Else Syntax Error if not RETURN
+    jp      nz,SNERR
+.is_term
+    ld      b,h                   ; BC = End of ArgVals
+    ld      c,l
     pop     hl                    ; HL = *ra_ptr
     ld      (hl),c
     inc     hl

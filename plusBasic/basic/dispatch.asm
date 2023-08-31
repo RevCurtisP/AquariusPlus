@@ -271,6 +271,19 @@ execute_function:
     pop     af                  ; Restore A
     jp      (ix)                ; Go Do It
 
+
+; ------------------------------------------------------------------------------
+;  Utility calls for functions
+; ------------------------------------------------------------------------------
+push_hlinc_labbck:
+        inc     hl                ; Skip current character
+push_hl_labbck:
+        ex      (sp),hl           ; Stack = TxtPtr, HL = Return Address
+        ld      bc,LABBCK         ; Put Return Address for FLOAT routine
+        push    bc                ;   on Stack
+        jp      (hl)              ; Fast Return
+
+
 ; ------------------------------------------------------------------------------
 ;  Issue Statement not implemented err
 ; ------------------------------------------------------------------------------
