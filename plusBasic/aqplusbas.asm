@@ -34,6 +34,8 @@
 ; To assemble:
 ;   zmac --zmac -o aqplusbas.cim -o aqplusbas.lst aqplusbas.asm
 
+    include "regs.inc"
+
 ; RAM Page Usage
 ROM_SYS_PG = 0        ; Main System ROM, mapped into Bank 0 with overlay from $3000-$3FFF
 ROM_EXT_PG = 1        ; plusBASIC extended ROM, mapped into Bank 3 
@@ -43,10 +45,10 @@ RAM_BAS_1 = 33        ; RAM for BASIC mapped into Bank 1
 RAM_BAS_2 = 34        ; RAM for BASIC mapped into Bank 2
 RAM_BAS_3 = 35        ; RAM for BASIC mapped into Bank 3, switched in as needed
                       ; If a cartrige is present, it is copied here unencrypted, then executed
-RAM_BUFFS = 36        ; plusBASIC extended system variables and buffers, mapped in bank 3 as needed
+BAS_BUFFR = 36        ; plusBASIC extended system variables and buffers, mapped in bank 3 as needed
                       ; See regs.inc for details
-
-    include "regs.inc"
+VID_BUFFR = 37        ; Video RAM Shadow Buffer
+PT3_BUFFR = 38        ; PT3 Player Buffer
 
     org     $2000
     jp      _reset          ; $2000 Called from main ROM at reset vector
@@ -55,9 +57,10 @@ RAM_BUFFS = 36        ; plusBASIC extended system variables and buffers, mapped 
     jp      _interrupt      ; $2009
     jp      _warm_boot      ; $200C Called from main ROM for warm boot
     jp      _scan_label     ; $200F Called from GOTO and RESTORE
-    jp      _inlin_hook     ; $2012 Jump from INLIN for command history recall
-    jp      _inlin_done     ; $2015 Jumped from FININL to save command to history
-
+    jp      do_cls_default  ; $2012
+    jp      _inlin_hook     ; $2015 Jump from INLIN for command history recall
+    jp      _inlin_done     ; $2018 Jumped from FININL to save command to history
+  
 ifdef _____   ; Waiting for modules to stablize
     org     $2100
     include "kernel.asm"    ; Kernal jump table
@@ -217,7 +220,7 @@ _coldboot:
 .print_basic
     call    print_string_immd
 .plus_text
-    db "  +Basic v0.9d", 0
+    db "  +BAS v0x10a", 0
 .plus_len   equ   $ - .plus_text
 
     call    CRDO
@@ -486,6 +489,37 @@ run_cmd:
     ld      bc, NEWSTT
     jp      RUNC2              ; GOTO line number
 
+
+do_cls_default:
+    ld      a,6                   ; default to black on cyan
+
+do_cls:
+    call    clear_screen
+    ld      (CURCHR),a            ; SPACE under cursor
+    ld      de,$3000+41           ; Point Address for (0,0) 
+    ld      (CURRAM),de       
+    xor     a
+    ld      (TTYPOS),a            ; column 0
+    ret
+
+clear_screen:
+    push    hl
+    ld      hl,$3000
+    ld      c,25
+.line:
+    ld      b,40
+.char:
+    ld      (hl),' '
+    set     2,h
+    ld      (hl),a
+    res     2,h
+    inc     hl
+    djnz    .char
+    dec     c
+    jr      nz,.line
+    pop     hl
+    ret
+
 move_cursor:
 
 ;;;This is separate routine MOVEIT in Extended BASIC
@@ -672,8 +706,9 @@ fast_hook_handler:
     include "evalext.asm"       ; EVAL extension - hook 9 
     include "extended.asm"      ; Statements and functions from Aquarius Extended BASIC 
     include "fileio.asm"        ; Disk and File I/O statements and functions
+    include "graphics.asm"      ; Graphics statements and functions
     include "plus.asm"          ; plusBASIC unique statements and functions
-    include "tokens.asm"        ; Keyword list and tokenize/expand routines-
+    include "tokens.asm"        ; Keyword list and tokenize/expand routines
     include "usbbas.asm"        ; Statements and functions from USB BASIC
 
 free_rom_16k = $10000 - $

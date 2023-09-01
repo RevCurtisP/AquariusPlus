@@ -2,6 +2,35 @@
 ; Enhanced BASIC Statements and Functions
 ;======================================================================================
 
+
+;-----------------------------------------------------------------------------
+; Enhanced COPY
+; syntax: COPY @page TO @page
+;-----------------------------------------------------------------------------
+
+ST_COPY:   
+    jp      z,COPY          ; No Parameters? Do Standard COPY
+;Do @page TO @page
+    SYNCHK  '@'
+    call    GETBYT          ; Get source page
+    push    af              ; and save it
+    rst     SYNCHR
+    byte    TOTK            ; Require TO
+    SYNCHK  '@'
+    call    GETBYT          ; Get destination page
+    ld      c,a             ; Put in C
+    pop     af              ; Get source page
+    ld      b,a             ; Put in B
+    jp      page_copy       ; Copy the page
+
+;-----------------------------------------------------------------------------
+; Enhanced POKE
+; syntax: POKE address, byte
+;         POKE! address, word
+;         POKE @page, address, byte
+;         POKE! @page, address, word
+;-----------------------------------------------------------------------------
+
 ST_POKE:
     cp      '!'                   ; If POKE!
     jr      z,.pokeword           ;   Poke a word

@@ -29,7 +29,7 @@ STJUMPS:
     dw      $0C1F                 ;$8F STOP              
     dw      $0780                 ;$90 ONGOTO            
     dw      $07B5                 ;$91 LPRINT            
-    dw      $1B15                 ;$92 COPY              
+    dw      ST_COPY               ;$92 COPY              
     dw      $0B3B                 ;$93 DEF               
     dw      ST_POKE               ;$94 POKE              
     dw      $07BC                 ;$95 PRINT             
@@ -97,7 +97,7 @@ STJUMPS:
     dw      SNERR                 ;$CF  
     dw      GSERR                 ;$D0 LINE
     dw      SNERR                 ;$D1  
-    dw      SNERR                 ;$D2  
+    dw      SNERR                 ;$D2 
     dw      SNERR                 ;$D3 TIME 
     dw      SNERR                 ;$D4 EDIT   
     dw      ST_CLS                ;$D5 CLS    
@@ -132,8 +132,8 @@ STJUMPS:
     dw      SNERR                 ;$F2 
     dw      SNERR                 ;$F3 
     dw      ST_RESUME             ;$F4 RESUME
-    dw      SNERR                 ;$F5 
-    dw      SNERR                 ;$F6
+    dw      ST_COLOR              ;$F5 COL
+    dw      ST_SCREEN             ;$F6 SCREEN 
     dw      SNERR                 ;$F7
     dw      SNERR                 ;$F8
     dw      SNERR                 ;$F9
@@ -181,7 +181,7 @@ FNJUMPS:
     dw      SNERR                 ;$CF   
     dw      SNERR                 ;$D0 LINE
     dw      SNERR                 ;$D1   
-    dw      SNERR                 ;$D2   
+    dw      SNERR                 ;$D2 SCREEN
     dw      FN_TIME               ;$D3 TIME$
     dw      SNERR                 ;$D4 EDIT   
     dw      SNERR                 ;$D5 CLS    
@@ -216,8 +216,8 @@ FNJUMPS:
     dw      SNERR                 ;$F2 
     dw      SNERR                 ;$F3 
     dw      SNERR                 ;$F4 RESUME
-    dw      SNERR                 ;$F5 
-    dw      SNERR                 ;$F6
+    dw      SNERR                 ;$F5 COL
+    dw      SNERR                 ;$F6 SCREEN 
     dw      SNERR                 ;$F7
     dw      SNERR                 ;$F8
     dw      SNERR                 ;$F9

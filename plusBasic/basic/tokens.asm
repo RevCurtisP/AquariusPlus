@@ -17,7 +17,7 @@ TBLCMDS:
     db $80 + ' '                  ; $CF             
     db $80 + 'L',"INE"            ; $D0             
     db $80 + ' '                  ; $D1            
-    db $80 + ' '                  ; $D2             
+    db $80 + ' '                  ; $D2   paint/fill
     db $80 + 'T',"IME"            ; $D3   Replaces MX-BASIC keyword SDTM
     db $80 + 'E',"DIT"            ; $D4   Not Implemented
     db $80 + 'C',"LS"             ; $D5
@@ -39,7 +39,7 @@ TBLCMDS:
     db $80 + 'D',"ATE"            ; $E5   Replaces MX-BASIC keyword DTM$
     db $80 + ' '                  ; $E6             
     db $80 + 'K',"EY"             ; $E7             
-    db $80 + 'A',"RGS"            ; $E8             
+    db $80 + 'A',"RGS"            ; $E8   Replaces MX-BASIC keyword DEEK
     db $80 + 'E',"RR"             ; $E9             
     db $80 + ' '                  ; $EA             
     db $80 + ' '                  ; $EB             
@@ -52,6 +52,8 @@ TBLCMDS:
     db $80 + ' '                  ; $F2             
     db $80 + ' '                  ; $F3             
     db $80 + 'R',"ESUME"          ; $F4             
+    db $80 + 'C',"OL"             ; $F5             
+    db $80 + 'S',"CREEN"          ; $F6             
 
     db $80             ; End of table marker
     
@@ -105,20 +107,20 @@ token_to_keyword:
 ; * = Likely to be replaced
 ;
 ;     plusBASIC   MX-BASIC             Conversion
-; $CB             INSTR            IN STR <--> INSTR  
+; $CB             INSTR            IN STRING <--> INSTR  
 ; $CC             PUT    
 ; $CD GET         GET    
 ; $CE             DRAW   
 ; $CF             CIRCLE  
 ; $D0             LINE                compatible
 ; $D1             SWAP   
-; $D2             DOKE              POKE! <--> DOKE
+; $D2 paint       DOKE              POKE! <--> DOKE
 ; $D3 TIME        SDTM   
 ; $D4             EDIT   
-; $D5             CLS    
-; $D6             LOCATE 
-; $D7             OUT    
-; $D8             PSG    
+; $D5 CLS         CLS    
+; $D6 LOCATE      LOCATE 
+; $D7 OUT         OUT    
+; $D8 PSG         PSG    
 ; $D9 DEBUG*      DEBUG  
 ; $DA CALL        CALL   
 ; $DB LOAD        LOAD   
@@ -139,17 +141,17 @@ token_to_keyword:
 ; $EA             STRING
 ; $EB             XOR           (a XOR b) <--> XOR(a,b)
 ; $EC             MENU
-; $ED             EVAL                 compatible
+; $ED EVAL        EVAL                 compatible
 ; $EE             SLEEP
 ; $EF             MKDIR
 ; $F0             RMDIR               DEL <--> RMDIR
 ; $F1             OFF
 ; $F2             WAIT
 ; $F3             FILE
-; $F4             RESUME
-; $F5             COL [OR]
-; $F6 OPEN
-; $F7 CLOSE
+; $F4 RESUME      RESUME
+; $F5 COL         COL [OR]
+; $F6 SCREEN
+; $F7 
 ; $F8
 ; $F9
 ; $FA

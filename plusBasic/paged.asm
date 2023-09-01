@@ -1,6 +1,63 @@
 ;=============================================================================
 ; Paged Memory Management routines
 ;=============================================================================
+
+;-----------------------------------------------------------------------------
+; Copy entire Page to another Page
+; Input: B: Source Page
+;        C: Destination Page
+; Clobbers: A, BC, DE
+;-----------------------------------------------------------------------------
+page_copy:
+    ld      a,b                   ; If Source Page not valid for read
+    call    page_check_read       ;   Return Error
+    ret     c                         
+    ld      a,c                   ; If Destination Page not valid for write
+    call    page_check_write      ;   Return Error
+    ret     c                         
+    push    hl                    ; Save HL
+    ld      hl,0
+    add     hl,sp                 ; Get Stack Pointer
+    ld      (PLUSTCK),hl          ; Save it
+    ld      sp,PLUSTCK            ; Use temporary stack
+    in      a,(IO_BANK3)          ; Save current page# in bank 2
+    push    af                    ; 
+    in      a,(IO_BANK2)          ; Save current page# in bank 2
+    push    af                    ; 
+    ld      a,b                   ; Map source page into bank 2         
+    out     (IO_BANK2),a          ;
+    ld      a,c                   ; Map destination page into bank 3        
+    out     (IO_BANK3),a          ; 
+    ld      hl,$8000              ; Copying from page in bank 2
+    ld      de,$C000              ; to page in bank 3
+    ld      bc,$4000              ; Entire bank/page
+    ldir
+    pop     af                    ; Restore bank 2 page
+    out     (IO_BANK2),a          ;
+    pop     af                    ; Restore bank 3 page
+    out     (IO_BANK3),a          ;
+    ld      sp,(PLUSTCK)          ; Back to original stack
+    pop     hl                    ; Restore HL
+    ret
+
+;-----------------------------------------------------------------------------
+; page_check_read
+; page_check_write
+; Verify page in A is valid for read/Write
+; Carry Clear if valid, Set if not valid
+;-----------------------------------------------------------------------------
+page_check_write:
+    cp      20                    ; If in video RAM
+    ret     z                     ;   Return No Carry
+    cp      21                    ; If in character RAM
+    ret     z                     ;   Return No Carry
+    cp      32                    ; If below main RAM
+    ret     c                     ;   Return Carry
+page_check_read:
+    cp      64                    ; See if above main RAM
+    ccf                           ; Invert Carry Flag
+    ret
+
 ;-----------------------------------------------------------------------------
 ; Read Byte from Page
 ; Input: A: Page
@@ -145,7 +202,6 @@ page_coerce_address:
     ex      af,af'                ; Restore page and flags
     ret
 
-
 ;-----------------------------------------------------------------------------
 ; Map Page into Bank 3 
 ; Input: A: Bank to map into bank 3
@@ -164,6 +220,7 @@ page_set_for_read:
     out     (IO_BANK3),a          ; Map page into bank 3
     cp      0                     ; Clear zero flag and carry flag
     ret
+
     
 ;-----------------------------------------------------------------------------
 ; Map next Page into Bank 3 

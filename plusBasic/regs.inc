@@ -33,29 +33,8 @@ FDIVG:      equ $381B   ;
 ;               $381E   ; {M80} RND FUNCTION PERTUBATION COUNT
 RNDCNT:     equ $381F   ;
 ;               $3820   ;
-RNDTAB      equ $3821   ; RND Permutation Table - Deprecated in S3BASIC and available for reuse
-;               $3821   ; Unused
-;Used by ON ERROR. Must be in in consecutive order: ERRLIN,ERRFLG,ONEFLG,ONELIN
-ERRLIN      equ $3822   ; LINE NUMBER WHERE LAST ERROR OCCURED.
-ERRFLG      equ $3824   ; USED TO SAVE THE ERROR NUMBER SO EDIT CAN BE
-ONEFLG      equ $3825   ; ONEFLG=1 IF WERE ARE EXECUTING AN ERROR TRAP ROUTINE
-ONELIN      equ $3826   ; THE pointer to the LINE TO GOTO WHEN AN ERROR OCCURS
-;        $3828 - $382F  ; Unused
-BANK0PAGE   equ $3830   ; Page that was banked into RAM
-BANK1PAGE   equ $3831   ; Page that was banked into RAM
-BANK2PAGE   equ $3832   ; Page that was banked into RAM
-BANK3PAGE   equ $3833   ; Page that was banked into RAM
-;               $3834   ; unused
-;               $3835   ; unused
-FILEDATE    equ $3836
-FILETIME    equ $3838
-FILEATTR    equ $383A
-BINPAGE     equ $383B   ; Binary file load/save page
-BINSTART:   equ $383C   ; Binary file load/save address
-BINLEN:     equ $383E   ; 16-bit binary file length
-FILESIZE    equ $383B   ; File Size (32-bits $383C-$383F)
-ESP_FDESC   equ $3840   ; ESP file descriptor to close on Error or Ctrl-C
-
+RNDTAB      equ $3821   ; RND Permutation Table - Deprecated in S3BASIC
+                        ; Used for plusBASIC system variables
 RNDX:       equ $3841   ; [M80] LAST RANDOM NUMBER GENERATED, BETWEEN 0 AND 1
 LPTPOS:     equ $3846   ; [M80] POSITION OF LPT PRINT HEAD
 PRTFLG:     equ $3847   ; [M80] WHETHER OUTPUT GOES TO LPT
@@ -131,8 +110,42 @@ KEYADR  equ     $38FE   ;;Extended Key Tables Base Address minus 1
 ;               $3900   ; This is always 0
 BASTXT:     equ $3901   ; Start of Basic Program
 
+;-----------------------------------------------------------------------------
+; plusBASIC System variables
+;-----------------------------------------------------------------------------
+; Screen and Color RAM Holes
+INTSTCK     equ $33FE   ; Top of Interrupt stemporary stack $33E8 - $33FF
+PLUSTCK     equ $37FE   ; Top of plusBASIC temporary stack $37E8 - $37FF
+
+; RNDTAB ($3821-$3840) - Deprecated RND Permutation Table
+BASINTPG    equ $3821   ; BASIC Interrupt Routine Page (swapped into BANK 3)
+BASINTJP    equ $3822   ; BASIC Interrupt Routine JP instruction
+              ; $3823   ; BASIC Interrupt Routine JP Address
+              ; $3825   ; unused
+; Paging Variables
+BANK0PAGE   equ $3826   ; Page that was in Banked 0
+BANK1PAGE   equ $3827   ; Page that was in Banked 1
+BANK2PAGE   equ $3828   ; Page that was in Banked 2
+BANK3PAGE   equ $3829   ; Page that was in Banked 3
+;Used by ON ERROR. Must be in in consecutive order: ERRLIN,ERRFLG,ONEFLG,ONELIN
+ERRLIN      equ $382A   ; LINE NUMBER WHERE LAST ERROR OCCURED.
+ERRFLG      equ $382C   ; USED TO SAVE THE ERROR NUMBER SO EDIT CAN BE
+ONEFLG      equ $382D   ; ONEFLG=1 IF WERE ARE EXECUTING AN ERROR TRAP ROUTINE
+ONELIN      equ $382E   ; THE pointer to the LINE TO GOTO WHEN AN ERROR OCCURS
+; DOS Variables - These can get overwritten between BASIC file operations
+; They might also be re-used by other modules
+ESP_FDESC   equ $3830   ; ESP file descriptor to close on Error or Ctrl-C
+BINPAGE     equ $3831   ; Binary file load/save page
+BINSTART    equ $3832   ; Binary file load/save address
+BINLEN:     equ $3834   ; 16-bit binary file length
+FILESIZE    equ $3836   ; File Size (32-bits $3836-$3839)
+FILEATTR    equ $383A   ; File Attribute
+FILEDATE    equ $383B   ;
+FILETIME    equ $383D
+;         $383F-$3840   ; unused
 
 plus_page   equ 1       ; plusBASIC ROM BANK3 page
+aux_page    equ 2       ; Auxillary ROM page
 
 ;-----------------------------------------------------------------------------
 ; BASIC Extended System Constants, Variables and Buffers
@@ -246,6 +259,7 @@ CHARCG      equ $1A18   ; Get keypress, check for Ctrl-C
 WRMCON:     equ $1A40
 BITTAB      equ $1ACA   ; Semigraphic Pixel Index to Bit Mask Table
 GETINT      equ $1AD0   ; Parse an Integer
+COPY        equ $1B15   ; Execute COPY statement
 TTYCHR:     equ $1D72   ; Print character in A with pause/break at end of page
 TTYOUT:     equ $1D94   ; Print character in A
 TTYFIS:     equ $1DE7   ; Save Column and Position
@@ -267,6 +281,7 @@ PLUSTK      equ $A8     ; +
 RETTK       equ $8D     ; RETURN
 TOTK        equ $A1     ; TO
 ORTK        equ $AE     ; OR
+EQUATK      equ $B0     ; = 
 
 ;Adddress of Byte following Hook RST
 HOOK0       = $03DF
