@@ -36,7 +36,41 @@
 384 _peekw:GETARGS PA,PB:GOSUB _assert:ARGS "PEEK!("+STR$(PA)+")="+STR$(PB):RETURN
 386 _peekw_err:GETARGS PA,PE:GOSUB _assert_err:ARGS "PEEK!("+STR$(PA)+")",PE:RETURN
 
-400 REM
+400 GOSUB _title:ARGS "POKE @ & PEEK(@"
+410 GOSUB _pokep:ARGS 40,$100,69:GOSUB _peekp:ARGS 40,$100,69
+412 GOSUB _pokewp:ARGS 40,$101,1776:GOSUB _peekwp:ARGS 40,$101,1776
+414 GOSUB _pokewp:ARGS 40,16383,$ABBA:GOSUB _peekwp:ARGS 40,16383,$ABBA
+416 GOSUB _peekp:ARGS 40,16383,$BA:GOSUB _peekp:ARGS 41,0,$AB
+
+420 GOSUB _pokep_err:ARGS 0,$1000,1,5:REM Writing to ROM pages
+422 GOSUB _pokep_err:ARGS 19,$1000,2,5
+424 GOSUB _pokep_err:ARGS 22,$1000,3,5
+426 GOSUB _pokep_err:ARGS 31,$1000,4,5
+428 GOSUB _pokep_err:ARGS 64,$1000,5,5
+
+430 GOSUB _pokewp_err:ARGS 20,16383,11,6:REM Overflow end of RAM page
+432 GOSUB _pokewp_err:ARGS 21,16383,22,6
+434 GOSUB _pokewp_err:ARGS 63,16383,33,6
+440 GOSUB _peekwp_err:ARGS 20,16383,6
+442 GOSUB _peekwp_err:ARGS 21,16383,6
+444 GOSUB _peekwp_err:ARGS 63,16383,6
+
+450 GOSUB _pokep_err:ARGS 0,16384,6,5:REM Illegal Address in Page
+452 GOSUB _pokewp_err:ARGS 0,16384,44,5
+454 GOSUB _peekp_err:ARGS 0,16384,5
+456 GOSUB _peekwp_err:ARGS 0,16384,5
+
+470 GOTO 500
+472 _pokep:GETARGS PP,PA,PB:GOSUB _output:ARGS "POKE @"+STR$(PP)+","+STR$(PA)+","+STR$(PB):POKE @PP,PA,PB:RETURN
+474 _peekp:GETARGS PP,PA,PB:GOSUB _assert:ARGS "PEEK(@"+STR$(PP)+","+STR$(PA)+")="+STR$(PB):RETURN
+476 _peekp_err:GETARGS PP,PA,PE:GOSUB _assert_err:ARGS "PEEK(@"+STR$(PP)+STR$(PA)+")",PE:RETURN
+478 _pokep_err:GETARGS PP,PA,PB,QE:QA$="POKE @"+STR$(PP)+","+STR$(PA)+","+STR$(PB):ON ERROR GOTO _yes_err:POKE @PP,PA,PB:GOTO _no_err
+482 _pokewp:GETARGS PP,PA,PB:GOSUB _output:ARGS "POKE! @"+STR$(PP)+","+STR$(PA)+","+STR$(PB):POKE! @PP,PA,PB:RETURN
+484 _peekwp:GETARGS PP,PA,PB:GOSUB _assert:ARGS "PEEK!(@"+STR$(PP)+","+STR$(PA)+")="+STR$(PB):RETURN
+486 _peekwp_err:GETARGS PP,PA,PE:GOSUB _assert_err:ARGS "PEEK!(@"+STR$(PP)+","+STR$(PA)+")",PE:RETURN
+488 _pokewp_err:GETARGS PP,PA,PB,QE:QA$="POKE!@"+STR$(PP)+","+STR$(PA)+","+STR$(PB):ON ERROR GOTO _yes_err:POKE! @PP,PA,PB:GOTO _no_err
+
+500 REM
 
 890 _finish
 892 _passed: GOSUB _output:ARGS "Passed:"+STR$(QR(1))
@@ -56,7 +90,7 @@
 940 _assert_err:GETARGS QA$,QE:GOSUB _quotes:ARGS QA$ RETURN QA$
 942 ON ERROR GOTO _yes_err:QV=EVAL(QA$)
 944 _no_err:ON ERROR GOTO 0:GOSUB _output:ARGS "No Error in "+QA$:QR(0)=QR(0)+1:RETURN
-946 _yes_err:QV=-(ERR=QE):QR(QV)=QR(QV)+1:GOSUB _output:ARGS QR$(QV)+"Error"+STR$(ERR)+" in "+QA$
+946 _yes_err:QV=-(ERR=QE):QR(QV)=QR(QV)+1:GOSUB _output:ARGS QR$(QV)+"Error"+STR$(QE)+" in "+QA$
 948 RESUME:ON ERROR GOTO 0:RETURN
 
 960 _outquoted:GOSUB GOSUB _quotes:ARGS QA$ RETURN QU$:GOTO _outputl:ARGS QU$
