@@ -211,7 +211,10 @@ _coldboot:
 .print_done:
     ld      a,21-.plus_len        ; Print spaces to right justify +BASIC text
     sub     b
-    jr      z,.print_basic
+    jr      nc,.space_it
+    call    CRDO
+    jr      .print_basic
+.space_it
     ld      b,a
     ld      a,' '
 .space_loop
@@ -220,7 +223,7 @@ _coldboot:
 .print_basic
     call    print_string_immd
 .plus_text
-    db "  +BAS v0x10a", 0
+    db "plusBASIC v0x10a", 0
 .plus_len   equ   $ - .plus_text
 
     call    CRDO

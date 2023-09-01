@@ -2,9 +2,54 @@
 
 Requires S3 BASIC assembled with "aqplus" switch
 
-Based on and replaces Aquarius+ System ROM
+## BASIC Language Enhancements 
 
-## Internal Code Changes:
+### Experimental
+  - `INKEY` - like `INKEY$` but returns ASCII code of key pressed
+  - `GETKEY` - like `INKEY` but waits for keypress
+  - `GETKEY$` - like `INKEY$` but waits for keypress
+  - `ON ERROR GOTO` - Error trapping
+  - `ERR` pseudo-variable returns last error number
+  - `ERR#` pseudo-variable returns last error message
+  - `ERRLINE` pseudo-variable returns line last error occured in
+  - `RESUME` - clear error condition and continue
+  - `POKE!` and `PEEK!` always return a positive integer
+  - `GOSUB line : ARGS arglist` - pass arguments to subroutine
+  - `GOSUB line : ARGS arglist RETURN varlist` - get values returned by subroutine
+  - `GETARGS varlist` - get arguments passed to subroutine
+  - `RETURN vallist` - return values from subroutine
+  - `SCREEN mode` - select screen mode (text, tile, bitmap, sprites)
+  - `COLOR #palette, entrylist` - set a palette
+  - `COPY @source TO @dest` - copy entire page
+  - Optional line labels
+    - Useable with `GOTO`, `GOSUB`, an `RESTORE`
+  - BASIC now displays long error messages
+    - e.g. `Syntax error` instead of `?SN error`
+    - Function Call error now displays `Illegal quantity`
+    
+### Live
+  - `LOAD "FILE",@page,address` - load file into page
+  - `SAVE "FILE",@page,address,length` - save from page to file
+  - `RENAME oldname$ TO newname$` - rename file
+  - `POKE @page,address,byte` - write byte to address in page
+  - `POKE! address,word` - write word to address
+  - `POKE! @,page,address,word` - write word to address in page
+  - `PEEK (@page,address)` - read byte from address in page
+  - `PEEK! (address)` - read word from address
+  - `PEEK! (@page,address)` - read word from address in page
+  - `CD$` pseudo-variable returns current path
+  - `DATE$` pseudo-variable returns current date "YYYYMMDD"
+  - `TIME$` pseudo-variable returns current time "HHmmss"
+  - `DATETIME$` pseudo-variable returns date and time "YYYYMMDD"
+  - Hexadecimal integer and string literals.
+  - All statements and functions that use an address accept -65535 to 65535
+
+## Internal BASIC Code Changes:
+  - Fixed plusBASIC version display on welcome screen
+    - Prints right justified on same line as System version if there is room
+    - Prints on next line if not enough room
+  - Extricated DOS and ESP machine language routines from BASIC statements and functions
+    - routines can now be passed BASIC string descriptors, eliminating filename buffer
   - Optimized Hook, Statement, and Function Dispatch routines
   - Added Extended Keyboard decode tables used by S3 BASIC
   - Calls STRPRI instead of STROUT for null terminated strings
@@ -13,12 +58,6 @@ Based on and replaces Aquarius+ System ROM
     - Timeout appears to be too short on harware, disabled
   - Added ESP error -9, "ESP times out"
   - Moved all ST_ and FN_ routines out of main assembly flie
- 
-## BASIC Language Enhancements 
-  - CD$ pseudo-variable returns current path
-  - DATE$ pseudo-variable returns current date "YYYYMMDD"
-  - TIME$ pseudo-variable returns current time "HHmmss"
-  - DATETIME$ pseudo-variable returns date and time "YYYYMMDD"
 
 ## Assembly Language Code Changes
   - New callable routines
