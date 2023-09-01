@@ -217,7 +217,7 @@ _coldboot:
 .print_basic
     call    print_string_immd
 .plus_text
-    db "  +Basic v0x9c", 0
+    db "  +Basic v0.9d", 0
 .plus_len   equ   $ - .plus_text
 
     call    CRDO
@@ -667,9 +667,10 @@ fast_hook_handler:
     include "dispatch.asm"      ; Statement/Function dispatch tables and routiness
     include "error.asm"         ; Error lookup table, messages and handling routines
     include "args.asm"          ; ARGS statement and function
-    include "basic80.asm"       ; Statements and Functions from MBASIC 80
+    include "basic80.asm"       ; Statements and functions from MBASIC 80
     include "enhanced.asm"      ; Enhanced stardard BASIC statements and functions
     include "evalext.asm"       ; EVAL extension - hook 9 
+    include "extended.asm"      ; Statements and functions from Aquarius Extended BASIC 
     include "fileio.asm"        ; Disk and File I/O statements and functions
     include "plus.asm"          ; plusBASIC unique statements and functions
     include "tokens.asm"        ; Keyword list and tokenize/expand routines-
