@@ -96,22 +96,22 @@ FN_PEEK:
     SYNCHK  ')'                   ; Require close paren
     pop     af                    ; Get page
     push    hl                    ; Save text pointer
-    ld      bc,LABBCK             ; Return address for GIVINT
+    ld      bc,LABBCK             ; Return address for FLOAT_BC
     push    bc
     jr      c,.read_page_word     ; If not specified
     ld      a,(de)                ;   Get LSB
     ld      c,a
     inc     de
     ld      a,(de)
-    jp      GIVINT
+    ld      b,a
+    jp      FLOAT_BC
 
 .read_page_word
     call    check_paged_address
     call    page_read_word
     jp      z,IQERR               ; FC error if illegal page
     jp      c,OVERR               ; Return overflow error if end of RAM 
-    ld      a,b
-    jp      GIVINT
+    jp      FLOAT_BC
 
 
 ; Check for and parse @page,

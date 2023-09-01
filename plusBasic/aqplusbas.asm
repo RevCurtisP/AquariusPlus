@@ -217,7 +217,7 @@ _coldboot:
 .print_basic
     call    print_string_immd
 .plus_text
-    db "  +Basic v0x9b", 0
+    db "  +Basic v0x9c", 0
 .plus_len   equ   $ - .plus_text
 
     call    CRDO
