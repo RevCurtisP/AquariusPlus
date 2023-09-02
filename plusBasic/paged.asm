@@ -11,10 +11,10 @@
 page_copy:
     ld      a,b                   ; If Source Page not valid for read
     call    page_check_read       ;   Return Error
-    ret     c                         
+    ret     z                         
     ld      a,c                   ; If Destination Page not valid for write
     call    page_check_write      ;   Return Error
-    ret     c                         
+    ret     z                         
     push    hl                    ; Save HL
     ld      hl,0
     add     hl,sp                 ; Get Stack Pointer
@@ -38,25 +38,9 @@ page_copy:
     out     (IO_BANK3),a          ;
     ld      sp,(PLUSTCK)          ; Back to original stack
     pop     hl                    ; Restore HL
+    cp      $FF                   ; Clear zero flag
     ret
 
-;-----------------------------------------------------------------------------
-; page_check_read
-; page_check_write
-; Verify page in A is valid for read/Write
-; Carry Clear if valid, Set if not valid
-;-----------------------------------------------------------------------------
-page_check_write:
-    cp      20                    ; If in video RAM
-    ret     z                     ;   Return No Carry
-    cp      21                    ; If in character RAM
-    ret     z                     ;   Return No Carry
-    cp      32                    ; If below main RAM
-    ret     c                     ;   Return Carry
-page_check_read:
-    cp      64                    ; See if above main RAM
-    ccf                           ; Invert Carry Flag
-    ret
 
 ;-----------------------------------------------------------------------------
 ; Read Byte from Page
@@ -208,19 +192,35 @@ page_coerce_address:
 ; Zero Flag: Set if trying to page into bank that isn't ram
 ;-----------------------------------------------------------------------------
 page_set_for_write:
+    call    page_check_write
+    ret     z
+    jr      _set_page
+page_set_for_read:
+    call    page_check_read
+    ret     z
+_set_page
+    out     (IO_BANK3),a          ; Map page into bank 3
+    ret
+
+;-----------------------------------------------------------------------------
+; page_check_read
+; page_check_write
+; Verify page in A is valid for Read/Write
+; Zero Flag: Clear if valid page, Set if nor
+;-----------------------------------------------------------------------------
+page_check_write:
     cp      20                    ; If in video RAM
     jr      z,page_set_for_read   ;   do it
     cp      21                    ; If in character RAM
     jr      z,page_set_for_read   ;   do it
     cp      32                    ; If below main RAM
     jr      c,set_zero_flag       ;   error out
-page_set_for_read:
+page_check_read:
     cp      64                    ; If above main RAM
     jr      nc,set_zero_flag      ;   error out
-    out     (IO_BANK3),a          ; Map page into bank 3
-    cp      0                     ; Clear zero flag and carry flag
+    cp      $FF                   ; Clear zero flag
+    or      a                     ; Clear carry flag
     ret
-
     
 ;-----------------------------------------------------------------------------
 ; Map next Page into Bank 3 

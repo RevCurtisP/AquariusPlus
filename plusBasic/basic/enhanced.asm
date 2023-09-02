@@ -21,7 +21,9 @@ ST_COPY:
     ld      c,a             ; Put in C
     pop     af              ; Get source page
     ld      b,a             ; Put in B
-    jp      page_copy       ; Copy the page
+    call    page_copy       ; Copy the page
+    jp      z,FCERR
+    ret
 
 ;-----------------------------------------------------------------------------
 ; Enhanced POKE
