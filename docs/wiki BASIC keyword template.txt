@@ -1,0 +1,38 @@
+Aquarius<sup>+</sup>
+
+=======================================================================
+Title: BASIC keyword [Statement|Function]
+-----------------------------------------------------------------------
+
+=======================================================================
+Text:
+-----------------------------------------------------------------------
+
+# KEYWORD
+
+**TYPE:** _whichBASIC_ typeof [statement|function]
+
+***
+
+**FORMAT:** KEYWORD *address*
+
+**Action:** descriptive text
+ - 
+ - 
+ - 
+
+***Examples:***
+
+` code `
+> Explanation
+
+***
+_plusBASIC enhancement_
+
+**FORMAT:** KEYWORD [args]
+
+etc.
+
+
+Links to other pages: [title](page_name)
+In unordered list: - **[title](page_name)** 
