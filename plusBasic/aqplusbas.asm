@@ -1,6 +1,6 @@
-;-----------------------------------------------------------------------------
-; Aquarius+ system ROM and Extende BASIC
-;-----------------------------------------------------------------------------
+;=====================================================================================
+; Aquarius+ System ROM and plusBASIC
+;=====================================================================================
 ; By Curtis F Kaylor and Frank van den Hoef
 ;
 ; Based on AQUBASIC source code by Bruce Abbott:
@@ -32,7 +32,7 @@
 ;-----------------------------------------------------------------------------
 
 ; To assemble:
-;   zmac --zmac -o aqplusbas.cim -o aqplusbas.lst aqplusbas.asm
+;   zmac --zmac  -I basic -I gfx -o aqplusbas.cim -o aqplusbas.lst aqplusbas.asm
 
     include "regs.inc"
 
@@ -223,7 +223,7 @@ _coldboot:
 .print_basic
     call    print_string_immd
 .plus_text
-    db "plusBASIC v0x10a", 0
+    db "plusBASIC v0x10b", 0
 .plus_len   equ   $ - .plus_text
 
     call    CRDO
@@ -319,6 +319,90 @@ _inlin_hook:
 _inlin_done:
     ret
 
+
+;-----------------------------------------------------------------------------
+; Graphics routine caller
+; Simple version for calls from BASIC
+; Input: IX = Graphics module jump table offset
+;        All other registers are passed through to routine
+;-----------------------------------------------------------------------------
+do_gfx_routine:
+    ;for now routines are at $F000
+    ld      ixh,$F0               ; Make jump address $8000+offset
+    jp      (ix)
+
+
+    exx                           
+    ld      hl,0
+    add     hl,sp                 ; Save Stack Pointer
+    ld      (PLUSTCK),hl          
+    ld      sp,PLUSTCK            ; Use temporary stack
+    exx                           
+
+    ex      af,af'
+    ld      a,ROM_AUX_PG          
+    out     (IO_BANK2),a          ; Map graphics module into bank 2
+; Not using any variables for now
+;    ld      a,BAS_BUFFR           
+;    out     (IO_BANK1),a          ; Map graohics sysvars into bank 1
+    ex      af,af'
+
+    ld      ixh,$80               ; Make jump address $8000+offset
+    call    jump_ix               ; Call the routine  
+
+    ex      af,af'
+    ld      a,RAM_BAS_2           ; Put the pages back
+    out     (IO_BANK2),a          
+;    ld      a,RAM_BAS_1
+;    out     (IO_BANK1),a
+    ex      af,af'
+
+    ld      sp,(PLUSTCK)          ; Back to original stack
+    ret
+    
+
+
+
+;-----------------------------------------------------------------------------
+; Graphics routine caller - High powered version
+; Input: IX = Graphics module jump table offset
+;        All other registers are passed through to routine
+;-----------------------------------------------------------------------------
+exec_gfx_routine:
+    ex      af,af'
+    exx                           ; Stash all the registers
+    ld      bc,$8000              ; Add jump table offset
+    add     ix,bc                 ; to graphics module base address
+    
+    ld      hl,0
+    add     hl,sp                 ; Get Stack Pointer
+    ld      (PLUSTCK),hl          ; Save it
+    ld      sp,PLUSTCK            ; Use temporary stack
+    in      a,(IO_BANK3)          ; Save current page# in bank 3
+    push    af                    ; 
+    in      a,(IO_BANK2)          ; Save current page# in bank 2
+    push    af                    ; 
+ 
+    ld      a,ROM_AUX_PG          ; Map graphics module into bank 2
+    out     (IO_BANK2),a
+    ld      a,BAS_BUFFR           ; Map graohics sysvars into bank 1
+    out     (IO_BANK1),a          
+  
+    exx                           ; Unstash registers
+    ex      af,af'
+    call    jump_ix               ; Call the routine  
+  
+    ex      af,af'
+    exx                           ; Stash all the registers
+    pop     af                    ; Restore bank 2 page
+    out     (IO_BANK2),a          ;
+    pop     af                    ; Restore bank 3 page
+    out     (IO_BANK3),a          ;
+    ld      sp,(PLUSTCK)          ; Back to original stack
+    exx                           ; Unstash registers
+    ex      af,af'
+    ret
+  
 
 ;-----------------------------------------------------------------------------
 ; Hook 2 - READY (Enter Direct Mode
@@ -715,6 +799,19 @@ fast_hook_handler:
     include "usbbas.asm"        ; Statements and functions from USB BASIC
 
 free_rom_16k = $10000 - $
+
+ ;   dephase
+
+    dc $F000-$,$FF
+
+
+;-----------------------------------------------------------------------------
+; Graphics Module
+;-----------------------------------------------------------------------------
+
+;    phase   $8000     ;Assemble in ROM Page 1 which will be in Bank 3
+
+    include "gfx.asm"           ; Main grafix module
 
     end
 

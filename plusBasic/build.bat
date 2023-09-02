@@ -1,1 +1,1 @@
-zmac --zmac -n aqplusbas.asm -I basic --oo cim,lst
+zmac --zmac -n aqplusbas.asm -I basic -I gfx --oo cim,lst

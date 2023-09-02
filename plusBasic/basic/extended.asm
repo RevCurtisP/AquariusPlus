@@ -8,7 +8,7 @@
 ;-----------------------------------------------------------------------------
 
 ST_CLS:
-    jp      z,.cls                ; no parameters, use default
+    jp      z,do_cls_default      ; no parameters, use default
     call    get_color             ; get foreground color
     push    af                    ; save it
     SYNCHK  ','                   ; require commae
@@ -20,7 +20,6 @@ ST_CLS:
     rla       
     rla                           ; shift to high nybble
     or      e                     ; combine background color
-.cls
     jp      do_cls                ; Clear screen and homecursor
 
 
