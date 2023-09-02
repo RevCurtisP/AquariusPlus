@@ -10,8 +10,9 @@ import argparse
 # aquarius.rom Aquarius+     
 # 0000 - 1FFF  0000 - 1FFF    S3 BASIC  
 # 2000 - 2FFF  2000 - 2FFF    plusBASIC
-# 3000 - 3FFF                 Char ROM
-# 4000 - ...   C000 - ...     plusBASIC
+# 3000 - 3FFF  3000 - 3FFF    Char ROM (Overlaid)
+# 4000 - 7FFF  C000 - FFFF    plusBASIC 16k
+# 8000 - A000  8000 - A000    plusBASIC 8k (swapped in)
 
 with open("zout/aquarius.rom", "wb") as f:
     # Aquarius S3 BASIC ROM with Aquarius+ options

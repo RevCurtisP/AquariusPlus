@@ -223,7 +223,7 @@ _coldboot:
 .print_basic
     call    print_string_immd
 .plus_text
-    db "plusBASIC v0x10c", 0
+    db "plusBASIC v0.10d", 0
 .plus_len   equ   $ - .plus_text
 
     call    CRDO
@@ -760,7 +760,7 @@ fast_hook_handler:
 
 
     assert !($2BFF<$)   ; ROM full!
-    dc $2BFF-$+1,$FF
+    dc $2BFF-$+1,$76
 
 ;-----------------------------------------------------------------------------
 ; Keyboard Decode Tables for S3 BASIC with Extended Keyboard Support
@@ -768,7 +768,7 @@ fast_hook_handler:
 ;-----------------------------------------------------------------------------
 
     assert !($2EFF<$)   ; ROM full!
-    dc $2EFF-$+1,$FF
+    dc $2EFF-$+1,$76
 
     include "keytable.asm"
 
@@ -800,10 +800,12 @@ fast_hook_handler:
 
 free_rom_16k = $10000 - $
 
- ;   dephase
 
-    dc $F000-$,$FF
+    dc $F000-$,$76
 
+;   dc $10000-$,$76
+;
+;    dephase
 
 ;-----------------------------------------------------------------------------
 ; Graphics Module
@@ -812,6 +814,8 @@ free_rom_16k = $10000 - $
 ;    phase   $8000     ;Assemble in ROM Page 1 which will be in Bank 3
 
     include "gfx.asm"           ; Main grafix module
+
+;    dc $A000-$,$76
 
     end
 

@@ -177,7 +177,7 @@ dos_load_rom:
     call    esp_read_bytes
 
     ; Check length
-    ld      a, d
+    ld      a, b
     cp      $20         ; 8KB ROM?
     jr      nz, .ok
 
