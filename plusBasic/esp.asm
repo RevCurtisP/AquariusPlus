@@ -190,21 +190,22 @@ esp_read_paged:
 
     push    bc
 
+    dec     de
 .loop:
     ; Done reading? (BC=0)
     ld      a, b
     or      a, c
     jr      z, .done
 
-    call    esp_get_byte
-    ld      (de), a
     inc     de
     ld      a,d
     or      a,e
-    jr      nz,.not_end
+    jr      nz,.read_byte
     call    page_next_address
     jr      c,.error              ; Return if overflow
-.not_end
+.read_byte
+    call    esp_get_byte
+    ld      (de), a
     dec     bc
     jr      .loop
 
