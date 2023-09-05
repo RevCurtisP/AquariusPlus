@@ -126,15 +126,15 @@ STJUMPS:
     dw      SNERR                 ;$EC 
     dw      SNERR                 ;$ED EVAL
     dw      SNERR                 ;$EE 
-    dw      SNERR                 ;$EF 
-    dw      SNERR                 ;$F0 
-    dw      SNERR                 ;$F1 
-    dw      SNERR                 ;$F2 
+    dw      SNERR                 ;$EF SPRITE
+    dw      SNERR                 ;$F0 TILE
+    dw      SNERR                 ;$F1 OFF
+    dw      SNERR                 ;$F2 MAP
     dw      SNERR                 ;$F3 
     dw      ST_RESUME             ;$F4 RESUME
     dw      ST_COLOR              ;$F5 COL
     dw      ST_SCREEN             ;$F6 SCREEN 
-    dw      SNERR                 ;$F7
+    dw      SNERR                 ;$F7 SET
     dw      SNERR                 ;$F8
     dw      SNERR                 ;$F9
     dw      SNERR                 ;$FA
@@ -210,15 +210,15 @@ FNJUMPS:
     dw      SNERR                 ;$EC 
     dw      FN_EVAL               ;$ED EVAL
     dw      SNERR                 ;$EE 
-    dw      SNERR                 ;$EF 
-    dw      SNERR                 ;$F0 
-    dw      SNERR                 ;$F1 
-    dw      SNERR                 ;$F2 
+    dw      SNERR                 ;$EF SPRITE
+    dw      SNERR                 ;$F0 TILE
+    dw      SNERR                 ;$F1 OFF
+    dw      SNERR                 ;$F2 MAP
     dw      SNERR                 ;$F3 
     dw      SNERR                 ;$F4 RESUME
     dw      SNERR                 ;$F5 COL
     dw      SNERR                 ;$F6 SCREEN 
-    dw      SNERR                 ;$F7
+    dw      SNERR                 ;$F7 SET
     dw      SNERR                 ;$F8
     dw      SNERR                 ;$F9
     dw      SNERR                 ;$FA

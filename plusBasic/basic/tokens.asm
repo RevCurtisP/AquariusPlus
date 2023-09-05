@@ -46,14 +46,15 @@ TBLCMDS:
     db $80 + ' '                  ; $EC             
     db $80 + 'E',"VAL"            ; $ED             
     db $80 + ' '                  ; $EE             
-    db $80 + ' '                  ; $EF             
-    db $80 + ' '                  ; $F0             
-    db $80 + ' '                  ; $F1             
-    db $80 + ' '                  ; $F2             
+    db $80 + 'S',"RITE"           ; $EF             
+    db $80 + 'T',"ILE"            ; $F0             
+    db $80 + 'O',"FF"             ; $F1             
+    db $80 + 'M',"AP"             ; $F2             
     db $80 + ' '                  ; $F3             
     db $80 + 'R',"ESUME"          ; $F4             
     db $80 + 'C',"OL"             ; $F5             
     db $80 + 'S',"CREEN"          ; $F6             
+    db $80 + 'S',"ET"             ; $F7             
 
     db $80             ; End of table marker
     
@@ -143,15 +144,15 @@ token_to_keyword:
 ; $EC             MENU
 ; $ED EVAL        EVAL                 compatible
 ; $EE             SLEEP
-; $EF             MKDIR
-; $F0             RMDIR               DEL <--> RMDIR
-; $F1             OFF
-; $F2             WAIT
+; $EF SPRITE      MKDIR
+; $F0 TILE        RMDIR               DEL <--> RMDIR
+; $F1 OFF         OFF
+; $F2 MAP         WAIT
 ; $F3             FILE
 ; $F4 RESUME      RESUME
 ; $F5 COL         COL [OR]
 ; $F6 SCREEN
-; $F7 
+; $F7 SET
 ; $F8
 ; $F9
 ; $FA
