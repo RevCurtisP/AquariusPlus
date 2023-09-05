@@ -147,6 +147,8 @@ FILETIME    equ $383D
 plus_page   equ 1       ; plusBASIC ROM BANK3 page
 aux_page    equ 2       ; Auxillary ROM page
 
+
+
 ;-----------------------------------------------------------------------------
 ; BASIC Extended System Constants, Variables and Buffers
 ; Page 36, swapped into Bank 3
@@ -360,7 +362,7 @@ VCTRL_SPR_EN:    equ (1<<3)
 VCTRL_TEXT_PRIO: equ (1<<4)
 
 ;-----------------------------------------------------------------------------
-; Other definitions
+; Bank and Page Definitions
 ;-----------------------------------------------------------------------------
 BANK0_BASE: equ $0000
 BANK1_BASE: equ $4000
@@ -370,8 +372,15 @@ BANK3_BASE: equ $C000
 BANK_READONLY:  equ $80     ; Bank readonly
 BANK_OVERLAY:   equ $40     ; RAM overlay
 
+PAGE_VIDEORAM   equ 20
+PAGE_CHARRAM    equ 21
+PAGE_RAMBASE    equ 32
+
+BMP_COLORRAM    equ $2000
+TILE_DATA       equ $1000
+
 ;-----------------------------------------------------------------------------
-; Other definitions
+; Macros
 ;-----------------------------------------------------------------------------
 SYNCHK macro value
     rst     $08

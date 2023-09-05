@@ -223,7 +223,7 @@ _coldboot:
 .print_basic
     call    print_string_immd
 .plus_text
-    db "plusBASIC v0.10d", 0
+    db "plusBASIC v0.11", 0
 .plus_len   equ   $ - .plus_text
 
     call    CRDO
@@ -797,6 +797,7 @@ fast_hook_handler:
     include "plus.asm"          ; plusBASIC unique statements and functions
     include "tokens.asm"        ; Keyword list and tokenize/expand routines
     include "usbbas.asm"        ; Statements and functions from USB BASIC
+    include "shared.asm"        ; Shared subroutines
 
 free_rom_16k = $10000 - $
 
@@ -813,7 +814,8 @@ free_rom_16k = $10000 - $
 
 ;    phase   $8000     ;Assemble in ROM Page 1 which will be in Bank 3
 
-    include "gfx.asm"           ; Main grafix module
+    include "gfx.asm"           ; Main graphics module
+    include "tile.asm"          ; Tile graphics module
 
 ;    dc $A000-$,$76
 

@@ -134,7 +134,7 @@ STJUMPS:
     dw      ST_RESUME             ;$F4 RESUME
     dw      ST_COLOR              ;$F5 COL
     dw      ST_SCREEN             ;$F6 SCREEN 
-    dw      SNERR                 ;$F7 SET
+    dw      ST_SET                ;$F7 SET
     dw      SNERR                 ;$F8
     dw      SNERR                 ;$F9
     dw      SNERR                 ;$FA

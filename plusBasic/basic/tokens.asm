@@ -67,6 +67,7 @@ KEYTK     equ     $E7
 ARGSTK    equ     $E8
 ERRTK     equ     $E9
 LINETK    equ     $D0
+TILETK    equ     $F0
 
 ;;; Extended Error Message Table can go here
 

@@ -79,11 +79,10 @@ page_write_byte:
 ; Read Word from Page - wraps to next page if address is 16383
 ; Input: A: Page
 ;       DE: Address 0-16383 (Higher addresses mapped to input range) 
-; Output: A: Original page in bank 3
-;        BC: Word read
-;        DE: Address coerced to $C000-$FFFF
-;      Zero: Cleared if succesful, Set if invalid page
-;     Carry: Cleared if succesful, Set if overflow
+; Output: BC: Word read
+;         DE: Address coerced to $C000-$FFFF
+;       Zero: Cleared if succesful, Set if invalid page
+;      Carry: Cleared if succesful, Set if overflow
 ;-----------------------------------------------------------------------------
 page_read_word:
     call    page_set4read_coerce
@@ -102,22 +101,18 @@ page_read_word:
     dec     de                    ; DE = Original address
     jr      page_restore_plus
 
-
-
 ;-----------------------------------------------------------------------------
 ; Write Word to Page - wraps to next page if address is 16383
 ; Input: A: Page
-;       BC: Word to read
+;       BC: Word to write
 ;       DE: Address 0-16383 (Higher addresses mapped to input range) 
-; Output: A: Original page in bank 3
-;        BC: Word written
-;        DE: Address coerced to $C000-$FFFF
-;      Zero: Cleared if succesful, Set if invalid page
-;     Carry: Cleared if succesful, Set if overflow
+; Output: BC: Word written
+;         DE: Address coerced to $C000-$FFFF
+;       Zero: Cleared if succesful, Set if invalid page
+;      Carry: Cleared if succesful, Set if overflow
 ;-----------------------------------------------------------------------------
 page_write_word:
     call    page_set4write_coerce
-;    call    debug
     jr      z,page_restore_plus  ; Return if illegal page
     ld      a,c
     ld      (de),a
@@ -141,6 +136,35 @@ page_restore_plus:
     out     (IO_BANK3),a
     ex      af,af'
     ret
+
+;-----------------------------------------------------------------------------
+; Write Bytes to Page - wraps to next page if address is 16383
+; Input: A: Page
+;       BC: Byte Count
+;       DE: Destination address 0-16383 
+;       HL: Source Address
+; Output: BC: Word written
+;         DE: Address coerced to $C000-$FFFF
+;       Zero: Cleared if succesful, Set if invalid page
+;      Carry: Cleared if succesful, Set if overflow
+;-----------------------------------------------------------------------------
+page_write_bytes:
+    call    page_set4write_coerce
+    jr      z,page_restore_plus  ; Return if illegal page
+.loop
+    ld      a,b 
+    or      c
+    jr      z,.done
+    ld      a,(hl)
+    ld      (de),a
+    inc     hl
+    dec     bc
+    call    page_inc_addr
+    jr      c,page_restore_plus
+    jr      .loop
+.done
+    xor     a                     ; Clear Zero and Carry Flags
+    jr      page_restore_plus     ; Restore BANK3 page and return
 
 ;-----------------------------------------------------------------------------
 ; Map Page into Bank 3 and coerce address to bank 3
@@ -221,10 +245,20 @@ page_check_read:
     cp      $FF                   ; Clear zero flag
     or      a                     ; Clear carry flag
     ret
+
+
+;-----------------------------------------------------------------------------
+; Increment Page Write Address
+; Sets carry if trying to move out of video, character, or end of main RAM
+;-----------------------------------------------------------------------------
+page_inc_addr:
+    inc     de                    ; Increment Address
+    ld      a,d
+    or      e                     ; If Rolled Over
+    ret     nz                    ;   Drop into page_next
     
 ;-----------------------------------------------------------------------------
 ; Map next Page into Bank 3 
-; Output: A: New page in bank 3 (current page if error)
 ; Sets carry if trying to move out of video, character, or end of main RAM
 ;-----------------------------------------------------------------------------
 page_next:
