@@ -14,7 +14,7 @@ Text:
 
 ***
 
-**FORMAT:** KEYWORD *address*
+**FORMAT:** KEYWORD [args]
 
 **Action:** descriptive text
  - 
