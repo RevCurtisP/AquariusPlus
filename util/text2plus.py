@@ -188,16 +188,20 @@ for idx, line in enumerate(args.input.readlines()):
     buf = bytearray()
     buf += struct.pack("<H", linenr)
 
+    in_chr = False
     in_str = False
     in_rem = False
 
     while len(line) > 0:
         upper = line.upper()
 
-        if line[0] == '"':
+        if line[0] == '"' and not in_chr:
             in_str = not in_str
 
-        if not (in_str or in_rem) and line[0] != " ":
+        if line[0] == "'" and not in_str:
+            in_chr = not in_chr
+
+        if not (in_str or in_chr or in_rem) and line[0] != " ":
             found = False
             for (token, keyword) in tokens.items():
                 if upper.startswith(keyword):
