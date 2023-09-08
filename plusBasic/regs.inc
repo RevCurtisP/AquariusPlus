@@ -149,17 +149,6 @@ aux_page    equ 2       ; Auxillary ROM page
 
 
 
-;-----------------------------------------------------------------------------
-; BASIC Extended System Constants, Variables and Buffers
-; Page 36, swapped into Bank 3
-;-----------------------------------------------------------------------------
-gfx_sysvars equ $8000   ; Extended BASIC Graphics System Variables
-                        ; defined in gfx/gfx.asm
-buff_strlen equ $C0FF   ; Length of String in Buffer
-string_buff equ $C100   ; String Buffer  - up to 255 chars plus null terminator 
-                        ; Must be on 256 byte boundary
-screen_buff equ $F800   ; For saving screen memory or double-buffering
-
 
 ;-----------------------------------------------------------------------------
 ; Variables
@@ -346,6 +335,7 @@ IO_PSG1DATA:    equ $F6
 IO_PSG1ADDR:    equ $F7
 IO_PSG2DATA:    equ $F8
 IO_PSG2ADDR:    equ $F9
+IO_KEYBUFF      equ $FA
 IO_SYSCTRL:     equ $FB
 IO_CASSETTE:    equ $FC
 IO_CPM:         equ $FD     ; Write-only
@@ -372,12 +362,43 @@ BANK3_BASE: equ $C000
 BANK_READONLY:  equ $80     ; Bank readonly
 BANK_OVERLAY:   equ $40     ; RAM overlay
 
-PAGE_VIDEORAM   equ 20
-PAGE_CHARRAM    equ 21
-PAGE_RAMBASE    equ 32
+; RAM Page Usage
+ROM_SYS_PG  equ 0           ; Main System ROM, mapped into Bank 0 with overlay from $3000-$3FFF
+ROM_EXT_PG  equ 1           ; plusBASIC extended ROM, mapped into Bank 3 
+ROM_AUX_PG  equ 1           ; plusBASIC auxillary ROM, mapped into Bank 3 as needed
 
+VIDEO_RAM   equ 20
+CHAR_RAM    equ 21
+
+RAM_BAS_1   equ 33          ; RAM for BASIC mapped into Bank 1
+RAM_BAS_2   equ 34          ; RAM for BASIC mapped into Bank 2
+RAM_BAS_3   equ 35          ; RAM for BASIC mapped into Bank 3, switched in as needed
+                            ; If a cartrige is present, it is copied here unencrypted, then executed
+BAS_BUFFR   equ 36          ; plusBASIC extended system variables and buffers, mapped in bank 3 as needed
+                            ; See regs.inc for details
+VID_BUFFR   equ 37          ; Video RAM Shadow Buffer
+PT3_BUFFR   equ 38          ; PT3 Player Buffer
+
+USER_RAM    equ 40
+
+;-----------------------------------------------------------------------------
+; Video RAM Offsets
+; Page 20
+;-----------------------------------------------------------------------------
 BMP_COLORRAM    equ $2000
 TILE_DATA       equ $1000
+
+;-----------------------------------------------------------------------------
+; BASIC Extended System Constants, Variables and Buffers
+; Page 36, swapped into Bank 3
+;-----------------------------------------------------------------------------
+GFX_SYSVARS equ $8000   ; Extended BASIC Graphics System Variables
+                        ; defined in gfx/gfx.asm
+STRBUFFLEN  equ $00FF   ; Page Address: Length of String in Buffer
+STRBUFF     equ $0100   ; Page Address: String Buffer  - up to 255 chars plus null terminator 
+                        ; Must be on 256 byte boundary
+SCREENBUFF  equ $F800   ; For saving screen memory or double-buffering
+
 
 ;-----------------------------------------------------------------------------
 ; Macros

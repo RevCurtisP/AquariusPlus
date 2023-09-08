@@ -4,43 +4,122 @@
 
 ;-----------------------------------------------------------------------------
 ; Copy entire Page to another Page
-; Input: B: Source Page
-;        C: Destination Page
-; Clobbers: A, BC, DE
+; Input: A: Destination Page
+;       A': Source Page
+; Zero Flag: Clear if valid pages, Set if nor
+; Clobbers: A,BC,DE,AF',HL',IX
 ;-----------------------------------------------------------------------------
 page_copy:
-    ld      a,b                   ; If Source Page not valid for read
-    call    page_check_read       ;   Return Error
-    ret     z                         
-    ld      a,c                   ; If Destination Page not valid for write
-    call    page_check_write      ;   Return Error
-    ret     z                         
-    push    hl                    ; Save HL
-    ld      hl,0
-    add     hl,sp                 ; Get Stack Pointer
-    ld      (PLUSTCK),hl          ; Save it
-    ld      sp,PLUSTCK            ; Use temporary stack
-    in      a,(IO_BANK3)          ; Save current page# in bank 2
-    push    af                    ; 
-    in      a,(IO_BANK2)          ; Save current page# in bank 2
-    push    af                    ; 
-    ld      a,b                   ; Map source page into bank 2         
-    out     (IO_BANK2),a          ;
-    ld      a,c                   ; Map destination page into bank 3        
-    out     (IO_BANK3),a          ; 
+    call    page_check_read_write
+    ret     z
+    push    hl                    ; Stack = HL, RetAddr
+    call    page_swap_two         ; Bank3 = A, Bank4 = A'
     ld      hl,$8000              ; Copying from page in bank 2
     ld      de,$C000              ; to page in bank 3
     ld      bc,$4000              ; Entire bank/page
     ldir
-    pop     af                    ; Restore bank 2 page
-    out     (IO_BANK2),a          ;
-    pop     af                    ; Restore bank 3 page
-    out     (IO_BANK3),a          ;
-    ld      sp,(PLUSTCK)          ; Back to original stack
-    pop     hl                    ; Restore HL
+    call    page_restore_two
+    pop     hl                    ; Stack = RetAddr
     cp      $FF                   ; Clear zero flag
     ret
 
+;-----------------------------------------------------------------------------
+; Input: A: Destination Page
+;       A': Source Page
+;       BC: Byte Count
+;       DE: Destination address (0-16383)
+;       HL: Source Address (0-16383)
+; Output: Zero Set if either page is not valid
+;         Carry Set if Overflow
+; Clobbers: A,BC,DE,HL,AF',HL',IX
+;-----------------------------------------------------------------------------
+page_copy_bytes:
+    call    page_check_read_write
+    ret     z
+    ex      af,af'
+    call    page_swap_two         ; Bank4 = Source, Bank3 = Dest
+    ex      de,hl                 ; DE = Source, HL = Dest
+    call    page_coerce_address   ; Coerce DE
+    call    _coerce_hl
+    dec     de
+    dec     hl
+.loop
+    ld      a,b
+    or      c
+    jr      z,.done
+    dec     bc
+    call    page_inc_addr
+    jr      c,.over
+    call    _inc_hl
+    jr      c,.over
+    ld      a,(de)
+    ld      (hl),a
+    jr      .loop
+.done
+    xor     a                     ; Clear Carry Flag
+    inc     a                     ; Clear Zero Flag
+.over
+    call    page_restore_two      
+    ret
+
+_inc_hl:
+    inc     hl                    ; Increment 
+    ld      a,$C0
+    cp      h
+    ret     nz
+
+    in      a,(IO_BANK2)
+    call    page_check_next
+    ret     c
+    inc     a
+    out     (IO_BANK2),a
+
+_coerce_hl:
+    ld      a,h                   ; Coerce HL
+    and     $3F
+    or      $80
+    ld      h,a
+    ret
+
+;-----------------------------------------------------------------------------
+; Set up temporary Stack and Swap Pages into Banks 2 and 3
+; Input: A: Page to Swap into Bank 3
+;       A': Page to Swap into Bank 2
+; Clobbers: AF,AF',HL',IX
+;-----------------------------------------------------------------------------
+page_swap_two:
+    pop     ix                    ; Get Return Address
+    exx                           ; Save Registers
+    ld      hl,0
+    add     hl,sp                 ; Get Stack Pointer
+    ld      (PLUSTCK),hl          ; Save it
+    ld      sp,PLUSTCK            ; Use temporary stack
+    ld      l,a                   ; Save Bank Page
+    in      a,(IO_BANK3)          ; Save current page# in bank 2
+    ld      (BANK3PAGE),a
+    in      a,(IO_BANK2)          ; Save current page# in bank 2
+    ld      (BANK2PAGE),a
+    ld      a,l                   
+    out     (IO_BANK3),a          ; Map destination page into bank 3         
+    ex      af,af'                
+    out     (IO_BANK2),a          ; Map source page into bank 2         
+    exx                           ; Restore Registers
+    jp      (ix)                  ; Return
+
+;-----------------------------------------------------------------------------
+; Restore Original Pages and Stack
+; Clobbers: AF',IX
+;-----------------------------------------------------------------------------
+page_restore_two:
+    pop     ix                    ; Get Return Address
+    ex      af,af'
+    ld      a,(BANK2PAGE)
+    out     (IO_BANK2),a          ; Restore bank 2 page
+    ld      a,(BANK3PAGE)
+    out     (IO_BANK3),a          ; Restore bank 3 page
+    ld      sp,(PLUSTCK)          ; Back to original stack
+    ex      af,af'
+    jp      (ix)
 
 ;-----------------------------------------------------------------------------
 ; Read Byte from Page
@@ -138,32 +217,75 @@ page_restore_plus:
     ret
 
 ;-----------------------------------------------------------------------------
+; Restore Bank 3 to Page 1
+;-----------------------------------------------------------------------------
+page_restore_ram2:
+    ex      af,af'
+    ld      a,plus_page
+    out     (IO_BANK3),a
+    ex      af,af'
+    ret
+
+
+;-----------------------------------------------------------------------------
 ; Write Bytes to Page - wraps to next page if address is 16383
 ; Input: A: Page
 ;       BC: Byte Count
 ;       DE: Destination address 0-16383 
 ;       HL: Source Address
-; Output: BC: Word written
-;         DE: Address coerced to $C000-$FFFF
-;       Zero: Cleared if succesful, Set if invalid page
-;      Carry: Cleared if succesful, Set if overflow
+; Output: Zero: Cleared if succesful, Set if invalid page
+;         Carry: Cleared if succesful, Set if overflow
+; Clobbers: A, BC, DE, HL
 ;-----------------------------------------------------------------------------
 page_write_bytes:
     call    page_set4write_coerce
     jr      z,page_restore_plus  ; Return if illegal page
+    dec     de
 .loop
     ld      a,b 
     or      c
     jr      z,.done
+    call    page_inc_addr
+    jr      c,page_restore_plus
     ld      a,(hl)
     ld      (de),a
     inc     hl
     dec     bc
-    call    page_inc_addr
-    jr      c,page_restore_plus
     jr      .loop
 .done
-    xor     a                     ; Clear Zero and Carry Flags
+    xor     a                     ; Clear Carry Flag
+    inc     a                     ; Clear Zero Flag
+    jr      page_restore_plus     ; Restore BANK3 page and return
+
+;-----------------------------------------------------------------------------
+; Read Bytes from Page - wraps to next page if address is 16383
+; Input: A: Page
+;       BC: Byte Count
+;       DE: Destination Address
+;       HL: Source Address  0-16383 
+; Output: Zero: Cleared if succesful, Set if invalid page
+;         Carry: Cleared if succesful, Set if overflow
+; Clobbers: A, BC, DE, HL
+;-----------------------------------------------------------------------------
+page_read_bytes:
+    ex      de,hl                 ; DE = Source Addr, HL = Dest Addr
+    call    page_set4write_coerce
+    jr      z,page_restore_plus   ; Return if illegal page
+    dec     de
+.loop
+    ld      a,b 
+    or      c
+    jr      z,.done
+    call    page_inc_addr
+    jr      c,page_restore_plus
+    ld      a,(de)
+    ld      (hl),a
+    inc     hl
+    dec     bc
+    jr      .loop
+.done
+    xor     a                     ; Clear Carry Flag
+    inc     a                     ; Clear Zero Flag
     jr      page_restore_plus     ; Restore BANK3 page and return
 
 ;-----------------------------------------------------------------------------
@@ -186,6 +308,16 @@ page_set4write_coerce:
     call    page_set_for_write
     jr      page_coerce_address
 
+;-----------------------------------------------------------------------------
+; Increment Page Write Address
+; Sets carry if trying to move out of video, character, or end of main RAM
+;-----------------------------------------------------------------------------
+page_inc_addr:
+    inc     de                    ; Increment Address
+    ld      a,d
+    or      e                     ; If Rolled Over
+    ret     nz                    ;   Drop into page_next_address
+    
 ;-----------------------------------------------------------------------------
 ; Map next Page into Bank 3 and coerce address to bank 3
 ; Input: DE: Address
@@ -227,6 +359,18 @@ _set_page
     ret
 
 ;-----------------------------------------------------------------------------
+; page_check_read_write
+; Verify page in A' is valid for Read
+;    and page in A is valid for Write
+; Zero Flag: Clear if valid page, Set if nor
+;-----------------------------------------------------------------------------
+page_check_read_write:
+    ex      af,af'
+    call    page_check_read       ; If Source Page not valid for read
+    ret     z                     ;   Return Error    
+    ex      af,af'
+
+;-----------------------------------------------------------------------------
 ; page_check_read
 ; page_check_write
 ; Verify page in A is valid for Read/Write
@@ -248,29 +392,24 @@ page_check_read:
 
 
 ;-----------------------------------------------------------------------------
-; Increment Page Write Address
-; Sets carry if trying to move out of video, character, or end of main RAM
-;-----------------------------------------------------------------------------
-page_inc_addr:
-    inc     de                    ; Increment Address
-    ld      a,d
-    or      e                     ; If Rolled Over
-    ret     nz                    ;   Drop into page_next
-    
-;-----------------------------------------------------------------------------
 ; Map next Page into Bank 3 
 ; Sets carry if trying to move out of video, character, or end of main RAM
 ;-----------------------------------------------------------------------------
 page_next:
     in      a,(IO_BANK3)
+    call    page_check_next
+    ret     c
+    inc     a
+    out     (IO_BANK3),a
+    ret
+
+page_check_next:
     cp      20                    ; If in video RAM
     jr      z,set_carry_flag      ;   error out
     cp      21                    ; If in character RAM
     jr      z,set_carry_flag      ;   error out
     cp      63                    ; If after last RAM page
     jr      nc,set_carry_flag     ;   error out
-    inc     a
-    out     (IO_BANK3),a
     cp      0                     ; Clear carry and zero flags
     ret
 

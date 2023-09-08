@@ -50,7 +50,7 @@ dos_get_cwd:
     ret
 
 ;-----------------------------------------------------------------------------
-; dos_create_dir - Delete file/directory
+; dos_rename_dir - Delete file/directory
 ; Input: DE: New name string descriptor
 ;        HL: Old name string descriptor
 ; Output:  A: Result
@@ -92,7 +92,7 @@ dos_get_filestat:
 
 
 ;-----------------------------------------------------------------------------
-; Load paged binary data from File into BINSTART in page A
+; Load binary file into paged memory`
 ; Input: A: Page
 ;        HL: String descriptor address
 ; Clobbered registers: A, DE
@@ -110,7 +110,7 @@ dos_load_paged:
     ret
 
 ;-----------------------------------------------------------------------------
-; Load binary data from File into BINSTART
+; Load binary file into main memory
 ; Input: HL: String descriptor address
 ; Clobbered registers: A, DE
 ;-----------------------------------------------------------------------------
@@ -125,10 +125,11 @@ dos_load_binary:
 
 
 ;-----------------------------------------------------------------------------
-; Load binary data of length BINSIIZE from BINSTART in page A to file
+; Save binary data from paged memory to file
 ; Input: A: Page
-;        HL: String descriptor address
-; Uses: BINSTART: Load address
+;        HL: Filename atring descriptor address
+; Uses: BINSTART: Save address
+;       BINLEN: Data ength
 ; Clobbered registers: A, DE
 ;-----------------------------------------------------------------------------
 dos_save_paged:
@@ -144,7 +145,11 @@ dos_save_paged:
     ret
 
 ;-----------------------------------------------------------------------------
-; Save binary
+; Save binary data from main memory to file
+; Input: HL: Filename atring descriptor address
+; Uses: BINSTART: Save address
+;       BINLEN: Data ength
+; Clobbered registers: A, DE
 ;-----------------------------------------------------------------------------
 dos_save_binary:
     ; Create file

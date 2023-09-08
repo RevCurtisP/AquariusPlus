@@ -26,12 +26,13 @@ esp_cmd:
     jp      esp_send_byte
 
 ;-----------------------------------------------------------------------------
-; Issue command with string to ESP and return result
-; Input:   A: Command
-;         HL: String Descriptor
-; Output:  A: Result
-;         DE: Address of Byte after String
-;         BC: String Length
+; Issue ESP command with string argument
+; Input:  A: Command
+;        DE: String Address
+;        BC: String Length
+; Output: A: Result
+;        DE: Address of Byte after String
+;        BC: String Length
 ;-----------------------------------------------------------------------------
 
 esp_cmd_string:
@@ -62,6 +63,15 @@ esp_open:
 
 ;-----------------------------------------------------------------------------
 ; Close file or directory
+; Clobbered registers: A
+;-----------------------------------------------------------------------------
+esp_close:
+    ld      a, ESPCMD_CLOSE
+    call    esp_cmd
+    jp      esp_get_result
+
+;-----------------------------------------------------------------------------
+; Close all files and directories
 ; Input: A: File Descriptor
 ; Output: A: Result 
 ;-----------------------------------------------------------------------------
@@ -71,17 +81,7 @@ esp_close_all:
     jp      esp_get_result
 
 ;-----------------------------------------------------------------------------
-; Close any open file/directory descriptor
-;
-; Clobbered registers: A
-;-----------------------------------------------------------------------------
-esp_close:
-    ld      a, ESPCMD_CLOSEALL
-    call    esp_cmd
-    jp      esp_get_result
-
-;-----------------------------------------------------------------------------
-; esp_read_to_buff - Read String from ESP to 256 byte buffer
+; esp_read_to_buff - Read bytes from ESP to string buffer
 ; Input: HL: Address of String Buffer
 ; Output: E: String Length, 
 ;        DE: Address of Terminator
@@ -112,7 +112,7 @@ esp_read_to_buff:
     ret
 
 ;-----------------------------------------------------------------------------
-; Read bytes
+; Read bytes from ESP to main memory
 ; Input:  BC: number of bytes to read
 ;         DE: destination address
 ; Output: BC: number of bytes actually read
@@ -159,7 +159,7 @@ esp_read_bytes:
 
 
 ;-----------------------------------------------------------------------------
-; Read paged bytes
+; Read bytes from ESP to paged memory
 ; Input:   A: page
 ;         BC: number of bytes to read
 ;         DE: destination address
@@ -241,7 +241,7 @@ esp_get_long:
     call    esp_get_bc
 
 ;-----------------------------------------------------------------------------t
-; Read 16-bit word from ESP32 into DE
+; Read word from ESP32 into DE
 ; Returns with MSB in A
 ;-----------------------------------------------------------------------------
 
@@ -253,7 +253,7 @@ esp_get_de:
     ret
 
 ;-----------------------------------------------------------------------------t
-; Read 16-bit word from ESP32 into BC
+; Read word from ESP32 into BC
 ; Returns with MSB in A
 ;-----------------------------------------------------------------------------
 
@@ -317,7 +317,7 @@ esp_send_string:
     jp      esp_send_byte         ; Send String Terminator
 
 ;-----------------------------------------------------------------------------
-; Write bytes
+; Write bytes from main memory
 ; Input:  DE: source address
 ;         BC: number of bytes to write
 ; Output: DE: next address
@@ -387,7 +387,7 @@ esp_write_repbyte:
     ret
 
 ;-----------------------------------------------------------------------------
-; Send bytes
+; Send bytes from main memory
 ; Input:  DE: source address
 ;         BC: number of bytes to write
 ; Output: DE: next address
@@ -413,7 +413,7 @@ esp_send_bytes:
     ret
 
 ;-----------------------------------------------------------------------------
-; Write paged bytes
+; Write bytes from paged memory
 ; Input:   A: page
 ;         DE: source address
 ;         BC: number of bytes to write
@@ -510,10 +510,10 @@ esp_send_byte:
     ret
 
 ;-----------------------------------------------------------------------------
-; Seek
+; Move to position in open file
 ; Input:  BC = Offset low 16 bits
 ;         DE = Offset high 16 bits
-; Clobbered registers: A, DE
+; Clobbered registers: A
 ;-----------------------------------------------------------------------------
 esp_seek:
     ld      a, ESPCMD_SEEK
@@ -531,7 +531,16 @@ esp_seek:
     ret
 
 ;-----------------------------------------------------------------------------
-; esp_get_datetime - Read Date and Time String into 256 byte buffer
+; Get current position in open file
+; Output: BC = Offset low 16 bits
+;         DE = Offset high 16 bits
+; Clobbered registers: A
+;-----------------------------------------------------------------------------
+esp_tell:
+    ret:
+
+;-----------------------------------------------------------------------------
+; esp_get_datetime - Read date and time into string buffer
 ; Input: HL = Buffer Address
 ; Sets: string_buff: Date and Time in format YYYYMMDDHHmmss
 ; Output:  E: String Length, DE = End of String, HL = Buffer Address

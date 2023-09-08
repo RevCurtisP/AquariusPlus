@@ -2,27 +2,83 @@
 ; Enhanced BASIC Statements and Functions
 ;======================================================================================
 
-
 ;-----------------------------------------------------------------------------
 ; Enhanced COPY
 ; syntax: COPY @page TO @page
+; ToDo: COPY [@page,] addr, len TO [@page],addr
 ;-----------------------------------------------------------------------------
 
 ST_COPY:   
     jp      z,COPY          ; No Parameters? Do Standard COPY
-;Do @page TO @page
-    SYNCHK  '@'
-    call    GETBYT          ; Get source page
-    push    af              ; and save it
+    call    get_page_arg    ; Check for Page Arg
+    push    af              ; Stack = SrcPgFlg
+    jr      nc,.no_fpg      ; If specified
+    ld      a,(hl)
+    cp      TOTK            ; and followed by TO
+    jr      z,.page2page    ;   Do Page to Page copy
+    SYNCHK  ','             
+.no_fpg
+    call    GETINT          ; DE = SrcAddr
+    pop     af              ; AF = SrcPgFlg
+    push    de              ; Stack = SrcAddr
+    push    af              ; Stack = SrcPgFlg, SrcAddr
+    SYNCHK  ','             ; Require Comma
+    call    GETINT          ; DE = Len
+    push    de              ; Stack = Len, SrcPgFlg, SrcAddr
     rst     SYNCHR
-    byte    TOTK            ; Require TO
-    SYNCHK  '@'
-    call    GETBYT          ; Get destination page
-    ld      c,a             ; Put in C
-    pop     af              ; Get source page
-    ld      b,a             ; Put in B
-    call    page_copy       ; Copy the page
+    byte    TOTK
+    call    get_page_addr   ; A = DstPgFlg, DE = DstAddr
+    ex      af,af'          ; AF' = DstPgFlg
+    pop     bc              ; BC = Len; Stack = SrcPgFlg, SrcAddr
+    pop     af              ; AF = SrcPgFlg, Stack = SrcAddr
+    ex      (sp),hl         ; HL = SrcAddr, Stack = TxtPtr
+    jr      nc,.no_spg      ; If Source Page
+    ex      af,af'          ;   AF = DstPgFlg, AF' = SrcPgFlg
+    jr      nc,.spg_no_dpg  ;   If Dest Page
+    call    page_copy_bytes ;     Do Page to Page
+    jr      .pg_done        ;   Else
+.spg_no_dpg
+    ex      af,af'          ;     AF = SrcPgFlg
+    call    page_read_bytes ;     Do Page to Main
+    jr      .pg_done        ; Else
+.no_spg:
+    ex      af,af'          ;   AF = DstPgFlg, AF' = SrcPgFlg
+    jr      nc,.no_pages    ;   If No Dest Page
+    call    page_write_bytes ;     Do Main to Page
+.pg_done    
     jp      z,FCERR
+    jp      c,OVERR
+    pop     hl               
+    ret                     ;   Else
+.no_pages:
+    rst      COMPAR         ;     If SrcAddr >= DstAddr
+    jr       c,.copy_down   ;    
+    ldir                    ;       Do the Copy
+    pop      hl             
+    ret                     ;     Else
+.copy_down
+    push    de              ;       Stack = DstAddr, TxtPtr
+    ex      (sp),hl         ;       HL = DstAddr, Stack = SrcAddr, TxtPtr
+    add      hl,bc                  
+    dec      hl                     
+    ld       d,h                    
+    ld       e,l            ;       DE = DstAddr + Len - 1
+    pop      hl             ;       HL = SrcAddr, Stack = TxtPtr
+    add      hl,bc                  
+    dec      hl             ;       HL = SrcAddr + Len - 1
+    lddr                    ;       Do the Copy
+    pop      hl
+    ret
+
+.page2page:
+    rst     CHRGET          ; Skip TO
+    call    get_page_arg    ; Check for Page Arg
+    jp      nc,SNERR        ; Error if not specified
+    ex      af,af'
+    pop     af              ; AF' = Source page
+    ex      af,af'
+    call    page_copy       ; Copy the page
+    jp      z,FCERR         ; Error if invalid page
     ret
 
 ;-----------------------------------------------------------------------------

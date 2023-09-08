@@ -36,19 +36,6 @@
 
     include "regs.inc"
 
-; RAM Page Usage
-ROM_SYS_PG = 0        ; Main System ROM, mapped into Bank 0 with overlay from $3000-$3FFF
-ROM_EXT_PG = 1        ; plusBASIC extended ROM, mapped into Bank 3 
-ROM_AUX_PG = 1        ; plusBASIC auxillary ROM, mapped into Bank 3 as needed
-
-RAM_BAS_1 = 33        ; RAM for BASIC mapped into Bank 1
-RAM_BAS_2 = 34        ; RAM for BASIC mapped into Bank 2
-RAM_BAS_3 = 35        ; RAM for BASIC mapped into Bank 3, switched in as needed
-                      ; If a cartrige is present, it is copied here unencrypted, then executed
-BAS_BUFFR = 36        ; plusBASIC extended system variables and buffers, mapped in bank 3 as needed
-                      ; See regs.inc for details
-VID_BUFFR = 37        ; Video RAM Shadow Buffer
-PT3_BUFFR = 38        ; PT3 Player Buffer
 
     org     $2000
     jp      _reset          ; $2000 Called from main ROM at reset vector
@@ -223,7 +210,7 @@ _coldboot:
 .print_basic
     call    print_string_immd
 .plus_text
-    db "plusBASIC v0.11", 0
+    db "plusBASIC v0.11b", 0
 .plus_len   equ   $ - .plus_text
 
     call    CRDO
@@ -659,17 +646,9 @@ byte_to_hex:
     inc     hl
     ret
 
-;-----------------------------------------------------------------------------
-; Utility routines
-;-----------------------------------------------------------------------------
-    include "util.asm"
-
-
-;-----------------------------------------------------------------------------
-; Paged memory routines
-;-----------------------------------------------------------------------------
-    include "paged.asm"
-
+_trap_error:
+    call    page_restore_plus     ; Map Extended ROM into bank 3
+    jp      trap_error
 
 ;-----------------------------------------------------------------------------
 ; DOS routines
@@ -681,6 +660,20 @@ byte_to_hex:
 ;-----------------------------------------------------------------------------
     include "esp.asm"
 
+;-----------------------------------------------------------------------------
+; Paged memory routines
+;-----------------------------------------------------------------------------
+    include "paged.asm"
+
+;-----------------------------------------------------------------------------
+; Extended string buffer routines
+;-----------------------------------------------------------------------------
+    include "sbuff.asm"
+
+;-----------------------------------------------------------------------------
+; Utility routines
+;-----------------------------------------------------------------------------
+    include "util.asm"
 
 
 ;-----------------------------------------------------------------------------
@@ -705,7 +698,7 @@ free_rom_2k = $2C00 - $
 ; BASIC Hook Jump Table
 ; 58 Bytes
 hook_table:                     ; ## caller   addr  performing function
-    dw      trap_error          ;  0 ERROR    03DB  Initialize Stack, Display Error, and Stop Program
+    dw      _trap_error         ;  0 ERROR    03DB  Initialize Stack, Display Error, and Stop Program
     dw      force_error         ;  1 ERRCRD   03E0  Print Error Message
     dw      HOOK2+1             ;  2 READY    0402  BASIC command line (immediate mode)
     dw      HOOK3+1             ;  3 EDENT    0428  Save Tokenized Line  
