@@ -127,7 +127,7 @@ STJUMPS:
     dw      SNERR                 ;$ED EVAL
     dw      SNERR                 ;$EE 
     dw      SNERR                 ;$EF SPRITE
-    dw      SNERR                 ;$F0 TILE
+    dw      ST_TILE               ;$F0 TILE
     dw      SNERR                 ;$F1 OFF
     dw      SNERR                 ;$F2 MAP
     dw      SNERR                 ;$F3 

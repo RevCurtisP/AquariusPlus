@@ -1,5 +1,12 @@
+;====================================================================
+; Evaluation and Operator Extensions
+;====================================================================
+
 ;-------------------------------------------------------------------------
 ; EVAL Extension - Hook 9
+; Hexadecimal Integer Literal: $xxxx
+; Hexadecimal String Literal: $"xxxx"
+; Character Literal: 'x'
 ;-------------------------------------------------------------------------
 eval_extension:
 
@@ -141,3 +148,82 @@ eval_ascii:
     pop     hl
     ret
 
+;-------------------------------------------------------------------------
+; RETAOP Extension - Hook 29
+; String Substitution: "xx%xx%xx..." % (formula, formula, ...)
+; Machine State:
+;     A: Possible Operator
+;    HL: Text Pointer
+; TEMP3: Saved Text Pointer
+;-------------------------------------------------------------------------
+oper_extension:
+    cp        '%'                 ; If string sub operator
+    jr        z,oper_stringsub    ;   Go do it
+    jp        HOOK29+1            ; ELse Back to operator evaluator
+
+
+oper_stringsub:
+    call    GETYPE              ; If expression is not a string
+    jp      nz,SNERR            ;   Syntax error
+    rst     CHRGET              ; Skip %
+    SYNCHK  '('                 ; Require (
+    call    sbuff_init          ; Initialize string buffer
+    push    hl                  ; Stack = TxtPtr
+    call    FRETMS
+    call    string_addr_len     ; HL = StrLen, DE = StrAdr, BC = StrLen
+    ld      b,1                 ; B = ReqComma, C = StrLen
+            
+.loop:      
+    inc     c                   ; Bump to Test at beginning of loop
+    dec     c                   ; End of String
+    jr      z,.done
+    ld      a,(de)              ; A = StrChar
+    inc     de                  ; Bump StrPtr
+    cp      '%'                 
+    jr      nz,.copychar        ; If substitution character        
+    ex      af,af'
+    dec     c                   ;   If character follows
+    jr      z,.copychar            
+    ld      a,(de)              ;     A = NextChar
+    cp      '%'                 ;     If substitution character
+    jr      z,.substitute       ;       Go substitute it
+    ex      af,af'              
+.copychar:                      ;
+    call    sbuff_write_byte    ; Copy StrChar to Buffer
+    dec     c
+    jr      .loop
+    
+.done:
+    pop     hl                  ; HL = TxtPtr 
+    SYNCHK  ')'                 ; Require )
+    push    hl                  ; Stack = TxtPtr
+    call    sbuff_create_string ; Make temporary string from buffer
+    jp      PUTNEW              ; and Return it
+
+.substitute:
+    inc     de                  ; Skip second substitution character
+    dec     c
+    dec     b                   ; Update ReqComma
+    pop     hl                  ; HL = TextPtr
+    push    de                  ; Stack = StrPtr
+    push    bc                  ; Stack = ReqComma+Counter, StrPtr
+    jr      z,.nocomma          ; If not first arg
+    SYNCHK  ','                 ;   Require comma
+.nocomma:   
+    call    FRMEVL              ; Evaluate argument
+    push    hl                  ; Stack = TxtPtr, ReqComma+Counter, StrPtr
+    call    GETYPE
+    jr      z,.notnum           ; If numeric
+    call    FOUT                ;   Convert to text
+    call    STRLIT              ;   Create Temp String
+.notnum                         ; 
+    call    FRETMS
+    call    free_addr_len       ; DE = ArgStr Addr, BC = ArgStr Length
+
+    call    sbuff_write_bytes   ; Write it to StrBuff
+    pop     hl                  ; HL = TxtPtr; Stack = ReqComma+Counter, StrPtr
+    pop     bc                  ; B = ReqComma, C = Counter; Stack = StrPtr
+    pop     de                  ; DE = StrPtr
+    push    hl                  ; HL = TextPtr
+    jp      c,OVERR             ; Error if Overflow
+    jr      .loop               ; Do next StrChr

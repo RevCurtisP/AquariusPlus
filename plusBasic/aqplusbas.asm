@@ -627,25 +627,6 @@ move_cursor:
     add     hl, de              ; Putting it all together
     jp      TTYFIS              ; Save cursor position and return
 
-byte_to_hex:
-    ld      b, a
-    rra
-    rra
-    rra
-    rra
-    call    .hex
-    ld      a, b
-.hex:
-    and     $0F
-    cp      10
-    jr      c, .chr
-    add     7
-.chr:
-    add     '0'
-    ld      (hl), a
-    inc     hl
-    ret
-
 _trap_error:
     call    page_restore_plus     ; Map Extended ROM into bank 3
     jp      trap_error
@@ -727,7 +708,7 @@ hook_table:                     ; ## caller   addr  performing function
     dw      HOOK26+1            ; 26 INPUT    0893  Execute INPUT, bypassing Direct Mode check
     dw      execute_function    ; 27 ISFUN    0A5F  Executing a Function
     dw      HOOK28+1            ; 28 DATBK    08F1  Doing a READ from DATA
-    dw      HOOK29+1            ; 29 NOTSTV   099E  Evaluate Operator (S3 BASIC Only)
+    dw      oper_extension      ; 29 NOTSTV   099E  Evaluate Operator (S3 BASIC Only)
 
 ; ------------------------------------------------------------------------------
 ;  Execute Hook Routine

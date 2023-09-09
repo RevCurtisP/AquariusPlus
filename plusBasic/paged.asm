@@ -233,7 +233,8 @@ page_restore_ram2:
 ;       BC: Byte Count
 ;       DE: Destination address 0-16383 
 ;       HL: Source Address
-; Output: Zero: Cleared if succesful, Set if invalid page
+; Output: DE = Updated destination address (coerced)
+;           Zero: Cleared if succesful, Set if invalid page
 ;         Carry: Cleared if succesful, Set if overflow
 ; Clobbers: A, BC, DE, HL
 ;-----------------------------------------------------------------------------

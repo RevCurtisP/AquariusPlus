@@ -195,6 +195,7 @@ RESSRC:     equ $05A8
 NEWSTT:     equ $062C
 CHRGTR      equ $066B   ; CALLable CHRGET
 CHRGT2      equ $066C   ; Get Current Character and Set Flags
+CHRGT3      equ $066D   ; Test character in A and set flags
 GONE4       equ $063C   ; Execute next line
 FRCINT:     equ $0682   ; Convert fp number to 16 bit signed integer in DE
 RETURN      equ $06F8   ; Execute RETURN statement
@@ -206,6 +207,7 @@ GOTO        equ $06DC   ; Execute GOTO Statement
 GOTOLN      equ $06DF   ; GOTO line# in DE
 USERR       equ $06F3   ; Undefined line error
 LETDO       equ $0736   ; Execute LET, bypassing PTRGET and SYNCHK '='
+INBUFC      equ $0768   ; Copy temporary string to string variable
 NTOERR      equ $0782   ; Execute ON ... GOTO
 FRMNUM:     equ $0972   ; Evaluate numeric expression
 CHKNUM:     equ $0975   ; Error if evaluated expression not a number
@@ -234,7 +236,9 @@ STRLTI      equ $0E60   ; Do STRLIT, without decrementing HL
 PUTNEW      equ $0E7E   ; Set Pointer to Temporary String
 STROUT:     equ $0E9D   ; Print null-terminated string in HL
 FRESTR      equ $0FC6   ; Free tempory string, return string descriptor address in HL
-FRETM2      equ $0FCC   ; Free up tem in FACLO
+FREFAC      equ $0FC9   ; Free tempory string with descriptor in FAC
+FRETM2      equ $0FCC   ; Free up temporary in FACLO
+FRETMS      equ $0FE4   ; Free up temporary descriptor
 LEN1:       equ $0FF7   ; Get string length (in: (FPREG) = string block, out: HL = string block, A = length)
 CHR         equ $1013   ; CHR$ Function
 FINBCK      equ $101D   ; Return a String
@@ -243,9 +247,11 @@ FIN         equ $15E5   ; Parse floating point number
 FIN0        equ $15EE   ; Parse floating point number wihout leading + or -
 LINPRT      equ $1675   ; Print Two Byte Number in HL as Decimal - Alters all Registers
 INT2STR:    equ $1679   ; Convert 16 bit integer in HL to text at FPSTR (starts with ' ')
+FOUT        equ $1680   ; Convert float in FAC to text
 OUTDO       equ $198A   ; Output a Character
 CRDO:       equ $19EA   ; Print CR+LF
 BUFCIN      equ $1A02   ; Return A as string from function 
+NULRT       equ $1A0B   ; Return null string
 CHARCG      equ $1A18   ; Get keypress, check for Ctrl-C
 WRMCON:     equ $1A40
 BITTAB      equ $1ACA   ; Semigraphic Pixel Index to Bit Mask Table
@@ -268,6 +274,7 @@ XINIT:      equ $E010   ; Cartridge entry point
 ; Standard BASIC Tokens
 GOTOTK      equ $88     ; GOTO
 GOSUTK      equ $8C     ; GOSUB
+DEFTK       equ $93     ; DEF
 PLUSTK      equ $A8     ; +
 RETTK       equ $8D     ; RETURN
 TOTK        equ $A1     ; TO
