@@ -1295,7 +1295,7 @@ GONE5:  add     hl,bc             ;[M80] ADD ON OFFSET
 ;;Skip Statement Token and Execute
 CHRGTR: inc     hl                ;[M80] DUPLICATION OF CHRGET RST FOR SPEED
 CHRGT2: ld      a,(hl)            ;Alternate CHRGOT
-        cp      ':'               ;[M80] SEE CHRGET RST FOR EXPLANATION
+CHRGT3: cp      ':'               ;[M80] SEE CHRGET RST FOR EXPLANATION
         ret     nc                ;
 ;[M80] CHRCON IS THE CONTINUATION OF THE CHRGET RST
 CHRCON: cp      ' '               ;[M80] MUST SKIP SPACES
@@ -1448,46 +1448,47 @@ REMER:  ld      a,(hl)            ;[M80] GET A CHAR
         cp      '"'               ;[M80] IS IT A QUOTE?
         jr      z,EXCHQT          ;[M80] IF SO TIME TO TRADE
         jr      REMER             ;
-LET:    call    PTRGET            ;[M80] GET POINTER TO VARIABLE INTO [D,E]
-        rst     SYNCHK            ;[M80]
-        byte    EQUATK            ;[M80] CHECK FOR "="
-LETDO:  push    de                ;[M80] SAVE THE VARIABLE POINTER
-        ld      a,(VALTYP)        ;{M80} REMEMBER THE VARIABLE TYPE
-        push    af                ;
-        call    FRMEVL            ;[M80] GET THE VALUE OF THE FORMULA
-        pop     af                ;[M80] GET THE VALTYP OF THE VARIABLE INTO [A] INTO FAC
-        ex      (sp),hl           ;[M80] [H,L]=POINTER TO VARIABLE, TEXT POINTER ON TOP OF STACK
-        ld      (SAVTXT),hl       ;[???] PLACE TO SAVE THE VALUE
+LET:    call    PTRGET            ; DE = VarPtr
+        rst     SYNCHK            ; Require '='
+        byte    EQUATK            ;
+LETDO:  push    de                ; Stack = VarPtr
+        ld      a,(VALTYP)        ; A = VarTyp
+        push    af                ; Stack = VarTyp, VarPtr
+        call    FRMEVL            ; Evaluate Formula
+        pop     af                ; A = VarTyp
+        ex      (sp),hl           ; HL = VarPtr, Stack = TxtPtr
+        ld      (SAVTXT),hl       ; SAVTXT = VarPtr
         rra                       ;
-        call    CHKVAL            ;[M65] MAKE SURE "VALTYP" MATCHES CARRY AND SET ZERO FLAG FOR NUMERIC
-        jp      z,COPNUM          ;[M80] NUMERIC, SO FORCE IT AND COPY
-INPCOM: push    hl                ;
-        ld      hl,(FACLO)        ;[M80] GET POINTER TO THE DESCRIPTOR OF THE RESULT
-        push    hl                ;[M80] SAVE THE POINTER AT THE DESCRIPTOR
+        call    CHKVAL            ; Error if VarTyp <> ValTyp, Return 0 if Numeric
+        jp      z,COPNUM          ; If Numeric, Go Copy it
+INPCOM: push    hl                ; Stack = VarPtr, TxtPtr
+        ld      hl,(FACLO)        ; HL = StrDsc
+        push    hl                ; Stack = StrDsc, VarPtr, TxtPtr
         inc     hl                ;
         inc     hl                ;
-        ld      e,(hl)            ;
+        ld      e,(hl)            ; 
         inc     hl                ;
-        ld      d,(hl)            ;
-        ld      hl,(TXTTAB)       ;[M80] IF THE DATA IS IN BUF, COPY
-        rst     COMPAR            ;[M80] SINCE BUF CHANGES ALL THE TIME
-        jr      nc,INBUFC         ;[M80] GO COPY, IF DATA REALLY IS IN BUF
-        ld      hl,(STREND)       ;[M80] SEE IF IT POINTS INTO STRING SPACE
-        rst     COMPAR            ;[M80] IF NOT DON'T COPY
-        pop     de                ;[M80] GET BACK THE POINTER AT THE DESCRIPTOR
+        ld      d,(hl)            ; DE = TxtAdr
+        ld      hl,(TXTTAB)       ; HL = Start of BASIC Program
+        rst     COMPAR            ; If TxtAdr < BASIC Start
+        jr      nc,INBUFC         ;   Copy String to Buffer
+        ld      hl,(STREND)       ; HL = End of Arrays
+        rst     COMPAR            ; 
+        pop     de                ; DE = StrDsc; Stack = VarPtr, TxtPtr
         jr      nc,DNTCPY         ;[M80] DON'T COPY LITERALS
         ld      hl,DSCTMP         ;[M80] NOW, SEE IF ITS A VARIABLE BY SEEING IF THE DESCRIPTOR
         rst     COMPAR            ;[M80] IS IN THE TEMPORARY STORAGE AREA (BELOW DSCTMP)
         jr      nc,DNTCPY         ;[M80] DON'T COPY IF ITS NOT A VARIABLE
         byte    $3E               ;[M80] SKIP THE NEXT BYTE WITH A "MVI A,"
-INBUFC: pop     de                ;[M80] GET THE POINTER TO THE DESCRIPTOR IN [D,E]
-        call    FRETMS            ;[M80] FREE UP A TEMORARY POINTING INTO BUF
-        ex      de,hl             ;[M80] STRCPY COPIES [H,L]
-        call    STRCPY            ;[M80] COPY VARIABLES IN STRING SPACE OR STRINGS WITH DATA IN BUF
-DNTCPY: call    FRETMS            ;[M80] FREE UP TEMPORARY WITHOUT FREEING UP ANY STRING SPACE
-        pop     hl                ;[M80]
-        call    MOVE              ;[M80] COPY A DESCRIPTOR OR A VALUE
-        pop     hl                ;[M80] GET THE TEXT POINTER BACK
+        ;; JP here with Stack = StrDsc, VarPtr, TxtPtr
+INBUFC: pop     de                ; DE = StrDsc; Stack = VarPtr, TxtPtr
+        call    FRETMS            ; Free Temporary, but no StringSpace
+        ex      de,hl             ; HL = StrDsc; Stack = TxtPtr
+        call    STRCPY            ; Copy to Temp String. DE = TmpDsc
+DNTCPY: call    FRETMS            ; Free Temporary, but no StringSpace
+        pop     hl                ; Stack = VarPtr
+        call    MOVE              ; Copy TmpDsc to VarPtr
+        pop     hl                ; HL = TxtPtr
         ret                       ;
 COPNUM: push    hl                
         call    MOVMF             ;COPY A DESCRIPTOR OR A VALUE
@@ -2589,22 +2590,22 @@ STR:    call    CHKNUM            ;[M80] IS A NUMERIC
         call    FREFAC            ;[M80] FREE UP THE TEMP
         ld      bc,FINBCK         ;
         push    bc                ;[M80] SET UP ANSWER IN NEW TEMP
-;;COPY A STRING
-STRCPY: ld      a,(hl)            ;[M80] GET LENGTH
-        inc     hl                ;[M80] MOVE UP TO THE POINTER
-        inc     hl                ;[M80] GET POINTER TO POINTER OF ARG
-        push    hl                ;[M80] GET THE SPACE
-        call    GETSPA            ;[M80] FIND OUT WHERE STRING TO COPY
-        pop     hl                ;
-        ld      c,(hl)            ;
+;; Copy String from StrDsc in HL, Return TmpDsc in DE
+STRCPY: ld      a,(hl)            ; A = SrcLen
+        inc     hl                ; 
+        inc     hl                ; HL = *SrcAdr
+        push    hl                ; Stack = *SrcAdr
+        call    GETSPA            ; Make Space for Temporary
+        pop     hl                ; HL = *SrcAdr
+        ld      c,(hl)            ; BC = SrcAdr
         inc     hl                ;
-        ld      b,(hl)            ;
-        call    STRAD2            ;[M80] SETUP DSCTMP
-        push    hl                ;[M80] SAVE POINTER TO DSCTMP
-        ld      l,a               ;[M80] GET CHARACTER COUNT INTO [L]
-        call    MOVSTR            ;[M80] MOVE THE CHARS IN
-        pop     de                ;[M80] RESTORE POINTER TO DSCTMP
-        ret                       ;[M80] RETURN
+        ld      b,(hl)            ; 
+        call    STRAD2            ; HL = TmpDsc, DE = TmpAdr
+        push    hl                ; Stack = DSCTMP
+        ld      l,a               ; L = StrLen
+        call    MOVSTR            ; Copy from SrcAdr to TnoAdr
+        pop     de                ; DE = TmpDesc
+        ret                       ;
 ;[M65] "STRINI" GET STRING SPACE FOR THE CREATION OF A STRING AND
 ;[M65] CREATES A DESCRIPTOR FOR IT IN "DSCTMP".
 ;;Returns String Text Address in [DE], Descriptor Address in [HL]
