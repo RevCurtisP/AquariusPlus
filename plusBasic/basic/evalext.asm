@@ -169,7 +169,7 @@ oper_stringsub:
     SYNCHK  '('                 ; Require (
     call    sbuff_init          ; Initialize string buffer
     push    hl                  ; Stack = TxtPtr
-    call    FRETMS
+    call    FRESTR
     call    string_addr_len     ; HL = StrLen, DE = StrAdr, BC = StrLen
     ld      b,1                 ; B = ReqComma, C = StrLen
             
@@ -198,6 +198,7 @@ oper_stringsub:
     SYNCHK  ')'                 ; Require )
     push    hl                  ; Stack = TxtPtr
     call    sbuff_create_string ; Make temporary string from buffer
+    call    FRESTR
     jp      PUTNEW              ; and Return it
 
 .substitute:
@@ -219,7 +220,17 @@ oper_stringsub:
 .notnum                         ; 
     call    FRETMS
     call    free_addr_len       ; DE = ArgStr Addr, BC = ArgStr Length
-
+.spaces
+    ld      a,b
+    or      c
+    jr      z,.notspace
+    ld      a,(de)
+    cp      ' '
+    jr      nz,.notspace
+    inc     de
+    dec     bc
+    jr      .spaces
+.notspace
     call    sbuff_write_bytes   ; Write it to StrBuff
     pop     hl                  ; HL = TxtPtr; Stack = ReqComma+Counter, StrPtr
     pop     bc                  ; B = ReqComma, C = Counter; Stack = StrPtr

@@ -210,7 +210,7 @@ _coldboot:
 .print_basic
     call    print_string_immd
 .plus_text
-    db "plusBASIC v0.11c", 0
+    db "plusBASIC v0.11d", 0
 .plus_len   equ   $ - .plus_text
 
     call    CRDO
@@ -569,6 +569,7 @@ do_cls_default:
 
 do_cls:
     call    clear_screen
+    ld      a,' '
     ld      (CURCHR),a            ; SPACE under cursor
     ld      de,$3000+41           ; Point Address for (0,0) 
     ld      (CURRAM),de       
