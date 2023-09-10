@@ -1,0 +1,57 @@
+   1:				;; Read byte from tape
+   2:				
+   3:				;zmac --zmac -o readbits.cim -o readbits.lst readbits.asm
+   4:				
+   5:     -	BF00          	        org     $BF00             ; CALL 48896
+   6:    0+11	BF00  E5      	        push    hl
+   7:				
+   8:   11+7	BF01  3E06    	_cls:   ld      a,$06
+   9:   18+10	BF03  210030  	        ld      hl,$3000
+  10:   28+7	BF06  0E19    	        ld      c,25
+  11:   35+7	BF08  0628    	.line:  ld      b,40
+  12:   42+10	BF0A  3620    	.char:  ld      (hl),' '
+  13:   52+8	BF0C  CBD4    	        set     2,h
+  14:   60+7	BF0E  77      	        ld      (hl),a
+  15:   67+8	BF0F  CB94    	        res     2,h
+  16:   75+6	BF11  23      	        inc     hl
+  17:   81+8+5	BF12  10F6    	        djnz    .char
+  18:   89+4	BF14  0D      	        dec     c
+  19:   93+7+5	BF15  20F1    	        jr      nz,.line
+  20:				
+  21:  100+10	BF17  110080  	        ld      de,$8000
+  22:  110+10	BF1A  212830  	.next:  ld      hl,$3000+40       ; Starting position for trace
+  23:				        
+  24:     -	BF1D          	.read:  
+  25:  120+17	BF1D  CD621B  	        call    $1B62             ; RDBIT
+  26:  137+7	BF20  CE30    	        adc     '0'
+  27:  144+7	BF22  12      	        ld      (de),a
+  28:  151+6	BF23  13      	        inc     de
+  29:  157+7	BF24  77      	        ld      (hl),a
+  30:  164+6	BF25  23      	        inc     hl
+  31:  170+4	BF26  7C      	        ld      a,h
+  32:  174+7	BF27  FE34    	        cp      $34
+  33:  181+7+5	BF29  38F2    	        jr      c,.read
+  34:  188+12	BF2B  18ED    	        jr      .next
+  35:				
+  36:  200+10	BF2D  E1      	        pop     hl
+  37:  210+10	BF2E  C9      	        ret
+  38:				
+
+
+
+Statistics:
+
+     3	passes
+     0	jr promotions
+     5	symbols
+    47	bytes
+
+
+
+Symbol Table:
+
+.char$1         BF0A      48906
+.line$1         BF08      48904
+.next$1         BF1A      48922
+.read$1         BF1D      48925
+_cls$readbits.asm BF01      48897
