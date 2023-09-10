@@ -145,7 +145,15 @@ tokens = {
     0xE8: "ARGS",
     0xE9: "ERR",
     0xED: "EVAL",
-    0xF4: "RESUME"
+    0xEF: "SPRITE",
+    0xF0: "TILE",
+    0xF1: "OFF",
+    0xF2: "MAP",
+    0xF4: "RESUME",
+    0xF5: "COL",
+    0xF6: "SCREEN",
+    0xF7: "SET",
+    0xF8: "ATTR"
 }
 
 with open(args.input, "rb") as f:
