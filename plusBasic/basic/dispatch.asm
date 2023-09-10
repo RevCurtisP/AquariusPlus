@@ -30,7 +30,7 @@ STJUMPS:
     dw      $0780                 ;$90 ONGOTO            
     dw      $07B5                 ;$91 LPRINT            
     dw      ST_COPY               ;$92 COPY              
-    dw      $0B3B                 ;$93 DEF               
+    dw      ST_DEF                ;$93 DEF               
     dw      ST_POKE               ;$94 POKE              
     dw      $07BC                 ;$95 PRINT             
     dw      $0C4B                 ;$96 CONT              
@@ -127,7 +127,7 @@ STJUMPS:
     dw      SNERR                 ;$ED EVAL
     dw      SNERR                 ;$EE 
     dw      SNERR                 ;$EF SPRITE
-    dw      ST_TILE               ;$F0 TILE
+    dw      SNERR                 ;$F0 TILE
     dw      SNERR                 ;$F1 OFF
     dw      SNERR                 ;$F2 MAP
     dw      SNERR                 ;$F3 
@@ -135,7 +135,7 @@ STJUMPS:
     dw      ST_COLOR              ;$F5 COL
     dw      ST_SCREEN             ;$F6 SCREEN 
     dw      ST_SET                ;$F7 SET
-    dw      SNERR                 ;$F8
+    dw      SNERR                 ;$F8 ATTR
     dw      SNERR                 ;$F9
     dw      SNERR                 ;$FA
     dw      SNERR                 ;$FB
@@ -211,15 +211,15 @@ FNJUMPS:
     dw      FN_EVAL               ;$ED EVAL
     dw      SNERR                 ;$EE 
     dw      SNERR                 ;$EF SPRITE
-    dw      SNERR                 ;$F0 TILE
+    dw      FN_TILE               ;$F0 TILE
     dw      SNERR                 ;$F1 OFF
     dw      SNERR                 ;$F2 MAP
     dw      SNERR                 ;$F3 
     dw      SNERR                 ;$F4 RESUME
-    dw      SNERR                 ;$F5 COL
+    dw      FN_COLOR              ;$F5 COL
     dw      SNERR                 ;$F6 SCREEN 
     dw      SNERR                 ;$F7 SET
-    dw      SNERR                 ;$F8
+    dw      SNERR                 ;$F8 ATTR
     dw      SNERR                 ;$F9
     dw      SNERR                 ;$FA
     dw      SNERR                 ;$FB

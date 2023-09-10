@@ -263,5 +263,12 @@ LSERR:
 ST_SET:
     cp      TILETK
     jp      z,SET_TILE
+    cp      COLTK
+    jr      nz,.notcol
+    rst     CHRGET                ; Skip COL token            
+    call    SYNCHR                ; Require OR after COL
+    byte    ORTK                  
+    jp      st_set_palette
+.notcol
     jp      SNERR
 

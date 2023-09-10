@@ -55,12 +55,13 @@ TBLCMDS:
     db $80 + 'C',"OL"             ; $F5             
     db $80 + 'S',"CREEN"          ; $F6             
     db $80 + 'S',"ET"             ; $F7             
-
+    db $80 + 'A',"TTR"            ; $F8             
     db $80             ; End of table marker
     
 ;-----------------------------------------------------------------------------
 ; plusBASIC tokens
 ;-----------------------------------------------------------------------------
+GETTK     equ     $CD
 TIMETK    equ     $D3    
 CDTK      equ     $E0
 KEYTK     equ     $E7
@@ -68,6 +69,8 @@ ARGSTK    equ     $E8
 ERRTK     equ     $E9
 LINETK    equ     $D0
 TILETK    equ     $F0
+COLTK     equ     $F5
+ATTRTK    equ     $F8
 
 ;;; Extended Error Message Table can go here
 
@@ -154,7 +157,7 @@ token_to_keyword:
 ; $F5 COL         COL [OR]
 ; $F6 SCREEN
 ; $F7 SET
-; $F8
+; $F8 ATTR
 ; $F9
 ; $FA
 ; $FB

@@ -9,10 +9,10 @@
 
 ST_CLS:
     jp      z,do_cls_default      ; no parameters, use default
-    call    get_color             ; get foreground color
+    call    get_byte16             ; get foreground color
     push    af                    ; save it
     SYNCHK  ','                   ; require commae
-    call    get_color             ; get background color
+    call    get_byte16             ; get background color
     pop     af                    ; get back foreground color
     or      a                     ; clear carry
     rla       
@@ -22,10 +22,16 @@ ST_CLS:
     or      e                     ; combine background color
     jp      do_cls                ; Clear screen and homecursor
 
-
-get_color:
-    call    GETBYT        ; get foreground color in e
-    cp      16            ; if > 15
-    jp      nc,FCERR      ;   FC Error
-    ret
-
+;-----------------------------------------------------------------------------
+; DEF statement stub
+;-----------------------------------------------------------------------------
+ST_DEF:
+    cp      ATTRTK
+    jp      z,ST_DEFATTR            ; DEF ATTRLIST
+    cp      COLTK
+    jp      z,ST_DEFCOLOR           ; DEF COLORLIST
+    cp      INTTK         
+    jp      z,ST_DEFINT             ; DEF INTLIST
+    cp      TILETK
+    jp      z,ST_DEFTILE          ; DEF TILELIST
+    jp      SNERR
