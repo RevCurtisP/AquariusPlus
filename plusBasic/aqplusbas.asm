@@ -34,7 +34,8 @@
 ; To assemble:
 ;   zmac --zmac  -I basic -I gfx -o aqplusbas.cim -o aqplusbas.lst aqplusbas.asm
 
-    include "regs.inc"
+    include "sbasic.inc"
+    include "plus.inc"
 
 
     org     $2000

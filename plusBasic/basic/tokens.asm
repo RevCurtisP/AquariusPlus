@@ -56,6 +56,7 @@ TBLCMDS:
     db $80 + 'S',"CREEN"          ; $F6             
     db $80 + 'S',"ET"             ; $F7             
     db $80 + 'A',"TTR"            ; $F8             
+    db $80 + ' '                  ; $F9             
     db $80             ; End of table marker
     
 ;-----------------------------------------------------------------------------
@@ -160,7 +161,7 @@ token_to_keyword:
 ; $F6 SCREEN
 ; $F7 SET
 ; $F8 ATTR
-; $F9
+; $F9 MOUSE
 ; $FA
 ; $FB
 ; $FC
