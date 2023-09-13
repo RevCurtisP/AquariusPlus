@@ -65,7 +65,7 @@ ST_SETCOLOR:
     cp      4                     ; If greater than 3
     jp      nc,FCERR              ;   Error
     ld      ix,_shift_palette_num
-    call    do_gfx_routine        ; 
+    call    exec_gfx_routine        ; 
     ld      b,a                   ; B = Shifted palette#
     push    bc                    ; Stack = PltOfs+Entry
     call    FRMEVL                ; Get DataAddr or String
@@ -79,7 +79,7 @@ ST_SETCOLOR:
     pop     bc                    ; Get back palette select
     scf
     ld      ix,_set_palette_entry
-    call    do_gfx_routine        ; Set the entry (increments C)
+    call    exec_gfx_routine        ; Set the entry (increments C)
     push    bc                    ; Save palette select again
     call    CHRGT2                ; Reget current character
     jr      z,.done               ; Finish up if terminator
@@ -98,7 +98,7 @@ ST_SETCOLOR:
     ld      l,h                   ; L = PltOfs
     scf                           ; Palette already shifted
     ld      ix,_set_palette
-    call    do_gfx_routine        ; Set the entry (increments C)
+    call    exec_gfx_routine        ; Set the entry (increments C)
     jp      c,OVERR               ; Error if Overflow
     pop     hl                    ; HL = TxtPtr
     ret
@@ -125,7 +125,7 @@ ST_SCREEN:
     cp      24                    ; If greater than 23
     jp      nc,FCERR              ;   Illegal quantity error
     ld      ix,_set_screen_mode   ; 
-    call    do_gfx_routine        ; Set Screen Mode
+    call    exec_gfx_routine        ; Set Screen Mode
     pop     hl                    ; HL - TxtPtr; Stack = RtnAdr
     ret
 
@@ -156,7 +156,7 @@ ST_SETTILE:
     pop     de                    ; DE = Pixel#; Stack = Tile#, RtnAdr
     ex      (sp),hl               ; HL = Tile#, Stack = TxtPtr, RtnAdr
     ld      ix,_set_tile_pixel    
-    call    do_gfx_routine        ; Set the entry (increments C)
+    call    exec_gfx_routine        ; Set the entry (increments C)
     inc     e                     ; Increment Pixel#
     ld      a,16
     cp      e
@@ -178,7 +178,7 @@ ST_SETTILE:
     pop     hl                    ; HL = Tile#; Stack = TxtPtr, RtnAdr
 .set_it:
     ld      ix,_set_tile      
-    call    do_gfx_routine        ; Set Tile Data
+    call    exec_gfx_routine        ; Set Tile Data
     jp      c,OVERR               ; Error if Overflow
     pop     hl                    ; HL = TxtPtr
     ret
@@ -289,7 +289,7 @@ FN_GETTILE:
     ld      bc,32                 ; BC = StrLen
     pop     hl                    ; HL = Tile#; Stack = DummyAdr, TxtPtr, RtnAdr
     ld      ix,_get_tile
-    call    do_gfx_routine        ; 
+    call    exec_gfx_routine        ; 
     ld      a,1
     ld      (VALTYP),a            ; Set Type to String
     call    FRESTR                ; Free Temporary
@@ -318,7 +318,7 @@ FN_GETCOL:
     pop     hl                    ; HL = Palette#; Stack = DummyAdr, TxtPtr
     ld      a,l
     ld      ix,_get_palette
-    call    do_gfx_routine        ; 
+    call    exec_gfx_routine        ; 
     ld      a,1
     ld      (VALTYP),a            ; Set Type to String
     call    FRESTR                ; Free Temporary
@@ -437,7 +437,7 @@ ST_SETSPRITE:
     pop     ix                    ; IX = JmpOfs; Stack = SprAdr, RtnAdr
 .do_gfx:
     ex      (sp),hl               ; HL = SprAdr; Stack = TxtPtr, RtnAdr
-    call    do_gfx_routine        ; HL = SprAdr; Stack = TxtPtr, RtnAdr
+    call    exec_gfx_routine        ; HL = SprAdr; Stack = TxtPtr, RtnAdr
     jp      nz,FCERR
     ex      (sp),hl               ; HL = TxtPtr; Stack = SprAdr, RtnAdr
     call    CHRGT2                ; If not Terminator
@@ -493,7 +493,7 @@ FN_GETSPRITE:
     call    string_addr_len       ; BC = BufLen, DE = BufAdr
     ex      (sp),hl               ; HL = SprAdr; Stack = BufDsc, DummyAdr, TxtPtr, RtnAdr
     ld      ix,_sprite_get_attrs
-    call    do_gfx_routine         
+    call    exec_gfx_routine         
     jp      nz,OVERR              ; Sprite and Buffer Size Mismtch
     ld      a,1
     ld      (VALTYP),a            ; Set Type to String

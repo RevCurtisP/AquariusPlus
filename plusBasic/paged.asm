@@ -81,6 +81,41 @@ _coerce_hl:
     ld      h,a
     ret
 
+
+;-----------------------------------------------------------------------------
+; Map Page into Bank
+; Input: A = Page
+;        C = Bank
+; Clobbers: A,BC,HL
+;-----------------------------------------------------------------------------
+page_map:
+    call    _map_setup
+    in      a,(c)                 ; Get current bank
+    ld      (hl),a                ; Save in SYSVAR
+    out     (c),b                 ; Map Page into Bank
+    ret
+
+;-----------------------------------------------------------------------------
+; Map Original Page into Bank
+; Input: C = Bank
+; Clobbers: A,BC,HL
+;-----------------------------------------------------------------------------
+page_restore:
+    call    _map_setup
+    ld      a,(hl)                ; A = Original Page
+    out     (c),a                 ; Map into Bank
+    ret
+    
+_map_setup:
+    ld      b,c                   ; BC = I/O Port / System Variable offset
+    ld      hl,BANK0PAGE          ; 
+    add     hl,bc                 ; HL = BANKxPAGE System Variable
+    ld      b,a                   ; B = Page
+    ld      a,IO_BANK0
+    add     a,c
+    ld      c,a                   ; C = I/O Port for bank
+    ret
+
 ;-----------------------------------------------------------------------------
 ; Set up temporary Stack and Swap Pages into Banks 2 and 3
 ; Input: A: Page to Swap into Bank 3

@@ -1,12 +1,50 @@
 ;-----------------------------------------------------------------------------
 ; regs.inc
 ;
-; This file contains locations of hardware registers and ROM/RAM locations.
-;
-; Locations to the original Aquarius ROM are taken from the dissassembly by
-; Curtis F Kaylor, which can be found at:
-; https://github.com/RevCurtisP/Aquarius/blob/main/disassembly/aquarius-rom.lst
-;
+; Aquarius+ I/O Registers, Memory Banks, and System Variables
+;-----------------------------------------------------------------------------
+
+;-----------------------------------------------------------------------------
+; Bank and Page Definitions
+;-----------------------------------------------------------------------------
+BANK0_BASE:     equ $0000
+BANK1_BASE:     equ $4000
+BANK2_BASE:     equ $8000
+BANK3_BASE:     equ $C000
+
+BANK_READONLY:  equ $80     ; Bank readonly
+BANK_OVERLAY:   equ $40     ; RAM overlay
+
+; RAM Page Usage
+ROM_SYS_PG      equ 0       ; Main System ROM, mapped into Bank 0 with overlay from $3000-$3FFF
+ROM_EXT_PG      equ 1       ; plusBASIC extended ROM, mapped into Bank 3 
+ROM_AUX_PG      equ 2       ; plusBASIC auxillary ROM, mapped into Bank 3 as needed
+
+VIDEO_RAM       equ 20
+CHAR_RAM        equ 21
+    
+RAM_BAS_1       equ 33      ; RAM for BASIC mapped into Bank 1
+RAM_BAS_2       equ 34      ; RAM for BASIC mapped into Bank 2
+RAM_BAS_3       equ 35      ; RAM for BASIC mapped into Bank 3, switched in as needed
+                            ; If a cartrige is present, it is copied here unencrypted, then executed
+BAS_BUFFR       equ 36      ; plusBASIC extended system variables and buffers, mapped in bank 3 as needed
+VID_BUFFR       equ 37      ; Video RAM Shadow Buffer
+PT3_BUFFR       equ 38      ; PT3 Player Buffer
+;Reserved       equ 39      ; Reserved for future use    
+    
+USER_RAM        equ 40      ; Start of User RAM
+
+ROM_EXT_BANK    equ 3       ; Bank Extended ROM is mapped into
+ROM_AUX_BANK    equ 3       ; Bank Auxillary ROM is mapped into
+
+;-----------------------------------------------------------------------------
+; Video RAM Offsets
+; Page 20
+;-----------------------------------------------------------------------------
+BMP_COLORRAM    equ $2000
+TILE_DATA       equ $0000
+TILE_MAP        equ $3000
+
 
 ;-----------------------------------------------------------------------------
 ; plusBASIC System variables
@@ -100,43 +138,6 @@ VCTRL_MODE_BM:   equ (2<<1)
 VCTRL_SPR_EN:    equ (1<<3)
 VCTRL_TEXT_PRIO: equ (1<<4)
 
-;-----------------------------------------------------------------------------
-; Bank and Page Definitions
-;-----------------------------------------------------------------------------
-BANK0_BASE: equ $0000
-BANK1_BASE: equ $4000
-BANK2_BASE: equ $8000
-BANK3_BASE: equ $C000
-
-BANK_READONLY:  equ $80     ; Bank readonly
-BANK_OVERLAY:   equ $40     ; RAM overlay
-
-; RAM Page Usage
-ROM_SYS_PG  equ 0           ; Main System ROM, mapped into Bank 0 with overlay from $3000-$3FFF
-ROM_EXT_PG  equ 1           ; plusBASIC extended ROM, mapped into Bank 3 
-ROM_AUX_PG  equ 1           ; plusBASIC auxillary ROM, mapped into Bank 3 as needed
-
-VIDEO_RAM   equ 20
-CHAR_RAM    equ 21
-
-RAM_BAS_1   equ 33          ; RAM for BASIC mapped into Bank 1
-RAM_BAS_2   equ 34          ; RAM for BASIC mapped into Bank 2
-RAM_BAS_3   equ 35          ; RAM for BASIC mapped into Bank 3, switched in as needed
-                            ; If a cartrige is present, it is copied here unencrypted, then executed
-BAS_BUFFR   equ 36          ; plusBASIC extended system variables and buffers, mapped in bank 3 as needed
-                            ; See regs.inc for details
-VID_BUFFR   equ 37          ; Video RAM Shadow Buffer
-PT3_BUFFR   equ 38          ; PT3 Player Buffer
-
-USER_RAM    equ 40
-
-;-----------------------------------------------------------------------------
-; Video RAM Offsets
-; Page 20
-;-----------------------------------------------------------------------------
-BMP_COLORRAM    equ $2000
-TILE_DATA       equ $0000
-TILE_MAP        equ $3000
 
 ;-----------------------------------------------------------------------------
 ; BASIC Extended System Constants, Variables and Buffers
@@ -181,6 +182,10 @@ ESPCMD_STAT:       equ $1D     ; Get file status
 ESPCMD_GETCWD:     equ $1E     ; Get current working directory
 ESPCMD_CLOSEALL:   equ $1F     ; Close any open file/directory descriptor
 
+
+;-----------------------------------------------------------------------------
+; ESP32 error codes
+;-----------------------------------------------------------------------------
 ERR_NOT_FOUND:     equ -1   ; File / directory not found
 ERR_TOO_MANY_OPEN: equ -2   ; Too many open files / directories
 ERR_PARAM:         equ -3   ; Invalid parameter
@@ -190,6 +195,9 @@ ERR_OTHER:         equ -6   ; Other error
 ERR_NO_DISK:       equ -7   ; No disk
 ERR_NOT_EMPTY:     equ -8   ; Not empty
 
+;-----------------------------------------------------------------------------
+; ESP32 file open modes
+;-----------------------------------------------------------------------------
 FO_RDONLY:      equ 0x00    ; Open for reading only
 FO_WRONLY:      equ 0x01    ; Open for writing only
 FO_RDWR:        equ 0x02    ; Open for reading and writing

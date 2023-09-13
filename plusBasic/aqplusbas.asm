@@ -37,7 +37,7 @@
     include "sbasic.inc"
     include "plus.inc"
 
-
+;Jump Table: S3BASIC interface
     org     $2000
     jp      _reset          ; $2000 Called from main ROM at reset vector
     jp      _coldboot       ; $2003 Called from main ROM for cold boot
@@ -49,10 +49,6 @@
     jp      _inlin_hook     ; $2015 Jump from INLIN for command history recall
     jp      _inlin_done     ; $2018 Jumped from FININL to save command to history
   
-ifdef _____   ; Waiting for modules to stablize
-    org     $2100
-    include "kernel.asm"    ; Kernal jump table
-endif
 
 ;-----------------------------------------------------------------------------
 ; Reset vector
@@ -117,35 +113,6 @@ _reset:
     dw $CCC, $3BB, $C2C, $419, $FF7, $2D4, $B22, $333
 
 ;-----------------------------------------------------------------------------
-; Character RAM initialization
-;-----------------------------------------------------------------------------
-init_charram:
-    ; Save current bank 1/2
-    in      a, (IO_BANK1)
-    push    a
-    in      a, (IO_BANK2)
-    push    a
-
-    ; Temporarily set up mappings for character RAM and character ROM
-    ld      a, 21           ; Page 21: character RAM
-    out     (IO_BANK1), a
-    ld      a, 0            ; Page 0: first page of flash ROM
-    out     (IO_BANK2), a
-
-    ; Copy character ROM to character RAM
-    ld      de, BANK1_BASE
-    ld      hl, BANK2_BASE + $3000
-    ld      bc, 2048
-    ldir
-
-    ; Restore bank 1/2
-    pop     a
-    out     (IO_BANK2), a
-    pop     a
-    out     (IO_BANK1), a
-    ret
-
-;-----------------------------------------------------------------------------
 ; Cold boot entry point
 ;-----------------------------------------------------------------------------
 _coldboot:
@@ -180,8 +147,9 @@ _coldboot:
     djnz    .sysvar_loop
 
     call    clear_esp_fdesc
-    
+
     ; Show our copyright message
+
     call    PRNTIT              ; Print copyright string in ROM
     call    print_string_immd
     db $0D, $0A
@@ -220,6 +188,48 @@ _coldboot:
     call    CRDO
 
     jp      INITFF              ; Continue in ROM
+
+    dc $2100-$,$76
+
+
+ifdef _____   ; Waiting for modules to stablize
+    org     $2100
+    include "kernel.asm"    ; Kernal jump table
+endif
+
+    dc $2100-$,$76
+    
+    
+;-----------------------------------------------------------------------------
+; Character RAM initialization
+;-----------------------------------------------------------------------------
+init_charram:
+    ; Save current bank 1/2
+    in      a, (IO_BANK1)
+    push    a
+    in      a, (IO_BANK2)
+    push    a
+
+    ; Temporarily set up mappings for character RAM and character ROM
+    ld      a, 21           ; Page 21: character RAM
+    out     (IO_BANK1), a
+    ld      a, 0            ; Page 0: first page of flash ROM
+    out     (IO_BANK2), a
+
+    ; Copy character ROM to character RAM
+    ld      de, BANK1_BASE
+    ld      hl, BANK2_BASE + $3000
+    ld      bc, 2048
+    ldir
+
+    ; Restore bank 1/2
+    pop     a
+    out     (IO_BANK2), a
+    pop     a
+    out     (IO_BANK1), a
+    ret
+
+
 
 ;-----------------------------------------------------------------------------
 ; Cartridge start entry point - A hold scramble value
@@ -309,7 +319,7 @@ _inlin_hook:
 _inlin_done:
     ret
 
-
+ifdef _____
 ;-----------------------------------------------------------------------------
 ; Graphics routine caller
 ; Simple version for calls from BASIC
@@ -350,7 +360,7 @@ do_gfx_routine:
     ld      sp,(PLUSTCK)          ; Back to original stack
     ret
     
-
+endif
 
 
 ;-----------------------------------------------------------------------------
@@ -361,34 +371,18 @@ do_gfx_routine:
 exec_gfx_routine:
     ex      af,af'
     exx                           ; Stash all the registers
-    ld      bc,$8000              ; Add jump table offset
+    ld      bc,gfx_jump_table     ; Add jump table offset
     add     ix,bc                 ; to graphics module base address
-    
-    ld      hl,0
-    add     hl,sp                 ; Get Stack Pointer
-    ld      (PLUSTCK),hl          ; Save it
-    ld      sp,PLUSTCK            ; Use temporary stack
-    in      a,(IO_BANK3)          ; Save current page# in bank 3
-    push    af                    ; 
-    in      a,(IO_BANK2)          ; Save current page# in bank 2
-    push    af                    ; 
- 
-    ld      a,ROM_AUX_PG          ; Map graphics module into bank 2
-    out     (IO_BANK2),a
-    ld      a,BAS_BUFFR           ; Map graohics sysvars into bank 1
-    out     (IO_BANK1),a          
-  
+    ld      a,ROM_AUX_PG
+    ld      c,ROM_AUX_BANK
+    call    page_map
     exx                           ; Unstash registers
     ex      af,af'
     call    jump_ix               ; Call the routine  
-  
     ex      af,af'
     exx                           ; Stash all the registers
-    pop     af                    ; Restore bank 2 page
-    out     (IO_BANK2),a          ;
-    pop     af                    ; Restore bank 3 page
-    out     (IO_BANK3),a          ;
-    ld      sp,(PLUSTCK)          ; Back to original stack
+    ld      c,ROM_AUX_BANK
+    call    page_restore
     exx                           ; Unstash registers
     ex      af,af'
     ret
@@ -634,7 +628,7 @@ free_rom_2k = hook_table - $
 ; ------------------------------------------------------------------------------
 
     assert !($2DFF<$)   ; ROM full!
-    dc $2DFF-$+1,$76
+    dc $2E00-$,$76
 
 ; BASIC Hook Jump Table
 ; 58 Bytes
@@ -697,7 +691,7 @@ fast_hook_handler:
 ;-----------------------------------------------------------------------------
 
     assert !($2EFF<$)   ; ROM full!
-    dc $2EFF-$+1,$76
+    dc $2F00-$,$76
 
     include "keytable.asm"
 
@@ -731,24 +725,28 @@ fast_hook_handler:
 free_rom_16k = $10000 - $
 
 
-    dc $F000-$,$76
+   dc $10000-$,$76
 
-;   dc $10000-$,$76
-;
-;    dephase
+    dephase
 
 ;-----------------------------------------------------------------------------
 ; Graphics Module
 ;-----------------------------------------------------------------------------
 
-;    phase   $8000     ;Assemble in ROM Page 1 which will be in Bank 3
+    phase   $C000     ;Assemble in ROM Page 1 which will be in Bank 3
 
     include "gfx.asm"           ; Main graphics module
     include "color.asm"         ; Color palette module
     include "sprite.asm"        ; Sprite graphics module
     include "tile.asm"          ; Tile graphics module
 
-;    dc $A000-$,$76
+free_rom_8k = $E000 - $
+
+    assert !($DFFF<$)   ; ROM full!
+
+    dc $E000-$,$76
+
+    dephase
 
     end
 
