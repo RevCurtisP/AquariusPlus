@@ -184,10 +184,12 @@ _coldboot:
     call    PRNTIT              ; Print copyright string in ROM
     call    print_string_immd
     db $0D, $0A
+.systext:
     db "Aquarius+ System ", 0
+.syslen = $ - .systext 
     ld      a, ESPCMD_VERSION
     call    esp_cmd
-    ld      b,0
+    ld      b,.syslen
 .print_version:
     call    esp_get_byte
     or      a
@@ -196,7 +198,7 @@ _coldboot:
     inc     b
     jr      .print_version
 .print_done:
-    ld      a,21-.plus_len        ; Print spaces to right justify +BASIC text
+    ld      a,38-.plus_len        ; Print spaces to right justify +BASIC text
     sub     b
     jr      nc,.space_it
     call    CRDO
@@ -210,7 +212,7 @@ _coldboot:
 .print_basic
     call    print_string_immd
 .plus_text
-    db "plusBASIC v0.11d", 0
+    db "plusBASIC v0.12", 0
 .plus_len   equ   $ - .plus_text
 
     call    CRDO
@@ -519,18 +521,6 @@ ULERR:
     jp      force_error
 
 
-FLOAT_BC:
-    ld      d,b                   ;  Copy into DE
-    ld      e,c                   ;  
-FLOAT_DE:
-    push    hl
-    xor     a                     ; Set HO to 0
-    ld      (VALTYP),a            ; Force Return Type to numeric
-    ld      b,$98                 ; Exponent = 2^24
-    call    FLOATR                ; Float It
-    pop     hl
-    ret
-
 ;-----------------------------------------------------------------------------
 ; bas_read_to_buff - Read String from ESP to BASIC String Buffer
 ; Input: IX: DOS or ESP routine to call
@@ -595,39 +585,6 @@ clear_screen:
     pop     hl
     ret
 
-move_cursor:
-
-;;;This is separate routine MOVEIT in Extended BASIC
-    push    af
-
-    ; Restore character behind cursor
-    push    hl
-    exx
-    ld      hl, (CURRAM)        ; CHRPOS - address of cursor within matrix
-    ld      a, (CURCHR)         ; BUFO - storage of the character behind the cursor
-    ld      (hl), a             ; Put original character on screen
-    pop     hl
-
-    ; Calculate new cursor location
-    ld      a, l
-    add     a, a
-    add     a, a
-    add     a, l
-    ex      de, hl
-    ld      e, d
-    ld      d, $00
-    ld      h, d
-    ld      l, a
-    ld      a, e
-    dec     a
-    add     hl, hl
-    add     hl, hl
-    add     hl, hl              ; HL is now 40 * rows
-    add     hl, de              ; Added the columns
-    ld      de, SCREEN          ; Screen character-matrix (= 12288 dec)
-    add     hl, de              ; Putting it all together
-    jp      TTYFIS              ; Save cursor position and return
-
 _trap_error:
     call    page_restore_plus     ; Map Extended ROM into bank 3
     jp      trap_error
@@ -665,7 +622,7 @@ _trap_error:
 
 
 
-free_rom_2k = $2C00 - $
+free_rom_2k = hook_table - $
 
 ;------------------------------------------------------------------------------
 ; Hook, Dispatch Tables and Handlers
@@ -675,7 +632,8 @@ free_rom_2k = $2C00 - $
 ;  Hook Jump Table
 ; ------------------------------------------------------------------------------
 
-    org ($ & $FF00) + 256
+    assert !($2DFF<$)   ; ROM full!
+    dc $2DFF-$+1,$76
 
 ; BASIC Hook Jump Table
 ; 58 Bytes
@@ -732,11 +690,6 @@ fast_hook_handler:
     ex      af,af'              ; Restore AF
     jp      (ix)
 
-
-
-    assert !($2BFF<$)   ; ROM full!
-    dc $2BFF-$+1,$76
-
 ;-----------------------------------------------------------------------------
 ; Keyboard Decode Tables for S3 BASIC with Extended Keyboard Support
 ; $2F00 - $2FFF
@@ -790,6 +743,8 @@ free_rom_16k = $10000 - $
 ;    phase   $8000     ;Assemble in ROM Page 1 which will be in Bank 3
 
     include "gfx.asm"           ; Main graphics module
+    include "color.asm"         ; Color palette module
+    include "sprite.asm"        ; Sprite graphics module
     include "tile.asm"          ; Tile graphics module
 
 ;    dc $A000-$,$76

@@ -158,6 +158,55 @@ clear_errvars:
         ret
 
 ;----------------------------------------------------------------------------
+;;; ---
+;;; STRING$ - Create string of repeating characters.
+;;; STRING$ (*length*)
+;;; STRING$ (*length*, *byte* )
+;;; STRING$ (*length*, *string* )
+FN_STRING: 
+        rst     CHRGET
+        SYNCHK  '$'               ;Require $
+        SYNCHK  '('               ;MAKE SURE LEFT PAREN
+        call    GETBYT            ;EVALUATE FIRST ARG (LENGTH)
+        ld      a,(hl)            ;Check Next Character
+        cp      ','               ;If No Comma
+        jr      nz,SPACE          ;  Single Argument - Act Like SPACE$() Function
+        rst     CHRGET            ;Else Skip Comma
+        push    de                ;SAVE FIRST ARG (LENGTH)
+        call    FRMEVL            ;GET FORMULA ARG 2
+        SYNCHK  ')'               ;EXPECT RIGHT PAREN
+        ex      (sp),hl           ;SAVE TEXT POINTER ON STACK, GET REP FACTOR
+        push    hl                ;SAVE BACK REP FACTOR
+        ld      a,(VALTYP)        ;GET TYPE OF ARG
+        dec     a                 ;Make 1 into 0
+        jr      z,STRSTR          ;WAS A STRING
+        call    CONINT            ;GET ASCII VALUE OF CHAR
+        jp      CALSPA            ;NOW CALL SPACE CODE
+STRSTR: call    ASC2              ;GET VALUE OF CHAR IN [A]
+CALSPA: pop     de                ;GET REP FACTOR IN [E]
+        CALL  SPACE2              ;INTO SPACE CODE, PUT DUMMY ENTRY
+SPACE:  SYNCHK  ')'               ;Require Right Paren after Single Argument
+        push    hl                ;Save Text Pointer
+        ld      a,' '             ;GET SPACE CHAR
+        push    bc                ;Dummy Return Address for FINBCK to discard
+SPACE2: push    af                ;SAVE CHAR
+        ld      a,e               ;GET NUMBER OF CHARS IN [A]
+        call    STRINI            ;GET A STRING THAT LONG
+        ld      b,a               ;COUNT OF CHARS BACK IN [B]
+        pop     af                ;GET BACK CHAR TO PUT IN STRING
+        inc     b                 ;TEST FOR NULL STRING
+        dec     b 
+        jp      z,FINBCK          ;YES, ALL DONE
+        ld      hl,(DSCTMP+2)     ;GET DESC. POINTER
+SPLP:   ld      (hl),a            ;SAVE CHAR
+        inc     hl                ;BUMP PTR
+                                  ;DECR COUNT
+        djnz    SPLP              ;KEEP STORING CHAR
+        jp      FINBCK            ;PUT TEMP DESC WHEN DONE
+
+
+
+;----------------------------------------------------------------------------
 ; Get Evaluated Formula Type
 ; Output: Zero Set if String, Clear if Number
 ; Clobbers: A

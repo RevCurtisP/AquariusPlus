@@ -138,6 +138,27 @@ sbuff_write_byte:
     ret
 
 ;-----------------------------------------------------------------------------
+; Write Byte to String Buffer
+; Input: A: Byte to Write
+;        E: Offset
+; Output: DE: Coerced Address + 1
+; Clobbers: A
+;-----------------------------------------------------------------------------
+sbuff_write_byte_ofs:
+    push    bc
+    ld      d,high(STRBUFF)       
+    ld      c,a
+    ld      a,BAS_BUFFR
+    call    page_write_byte
+    inc     de
+    xor     a                     ; Clear Carry
+    inc     a                     ; Clear Zero
+.error
+    pop     bc
+    ret
+
+
+;-----------------------------------------------------------------------------
 ; Write Bytes to String Buffer
 ; Input: BC: Byte Count
 ;        DE: Source Address

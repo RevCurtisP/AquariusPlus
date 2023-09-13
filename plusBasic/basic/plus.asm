@@ -35,7 +35,13 @@ FN_DATE:
 ;-----------------------------------------------------------------------------
 FN_GET:
     rst     CHRGET                ; Skip GET Token
-    rst     SYNCHR                ; Only GETKEY for now
+    cp      COLTK
+    jp      z,FN_GETCOL
+    cp      TILETK
+    jp      z,FN_GETTILE
+    cp      SPRITK
+    jp      z,FN_GETSPRITE
+    rst     SYNCHR                ; Must be GETKEY
     byte    KEYTK
 
 ;-----------------------------------------------------------------------------
@@ -62,11 +68,10 @@ FN_GETKEY:
 ;-----------------------------------------------------------------------------
 ; GET statements stub
 ;-----------------------------------------------------------------------------
-ST_GET:
+ST_GET: 
     cp      ARGSTK
-    rst     SYNCHR
-    byte    ARGSTK
-    jp      ST_GETARGS
+    jp      z,ST_GETARGS
+    jp      SNERR    
 
 ;-----------------------------------------------------------------------------
 ; INKEY - Return ASCII code of currently pressed key
@@ -93,9 +98,9 @@ FN_INKEY:
 ; |  K2    |  D7,2    | 1.....1. |  7B  |   123   |    +------------------------+
 ; |  K3    |  D7,5    | 1..1.... |  5F  |    95   |    |                        |
 ; |  K4    |  D5      | ..1..... |  DF  |   223   |    |    [K1]  [K2]  [K3]    |
-; |  K5    |  D7,1    | 1.....1. |  7D  |   125   |    |                        |
+; |  K5    |  D7,1    | 1.....1. |  7D  |   125   |    |                        | 
 ; |  K6    |  D7,0    | 1......1 |  7E  |   126   |    |    [K4]  [K5]  [K6]    |                      
-; |  p1    |  D1      | ......1. |  FD  |   253   |    |                        |                      
+; |  P1    |  D1      | ......1. |  FD  |   253   |    |                        |                      
 ; |  P2    |  D1,4    | ...1..1. |  ED  |   237   |    |                        |        
 ; |  P3    |  D1,0,4  | ...1..11 |  EC  |   236   |    |      P12 P13 P14       |     
 ; |  P4    |  D1,0    | ......11 |  FC  |   252   |    |   P11      |     P15   |  
@@ -261,14 +266,16 @@ LSERR:
 ; SET Statement stub
 ;-----------------------------------------------------------------------------
 ST_SET:
+    cp      SPRITK
+    jp      z,ST_SETSPRITE
     cp      TILETK
-    jp      z,SET_TILE
+    jp      z,ST_SETTILE
     cp      COLTK
     jr      nz,.notcol
     rst     CHRGET                ; Skip COL token            
     call    SYNCHR                ; Require OR after COL
     byte    ORTK                  
-    jp      st_set_palette
+    jp      ST_SETCOLOR
 .notcol
     jp      SNERR
 

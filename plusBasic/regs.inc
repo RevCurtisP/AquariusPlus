@@ -114,8 +114,10 @@ BASTXT:     equ $3901   ; Start of Basic Program
 ; plusBASIC System variables
 ;-----------------------------------------------------------------------------
 ; Screen and Color RAM Holes
-INTSTCK     equ $33FE   ; Top of Interrupt stemporary stack $33E8 - $33FF
-PLUSTCK     equ $37FE   ; Top of plusBASIC temporary stack $37E8 - $37FF
+INTSTCK     equ $33FD   ; Top of Interrupt stemporary stack $33E8 - $33FF
+BORDERCHR   equ $33FE   ; Border character alternate memory location
+PLUSTCK     equ $37FD   ; Top of plusBASIC temporary stack $37E8 - $37FF
+BORDERCLR   equ $37FE   ; Border character alternate memory location
 
 ; RNDTAB ($3821-$3840) - Deprecated RND Permutation Table
 BASINTPG    equ $3821   ; BASIC Interrupt Routine Page (swapped into BANK 3)
@@ -137,12 +139,11 @@ ONELIN      equ $382E   ; THE pointer to the LINE TO GOTO WHEN AN ERROR OCCURS
 ESP_FDESC   equ $3830   ; ESP file descriptor to close on Error or Ctrl-C
 BINPAGE     equ $3831   ; Binary file load/save page
 BINSTART    equ $3832   ; Binary file load/save address
-BINLEN:     equ $3834   ; 16-bit binary file length
-FILESIZE    equ $3836   ; File Size (32-bits $3836-$3839)
-FILEATTR    equ $383A   ; File Attribute
-FILEDATE    equ $383B   ;
-FILETIME    equ $383D
-;         $383F-$3840   ; unused
+BINLEN:     equ $3834   ; Binary file load length (32-bits $3838-$383B)
+FILESIZE    equ $3838   ; File Size (32-bits $3838-$383B)
+FILEATTR    equ $383C   ; File Attribute
+FILEDATE    equ $383D   ; File Datestamp ($383D-$383E)
+FILETIME    equ $383F   ; File Timestamp ($383F-$3840)
 
 plus_page   equ 1       ; plusBASIC ROM BANK3 page
 aux_page    equ 2       ; Auxillary ROM page
@@ -221,6 +222,7 @@ GIVINT      equ $0B21   ; Float Integer MSB=[A], LSB=[C]
 SNGFLT:     equ $0B36   ; Store variable 8 bit (out: B = value)
 ERRDIR      equ $0B45   ; Error if in direct mode
 GETBYT:     equ $0B54   ; Evaluate numeric expression (integer 0-255)
+CONINT      equ $0B57   ; Convert FAC to byte
 OMERR:      equ $0BB7   ; Out of memory error
 SCRTCH:     equ $0BBE
 RUNC:       equ $0BCB
@@ -238,8 +240,10 @@ STROUT:     equ $0E9D   ; Print null-terminated string in HL
 FRESTR      equ $0FC6   ; Free tempory string, return string descriptor address in HL
 FREFAC      equ $0FC9   ; Free tempory string with descriptor in FAC
 FRETM2      equ $0FCC   ; Free up temporary in FACLO
+FRETMP      equ $0FCD   ; Free up temporary
 FRETMS      equ $0FE4   ; Free up temporary descriptor
 LEN1:       equ $0FF7   ; Get string length (in: (FPREG) = string block, out: HL = string block, A = length)
+ASC2        equ $1006   ; Return DE = Pointer to String Text, A=First Character 
 CHR         equ $1013   ; CHR$ Function
 FINBCK      equ $101D   ; Return a String
 PTRGET:     equ $10D1   ; Get variable (out: BC = addr, DE = len)
@@ -274,12 +278,16 @@ XINIT:      equ $E010   ; Cartridge entry point
 ; Standard BASIC Tokens
 GOTOTK      equ $88     ; GOTO
 GOSUTK      equ $8C     ; GOSUB
+ONTK        equ $90     ; ON
 DEFTK       equ $93     ; DEF
+LISTTK      equ $97     ; LIST
 PLUSTK      equ $A8     ; +
 RETTK       equ $8D     ; RETURN
 TOTK        equ $A1     ; TO
 ORTK        equ $AE     ; OR
 EQUATK      equ $B0     ; = 
+INTTK       equ $B3     ; INT
+POSTK       equ $B8     ; POS
 
 ;Adddress of Byte following Hook RST
 HOOK0       = $03DF
@@ -393,7 +401,8 @@ USER_RAM    equ 40
 ; Page 20
 ;-----------------------------------------------------------------------------
 BMP_COLORRAM    equ $2000
-TILE_DATA       equ $1000
+TILE_DATA       equ $0000
+TILE_MAP        equ $3000
 
 ;-----------------------------------------------------------------------------
 ; BASIC Extended System Constants, Variables and Buffers

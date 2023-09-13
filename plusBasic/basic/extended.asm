@@ -32,6 +32,8 @@ ST_DEF:
     jp      z,ST_DEFCOLOR           ; DEF COLORLIST
     cp      INTTK         
     jp      z,ST_DEFINT             ; DEF INTLIST
+    cp      SPRITK
+    jp      z,ST_DEFSPRITE          ; DEF TILELIST
     cp      TILETK
-    jp      z,ST_DEFTILE          ; DEF TILELIST
+    jp      z,ST_DEFTILE            ; DEF TILELIST
     jp      SNERR

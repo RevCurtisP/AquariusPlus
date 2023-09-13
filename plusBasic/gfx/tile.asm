@@ -4,14 +4,19 @@
 
 ;-----------------------------------------------------------------------------
 ; Set tile pixel
-; Input: BC: Data length
-;        DE: Data address
+; Input: C: Color Index
+;        E: Pixel Index
 ;        HL: Tile #
-; Clobbered: A,BC,DE,HL
+; Clobbered: A,DE,HL
 ;-----------------------------------------------------------------------------
 gfx_set_tile_pixel:
-    call      _get_set_init       ; HL = Tile Address
-    jp        page_write_bytes    ; Write data to tile
+    push      hl
+    call      _get_set_init       ; HL = TileAddr, A = Video RAM
+    ld        d,0
+    add       hl,de               ; HL = Pixel Address
+    ex        de,hl               ; DE = Pixel Address
+    pop       hl
+    jp        page_write_byte     ; Write pixel to tile
 
 ;-----------------------------------------------------------------------------
 ; Set tile data
@@ -21,7 +26,8 @@ gfx_set_tile_pixel:
 ; Clobbered: A,BC,DE,HL
 ;-----------------------------------------------------------------------------
 gfx_set_tile:
-    call      _get_set_init       ; HL = Tile Address
+    call      _get_set_init       ; HL = TileAddr
+    ex        de,hl               ; DE = TileAddr, HL = Dat
     jp        page_write_bytes    ; Write data to tile
     
 ;-----------------------------------------------------------------------------
@@ -32,7 +38,7 @@ gfx_set_tile:
 ; Clobbered: A,BC,DE,HL
 ;-----------------------------------------------------------------------------
 gfx_get_tile:
-    call      _get_set_init       ; HL = Tile Address
+    call      _get_set_init       ; HL = TileAddr
     jp        page_read_bytes     ; Read data and return
 
 _get_set_init:

@@ -9,6 +9,7 @@
 ; GETARGS statement
 ;-----------------------------------------------------------------------------
 ST_GETARGS:
+    rst     CHRGET                ; Skip ARGS Token
     jp      z,MOERR               ; "Missing operand" if end of state
     ex      de,hl                 ; DE = Text Pointer
     ld      hl,2

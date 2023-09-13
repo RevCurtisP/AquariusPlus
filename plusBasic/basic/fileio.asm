@@ -843,8 +843,11 @@ get_string_arg:
     call    FRMEVL                ; Get Path
     pop     IX                    ; IX = Return Address
     push    hl                    ; Text Pointer on stack
-    call    FRESTR                ; Free Temporary String
-    call    string_addr_len                ; Get Length and Text Pointer
+    call    FRESTR                ; HL = StrDsc
+    call    string_addr_len       ; BC = StrLen, DE = StrAdr
+    xor     a
+    cp      c
+    jp      z,FCERR
     jp      (IX)                  ; Fast Return
 
 ;-----------------------------------------------------------------------------

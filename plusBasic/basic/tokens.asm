@@ -41,12 +41,12 @@ TBLCMDS:
     db $80 + 'K',"EY"             ; $E7             
     db $80 + 'A',"RGS"            ; $E8   Replaces MX-BASIC keyword DEEK
     db $80 + 'E',"RR"             ; $E9             
-    db $80 + ' '                  ; $EA             
+    db $80 + 'S',"TRING"          ; $EA             
     db $80 + ' '                  ; $EB             
     db $80 + ' '                  ; $EC             
     db $80 + 'E',"VAL"            ; $ED             
     db $80 + ' '                  ; $EE             
-    db $80 + 'S',"RITE"           ; $EF             
+    db $80 + 'S',"PRITE"          ; $EF             
     db $80 + 'T',"ILE"            ; $F0             
     db $80 + 'O',"FF"             ; $F1             
     db $80 + 'M',"AP"             ; $F2             
@@ -67,8 +67,10 @@ CDTK      equ     $E0
 KEYTK     equ     $E7
 ARGSTK    equ     $E8
 ERRTK     equ     $E9
+SPRITK    equ     $EF
 LINETK    equ     $D0
 TILETK    equ     $F0
+OFFTK     equ     $F1
 COLTK     equ     $F5
 ATTRTK    equ     $F8
 
@@ -143,7 +145,7 @@ token_to_keyword:
 ; $E7 KEY         KEY             
 ; $E8 ARGS        DEEK              PEEK! <--> DEEK
 ; $E9 ERR         ERR [OR]            ERR <--> ERR(0), ERRLINE <--> ERR(1), ERR$ <--> ERR$(1)
-; $EA             STRING
+; $EA STRING      STRING
 ; $EB             XOR           (a XOR b) <--> XOR(a,b)
 ; $EC             MENU
 ; $ED EVAL        EVAL                 compatible
