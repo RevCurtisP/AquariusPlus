@@ -44,9 +44,9 @@ SPR_HFLIP     equ   $02
 ;-----------------------------------------------------------------------------
 ; Set Sprite Attributes
 ; Input:  C: Attribute Count
-;        DE: Attribute List
+;        DE: Attribute List Address
 ;        HL: SpriteDef Address
-;        Not Zero if tile count <> spritle count
+; Output: Not Zero if tile count <> spritle count
 ; Clobbered: A,BC,DE
 ;-----------------------------------------------------------------------------
 gfx_sprite_set_attrs:
