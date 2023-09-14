@@ -3,33 +3,6 @@
 ;=====================================================================================
 
 ;-----------------------------------------------------------------------------
-; Graphic Routines Jump Table
-;-----------------------------------------------------------------------------
-gfx_jump_table
-    jp      gfx_startup           ; $8000
-    jp      gfx_init              ; $8003
-    jp      gfx_set_screen_mode   ; $8006 
-    jp      gfx_shift_palette_num ; $8009 
-    jp      gfx_set_palette_entry ; $800C 
-    jp      gfx_set_palette       ; $800F
-    jp      gfx_get_palette       ; $8012
-    jp      gfx_set_tile_pixel    ; $8015
-    jp      gfx_set_tile          ; $8018
-    jp      gfx_get_tile          ; $801B
-    jp      gfx_spritle_set_attr  ; $801E
-    jp      gfx_sprite_set_attrs  ; $8021
-    jp      gfx_spritle_set_color ; $8024
-    jp      gfx_sprite_set_colors ; $8027
-    jp      gfx_spritle_set_tile  ; $802A
-    jp      gfx_sprite_set_tiles  ; $802D
-    jp      gfx_spritle_get_attrs ; $8030
-    jp      gfx_sprite_get_attrs  ; $8033
-    jp      gfx_sprite_toggle     ; $8036
-    jp      gfx_spritle_toggle    ; $8039
-    jp      gfx_sprite_set_pos    ; $803C
-    jp      gfx_spritle_set_pos   ; $803F
-
-;-----------------------------------------------------------------------------
 ; Graphic initialization routine
 ; routines are in common.asm for now
 ;-----------------------------------------------------------------------------
@@ -48,7 +21,7 @@ gfx_init:
 ;        BC: Mode
 ;        HL: Address in lookup table
 ;-----------------------------------------------------------------------------
-gfx_set_screen_mode:
+screen_set_mode:
     ld      hl,_screen_modes
     ld      b,0
     ld      c,a

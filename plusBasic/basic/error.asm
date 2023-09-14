@@ -1,3 +1,7 @@
+;===========================================================================
+; Error messages, lookup table, and lookup routines
+;===========================================================================
+
 ; S3BASIC errors
 ERRNF   equ     $00   ;  1 NF NEXT without FOR
 ERRSN   equ     $02   ;  2 SN Syntax error
@@ -38,7 +42,56 @@ ERRNOD  equ     $70   ; 56 No disk
 ERRNEM  equ     $72   ; 57 Not empty                          
 LSTERR  equ     $74   ; 58  Last error used for range checks
 
-;put the lookup table at 256 byte boundary
+;===========================================================================
+; The error routines fit in the space between the end of the dispatch 
+; routines and the beginning of the error lookup table
+;===========================================================================
+
+;----------------------------------------------------------------------------
+; Print error message and return to direct mode
+;----------------------------------------------------------------------------
+force_error:
+    call    get_errmsg_ptr   ; Get Pointer into Error Table
+    jp      ERRFN1
+
+; -------------------------------------------------------------------------------
+;  Error Message Lookup Routines`
+; ------------------------------------------------------------------------------
+get_errno_ptr:
+    dec     a                  ; Convert to Error# to offset
+    sla     a     
+    ld      e,a                ; Put in E
+get_errcode_ptr:
+    ld      a,e                   ; Get Error Table Offset into A
+    cp      ERRFNF                
+    jr      c,.not_dos
+    sub     ERRFNF-NONDSK
+.not_dos
+    cp      NONDSK                ; Compare to End of Table
+    jr      c,.load_ptr           ; If Past End of Table
+    ld      a,ERRUE               ;   Display "UE" - Unprintable Error
+.load_ptr
+    ld      l,a                   ; Table Starts at page boundary
+    ld      h,high(err_codes)     ; Put address in HL
+    ret
+
+get_errno_msg:
+    call    get_errno_ptr
+    jr      _errmag_ptr
+
+; Get Pointer to Long Error Message
+; E = Offset into Error Table - 0=NF, 2=SN, etc.
+get_errmsg_ptr:
+    call    get_errcode_ptr       ; Get Pointer to Error Code for E
+_errmag_ptr:
+    ld      a,(hl)                ; Read Address from Error Message Table
+    inc     hl
+    ld      h,(hl)
+    ld      l,a
+    ret
+
+
+;Put the lookup table at 256 byte boundary
 if $ & $FF
     dc ($FF00&$)+256-$,$FF
 endif
@@ -82,49 +135,6 @@ err_disk:
         word    MSGNOD
         word    MSGNEM
 
-;----------------------------------------------------------------------------
-; Print error message and return to direct mode
-;----------------------------------------------------------------------------
-force_error:
-    call    get_errmsg_ptr   ; Get Pointer into Error Table
-    jp      ERRFN1
-
-; -------------------------------------------------------------------------------
-;  Error Message Lookup Routines`
-; ------------------------------------------------------------------------------
-
-get_errno_ptr:
-    dec     a                  ; Convert to Error# to offset
-    sla     a     
-    ld      e,a                ; Put in E
-get_errcode_ptr:
-    ld      a,e                   ; Get Error Table Offset into A
-    cp      ERRFNF                
-    jr      c,.not_dos
-    sub     ERRFNF-NONDSK
-.not_dos
-    cp      NONDSK                ; Compare to End of Table
-    jr      c,.load_ptr           ; If Past End of Table
-    ld      a,ERRUE               ;   Display "UE" - Unprintable Error
-.load_ptr
-    ld      l,a                   ; Table Starts at page boundary
-    ld      h,high(err_codes)     ; Put address in HL
-    ret
-
-get_errno_msg:
-    call    get_errno_ptr
-    jr      _errmag_ptr
-
-; Get Pointer to Long Error Message
-; E = Offset into Error Table - 0=NF, 2=SN, etc.
-get_errmsg_ptr:
-    call    get_errcode_ptr       ; Get Pointer to Error Code for E
-_errmag_ptr:
-    ld      a,(hl)                ; Read Address from Error Message Table
-    inc     hl
-    ld      h,(hl)
-    ld      l,a
-    ret
 
 ; Long Error Descriptions
 err_messages:

@@ -7,6 +7,11 @@
 ;  Statement, Function, and Hook Dispatch Tables
 ; ------------------------------------------------------------------------------
 
+;Put the lookup table at 256 byte boundary
+if $ & $FF
+    dc ($FF00&$)+256-$,$FF
+endif
+
 ; Combined Statement Jump Table 
 ; 256 Bytes
 ; Standard BASIC Routines left as HEX

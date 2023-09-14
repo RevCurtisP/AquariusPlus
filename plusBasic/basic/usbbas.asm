@@ -114,6 +114,89 @@ FN_IN:
     jp      SNGFLT           ; Return with 8 bit input value in variable var
 
 ;-----------------------------------------------------------------------------
+; JOY() function
+; syntax: var = JOY(stick)
+;    stick - 0 will read left or right
+;          - 1 will read left joystick only
+;          - 2 will read right joystick only
+;
+; |        | Data bus |  Binary  | Hex  | Decimal |    
+; | Switch | grounded | 76543210 | code |  code   |          
+; | ------ | -------- | -------- |      | ------- |    
+; |  K1    |  D6      | .1...... |  BF  |   191   |    
+; |  K2    |  D7,2    | 1.....1. |  7B  |   123   |    +------------------------+
+; |  K3    |  D7,5    | 1..1.... |  5F  |    95   |    |                        |
+; |  K4    |  D5      | ..1..... |  DF  |   223   |    |    [K1]  [K2]  [K3]    |
+; |  K5    |  D7,1    | 1.....1. |  7D  |   125   |    |                        | 
+; |  K6    |  D7,0    | 1......1 |  7E  |   126   |    |    [K4]  [K5]  [K6]    |                      
+; |  P1    |  D1      | ......1. |  FD  |   253   |    |                        |                      
+; |  P2    |  D1,4    | ...1..1. |  ED  |   237   |    |                        |        
+; |  P3    |  D1,0,4  | ...1..11 |  EC  |   236   |    |      P12 P13 P14       |     
+; |  P4    |  D1,0    | ......11 |  FC  |   252   |    |   P11      |     P15   |  
+; |  P5    |  D0      | .......1 |  FE  |   254   |    |       \    |   /       |     
+; |  P6    |  D0,4    | ...1...1 |  EE  |   238   |    |   P10  \   |  /  P16   |  
+; |  P7    |  D3,0,4  | ...11..1 |  E6  |   230   |    |         \  | /         |       
+; |  P8    |  D3,0    | ....1..1 |  F6  |   246   |    |   P9 ------*------ P1  |      
+; |  P9    |  D3      | ....1... |  F7  |   247   |    |          / |  \        |      
+; |  P10   |  D3,4    | ...11... |  E7  |   231   |    |    P8   /  |   \  P2   |      
+; |  P11   |  D3,2,4  | ...111.. |  E3  |   227   |    |        /   |    \      |
+; |  P12   |  D3,2    | ....11.. |  F3  |   243   |    |     P7     |      P3   |      
+; |  P13   |  D2      | .....1.. |  FB  |   251   |    |        P6  P5  P4      |                       
+; |  P14   |  D2,4    | ...1.1.. |  EB  |   235   |    |                        |                       
+; |  P15   |  D1,2,4  | ...1.11. |  E9  |   233   |    +------------------------+                       
+; |  P16   |  D1,2    | .....11. |  F9  |   249   |                           
+
+
+
+;-----------------------------------------------------------------------------
+FN_JOY:
+    rst     CHRGET            ; Skip Token and Eat Spaces
+    call    PARCHK
+    push    hl
+    ld      bc,LABBCK
+    push    bc
+    call    FRCINT         ; FRCINT - evalute formula pointed by HL result in DE
+
+    ld      a, e  
+    or      a
+    jr      nz, .joy01
+    ld      a, $03
+
+.joy01:
+    ld      e, a
+    ld      bc, $00F7
+    ld      a, $FF
+    bit     0, e
+    jr      z, .joy03
+    ld      a, $0e
+    out     (c), a
+    dec     c
+    ld      b, $FF
+
+.joy02:
+    in      a,(c)
+    djnz    .joy02
+    cp      $FF
+    jr      nz, .joy05
+
+.joy03:
+    bit     1,e
+    jr      z, .joy05
+    ld      bc, $00F7
+    ld      a, $0F
+    out     (c), a
+    dec     c
+    ld      b, $FF
+
+.joy04:
+    in      a, (c)
+    djnz    .joy04
+
+.joy05:
+    cpl
+    jp      SNGFLT
+
+;-----------------------------------------------------------------------------
 ; LOCATE statement
 ; Syntax: LOCATE col, row
 ;-----------------------------------------------------------------------------
@@ -155,3 +238,50 @@ ST_OUT:
     pop     bc                  ; BC = port
     out     (c), a              ; Out data to port
     ret
+
+;-----------------------------------------------------------------------------
+; PSG statement
+; syntax: PSG register, value [, ... ]
+;-----------------------------------------------------------------------------
+ST_PSG:
+    cp      $00
+    jp      z, MOERR         ; MO error if no args
+
+.psgloop:
+    ; Get PSG register to write to
+    call    GETBYT           ; Get/evaluate register
+    cp      16
+    jr      nc, .psg2
+
+    out     (IO_PSG1ADDR), a ; Set the PSG register
+
+    ; Expect comma
+    SYNCHK  ','
+
+    ; Get value to write to PSG register
+    call    GETBYT           ; Get/evaluate value
+    out     (IO_PSG1DATA), a ; Send data to the selected PSG register
+
+.check_comma:
+    ; Check for a comma
+    ld      a, (hl)          ; Get next character on command line
+    cp      ','              ; Compare with ','
+    ret     nz               ; No comma = no more parameters -> return
+
+    inc     hl               ; next character on command line
+    jr      .psgloop         ; parse next register & value
+
+.psg2:
+    sub     16
+    out     (IO_PSG2ADDR), a ; Set the PSG register
+
+    ; Expect comma
+    SYNCHK  ','
+
+    ; Get value to write to PSG register
+    call    GETBYT           ; Get/evaluate value
+    out     (IO_PSG2DATA), a ; Send data to the selected PSG register
+
+    jr      .check_comma
+
+

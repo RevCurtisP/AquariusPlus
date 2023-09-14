@@ -2,7 +2,6 @@
 ; Spritle and Sprite Assembly Routines
 ;=============================================================================
 
-
 ; Sprite attributes
 SPR_ENABLE    equ   $80
 SPR_PRIORITY  equ   $40
@@ -49,13 +48,12 @@ SPR_HFLIP     equ   $02
 ; Output: Not Zero if tile count <> spritle count
 ; Clobbered: A,BC,DE
 ;-----------------------------------------------------------------------------
-gfx_sprite_set_attrs:
-    ld      ix,gfx_spritle_set_attr
+sprite_set_attrs:
+    ld      ix,spritle_set_attr
     jr      _sprite_attrs
 
-gfx_sprite_set_colors:
-    ld      ix,gfx_spritle_set_color
-    jr      _sprite_attrs
+sprite_set_colors:
+    ld      ix,spritle_set_color
 
 _sprite_attrs:
     push    hl                    ; Stack = SprAdr, RtnAdr
@@ -89,7 +87,7 @@ _sprite_attr:
 ;                       Bit 2: Vertical Flip
 ;                       Bit 1: Horizontal Flip
 ;-----------------------------------------------------------------------------
-gfx_spritle_set_attr:
+spritle_set_attr:
     out   (IO_VSPRSEL),a          ; Select sprite
     ex    af,af'
     ld    a,c
@@ -107,7 +105,7 @@ gfx_spritle_set_attr:
 ; Input: A: sprite #  0-63
 ;        C: color palette  0-3
 ;-----------------------------------------------------------------------------
-gfx_spritle_set_color:
+spritle_set_color:
     out   (IO_VSPRSEL),a          ; Select sprite
     ex    af,af'
     ld    a,c                     ; Get palette #
@@ -134,7 +132,7 @@ gfx_spritle_set_color:
 ;        Not Zero tile count <> spritle count
 ; Clobbered: A,BC,DE
 ;-----------------------------------------------------------------------------
-gfx_sprite_set_tiles:
+sprite_set_tiles:
     push    hl
     ld      a,c                   ; Get tile count
     srl     a
@@ -152,7 +150,7 @@ gfx_sprite_set_tiles:
     inc     hl 
     ld      d,(hl)                ; DE = TilIdx
     inc     hl
-    call    gfx_spritle_set_tile
+    call    spritle_set_tile
     pop     de                    ; DE = SprAdr
     djnz    .loop                 ; Do next one
     xor     a                     ; Return Z (success)
@@ -164,7 +162,7 @@ gfx_sprite_set_tiles:
 ; Input: A: spritle# (0-63)
 ;        DE: tile index (0-511)
 ;-----------------------------------------------------------------------------
-gfx_spritle_set_tile:
+spritle_set_tile:
     out   (IO_VSPRSEL),a          ; Select sprite
     ex    af,af'
     ld    a,e                     ; Write index LSB             
@@ -192,7 +190,7 @@ gfx_spritle_set_tile:
 ;          Y-position - +2
 ;          Attrs+Tile - +3
 ;;-----------------------------------------------------------------------------
-gfx_sprite_get_attrs:
+sprite_get_attrs:
     ld      a,(hl)                ; SptlCnt
     ld      b,a
     add     a                     ; x 2     
@@ -209,7 +207,7 @@ gfx_sprite_get_attrs:
     push    bc                    ; Stack = SptCnt, RtnAdr
     push    hl                    ; Stack = SprAdr, SprCnt, RtnAdr
     push    de                    ; Stack = BufAdr, SprAdr, SprCnt, RtnAdr
-    call    gfx_spritle_get_attrs ; BC = X-position; DE = Y-position, HL = Tile+Attrs
+    call    spritle_get_attrs ; BC = X-position; DE = Y-position, HL = Tile+Attrs
     ex      (sp),hl               ; HL = BufAdr; Stack = Tile+Attrs, SprAdr, SprCnt, RtnAdr
     ld      (hl),c
     inc     hl
@@ -236,7 +234,7 @@ gfx_sprite_get_attrs:
 ;         DE: Y-position
 ;         HL: Attrs+Tile#
 ;-----------------------------------------------------------------------------
-gfx_spritle_get_attrs:
+spritle_get_attrs:
     out   (IO_VSPRSEL),a          ; Select sprite
     ex    af,af'
     in    a,(IO_VSPRX_L)          ; BC = X-position
@@ -261,7 +259,7 @@ gfx_spritle_get_attrs:
 ;        HL: spritedef address
 ; Clobbered: A,BC,HL
 ;-----------------------------------------------------------------------------
-gfx_sprite_toggle:
+sprite_toggle:
     or      a
     jr      z,.zero
     ld      a,$80
@@ -273,7 +271,7 @@ gfx_sprite_toggle:
     inc     hl                    ; Skip Y-offset
     inc     hl                    ; Next spritle entry
     ld      a,(hl)                ; Get spritle#
-    call    gfx_spritle_toggle    ; Toggle it
+    call    spritle_toggle    ; Toggle it
     djnz    .loop
     xor     a                     ; No Errors
     ret
@@ -283,7 +281,7 @@ gfx_sprite_toggle:
 ; Input: A: sprite #  0-63
 ;        C: 128 = Enable, $0 = Disable
 ;-----------------------------------------------------------------------------
-gfx_spritle_toggle:
+spritle_toggle:
     out   (IO_VSPRSEL),a          ; Select sprite
     ex    af,af'
     ld    a,$80                   ; Only Enable Bit
@@ -303,7 +301,7 @@ gfx_spritle_toggle:
 ;        HL: spritedef address
 ; Clobbered: A, HL
 ;-----------------------------------------------------------------------------
-gfx_sprite_set_pos:
+sprite_set_pos:
     ld      a,(hl)                ; A = spritle count
     push    hl                    ; Stack = SprAdr, RtnAdr
     inc     hl                    ; Skip width and height
@@ -336,7 +334,7 @@ gfx_sprite_set_pos:
 ;       BC: X-position
 ;       DE  Y-position 
 ;-----------------------------------------------------------------------------
-gfx_spritle_set_pos:
+spritle_set_pos:
     out   (IO_VSPRSEL),a          ; Select sprite
     ex    af,af'
     ld    a,c

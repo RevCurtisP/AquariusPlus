@@ -181,7 +181,7 @@ _coldboot:
 .print_basic
     call    print_string_immd
 .plus_text
-    db "plusBASIC v0.12b", 0
+    db "plusBASIC v0.12c", 0
 .plus_len   equ   $ - .plus_text
 
     call    CRDO
@@ -614,13 +614,6 @@ _trap_error:
 ;-----------------------------------------------------------------------------
     include "tokens.asm"        ; Keyword list and tokenize/expand routines
 
-;-----------------------------------------------------------------------------
-; Primitive debugger
-;-----------------------------------------------------------------------------
-;    include "debug.asm"
-
-
-
 free_rom_2k = hook_table - $
 
 ;------------------------------------------------------------------------------
@@ -711,7 +704,8 @@ fast_hook_handler:
 
     phase   $C000     ;Assemble in ROM Page 1 which will be in Bank 3
 
-    ; dispatch.asm and error.asm must be first and second because of aligned tables 
+    include "gfxjump.asm"
+    ; dispatch and error tables align to 256 byte boundary
     include "dispatch.asm"      ; Statement/Function dispatch tables and routiness
     include "error.asm"         ; Error lookup table, messages and handling routines
     include "args.asm"          ; ARGS statement and function
@@ -725,29 +719,17 @@ fast_hook_handler:
     include "usbbas.asm"        ; Statements and functions from USB BASIC
     include "shared.asm"        ; Shared subroutines
 
-free_rom_16k = $10000 - $
-
-
-   dc $10000-$,$76
-
-    dephase
-
-;-----------------------------------------------------------------------------
-; Graphics Module
-;-----------------------------------------------------------------------------
-
-    phase   $C000     ;Assemble in ROM Page 1 which will be in Bank 3
-
+    ; Graphics modules
     include "gfx.asm"           ; Main graphics module
     include "color.asm"         ; Color palette module
     include "sprite.asm"        ; Sprite graphics module
     include "tile.asm"          ; Tile graphics module
 
-free_rom_8k = $E000 - $
+    assert !($FFFF<$)   ; ROM full!
 
-    assert !($DFFF<$)   ; ROM full!
+    free_rom_16k = $10000 - $
 
-    dc $E000-$,$76
+    dc $10000-$,$76
 
     dephase
 

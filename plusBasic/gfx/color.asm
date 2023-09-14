@@ -11,11 +11,11 @@
 ;           
 ; Clobbered: A,BC,DE,HL
 ;-----------------------------------------------------------------------------
-gfx_set_palette:
+    palette_set:
     push    af
     jr      c,.shifted
     ld      a,l
-    call    gfx_shift_palette_num ; B = Shifted palette #
+    call    palette_shift_num ; B = Shifted palette #
     ld      l,a                   ; Save It
 .shifted:
     pop     af
@@ -43,8 +43,8 @@ gfx_set_palette:
 ;       DE: Data Address
 ; Clobbered: A,BC,DE,HL
 ;-----------------------------------------------------------------------------
-gfx_get_palette:
-    call    gfx_shift_palette_num ; A = Shifted palette #
+    palette_get:
+    call    palette_shift_num ; A = Shifted palette #
     ld      l,a                   ; Save It
 .loop
     ld      a,b
@@ -69,9 +69,9 @@ gfx_get_palette:
 ; Output: B: Shifted palette#
 ;         C: Next entry#
 ;-----------------------------------------------------------------------------
-gfx_set_palette_entry:
+    palette_set_entry:
     jr      c,.use_b
-    call    gfx_shift_palette_num ; B = Shifted palette #
+    call    palette_shift_num     ; B = Shifted palette #
     ld      b,a                   ; Save It
 .use_b:
     push    a
@@ -98,7 +98,7 @@ gfx_set_palette_entry:
 ; Input:  A: Palette#            
 ; Output: A: Shifted palette#    
 ;-----------------------------------------------------------------------------
-gfx_shift_palette_num:
+palette_shift_num:
     and     $03                   ; Remove extraneous b
     rla                           ; Shift palette # to bits 5 and 6
     rla

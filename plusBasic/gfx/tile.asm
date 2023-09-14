@@ -9,7 +9,7 @@
 ;        HL: Tile #
 ; Clobbered: A,DE,HL
 ;-----------------------------------------------------------------------------
-gfx_set_tile_pixel:
+tile_set_pixel:
     push      hl
     call      _get_set_init       ; HL = TileAddr, A = Video RAM
     ld        d,0
@@ -25,7 +25,7 @@ gfx_set_tile_pixel:
 ;        HL: Tile #
 ; Clobbered: A,BC,DE,HL
 ;-----------------------------------------------------------------------------
-gfx_set_tile:
+tile_set:
     call      _get_set_init       ; HL = TileAddr
     ex        de,hl               ; DE = TileAddr, HL = Dat
     jp        page_write_bytes    ; Write data to tile
@@ -37,7 +37,7 @@ gfx_set_tile:
 ;        DE: Data address
 ; Clobbered: A,BC,DE,HL
 ;-----------------------------------------------------------------------------
-gfx_get_tile:
+tile_get:
     call      _get_set_init       ; HL = TileAddr
     jp        page_read_bytes     ; Read data and return
 

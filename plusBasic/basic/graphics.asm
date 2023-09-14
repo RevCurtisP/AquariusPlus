@@ -2,31 +2,6 @@
 ; Graphics Statements and Functions
 ;====================================================================
 
-; Graphics module jump table offsets
-_startup            equ $00
-_init               equ $03
-_set_screen_mode    equ $06 
-_shift_palette_num  equ $09 
-_set_palette_entry  equ $0C 
-_set_palette        equ $0F
-_get_palette        equ $12
-_set_tile_pixel     equ $15
-_set_tile           equ $18
-_get_tile           equ $1B
-_sprite_set_attr    equ $1E
-_sprite_set_attrs   equ $21
-_sprite_set_color   equ $24
-_sprite_set_colors  equ $27
-_sprite_set_tile    equ $2A
-_sprite_set_tiles   equ $2D
-_spritle_get_attrs  equ $30
-_sprite_get_attrs   equ $33
-_sprite_toggle      equ $36
-_spritle_toggle     equ $39
-_sprite_set_pos     equ $3C
-_spritle_set_pos    equ $3F
-
-
 ;-----------------------------------------------------------------------------
 ; COLOR statement 
 ; syntax: [SET] COLOR [#] palette [, index] [TO | ;] rgb, ...
@@ -36,7 +11,7 @@ ST_COLOR:
     call    SYNCHR                ; Require OR after COL
     byte    ORTK                  
     cp      '#'                   ; If followed with '#'
-    jr      z,ST_SETCOLOR      ;   Set palette
+    jr      z,ST_SETCOLOR         ;   Set palette
     jp      SNERR                 ; No other syntax supported yet
     rst     CHRGET                ; Skip '#'
 ST_SETCOLOR:
@@ -64,8 +39,7 @@ ST_SETCOLOR:
     ld      a,e                   ; Get palette#
     cp      4                     ; If greater than 3
     jp      nc,FCERR              ;   Error
-    ld      ix,_shift_palette_num
-    call    exec_gfx_routine        ; 
+    call    palette_shift_num     ; 
     ld      b,a                   ; B = Shifted palette#
     push    bc                    ; Stack = PltOfs+Entry
     call    FRMEVL                ; Get DataAddr or String
@@ -78,8 +52,7 @@ ST_SETCOLOR:
 .skip
     pop     bc                    ; Get back palette select
     scf
-    ld      ix,_set_palette_entry
-    call    exec_gfx_routine        ; Set the entry (increments C)
+    call    palette_set_entry     ; Set the entry (increments C)
     push    bc                    ; Save palette select again
     call    CHRGT2                ; Reget current character
     jr      z,.done               ; Finish up if terminator
@@ -97,8 +70,7 @@ ST_SETCOLOR:
     ld      a,l                   ; A = Entry#
     ld      l,h                   ; L = PltOfs
     scf                           ; Palette already shifted
-    ld      ix,_set_palette
-    call    exec_gfx_routine        ; Set the entry (increments C)
+    call    palette_set           ; Set the entry (increments C)
     jp      c,OVERR               ; Error if Overflow
     pop     hl                    ; HL = TxtPtr
     ret
@@ -124,8 +96,7 @@ ST_SCREEN:
     push    hl                    ; Stack = TxtPtr, RtnAdr
     cp      24                    ; If greater than 23
     jp      nc,FCERR              ;   Illegal quantity error
-    ld      ix,_set_screen_mode   ; 
-    call    exec_gfx_routine        ; Set Screen Mode
+    call    screen_set_mode       ; 
     pop     hl                    ; HL - TxtPtr; Stack = RtnAdr
     ret
 
@@ -155,8 +126,7 @@ ST_SETTILE:
     ld      c,a                   ; C = Color
     pop     de                    ; DE = Pixel#; Stack = Tile#, RtnAdr
     ex      (sp),hl               ; HL = Tile#, Stack = TxtPtr, RtnAdr
-    ld      ix,_set_tile_pixel    
-    call    exec_gfx_routine        ; Set the entry (increments C)
+    call    tile_set_pixel
     inc     e                     ; Increment Pixel#
     ld      a,16
     cp      e
@@ -177,8 +147,7 @@ ST_SETTILE:
     call    free_addr_len         ; DE = DataAddr, BC = Count
     pop     hl                    ; HL = Tile#; Stack = TxtPtr, RtnAdr
 .set_it:
-    ld      ix,_set_tile      
-    call    exec_gfx_routine        ; Set Tile Data
+    call    tile_set      
     jp      c,OVERR               ; Error if Overflow
     pop     hl                    ; HL = TxtPtr
     ret
@@ -288,8 +257,7 @@ FN_GETTILE:
     call    STRINI                ; Create TmpStr; HL = StrDsc, DE = StrAdr
     ld      bc,32                 ; BC = StrLen
     pop     hl                    ; HL = Tile#; Stack = DummyAdr, TxtPtr, RtnAdr
-    ld      ix,_get_tile
-    call    exec_gfx_routine        ; 
+    call    tile_get
     ld      a,1
     ld      (VALTYP),a            ; Set Type to String
     call    FRESTR                ; Free Temporary
@@ -317,8 +285,7 @@ FN_GETCOL:
     ld      bc,32                 ; BC = StrLen
     pop     hl                    ; HL = Palette#; Stack = DummyAdr, TxtPtr
     ld      a,l
-    ld      ix,_get_palette
-    call    exec_gfx_routine        ; 
+    call    palette_get           ; 
     ld      a,1
     ld      (VALTYP),a            ; Set Type to String
     call    FRESTR                ; Free Temporary
@@ -416,17 +383,17 @@ ST_SETSPRITE:
     rst     CHRGET                ; Skip COL
     rst     SYNCHR                ; Require OR
     byte    ORTK
-    ld      ix,_sprite_set_colors ; IX = JmpOfs
+    ld      ix,sprite_set_colors  ; IX = jump address
     jr      .string_arg            
 
 .tiles
     rst     CHRGET                ; Skip ATTR
-    ld      ix,_sprite_set_tiles  ; IX = JmpOfs
+    ld      ix,sprite_set_tiles   ; IX = jump address
     jr      .string_arg            
 
 .attrs
     rst     CHRGET                ; Skip ATTR
-    ld      ix,_sprite_set_attrs  ; IX = JmpOfs
+    ld      ix,sprite_set_attrs   ; IX = jump address
 
 .string_arg
     push    ix                    ; Stack = JmpOfs, SprAdr, RtnAdr
@@ -437,7 +404,7 @@ ST_SETSPRITE:
     pop     ix                    ; IX = JmpOfs; Stack = SprAdr, RtnAdr
 .do_gfx:
     ex      (sp),hl               ; HL = SprAdr; Stack = TxtPtr, RtnAdr
-    call    exec_gfx_routine        ; HL = SprAdr; Stack = TxtPtr, RtnAdr
+    call    jump_ix               ; HL = SprAdr; Stack = TxtPtr, RtnAdr
     jp      nz,FCERR
     ex      (sp),hl               ; HL = TxtPtr; Stack = SprAdr, RtnAdr
     call    CHRGT2                ; If not Terminator
@@ -452,7 +419,7 @@ ST_SETSPRITE:
     ex      af,af'
     rst     CHRGET                ; Skip ON/OFF
     ex      af,af'
-    ld      ix,_sprite_toggle     ; IX = JmpOfs
+    ld      ix,sprite_toggle      ; IX = jump address
     jr      .do_gfx
 
 .pos                              
@@ -462,7 +429,7 @@ ST_SETSPRITE:
     SYNCHK  ','                   ; Require Comma
     call    GETINT                ; DE = Y-pos
     pop     bc                    ; BC = X-pos; Stack = SprAdr, RtnAdr
-    ld      ix,_sprite_set_pos    
+    ld      ix,sprite_set_pos     ; IX = jump address
     jr      .do_gfx    
     
 ;-----------------------------------------------------------------------------
@@ -492,8 +459,7 @@ FN_GETSPRITE:
     call    STRINI                ; Create BufStr; HL = BufDsc, DE = BufAdr
     call    string_addr_len       ; BC = BufLen, DE = BufAdr
     ex      (sp),hl               ; HL = SprAdr; Stack = BufDsc, DummyAdr, TxtPtr, RtnAdr
-    ld      ix,_sprite_get_attrs
-    call    exec_gfx_routine         
+    call    sprite_get_attrs
     jp      nz,OVERR              ; Sprite and Buffer Size Mismtch
     ld      a,1
     ld      (VALTYP),a            ; Set Type to String
