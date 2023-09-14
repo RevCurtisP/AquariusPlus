@@ -50,7 +50,7 @@ TBLCMDS:
     db $80 + 'T',"ILE"            ; $F0             
     db $80 + 'O',"FF"             ; $F1             
     db $80 + 'M',"AP"             ; $F2             
-    db $80 + ' '                  ; $F3             
+    db $80 + 'F',"ILE"            ; $F3             
     db $80 + 'R',"ESUME"          ; $F4             
     db $80 + 'C',"OL"             ; $F5             
     db $80 + 'S',"CREEN"          ; $F6             
@@ -155,7 +155,7 @@ token_to_keyword:
 ; $F0 TILE        RMDIR               DEL <--> RMDIR
 ; $F1 OFF         OFF
 ; $F2 MAP         WAIT
-; $F3             FILE
+; $F3 FILE        FILE
 ; $F4 RESUME      RESUME
 ; $F5 COL         COL [OR]
 ; $F6 SCREEN

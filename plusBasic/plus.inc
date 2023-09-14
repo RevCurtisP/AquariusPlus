@@ -143,11 +143,13 @@ VCTRL_TEXT_PRIO: equ (1<<4)
 ; BASIC Extended System Constants, Variables and Buffers
 ; Page 36, swapped into Bank 3
 ;-----------------------------------------------------------------------------
-GFX_SYSVARS equ $8000   ; Extended BASIC Graphics System Variables
+GFX_SYSVARS equ $C000   ; Extended BASIC Graphics System Variables
                         ; defined in gfx/gfx.asm
 STRBUFFLEN  equ $00FF   ; Page Address: Length of String in Buffer
 STRBUFF     equ $0100   ; Page Address: String Buffer  - up to 255 chars plus null terminator 
                         ; Must be on 256 byte boundary
+EDITBUFF    equ $0200   ; 256 Byte Edit Buffer
+
 SCREENBUFF  equ $F800   ; For saving screen memory or double-buffering
 
 

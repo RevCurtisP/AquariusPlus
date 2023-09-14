@@ -181,7 +181,7 @@ _coldboot:
 .print_basic
     call    print_string_immd
 .plus_text
-    db "plusBASIC v0.12a", 0
+    db "plusBASIC v0.12b", 0
 .plus_len   equ   $ - .plus_text
 
     call    CRDO
@@ -609,6 +609,10 @@ _trap_error:
 ;-----------------------------------------------------------------------------
     include "util.asm"
 
+;-----------------------------------------------------------------------------
+; plusBASIC tokens
+;-----------------------------------------------------------------------------
+    include "tokens.asm"        ; Keyword list and tokenize/expand routines
 
 ;-----------------------------------------------------------------------------
 ; Primitive debugger
@@ -718,7 +722,6 @@ fast_hook_handler:
     include "fileio.asm"        ; Disk and File I/O statements and functions
     include "graphics.asm"      ; Graphics statements and functions
     include "plus.asm"          ; plusBASIC unique statements and functions
-    include "tokens.asm"        ; Keyword list and tokenize/expand routines
     include "usbbas.asm"        ; Statements and functions from USB BASIC
     include "shared.asm"        ; Shared subroutines
 
