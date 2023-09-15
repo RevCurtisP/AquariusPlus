@@ -24,7 +24,7 @@ TBLCMDS:
     db $80 + 'L',"OCATE"          ; $D6
     db $80 + 'O',"UT"             ; $D7
     db $80 + 'P',"SG"             ; $D8
-    db $80 + 'D',"EBUG"           ; $D9   Not Implemented
+    db $80 + 'M',"OUSE"           ; $D9   Not Implemented
     db $80 + 'C',"ALL"            ; $DA
     db $80 + 'L',"OAD"            ; $DB
     db $80 + 'S',"AVE"            ; $DC
@@ -64,6 +64,7 @@ TBLCMDS:
 ;-----------------------------------------------------------------------------
 GETTK     equ     $CD
 TIMETK    equ     $D3    
+MOUSTK    equ     $D9
 CDTK      equ     $E0
 KEYTK     equ     $E7
 ARGSTK    equ     $E8
@@ -129,7 +130,7 @@ token_to_keyword:
 ; $D6 LOCATE      LOCATE 
 ; $D7 OUT         OUT    
 ; $D8 PSG         PSG    
-; $D9 DEBUG*      DEBUG  
+; $D9 MOUSE       DEBUG  
 ; $DA CALL        CALL   
 ; $DB LOAD        LOAD   
 ; $DC SAVE        SAVE   
@@ -161,7 +162,7 @@ token_to_keyword:
 ; $F6 SCREEN
 ; $F7 SET
 ; $F8 ATTR
-; $F9 MOUSE
+; $F9 
 ; $FA
 ; $FB
 ; $FC

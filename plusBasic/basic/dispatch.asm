@@ -109,7 +109,7 @@ STJUMPS:
     dw      ST_LOCATE             ;$D6 LOCATE 
     dw      ST_OUT                ;$D7 OUT    
     dw      ST_PSG                ;$D8 PSG    
-    dw      SNERR                 ;$D9 DEBUG  
+    dw      SNERR                 ;$D9 MOUSE
     dw      ST_CALL               ;$DA CALL   
     dw      ST_LOAD               ;$DB LOAD   
     dw      ST_SAVE               ;$DC SAVE   
@@ -193,7 +193,7 @@ FNJUMPS:
     dw      SNERR                 ;$D6 LOCATE 
     dw      SNERR                 ;$D7 OUT    
     dw      SNERR                 ;$D8 PSG    
-    dw      SNERR                 ;$D9 DEBUG  
+    dw      SNERR                 ;$D9 MOUSE  
     dw      SNERR                 ;$DA CALL   
     dw      SNERR                 ;$DB LOAD   
     dw      SNERR                 ;$DC SAVE   

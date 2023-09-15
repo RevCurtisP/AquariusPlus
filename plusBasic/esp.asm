@@ -249,7 +249,8 @@ esp_get_de:
     call    esp_get_byte       ; Read LSB
     ld      e,a                   ; into E
     call    esp_get_byte       ; Read MSB
-    ld      d,a                   ; into D
+    ld      d,a                ; into D
+    xor     a                  ; Return success
     ret
 
 ;-----------------------------------------------------------------------------t
@@ -266,26 +267,14 @@ esp_get_bc:
 
 ;-----------------------------------------------------------------------------
 ; Wait for data from ESP
-; Time Out = 1500 milliseconds - (43 + 82 * 65536) / 3.579545 microseconds
 ;-----------------------------------------------------------------------------
 esp_get_byte:
-;    push    bc                    ;+11	
-                                  	
-.wait:                            
-;    dec     bc                    ;+6	
-;    ld      a,b                   ;+4	
-;    or      c                     ;+4	
-;    jr      z,.timeout            ;+7+5
-    in      a, (IO_ESPCTRL)       ;+11	
-    and     a, 1                  ;+7	
-    jr      z, .wait              ;+7+5
-    in      a, (IO_ESPDATA)       ;+11	
- ;   pop     bc                    ;+10	
-    ret                           ;+10	
-;.timeout                          
-;    ld      a,-9                  ;+7	
-;    pop     bc                    ;+10	
-;    ret                           ;+10	
+.wait:
+    in      a, (IO_ESPCTRL)
+    and     a, 1
+    jr      z, .wait
+    in      a, (IO_ESPDATA)
+    ret
 
 
 ;-----------------------------------------------------------------------------
@@ -295,7 +284,6 @@ esp_get_byte:
 ;           BC: String Length
 ; Destroys: HL
 ;-----------------------------------------------------------------------------
-
 esp_send_strdesc: 
     ld      a,h                   ; If HL is 0
     or      l
@@ -546,7 +534,7 @@ esp_tell:
 ; Output:  E: String Length, DE = End of String, HL = Buffer Address
 ;-----------------------------------------------------------------------------
 esp_get_datetime:
-    ld      a,ESPCMD_DATETIME     ; Issue CWD command
+    ld      a,ESPCMD_DATETIME     ; Issue DATETIME command
     call    esp_cmd
     xor     a     
     call    esp_send_byte         ; Response Type ($00)
@@ -554,6 +542,21 @@ esp_get_datetime:
     ret     m                     
     jp      esp_read_to_buff      
 
+;-----------------------------------------------------------------------------
+; esp_get_mouse - Read date and time into string buffer
+; Output:  A: 0 if succesful, else error code
+;          B: Button State      
+;          C: Y-position
+;         DE: X-position
+;-----------------------------------------------------------------------------
+esp_get_mouse:
+    ld      a,ESPCMD_GETMOUSE     ; Issue MOUSE command
+    call    esp_cmd
+    xor     a     
+    call    esp_get_result
+    ret     m                     
+    jp      esp_get_long
+    
 ;-----------------------------------------------------------------------------
 ; esp_error
 ;-----------------------------------------------------------------------------

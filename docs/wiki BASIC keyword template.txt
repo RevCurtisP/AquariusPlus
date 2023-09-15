@@ -14,7 +14,7 @@ Text:
 
 ***
 
-**FORMAT:** KEYWORD [args]
+**FORMAT:** KEYWORD _arg_ , _arg_ ...
 
 **Action:** descriptive text
  - 

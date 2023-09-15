@@ -137,7 +137,7 @@ sprite_set_tiles:
     ld      a,c                   ; Get tile count
     srl     a
     cp      (hl)                  ; If not equal to spritle count
-    ret     nz                    ;   Return NZ (error)
+    jr      nz,.ret               ;   Return NZ (error)
     ld      b,(hl)                ; B = spritle/tile count
     ex      de,hl                 ; DE = SprAdr, HL = TilAdr
 .loop 
@@ -154,6 +154,7 @@ sprite_set_tiles:
     pop     de                    ; DE = SprAdr
     djnz    .loop                 ; Do next one
     xor     a                     ; Return Z (success)
+.ret
     pop     hl
     ret
 

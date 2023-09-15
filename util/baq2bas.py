@@ -144,6 +144,7 @@ tokens = {
     0XE7: "KEY",
     0xE8: "ARGS",
     0xE9: "ERR",
+    0xEA: "STRING",
     0xED: "EVAL",
     0xEF: "SPRITE",
     0xF0: "TILE",

@@ -147,6 +147,7 @@ tokens = {
     0XE7: "KEY",
     0xE8: "ARGS",
     0xE9: "ERR",
+    0xEA: "STRING",
     0xED: "EVAL",
     0xEF: "SPRITE",
     0xF0: "TILE",
@@ -168,7 +169,7 @@ def error(idx, message):
 args.output.write(
     12 * b"\xFF"
     + b"\x00"
-    + (args.input.name.upper() + "      ")[0:6].encode()
+    + "AQPLUS".encode()
     + 12 * b"\xFF"
     + b"\x00"
 )

@@ -41,6 +41,8 @@ FN_GET:
     jp      z,FN_GETTILE
     cp      SPRITK
     jp      z,FN_GETSPRITE
+    cp      MOUSTK
+    jr      z,FN_GETMOUSE
     rst     SYNCHR                ; Must be GETKEY
     byte    KEYTK
 
@@ -64,6 +66,38 @@ FN_GETKEY:
     jp      nz,SNGFLT             ; If not GETKEY$, Float it
     pop     bc                    ; Get rid of dummy return address
     jp      BUFCIN                ; Else Return String
+
+;-----------------------------------------------------------------------------
+; GETMOUSEB - Returns mouse buttons
+; GETMOUSEX - Returns mouse x-position
+; GETMOUSEY - Returns mouse y-position
+;-----------------------------------------------------------------------------
+FN_GETMOUSE:
+    rst     CHRGET                ; Skip MOUSE token
+    jr      z,_snerr              ;   Error
+    ex      af,af'               
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    push    hl                    ; Stack = DummyAdr, TxtPtr, RtnAdr
+    call    esp_get_mouse         ; B = buttons, C = ypos, DE = xpos
+    jr      nz,.not_found
+    ex      af,af'
+    cp      'X'
+    jr      z,.xpos
+    cp      'Y'
+    jr      z,.ypos
+    cp      'B'
+    jr      z,.buttons
+    jr      _snerr
+.buttons
+    ld      c,b
+.ypos:
+    ld      a,c
+    jp      SNGFLT
+.not_found:
+    ld      de,-1
+.xpos:   
+    jp      FLOAT_DE
+
     
 ;-----------------------------------------------------------------------------
 ; GET statements stub
@@ -71,6 +105,7 @@ FN_GETKEY:
 ST_GET: 
     cp      ARGSTK
     jp      z,ST_GETARGS
+_snerr:
     jp      SNERR    
 
 ;-----------------------------------------------------------------------------
