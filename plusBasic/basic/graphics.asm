@@ -174,7 +174,7 @@ ST_DEFATTR:
     jr      .loop                 ;   and get next tile#
     
 ;-----------------------------------------------------------------------------
-; DEF COLORLIST T$ = tile#, tile#, ...
+; DEF COLORLIST T$ = palette#, palette#, ...
 ; tile# is a integet between 0 and 511
 ;-----------------------------------------------------------------------------
 ST_DEFCOLOR:
@@ -183,7 +183,9 @@ ST_DEFCOLOR:
     byte    ORTK                  ; Require OR
     call    _setupdef
 .loop
-    call    get_byte16            ; Get color
+    call    GETBYT                ; Get palette#
+    cp      4                     ; If >=4
+    jp      nc,FCERR              ;   Error
     call    sbuff_write_byte      ; Write it to string buffer
     call    CHRGT2                ; Reget next character
     jr      z,_finish_def         ; If not end of statement
