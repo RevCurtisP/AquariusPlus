@@ -545,9 +545,9 @@ esp_get_datetime:
 ;-----------------------------------------------------------------------------
 ; esp_get_mouse - Read date and time into string buffer
 ; Output:  A: 0 if succesful, else error code
-;          B: Button State      
-;          C: Y-position
-;         DE: X-position
+;         BC: X-position
+;          E: Button State      
+;          D: Y-position
 ;-----------------------------------------------------------------------------
 esp_get_mouse:
     ld      a,ESPCMD_GETMOUSE     ; Issue MOUSE command

@@ -153,7 +153,22 @@ ST_SETTILE:
     ret
 
 ;-----------------------------------------------------------------------------
-; DEF ATTRLIST T$ = attr#, attr#, ...
+; SET TILEMAP
+; SET TILEMAP OFFSET x,y 
+;-----------------------------------------------------------------------------
+
+;-----------------------------------------------------------------------------
+; GETMAPX, GETMAPY
+;-----------------------------------------------------------------------------
+
+;-----------------------------------------------------------------------------
+; MAP TILE
+; MAP TILE tile# TO x,y ; tile# TO x,y ...
+; MAP TILELIST tilelist$ TO x,y LEN width STEP step
+;-----------------------------------------------------------------------------
+
+;-----------------------------------------------------------------------------
+; DEF ATTRLIST A$ = attr#, attr#, ...
 ; attr# is an even integet between 0 and 127
 ;   Bit 6 = Priority
 ; Bit 4-5 = Palette# 
@@ -350,7 +365,7 @@ _get_byte:
     ret
 
 ;-----------------------------------------------------------------------------
-; SET SPRITE sprite$ [ON/OFF] [POS x,y] [TILE tilelst$] COLOR [colorlist$] [ATTR attrlist$]
+; SET SPRITE sprite$ [ON/OFF] [POS x,y] [TILE tilelist$] COLOR [colorlist$] [ATTR attrlist$]
 ; Attributes: Priority (64), Double-Height (8), Vertical Flip (4), Horizontal Flip (2)
 ;-----------------------------------------------------------------------------
 ST_SETSPRITE:

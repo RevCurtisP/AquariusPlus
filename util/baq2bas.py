@@ -128,7 +128,7 @@ tokens = {
     0xD6: "LOCATE",
     0xD7: "OUT",
     0xD8: "PSG",
-    0xD9: "DEBUG",
+    0xD9: "MOUSE",
     0xDA: "CALL",
     0xDB: "LOAD",
     0xDC: "SAVE",

@@ -50,3 +50,35 @@ _get_set_init:
     pop       bc
     ld        a,VIDEO_RAM
     ret
+    
+;-----------------------------------------------------------------------------
+; Set tilemap offset
+; Inpuit: BC: X-Offset
+;        DE: Y-Offset
+; Clobbered: A
+;-----------------------------------------------------------------------------
+tilemap_set_offset:
+    ld        a,c
+    out       (IO_VSCRX_L),a
+    ld        a,b
+    out       (IO_VSCRX_H),a
+    ld        a,e
+    out       (IO_VSCRY),a
+    ret
+    
+;-----------------------------------------------------------------------------
+; Get tilemap offset
+; Input: BC: X-Offset
+;        DE: Y-Offset
+; Clobbered: A
+;-----------------------------------------------------------------------------
+tilemap_get_offset:
+    in        a,(IO_VSCRX_L)
+    ld        c,a
+    in        a,(IO_VSCRX_H)
+    ld        b,a
+    in        a,(IO_VSCRY)
+    ld        e,a
+    ld        d,0
+    ret
+

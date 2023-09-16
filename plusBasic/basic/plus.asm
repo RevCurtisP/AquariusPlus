@@ -42,7 +42,7 @@ FN_GET:
     cp      SPRITK
     jp      z,FN_GETSPRITE
     cp      MOUSTK
-    jr      z,FN_GETMOUSE
+    jr      z,FN_MOUSE
     rst     SYNCHR                ; Must be GETKEY
     byte    KEYTK
 
@@ -68,17 +68,19 @@ FN_GETKEY:
     jp      BUFCIN                ; Else Return String
 
 ;-----------------------------------------------------------------------------
-; GETMOUSEB - Returns mouse buttons
-; GETMOUSEX - Returns mouse x-position
-; GETMOUSEY - Returns mouse y-position
+; MOUSEB - Returns mouse buttons
+; MOUSEX - Returns mouse x-position
+; MOUSEY - Returns mouse y-position
 ;-----------------------------------------------------------------------------
-FN_GETMOUSE:
+FN_MOUSE:
     rst     CHRGET                ; Skip MOUSE token
     jr      z,_snerr              ;   Error
     ex      af,af'               
+    rst     CHRGET                ; Skip Character after MOUSE
     push    hl                    ; Stack = TxtPtr, RtnAdr
-    push    hl                    ; Stack = DummyAdr, TxtPtr, RtnAdr
-    call    esp_get_mouse         ; B = buttons, C = ypos, DE = xpos
+    ld      bc,LABBCK
+    push    bc                    ; Stack = LABBCK, TxtPtr, RtnAdr
+    call    esp_get_mouse         ; BC = xpos, D = buttons, E = ypos 
     jr      nz,.not_found
     ex      af,af'
     cp      'X'
@@ -89,14 +91,15 @@ FN_GETMOUSE:
     jr      z,.buttons
     jr      _snerr
 .buttons
-    ld      c,b
+    ld      a,d
+    byte    $06                   ; LD B, over next instruction
 .ypos:
-    ld      a,c
+    ld      a,e
     jp      SNGFLT
 .not_found:
-    ld      de,-1
+    ld      bc,-1
 .xpos:   
-    jp      FLOAT_DE
+    jp      FLOAT_BC
 
     
 ;-----------------------------------------------------------------------------

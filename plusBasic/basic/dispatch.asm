@@ -193,7 +193,7 @@ FNJUMPS:
     dw      SNERR                 ;$D6 LOCATE 
     dw      SNERR                 ;$D7 OUT    
     dw      SNERR                 ;$D8 PSG    
-    dw      SNERR                 ;$D9 MOUSE  
+    dw      FN_MOUSE              ;$D9 MOUSE  
     dw      SNERR                 ;$DA CALL   
     dw      SNERR                 ;$DB LOAD   
     dw      SNERR                 ;$DC SAVE   

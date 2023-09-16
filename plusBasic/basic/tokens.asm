@@ -24,7 +24,7 @@ TBLCMDS:
     db $80 + 'L',"OCATE"          ; $D6
     db $80 + 'O',"UT"             ; $D7
     db $80 + 'P',"SG"             ; $D8
-    db $80 + 'M',"OUSE"           ; $D9   Not Implemented
+    db $80 + 'M',"OUSE"           ; $D9   
     db $80 + 'C',"ALL"            ; $DA
     db $80 + 'L',"OAD"            ; $DB
     db $80 + 'S',"AVE"            ; $DC
@@ -163,8 +163,8 @@ token_to_keyword:
 ; $F7 SET
 ; $F8 ATTR
 ; $F9 
-; $FA
-; $FB
+; $FA OPEN
+; $FB CLOSE
 ; $FC
 ; $FD
 ; $FE
