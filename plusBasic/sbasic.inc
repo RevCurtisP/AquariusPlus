@@ -212,6 +212,9 @@ BUFCIN      equ $1A02   ; Return A as string from function
 NULRT       equ $1A0B   ; Return null string
 CHARCG      equ $1A18   ; Get keypress, check for Ctrl-C
 WRMCON:     equ $1A40
+RSETCC      equ $1A5D   ; Partway into PSET/PRESET`
+SCAND       equ $1A7F   ; Get parameters for PSET, PRESET, POINT, and SOUND
+SCALXY      equ $1A8E   ; Convert PSET Coordinates to Screen Position and Character Mask
 BITTAB      equ $1ACA   ; Semigraphic Pixel Index to Bit Mask Table
 GETINT      equ $1AD0   ; Parse an Integer
 COPY        equ $1B15   ; Execute COPY statement

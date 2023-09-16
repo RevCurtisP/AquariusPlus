@@ -4641,7 +4641,7 @@ PPRSDO: call    SCALXY            ;;Convert X,Y
         jr      z,RSETC           ;;Semigraphics at screen location?
         ld      (hl),$A0          ;;No, store base semigraphic
 RSETC:  ex      af,af'            ;;Restore PSET/PRESET flag
-        or      a                 ;;Set flags
+RSETCC: or      a                 ;;Set flags
         ld      a,(de)            ;;Get semigraphic offset
         jr      nz,PSETC          ;;PRESET?
         cpl                       ;;Invert to create mask

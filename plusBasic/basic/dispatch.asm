@@ -44,8 +44,8 @@ STJUMPS:
     dw      $0CCD                 ;$99 CLEAR             
     dw      $1C2C                 ;$9A CLOAD             
     dw      $1C08                 ;$9B CSAVE             
-    dw      $1A4F                 ;$9C PSET              
-    dw      $1A51                 ;$9D PRESET            
+    dw      ST_PSET               ;$9C PSET              
+    dw      ST_PRESET             ;$9D PRESET            
     dw      $1AD6                 ;$9E SOUND             
     dw      $0BBD                 ;$9F NEW
 ;Miscellaneous Functions
