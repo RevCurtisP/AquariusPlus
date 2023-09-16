@@ -181,7 +181,7 @@ _coldboot:
 .print_basic
     call    print_string_immd
 .plus_text
-    db "plusBASIC v0.12c", 0
+    db "plusBASIC v0.12d", 0
 .plus_len   equ   $ - .plus_text
 
     call    CRDO
@@ -300,8 +300,14 @@ descramble_rom:
 
 ;-----------------------------------------------------------------------------
 ; VBLANK Interrupt Handler
+; Use screen holes for temporary stack
+;
 ;-----------------------------------------------------------------------------
 _interrupt:
+    
+
+
+
     ret
 
 ;-----------------------------------------------------------------------------

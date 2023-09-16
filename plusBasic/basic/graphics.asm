@@ -365,6 +365,8 @@ ST_SETSPRITE:
     ex      (sp),hl               ; HL = TxtPtr; Stack = SprAdr, RtnAdr
     ld      a,(hl)                ; Get current character
 .loop
+    cp      ';'
+    jr      z,.nextsprite
     cp      POSTK
     jr      z,.pos
     cp      ATTRTK                
@@ -378,6 +380,10 @@ ST_SETSPRITE:
     cp      OFFTK
     jr      z,.off
     jp      SNERR
+    
+.nextsprite    
+    pop     de                    ; HL = TxtPtr; Stack = RtnAdr
+    jr      ST_SETSPRITE
     
 .color
     rst     CHRGET                ; Skip COL
@@ -399,7 +405,6 @@ ST_SETSPRITE:
     push    ix                    ; Stack = JmpOfs, SprAdr, RtnAdr
     call    get_string_arg        ; BC = StrLen, DE = StrAdr, HL = StrDsc; Stack = TxtPtr, JmpOfs, SprAdr, RtnAdr
 
-
     pop     hl                    ; HL = TxtPtr; Stack = JmpOfs, SprAdr, RtnAdr
     pop     ix                    ; IX = JmpOfs; Stack = SprAdr, RtnAdr
 .do_gfx:
@@ -409,8 +414,8 @@ ST_SETSPRITE:
     ex      (sp),hl               ; HL = TxtPtr; Stack = SprAdr, RtnAdr
     call    CHRGT2                ; If not Terminator
     jr      nz,.loop              ; Get Next Argument
-    pop     bc                    ; Stack = RtnAdr
-    ret
+    pop     bc                    ;   Stack = RtnAdr
+    ret     
 
 .on
     byte    $3E                   ; LD A,$AF, Non-Zero = On

@@ -325,7 +325,7 @@ sprite_set_pos:
     out     (IO_VSPRY),a          ; and write it
     ex      af,af'
     dec     a
-    jr      nz,.loop
+    jr      nz,.loop              ; 144 cycles per loop = 
     pop     hl                    ; HL = SprAdr; Stack = RtnAdr
     ret
 

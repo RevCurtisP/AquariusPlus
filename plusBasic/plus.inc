@@ -1,7 +1,7 @@
 ;-----------------------------------------------------------------------------
 ; regs.inc
 ;
-; Aquarius+ I/O Registers, Memory Banks, and System Variables
+; Aquarius+ I/O Registers and Memory Banks
 ;-----------------------------------------------------------------------------
 
 ;-----------------------------------------------------------------------------
@@ -49,23 +49,35 @@ TILE_MAP        equ $3000
 ;-----------------------------------------------------------------------------
 ; plusBASIC System variables
 ;-----------------------------------------------------------------------------
-; Screen and Color RAM Holes
-INTSTCK     equ $33FD   ; Top of Interrupt stemporary stack $33E8 - $33FF
-BORDERCHR   equ $33FE   ; Border character alternate memory location
-PLUSTCK     equ $37FD   ; Top of plusBASIC temporary stack $37E8 - $37FF
-BORDERCLR   equ $37FE   ; Border character alternate memory location
+; Screen RAM Hole
+; Used to save registers during interrupt, during which the mapping of pages 
+; into banks is unknown and the stack may not be visible to the Z80
 
+        ; $33E8-$33E9   ; Unused
+INTSAVB0    equ $33F0
+INTSAVB2    equ $33F1
+INTSAVB3    equ $33F2
+INTSAVAF    equ $33F4
+INTSAVBC    equ $33F6
+INTSAVDE    equ $33F8
+INTSAVHL    equ $33FA
+INTSAVSP    equ $33FC   ; Interrupt Stack Pointer Save
+;               $33FE   ; Unused
+BORDERCHR   equ $33FF   ; Border character alternate memory location
+; Color RAM Hole
+; Used as a temporary stack while alternate pages are mapped into banks 1 and 2
+PLUSTCK     equ $37ED   ; Top of plusBASIC temporary stack $37E8 - $37FF
+BORDERCLR   equ $37FF   ; Border character alternate memory location
 ; RNDTAB ($3821-$3840) - Deprecated RND Permutation Table
 BASINTPG    equ $3821   ; BASIC Interrupt Routine Page (swapped into BANK 3)
 BASINTJP    equ $3822   ; BASIC Interrupt Routine JP instruction
               ; $3823   ; BASIC Interrupt Routine JP Address
               ; $3825   ; unused
-
 ; Paging Variables
-BANK0PAGE   equ $3826   ; Page that was in Banked 0
-BANK1PAGE   equ $3827   ; Page that was in Banked 1
-BANK2PAGE   equ $3828   ; Page that was in Banked 2
-BANK3PAGE   equ $3829   ; Page that was in Banked 3
+BANK0PAGE   equ $3826   ; Page that was in Bank 0
+BANK1PAGE   equ $3827   ; Page that was in Bank 1
+BANK2PAGE   equ $3828   ; Page that was in Bank 2
+BANK3PAGE   equ $3829   ; Page that was in Bank 3
 ;Used by ON ERROR. Must be in in consecutive order: ERRLIN,ERRFLG,ONEFLG,ONELIN
 ERRLIN      equ $382A   ; LINE NUMBER WHERE LAST ERROR OCCURED.
 ERRFLG      equ $382C   ; USED TO SAVE THE ERROR NUMBER SO EDIT CAN BE
