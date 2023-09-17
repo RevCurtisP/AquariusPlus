@@ -1,0 +1,34 @@
+Semi-Compiled BASIC program
+
+First Line Link is to end of variable allocation
+First Line Number is $FFFE
+Store start of vars, arrays at beginning of first line
+
+CLEAR 
+  check first lin number
+  sets all vars and array elements to 0
+
+Disable LIST
+  Patch LIST to check first line number
+
+Adding new line
+  Use Hook 3 to check first line number
+
+Literals Variables and arrays
+  Bit 4 (16): 1 = Embedded Value
+  Bit 3  (8): 1 = Line Address  
+  Bit 2  (4): 0 = Simple Variable, 1 = Array     
+  Bit 1  (2): 0 = Literal, 1 = Variable
+  Bit 0  (1): 0 = Float, 1 = String
+
+Float Literal:   16, binary_float
+String Literal:  17, string_descriptor
+Float Variable:  18, variable_address
+String Variable: 19, variable_address
+Float Array:     22, array_dimensions_address?
+String Array:    23, array_dimensions_address?
+Line Address     24, address
+
+Handling Embedded Values
+  GOTO and GOSUB - Modify SCNLBL
+  All others - Modify Hook 9 eval_ext
