@@ -22,6 +22,9 @@ gfx_jump_table
     jp      sprite_get_attrs      ; $8033
     jp      sprite_toggle         ; $8036
     jp      spritle_toggle        ; $8039
-    jp      sprite_set_pos        ; $803C
-    jp      spritle_set_pos       ; $803F
-
+    jp      spritle_toggle_all    ; $803C
+    jp      sprite_set_pos        ; $803F
+    jp      spritle_set_pos       ; $8042
+    jp      spritle_clear         ; $8045
+    jp      spritle_clear_all     ; $8048
+    

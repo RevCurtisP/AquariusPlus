@@ -181,11 +181,13 @@ _coldboot:
 .print_basic
     call    print_string_immd
 .plus_text
-    db "plusBASIC v0.12g", 0
+    db "plusBASIC v0.12h", 0
 .plus_len   equ   $ - .plus_text
 
     call    CRDO
     call    CRDO
+
+    call    spritle_clear_all   ; Clear all sprite properties
 
     jp      INITFF              ; Continue in ROM
 
@@ -415,7 +417,9 @@ clear_esp_fdesc:
 ; Hook 12 - SCRTCH (Execute NEW statement)
 ;-----------------------------------------------------------------------------
 _scratch:
-    call  clear_all_errvars
+    call    clear_all_errvars
+    ld      c,0
+    call    spritle_toggle_all    ; Disable all sprites
     jp      HOOK12+1
 
 ;-----------------------------------------------------------------------------
@@ -435,10 +439,6 @@ statement_ret:
     out     (IO_BANK3),a          ; Bank it Back in
     ret                           ; Return to NEWSTT
     
-; run "progs/lbltest.bas"
-
-; run "progs/restest.bas"
-
 ;-----------------------------------------------------------------------------
 ; GOTO and RESUME hack
 ; Check for label at beginning of line, then search for it's line

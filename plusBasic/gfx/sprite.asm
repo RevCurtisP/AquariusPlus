@@ -252,7 +252,36 @@ spritle_get_attrs:
     ex    af,af'
     ret
 
+;-----------------------------------------------------------------------------
+; Clear all properties of a spritle
+; Input: A: sprite #  0-63
+; Clobbers: BC
+;-----------------------------------------------------------------------------
+spritle_clear:
+    out     (IO_VSPRSEL),a        ; Select sprite
+    ex      af,af'
+    xor     a
+    ld      c,$E5
+    ld      b,5
+.loop
+    out     (c),a
+    inc     c
+    djnz    .loop
+    ex      af,af'
+    ret
 
+;-----------------------------------------------------------------------------
+; Clear all properties of all spritles
+; Clobbers: A,BC
+;-----------------------------------------------------------------------------
+spritle_clear_all:
+    ld      a,63
+spritle_clear_a2z:
+    call    spritle_clear
+    dec     a
+    ret     m
+    jr      spritle_clear_a2z
+    ret
 
 ;-----------------------------------------------------------------------------
 ; Enable/disable sprite
@@ -272,7 +301,7 @@ sprite_toggle:
     inc     hl                    ; Skip Y-offset
     inc     hl                    ; Next spritle entry
     ld      a,(hl)                ; Get spritle#
-    call    spritle_toggle    ; Toggle it
+    call    spritle_toggle        ; Toggle it
     djnz    .loop
     xor     a                     ; No Errors
     ret
@@ -283,17 +312,30 @@ sprite_toggle:
 ;        C: 128 = Enable, $0 = Disable
 ;-----------------------------------------------------------------------------
 spritle_toggle:
-    out   (IO_VSPRSEL),a          ; Select sprite
-    ex    af,af'
-    ld    a,$80                   ; Only Enable Bit
-    and   c
-    ld    c,a 
-    in    a,(IO_VSPRATTR)         ; Get current attributes
-    and   $7F                     ; Keep all other attributes
-    or    c                       ;   Set enable bit
-    out   (IO_VSPRATTR),a         ; and write back out
-    ex    af,af'
+    out     (IO_VSPRSEL),a        ; Select sprite
+    ex      af,af'
+    ld      a,$80                 ; Only Enable Bit
+    and     c
+    ld      c,a 
+    in      a,(IO_VSPRATTR)       ; Get current attributes
+    and     $7F                   ; Keep all other attributes
+    or      c                     ;   Set enable bit
+    out     (IO_VSPRATTR),a       ; and write back out
+    ex      af,af'
     ret
+
+;-----------------------------------------------------------------------------
+; Enable/Disable all spritles
+; Input: C: 128 = Enable, $0 = Disable
+; Clobbers: A
+;-----------------------------------------------------------------------------
+spritle_toggle_all:
+    ld      a,63
+spritle_toggle_a2z:
+    call    spritle_toggle
+    dec     a
+    ret     m 
+    jr      spritle_toggle_a2z
 
 ;-----------------------------------------------------------------------------
 ; Set sprite position

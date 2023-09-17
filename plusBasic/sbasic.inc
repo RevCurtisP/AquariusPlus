@@ -235,12 +235,14 @@ XINIT:      equ $E010   ; Cartridge entry point
 ; Standard BASIC Tokens
 GOTOTK      equ $88     ; GOTO
 GOSUTK      equ $8C     ; GOSUB
+RETTK       equ $8D     ; RETURN
 ONTK        equ $90     ; ON
 DEFTK       equ $93     ; DEF
 LISTTK      equ $97     ; LIST
+CLRTK       equ $99     ; CLEAR
 PLUSTK      equ $A8     ; +
-RETTK       equ $8D     ; RETURN
 TOTK        equ $A1     ; TO
+MULTK       equ $AA     ; *
 ORTK        equ $AE     ; OR
 EQUATK      equ $B0     ; = 
 INTTK       equ $B3     ; INT

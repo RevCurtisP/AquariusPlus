@@ -370,6 +370,8 @@ _get_byte:
 ;-----------------------------------------------------------------------------
 ST_SETSPRITE:
     rst     CHRGET                ; Skip SPRITE
+    cp      MULTK                 ; If *
+    jr      z,.all                ;   Set all Sprites
     call    get_stringvar         ; DE = SprPtr
     jp      z,MOERR               ; Missing Operand Error
     push    hl                    ; Stack = TxtPtr, RtnAdr
@@ -453,6 +455,19 @@ ST_SETSPRITE:
     pop     bc                    ; BC = X-pos; Stack = SprAdr, RtnAdr
     ld      ix,sprite_set_pos     ; IX = jump address
     jr      .do_gfx    
+    
+.all
+    rst     CHRGET                ; Skip *
+    cp      CLRTK                 ; If CLEAR
+    jr      z,.allreset           ;   Reset all spritles
+    rst     SYNCHR                ; Else
+    byte    OFFTK                 ;   SNERR if not OFF
+.alloff
+    ld      c,0
+    jp      spritle_toggle_all    ; Disable all off and return
+.allreset
+    rst     CHRGET                ; Skip CLEAR
+    jp      spritle_clear_all     
     
 ;-----------------------------------------------------------------------------
 ; GETSPRITE Attributes
