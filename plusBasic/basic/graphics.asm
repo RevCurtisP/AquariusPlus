@@ -340,7 +340,7 @@ FN_GETCOL:
     jp      FINBCK                ; Return String
 
 ;-----------------------------------------------------------------------------
-; DEF SPRITE sprite$ = spritle#, x-offset, y-offset; spritle#, x-offset, y-offset;
+; DEF SPRITE sprite$ = spritle#, x-offset, y-offset; spritle#, x-offset, y-offset
 ;-----------------------------------------------------------------------------
 ST_DEFSPRITE:
     rst     CHRGET                ; Skip SPRITE

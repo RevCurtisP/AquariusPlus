@@ -5,44 +5,64 @@ Requires S3 BASIC assembled with "aqplus" switch
 ## BASIC Language Enhancements 
 
 ### Experimental
-  - `INKEY` - like `INKEY$` but returns ASCII code of key pressed
-  - `GETKEY` - like `INKEY` but waits for keypress
-  - `GETKEY$` - like `INKEY$` but waits for keypress
-  - `ON ERROR GOTO` - Error trapping
-  - `ERR` pseudo-variable returns last error number
-  - `ERR#` pseudo-variable returns last error message
-  - `ERRLINE` pseudo-variable returns line last error occured in
-  - `RESUME` - clear error condition and continue
-  - `POKE!` and `PEEK!` always return a positive integer
-  - `GOSUB line : ARGS arglist` - pass arguments to subroutine
-  - `GOSUB line : ARGS arglist RETURN varlist` - get values returned by subroutine
-  - `GETARGS varlist` - get arguments passed to subroutine
-  - `RETURN vallist` - return values from subroutine
-  - `SCREEN mode` - select screen mode (text, tile, bitmap, sprites)
-  - `COLOR #palette, entrylist` - set a palette
-  - `COPY @source TO @dest` - copy entire page
+  - `SET SPRITE sprite$ TO proplist$` - set sprite properties
+  - `SET TILEMAP OFFSET x , y` - set tilemap offset
+  - `TILEMAPX` pseudo-variable returns tilemap x-offset
+  - `TILEMAPY` pseudo-variable returns tilemap y-offset
+    
+### Live
+  - Hexadecimal integer and string literals.
+  - All statements and functions that use an address accept -65535 to 65535
   - Optional line labels
     - Useable with `GOTO`, `GOSUB`, an `RESTORE`
   - BASIC now displays long error messages
     - e.g. `Syntax error` instead of `?SN error`
     - Function Call error now displays `Illegal quantity`
-    
-### Live
+  - `CD$` pseudo-variable returns current path
+  - `CLS fgcolor, bgcolor` - Clear screen to specified colors
+  - `COLOR #palette, entrylist` - set a palette
+  - `COPY @source TO @dest` - copy entire page
+  - `COPY [@page], src, len TO [@page], dst` - copy memory from one location to another
+  - `DATE$` pseudo-variable returns current date "YYYYMMDD"
+  - `DATETIME$` pseudo-variable returns date and time "YYYYMMDD"
+  - `DEF ATTRLIST var$ = attr, attr, ...` - create attribute list
+  - `DEF COLORLIST var$ = palette#, palette#, ...` - create color palette list
+  - `DEF INTLIST var$ = int, int, ...` - create integer list
+  - `DEF SPRITE sprite$ = spritle#, x-offset, y-offset;...` - define sprite
+  - `DEF TILELIST var$ = tile#, tile#, ...` - crete tile index list
+  - `ERR` pseudo-variable returns last error number
+  - `ERR#` pseudo-variable returns last error message
+  - `ERRLINE` pseudo-variable returns line last error occured in
+  - `EVAL(string$)` - evaluates expression in string
+  - `GETARGS varlist` - get arguments passed to subroutine
+  - `GETCOLOR$(palette#)` - returns color palette RGB values
+  - `GETKEY` - like `INKEY` but waits for keypress
+  - `GETKEY$` - like `INKEY$` but waits for keypress
+  - `GETSPRITE$(SpriteDef$)` - returns sprite properties
+  - `GETTILE$(tile#)` - returns tile pixel data
+  - `GOSUB line : ARGS arglist` - pass arguments to subroutine
+  - `GOSUB line : ARGS arglist RETURN varlist` - get values returned by subroutine
+  - `INKEY` - like `INKEY$` but returns ASCII code of key pressed
   - `LOAD "FILE",@page,address` - load file into page
-  - `SAVE "FILE",@page,address,length` - save from page to file
-  - `RENAME oldname$ TO newname$` - rename file
+  - `MOUSEB, MOUSEX, MOUSEY` - returns mouse position and buttons
+  - `ON ERROR GOTO` - Error trapping
+  - `POKE!` and `PEEK!` always return a positive integer
   - `POKE @page,address,byte` - write byte to address in page
   - `POKE! address,word` - write word to address
   - `POKE! @,page,address,word` - write word to address in page
   - `PEEK (@page,address)` - read byte from address in page
   - `PEEK! (address)` - read word from address
   - `PEEK! (@page,address)` - read word from address in page
-  - `CD$` pseudo-variable returns current path
-  - `DATE$` pseudo-variable returns current date "YYYYMMDD"
+  - `RENAME oldname$ TO newname$` - rename file
+  - `RESUME` - clear error condition and continue
+  - `RETURN vallist` - return values from subroutine
+  - `SAVE "FILE",@page,address,length` - save from page to file
+  - `SCREEN mode` - select screen mode (text, tile, bitmap, sprites)
+  - `SET COLOR palette , index TO rgb_list` - set color palette
+  - `SET SPRITE sprite$ ...` - set sprite properties
+  - `SET TILE tile# TO tile_data` - set tile pixel data
+  - `STRING$ (length, byte/string$)` - returns string of repeating characters
   - `TIME$` pseudo-variable returns current time "HHmmss"
-  - `DATETIME$` pseudo-variable returns date and time "YYYYMMDD"
-  - Hexadecimal integer and string literals.
-  - All statements and functions that use an address accept -65535 to 65535
 
 ## Internal BASIC Code Changes:
   - Fixed plusBASIC version display on welcome screen
@@ -66,10 +86,7 @@ Requires S3 BASIC assembled with "aqplus" switch
     - dos_create_dir
     - dos_get_cwd
 
-
-
-  
-### Assembly Ruutines
+### Assembly Routines
 
 ## ToDo:
   - Make dos_create_dir and MKDIR use buffer in page 35
@@ -98,10 +115,6 @@ be the token for IN followed by the token for STR$.
 
   - Make ESP and DOS errors generate BASIC errors
     - Start at 50 like CP/M BASIC does with disk erros
-  - ON ERROR GOTO line
-  - ERR$ pseudo-variable
-  - ERRLINE$ pseudo-variable
-  - RESUME
 
 #### File I/O
 
@@ -122,34 +135,19 @@ be the token for IN followed by the token for STR$.
 
 #### Graphics
 
-  - SCREEN mode
   - LINE 
   - CIRCLE 
   - DRAW
   
 #### Strings
 
-  - STRING$(char$, count)
-  - INSTR$(str$, str$ [,pos])
+  - INSTRING$(str$, str$ [,pos])
   - MIDS$(var$, pos [,len]) = string expression
 
 #### Miscellaneous
   
-  - ARGS and ARGS$()
-    - ARGS$() will be a function instead of an array
-    - Argument strings will be stored in BASIC buffers page
   - VARPTR(variable)
 
 ### Enhancements to existing Statements and Functions
  
-  - CLS [fgcolor [, bgcolor]]
-  - PEEK([@page,] addr)
-  - PEEK!([@page,] addr) returns 16-bit word
-  - PEEK$([@page], addr, length)
-  - POKE [@page,] addr, byte
-  - POKE! [@page,] addr, word
-  - POKE [@page,] addr, string$
-  - COPY [@page], addr, length TO [@page], addr
   - COPY srcfile$ TO dstfile$
-  - SAVE file$, [@page,] addr, length
-  - LOAD file$, [@page,] addr
