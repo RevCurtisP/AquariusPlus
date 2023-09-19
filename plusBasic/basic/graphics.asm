@@ -167,7 +167,7 @@ ST_SETTILEMAP:
     call    get_int512            ; DE = X-position
     push    de                    ; Stack = X-position, RtnAdr
     SYNCHK  ','                   ; Require comma
-    call    get_byte200           ; DE = Y-position
+    call    GETBYT                ; E = Y-position
     pop     bc                    ; BC = X-position, Stack = RtnAdr
     jp      tilemap_set_offset    ; Set Offset and return
 
