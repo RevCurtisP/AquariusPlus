@@ -181,13 +181,16 @@ _coldboot:
 .print_basic
     call    print_string_immd
 .plus_text
-    db "plusBASIC v0.12h", 0
+    db "plusBASIC v0.12i", 0
 .plus_len   equ   $ - .plus_text
 
     call    CRDO
     call    CRDO
 
     call    spritle_clear_all   ; Clear all sprite properties
+
+; ToDo: Copy INITFF code into here, try to load AUTOEXEC basic program 
+; RUNC if load successful, READY if not
 
     jp      INITFF              ; Continue in ROM
 

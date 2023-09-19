@@ -87,13 +87,24 @@ get_addr_len:
 
 
 ;-----------------------------------------------------------------------------
-; Parse 4 bit Integer
-; Output: A,E = Integer
+; Parse Nybble
+; Output: A,E = Nybble
 ; Clobbers: A,BC
 ;-----------------------------------------------------------------------------
 get_byte16:
     call    GETBYT                ; get foreground color in e
     cp      16                    ; if > 15
+    jp      nc,FCERR              ;   FC Error
+    ret
+
+;-----------------------------------------------------------------------------
+; Parse Byte 0 - 199
+; Output: A,E = Byte
+; Clobbers: A,BC
+;-----------------------------------------------------------------------------
+get_byte200:
+    call    GETBYT                ; get foreground color in e
+    cp      200                   ; if > 1200
     jp      nc,FCERR              ;   FC Error
     ret
 

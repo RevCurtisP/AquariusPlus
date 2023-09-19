@@ -124,6 +124,40 @@ spritle_set_color:
     ex    af,af'
     ret
 
+
+;-----------------------------------------------------------------------------
+; Set Sprite Properties
+; Input: BC: PrpLen 
+;        DE: PrpAdr
+;        HL: SprAdr
+;        Not Zero tile count <> spritle count
+; Clobbered: A,BC,DE,HL
+;-----------------------------------------------------------------------------
+sprite_set_props:
+    ld      a,c                   ; Get tile count
+    srl     a
+    cp      (hl)                  ; If not equal to spritle count
+    jr      nz,.ret               ;   Return NZ (error)
+    ld      b,(hl)                ; B = spritle/tile count
+.loop 
+    inc     hl                    ; Skip X-offset
+    inc     hl                    ; Skip Y-offset
+    inc     hl                    ; Next spritle entry
+    ld      a,(hl)                ; Get spritle#
+    out     (IO_VSPRSEL),a        ; Select sprite
+    ld      a,(de)                ; Get Tile Index
+    out     (IO_VSPRIDX),a        ; and Write it
+    inc     de
+    ld      a,(de)                ; Get Attributes
+    out     (IO_VSPRATTR),a       ; and write them
+    inc     de                    ; Next Property
+    djnz    .loop                 ; Do next one
+    xor     a                     ; Return Z (success)
+.ret
+    ret
+
+
+
 ;-----------------------------------------------------------------------------
 ; Set sprite tile indexes
 ; Input: BC: TilLen 
@@ -164,20 +198,20 @@ sprite_set_tiles:
 ;        DE: tile index (0-511)
 ;-----------------------------------------------------------------------------
 spritle_set_tile:
-    out   (IO_VSPRSEL),a          ; Select sprite
-    ex    af,af'
-    ld    a,e                     ; Write index LSB             
-    out   (IO_VSPRIDX),a
-    ld    a,d                     ; Get index MSB
-    exx   
-    and   $01                     ; Mask off unused bits
-    ld    d,a                     ; Back into D
-    in    a,(IO_VSPRATTR)         ; Get current attributes
-    and   $FE                     ; Keep attribute and palette bits
-    or    d                       ; Set attribute bits
-    out   (IO_VSPRATTR),a         ; and write back out
-    exx
-    ex    af,af'
+    out     (IO_VSPRSEL),a        ; Select sprite
+    ex      af,af'
+    ld      a,e                   ; Write index LSB             
+    out     (IO_VSPRIDX),a
+    ld      a,d                   ; Get index MSB
+    exx     
+    and     $01                   ; Mask off unused bits
+    ld      d,a                   ; Back into D
+    in      a,(IO_VSPRATTR)       ; Get current attributes
+    and     $FE                   ; Keep attribute and palette bits
+    or      d                     ; Set attribute bits
+    out     (IO_VSPRATTR),a       ; and write back out
+    exx 
+    ex      af,af'
     ret
 
 

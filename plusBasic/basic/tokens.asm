@@ -73,10 +73,10 @@ SPRITK    equ     $EF
 LINETK    equ     $D0
 TILETK    equ     $F0
 OFFTK     equ     $F1
+MAPTK     equ     $F2
 COLTK     equ     $F5
+SETTK     equ     $F7
 ATTRTK    equ     $F8
-
-;;; Extended Error Message Table can go here
 
 ;-----------------------------------------------------------------------------
 ; Convert keyword to token - hook 10

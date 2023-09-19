@@ -53,8 +53,8 @@ _get_set_init:
     
 ;-----------------------------------------------------------------------------
 ; Set tilemap offset
-; Inpuit: BC: X-Offset
-;        DE: Y-Offset
+; Input: BC: X-Offset
+;         E: Y-Offset
 ; Clobbered: A
 ;-----------------------------------------------------------------------------
 tilemap_set_offset:
