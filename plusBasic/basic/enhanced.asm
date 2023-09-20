@@ -27,7 +27,7 @@ ST_COPY:
     push    de              ; Stack = Len, SrcPgFlg, SrcAddr
     rst     SYNCHR
     byte    TOTK
-    call    get_page_addr   ; A = DstPgFlg, DE = DstAddr
+    call    get_page_addr   ; A = DstPgFlg, DE = DstAdr
     ex      af,af'          ; AF' = DstPgFlg
     pop     bc              ; BC = Len; Stack = SrcPgFlg, SrcAddr
     pop     af              ; AF = SrcPgFlg, Stack = SrcAddr
@@ -51,18 +51,18 @@ ST_COPY:
     pop     hl               
     ret                     ;   Else
 .no_pages:
-    rst      COMPAR         ;     If SrcAddr >= DstAddr
+    rst      COMPAR         ;     If SrcAddr >= DstAdr
     jr       c,.copy_down   ;    
     ldir                    ;       Do the Copy
     pop      hl             
     ret                     ;     Else
 .copy_down
-    push    de              ;       Stack = DstAddr, TxtPtr
-    ex      (sp),hl         ;       HL = DstAddr, Stack = SrcAddr, TxtPtr
+    push    de              ;       Stack = DstAdr, TxtPtr
+    ex      (sp),hl         ;       HL = DstAdr, Stack = SrcAddr, TxtPtr
     add      hl,bc                  
     dec      hl                     
     ld       d,h                    
-    ld       e,l            ;       DE = DstAddr + Len - 1
+    ld       e,l            ;       DE = DstAdr + Len - 1
     pop      hl             ;       HL = SrcAddr, Stack = TxtPtr
     add      hl,bc                  
     dec      hl             ;       HL = SrcAddr + Len - 1
@@ -84,27 +84,48 @@ ST_COPY:
 ;-----------------------------------------------------------------------------
 ; Enhanced POKE
 ; syntax: POKE address, byte
+;         POKE address, string$
 ;         POKE! address, word
 ;         POKE @page, address, byte
+;         POKE @page, address, string$
 ;         POKE! @page, address, word
 ;-----------------------------------------------------------------------------
-
 ST_POKE:
     cp      '!'                   ; If POKE!
     jr      z,.pokeword           ;   Poke a word
     call    parse_page_arg        ; Parse page
-    push    af                    ; Save it
+    push    af                    ; Stack = Page, RtnAdr
     call    GETINT                ; Parse Address
-    push    de                    ; Save It
+    push    de                    ; Stack = Addr, Page, RtnAdr
     SYNCHK  ','                   ; Require comma
-    call    GETBYT                ; Parse Byte
-    ld      c,a                   ; and put into C
-    pop     de                    ; Get address
-    pop     af                    ; Get page
+    call    FRMEVL                ; Evaluate argumenr
+    call    GETYPE                ; If String
+    jr      z,.pokestring         ;   Poke It
+    call    CONINT                ; Convert to Byte
+    ld      c,a                   ; C = Byte
+    pop     de                    ; DE = Addr; Stack = Page, RtnAdr
+    pop     af                    ; AF = Page, Stack = RtnAdr
     jr      c,.write_paged_byte   ; If page specified, write to it
     ld      a,c                   ; Write byte
     ld      (de),a                ; to address
     ret
+
+.pokestring
+    pop     de                    ; DE = DstAdr; Stack = Page, RtnAdr
+    pop     af                    ; AF = Page; Stack = RtnAdr
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    push    de                    ; Stack = DstAdr, TxtPtr, RtnAdr
+    ex      af,af'
+    call    FRESTR                ; HL = StrDsc
+    call    string_addr_len       ; BC = StrLen, DE = StrAdr, HL = StrDsc
+    ex      de,hl                 ; HL = StrAdr
+    pop     de                    ; DE = DstAdr; Stack = TxtPtr, RtnAdr
+    ex      af,af'
+    jr      c,.write_paged_bytes  ; If page specified, write to it
+    ldir                          ; Else copy bytes
+    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
+    ret
+
 .pokeword    
     rst     CHRGET                ; Eat the !
     call    parse_page_arg        ; Parse page
@@ -129,6 +150,13 @@ ST_POKE:
     call    check_paged_address
     call    page_write_byte     ; If page specified, write to it
     jp      z,IQERR             ; FC error if illegal page
+    ret
+
+.write_paged_bytes:
+    call    check_paged_address
+    call    page_write_bytes    ; If page specified, write to it
+    jp      z,IQERR             ; FC error if illegal page
+    pop     hl
     ret
 
 .write_paged_word  
