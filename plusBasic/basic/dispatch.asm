@@ -141,7 +141,7 @@ STJUMPS:
     dw      ST_SCREEN             ;$F6 SCREEN 
     dw      ST_SET                ;$F7 SET
     dw      SNERR                 ;$F8 ATTR
-    dw      SNERR                 ;$F9
+    dw      ST_FILL               ;$F9 FILL
     dw      SNERR                 ;$FA
     dw      SNERR                 ;$FB
     dw      SNERR                 ;$FC
@@ -225,7 +225,7 @@ FNJUMPS:
     dw      SNERR                 ;$F6 SCREEN 
     dw      SNERR                 ;$F7 SET
     dw      SNERR                 ;$F8 ATTR
-    dw      SNERR                 ;$F9
+    dw      SNERR                 ;$F9 FILL
     dw      SNERR                 ;$FA
     dw      SNERR                 ;$FB
     dw      SNERR                 ;$FC
@@ -275,19 +275,6 @@ execute_function:
     exx                         ; Restore BC,DE,HL
     pop     af                  ; Restore A
     jp      (ix)                ; Go Do It
-
-
-; ------------------------------------------------------------------------------
-;  Utility calls for functions
-; ------------------------------------------------------------------------------
-push_hlinc_labbck:
-        inc     hl                ; Skip current character
-push_hl_labbck:
-        ex      (sp),hl           ; Stack = TxtPtr, HL = Return Address
-        ld      bc,LABBCK         ; Put Return Address for FLOAT routine
-        push    bc                ;   on Stack
-        jp      (hl)              ; Fast Return
-
 
 ; ------------------------------------------------------------------------------
 ;  Issue Statement not implemented err

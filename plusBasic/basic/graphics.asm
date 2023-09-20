@@ -3,13 +3,13 @@
 ;====================================================================
 
 ;-----------------------------------------------------------------------------
-; COLOR statement 
+; COLOR statement
 ; syntax: [SET] COLOR [#] palette [, index] [TO | ;] rgb, ...
 ;         [SET] COLOR [#] palette [, index] [TO | ;] rgblist$
 ;-----------------------------------------------------------------------------
 ST_COLOR:
     call    SYNCHR                ; Require OR after COL
-    byte    ORTK                  
+    byte    ORTK
     cp      '#'                   ; If followed with '#'
     jr      z,ST_SETCOLOR         ;   Set palette
     jp      SNERR                 ; No other syntax supported yet
@@ -39,7 +39,7 @@ ST_SETCOLOR:
     ld      a,e                   ; Get palette#
     cp      4                     ; If greater than 3
     jp      nc,FCERR              ;   Error
-    call    palette_shift_num     ; 
+    call    palette_shift_num     ;
     ld      b,a                   ; B = Shifted palette#
     push    bc                    ; Stack = PltOfs+Entry
     call    FRMEVL                ; Get DataAddr or String
@@ -47,7 +47,7 @@ ST_SETCOLOR:
     jr      z,.string             ;   Process and set Tile
     call    FRCINT
     jr      .skip
-.loop    
+.loop
     call    GETINT                ; DE = RGB palette entry
 .skip
     pop     bc                    ; Get back palette select
@@ -74,13 +74,13 @@ ST_SETCOLOR:
     jp      c,OVERR               ; Error if Overflow
     pop     hl                    ; HL = TxtPtr
     ret
-    
-    
+
+
 ;-----------------------------------------------------------------------------
-; SCREEN statement 
+; SCREEN statement
 ; syntax: SCREEN mode
 ;              b p s gm t
-;   mode:  0 ( 0 0 0 00 1) Text 
+;   mode:  0 ( 0 0 0 00 1) Text
 ;          1 ( 0 0 0 01 0) 64 x 32 Color Tilemap
 ;          2 ( 0 0 0 10 0) 320 x 200 Bitmap mode ON
 ;          3 ( 0 0 0 11 0) Multicolor Bitmap Mode
@@ -96,7 +96,7 @@ ST_SCREEN:
     push    hl                    ; Stack = TxtPtr, RtnAdr
     cp      24                    ; If greater than 23
     jp      nc,FCERR              ;   Illegal quantity error
-    call    screen_set_mode       ; 
+    call    screen_set_mode       ;
     pop     hl                    ; HL - TxtPtr; Stack = RtnAdr
     ret
 
@@ -105,11 +105,11 @@ ST_SCREEN:
 ; SETTILE tile# TO color_index, ...
 ; SETTILE tile# TO tiledata$
 ;-----------------------------------------------------------------------------
-ST_SETTILE:
+ST_SET_TILE:
     rst     CHRGET                ; Skip TILE Token
     cp      MAPTK                 ; If TILEMAP
-    jp      z,ST_SETTILEMAP       ;   Go do that
-    call    GETINT                ; Get Tile#
+    jp      z,ST_SET_TILEMAP      ;   Go do that
+    call    get_int512            ; Get Tile#
     push    de                    ; Stack = Tile#, RtnAdr
     rst     SYNCHR                ; Require TO
     byte    TOTK
@@ -120,17 +120,19 @@ ST_SETTILE:
     push    de                    ; Stack = Pixel#, Tile#, RtnAdr
     call    CONINT
     jr      .skip
-.loop    
+.loop
     call    GETBYT                ; A = Color Index
 .skip
     cp      16
     jp      nc,FCERR              ; Error if > 15
     ld      c,a                   ; C = Color
     pop     de                    ; DE = Pixel#; Stack = Tile#, RtnAdr
+    ld      c,e                   ; C = Pixel#
     ex      (sp),hl               ; HL = Tile#, Stack = TxtPtr, RtnAdr
     call    tile_set_pixel
+    ld      e,c                   ; E = Pixel#
     inc     e                     ; Increment Pixel#
-    ld      a,16
+    ld      a,15
     cp      e
     jp      c,OVERR               ; Error if > 15
     ex      (sp),hl               ; HL = TxtPtr, Stack = Tile#, RtnAdr
@@ -149,21 +151,130 @@ ST_SETTILE:
     call    free_addr_len         ; DE = DataAddr, BC = Count
     pop     hl                    ; HL = Tile#; Stack = TxtPtr, RtnAdr
 .set_it:
-    call    tile_set      
+    call    tile_set
     jp      c,OVERR               ; Error if Overflow
     pop     hl                    ; HL = TxtPtr
     ret
 
 ;-----------------------------------------------------------------------------
-; SET TILEMAP
-; SET TILEMAP OFFSET x,y 
+; FILL TILEMAP TILE tile# ATTR attrs COLOR palette#
+; FILL TILEMAP (col,row)-(col,row) TILE tile# ATTR attrs COLOR palette#
 ;-----------------------------------------------------------------------------
-ST_SETTILEMAP:
+;FILL TILEMAP (2,2) - (10,10) TILE 511
+ST_FILLTILE:
+    rst     CHRGET                ; Skip TILE
+    rst     SYNCHR                ; Require MAP
+    byte    MAPTK
+    cp      '('
+    jr      nz,.fill_all
+    call    SCAND                 ; C = BgnCol, E = BgnRow
+    push    de                    ; Stack = BgnRow, RtnAdr
+    push    bc                    ; Stack = BgnCol, BgnRow, RtnAdr
+    rst     SYNCHR                ; Require -
+    byte    MINUTK                 
+    call    SCAND                 ; C = EndCol, E = EndRow
+    ex      (sp),hl               ; L = BgnCol; Stack = TxtPtr, BgnRow, RtnAdr
+    ld      b,l                   ; B = BgnCol, C = EndCol
+    pop     hl                    ; HL = TxtPtr; Stack = BgnRow, RtnAdr
+    ex      (sp),hl               ; L = BgnRow; Stack = TxtPtr, RtnAdr
+    ld      d,l                   ; D = BgnRow, C = EndRow
+    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
+    jr      .get_props
+.fill_all
+    ld      bc,63                 ; BgnRow = 0, EndRow = 31
+    ld      de,31                 ; BgnCol = 0, EndCol = 63
+.get_props
+    push    de                    ; Stack = Rows, RtnAdr
+    push    bc                    ; Stack = Cols, Rows, RtnAdr
+    call    _get_tile_props       ; BC = Props, DE = Tile #
+    call    tile_combine_props    ; DE = TilPrp
+    pop     bc                    ; BC = Cols; Stack = Rows, RtnAdr
+    ex      (sp),hl               ; HL = Rows; Stack = TxtPtr, RtnAdr
+    ex      de,hl                 ; DE = Rows, HL = TilPrp
+    call    tilemap_fill          ; In: B=BgnCol, C=EndCol, D=BgnRow, E=EndRow, HL: TilPrp
+    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
+    ret
+
+;----------------------------------------------------------------------------
+; GET Statement
+; Syntax: GET (x1,y1)-(x2,y2),*arrayvar
+;----------------------------------------------------------------------------
+ST_GET: 
+    cp      ARGSTK
+    jp      z,ST_GETARGS
+    cp      TILETK                ; If GET TILEMAP
+    jr      z, ST_GET_TILEMAP     ;   Go do it
+    jp      GSERR
+
+;-----------------------------------------------------------------------------
+; GET TILEMAP (col,row)-(col,row) *arrayvar
+; binary = column-count, row-count, cells
+;-----------------------------------------------------------------------------
+ST_GET_TILEMAP:
+    jp      GSERR
+
+;----------------------------------------------------------------------------
+; PUT Statement
+; Syntax: PUT (x1,y1)-(x2,y2),*arrayvar [,operation]
+;----------------------------------------------------------------------------
+ST_PUT: 
+    cp      TILETK              ; If PUT TILEMAP
+    jr      z,ST_PUT_TILEMAP    ;   Go do it
+    jp      GSERR
+
+;-----------------------------------------------------------------------------
+; PUT TILEMAP (col,row) *arrayvar
+;-----------------------------------------------------------------------------
+ST_PUT_TILEMAP:
+    jp      GSERR
+
+;-----------------------------------------------------------------------------
+; SET TILEMAP
+; SET TILEMAP (x,y) TO TILE tile# ATTR attrs COLOR palette#
+; SET TILEMAP (x,y) TO integer
+; SET TILEMAP OFFSET x,y
+;-----------------------------------------------------------------------------
+ ST_SET_TILEMAP:
+    jp      GSERR
     rst     CHRGET                ; Skip MAP
+    cp      OFFTK                 ; If OFF
+    jr      z,_tilemap_offset     ;   Do SET TILEMAP OFFSET
+    jp      SNERR
+
+_get_tile_props:
+    rst     SYNCHR                ; Require TILE
+    byte    TILETK
+    call    get_int512            ; DE = Tile#
+_get_attr_colors:
+    push    de                    ; Stack = Tile# , RtnAdr
+    ld      bc,0                  ; Default to Attrs 0, Palette# 0
+.loop
+    call    CHRGT2                ; Reget character
+    jr      z,_pop_de_ret         ; Return if terminator
+    push    bc                    ; Stack = Props, Tile #, RtnAdr
+    cp      ATTRTK                ; If ATTR
+    jr      nz,.notattrs
+    call    GTBYTC                ;   Get attributes
+    pop     bc                    ;   BC = Props; Stack = Tile#, RtnAdr
+    ld      b,a                   ;   B = attributes
+    jr      .loop
+.notattrs
+    rst     SYNCHR                ; Else
+    byte    COLTK                 ;   Require COLOR
     rst     SYNCHR
-    byte    OFFTK                 
-    rst     SYNCHR                ; Require OFFSET
-    byte    SETTK 
+    byte    ORTK
+    call    getbyte4              ;   Get palette#
+    pop     bc                    ;   BC = Props; Stack = Tile#, RtnAdr
+    ld      c,a                   ;   C = palette#
+    jr      .loop
+_pop_de_ret:
+    pop     de                    ; DE = tile#, Stack = RtnAdr
+    ret
+
+_tilemap_offset:
+    rst     CHRGET                ; Skip OFF
+    rst     SYNCHR                ; Require SET
+    byte    SETTK
     call    get_int512            ; DE = X-position
     push    de                    ; Stack = X-position, RtnAdr
     SYNCHK  ','                   ; Require comma
@@ -178,6 +289,8 @@ FN_TILE:
     rst     CHRGET                ; Skip TILE
     rst     SYNCHR
     byte    MAPTK                 ; Require MAP
+    cp      '('                   ; If (
+    jr      z,FN_TILEMAP          ; Go do TILEMAP(x,y)
     push    AF                    ; Stack = 'X'/'Y', RtnAdr
     call    tilemap_get_offset    ; BC = X-Offset, DE = Y-Offset
     pop     AF                    ; A = 'X'/'Y', Stack = RtnAdr
@@ -192,17 +305,20 @@ push_labbck_floatde:
     jp      FLOAT_DE              ;   Return Y-Offset
 
 ;-----------------------------------------------------------------------------
-; MAP TILE
-; MAP TILE (x,y) [ - (x,y)] TO tile# ATTRS attrs
-; MAP TILE (x,y) - (x,y) TO tilelist$ ATTRS attrlist$
-; MAP TILE * TO tile# ATTRS attrs
+; TILEMAP(col,row) - Return tile# and properties
 ;-----------------------------------------------------------------------------
+FN_TILEMAP
+    call    SCAND                 ; Parse column and row
+    call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
+    call    tilemap_get_tile      ; BC = tile# + properties
+    jp      c,FCERR               ; Carry set = bad args
+    jp      FLOAT_BC              ; Return BC
 
 ;-----------------------------------------------------------------------------
 ; DEF ATTRLIST A$ = attr#, attr#, ...
 ; attr# is an even integer between 0 and 127
 ;   Bit 6 = Priority
-; Bit 4-5 = Palette# 
+; Bit 4-5 = Palette#
 ;   Bit 3 = Double Height (sprite only)
 ;   Bit 2 = Vertical Flip
 ;   Bit 1 = Horizontal Flip
@@ -218,7 +334,7 @@ ST_DEFATTR:
     jr      z,_finish_def         ; If not end of statement
     SYNCHK  ','                   ;   Require comma
     jr      .loop                 ;   and get next tile#
-    
+
 ;-----------------------------------------------------------------------------
 ; DEF COLORLIST C$ = palette#, palette#, ...
 ; palette# is an integer between 0 and 3
@@ -229,14 +345,13 @@ ST_DEFCOLOR:
     byte    ORTK                  ; Require OR
     call    _setupdef
 .loop
-    call    GETBYT                ; Get palette#
-    cp      4                     ; If >=4
-    jp      nc,FCERR              ;   Error
+    call    getbyte4              ; Get palette#
     call    sbuff_write_byte      ; Write it to string buffer
     call    CHRGT2                ; Reget next character
     jr      z,_finish_def         ; If not end of statement
     SYNCHK  ','                   ;   Require comma
-    jr      .loop                 ;   and get next color    
+    jr      .loop                 ;   and get next color
+
 ;-----------------------------------------------------------------------------
 ; DEF INTLIST I$ = int, int, ...
 ; int is a integer between 0 and 65535
@@ -253,7 +368,7 @@ ST_DEFINT:
     jr      .loop                 ;   and get next tile#
 
 _finish_def:
-    ex      (sp),hl               ; HL = VarPtr; Stack = TxtPtr  
+    ex      (sp),hl               ; HL = VarPtr; Stack = TxtPtr
     push    hl                    ; Stack = VarPtr, TxtPtr
     call    sbuff_create_string   ; Copy Buffer to Temporary. Return HL = StrDsc
     push    hl                    ; Stack = StrDsc, VarPtr, TxtPtr
@@ -267,7 +382,7 @@ _defnolist:
     pop     bc                    ; BC = ThisRet; Stack = RetAdr
     push    de                    ; Stack = VarPtr, RetAdr
     push    bc                    ; Stack = ThisRet, VarPtr, RetAdr
-    rst     SYNCHR            
+    rst     SYNCHR
     byte    EQUATK                ; Require '='
     jp      sbuff_init            ; Init string buffer and return
 
@@ -285,9 +400,9 @@ ST_DEFTILE:
     jr      z,_finish_def         ; If not end of statement
     SYNCHK  ','                   ;   Require comma
     jr      .loop                 ;   and get next tile#
-    
+
 ;-----------------------------------------------------------------------------
-; GETTILE Function 
+; GETTILE Function
 ; GETTILE$(tile#)
 ; tile# is a integer between 0 and 511
 ;-----------------------------------------------------------------------------
@@ -312,7 +427,7 @@ FN_GETTILE:
     jp      FINBCK                ; Return String
 
 ;-----------------------------------------------------------------------------
-; GETCOLOR Function 
+; GETCOLOR Function
 ; GETCOLOR$(palette#)
 ; palette# is a integer between 0 and 3
 ;-----------------------------------------------------------------------------
@@ -333,7 +448,7 @@ FN_GETCOL:
     ld      bc,32                 ; BC = StrLen
     pop     hl                    ; HL = Palette#; Stack = DummyAdr, TxtPtr
     ld      a,l
-    call    palette_get           ; 
+    call    palette_get           ;
     ld      a,1
     ld      (VALTYP),a            ; Set Type to String
     call    FRESTR                ; Free Temporary
@@ -351,19 +466,19 @@ ST_DEFSPRITE:
     ld      b,a                   ; B = MaxYoffset (0)
     ld      c,a                   ; C = MaxXoffset (0)
     call    sbuff_write_bc        ; Write Them
-.loop                             
+.loop
     call    _get_byte             ; Get Spritle#
-    cp      64                    
-    jp      nc,FCERR              
+    cp      64
+    jp      nc,FCERR
     call    sbuff_write_byte      ; Write Spritle#
-    SYNCHK  ','                   
+    SYNCHK  ','
     call    _get_byte             ; Get Xoffset
-    cp      c                     
+    cp      c
     jr      c,.skipx              ; If Xoffset > MaxXoffset
     ld      c,a                   ;   MaxXoffset = Xoffset
-.skipx                            
+.skipx
     call    sbuff_write_byte      ; Write Xoffset
-    SYNCHK  ','                   
+    SYNCHK  ','
     call    _get_byte             ; Get Yoffset
     cp      b
     jr      c,.skipy              ; If Xoffset > MaxXoffset
@@ -381,10 +496,10 @@ ST_DEFSPRITE:
     ld      de,0                  ; DE = BuffOffset (0)
     pop     af                    ; A = SptlCnt; Stack = VarPtr, RetAdr
     call    sbuff_write_byte_ofs  ; Write it
-    ld      a,c                   ; 
+    ld      a,c                   ;
     add     a,8                   ; A = MaxXoffset + Spritle Width
     call    sbuff_write_byte_ofs  ; Write it
-    ld      a,b                   ; 
+    ld      a,b                   ;
     add     a,8                   ; A = MaxYoffset + Spritle Width
     call    sbuff_write_byte_ofs  ; Write it
     jp      _finish_def           ; A = SptlCnt; Stack = VarPtr, RetAdr
@@ -416,39 +531,39 @@ ST_SETSPRITE:
     ex      (sp),hl               ; HL = TxtPtr; Stack = SprAdr, RtnAdr
     ld      a,(hl)                ; Get current character
     cp      TOTK                  ; If TO
-    jp      .props                ;   Set all properties
+    jp      z,.props              ;   Set all properties
 .loop
     cp      ';'
     jr      z,.nextsprite
     cp      POSTK
     jr      z,.pos
-    cp      ATTRTK                
+    cp      ATTRTK
     jr      z,.attrs
-    cp      COLTK 
+    cp      COLTK
     jr      z,.color
-    cp      TILETK 
+    cp      TILETK
     jr      z,.tiles
     cp      ONTK
     jr      z,.on
     cp      OFFTK
     jr      z,.off
     jp      SNERR
-    
-.nextsprite    
+
+.nextsprite
     pop     de                    ; HL = TxtPtr; Stack = RtnAdr
     jr      ST_SETSPRITE
-    
+
 .color
     rst     CHRGET                ; Skip COL
     rst     SYNCHR                ; Require OR
     byte    ORTK
     ld      ix,sprite_set_colors  ; IX = jump address
-    jr      .string_arg            
+    jr      .string_arg
 
 .tiles
     rst     CHRGET                ; Skip ATTR
     ld      ix,sprite_set_tiles   ; IX = jump address
-    jr      .string_arg            
+    jr      .string_arg
 
 .attrs
     rst     CHRGET                ; Skip ATTR
@@ -468,7 +583,7 @@ ST_SETSPRITE:
     call    CHRGT2                ; If not Terminator
     jr      nz,.loop              ; Get Next Argument
     pop     bc                    ;   Stack = RtnAdr
-    ret     
+    ret
 
 .on
     byte    $3E                   ; LD A,$AF, Non-Zero = On
@@ -480,7 +595,7 @@ ST_SETSPRITE:
     ld      ix,sprite_toggle      ; IX = jump address
     jr      .do_gfx
 
-.pos                              
+.pos
     rst     CHRGET                ; Skip POS
     call    GETINT                ; DE = X-pos
     push    de                    ; Stack = X-pos, SprAdr, RtnAdr
@@ -488,8 +603,8 @@ ST_SETSPRITE:
     call    GETINT                ; DE = Y-pos
     pop     bc                    ; BC = X-pos; Stack = SprAdr, RtnAdr
     ld      ix,sprite_set_pos     ; IX = jump address
-    jr      .do_gfx    
-    
+    jr      .do_gfx
+
 .all
     rst     CHRGET                ; Skip *
     cp      CLRTK                 ; If CLEAR
@@ -501,22 +616,22 @@ ST_SETSPRITE:
     jp      spritle_toggle_all    ; Disable all off and return
 .allreset
     rst     CHRGET                ; Skip CLEAR
-    jp      spritle_clear_all     
-  
+    jp      spritle_clear_all
+
 .props                            ; HL = TxtPtr; Stack = SprAdr, RtnAdr
     rst     CHRGET                ; Skip TO
     call    get_string_arg        ; BC = StrLen, DE = StrAdr, HL = StrDsc; Stack = TxtPtr, SprAdr, RtnAdr
     pop     hl                    ; BC = StrLen, DE = StrAdr, HL = TxtPtr; Stack = SprAdr, RtnAdr
     ex      (sp),hl               ; BC = StrLen, DE = StrAdr, HL = SprAdr; Stack = TxtPtr, RtnAdr
     call    sprite_set_props      ; Set properties
-    jp      nz,FCERR              
+    jp      nz,FCERR
     pop     hl
     ret
 
 ;-----------------------------------------------------------------------------
 ; GETSPRITE Attributes
 ; GETSPRITE$(SpriteDef$)
-; Data Format: 5 characters for each spritle 
+; Data Format: 5 characters for each spritle
 ;          X-position - 1-2
 ;          Y-position -  3
 ;          Attrs+Tile - 4-5
@@ -533,10 +648,10 @@ FN_GETSPRITE:
     push    de                    ; Stack = SprAdr, DummyAdr, TxtPtr, RtnAdr
     ld      a,(de)                ; A = SptlCnt
     ld      d,a
-    add     a                     ; x 2     
+    add     a                     ; x 2
     add     a                     ; x 4
     add     d                     ; x 5
-    jp      c,LSERR               ; Error if too long 
+    jp      c,LSERR               ; Error if too long
     call    STRINI                ; Create BufStr; HL = BufDsc, DE = BufAdr
     call    string_addr_len       ; BC = BufLen, DE = BufAdr
     ex      (sp),hl               ; HL = SprAdr; Stack = BufDsc, DummyAdr, TxtPtr, RtnAdr
@@ -544,6 +659,8 @@ FN_GETSPRITE:
     jp      nz,OVERR              ; Sprite and Buffer Size Mismtch
     ld      a,1
     ld      (VALTYP),a            ; Set Type to String
-    call    FRETM2                
+    call    FRETM2
     pop     hl                    ; HL = BufDsc; Stack = DummyAdr, TxtPtr, RtnAdr
     jp      FINBCK                ; Return String
+
+

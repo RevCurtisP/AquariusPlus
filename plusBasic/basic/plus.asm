@@ -74,7 +74,7 @@ FN_GETKEY:
 ;-----------------------------------------------------------------------------
 FN_MOUSE:
     rst     CHRGET                ; Skip MOUSE token
-    jr      z,_snerr              ;   Error
+    jr      z,.snerr              ;   Error
     ex      af,af'               
     rst     CHRGET                ; Skip Character after MOUSE
     push    hl                    ; Stack = TxtPtr, RtnAdr
@@ -89,7 +89,8 @@ FN_MOUSE:
     jr      z,.ypos
     cp      'B'
     jr      z,.buttons
-    jr      _snerr
+.snerr:
+    jp      SNERR
 .buttons
     ld      a,d
     byte    $06                   ; LD B, over next instruction
@@ -100,16 +101,6 @@ FN_MOUSE:
     ld      bc,-1
 .xpos:   
     jp      FLOAT_BC
-
-    
-;-----------------------------------------------------------------------------
-; GET statements stub
-;-----------------------------------------------------------------------------
-ST_GET: 
-    cp      ARGSTK
-    jp      z,ST_GETARGS
-_snerr:
-    jp      SNERR    
 
 ;-----------------------------------------------------------------------------
 ; INKEY - Return ASCII code of currently pressed key
@@ -171,6 +162,15 @@ LSERR:
     ld      e,ERRLS
     jp      ERROR
     
+
+;-----------------------------------------------------------------------------
+; FILL stub
+;-----------------------------------------------------------------------------
+ ST_FILL:
+    cp    TILETK
+    jp    z,ST_FILLTILE
+    jp    SNERR
+
    
 ;-----------------------------------------------------------------------------
 ; SET Statement stub
@@ -179,7 +179,7 @@ ST_SET:
     cp      SPRITK
     jp      z,ST_SETSPRITE
     cp      TILETK
-    jp      z,ST_SETTILE
+    jp      z,ST_SET_TILE
     cp      COLTK
     jr      nz,.notcol
     rst     CHRGET                ; Skip COL token            

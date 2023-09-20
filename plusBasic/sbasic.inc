@@ -168,6 +168,7 @@ FRMNUM:     equ $0972   ; Evaluate numeric expression
 CHKNUM:     equ $0975   ; Error if evaluated expression not a number
 CHKSTR:     equ $0976   ; Error if evaluated expression not string
 FRMEVL:     equ $0985   ; Evaluate formula
+FRMCHK      equ $0986   ; Skip current character, then evaluate formula
 QDOT:       equ $0A14   ; Continue EVAL routine
 PARCHK:     equ $0A37   ; Evaluate expression in brackets
 LABBCK:     equ $0A49
@@ -175,6 +176,7 @@ ISVAR       equ $0A4E   ; Get variable value or string pointer
 GIVINT      equ $0B21   ; Float Integer MSB=[A], LSB=[C]
 SNGFLT:     equ $0B36   ; Store variable 8 bit (out: B = value)
 ERRDIR      equ $0B45   ; Error if in direct mode
+GTBYTC      equ $0B53   ; Skip character, evaluate expression (integer 0-255)
 GETBYT:     equ $0B54   ; Evaluate numeric expression (integer 0-255)
 CONINT      equ $0B57   ; Convert FAC to byte
 OMERR:      equ $0BB7   ; Out of memory error
@@ -242,6 +244,7 @@ LISTTK      equ $97     ; LIST
 CLRTK       equ $99     ; CLEAR
 PLUSTK      equ $A8     ; +
 TOTK        equ $A1     ; TO
+MINUTK      equ $A9     ; -
 MULTK       equ $AA     ; *
 ORTK        equ $AE     ; OR
 EQUATK      equ $B0     ; = 

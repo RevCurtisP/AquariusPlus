@@ -86,8 +86,20 @@ get_addr_len:
     ret
 
 
+
 ;-----------------------------------------------------------------------------
-; Parse Nybble
+; Parse Byte between 0 - 3
+; Output: A,E = Nybble
+; Clobbers: A,BC
+;-----------------------------------------------------------------------------
+getbyte4:
+    call    GETBYT                ; get foreground color in e
+    cp      4                     ; if > 15
+    jp      nc,FCERR              ;   FC Error
+    ret
+
+;-----------------------------------------------------------------------------
+; Parse Byte 0 - 15
 ; Output: A,E = Nybble
 ; Clobbers: A,BC
 ;-----------------------------------------------------------------------------
@@ -174,3 +186,19 @@ move_cursor:
     ld      de, SCREEN          ; Screen character-matrix (= 12288 dec)
     add     hl, de              ; Putting it all together
     jp      TTYFIS              ; Save cursor position and return
+
+; ------------------------------------------------------------------------------
+; Increment text pointer, push it then LABBCK
+; ------------------------------------------------------------------------------
+push_hlinc_labbck:
+        inc     hl                ; Skip current character
+; ------------------------------------------------------------------------------
+; Push text pointer then LABBCK
+; ------------------------------------------------------------------------------
+push_hl_labbck:
+        ex      (sp),hl           ; HL = RtnAdr; Stack = TxtPtr
+        push    hl                ; Stack = RtnAdr, TxtPtr
+        ld      hl,LABBCK         ; HL = LABBCK
+        ex      (sp),hl           ; HL = RtnAdr; Stack = LABBCK, TxtPtr 
+        jp      (hl)              ; Fast Return
+

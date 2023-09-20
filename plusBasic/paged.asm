@@ -81,6 +81,60 @@ _coerce_hl:
     ld      h,a
     ret
 
+;-----------------------------------------------------------------------------
+; Fill Paged Memory with Byte
+; Input: A: Page
+;       BC: Byte Count
+;       DE: Start Address
+;        L: Byte
+; Output: Zero: Cleared if fill succesful, Set if invalid page
+;         Carry: Cleared if succesful, Set if overflow
+; Clobbers: A, BC, DE
+;-----------------------------------------------------------------------------
+;ToDo: finish rewrite page_fill_word
+page_fill_byte:
+    call    page_set4write_coerce ; DE = Coerced Start Address
+    ret     z                     ; If invalid page, return error
+.loop
+    ld      a,b
+    or      c
+    jp      z,_success
+    dec     bc
+    ld      a,l
+    ld      (de),a
+    call    page_inc_addr
+    jp      c,page_restore_plus   
+
+    jr      .loop
+
+;-----------------------------------------------------------------------------
+; Fill Paged Memory with Word
+; Input: A: Page
+;       BC: Word Count
+;       DE: Start Address
+;       HL: Word
+; Output: Zero: Cleared if fill succesful, Set if invalid page
+;         Carry: Cleared if succesful, Set if overflow
+; Clobbers: A, BC, DE
+;-----------------------------------------------------------------------------
+;ToDo: finish rewrite page_fill_word
+page_fill_word:
+    call    page_set4write_coerce ; DE = Coerced Start Address
+    ret     z                     ; If invalid page, return error
+.loop
+    ld      a,b
+    or      c
+    jp      z,_success
+    dec     bc
+    ld      a,l
+    ld      (de),a
+    call    page_inc_addr
+    jp      c,page_restore_plus
+    ld      a,h
+    ld      (de),a
+    call    page_inc_addr
+    jp      c,page_restore_plus
+    jr      .loop
 
 ;-----------------------------------------------------------------------------
 ; Map Page into Bank
@@ -224,6 +278,7 @@ page_read_word:
 ;         DE: Address coerced to $C000-$FFFF
 ;       Zero: Cleared if succesful, Set if invalid page
 ;      Carry: Cleared if succesful, Set if overflow
+; Clobbered: A
 ;-----------------------------------------------------------------------------
 page_write_word:
     call    page_set4write_coerce
@@ -261,7 +316,6 @@ page_restore_ram2:
     ex      af,af'
     ret
 
-
 ;-----------------------------------------------------------------------------
 ; Write Bytes to Page - wraps to next page if address is 16383
 ; Input: A: Page
@@ -280,7 +334,7 @@ page_write_bytes:
 .loop
     ld      a,b 
     or      c
-    jr      z,.done
+    jr      z,_success
     call    page_inc_addr
     jr      c,page_restore_plus
     ld      a,(hl)
@@ -288,7 +342,7 @@ page_write_bytes:
     inc     hl
     dec     bc
     jr      .loop
-.done
+_success:
     xor     a                     ; Clear Carry Flag
     inc     a                     ; Clear Zero Flag
     jr      page_restore_plus     ; Restore BANK3 page and return
@@ -365,7 +419,7 @@ page_next_address:
     call    page_next             ; Move to next page and coerce address
     
 ;-----------------------------------------------------------------------------
-; Coerce address in to bank 3
+; Coerce address into bank 3
 ; Input: DE: Address to coerce
 ; Output: DE: Coerced address
 ; Zero Flag: Set if trying to page into bank that isn't ram
@@ -440,11 +494,11 @@ page_next:
     ret
 
 page_check_next:
-    cp      20                    ; If in video RAM
+    cp      VIDEO_RAM             ; If in video RAM
     jr      z,set_carry_flag      ;   error out
-    cp      21                    ; If in character RAM
+    cp      CHAR_RAM              ; If in character RAM
     jr      z,set_carry_flag      ;   error out
-    cp      63                    ; If after last RAM page
+    cp      64                    ; If after last RAM page
     jr      nc,set_carry_flag     ;   error out
     cp      0                     ; Clear carry and zero flags
     ret
