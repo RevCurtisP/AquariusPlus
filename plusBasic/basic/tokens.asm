@@ -71,6 +71,7 @@ ARGSTK    equ     $E8
 ERRTK     equ     $E9
 SPRITK    equ     $EF
 LINETK    equ     $D0
+SAVETK    equ     $DC
 TILETK    equ     $F0
 OFFTK     equ     $F1
 MAPTK     equ     $F2

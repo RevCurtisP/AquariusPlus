@@ -90,12 +90,36 @@ ST_SETCOLOR:
 ;        +24 ( 1 x x xx x) Remap Border Character
 ;-----------------------------------------------------------------------------
 ST_SCREEN:
+    cp      SAVETK                ; If SAVE
+    jr      z,ST_SCREEN_SAVE      ;   Do SCREEN SAVE
+    cp      RESTK                 ; If RESTORE
+    jr      z,ST_SCREEN_RESTORE   ;   Do SCREEN RESTORE
     call    GETBYT                ; Get Mode
     push    hl                    ; Stack = TxtPtr, RtnAdr
     cp      24                    ; If greater than 23
     jp      nc,FCERR              ;   Illegal quantity error
     call    screen_set_mode       ;
     pop     hl                    ; HL - TxtPtr; Stack = RtnAdr
+    ret
+
+;-----------------------------------------------------------------------------
+; SCREEN SAVE - Copy Text Screen to Screen Buffer
+;-----------------------------------------------------------------------------
+ST_SCREEN_SAVE:
+    rst     CHRGET                ; Skip SAVE
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    call    screen_save           ; Do the Copy  
+    pop     hl                    ; HL = TxtPtr; HL = RtnAdr
+    ret
+
+;-----------------------------------------------------------------------------
+; SCREEN RESTORE - Copy Screen Buffer to Text Screen
+;-----------------------------------------------------------------------------
+ST_SCREEN_RESTORE:
+    rst     CHRGET                ; Skip RESTORE
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    call    screen_restore        ; Do the Copy  
+    pop     hl                    ; HL = TxtPtr; HL = RtnAdr
     ret
 
 ;-----------------------------------------------------------------------------
@@ -394,7 +418,7 @@ ST_DEFCOLOR:
 ;-----------------------------------------------------------------------------
 ST_DEFINT:
     rst     CHRGET                ; Skip INT
-    call    _setupdef             ; Stack = VarPtr, RetAdr
+    call    _setupdef             ; Stack = VarPtr, RtnAdr
 .loop
     call    GETINT                ; Get Integer
     call    sbuff_write_de        ; Write it to string buffer
@@ -415,9 +439,9 @@ _setupdef:
     byte    LISTTK                ; Require LIST
 _defnolist:
     call    get_stringvar         ; Get string variable address
-    pop     bc                    ; BC = ThisRet; Stack = RetAdr
-    push    de                    ; Stack = VarPtr, RetAdr
-    push    bc                    ; Stack = ThisRet, VarPtr, RetAdr
+    pop     bc                    ; BC = ThisRet; Stack = RtnAdr
+    push    de                    ; Stack = VarPtr, RtnAdr
+    push    bc                    ; Stack = ThisRet, VarPtr, RtnAdr
     rst     SYNCHR
     byte    EQUATK                ; Require '='
     jp      sbuff_init            ; Init string buffer and return
@@ -495,9 +519,9 @@ FN_GETCOL:
 ;-----------------------------------------------------------------------------
 ST_DEFSPRITE:
     rst     CHRGET                ; Skip SPRITE
-    call    _defnolist            ; Stack = VarPtr, RetAdr
+    call    _defnolist            ; Stack = VarPtr, RtnAdr
     xor     a                     ; A = SptlCnt (0)
-    push    af                    ; Stack = SptlCnt, VarPtr, RetAdr
+    push    af                    ; Stack = SptlCnt, VarPtr, RtnAdr
     call    sbuff_write_byte      ; Write it
     ld      b,a                   ; B = MaxYoffset (0)
     ld      c,a                   ; C = MaxXoffset (0)
@@ -521,16 +545,16 @@ ST_DEFSPRITE:
     ld      b,a                   ;   MaxXoffset = Xoffset
 .skipy
     call    sbuff_write_byte      ; Write Xoffset
-    pop     af                    ; A = SptlCnt; Stack = VarPtr, RetAdr
+    pop     af                    ; A = SptlCnt; Stack = VarPtr, RtnAdr
     inc     a                     ; SptlCnt += 1
-    push    af                    ; Stack = SptlCnt, VarPtr, RetAdr
+    push    af                    ; Stack = SptlCnt, VarPtr, RtnAdr
     call    CHRGT2
     jr      z,.done
     SYNCHK  ';'
     jr      .loop
 .done
     ld      de,0                  ; DE = BuffOffset (0)
-    pop     af                    ; A = SptlCnt; Stack = VarPtr, RetAdr
+    pop     af                    ; A = SptlCnt; Stack = VarPtr, RtnAdr
     call    sbuff_write_byte_ofs  ; Write it
     ld      a,c                   ;
     add     a,8                   ; A = MaxXoffset + Spritle Width
@@ -538,7 +562,7 @@ ST_DEFSPRITE:
     ld      a,b                   ;
     add     a,8                   ; A = MaxYoffset + Spritle Width
     call    sbuff_write_byte_ofs  ; Write it
-    jp      _finish_def           ; A = SptlCnt; Stack = VarPtr, RetAdr
+    jp      _finish_def           ; A = SptlCnt; Stack = VarPtr, RtnAdr
 
 _get_byte:
     push    bc                ; Stack = MaxOffsets

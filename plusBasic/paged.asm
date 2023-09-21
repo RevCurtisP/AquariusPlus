@@ -24,6 +24,35 @@ page_copy:
     ret
 
 ;-----------------------------------------------------------------------------
+; Input: A: Source Page
+;       BC: Byte Count
+;       DE: Destination address
+;       HL: Source Address (0-16383)
+; No rollover or error checking 
+; Clobbers: A,BC,DE,HL
+;-----------------------------------------------------------------------------
+page_copy_bytes_from:
+    ex      de,hl                 ; DE = SrcAdr, HL = DstAdr 
+    call    page_coerce_address   ; Coerce DstAdr
+    ex      de,hl                 ; DE = DstAdr, HL = SrcAdr
+    jr      _page_copy            ; Copy it
+
+;-----------------------------------------------------------------------------
+; Input: A: Destination Page
+;       BC: Byte Count
+;       DE: Destination address (0-16383)
+;       HL: Source Address
+; No rollover or error checking
+; Clobbers: A,BC,DE,HL
+;-----------------------------------------------------------------------------
+page_copy_bytes_to:
+    call    page_coerce_address   ; Coerce DstAdr
+_page_copy:
+    out     (IO_BANK3),a          ; Map DestPg
+    ldir                          ; Do the Copy
+    jp      page_restore_plus     ; Restore ROM Page and return
+
+;-----------------------------------------------------------------------------
 ; Input: A: Destination Page
 ;       A': Source Page
 ;       BC: Byte Count
@@ -517,9 +546,3 @@ set_zero_flag:
     pop     af                    ; AF now has zero bit set
     ret
     
-    
-    
-buff_to_temp_string:
-    call    STRLIT
-    ret
-

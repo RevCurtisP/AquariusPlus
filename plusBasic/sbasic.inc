@@ -236,6 +236,7 @@ XINIT:      equ $E010   ; Cartridge entry point
 
 ; Standard BASIC Tokens
 GOTOTK      equ $88     ; GOTO
+RESTK       equ $8B     ; RESTORE    
 GOSUTK      equ $8C     ; GOSUB
 RETTK       equ $8D     ; RETURN
 ONTK        equ $90     ; ON
