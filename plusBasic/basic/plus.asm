@@ -164,13 +164,15 @@ LSERR:
     
 
 ;-----------------------------------------------------------------------------
-; FILL stub
+; FILL [@page], startaddr, oount, byte
+; FILL! [@page], startaddr, count, word
 ;-----------------------------------------------------------------------------
  ST_FILL:
     cp    TILETK
-    jp    z,ST_FILLTILE
+    jp    z,ST_FILL_TILE
+    cp    SCRNTK
+    jp    z,ST_FILL_SCREEN
     jp    SNERR
-
    
 ;-----------------------------------------------------------------------------
 ; SET Statement stub

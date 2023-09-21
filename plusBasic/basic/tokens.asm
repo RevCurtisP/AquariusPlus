@@ -75,6 +75,7 @@ TILETK    equ     $F0
 OFFTK     equ     $F1
 MAPTK     equ     $F2
 COLTK     equ     $F5
+SCRNTK    equ     $F6
 SETTK     equ     $F7
 ATTRTK    equ     $F8
 

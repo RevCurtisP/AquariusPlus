@@ -142,25 +142,18 @@ tilemap_get_tile:
 ;-----------------------------------------------------------------------------
 tilemap_cell_addr:   
     ld      a,e                   
-    cp      32                    ; If Row > 31
-    jr      nc,_ccf_ret           ;   Return error
     ld      d,a
     ld      e,0                   ; DE = Row * 256
     srl     d
     rr      e                     ; DE = Row * 128
     ld      a,c 
-    cp      64                    ; If Column > 63
-    jr      nc,_ccf_ret           ;   Return error
     sll     a                     ; A = Column * 2
     and     e                     ; Clears carry
     ld      e,a                   ; DE = (Row*64+Column)*2
     ret
-_ccf_ret:
-    ccf
-    ret
 
 ;-----------------------------------------------------------------------------
-; Fill Tilemap with Tile + Palette + Attributes
+; Fill Tilemap Section with Tile + Palette + Attributes
 ; Input: B: Start Column
 ;        C: End Column  
 ;        D: Start Row
@@ -168,9 +161,12 @@ _ccf_ret:
 ;       HL: Tile#+Props
 ; Clobbered: A, BC, DE
 ;-----------------------------------------------------------------------------
-;ToDo: update this after rewriting page_fill_word
 tilemap_fill:
-    call    _convert_map_range    ; A = RowCnt, BC = ColCnt, DE = FilAdr
+    call    _tile_bounds          ; Check EndCol and EndRow
+    ret     c
+    ld      ix,tilemap_cell_addr
+    call    gfx_convert_rect      ; A = RowCnt, BC = ColCnt, DE = FilAdr
+    ret     c
 .loop
     push    af                    ; Stack = RowCnt, RtnAdr
     push    bc                    ; Stack = ColCnt, RowCnt, RtnAdr
@@ -188,30 +184,13 @@ tilemap_fill:
     ret     z                     ;   Return
     jr      .loop                 ; Else do next row
 
-; In: B=Start Column, C=End Column, D=Start Row, E=End Row
-; Out: A = Row Count, BC = Column Count, DE = Start Address
-_convert_map_range:
-    ld      a,c                   ; A = EndCol
-    cp      64                    ; If EndCol > 63
-    jr      nc,_ccf_ret           ;   Return error
-    sub     b                     ; A = EndCol - BgnCol
-    ret     c                     ; If EndCol < BgnCol Return error
-    inc     a                     ; ColCnh = EndCol - BgnCol + 1
-    ld      c,b                   ; C = BgnCol
-    ld      b,a                   ; B = ColCnt
+; In: C=Column, E=Row
+; Out: Carry set if out of bounds
+_tile_bounds:
+    ld      a,64
+    cp      b                     ; If EndCol > 63
+    ret     c                     ;   Return Carry Set
+    ld      a,32                  
+    cp      e                     ; If EndRow > 31
+    ret                           ;   Return Carry Set
 
-    ld      a,e                   ; A = EndRow
-    cp      32                    ; If EndRow > 31
-    jr      nc,_ccf_ret           ;   Return error
-    sub     d                     ; A= EndRow - BgnRow
-    ret     c                     ; If EndRow < BgnRow Return error
-    inc     a                     ; A = RowCnt 
-
-    ex      af,af'
-    ld      e,d                   ; E = BgnRow
-    call    tilemap_cell_addr     ; DE = FilAdr
-    ret     c                     ; Return if error
-    ld      c,b                   
-    ld      b,0                   ; BC = ColCnt
-    ex      af,af'
-    ret

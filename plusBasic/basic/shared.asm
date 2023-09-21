@@ -202,3 +202,25 @@ push_hl_labbck:
         ex      (sp),hl           ; HL = RtnAdr; Stack = LABBCK, TxtPtr 
         jp      (hl)              ; Fast Return
 
+;-----------------------------------------------------------------------------
+; Scan Rectangular Coordinates
+; Input: HL: Text Pointer
+; Output B: Start Column
+;        C: End Column  
+;        D: Start Row
+;        E: End Row
+;-----------------------------------------------------------------------------
+scan_rect:
+    call    SCAND                 ; C = BgnCol, E = BgnRow
+    push    de                    ; Stack = BgnRow, RtnAdr
+    push    bc                    ; Stack = BgnCol, BgnRow, RtnAdr
+    rst     SYNCHR                ; Require -
+    byte    MINUTK                 
+    call    SCAND                 ; C = EndCol, E = EndRow
+    ex      (sp),hl               ; L = BgnCol; Stack = TxtPtr, BgnRow, RtnAdr
+    ld      b,l                   ; B = BgnCol, C = EndCol
+    pop     hl                    ; HL = TxtPtr; Stack = BgnRow, RtnAdr
+    ex      (sp),hl               ; L = BgnRow; Stack = TxtPtr, RtnAdr
+    ld      d,l                   ; D = BgnRow, C = EndRow
+    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
+    ret

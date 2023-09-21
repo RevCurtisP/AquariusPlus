@@ -89,8 +89,6 @@ ST_SETCOLOR:
 ;        +16 ( 0 1 x xx 1) Text in Front of Graphics
 ;        +24 ( 1 x x xx x) Remap Border Character
 ;-----------------------------------------------------------------------------
-
-
 ST_SCREEN:
     call    GETBYT                ; Get Mode
     push    hl                    ; Stack = TxtPtr, RtnAdr
@@ -157,28 +155,65 @@ ST_SET_TILE:
     ret
 
 ;-----------------------------------------------------------------------------
+; FILL SCREEN (col,row)-(col,row) character$, fgcolor, bgcolor
+; FILL SCREEN (col,row)-(col,row) character, fgcolor, bgcolor
+;-----------------------------------------------------------------------------
+;FILL SCREEN (5,10) - (25,15) "X",7,0
+;FILL SCREEN (20,8) - (38,20) $86,5,0
+ST_FILL_SCREEN:
+    rst     CHRGET                ; Skip SCREEN
+    call    scan_rect             ; B = BgnCol, C = EndCol, D = BgnRow, E= EndRow  
+    push    de                    ; Stack = Rows, RtnAdr
+    push    bc                    ; Stack = Cols, Rows, RtnAdr
+    call    FRMEVL                ; Evaluate Character
+    call    GETYPE                
+    jr      z,.string             ; If numeric
+    call    CONINT                ;   Convert to byte
+    jr      .gotit                ; Else
+.string
+    push    hl                    ; Stack = TxtPtr, Cols, Rows, RtnAdr
+    call    free_addr_len         ; BC = StrLen, DE = StrAdr
+    pop     hl                    ; HL = TxtPtr; Stack = Cols, Rows, RtnAdr
+    xor     a 
+    or      c                     
+    jp      z,FCERR               ; Error if LEN = 0
+    ld      a,(de)                ;   Get first character
+.gotit    
+    push    af                    ; Stack = Char, Cols, Rows, RtnAdr
+    SYNCHK  ','                   ; Require comma
+    call    get_byte16            ; A = FColor
+    sll     a                     ; 
+    sll     a                     ; 
+    sll     a                     ; 
+    sll     a                     ; 
+    push    af                    ; Stack = FColor, Char, Cols, Rows, RtnAdr
+    SYNCHK  ','                   ; Require comma
+    call    get_byte16            ; A = BColor
+    pop     bc                    ; D = FColor; Stack = Char, Cols, Rows, RtnAdr
+    or      b                     ; A = Colors
+    pop     de                    ; D = Char; Stack = Cols, Rows, RtnAdr
+    ld      e,a                   ; DE = ChrClr
+    pop     bc                    ; BC = Cols; Stack = Rows, RtnAdr
+    ex      (sp),hl               ; HL = Rows; Stack = TxtPtr, RtnAdr
+    ex      de,hl                 ; DE = Rows, HL = ChrClr
+    call    screen_fill           ; In: B=BgnCol, C=EndCol, D=BgnRow, E=EndRow, HL: ChrClr
+    jp      c,FCERR
+    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
+    ret
+
+
+;-----------------------------------------------------------------------------
 ; FILL TILEMAP TILE tile# ATTR attrs COLOR palette#
 ; FILL TILEMAP (col,row)-(col,row) TILE tile# ATTR attrs COLOR palette#
 ;-----------------------------------------------------------------------------
 ;FILL TILEMAP (2,2) - (10,10) TILE 511
-ST_FILLTILE:
+ST_FILL_TILE:
     rst     CHRGET                ; Skip TILE
     rst     SYNCHR                ; Require MAP
     byte    MAPTK
     cp      '('
     jr      nz,.fill_all
-    call    SCAND                 ; C = BgnCol, E = BgnRow
-    push    de                    ; Stack = BgnRow, RtnAdr
-    push    bc                    ; Stack = BgnCol, BgnRow, RtnAdr
-    rst     SYNCHR                ; Require -
-    byte    MINUTK                 
-    call    SCAND                 ; C = EndCol, E = EndRow
-    ex      (sp),hl               ; L = BgnCol; Stack = TxtPtr, BgnRow, RtnAdr
-    ld      b,l                   ; B = BgnCol, C = EndCol
-    pop     hl                    ; HL = TxtPtr; Stack = BgnRow, RtnAdr
-    ex      (sp),hl               ; L = BgnRow; Stack = TxtPtr, RtnAdr
-    ld      d,l                   ; D = BgnRow, C = EndRow
-    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
+    call    scan_rect             ; B = BgnCol, C = EndCol, D = BgnRow, E= EndRow  
     jr      .get_props
 .fill_all
     ld      bc,63                 ; BgnRow = 0, EndRow = 31
@@ -228,13 +263,14 @@ ST_PUT:
 ST_PUT_TILEMAP:
     jp      GSERR
 
+
 ;-----------------------------------------------------------------------------
 ; SET TILEMAP
 ; SET TILEMAP (x,y) TO TILE tile# ATTR attrs COLOR palette#
 ; SET TILEMAP (x,y) TO integer
 ; SET TILEMAP OFFSET x,y
 ;-----------------------------------------------------------------------------
- ST_SET_TILEMAP:
+ST_SET_TILEMAP:
     jp      GSERR
     rst     CHRGET                ; Skip MAP
     cp      OFFTK                 ; If OFF

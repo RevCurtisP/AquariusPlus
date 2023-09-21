@@ -7,7 +7,6 @@
 ; syntax: COPY @page TO @page
 ;         COPY [@page], source, length TO [@page], destination
 ;-----------------------------------------------------------------------------
-
 ST_COPY:   
     jp      z,COPY          ; No Parameters? Do Standard COPY
     call    get_page_arg    ; Check for Page Arg
@@ -177,6 +176,14 @@ check_paged_address:
     pop     a
     ret
     
+;-----------------------------------------------------------------------------
+; Enhanced PEEK
+; syntax: PEEK(address)
+;         PEEK!(address)
+;         PEEK(@page, address)
+;         PEEK!(@page, address)
+;-----------------------------------------------------------------------------
+;ToDo: Add PEEK$
 FN_PEEK:
     rst     CHRGET                ; Skip token
     cp      '!'                   ; If POKE!

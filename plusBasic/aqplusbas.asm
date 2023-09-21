@@ -663,6 +663,8 @@ fast_hook_handler:
     ; Graphics modules
     include "gfx.asm"           ; Main graphics module
     include "color.asm"         ; Color palette module
+    include "common.asm"        ; Shared graphics subroutines
+    include "screen.asm"        ; Text screen graphics subroutines
     include "sprite.asm"        ; Sprite graphics module
     include "tile.asm"          ; Tile graphics module
 
