@@ -10,14 +10,14 @@ BTOKEN:     equ $CB               ; Our first token number
 
 TBLCMDS:
 
-    db $80 + ' '                  ; $CB            
-    db $80 + ' '                  ; $CC            
+    db $80 + 'X',"OR"             ; $CB            
+    db $80 + 'P',"UT"             ; $CC            
     db $80 + 'G',"ET"             ; $CD             
     db $80 + ' '                  ; $CE            
     db $80 + ' '                  ; $CF             
     db $80 + 'L',"INE"            ; $D0             
-    db $80 + ' '                  ; $D1            
-    db $80 + ' '                  ; $D2   paint/fill
+    db $80 + 'S',"WAP"            ; $D1            
+    db $80 + 'F',"ILL"            ; $D2   Paint/Fill
     db $80 + 'T',"IME"            ; $D3   Replaces MX-BASIC keyword SDTM
     db $80 + 'E',"DIT"            ; $D4   Not Implemented
     db $80 + 'C',"LS"             ; $D5
@@ -42,7 +42,7 @@ TBLCMDS:
     db $80 + 'A',"RGS"            ; $E8   Replaces MX-BASIC keyword DEEK
     db $80 + 'E',"RR"             ; $E9             
     db $80 + 'S',"TRING"          ; $EA             
-    db $80 + ' '                  ; $EB             
+    db $80 + 'B',"IT"             ; $EB             
     db $80 + ' '                  ; $EC             
     db $80 + 'E',"VAL"            ; $ED             
     db $80 + ' '                  ; $EE             
@@ -56,13 +56,14 @@ TBLCMDS:
     db $80 + 'S',"CREEN"          ; $F6             
     db $80 + 'S',"ET"             ; $F7             
     db $80 + 'A',"TTR"            ; $F8             
-    db $80 + 'F',"ILL"            ; $F9             
+    db $80 + ' '                  ; $F9             
     db $80             ; End of table marker
     
 ;-----------------------------------------------------------------------------
 ; plusBASIC tokens
 ;-----------------------------------------------------------------------------
 GETTK     equ     $CD
+SWAPTK    equ     $D1
 TIMETK    equ     $D3    
 MOUSTK    equ     $D9
 CDTK      equ     $E0
@@ -118,14 +119,14 @@ token_to_keyword:
 ; * = Likely to be replaced
 ;
 ;     plusBASIC   MX-BASIC             Conversion
-; $CB             INSTR            IN STRING <--> INSTR  
-; $CC             PUT    
+; $CB XOR         INSTR            IN STRING <--> INSTR  
+; $CC PUT         PUT    
 ; $CD GET         GET    
 ; $CE             DRAW   
 ; $CF             CIRCLE  
 ; $D0             LINE                compatible
-; $D1             SWAP   
-; $D2 paint       DOKE              POKE! <--> DOKE
+; $D1 SWAP        SWAP   
+; $D2 FILL        DOKE              POKE! <--> DOKE
 ; $D3 TIME        SDTM   
 ; $D4             EDIT   
 ; $D5 CLS         CLS    
@@ -150,7 +151,7 @@ token_to_keyword:
 ; $E8 ARGS        DEEK              PEEK! <--> DEEK
 ; $E9 ERR         ERR [OR]            ERR <--> ERR(0), ERRLINE <--> ERR(1), ERR$ <--> ERR$(1)
 ; $EA STRING      STRING
-; $EB             XOR           (a XOR b) <--> XOR(a,b)
+; $EB BIT         XOR           (a XOR b) <--> XOR(a,b)
 ; $EC             MENU
 ; $ED EVAL        EVAL                 compatible
 ; $EE             SLEEP
@@ -164,7 +165,7 @@ token_to_keyword:
 ; $F6 SCREEN
 ; $F7 SET
 ; $F8 ATTR
-; $F9 FILL
+; $F9 
 ; $FA OPEN
 ; $FB CLOSE
 ; $FC

@@ -94,12 +94,24 @@ ST_SCREEN:
     jr      z,ST_SCREEN_SAVE      ;   Do SCREEN SAVE
     cp      RESTK                 ; If RESTORE
     jr      z,ST_SCREEN_RESTORE   ;   Do SCREEN RESTORE
+    cp      SWAPTK                ; If RESTORE
+    jr      z,ST_SCREEN_SWAP      ;   Do SCREEN RESTORE
     call    GETBYT                ; Get Mode
     push    hl                    ; Stack = TxtPtr, RtnAdr
     cp      24                    ; If greater than 23
     jp      nc,FCERR              ;   Illegal quantity error
     call    screen_set_mode       ;
     pop     hl                    ; HL - TxtPtr; Stack = RtnAdr
+    ret
+
+;-----------------------------------------------------------------------------
+; SCREEN RESTORE - Copy Screen Buffer to Text Screen
+;-----------------------------------------------------------------------------
+ST_SCREEN_RESTORE:
+    rst     CHRGET                ; Skip RESTORE
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    call    screen_restore        ; Do the Copy  
+    pop     hl                    ; HL = TxtPtr; HL = RtnAdr
     ret
 
 ;-----------------------------------------------------------------------------
@@ -113,12 +125,12 @@ ST_SCREEN_SAVE:
     ret
 
 ;-----------------------------------------------------------------------------
-; SCREEN RESTORE - Copy Screen Buffer to Text Screen
+; SCREEN SWAP - Swap Text Screen with Screen Buffer
 ;-----------------------------------------------------------------------------
-ST_SCREEN_RESTORE:
-    rst     CHRGET                ; Skip RESTORE
+ST_SCREEN_SWAP:
+    rst     CHRGET                ; Skip SWAP
     push    hl                    ; Stack = TxtPtr, RtnAdr
-    call    screen_restore        ; Do the Copy  
+    call    screen_swap           ; Do the Copy  
     pop     hl                    ; HL = TxtPtr; HL = RtnAdr
     ret
 

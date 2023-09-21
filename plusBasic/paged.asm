@@ -53,6 +53,32 @@ _page_copy:
     jp      page_restore_plus     ; Restore ROM Page and return
 
 ;-----------------------------------------------------------------------------
+; Input: A: Page
+;       BC: Byte Count
+;       DE: Page Start Address (0-16383)
+;       HL: RAM Start Address
+; No rollover or error checking
+; Clobbers: A,BC,DE,HL
+;-----------------------------------------------------------------------------
+page_swap_bytes_with:
+    call    page_coerce_address   ; Coerce DstAdr
+    out     (IO_BANK3),a          ; Map DestPg
+.loop    
+    ld      a,b
+    or      c                     ; If BC = 0
+    jp      z,page_restore_plus   ;   Restore ROM Page and return
+    ld      a,(hl)                ; Get RAM byte
+    ex      af,af'
+    ld      a,(de)                ; Copy paged byte
+    ld      (hl),a                ; to RAM address
+    ex      af,af'
+    ld      (de),a                ; Put RAM byte in paged address
+    inc     de                    ; Next paged addres
+    inc     hl                    ; Next RAM address
+    dec     bc                    ; Count down
+    jr      .loop                 ; and do next byte
+
+;-----------------------------------------------------------------------------
 ; Input: A: Destination Page
 ;       A': Source Page
 ;       BC: Byte Count
