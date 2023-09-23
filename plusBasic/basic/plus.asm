@@ -164,6 +164,7 @@ LSERR:
     
 
 ;-----------------------------------------------------------------------------
+; GET Statement stub
 ; FILL [@page], startaddr, oount, byte
 ; FILL! [@page], startaddr, count, word
 ;-----------------------------------------------------------------------------
@@ -174,6 +175,31 @@ LSERR:
     jp    z,ST_FILL_SCREEN
     jp    SNERR
    
+;----------------------------------------------------------------------------
+; GET Statement stub
+;----------------------------------------------------------------------------
+ST_GET: 
+    cp      ARGSTK
+    jp      z,ST_GETARGS
+    cp      SCRNTK
+    jp      z,ST_GET_SCREEN
+    cp      TILETK                ; If GET TILEMAP
+    jp      z, ST_GET_TILEMAP     ;   Go do it
+    jp      GSERR
+
+;----------------------------------------------------------------------------
+; PUT Statement stub
+; Syntax: GET (x1,y1)-(x2,y2),*arrayvar
+;----------------------------------------------------------------------------
+ST_PUT: 
+    cp      SCRNTK
+    jp      z,ST_PUT_SCREEN
+    cp      TILETK                ; If GET TILEMAP
+    jp      z, ST_PUT_TILEMAP     ;   Go do it
+    jp      GSERR
+
+
+
 ;-----------------------------------------------------------------------------
 ; SET Statement stub
 ;-----------------------------------------------------------------------------

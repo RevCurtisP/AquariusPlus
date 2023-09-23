@@ -242,8 +242,11 @@ ST_FILL_SCREEN:
 ; FILL TILEMAP TILE tile# ATTR attrs COLOR palette#
 ; FILL TILEMAP (col,row)-(col,row) TILE tile# ATTR attrs COLOR palette#
 ;-----------------------------------------------------------------------------
-;FILL TILEMAP (2,2) - (10,10) TILE 511
+;FILL TILEMAP (5,4) - (12,11) TILE 128
+;FILL TILEMAP TILE 511
 ST_FILL_TILE:
+    jp      GSERR
+
     rst     CHRGET                ; Skip TILE
     rst     SYNCHR                ; Require MAP
     byte    MAPTK
@@ -266,38 +269,99 @@ ST_FILL_TILE:
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     ret
 
-;----------------------------------------------------------------------------
-; GET Statement
-; Syntax: GET (x1,y1)-(x2,y2),*arrayvar
-;----------------------------------------------------------------------------
-ST_GET: 
-    cp      ARGSTK
-    jp      z,ST_GETARGS
-    cp      TILETK                ; If GET TILEMAP
-    jr      z, ST_GET_TILEMAP     ;   Go do it
-    jp      GSERR
+;-----------------------------------------------------------------------------
+; GET SCREEN (col,row)-(col,row) *arrayvar
+; binary = column-count, row-count, char, color, char color, ...
+;-----------------------------------------------------------------------------
+;DIM A(40)
+;GET SCREEN (2,2) - (10,10),*A
+ST_GET_SCREEN:
+    rst     CHRGET                ; Skip SCREEN
+    call    scan_rect             ; B = BgnCol, C = EndCol, D = BgnRow, E = EndRow  
+    SYNCHK  ','                   ; Require comma
+    rst     SYNCHR
+    byte    MULTK                 ; Require * - for now
+    push    de                    ; Stack = Rows, RtnAdr
+    push    bc                    ; Stack = Cols, Rows, RtnAdr
+    call    get_array             ; DE = Array Data Address
+    pop     bc                    ; B = BgnCol, C = EndCol; Stack = Rows, RtnAdr
+    ex      (sp),hl               ; HL = Rows; Stack = TxtPtr, RtnAdr
+    ex      de,hl                 ; D = BgnRow, E = EndRow, HL = AryAdr
+    call    screen_get            ; In: B=BgnCol, C=EndCol, D=BgnRow, E=EndRow, HL: AryAdr
+    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
+    ret
 
 ;-----------------------------------------------------------------------------
-; GET TILEMAP (col,row)-(col,row) *arrayvar
+; GET TILEMAP (col,row)-(col,row),*arrayvar
 ; binary = column-count, row-count, cells
 ;-----------------------------------------------------------------------------
+;DIM A(40)
+;GET TILEMAP (2,2) - (10,10),*A
 ST_GET_TILEMAP:
     jp      GSERR
 
+    rst     CHRGET                ; Skip SCREEN
+    rst     SYNCHR                ; Require MAP
+    byte    MAPTK
+    call    scan_rect             ; B = BgnCol, C = EndCol, D = BgnRow, E = EndRow  
+    SYNCHK  ','                   ; Require comma
+    rst     SYNCHR
+    byte    MULTK                 ; Require * - for now
+    push    de                    ; Stack = Rows, RtnAdr
+    push    bc                    ; Stack = Cols, Rows, RtnAdr
+    call    get_array             ; DE = Array Data Address
+    pop     bc                    ; B = BgnCol, C = EndCol; Stack = Rows, RtnAdr
+    ex      (sp),hl               ; HL = Rows; Stack = TxtPtr, RtnAdr
+    ex      de,hl                 ; D = BgnRow, E = EndRow, HL = AryAdr
+    call    tilemap_get            ; In: B=BgnCol, C=EndCol, D=BgnRow, E=EndRow, HL: AryAdr
+    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
+    ret
+
 ;----------------------------------------------------------------------------
 ; PUT Statement
-; Syntax: PUT (x1,y1)-(x2,y2),*arrayvar [,operation]
+; Syntax: PUT (x1,y1),*arrayvar
 ;----------------------------------------------------------------------------
-ST_PUT: 
-    cp      TILETK              ; If PUT TILEMAP
-    jr      z,ST_PUT_TILEMAP    ;   Go do it
-    jp      GSERR
+;PUT SCREEN (4,4),*A
+ST_PUT_SCREEN: 
+    rst     CHRGET                ; Skip SCREEN
+    call    SCAND                 ; C = Col, E = Row
+    SYNCHK  ','                   ; Require comma
+    rst     SYNCHR
+    byte    MULTK                 ; Require * - for now
+    push    de                    ; Stack = Row, RtnAdr
+    push    bc                    ; Stack = Col, Row, RtnAdr
+    call    get_array             ; DE = Array Data Address
+    pop     bc                    ; C = Col; Stack = Row, RtnAdr
+    ex      (sp),hl               ; HL = Row; Stack = TxtPtr, RtnAdr
+    ex      de,hl                 ; E = Row, HL = AryAdr
+    call    screen_put            ; In: C=Col, E=End, HL: AryAdr
+    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
+    ret
 
 ;-----------------------------------------------------------------------------
-; PUT TILEMAP (col,row) *arrayvar
+; PUT TILEMAP (col,row),*arrayvar
 ;-----------------------------------------------------------------------------
+;PUT TILEMAP (5,5),*A
 ST_PUT_TILEMAP:
     jp      GSERR
+
+    rst     CHRGET                ; Skip SCREEN
+    rst     SYNCHR                ; Require MAP
+    byte    MAPTK
+    call    SCAND                 ; C = Col, E = Row
+    SYNCHK  ','                   ; Require comma
+    rst     SYNCHR
+    byte    MULTK                 ; Require * - for now
+    push    de                    ; Stack = Row, RtnAdr
+    push    bc                    ; Stack = Col, Row, RtnAdr
+    call    get_array             ; DE = Array Data Address
+    pop     bc                    ; C = Col; Stack = Row, RtnAdr
+    ex      (sp),hl               ; HL = Row; Stack = TxtPtr, RtnAdr
+    ex      de,hl                 ; E = Row, HL = AryAdr
+    call    tilemap_put           ; In: C=Col, E=End, HL: AryAdr
+    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
+    ret
+
 
 
 ;-----------------------------------------------------------------------------
@@ -308,6 +372,7 @@ ST_PUT_TILEMAP:
 ;-----------------------------------------------------------------------------
 ST_SET_TILEMAP:
     jp      GSERR
+
     rst     CHRGET                ; Skip MAP
     cp      OFFTK                 ; If OFF
     jr      z,_tilemap_offset     ;   Do SET TILEMAP OFFSET

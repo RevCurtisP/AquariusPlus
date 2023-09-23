@@ -14,6 +14,44 @@ FLOAT_DE:
     pop     hl
     ret
 
+
+
+;-----------------------------------------------------------------------------
+; Parse Array Variable without subscript
+; Output: DE = First Byte of Data
+;         BC = Last Byte of Data
+
+; Clobbered: A
+;-----------------------------------------------------------------------------
+get_array: 
+    ld      a,1                   ; SEARCH ARRAYS ONLY
+    ld      (SUBFLG),a            
+    call    PTRGET                ; GET PTR TO ARRAY
+    jp      nz,FCERR              ; NOT THERE - ERROR
+    ld      (SUBFLG),a            ; CLEAR THIS
+    push    hl                    ; SAVE TXTPTR
+    ld      h,b                   ; HL = PTR TO ARRAY
+    ld      l,c                   
+    ex      de,hl                 ; HL = LENGTH
+    add     hl,de                 ; HL = LAST BYTE OF ARRAY
+    push    hl                    ; SAVE
+    ld      a,(bc)                ; GET NO. OF DIMS
+    add     a,a                   ; DOUBLE SINCE 2 BYTE ENTRIES
+    ld      l,a                   
+    ld      h,0                   
+    inc     bc                    ; SKIP NO. OF DIMS
+    add     hl,bc                 
+    ex      de,hl                 ; DE = PTR TO FIRST BYTE OF DATA
+    xor     a                     ; Clear carry
+    pop     hl                    ; HL = PTR TO LAST BYTE OF DATA
+    sbc     hl,de                 
+    inc     hl                    ; HL = Data Length
+    ld      b,h
+    ld      c,l                   ; BE = Data Length
+    pop     hl                    ; HL = TxtPtr
+    ret
+
+
 ;-----------------------------------------------------------------------------
 ; Parse @Page
 ; Output: A, E = Page number`

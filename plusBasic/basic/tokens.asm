@@ -70,6 +70,7 @@ CDTK      equ     $E0
 KEYTK     equ     $E7
 ARGSTK    equ     $E8
 ERRTK     equ     $E9
+BITTK     equ     $EB
 SPRITK    equ     $EF
 LINETK    equ     $D0
 SAVETK    equ     $DC

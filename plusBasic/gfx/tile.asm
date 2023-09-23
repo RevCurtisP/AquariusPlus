@@ -162,7 +162,7 @@ tilemap_cell_addr:
 ; Clobbered: A, BC, DE
 ;-----------------------------------------------------------------------------
 tilemap_fill:
-    call    _tile_bounds          ; Check EndCol and EndRow
+    call    _tilemap_bounds          ; Check EndCol and EndRow
     ret     c
     ld      ix,tilemap_cell_addr
     call    gfx_convert_rect      ; A = RowCnt, BC = ColCnt, DE = FilAdr
@@ -184,9 +184,73 @@ tilemap_fill:
     ret     z                     ;   Return
     jr      .loop                 ; Else do next row
 
+
+;-----------------------------------------------------------------------------
+; Read TileMap Section into Buffer
+; Input: B: Start Column
+;        C: End Column  
+;        D: Start Row
+;        E: End Row
+;        HL: Buffer Address
+; Clobbered: A, BC, DE
+;-----------------------------------------------------------------------------
+tilemap_get:
+    call    tile_convert_rect     ; A = RowCnt, C = ColCnt, DE = RowAdr
+    ret     c
+    ld      (hl),c                ; Buffer[0] = Columns
+    inc     hl
+    ld      (hl),a                ; Buffer[1] = Rows
+    inc     hl
+.loop
+    push    af                    ; Stack = RowCnt, RtnAdr
+    push    bc                    ; Stack = ColCnt, RowCnt, RtnAdr
+    push    de                    ; Stack = RowAdr, ColCnt, RowCnt, RtnAdr 
+    ld      a,VIDEO_RAM
+    call    page_read_bytes       ; In:  A = Page, BC: BytCnt, DE: DstAdr, HL: SrcAdr
+    pop     de                    ; DE = RowlAdr; Stack = ColCnt, RowCnt, RtnAdr
+    ex      de,hl                 ; HL = RowlAdr, DE = TilPrp
+    ld      bc,128                ; Row Width in Words
+    add     hl,bc                 ; Add to RowAdr
+    ex      de,hl                 ; DE = RowAdr, HL = TilPrp
+    pop     bc                    ; BC = ColCnt; Stack = RowCnt, RtnAdr
+    pop     af                    ; A = RowCnt; Stack = RtnAdr
+    dec     a                     ; If all rows done
+    ret     z                     ;   Return
+    jr      .loop                 ; Else do next row
+
+;-----------------------------------------------------------------------------
+; Write TileMap Section from Buffer
+; Input: B: Start Column
+;        C: End Column  
+;        D: Start Row
+;        E: End Row
+;        HL: Buffer Address
+; Clobbered: A, BC, DE
+;-----------------------------------------------------------------------------
+tilemap_put:
+
+
+;-----------------------------------------------------------------------------
+; Convert Tile Coordinates to Size and Start Address
+; Input: B: Start Column
+;        C: End Column  
+;        D: Start Row
+;        E: End Row
+; Output: A = Row Count
+;         C = Column Count
+;        DE = Start Address
+;-----------------------------------------------------------------------------
+tile_convert_rect:
+    call    _tilemap_bounds       ; Check EndCol and EndRow
+    ret     c
+    ld      ix,tilemap_cell_addr
+    call    gfx_convert_rect      ; A = RowCnt, C = ColCnt, DE = RowAdr
+    ret     
+
+
 ; In: C=Column, E=Row
 ; Out: Carry set if out of bounds
-_tile_bounds:
+_tilemap_bounds:
     ld      a,64
     cp      b                     ; If EndCol > 63
     ret     c                     ;   Return Carry Set
