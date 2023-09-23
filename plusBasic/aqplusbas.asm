@@ -477,17 +477,20 @@ run_cmd:
 
     push    hl
     call    FRMEVL             ; Get argument type
-    pop     hl
-
     ld      a, (VALTYP)
     dec     a                  ; 0 = string
-    jp      z, run_file
+    jr      nz,.not_file
+    call    FRESTR
+    pop     hl
+    jp      run_file
+
+.not_file:
+    pop     hl
 
     ; RUN with line number
     call    CLEARC             ; Init BASIC run environment
     ld      bc, NEWSTT
     jp      RUNC2              ; GOTO line number
-
 
 do_cls_default:
     ld      a,6                   ; default to black on cyan
