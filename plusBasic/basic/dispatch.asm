@@ -172,7 +172,7 @@ FNJUMPS:
     dw      HOOK27+1              ;$C2 LEN     
     dw      HOOK27+1              ;$C3 STR$     
     dw      HOOK27+1              ;$C4 VAL     
-    dw      HOOK27+1              ;$C5 ASC     
+    dw      FN_ASC                ;$C5 ASC     
     dw      HOOK27+1              ;$C6 CHR$     
     dw      HOOK27+1              ;$C7 LEFT$    
     dw      HOOK27+1              ;$C8 RIGHT$   

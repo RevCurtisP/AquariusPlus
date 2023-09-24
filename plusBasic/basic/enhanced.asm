@@ -3,6 +3,28 @@
 ;======================================================================================
 
 ;-----------------------------------------------------------------------------
+; ASC$(hexstring$)
+; Convert Hexadecimal String to Binary String
+;-----------------------------------------------------------------------------
+
+FN_ASC:
+    inc     hl                    ; Check character directly after ASC Token
+    ld      a,(hl)                ; (don't skip spaces)
+    cp      '$'                   ; If it's not a dollar sign
+    jr      nz,ABORT_FN           ;   Return to do normal ASC
+    rst     CHRGET                ; Eat $ and Skip Spaces
+    call    PARCHK                ; Parse Argument in Parentheses
+    push    hl                    ; Save Text Pointer
+    call    CHKSTR                ; TM Error if Not a String
+    jp      hex_to_asc            ; Convert to ASCII
+    
+ABORT_FN:   
+    dec     hl                    ; Back up to Function Token
+    ld      a,(hl)                ; Re-Read Token
+    sub     ONEFUN                ; Convert to Offset
+    jp      HOOK27+1              ; Continue with Standard Function Code
+  
+;-----------------------------------------------------------------------------
 ; Enhanced COPY
 ; syntax: COPY @page TO @page
 ;         COPY [@page], source, length TO [@page], destination

@@ -249,6 +249,7 @@ MINUTK      equ $A9     ; -
 MULTK       equ $AA     ; *
 ORTK        equ $AE     ; OR
 EQUATK      equ $B0     ; = 
+ONEFUN      equ $B2     ; First Function Token
 INTTK       equ $B3     ; INT
 POSTK       equ $B8     ; POS
 
