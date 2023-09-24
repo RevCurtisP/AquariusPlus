@@ -45,9 +45,10 @@
     jp      _interrupt      ; $2009
     jp      _warm_boot      ; $200C Called from main ROM for warm boot
     jp      _scan_label     ; $200F Called from GOTO and RESTORE
-    jp      do_cls_default  ; $2012
-    jp      _inlin_hook     ; $2015 Jump from INLIN for command history recall
-    jp      _inlin_done     ; $2018 Jumped from FININL to save command to history
+    jp      _stopc_hook     ; $2012
+    jp      do_cls_default  ; $2015
+    jp      _inlin_hook     ; $2018 Jump from INLIN for command history recall
+    jp      _inlin_done     ; $201B Jumped from FININL to save command to history
   
 
 ;-----------------------------------------------------------------------------
@@ -181,7 +182,7 @@ _coldboot:
 .print_basic
     call    print_string_immd
 .plus_text
-    db "plusBASIC v0.12l", 0
+    db "plusBASIC v0.12m", 0
 .plus_len   equ   $ - .plus_text
 
     call    CRDO
@@ -450,11 +451,17 @@ _scan_label:
     xor     a                     ;   Treat like terminator
     ret
 
-
 ULERR:
     ld      e,ERRUL
     jp      force_error
 
+_stopc_hook:
+    ld      (SAVTXT),hl
+    ex      af,af'
+    ld      a,0
+    call    screen_set_mode
+    ex      af,af'
+    ret
 
 ;-----------------------------------------------------------------------------
 ; bas_read_to_buff - Read String from ESP to BASIC String Buffer
