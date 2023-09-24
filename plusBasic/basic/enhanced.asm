@@ -7,7 +7,7 @@
 ; syntax: COPY @page TO @page
 ;         COPY [@page], source, length TO [@page], destination
 ;-----------------------------------------------------------------------------
-ST_COPY:   
+ST_COPY:
     jp      z,COPY          ; No Parameters? Do Standard COPY
     call    get_page_arg    ; Check for Page Arg
     push    af              ; Stack = SrcPgFlg
@@ -15,7 +15,7 @@ ST_COPY:
     ld      a,(hl)
     cp      TOTK            ; and followed by TO
     jr      z,.page2page    ;   Do Page to Page copy
-    SYNCHK  ','             
+    SYNCHK  ','
 .no_fpg
     call    GETINT          ; DE = SrcAddr
     pop     af              ; AF = SrcPgFlg
@@ -44,26 +44,26 @@ ST_COPY:
     ex      af,af'          ;   AF = DstPgFlg, AF' = SrcPgFlg
     jr      nc,.no_pages    ;   If No Dest Page
     call    page_write_bytes ;     Do Main to Page
-.pg_done    
+.pg_done
     jp      z,FCERR
     jp      c,OVERR
-    pop     hl               
+    pop     hl
     ret                     ;   Else
 .no_pages:
     rst      COMPAR         ;     If SrcAddr >= DstAdr
-    jr       c,.copy_down   ;    
+    jr       c,.copy_down   ;
     ldir                    ;       Do the Copy
-    pop      hl             
+    pop      hl
     ret                     ;     Else
 .copy_down
     push    de              ;       Stack = DstAdr, TxtPtr
     ex      (sp),hl         ;       HL = DstAdr, Stack = SrcAddr, TxtPtr
-    add      hl,bc                  
-    dec      hl                     
-    ld       d,h                    
+    add      hl,bc
+    dec      hl
+    ld       d,h
     ld       e,l            ;       DE = DstAdr + Len - 1
     pop      hl             ;       HL = SrcAddr, Stack = TxtPtr
-    add      hl,bc                  
+    add      hl,bc
     dec      hl             ;       HL = SrcAddr + Len - 1
     lddr                    ;       Do the Copy
     pop      hl
@@ -125,7 +125,7 @@ ST_POKE:
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     ret
 
-.pokeword    
+.pokeword
     rst     CHRGET                ; Eat the !
     call    parse_page_arg        ; Parse page
     push    af                    ; Save it
@@ -133,8 +133,8 @@ ST_POKE:
     push    de                    ; Save It
     SYNCHK  ','                   ; Require comma
     call    GETINT                ; Parse Word
-    ld      b,d                       
-    ld      c,e                   ;   
+    ld      b,d
+    ld      c,e                   ;
     pop     de                    ; Get address
     pop     af                    ; Get page number
     jr      c,.write_paged_word   ; If page specified, write to it
@@ -158,13 +158,13 @@ ST_POKE:
     pop     hl
     ret
 
-.write_paged_word  
+.write_paged_word
     call    check_paged_address   ; Verify pages addres is between 0 and 16383
     call    page_write_word       ; If page specified, write to it
     jp      z,IQERR               ; FC error if illegal page
-    jp      c,OVERR               ; Return overflow error if end of RAM 
+    jp      c,OVERR               ; Return overflow error if end of RAM
     ret
-    
+
 ;-----------------------------------------------------------------------------
 ; Generate Illegal Quantity error if address in DE is not between 0 and 16383
 ;-----------------------------------------------------------------------------
@@ -175,7 +175,7 @@ check_paged_address:
     jp      nz,IQERR              ;   Illegal Quantity error
     pop     a
     ret
-    
+
 ;-----------------------------------------------------------------------------
 ; Enhanced PEEK
 ; syntax: PEEK(address)
@@ -188,10 +188,12 @@ FN_PEEK:
     rst     CHRGET                ; Skip token
     cp      '!'                   ; If POKE!
     jr      z,.peekword           ;   Poke a word
+    cp      '$'                   ; If followed by dollar sign
+    jr      z,.peekstring         ;   Do PEEK$()
     SYNCHK  '('                   ; Require open paren
     call    parse_page_arg        ; Parse page
     push    af                    ; Save it
-    call    GETINT                ; Parse Integer
+    call    GETINT                ; Parse Address
     SYNCHK  ')'                   ; Require close paren
     pop     af                    ; Get page
     push    hl                    ; Save text pointer
@@ -213,8 +215,8 @@ FN_PEEK:
     rst     CHRGET                ; Skip token
     SYNCHK  '('                   ; Require open paren
     call    parse_page_arg        ; Parse page
-    push    af                    ; Save itj
-    call    GETINT                ; Parse Integer
+    push    af                    ; Save it
+    call    GETINT                ; Parse Address
     SYNCHK  ')'                   ; Require close paren
     pop     af                    ; Get page
     push    hl                    ; Save text pointer
@@ -228,11 +230,42 @@ FN_PEEK:
     ld      b,a
     jp      FLOAT_BC
 
+.peekstring:
+    rst     CHRGET                ; Skip token
+    SYNCHK  '('                   ; Require open paren
+    call    parse_page_arg        ; Parse page
+    push    af                    ; Stack = PgArg, RtnAdr
+    call    GETINT                ; Parse Address
+    push    de                    ; Stack = PkAdr, PgArg, RtnAdr
+    SYNCHK  ','                   ; Require comma
+    call    GETBYT                ; Parse Length
+    SYNCHK  ')'                   ; Require close paren
+    pop     bc                    ; BC = PkAdr; Stack = PgArg, RtnAdr
+    pop     af                    ; AF = PgArg; Stack = RtnAdr
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    push    af                    ; Stack = PgArg, TxtPtr, RtnAr
+    ld      a,e                   ; A = Length
+    or      a                     ; If Length is 0
+    jp      z,null_string         ;   Return Empty String
+    push    bc                    ; Stack = PkAdr, PgArg, TxtPtr, RtnAdr
+    push    de                    ; Stack = Length, PkAdr, PgArg, TxtPtr, RtnAdr
+    call    STRINI                ; Make String with Length [A], HL=StrDsc, DE=StrTxt
+    pop     bc                    ; BC = Length; Stack = Address, PgArg, TxtPtr, RtnAdr
+    pop     hl                    ; HL = PkAdr; Stack = PgArg, TxtPtr, RtnAdr
+    pop     af                    ; AF = PgArg; Stack = TxtPtr, RtnAdr
+    jr      nc,.do_ldir           ; If paged read
+    call    page_copy_bytes_from  ;   Copy from Paged Memory to String
+    jr      .do_putnew            ; Else
+.do_ldir
+    ldir                          ;   Copy from Main Memory to String
+.do_putnew
+    jp      PUTNEW                ; Return the Temporary String
+
 .read_page_word
     call    check_paged_address
     call    page_read_word
     jp      z,IQERR               ; FC error if illegal page
-    jp      c,OVERR               ; Return overflow error if end of RAM 
+    jp      c,OVERR               ; Return overflow error if end of RAM
     jp      FLOAT_BC
 
 
@@ -240,7 +273,7 @@ FN_PEEK:
 ; Output: A, E = Page number`
 ;  Carry: Set if page specified
 parse_page_arg:
-    cp      '@'                   
+    cp      '@'
     jr      nz,.notat             ; If page prefix
     rst     CHRGET                ;   Skip '@'
     call    GETBYT                ;   Parse byte into E
@@ -249,5 +282,5 @@ parse_page_arg:
     scf
     ret
 .notat
-    or      a                     ; Set Flags
-    ret     
+    or      a                     ; Clear Carry Flag
+    ret
