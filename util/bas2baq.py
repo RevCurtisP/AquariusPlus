@@ -124,7 +124,7 @@ tokens = {
     0xCA: "POINT",
     # Start of plusBASIC keywords
     0xCB: "XOR",
-    0xCC: "PUT"
+    0xCC: "PUT",
     0xCD: "GET",
     0xD0: "LINE",
     0xD1: "SWAP",

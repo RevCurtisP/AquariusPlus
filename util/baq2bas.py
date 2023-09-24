@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 #-----------------------------------------------------------------------------
 # Copyright (C) 2022 Frank van den Hoef
+# Modifications (C) 2023 Curtis F Kaylor
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -121,7 +122,7 @@ tokens = {
     0xCA: "POINT",
     # Start of plusBASIC keywords
     0xCB: "XOR",
-    0xCC: "PUT"
+    0xCC: "PUT",
     0xCD: "GET",
     0xD0: "LINE",
     0xD1: "SWAP",
