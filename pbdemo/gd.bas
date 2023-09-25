@@ -1,0 +1,25 @@
+100 REM Tile Test (Arcade Gauntlet Level 1)
+110 CLS
+120 PRINT "Enter level to load (1-3)":PRINT
+140 PRINT "Cursor Keys: Move one pixel."
+150 PRINT "PgUp,PgDn,Home,End: Move 8 pixels."
+160 print "Q to quit."
+170 INPUT "Level";L$
+180 INPUT "Overlay Text (Y/N)";T$
+185 S=1:IF T$="Y" OR T$="y" THEN S=17
+210 N$="gauntlet/level"+L$
+220 LOAD N$+".pal",$3860
+225 SET COLOR 1 TO PEEK$($3860,30)
+230 LOAD N$+".map",@20,0
+240 LOAD N$+".til",@20,4096
+260 SET TILEMAP OFFSET 0,0
+270 CLS 7,0
+280 SCREEN S:REM TileMap with Text in Front
+300 TX=0:TY=0
+310 _LOOP:K=GETKEY
+320 IF K=81 OR K=113 THEN SCREEN 0:STOP
+330 TX=TX+(K=158 AND TX>0)-(K=142 AND TX<191)+8*(K=155 AND TX>7)-8*(K=154 AND TX<184)
+340 TY=TY+(K=143 AND TY>0)-(K=159 AND TY<55)+8*(K=138 AND TY>7)-8*(K=139 AND TY<48)
+350 SET TILEMAP OFFSET TX,TY
+380 GOTO _LOOP
+
