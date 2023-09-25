@@ -121,7 +121,6 @@ XCART   equ     $2006   ;; | plusBASIC Start Cartridge
 XINTR   equ     $2009   ;; | plusBASIC  Interrupt Handler
 XWARM   equ     $200C   ;; | plusBASIC Warm Start`
 SCNLBL  equ     $200F   ;; | Line label hook for GOTO, GOSUB, and RESTORE
-XSTOP   equ     $2012   ;; | Hook for Direct Mode (Warm-Boot, End and Ctrl-C)
 endif                   
 EXTBAS  equ     $2000   ;;Start of Extended Basic
 XSTART  equ     $2010   ;;Extended BASIC Startup Routine
@@ -2248,11 +2247,7 @@ RESFIN: ld      (DATPTR),hl       ;[M80] READ FINISHES COME TO RESFIN
 STOP:   ret     nz                ;[M80] MAKE SURE "STOP" STATEMENTS HAVE A TERMINATOR
 STOPC:  byte    $F6               ;;"OR" to skip next instruction
 ENDS:   ret     nz                ;[M80] MAKE SURE "END" STATEMENTS HAVE A TERMINATOR
-ifdef aqplus
-        call    XSTOP             ; | plusBASIC hook
-else
-        ld      (SAVTXT),hl       ; \ 
-endif
+        ld      (SAVTXT),hl       ;
         byte    $21               ;{M80} SKIP OVER OR USING "LD H,"
 STPEND: or      $FF               ;[M80] SET NON-ZERO TO FORCE PRINTING OF BREAK MESSAGE
         pop     bc                ;[M80] POP OFF NEWSTT ADDRESS

@@ -371,8 +371,6 @@ ST_PUT_TILEMAP:
 ; SET TILEMAP OFFSET x,y
 ;-----------------------------------------------------------------------------
 ST_SET_TILEMAP:
-    jp      GSERR
-
     rst     CHRGET                ; Skip MAP
     cp      OFFTK                 ; If OFF
     jr      z,_tilemap_offset     ;   Do SET TILEMAP OFFSET

@@ -45,10 +45,9 @@
     jp      _interrupt      ; $2009
     jp      _warm_boot      ; $200C Called from main ROM for warm boot
     jp      _scan_label     ; $200F Called from GOTO and RESTORE
-    jp      _stopc_hook     ; $2012
-    jp      do_cls_default  ; $2015
-    jp      _inlin_hook     ; $2018 Jump from INLIN for command history recall
-    jp      _inlin_done     ; $201B Jumped from FININL to save command to history
+    jp      do_cls_default  ; $2012
+    jp      _inlin_hook     ; $2015 Jump from INLIN for command history recall
+    jp      _inlin_done     ; $2018 Jumped from FININL to save command to history
   
 
 ;-----------------------------------------------------------------------------
@@ -182,7 +181,7 @@ _coldboot:
 .print_basic
     call    print_string_immd
 .plus_text
-    db "plusBASIC v0.12m", 0
+    db "plusBASIC v0.12p", 0
 .plus_len   equ   $ - .plus_text
 
     call    CRDO
@@ -455,13 +454,13 @@ ULERR:
     ld      e,ERRUL
     jp      force_error
 
-_stopc_hook:
-    ld      (SAVTXT),hl
-    ex      af,af'
+
+_ready_hook:
+_restore_text_screen:
     ld      a,0
     call    screen_set_mode
-    ex      af,af'
-    ret
+    jp      HOOK2+1
+    
 
 ;-----------------------------------------------------------------------------
 ; bas_read_to_buff - Read String from ESP to BASIC String Buffer
@@ -582,7 +581,7 @@ free_rom_2k = hook_table - $
 hook_table:                     ; ## caller   addr  performing function
     dw      _trap_error         ;  0 ERROR    03DB  Initialize Stack, Display Error, and Stop Program
     dw      force_error         ;  1 ERRCRD   03E0  Print Error Message
-    dw      HOOK2+1             ;  2 READY    0402  BASIC command line (immediate mode)
+    dw      _ready_hook         ;  2 READY    0402  BASIC command line (immediate mode)
     dw      HOOK3+1             ;  3 EDENT    0428  Save Tokenized Line  
     dw      HOOK4+1             ;  4 FINI     0480  Finish Adding/Removing Line or Loading Program
     dw      HOOK5+1             ;  5 LINKER   0485  Update BASIC Program Line Links
