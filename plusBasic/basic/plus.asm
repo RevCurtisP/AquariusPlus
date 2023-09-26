@@ -98,7 +98,9 @@ FN_MOUSE:
     ld      a,e
     jp      SNGFLT
 .not_found:
-    ld      bc,-1
+    ld      a,255                 ; Return -1
+    ld      c,a
+    jp      GIVINT
 .xpos:   
     jp      FLOAT_BC
 

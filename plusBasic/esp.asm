@@ -552,8 +552,8 @@ esp_get_datetime:
 esp_get_mouse:
     ld      a,ESPCMD_GETMOUSE     ; Issue MOUSE command
     call    esp_cmd
-    xor     a     
-    call    esp_get_result
+    call    esp_get_byte
+    or      a
     ret     m                     
     jp      esp_get_long
     
