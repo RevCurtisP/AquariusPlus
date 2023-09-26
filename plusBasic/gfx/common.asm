@@ -20,6 +20,7 @@ gfx_convert_rect:
     inc     a                     ; ColCnh = EndCol - BgnCol + 1
     ld      c,b                   ; C = BgnCol
     ld      b,a                   ; B = ColCnt
+    ld      a,e
     sub     d                     ; A= EndRow - BgnRow
     ret     c                     ; If EndRow < BgnRow Return error
     inc     a                     ; A = RowCnt 

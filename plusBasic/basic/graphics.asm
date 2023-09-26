@@ -98,7 +98,7 @@ ST_SCREEN:
     jr      z,ST_SCREEN_SWAP      ;   Do SCREEN RESTORE
     call    GETBYT                ; Get Mode
     push    hl                    ; Stack = TxtPtr, RtnAdr
-    cp      24                    ; If greater than 23
+    cp      48                    ; If greater than 47
     jp      nc,FCERR              ;   Illegal quantity error
     call    screen_set_mode       ;
     pop     hl                    ; HL - TxtPtr; Stack = RtnAdr
