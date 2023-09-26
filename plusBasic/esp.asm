@@ -235,6 +235,7 @@ esp_create:
 
 ;-----------------------------------------------------------------------------
 ; Read 32-bit long from ESP32 into BC,DE
+; Returns with MSB (D) in A
 ;-----------------------------------------------------------------------------
 
 esp_get_long:
@@ -250,7 +251,6 @@ esp_get_de:
     ld      e,a                   ; into E
     call    esp_get_byte       ; Read MSB
     ld      d,a                ; into D
-    xor     a                  ; Return success
     ret
 
 ;-----------------------------------------------------------------------------t
