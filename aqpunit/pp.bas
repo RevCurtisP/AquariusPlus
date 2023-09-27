@@ -1,8 +1,6 @@
-100 REM Program Description
+100 REM POKE and PEEK Unit Tests
 110 QU=0:REM 0=Screen,1=Printer
 130 GOSUB _init
-
-190 REM Tests
 
 200 GOSUB _title:ARGS "POKE & PEEK"
 210 FOR I=1 TO 3:A=$3000+I:GOSUB _poke:ARGS A,I:NEXT
@@ -34,7 +32,7 @@
 380 GOTO 400
 382 _pokew:GETARGS PA,PB:GOSUB _output:ARGS "POKE! %%,%%" % (PA,PB):POKE! PA,PB:RETURN
 384 _peekw:GETARGS PA,PB:GOSUB _assert:ARGS "PEEK!(%%)=%%" % (PA,PB):RETURN
-386 _peekw_err:GETARGS PA,PE:GOSUB _assert_err:ARGS "PEEK!*%%)" % (PE),PE:RETURN
+386 _peekw_err:GETARGS PA,PE:GOSUB _assert_err:ARGS "PEEK!(%%)" % (PA),PE:RETURN
 
 400 GOSUB _title:ARGS "POKE @ & PEEK(@"
 410 GOSUB _pokep:ARGS 40,$100,69:GOSUB _peekp:ARGS 40,$100,69
