@@ -5301,7 +5301,7 @@ INCHRI: ld      hl,(RESPTR)
         or      a
 ifdef noreskeys
 ;;;Stop auto-styping when ASCII null is encountered
-        jp      z,KEYRET          ;; |                                            
+        jp      nz,KEYRET         ;; |                                            
 else
         jp      p,KEYRET          ;; \                                        
 endif
