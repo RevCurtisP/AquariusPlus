@@ -3,13 +3,46 @@
 ;=============================================================================
 
 ;-----------------------------------------------------------------------------
+; Copy bytes from one Page to another Page
+; Input: A: Destination Page
+;       A': Source Page
+;       BC: Byte Count
+;       DE: Destination address (0-16383)
+;       HL: Source Address (0-16383)
+;     Zero: Set if either page is invalid
+; Clobbers: A,BC,DE,HL,IX
+; No rollover or error checking 
+;-----------------------------------------------------------------------------
+page_fast_copy:
+    call    page_check_read_write
+    ret     z
+    ex      af,af'
+    ld      ixl,a                 ; IXL = SrcPg
+    ex      af,af'
+    cp      ixl                   ; If SrcPg = DstPg
+    ret     z                     ; Return Error
+    call    page_swap_two         ; Bank3 = DstPg, Bank2 = SrcPg
+    ex      de,hl
+    call    page_coerce_address   ; Coerce SrcAdr to Bank3
+    ex      de,hl 
+    ld      a,d                   ; Coerce DstAdr to Bank2
+    and     $3F                   ;  
+    or      $80
+    ld      d,a
+    ldir                          ; Do the copy
+    call    page_restore_two
+    xor     a
+    inc     a                     ; Clear carry and zero flag
+    ret
+
+;-----------------------------------------------------------------------------
 ; Copy entire Page to another Page
 ; Input: A: Destination Page
 ;       A': Source Page
-; Zero Flag: Clear if valid pages, Set if nor
+; Zero Flag: Clear if valid pages, Set if not
 ; Clobbers: A,BC,DE,AF',HL',IX
 ;-----------------------------------------------------------------------------
-page_copy:
+page_full_copy:
     call    page_check_read_write
     ret     z
     push    hl                    ; Stack = HL, RetAddr
@@ -31,7 +64,7 @@ page_copy:
 ; No rollover or error checking 
 ; Clobbers: A,BC,DE,HL
 ;-----------------------------------------------------------------------------
-page_copy_bytes_from:
+page_fast_read_bytes:
     ex      de,hl                 ; DE = SrcAdr, HL = DstAdr 
     call    page_coerce_address   ; Coerce DstAdr
     ex      de,hl                 ; DE = DstAdr, HL = SrcAdr
@@ -45,7 +78,7 @@ page_copy_bytes_from:
 ; No rollover or error checking
 ; Clobbers: A,BC,DE,HL
 ;-----------------------------------------------------------------------------
-page_copy_bytes_to:
+page_fast_write_bytes:
     call    page_coerce_address   ; Coerce DstAdr
 _page_copy:
     out     (IO_BANK3),a          ; Map DestPg
@@ -60,7 +93,7 @@ _page_copy:
 ; No rollover or error checking
 ; Clobbers: A,BC,DE,HL
 ;-----------------------------------------------------------------------------
-page_swap_bytes_with:
+page_mem_swap_bytes:
     call    page_coerce_address   ; Coerce DstAdr
     out     (IO_BANK3),a          ; Map DestPg
 .loop    
@@ -507,7 +540,7 @@ _set_page
 ; page_check_read_write
 ; Verify page in A' is valid for Read
 ;    and page in A is valid for Write
-; Zero Flag: Clear if valid page, Set if nor
+; Zero Flag: Clear if valid page, Set if not
 ;-----------------------------------------------------------------------------
 page_check_read_write:
     ex      af,af'
@@ -519,18 +552,19 @@ page_check_read_write:
 ; page_check_read
 ; page_check_write
 ; Verify page in A is valid for Read/Write
-; Zero Flag: Clear if valid page, Set if nor
+; Zero Flag: Clear if valid page, Set if not
 ;-----------------------------------------------------------------------------
 page_check_write:
     cp      20                    ; If in video RAM
-    jr      z,page_set_for_read   ;   do it
+    jr      z,_page_ok            ;   do it
     cp      21                    ; If in character RAM
-    jr      z,page_set_for_read   ;   do it
+    jr      z,_page_ok            ;   do it
     cp      32                    ; If below main RAM
     jr      c,set_zero_flag       ;   error out
 page_check_read:
     cp      64                    ; If above main RAM
     jr      nc,set_zero_flag      ;   error out
+_page_ok
     cp      $FF                   ; Clear zero flag
     or      a                     ; Clear carry flag
     ret
@@ -553,8 +587,8 @@ page_check_next:
     jr      z,set_carry_flag      ;   error out
     cp      CHAR_RAM              ; If in character RAM
     jr      z,set_carry_flag      ;   error out
-    cp      64                    ; If after last RAM page
-    jr      nc,set_carry_flag     ;   error out
+    cp      63                    ; If in last RAM page
+    jr      z,set_carry_flag      ;   error out
     cp      0                     ; Clear carry and zero flags
     ret
 

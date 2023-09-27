@@ -27,10 +27,13 @@ ABORT_FN:
 ;-----------------------------------------------------------------------------
 ; Enhanced COPY
 ; syntax: COPY @page TO @page
-;         COPY [@page], source, length TO [@page], destination
+;         COPY [@page,] source, length TO [@page,] destination
+;         COPY! @page,] source, length TO @page, destination
 ;-----------------------------------------------------------------------------
 ST_COPY:
     jp      z,COPY          ; No Parameters? Do Standard COPY
+    cp      '!'             ; If COPY!
+    jr      z,.fast_page    ;   Do fast page to page
     call    get_page_arg    ; Check for Page Arg
     push    af              ; Stack = SrcPgFlg
     jr      nc,.no_fpg      ; If specified
@@ -39,20 +42,20 @@ ST_COPY:
     jr      z,.page2page    ;   Do Page to Page copy
     SYNCHK  ','
 .no_fpg
-    call    GETINT          ; DE = SrcAddr
+    call    GETINT          ; DE = SrcAdr
     pop     af              ; AF = SrcPgFlg
-    push    de              ; Stack = SrcAddr
-    push    af              ; Stack = SrcPgFlg, SrcAddr
+    push    de              ; Stack = SrcAdr
+    push    af              ; Stack = SrcPgFlg, SrcAdr
     SYNCHK  ','             ; Require Comma
     call    GETINT          ; DE = Len
-    push    de              ; Stack = Len, SrcPgFlg, SrcAddr
+    push    de              ; Stack = Len, SrcPgFlg, SrcAdr
     rst     SYNCHR
     byte    TOTK
     call    get_page_addr   ; A = DstPgFlg, DE = DstAdr
     ex      af,af'          ; AF' = DstPgFlg
-    pop     bc              ; BC = Len; Stack = SrcPgFlg, SrcAddr
-    pop     af              ; AF = SrcPgFlg, Stack = SrcAddr
-    ex      (sp),hl         ; HL = SrcAddr, Stack = TxtPtr
+    pop     bc              ; BC = Len; Stack = SrcPgFlg, SrcAdr
+    pop     af              ; AF = SrcPgFlg, Stack = SrcAdr
+    ex      (sp),hl         ; HL = SrcAdr, Stack = TxtPtr
     jr      nc,.no_spg      ; If Source Page
     ex      af,af'          ;   AF = DstPgFlg, AF' = SrcPgFlg
     jr      nc,.spg_no_dpg  ;   If Dest Page
@@ -72,21 +75,21 @@ ST_COPY:
     pop     hl
     ret                     ;   Else
 .no_pages:
-    rst      COMPAR         ;     If SrcAddr >= DstAdr
+    rst      COMPAR         ;     If SrcAdr >= DstAdr
     jr       c,.copy_down   ;
     ldir                    ;       Do the Copy
     pop      hl
     ret                     ;     Else
 .copy_down
     push    de              ;       Stack = DstAdr, TxtPtr
-    ex      (sp),hl         ;       HL = DstAdr, Stack = SrcAddr, TxtPtr
+    ex      (sp),hl         ;       HL = DstAdr, Stack = SrcAdr, TxtPtr
     add      hl,bc
     dec      hl
     ld       d,h
     ld       e,l            ;       DE = DstAdr + Len - 1
-    pop      hl             ;       HL = SrcAddr, Stack = TxtPtr
+    pop      hl             ;       HL = SrcAdr, Stack = TxtPtr
     add      hl,bc
-    dec      hl             ;       HL = SrcAddr + Len - 1
+    dec      hl             ;       HL = SrcAdr + Len - 1
     lddr                    ;       Do the Copy
     pop      hl
     ret
@@ -98,9 +101,38 @@ ST_COPY:
     ex      af,af'
     pop     af              ; AF' = Source page
     ex      af,af'
-    call    page_copy       ; Copy the page
+    call    page_full_copy  ; Copy the page
     jp      z,FCERR         ; Error if invalid page
     ret
+
+;COPY! @40,0,4096 TO @20,0
+.fast_page:
+    rst     CHRGET          ; Skip !
+    SYNCHK  '@'             ; Require page prefix
+    call    GETBYT          ; A = SrcPg
+    push    af              ; Stack = SrcPg
+    SYNCHK  ','             ; Require Comma
+    call    GETINT          ; DE = SrcAdr
+    pop     af              ; AF = SrcPgFlg
+    push    de              ; Stack = SrcAdr
+    push    af              ; Stack = SrcPg, SrcAdr
+    SYNCHK  ','             ; Require Comma
+    call    GETINT          ; DE = Len
+    push    de              ; Stack = Len, SrcPg, SrcAdr
+    rst     SYNCHR
+    byte    TOTK
+    SYNCHK  '@'             ; Require page prefix
+    call    GETBYT          ; A = DstPg
+    push    af              ; Stack = DstPg, Len, SrcPg, SrcAdr
+    SYNCHK  ','             ; Require Comma
+    call    GETINT          ; DE = DstAdr
+    pop     af              ; AF = DstPg; Len, SrcPg, SrcAdr
+    ex      af,af'          ; AF' = DstPgFlg    
+    pop     bc              ; BC = Len; Stack = SrcPg, SrcAdr
+    pop     af              ; AF = SrcPg; Stack = SrcAdr
+    ex      (sp),hl         ; HL = SrcAdr, Stack = TxtPtr
+    call    page_fast_copy  ; Do fast page to page copy
+    jr      .pg_done        ; Finish up
 
 ;-----------------------------------------------------------------------------
 ; Enhanced POKE
@@ -276,7 +308,7 @@ FN_PEEK:
     pop     hl                    ; HL = PkAdr; Stack = PgArg, TxtPtr, RtnAdr
     pop     af                    ; AF = PgArg; Stack = TxtPtr, RtnAdr
     jr      nc,.do_ldir           ; If paged read
-    call    page_copy_bytes_from  ;   Copy from Paged Memory to String
+    call    page_read_bytes       ;   Copy from Paged Memory to String
     jr      .do_putnew            ; Else
 .do_ldir
     ldir                          ;   Copy from Main Memory to String
