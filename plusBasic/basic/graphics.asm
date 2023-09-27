@@ -362,7 +362,10 @@ ST_PUT_TILEMAP:
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     ret
 
-
+;-----------------------------------------------------------------------------
+; Copy section of virtual tilemap into actual tilemap
+; COPY TILEMAP @page,width,height,x,y
+;-----------------------------------------------------------------------------
 
 ;-----------------------------------------------------------------------------
 ; SET TILEMAP

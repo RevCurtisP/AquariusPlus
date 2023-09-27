@@ -181,7 +181,7 @@ _coldboot:
 .print_basic
     call    print_string_immd
 .plus_text
-    db "plusBASIC v0.13", 0
+    db "plusBASIC v0.13a", 0
 .plus_len   equ   $ - .plus_text
 
     call    CRDO
@@ -355,6 +355,31 @@ _scratch:
     ld      c,0
     call    spritle_toggle_all    ; Disable all sprites
     jp      HOOK12+1
+
+;-----------------------------------------------------------------------------
+; Hook 18 - INCHRC (Get character from keyboard)
+;-----------------------------------------------------------------------------
+read_key:   
+    jp      HOOK18+1              ; Do Regular read for now
+    exx
+.autotype
+    ld      hl,(RESPTR)       
+    ld      a,h
+    or      a
+    jr      z,.readkey
+    inc     hl
+    ld      a,(hl)
+    ld      (RESPTR),hl
+    or      a
+    jp      nz,.done
+    xor     a                                                             
+    ld      (RESPTR+1),a                                                  
+.done
+    exx
+    ret
+.readkey
+    exx
+    jp      key_read_ascii    ; Read key from keyboard and return
 
 ;-----------------------------------------------------------------------------
 ; Hook 23 - GONE2 (Handle Extended BASIC Statement Tokens)
@@ -549,6 +574,11 @@ _trap_error:
     include "paged.asm"
 
 ;-----------------------------------------------------------------------------
+; Alternate keyboard port routines
+;-----------------------------------------------------------------------------
+    include "keyread.asm"
+
+;-----------------------------------------------------------------------------
 ; Extended string buffer routines
 ;-----------------------------------------------------------------------------
     include "sbuff.asm"
@@ -597,7 +627,7 @@ hook_table:                     ; ## caller   addr  performing function
     dw      HOOK15+1            ; 15 DEF      0B3B  DEF statement
     dw      HOOK16+1            ; 16 FNDOER   0B40  FNxx() call
     dw      HOOK17+1            ; 17 LPTOUT   1AE8  Print Character to Printer
-    dw      HOOK18+1            ; 18 INCHRH   1E7E  Read Character from Keyboard
+    dw      read_key            ; 18 INCHRH   1E7E  Read Character from Keyboard
     dw      HOOK19+1            ; 19 TTYCHR   1D72  Print Character to Screen
     dw      HOOK20+1            ; 20 CLOAD    1C2C  Load File from Tape
     dw      HOOK21+1            ; 21 CSAVE    1C09  Save File to Tape
