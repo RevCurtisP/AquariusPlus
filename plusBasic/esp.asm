@@ -555,7 +555,9 @@ esp_get_mouse:
     call    esp_get_byte
     or      a
     ret     m                     
-    jp      esp_get_long
+    call    esp_get_long
+    xor     a                     ; Return success
+    ret
     
 ;-----------------------------------------------------------------------------
 ; esp_error
