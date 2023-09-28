@@ -147,9 +147,20 @@ _coldboot:
     djnz    .sysvar_loop
 
     call    clear_esp_fdesc
+    call    spritle_clear_all   ; Clear all sprite properties
+    call    print_copyright
 
-    ; Show our copyright message
+    jp      INITFF              ; Continue in ROM
 
+    dc $2100-$,$76
+
+ifdef _____   ; Waiting for modules to stablize
+    org     $2100
+    include "kernel.asm"    ; Kernal jump table
+endif
+
+; Show our copyright message
+print_copyright:
     call    PRNTIT              ; Print copyright string in ROM
     call    print_string_immd
     db $0D, $0A
@@ -181,29 +192,32 @@ _coldboot:
 .print_basic
     call    print_string_immd
 .plus_text
-    db "plusBASIC v0.13a", 0
+    db "plusBASIC v0.13b", 0
 .plus_len   equ   $ - .plus_text
-
     call    CRDO
-    call    CRDO
+    jp      CRDO
 
-    call    spritle_clear_all   ; Clear all sprite properties
+; If autorun exists, push RUN "autoexec to key buffer 
+; ToDo: make esp functions return error code instead of generating BASIC error
+check_autoexec:
+    ld      hl,_autodesc
+    call    esp_open
+    ret     m
+    call    esp_close_all
+    ld      hl,_autocmd-1
+    ld      (RESPTR),hl
+.nope
+    ret
+_autocmd:
+    db      'RUN "'
+_autotext
+    db      "autoexec"
+_autolen = $ - _autotext
+    db      $0D
+_autodesc
+    dw      _autolen,_autotext      
 
-; ToDo: Copy INITFF code into here, try to load AUTOEXEC basic program 
-; RUNC if load successful, READY if not
 
-    jp      INITFF              ; Continue in ROM
-
-    dc $2100-$,$76
-
-
-ifdef _____   ; Waiting for modules to stablize
-    org     $2100
-    include "kernel.asm"    ; Kernal jump table
-endif
-
-    dc $2100-$,$76
-    
     
 ;-----------------------------------------------------------------------------
 ; Character RAM initialization
