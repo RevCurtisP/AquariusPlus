@@ -192,7 +192,7 @@ print_copyright:
 .print_basic
     call    print_string_immd
 .plus_text
-    db "plusBASIC v0.13b", 0
+    db "plusBASIC v0.13c", 0
 .plus_len   equ   $ - .plus_text
     call    CRDO
     jp      CRDO
@@ -374,7 +374,7 @@ _scratch:
 ; Hook 18 - INCHRC (Get character from keyboard)
 ;-----------------------------------------------------------------------------
 read_key:   
-    jp      HOOK18+1              ; Do Regular read for now
+    jp      key_read_ascii        ; Skip autotype for now
     exx
 .autotype
     ld      hl,(RESPTR)       
