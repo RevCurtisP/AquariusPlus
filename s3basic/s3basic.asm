@@ -122,6 +122,7 @@ XINTR   equ     $2009   ;; | plusBASIC  Interrupt Handler
 XWARM   equ     $200C   ;; | plusBASIC Warm Start`
 SCNLBL  equ     $200F   ;; | Line label hook for GOTO, GOSUB, and RESTORE
 XINCHR  equ     $2012   ;; | Alternate keyboard read
+XCHRAM  equ     $2015   ;; | Set Character RAM
 endif                   
 EXTBAS  equ     $2000   ;;Start of Extended Basic
 XSTART  equ     $2010   ;;Extended BASIC Startup Routine
@@ -274,7 +275,7 @@ COLOR1: ld      (hl),b            ;;memory, addresses $3400 through $3FFF
         jr      nz,COLOR1         ;
         ld      hl,$4000          ;;Loop 12,288 times
 COLOR2: 
-if aqplus
+ifdef aqplus
 ;;; Code Change: Directly read alt port so, network key stuffing works    
         call    XINCHR            ;;Read Keyboard
 else
@@ -2506,8 +2507,9 @@ INLNC1: ld      c,a               ;[M80] SAVE CURRENT CHAR IN [C]
         ld      (RUBSW),a         ;[M80] LIKE SO
 NOTRUB: ld      a,c               ;[M80] GET BACK CURRENT CHAR
 ;;; End of deprecated code
+;;; Bug Fix: Jump to OUTBEL so BEL doesn't go into buffer
 CHKFUN: cp      7                 ;[M80] IS IT BOB ALBRECHT RINGING THE BELL
-        jr      z,GOODCH          ;[M80] FOR SCHOOL KIDS?
+        jr      z,OUTBEL          ;[M80] FOR SCHOOL KIDS?
         cp      3                 ;[M80] CONTROL-C?
         call    z,CRDO            ;[M80] TYPE CHAR, AND CRLFT
         scf                       ;[M80] RETURN WITH CARRY ON
