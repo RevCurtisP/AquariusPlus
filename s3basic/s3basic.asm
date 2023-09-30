@@ -121,6 +121,7 @@ XCART   equ     $2006   ;; | plusBASIC Start Cartridge
 XINTR   equ     $2009   ;; | plusBASIC  Interrupt Handler
 XWARM   equ     $200C   ;; | plusBASIC Warm Start`
 SCNLBL  equ     $200F   ;; | Line label hook for GOTO, GOSUB, and RESTORE
+XINCHR  equ     $2012   ;; | Alternate keyboard read
 endif                   
 EXTBAS  equ     $2000   ;;Start of Extended Basic
 XSTART  equ     $2010   ;;Extended BASIC Startup Routine
@@ -272,7 +273,13 @@ COLOR1: ld      (hl),b            ;;memory, addresses $3400 through $3FFF
         cp      $38               ;;which are after the end of Color memory.
         jr      nz,COLOR1         ;
         ld      hl,$4000          ;;Loop 12,288 times
-COLOR2: call    INCHRC            ;;Check for keypress
+COLOR2: 
+if aqplus
+;;; Code Change: Directly read alt port so, network key stuffing works    
+        call    XINCHR            ;;Read Keyboard
+else
+        call    INCHRC            ;;Check for keypress
+endif
         cp      13                ;{M80} IS IT A CARRIAGE RETURN?
         jr      z,COLDST          ;;Cold Start
         cp      3                 ;;Is it CTRL-C?

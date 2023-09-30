@@ -45,9 +45,10 @@
     jp      _interrupt      ; $2009
     jp      _warm_boot      ; $200C Called from main ROM for warm boot
     jp      _scan_label     ; $200F Called from GOTO and RESTORE
-    jp      do_cls_default  ; $2012
-    jp      _inlin_hook     ; $2015 Jump from INLIN for command history recall
-    jp      _inlin_done     ; $2018 Jumped from FININL to save command to history
+    jp      _keyread        ; $2012 Called from COLORS
+    jp      do_cls_default  ; $20??
+    jp      _inlin_hook     ; $20?? Jump from INLIN for command history recall
+    jp      _inlin_done     ; $20?? Jumped from FININL to save command to history
   
 
 ;-----------------------------------------------------------------------------
@@ -192,7 +193,7 @@ print_copyright:
 .print_basic
     call    print_string_immd
 .plus_text
-    db "plusBASIC v0.13c", 0
+    db "plusBASIC v0.13d", 0
 .plus_len   equ   $ - .plus_text
     call    CRDO
     jp      CRDO
@@ -336,6 +337,12 @@ _warm_boot:
     ld      a, plus_page          ; Page 1 ROM
     out     (IO_BANK3), a         ; into Bank 3
     jp      WRMCON                ; Go back to S3 BASIC
+
+;-----------------------------------------------------------------------------
+; Directly read alternate keyboard port
+;-----------------------------------------------------------------------------
+_keyread:
+    jp      key_read_ascii
 
 ;-----------------------------------------------------------------------------
 ; INLIN enhancement stubs
