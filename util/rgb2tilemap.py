@@ -38,7 +38,7 @@ tm_pal = 0x1000
 pal_index = 0
 pal_dict = {} 
 
-tile_index = 128
+tile_index = 192
 tile_dict = {}
 
 tile_map = []
