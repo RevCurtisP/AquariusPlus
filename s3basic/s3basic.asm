@@ -2503,19 +2503,19 @@ ifdef aqplus
                                                                               ; 0D97
         jr      nc,NOTRUB                                                     ; 0D98
                                                                               ; 0D99  or      a
-        exx                                                                   ; 0D9A  jr      z,NOTRUB
-        call    XCHRAM                                                        ; 0D9B
-                                                                              ; 0D9C  ld      a,'\'
-                                                                              ; 0D9D
-        exx                                                                   ; 0D9E  rst     OUTCHR
-        jr      INLINC                                                        ; 0D9F  xor     a
-                                                                              ; 0DA0  ld      (RUBSW),a
-        byte    $4A                                                           ; 0DA1
-        byte    $38                                                           ; 0DA2
+        xor     1                 ;;Reverse 0 and 1                           ; 0D9A  jr      z,NOTRUB
+                                                                              ; 0D9B
+        exx                                                                   ; 0D9C  ld      a,'\'
+        call    XCHRAM                                                        ; 0D9D
+                                                                              ; 0D9E  rst     OUTCHR
+                                                                              ; 0D9F  xor     a
+        exx                                                                   ; 0DA0  ld      (RUBSW),a
+        jr      INLINC                                                        ; 0DA1
+                                                                              ; 0DA2
 else
 ;;;Code Change: Remove ancient TTY Delete code
-        jr      CHKFUN                                                        ; 0D92  cp      127
-                                                                              ; 0D93    
+        jr      CHKFUN                                                        
+                                                                              
 ;;; Deprecated code - 16 bytes
         jr      z,RUBOUT          ;[M80] DO IT
         ld      a,(RUBSW)         ;[M80] BEEN DOING A RUBOUT?
