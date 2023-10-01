@@ -569,7 +569,7 @@ esp_error:
     
     neg
     dec     a
-    cp      -ERR_NOT_EMPTY
+    cp      -ERR_WRITE_PROTECT
     jr      c, .ok
     ld      a, -ERR_OTHER - 1
 
@@ -600,6 +600,7 @@ esp_error:
     dw .msg_err_other         ; -6: Other error
     dw .msg_err_no_disk       ; -7: No disk
     dw .msg_err_not_empty     ; -8: Not empty
+    dw .msg_err_write_protect ; -9: Write protected
 
 .msg_err_not_found:     db "Not found",0
 .msg_err_too_many_open: db "Too many open",0
@@ -609,6 +610,7 @@ esp_error:
 .msg_err_other:         db "Unknown error",0
 .msg_err_no_disk:       db "No disk",0
 .msg_err_not_empty:     db "Not empty",0
+.msg_err_write_protect  db "Write protected",0
 
 ;-----------------------------------------------------------------------------
 ; Bad file error

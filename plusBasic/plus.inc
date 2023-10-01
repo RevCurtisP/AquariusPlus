@@ -212,7 +212,7 @@ ERR_EXISTS:        equ -5   ; File already exists
 ERR_OTHER:         equ -6   ; Other error
 ERR_NO_DISK:       equ -7   ; No disk
 ERR_NOT_EMPTY:     equ -8   ; Not empty
-ERR_NOT_EMPTY:     equ -8   ; Not empty
+ERR_WRITE_PROTECT  equ -9   ; Write protected
 
 ;-----------------------------------------------------------------------------
 ; ESP32 file open modes
