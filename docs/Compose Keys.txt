@@ -1,0 +1,115 @@
+https://math.dartmouth.edu/~sarunas/Linux_Compose_Key_Sequences.html
+
+          Em HW
+$A0 € =c  ok ok
+      =C  ok ok
+      =E  ok ok *add =e
+$A1 ¡ !!  ok ok
+$A2 ¢ |c  ok ok
+      c|  ok ok
+      c/  ok ok
+      /c  ok ok
+$A3 £ L-  ok ok *add l- and -l
+    £ -L  ok ok
+$A4 ¤ ox  ok ok
+    ¤ xo  ok ok
+$A5 ¥ Y=  --    *add y= and = y
+    ¥ =Y  --   
+$A6 ¦ !^  ok ok 
+$A7 § so  ok ok 
+    § os  ok ok 
+$A9 © oc  ok ok *add Co,co
+      oC  ok ok 
+$AA ª ^_a -- --  
+$AB « <<  ok ok 
+$AC ¬ ,-  ok ok 
+      -,  ok ok 
+$AE ® or  ok ok 
+      oR  ok ok 
+      Or  ok ok 
+      OR  ok ok 
+$B0 ° oo  ok ok *add OO
+$B1 ± +-  ok ok 
+$B2 ² ^2  ok ok 
+$B3 ³ ^3  ok ok 
+$B5 µ mu  ok ok 
+$B6 ¶ p!  ok ok 
+      P!  ok ok 
+      PP  ok ok *add pp
+$B7 · ..  ok ok  
+$B8 ¸            
+    ,spc  ok ok  
+    spc,  ok ok  
+$B9 ¹ ^1  ok ok    
+$BA º ^_o -- --   
+$BB » >>  ok ok  
+$BC ¼ 14  ok ok  
+$BD ½ 12  ok ok  
+$BE ¾ 34  ok ok  
+$BF ¿ ??  ok ok  
+$C0 À `A  ok ok  
+$C1 Á 'A  ok ok  
+$C2 Â ^A  ok ok  
+$C3 Ã ~A  ok ok  
+$C4 Ä "A  ok ok  
+$C5 Å oA  -- -- !generates $A5 yen
+$C6 Æ AE  ok ok  
+$C7 Ç ,C  ok ok  
+$C8 È `E  ok ok  
+$C9 É 'E  ok ok  
+$CA Ê ^E  ok ok  
+$CB Ë "E  ok ok  
+$CC Ì `I  ok ok  
+$CD Í 'I  ok ok  
+$CE Î ^I  ok ok  
+$CF Ï "I  ok ok  
+$D0 Ð DH  ok ok  
+$D1 Ñ ~N  ok ok  
+$D2 Ò `O  ok ok  
+$D3 Ó 'O  ok ok  
+$D4 Ô ^O  ok ok  
+$D5 Õ ~O  ok ok  
+$D6 Ö "O  ok ok  
+$D7 × xx  ok ok  
+$D8 Ø /O  ok ok  
+$D9 Ù `U  ok ok  
+$DA Ú 'U  ok ok  
+$DB Û ^U  ok ok  
+$DC Ü "U  ok ok  
+$DD Ý 'Y  ok ok  
+$DE Þ TH  ok ok  
+$DF ß ss  ok ok  
+$E0 à `a  ok ok
+$E1 á 'a  ok ok
+$E2 â ^a  ok ok
+$E3 ã ~a  ok ok
+$E4 ä "a  ok ok
+$E5 å oa  ok ok
+$E6 æ ae  ok ok
+$E7 ç ,c  ok ok  
+$E8 è `e  ok ok  
+$E9 é 'e  ok ok  
+$EA ê ^e  ok ok  
+$EB ë "e  ok ok  
+$EC ì `i  ok ok  
+$ED í 'i  ok ok  
+$EE î ^i  ok ok  
+$EF ï "i  ok ok  
+$F0 ð dh  ok ok  
+$F1 ñ ~n  ok ok  
+$F2 ò `o  ok ok  
+$F3 ó 'o  ok ok  
+$F4 ô ^o  ok ok  
+$F5 õ ~o  ok ok  
+$F6 ö "o  ok ok  
+$F7 ÷ :-  ok ok  
+      -:  ok ok  
+$F8 ø /o  ok ok
+$F9 ù `u  ok ok
+$FA ú 'u  ok ok
+$FB û ^u  ok ok
+$FC ü "u  ok ok
+$FD ý 'y  ok ok
+$FE þ th  ok ok
+$FF ÿ "y  ok ok
+
