@@ -558,6 +558,21 @@ esp_get_mouse:
     call    esp_get_long
     xor     a                     ; Return success
     ret
+
+;-----------------------------------------------------------------------------
+; esp_set_keymode - Set keyboard buffer mode
+;  Input: A: Buffer Mode (KB_ENABLE | KB_SCANCODE | KB_REPEAT) 
+; Output: A: 0 if succesful, else error code
+;-----------------------------------------------------------------------------
+esp_set_keymode:
+    push    a
+    ld      a,ESPCMD_KEYMODE     ; Issue DATETIME command
+    call    esp_cmd
+    pop     a
+    call    esp_send_byte        ; Keyboard buffer mode 
+    call    esp_get_byte         ; Get result
+    or      a
+    ret
     
 ;-----------------------------------------------------------------------------
 ; esp_error

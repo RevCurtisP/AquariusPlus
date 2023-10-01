@@ -27,10 +27,10 @@ key_read_scancode:
     ret
     
 ;-----------------------------------------------------------------------------
-; Set alternate keyboard mode
-; Input: 
+; Set keyboard mode
+;  Input: A: Mode (KB_ENABLE | KB_SCANCODE | KB_REPEAT) 
+; Output: A: 0 if succesful, else error code
 ;-----------------------------------------------------------------------------
-key_set_mode:
-    ret
-
+key_set_keymode:
+    jp      esp_set_keymode
 

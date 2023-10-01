@@ -50,7 +50,7 @@
     jp      do_cls_default  ; $20??
     jp      _inlin_hook     ; $20?? Jump from INLIN for command history recall
     jp      _inlin_done     ; $20?? Jumped from FININL to save command to history
-  
+
 
 ;-----------------------------------------------------------------------------
 ; Reset vector
@@ -99,7 +99,7 @@ _reset:
 
     ; Install Interrupt Handler
     ld      a,$C3               ; Jump Instruction
-    ld      (INTJMP),a          ; 
+    ld      (INTJMP),a          ;
     ld      hl,_interrupt       ; Interrupt Address
     ld      (INTJMP+1), hl
 
@@ -139,11 +139,15 @@ _coldboot:
     ld      hl,fast_hook_handler
     ld      (HOOK), hl
 
+    ; Turn on Keyboard Buffer
+    ld      a,KB_ENABLE | KB_ASCII
+    call    key_set_keymode
+
     ; Zero out plusBASIC system vars
     xor     a
     ld      b,ESP_FDESC-RNDTAB
     ld      hl,RNDTAB
-.sysvar_loop    
+.sysvar_loop
     ld      (hl),a
     inc     hl
     djnz    .sysvar_loop
@@ -168,7 +172,7 @@ print_copyright:
     db $0D, $0A
 .systext:
     db "Aquarius+ System ", 0
-.syslen = $ - .systext 
+.syslen = $ - .systext
     ld      a, ESPCMD_VERSION
     call    esp_cmd
     ld      b,.syslen
@@ -194,12 +198,12 @@ print_copyright:
 .print_basic
     call    print_string_immd
 .plus_text
-    db "plusBASIC v0.13j", 0
+    db "plusBASIC v0.14", 0
 .plus_len   equ   $ - .plus_text
     call    CRDO
     jp      CRDO
 
-; If autorun exists, push RUN "autoexec to key buffer 
+; If autorun exists, push RUN "autoexec to key buffer
 ; ToDo: make esp functions return error code instead of generating BASIC error
 check_autoexec:
     ld      hl,_autodesc
@@ -217,7 +221,7 @@ _autotext
 _autolen = $ - _autotext
     db      $0D
 _autodesc
-    dw      _autolen,_autotext      
+    dw      _autolen,_autotext
 
 set_char_ram:
     or      a                     ; If A = 0
@@ -228,11 +232,11 @@ set_char_ram:
 ;-----------------------------------------------------------------------------
 ; Character RAM initialization
 ;-----------------------------------------------------------------------------
-init_charram: 
+init_charram:
     ld      hl,CHAR_ROM_AQ        ; and fall into _set_char_ram
-_copy_charram: 
+_copy_charram:
     ld      a,ROM_SYS_PG          ; Set source page and address
-    
+
 ;-----------------------------------------------------------------------------
 ; Copy Character ROM into Character RAM
 ; Input: A = Source Page
@@ -242,11 +246,11 @@ _copy_charram:
 
 copy_char_ram:
     ex      af,af'
-    ld      a,CHAR_RAM          
+    ld      a,CHAR_RAM
     ld      bc,2048
     ld      de,0
     jp      page_fast_copy        ; Copy It
-    
+
 ;-----------------------------------------------------------------------------
 ; Cartridge start entry point - A hold scramble value
 ;-----------------------------------------------------------------------------
@@ -320,7 +324,7 @@ descramble_rom:
 ;
 ;-----------------------------------------------------------------------------
 _interrupt:
-    
+
 
 
 
@@ -351,18 +355,28 @@ _inlin_done:
 ; Hook 2 - READY (Enter Direct Mode
 ;-----------------------------------------------------------------------------
 direct_mode:
+    ld      a,0                    ; Return to Text mode
+    call    screen_set_mode
+
+    ld      a,KB_ENABLE | KB_ASCII | KB_REPEAT
+    call    key_set_keymode       ; Turn on keybuffer, ASCII mode, no repeat
+
+    jp      HOOK2+1
+
+; To clean up after aborted DOS command after allowing multiple files open
     ld      a,(ESP_FDESC)         ; Get File Descriptor in Use
     or      a
     jp      m,.no_fdesc           ; If Valid Descriptor
     call    esp_close             ;   Close the File
-    call    clear_esp_fdesc       ;   
+    call    clear_esp_fdesc       ;
 .no_fdesc
     jp      HOOK2+1
-    
+
 clear_esp_fdesc:
     ld      a,128
     ld      (ESP_FDESC),a         ; Set to No File
-    reti
+    ret
+
 
 ;-----------------------------------------------------------------------------
 ; Hook 12 - SCRTCH (Execute NEW statement)
@@ -376,11 +390,11 @@ _scratch:
 ;-----------------------------------------------------------------------------
 ; Hook 18 - INCHRC (Get character from keyboard)
 ;-----------------------------------------------------------------------------
-read_key:   
+read_key:
     jp      key_read_ascii        ; Skip autotype for now
     exx
 .autotype
-    ld      hl,(RESPTR)       
+    ld      hl,(RESPTR)
     ld      a,h
     or      a
     jr      z,.readkey
@@ -389,8 +403,8 @@ read_key:
     ld      (RESPTR),hl
     or      a
     jp      nz,.done
-    xor     a                                                             
-    ld      (RESPTR+1),a                                                  
+    xor     a
+    ld      (RESPTR+1),a
 .done
     exx
     ret
@@ -405,7 +419,7 @@ _next_statement:
     push    af                    ; Save Token and Flags
     in      a,(IO_BANK3)          ; Get Current Page
     ld      (BANK3PAGE),a         ; Save It
-    ld      a,plus_page           ; Page 1 - Extended BASIC 
+    ld      a,plus_page           ; Page 1 - Extended BASIC
     out     (IO_BANK3),a          ; Page it in
     pop     af                    ; Restore Token and Flags
     jp      exec_next_statement   ; Go do the Statement
@@ -414,7 +428,7 @@ statement_ret:
     ld      a,(BANK3PAGE)         ; Get Saved Page
     out     (IO_BANK3),a          ; Bank it Back in
     ret                           ; Return to NEWSTT
-    
+
 ;-----------------------------------------------------------------------------
 ; GOTO and RESUME hack
 ; Check for label at beginning of line, then search for it's line
@@ -431,10 +445,10 @@ _scan_label:
     ld      c,(hl)                ; BC = link to next line
     inc     hl
     ld      b,(hl)
-    inc     hl  
+    inc     hl
     ld      (TEMP3),bc            ; Save for later
     inc     hl                    ; Skip line number
-    inc     hl                    ; 
+    inc     hl                    ;
     ld      a,(hl)                ; Get first character
     cp      '_'                   ; If not underscore
     jr      nz,.next_line         ;   Skip to next lines
@@ -472,14 +486,14 @@ _scan_label:
     jr      .line_loop            ; Scan the next line
 .found_it
     pop     af                    ; Get return address
-    cp      $06                   ; If we came from GOTO 
+    cp      $06                   ; If we came from GOTO
     ret     z                     ;   Return to NEWSTT
     cp      $0C                   ; If we came from RESTORE
     jp      z,BGNRST              ;   Load DATPTR, HL = Text Pointer, and Return
     ex      de,hl                 ; HL = New text pointer
     ld      de,(TEMP2)            ; DE = Pointer to Line
     jp      reset_trap            ; Finish ON ERROR GOTO
-    
+
 .not_label:
     jp      SCNLIN                ;   Scan line number and return to GOTO
 
@@ -496,13 +510,6 @@ ULERR:
     ld      e,ERRUL
     jp      force_error
 
-
-_ready_hook:
-_restore_text_screen:
-    ld      a,0
-    call    screen_set_mode
-    jp      HOOK2+1
-    
 
 ;-----------------------------------------------------------------------------
 ; bas_read_to_buff - Read String from ESP to BASIC String Buffer
@@ -521,6 +528,11 @@ jump_ix:
 ; RUN command - hook 24
 ;-----------------------------------------------------------------------------
 run_cmd:
+    push    af
+    ld      a,KB_ENABLE | KB_ASCII
+    call    key_set_keymode       ; Turn off key repeat
+    pop     af
+
     jp      z, RUNC            ; If no argument then RUN from 1st line
 
     push    hl
@@ -547,8 +559,8 @@ do_cls:
     call    clear_screen
     ld      a,' '
     ld      (CURCHR),a            ; SPACE under cursor
-    ld      de,$3000+41           ; Point Address for (0,0) 
-    ld      (CURRAM),de       
+    ld      de,$3000+41           ; Point Address for (0,0)
+    ld      (CURRAM),de
     xor     a
     ld      (TTYPOS),a            ; column 0
     ret
@@ -628,8 +640,8 @@ free_rom_2k = hook_table - $
 hook_table:                     ; ## caller   addr  performing function
     dw      _trap_error         ;  0 ERROR    03DB  Initialize Stack, Display Error, and Stop Program
     dw      force_error         ;  1 ERRCRD   03E0  Print Error Message
-    dw      _ready_hook         ;  2 READY    0402  BASIC command line (immediate mode)
-    dw      HOOK3+1             ;  3 EDENT    0428  Save Tokenized Line  
+    dw      direct_mode         ;  2 READY    0402  BASIC command line (immediate mode)
+    dw      HOOK3+1             ;  3 EDENT    0428  Save Tokenized Line
     dw      HOOK4+1             ;  4 FINI     0480  Finish Adding/Removing Line or Loading Program
     dw      HOOK5+1             ;  5 LINKER   0485  Update BASIC Program Line Links
     dw      HOOK6+1             ;  6 PRINT    07BC  Execute PRINT Statement
@@ -708,8 +720,8 @@ fast_hook_handler:
     include "basic80.asm"       ; Statements and functions from MBASIC 80
     include "draw.asm"          ; Bitmap drawing statements and functions
     include "enhanced.asm"      ; Enhanced stardard BASIC statements and functions
-    include "evalext.asm"       ; EVAL extension - hook 9 
-    include "extended.asm"      ; Statements and functions from Aquarius Extended BASIC 
+    include "evalext.asm"       ; EVAL extension - hook 9
+    include "extended.asm"      ; Statements and functions from Aquarius Extended BASIC
     include "fileio.asm"        ; Disk and File I/O statements and functions
     include "graphics.asm"      ; Graphics statements and functions
     include "plus.asm"          ; plusBASIC unique statements and functions

@@ -13,7 +13,7 @@ FN_DATE:
     jr      nz,.notime
     rst     CHRGET                ;   Skip TIME token
     dec     c                     ;   Return Date and Time
-.notime    
+.notime
     SYNCHK  '$'                   ; Require Dollar Sign
     push    hl
     ld      de,LABBCK
@@ -26,7 +26,7 @@ FN_DATE:
     add     hl,de                 ; Start of Time substring
     xor     a
     ld      (hl),a                ; Terminate Date substring
-    sbc     hl,de                 ; Set HL back to Buffer address 
+    sbc     hl,de                 ; Set HL back to Buffer address
 .done
     jp      TIMSTR                ; Create and return temporary string
 
@@ -75,12 +75,12 @@ FN_GETKEY:
 FN_MOUSE:
     rst     CHRGET                ; Skip MOUSE token
     jr      z,.snerr              ;   Error
-    ex      af,af'               
+    ex      af,af'
     rst     CHRGET                ; Skip Character after MOUSE
     push    hl                    ; Stack = TxtPtr, RtnAdr
     ld      bc,LABBCK
     push    bc                    ; Stack = LABBCK, TxtPtr, RtnAdr
-    call    esp_get_mouse         ; BC = xpos, D = buttons, E = ypos 
+    call    esp_get_mouse         ; BC = xpos, D = buttons, E = ypos
     jr      nz,.not_found
     ex      af,af'
     cp      'X'
@@ -101,7 +101,7 @@ FN_MOUSE:
     ld      a,255                 ; Return -1
     ld      c,a
     jp      GIVINT
-.xpos:   
+.xpos:
     jp      FLOAT_BC
 
 ;-----------------------------------------------------------------------------
@@ -150,11 +150,11 @@ FN_EVAL:
     ld      (de),a            ; Terminate String
     ld      hl,BUF            ; Reading Line Buffer
     ld      d,h               ; Writing Line Buffers
-    ld      e,l 
+    ld      e,l
     xor     a                 ; Tokenize String
-    ld      (DORES),a         ; 
-    ld      c,5               ; 
-    call    KLOOP             ; 
+    ld      (DORES),a         ;
+    ld      c,5               ;
+    call    KLOOP             ;
     ld      hl,BUF            ; Point to Line Buffer
     call    FRMEVL            ; Evaluate Formula
     pop     hl                ; Restore Text Pointer
@@ -163,7 +163,7 @@ FN_EVAL:
 LSERR:
     ld      e,ERRLS
     jp      ERROR
-    
+
 
 ;-----------------------------------------------------------------------------
 ; GET Statement stub
@@ -176,11 +176,11 @@ LSERR:
     cp    SCRNTK
     jp    z,ST_FILL_SCREEN
     jp    SNERR
-   
+
 ;----------------------------------------------------------------------------
 ; GET Statement stub
 ;----------------------------------------------------------------------------
-ST_GET: 
+ST_GET:
     cp      ARGSTK
     jp      z,ST_GETARGS
     cp      SCRNTK
@@ -193,7 +193,7 @@ ST_GET:
 ; PUT Statement stub
 ; Syntax: GET (x1,y1)-(x2,y2),*arrayvar
 ;----------------------------------------------------------------------------
-ST_PUT: 
+ST_PUT:
     cp      SCRNTK
     jp      z,ST_PUT_SCREEN
     cp      TILETK                ; If GET TILEMAP
@@ -212,10 +212,22 @@ ST_SET:
     jp      z,ST_SET_TILE
     cp      COLTK
     jr      nz,.notcol
-    rst     CHRGET                ; Skip COL token            
+    rst     CHRGET                ; Skip COL token
     call    SYNCHR                ; Require OR after COL
-    byte    ORTK                  
+    byte    ORTK
     jp      ST_SETCOLOR
 .notcol
-    jp      SNERR
+    rst     SYNCHR                ; All that's let is SET KEY
+    byte    KEYTK                 ; So drop into it
 
+;-----------------------------------------------------------------------------
+; Set keybuffer mode
+; Syntax: SET KEY mode
+;-----------------------------------------------------------------------------
+ST_SET_KEY:
+    call    GETBYT                ; Get key mode
+    push    hl
+    call    key_set_keymode       ; Set the mode
+    jp      m,FCERR
+    pop     hl
+    ret

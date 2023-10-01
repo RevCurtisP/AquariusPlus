@@ -182,6 +182,7 @@ endm
 ESPCMD_RESET:      equ $01     ; Reset ESP
 ESPCMD_VERSION:    equ $02     ; Get version string
 ESPCMD_DATETIME    equ $03     ; Get current date and time
+ESPCMD_KEYMODE     equ $08     ; Set keyboard buffer mode
 ESPCMD_GETMOUSE    equ $0C     ; Get mouse position and button state
 ESPCMD_OPEN:       equ $10     ; Open / create file
 ESPCMD_CLOSE:      equ $11     ; Close open file
@@ -225,3 +226,10 @@ FO_APPEND:      equ 0x04    ; Append mode
 FO_CREATE:      equ 0x08    ; Create if non-existant
 FO_TRUNC:       equ 0x10    ; Truncate to zero length
 FO_EXCL:        equ 0x20    ; Error if already exists
+
+;-----------------------------------------------------------------------------
+; ESP32 keyboard buffer modes
+;-----------------------------------------------------------------------------
+KB_ENABLE       equ 0x01    ; Enable keyboard buffer
+KB_ASCII        equ 0x02    ; ASCII mode
+KB_REPEAT       equ 0x04    ; Enable auto-repeat
