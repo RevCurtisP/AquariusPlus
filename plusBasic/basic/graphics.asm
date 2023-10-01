@@ -123,10 +123,7 @@ ST_SCREEN_SET:
  
 .set_string
     call    FRESTR
-    ld      a,CHAR_RAM
-    ld      de,0
-    ld      (BINSTART),de
-    call    dos_load_paged
+    call    dos_load_charram
     pop     hl
     ret
  

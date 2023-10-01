@@ -92,6 +92,15 @@ dos_get_filestat:
 
 
 ;-----------------------------------------------------------------------------
+; Load file into character RAM
+; Clobbered registers: A, BC, DE, HL
+;-----------------------------------------------------------------------------
+dos_load_charram:
+    ld      a,CHAR_RAM
+    ld      de,0
+    ld      (BINSTART),de
+
+;-----------------------------------------------------------------------------
 ; Load binary file into paged memory`
 ; Input: A: Page
 ;        HL: String descriptor address
