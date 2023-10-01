@@ -2493,6 +2493,26 @@ INLIN:  ld      hl,BUF            ;
         ld      (RUBSW),a         ;[M80] LIKE SO
 INLINC: call    INCHR             ;[M80] GET A CHAR
 INLNC1: ld      c,a               ;[M80] SAVE CURRENT CHAR IN [C]
+;;;Code Change: Aquarius+ character set switch
+ifdef aqplus
+        sub     a,14                                                          ; 0D92  cp      127
+                                                                              ; 0D93    
+        jr      c,NOTRUB          ;;If Shift-in                               ; 0D94  jr      z,RUBOUT
+                                                                              ; 0D95
+        cp      a,2               ;;or Shift-out                              ; 0D96  ld      a,(RUBSW)
+                                                                              ; 0D97
+        jr      nc,NOTRUB                                                     ; 0D98
+                                                                              ; 0D99  or      a
+        exx                                                                   ; 0D9A  jr      z,NOTRUB
+        call    XCHRAM                                                        ; 0D9B
+                                                                              ; 0D9C  ld      a,'\'
+                                                                              ; 0D9D
+        exx                                                                   ; 0D9E  rst     OUTCHR
+        jr      INLINC                                                        ; 0D9F  xor     a
+                                                                              ; 0DA0  ld      (RUBSW),a
+        byte    $4A                                                           ; 0DA1
+        byte    $38                                                           ; 0DA2
+else
 ;;;Code Change: Remove ancient TTY Delete code
         jr      CHKFUN                                                        ; 0D92  cp      127
                                                                               ; 0D93    
@@ -2505,8 +2525,9 @@ INLNC1: ld      c,a               ;[M80] SAVE CURRENT CHAR IN [C]
         rst     OUTCHR            ;[M80] SEND IT
         xor     a                 ;[M80] CLEAR RUBSW
         ld      (RUBSW),a         ;[M80] LIKE SO
-NOTRUB: ld      a,c               ;[M80] GET BACK CURRENT CHAR
 ;;; End of deprecated code
+endif
+NOTRUB: ld      a,c               ;[M80] GET BACK CURRENT CHAR
 ;;; Bug Fix: Jump to OUTBEL so BEL doesn't go into buffer
 CHKFUN: cp      7                 ;[M80] IS IT BOB ALBRECHT RINGING THE BELL
         jr      z,OUTBEL          ;[M80] FOR SCHOOL KIDS?
