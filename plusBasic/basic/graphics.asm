@@ -111,12 +111,23 @@ ST_SCREEN:
 ;-----------------------------------------------------------------------------
 ST_SCREEN_SET:
     rst     CHRGET                ; Skip SET
-    call    GETBYT                ; Get Character Set Number
+    call    FRMEVL                ; Evaluate Argument
     push    hl                    ; Stack = TxtPtr, RtnAdr
+    call    GETYPE                ; If string
+    jr      z,.set_string         ;   Load from Disk
     cp      2                     ; If greater than 1
     jp      nc,FCERR              ;   Illegal quantity error
     call    set_char_ram          ;
     pop     hl                    ; HL - TxtPtr; Stack = RtnAdr
+    ret
+ 
+.set_string
+    call    FRESTR
+    ld      a,CHAR_RAM
+    ld      de,0
+    ld      (BINSTART),de
+    call    dos_load_paged
+    pop     hl
     ret
  
 ;-----------------------------------------------------------------------------
