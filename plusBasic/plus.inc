@@ -37,6 +37,9 @@ USER_RAM        equ 40      ; Start of User RAM
 ROM_EXT_BANK    equ 3       ; Bank Extended ROM is mapped into
 ROM_AUX_BANK    equ 3       ; Bank Auxillary ROM is mapped into
 
+CHAR_ROM_AQ     equ $3000   ; Standard Aquarius Character ROM Address in System ROM
+CHAR_ROM_L1     equ $3800   ; Latin-1 Aquarius Character ROM Address in System ROM
+
 ;-----------------------------------------------------------------------------
 ; Video RAM Offsets
 ; Page 20

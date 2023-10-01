@@ -22,13 +22,11 @@ page_fast_copy:
     cp      ixl                   ; If SrcPg = DstPg
     ret     z                     ; Return Error
     call    page_swap_two         ; Bank3 = DstPg, Bank2 = SrcPg
-    ex      de,hl
-    call    page_coerce_address   ; Coerce SrcAdr to Bank3
-    ex      de,hl 
-    ld      a,d                   ; Coerce DstAdr to Bank2
+    call    page_coerce_address   ; Coerce DstAdr to Bank3
+    ld      a,h                   ; Coerce SrcAdr to Bank2
     and     $3F                   ;  
     or      $80
-    ld      d,a
+    ld      h,a
     ldir                          ; Do the copy
     call    page_restore_two
     xor     a
@@ -566,7 +564,7 @@ page_check_read:
     jr      nc,set_zero_flag      ;   error out
 _page_ok
     cp      $FF                   ; Clear zero flag
-    or      a                     ; Clear carry flag
+    ccf                           ; Clear carry flag
     ret
 
 

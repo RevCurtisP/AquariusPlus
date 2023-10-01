@@ -90,6 +90,8 @@ ST_SETCOLOR:
 ;        +24 ( 1 x x xx x) Remap Border Character
 ;-----------------------------------------------------------------------------
 ST_SCREEN:
+    cp      SETTK                 ; If SET
+    jr      z,ST_SCREEN_SET       ;  Do SCREEN SET
     cp      SAVETK                ; If SAVE
     jr      z,ST_SCREEN_SAVE      ;   Do SCREEN SAVE
     cp      RESTK                 ; If RESTORE
@@ -104,6 +106,19 @@ ST_SCREEN:
     pop     hl                    ; HL - TxtPtr; Stack = RtnAdr
     ret
 
+;-----------------------------------------------------------------------------
+; SCREEN SET - Change Character Set
+;-----------------------------------------------------------------------------
+ST_SCREEN_SET:
+    rst     CHRGET                ; Skip SET
+    call    GETBYT                ; Get Character Set Number
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    cp      2                     ; If greater than 1
+    jp      nc,FCERR              ;   Illegal quantity error
+    call    set_char_ram          ;
+    pop     hl                    ; HL - TxtPtr; Stack = RtnAdr
+    ret
+ 
 ;-----------------------------------------------------------------------------
 ; SCREEN RESTORE - Copy Screen Buffer to Text Screen
 ;-----------------------------------------------------------------------------
