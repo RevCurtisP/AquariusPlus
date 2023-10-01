@@ -115,6 +115,7 @@ ST_SCREEN_SET:
     push    hl                    ; Stack = TxtPtr, RtnAdr
     call    GETYPE                ; If string
     jr      z,.set_string         ;   Load from Disk
+    call    CONINT                ; Convert Arg to Byte
     cp      2                     ; If greater than 1
     jp      nc,FCERR              ;   Illegal quantity error
     call    set_char_ram          ;
