@@ -75,7 +75,7 @@ BORDERCLR   equ $37FF   ; Border character alternate memory location
 BASINTPG    equ $3821   ; BASIC Interrupt Routine Page (swapped into BANK 3)
 BASINTJP    equ $3822   ; BASIC Interrupt Routine JP instruction
               ; $3823   ; BASIC Interrupt Routine JP Address
-              ; $3825   ; unused
+BASYSCTL    equ $3825   ; System Control Bits: 2 = Key Repeat
 ; Paging Variables
 BANK0PAGE   equ $3826   ; Page that was in Bank 0
 BANK1PAGE   equ $3827   ; Page that was in Bank 1

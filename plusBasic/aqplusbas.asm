@@ -152,6 +152,10 @@ _coldboot:
     inc     hl
     djnz    .sysvar_loop
 
+    ; Default direct mode to keyrepeat on
+    ld      a,KB_REPEAT
+    ld      (BASYSCTL),a
+
     call    clear_esp_fdesc
     call    spritle_clear_all   ; Clear all sprite properties
     call    print_copyright
@@ -198,7 +202,7 @@ print_copyright:
 .print_basic
     call    print_string_immd
 .plus_text
-    db "plusBASIC v0.14", 0
+    db "plusBASIC v0.14a", 0
 .plus_len   equ   $ - .plus_text
     call    CRDO
     jp      CRDO
@@ -358,7 +362,9 @@ direct_mode:
     ld      a,0                    ; Return to Text mode
     call    screen_set_mode
 
-    ld      a,KB_ENABLE | KB_ASCII | KB_REPEAT
+    ld      a,(BASYSCTL)
+    and     KB_REPEAT
+    or      KB_ENABLE | KB_ASCII
     call    key_set_keymode       ; Turn on keybuffer, ASCII mode, no repeat
 
     jp      HOOK2+1
