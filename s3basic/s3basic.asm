@@ -122,7 +122,7 @@ XINTR   equ     $2009   ;; | plusBASIC  Interrupt Handler
 XWARM   equ     $200C   ;; | plusBASIC Warm Start`
 SCNLBL  equ     $200F   ;; | Line label hook for GOTO, GOSUB, and RESTORE
 XINCHR  equ     $2012   ;; | Alternate keyboard read
-XCHRAM  equ     $2015   ;; | Set Character RAM
+XFUNKY  equ     $2015   ;; | Set Character RAM
 endif                   
 EXTBAS  equ     $2000   ;;Start of Extended Basic
 XSTART  equ     $2010   ;;Extended BASIC Startup Routine
@@ -2495,29 +2495,17 @@ INLINC: call    INCHR             ;[M80] GET A CHAR
 INLNC1: ld      c,a               ;[M80] SAVE CURRENT CHAR IN [C]
 ;;;Code Change: Aquarius+ character set switch
 ifdef aqplus
-        sub     a,14                                                          ; 0D92  cp      127
+        jp      XFUNKY            ;;Check for Extended Ctrl-Keys              ; 0D92  cp      127 
                                                                               ; 0D93    
-        jr      c,NOTRUB          ;;If Shift-in                               ; 0D94  jr      z,RUBOUT
-                                                                              ; 0D95
-        cp      a,2               ;;or Shift-out                              ; 0D96  ld      a,(RUBSW)
-                                                                              ; 0D97
-        jr      nc,NOTRUB                                                     ; 0D98
-                                                                              ; 0D99  or      a
-        xor     1                 ;;Reverse 0 and 1                           ; 0D9A  jr      z,NOTRUB
-                                                                              ; 0D9B
-        exx                                                                   ; 0D9C  ld      a,'\'
-        call    XCHRAM                                                        ; 0D9D
-                                                                              ; 0D9E  rst     OUTCHR
-                                                                              ; 0D9F  xor     a
-        exx                                                                   ; 0DA0  ld      (RUBSW),a
-        jr      INLINC                                                        ; 0DA1
-                                                                              ; 0DA2
+                                                                              ; 0D94  jr      z,RUBOUT
+        byte    $CE                                                           ; 0D95
+                                                                              
 else
 ;;;Code Change: Remove ancient TTY Delete code
         jr      CHKFUN                                                        
-                                                                              
 ;;; Deprecated code - 16 bytes
         jr      z,RUBOUT          ;[M80] DO IT
+endif
         ld      a,(RUBSW)         ;[M80] BEEN DOING A RUBOUT?
         or      a                 ;[M80] SET CC'S
         jr      z,NOTRUB          ;[M80] NOPE.
@@ -2526,7 +2514,6 @@ else
         xor     a                 ;[M80] CLEAR RUBSW
         ld      (RUBSW),a         ;[M80] LIKE SO
 ;;; End of deprecated code
-endif
 NOTRUB: ld      a,c               ;[M80] GET BACK CURRENT CHAR
 ;;; Bug Fix: Jump to OUTBEL so BEL doesn't go into buffer
 CHKFUN: cp      7                 ;[M80] IS IT BOB ALBRECHT RINGING THE BELL

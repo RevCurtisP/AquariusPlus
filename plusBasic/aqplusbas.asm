@@ -46,7 +46,7 @@
     jp      _warm_boot      ; $200C Called from main ROM for warm boot
     jp      _scan_label     ; $200F Called from GOTO and RESTORE
     jp      _keyread        ; $2012 Called from COLORS
-    jp      select_chrset    ; $2015
+    jp      _ctrl_keys      ; $2015
     jp      do_cls_default  ; $20??
     jp      _inlin_hook     ; $20?? Jump from INLIN for command history recall
     jp      _inlin_done     ; $20?? Jumped from FININL to save command to history
@@ -202,7 +202,7 @@ print_copyright:
 .print_basic
     call    print_string_immd
 .plus_text
-    db "plusBASIC v0.14b", 0
+    db "plusBASIC v0.14c", 0
 .plus_len   equ   $ - .plus_text
     call    CRDO
     jp      CRDO
@@ -226,6 +226,39 @@ _autolen = $ - _autotext
     db      $0D
 _autodesc
     dw      _autolen,_autotext
+
+;-----------------------------------------------------------------------------
+; Extended line editor function keys
+; Jumped to from INLNC
+;-----------------------------------------------------------------------------
+_ctrl_keys:
+    sub     a,'K'-64              ; 
+    jr      c,.notrub             ; 
+    cp      'M'-'K'               ; 
+    jr      z,.notrub             ;  
+    jr      nc,.notrepeat         ; If ^K or ^L
+    dec     a                     ;   ^K = $FF, ^L = 0
+    and     KB_REPEAT             ;   ^K = Repeat on, ^L = off
+    ld      b,a                   ;   Save it
+    ld      a,(BASYSCTL)          ;   Get current Flags
+    and     $FF-KB_REPEAT         ;   Mask out Repeat Bit
+    or      b                     ;   OR new value back in
+    ld      (BASYSCTL),a          ;   And write it back out
+    ld      a,KB_ENABLE | KB_ASCII
+    or      b                     ;   
+    call    key_set_keymode       ;   Now set new keybuffer mode
+    jr      .inlinc               ;   Wait for next key
+.notrepeat:
+    cp      'Q'-'K'               ; If not ^N through ^P
+    jr      c,.keyrepeat
+.notrub   
+    jp      NOTRUB                ;   Continue standard Ctrl-key check
+.keyrepeat
+    sub     a,'N'-'K'             ; ^N = 0, ^O = 1, ^P = 2
+    xor     1                     ; ^O = 1, ^O = 0, ^P = 2
+    call    select_chrset         ; Select the character set
+.inlinc
+    jp      INLINC                ;   Wait for next key
 
 ;-----------------------------------------------------------------------------
 ; Copy selected character set into Character RAM
