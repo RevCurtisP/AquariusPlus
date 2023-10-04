@@ -24,14 +24,18 @@ $AA ª ^_a -- --
 $AB « <<  ok ok 
 $AC ¬ ,-  ok ok 
       -,  ok ok 
+$AD (-)
+      ''
 $AE ® or  ok ok 
       oR  ok ok 
       Or  ok ok 
       OR  ok ok 
+$AF ¯ ^-         
 $B0 ° oo  ok ok *add OO
 $B1 ± +-  ok ok 
 $B2 ² ^2  ok ok 
 $B3 ³ ^3  ok ok 
+$B4 ´ ''
 $B5 µ mu  ok ok 
 $B6 ¶ p!  ok ok 
       P!  ok ok 
