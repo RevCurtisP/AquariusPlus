@@ -202,7 +202,7 @@ print_copyright:
 .print_basic
     call    print_string_immd
 .plus_text
-    db "plusBASIC v0.14c", 0
+    db "plusBASIC v0.14d", 0
 .plus_len   equ   $ - .plus_text
     call    CRDO
     jp      CRDO
@@ -279,6 +279,13 @@ custom_chrset:
 ; Character RAM initialization
 ;-----------------------------------------------------------------------------
 init_charram:
+    ld      hl,CHAR_ROM_AQ        ; Copy AQUASCII in to Custom Char ROM buffer
+    ld      a,ROM_SYS_PG          
+    ld      de,CHRSETBUF          
+    ex      af,af'
+    ld      a,BAS_BUFFR
+    call    page_fast_copy
+
     ld      hl,CHAR_ROM_AQ        ; and fall into _copy_charram
 _copy_charram:
     ld      a,ROM_SYS_PG          ; Set source page and address
