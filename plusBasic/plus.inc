@@ -46,7 +46,7 @@ CHAR_ROM_L1     equ $3800   ; Latin-1 Aquarius Character ROM Address in System R
 ;-----------------------------------------------------------------------------
 BMP_COLORRAM    equ $2000
 TILE_DATA       equ $0000
-TILE_MAP        equ $3000
+TILE_MAP        equ $0000
 
 
 ;-----------------------------------------------------------------------------
@@ -164,7 +164,7 @@ STRBUFFLEN  equ $00FF   ; Page Address: Length of String in Buffer
 STRBUFF     equ $0100   ; Page Address: String Buffer  - up to 255 chars plus null terminator 
                         ; Must be on 256 byte boundary
 EDITBUFF    equ $0200   ; 256 Byte Edit Buffer
-
+CHRSETBUF   equ $3000   ; Page Address: Custom Character Set Buffer
 SCREENBUFF  equ $F800   ; For saving screen memory or double-buffering
 
 

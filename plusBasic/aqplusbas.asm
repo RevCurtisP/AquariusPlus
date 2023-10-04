@@ -46,7 +46,7 @@
     jp      _warm_boot      ; $200C Called from main ROM for warm boot
     jp      _scan_label     ; $200F Called from GOTO and RESTORE
     jp      _keyread        ; $2012 Called from COLORS
-    jp      set_char_ram    ; $2015
+    jp      select_chrset    ; $2015
     jp      do_cls_default  ; $20??
     jp      _inlin_hook     ; $20?? Jump from INLIN for command history recall
     jp      _inlin_done     ; $20?? Jumped from FININL to save command to history
@@ -202,7 +202,7 @@ print_copyright:
 .print_basic
     call    print_string_immd
 .plus_text
-    db "plusBASIC v0.14a", 0
+    db "plusBASIC v0.14b", 0
 .plus_len   equ   $ - .plus_text
     call    CRDO
     jp      CRDO
@@ -227,17 +227,26 @@ _autolen = $ - _autotext
 _autodesc
     dw      _autolen,_autotext
 
-set_char_ram:
+;-----------------------------------------------------------------------------
+; Copy selected character set into Character RAM
+; Input: A: Character set (0: Standard, 1: Latin-1, 2: Custom)
+;-----------------------------------------------------------------------------
+select_chrset:
     or      a                     ; If A = 0
     jr      z,init_charram        ;   Copy standard character set
-    ld      hl,CHAR_ROM_L1        ; Else
-    jr      _copy_charram         ;   Copy Latin-1 character set
+    dec     a                     ; If A = 1
+    ld      hl,CHAR_ROM_L1        ;   Copy Latin-1 character set  
+    jr      z,_copy_charram       ; Else
+custom_chrset:
+    ld      hl,CHRSETBUF          ;   Copy Custom Character Set
+    ld      a,BAS_BUFFR
+    jr      copy_char_ram         ;   
 
 ;-----------------------------------------------------------------------------
 ; Character RAM initialization
 ;-----------------------------------------------------------------------------
 init_charram:
-    ld      hl,CHAR_ROM_AQ        ; and fall into _set_char_ram
+    ld      hl,CHAR_ROM_AQ        ; and fall into _copy_charram
 _copy_charram:
     ld      a,ROM_SYS_PG          ; Set source page and address
 

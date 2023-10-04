@@ -56,7 +56,9 @@ TBLCMDS:
     db $80 + 'S',"CREEN"          ; $F6             
     db $80 + 'S',"ET"             ; $F7             
     db $80 + 'A',"TTR"            ; $F8             
-    db $80 + ' '                  ; $F9             
+    db $80 + 'C',"HR"             ; $F9             
+    db $80 + 'O',"PEN"            ; $FA             
+    db $80 + 'C',"LOSE"           ; $FB             
     db $80             ; End of table marker
     
 ;-----------------------------------------------------------------------------
@@ -81,6 +83,7 @@ COLTK     equ     $F5
 SCRNTK    equ     $F6
 SETTK     equ     $F7
 ATTRTK    equ     $F8
+CHRTK     equ     $F9
 
 ;-----------------------------------------------------------------------------
 ; Convert keyword to token - hook 10
@@ -166,7 +169,7 @@ token_to_keyword:
 ; $F6 SCREEN
 ; $F7 SET
 ; $F8 ATTR
-; $F9 
+; $F9 CHR
 ; $FA OPEN
 ; $FB CLOSE
 ; $FC

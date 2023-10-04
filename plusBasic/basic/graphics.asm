@@ -2,6 +2,22 @@
 ; Graphics Statements and Functions
 ;====================================================================
 
+
+;-----------------------------------------------------------------------------
+; CHRSET - Change Character Set
+; Syntax: 
+;-----------------------------------------------------------------------------
+ST_CHR:
+    rst     SYNCHR                ; Require SET
+    byte    SETTK
+    call    GETBYT                ; Evaluate Argument
+    cp      3                    
+    jp      nc,FCERR
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    call    select_chrset         ;
+    pop     hl                    ; HL - TxtPtr; Stack = RtnAdr
+    ret
+ 
 ;-----------------------------------------------------------------------------
 ; COLOR statement
 ; syntax: [SET] COLOR [#] palette [, index] [TO | ;] rgb, ...
@@ -90,8 +106,6 @@ ST_SETCOLOR:
 ;        +24 ( 1 x x xx x) Remap Border Character
 ;-----------------------------------------------------------------------------
 ST_SCREEN:
-    cp      SETTK                 ; If SET
-    jr      z,ST_SCREEN_SET       ;  Do SCREEN SET
     cp      SAVETK                ; If SAVE
     jr      z,ST_SCREEN_SAVE      ;   Do SCREEN SAVE
     cp      RESTK                 ; If RESTORE
@@ -106,28 +120,6 @@ ST_SCREEN:
     pop     hl                    ; HL - TxtPtr; Stack = RtnAdr
     ret
 
-;-----------------------------------------------------------------------------
-; SCREEN SET - Change Character Set
-;-----------------------------------------------------------------------------
-ST_SCREEN_SET:
-    rst     CHRGET                ; Skip SET
-    call    FRMEVL                ; Evaluate Argument
-    push    hl                    ; Stack = TxtPtr, RtnAdr
-    call    GETYPE                ; If string
-    jr      z,.set_string         ;   Load from Disk
-    call    CONINT                ; Convert Arg to Byte
-    cp      2                     ; If greater than 1
-    jp      nc,FCERR              ;   Illegal quantity error
-    call    set_char_ram          ;
-    pop     hl                    ; HL - TxtPtr; Stack = RtnAdr
-    ret
- 
-.set_string
-    call    FRESTR
-    call    dos_load_charram
-    pop     hl
-    ret
- 
 ;-----------------------------------------------------------------------------
 ; SCREEN RESTORE - Copy Screen Buffer to Text Screen
 ;-----------------------------------------------------------------------------

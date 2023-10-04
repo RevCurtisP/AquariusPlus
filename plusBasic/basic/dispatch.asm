@@ -96,8 +96,8 @@ STJUMPS:
     dw      SNERR                 ;$CA POINT
 ;PlusBASIC Statements and Functions
     dw      SNERR                 ;$CB 
-    dw      ST_PUT                ;$CC  PUT
-    dw      ST_GET                ;$CD  GET
+    dw      ST_PUT                ;$CC PUT
+    dw      ST_GET                ;$CD GET
     dw      SNERR                 ;$CE  
     dw      SNERR                 ;$CF  
     dw      GSERR                 ;$D0 LINE
@@ -141,9 +141,9 @@ STJUMPS:
     dw      ST_SCREEN             ;$F6 SCREEN 
     dw      ST_SET                ;$F7 SET
     dw      SNERR                 ;$F8 ATTR
-    dw      SNERR                 ;$F9
-    dw      SNERR                 ;$FA
-    dw      SNERR                 ;$FB
+    dw      ST_CHR                ;$F9 CHR
+    dw      SNERR                 ;$FA OPEN
+    dw      SNERR                 ;$FB CLOSE
     dw      SNERR                 ;$FC
     dw      SNERR                 ;$FD
     dw      SNERR                 ;$FE
@@ -186,7 +186,7 @@ FNJUMPS:
     dw      SNERR                 ;$CF   
     dw      SNERR                 ;$D0 LINE
     dw      SNERR                 ;$D1   
-    dw      SNERR                 ;$D2 SCREEN
+    dw      SNERR                 ;$D2 FILL
     dw      FN_TIME               ;$D3 TIME$
     dw      SNERR                 ;$D4 EDIT   
     dw      SNERR                 ;$D5 CLS    
@@ -225,9 +225,9 @@ FNJUMPS:
     dw      SNERR                 ;$F6 SCREEN 
     dw      SNERR                 ;$F7 SET
     dw      SNERR                 ;$F8 ATTR
-    dw      SNERR                 ;$F9 FILL
-    dw      SNERR                 ;$FA
-    dw      SNERR                 ;$FB
+    dw      SNERR                 ;$F9 CHR
+    dw      SNERR                 ;$FA OPEN
+    dw      SNERR                 ;$FB CLOSE
     dw      SNERR                 ;$FC
     dw      SNERR                 ;$FD
     dw      SNERR                 ;$FE

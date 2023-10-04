@@ -163,7 +163,10 @@ tokens = {
     0xF5: "COL",
     0xF6: "SCREEN",
     0xF7: "SET",
-    0xF8: "ATTR"
+    0xF8: "ATTR",
+    0xF9: "CHR",
+    0xFA: "OPEN",
+    0xFB: "CLOSE"
 }
 
 def error(idx, message):

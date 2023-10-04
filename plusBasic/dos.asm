@@ -95,10 +95,12 @@ dos_get_filestat:
 ; Load file into character RAM
 ; Clobbered registers: A, BC, DE, HL
 ;-----------------------------------------------------------------------------
-dos_load_charram:
-    ld      a,CHAR_RAM
-    ld      de,0
+dos_load_chrset:
+    ld      a,BAS_BUFFR
+    ld      de,CHRSETBUF
     ld      (BINSTART),de
+    call    dos_load_paged
+    jp      custom_chrset
 
 ;-----------------------------------------------------------------------------
 ; Load binary file into paged memory`

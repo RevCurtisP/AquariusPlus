@@ -392,6 +392,10 @@ ST_LOAD:
     ; Close any open files
     call    esp_close_all
 
+    ld      a,(hl)
+    cp      CHRTK
+    jp      z,_load_chrset
+
     ; Get string parameter with path
     call    get_strdesc_arg        ; Get FileSpec pointer in HL
 
@@ -626,6 +630,15 @@ get_array_argument:
     ld      (BINLEN), de
     pop     hl                  ; Pop text pointer
 
+    ret
+
+_load_chrset:
+    rst     CHRGET
+    rst     SYNCHR
+    byte    SETTK
+    call    get_strdesc_arg       ; HL = FileSpec StrDsc; Stack = TxtPtr
+    call    dos_load_chrset
+    pop     hl
     ret
 
 ;-----------------------------------------------------------------------------
