@@ -576,14 +576,12 @@ FN_GETTILE:
     jp      FINBCK                ; Return String
 
 ;-----------------------------------------------------------------------------
-; GETCOLOR Function
-; GETCOLOR$(palette#)
+; GETPALETTE Function
+; Syntax: GETPALETTE$(palette#)
 ; palette# is a integer between 0 and 3
 ;-----------------------------------------------------------------------------
-FN_GETCOL:
-    rst     CHRGET                ; Skip COL token
-    rst     SYNCHR
-    byte    ORTK
+FN_GETPALETTE:
+    rst     CHRGET                ; Skip PALETTE token
     SYNCHK  '$'
     SYNCHK  '('
     call    GETBYT                ; E = Palette#

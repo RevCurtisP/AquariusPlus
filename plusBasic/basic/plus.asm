@@ -35,16 +35,19 @@ FN_DATE:
 ;-----------------------------------------------------------------------------
 FN_GET:
     rst     CHRGET                ; Skip GET Token
-    cp      COLTK
-    jp      z,FN_GETCOL
     cp      TILETK
     jp      z,FN_GETTILE
     cp      SPRITK
     jp      z,FN_GETSPRITE
     cp      MOUSTK
     jr      z,FN_MOUSE
-    rst     SYNCHR                ; Must be GETKEY
-    byte    KEYTK
+    cp      KEYTK
+    jr      z,FN_GETKEY
+    rst     SYNCHR
+    byte    XTOKEN                ; Check Extended Tokens
+    cp      PALETK                
+    jp      z,FN_GETPALETTE
+    jp      SNERR
 
 ;-----------------------------------------------------------------------------
 ; GETKEY - Wait for key an return ASCII code
