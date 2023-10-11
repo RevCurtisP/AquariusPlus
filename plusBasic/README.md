@@ -2,6 +2,11 @@
 
 Requires S3 BASIC assembled with "aqplus" switch
 
+## Breaking changes
+  - `SET COLOR` statement changed to `SET PALETTE`
+  - `COLOR` option changed to `PALETTE` in `SPRITE` and `TILE` commands
+  - `CHRSET` statement changed to `USE CHRSET`
+
 ## BASIC Language Enhancements 
 
 ### Experimental
