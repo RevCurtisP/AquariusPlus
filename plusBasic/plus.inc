@@ -46,8 +46,8 @@ CHAR_ROM_L1     equ $3800   ; Latin-1 Aquarius Character ROM Address in System R
 ;-----------------------------------------------------------------------------
 BMP_COLORRAM    equ $2000
 TILE_DATA       equ $0000
-TILE_MAP        equ $0000
-
+TILE_MAP_BASE   equ $0000
+TILE_MAP_LEN    equ 64*32*2
 
 ;-----------------------------------------------------------------------------
 ; plusBASIC System variables

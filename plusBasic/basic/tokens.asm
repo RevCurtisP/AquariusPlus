@@ -56,11 +56,26 @@ TBLCMDS:
     db $80 + 'S',"CREEN"          ; $F6             
     db $80 + 'S',"ET"             ; $F7             
     db $80 + 'A',"TTR"            ; $F8             
-    db $80 + 'C',"HR"             ; $F9             
+    db $80 + 'U',"SE"             ; $F9             
     db $80 + 'O',"PEN"            ; $FA             
     db $80 + 'C',"LOSE"           ; $FB             
+    db $80 + ' '                  ; $FC             
+    db $80 + ' '                  ; $FD             
     db $80             ; End of table marker
-    
+
+XTOKEN = $FE
+XPSVAR = $FF
+
+BXTOKEN = $80           ; First Extended Token
+
+EXTCMDS:
+    db $80 + 'P',"ALETTE"         ; $80            
+    db $80 + 'R',"GB"             ; $81            
+    db $80 + 'C',"HR"             ; $82            
+    db $80             ; End of table marker
+
+EXTOKEN = $83
+
 ;-----------------------------------------------------------------------------
 ; plusBASIC tokens
 ;-----------------------------------------------------------------------------
@@ -83,24 +98,64 @@ COLTK     equ     $F5
 SCRNTK    equ     $F6
 SETTK     equ     $F7
 ATTRTK    equ     $F8
-CHRTK     equ     $F9
+USETK     equ     $F9
+
+;-----------------------------------------------------------------------------
+; Extended tokens
+;-----------------------------------------------------------------------------
+PALETK    equ     $80
+RGBTK     equ     $81
+CHRTK     equ     $82
 
 ;-----------------------------------------------------------------------------
 ; Convert keyword to token - hook 10
 ;-----------------------------------------------------------------------------
 keyword_to_token:
-    ld      a, b               ; A = current index
-
-    cp      $CB                ; If < $CB then keyword was found in BASIC table
-    ld      IX,HOOK10+1        ;   CRUNCX will also return here when done
-    push    IX
-    ret     nz                 ;   so return
-    ; Set our own keyword table and let BASIC code use that instead
-    ex      de, hl             ; HL = Line buffer
-    ld      de, TBLCMDS - 1    ; DE = our keyword table
-    ld      b, BTOKEN - 1      ; B = our first token
+    ld      a,b                   ; A = current index
     
-    jp      CRUNCX             ; Continue searching using our keyword table
+    cp      BTOKEN                ; If < BTOKEN then keyword was found in BASIC table
+    jp      c,HOOK10+1            ;   So go do it
+
+; Use plusBASIC simple token table
+    ld      ix,.ext_tokens
+    push    ix                    ; Make CRUNCX return to extended token routine
+
+    ; Set our own keyword table and let BASIC code use that instead
+    ex      de,hl                 ; HL = Line buffer
+    ld      de,TBLCMDS - 1        ; DE = our keyword table
+    ld      b,BTOKEN - 1          ; B = our first token
+        
+    jp      CRUNCX                ; Continue searching using our keyword table
+    
+.ext_tokens:    
+    ld      a,b                   ; A = current index
+    cp      XTOKEN
+    jp      c,HOOK10+1
+
+    ex      de,hl                 ; HL = Line buffer
+    ld      de,EXTCMDS - 1        ; DE = our keyword table
+    ld      b,BXTOKEN - 1         ; First Extended Token
+
+    ld      ix,.ext_done          ;   Make CRUNCX skip hook when done
+    push    ix
+    jp      CRUNCX                ; Continue searching using our keyword table
+    
+.ext_done:
+    ld      a,b                   ; A = current index
+    cp      EXTOKEN               ;
+    jp      nc,HOOK10+1
+    ld      a,c                   ; Get token
+    ex      af,af'                ; Save token
+    ex      de,hl                 
+    pop     bc                    
+    pop     de                    
+    ld      a,XTOKEN
+    ld      (de),a
+    inc     de                    
+    inc     c
+    ex      af,af'
+    jp      STUFFH
+
 
 ;-----------------------------------------------------------------------------
 ; Convert token to keyword - hook 22
@@ -115,10 +170,22 @@ token_to_keyword:
     jp      HOOK22+1            ; No, return to system for expansion
 
 .expand_token:
+    cp      XTOKEN             ; If extended token prefix
+    jr      nz,.not_xtoken
+    ld      a,(hl)              ; Get extended token
+    inc     hl
+    sub     BXTOKEN - 1
+    ld      de,EXTCMDS
+    jr      .expand_it
+
+.not_xtoken
     sub     BTOKEN - 1
-    ld      c, a                ; C = offset to AquBASIC command
     ld      de, TBLCMDS         ; DE = table of AquBASIC command names
+.
+.expand_it:
+    ld      c, a                ; C = offset to AquBASIC command
     jp      RESSRC              ; Print keyword indexed by C
+
 
 ; * = Likely to be replaced
 ;
@@ -169,10 +236,15 @@ token_to_keyword:
 ; $F6 SCREEN
 ; $F7 SET
 ; $F8 ATTR
-; $F9 CHR
+; $F9 USE
 ; $FA OPEN
 ; $FB CLOSE
-; $FC
-; $FD
+; $FC extended prefix
+; $FD possibly pseudovar prefix
 ; $FE
 ; $FF
+
+; Extended tokens
+; $80 PALETTE                    
+; $81 RGB
+; $82 CHR                      

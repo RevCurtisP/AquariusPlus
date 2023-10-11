@@ -200,8 +200,6 @@ ST_PUT:
     jp      z, ST_PUT_TILEMAP     ;   Go do it
     jp      GSERR
 
-
-
 ;-----------------------------------------------------------------------------
 ; SET Statement stub
 ;-----------------------------------------------------------------------------
@@ -210,24 +208,32 @@ ST_SET:
     jp      z,ST_SETSPRITE
     cp      TILETK
     jp      z,ST_SET_TILE
-    cp      COLTK
-    jr      nz,.notcol
-    rst     CHRGET                ; Skip COL token
-    call    SYNCHR                ; Require OR after COL
-    byte    ORTK
-    jp      ST_SETCOLOR
-.notcol
-    rst     SYNCHR                ; All that's let is SET KEY
-    byte    KEYTK                 ; So drop into it
+    cp      KEYTK      
+    jr      z,ST_SETKEY
+    rst     SYNCHR                ; Must be extended Token
+    byte    XTOKEN
+    cp      PALETK
+    jp      z,ST_SETPALETTE
+    jp      SNERR
 
 ;-----------------------------------------------------------------------------
 ; Set keybuffer mode
 ; Syntax: SET KEY mode
 ;-----------------------------------------------------------------------------
-ST_SET_KEY:
+ST_SETKEY:
     call    GETBYT                ; Get key mode
     push    hl
     call    key_set_keymode       ; Set the mode
     jp      m,FCERR
     pop     hl
     ret
+
+;-----------------------------------------------------------------------------
+; USE Statement stub
+;-----------------------------------------------------------------------------
+ST_USE:
+    call    SYNCHR
+    byte    XTOKEN
+    cp      CHRTK
+    jp      z,ST_USECHR           ; USE CHRSET
+    jp      SNERR

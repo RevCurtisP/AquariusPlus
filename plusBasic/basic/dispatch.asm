@@ -137,16 +137,16 @@ STJUMPS:
     dw      SNERR                 ;$F2 MAP
     dw      SNERR                 ;$F3 
     dw      ST_RESUME             ;$F4 RESUME
-    dw      ST_COLOR              ;$F5 COL
+    dw      SNERR                 ;$F5 COL
     dw      ST_SCREEN             ;$F6 SCREEN 
     dw      ST_SET                ;$F7 SET
     dw      SNERR                 ;$F8 ATTR
-    dw      ST_CHR                ;$F9 CHR
+    dw      ST_USE                ;$F9 USE
     dw      SNERR                 ;$FA OPEN
     dw      SNERR                 ;$FB CLOSE
     dw      SNERR                 ;$FC
     dw      SNERR                 ;$FD
-    dw      SNERR                 ;$FE
+    dw      extended_statement    ;$FE
     dw      SNERR                 ;$FF
 
 ; Combined Function Jump Table
@@ -230,22 +230,19 @@ FNJUMPS:
     dw      SNERR                 ;$FB CLOSE
     dw      SNERR                 ;$FC
     dw      SNERR                 ;$FD
-    dw      SNERR                 ;$FE
+    dw      extended_function     ;$FE
     dw      SNERR                 ;$FF
-
-
-    dc $C1A0-$,$FF
 
 ; ------------------------------------------------------------------------------
 ;  Execute Statement with Token in A
 ; ------------------------------------------------------------------------------
-
 exec_next_statement:
     exx                         ; save BC,DE,HL
     sub     $80                 ; Convert from Token to Table Position
     add     a,a                 ; A * 2 to index WORD size vectors
     ld      l,a
     ld      h,high(STJUMPS)
+_exec_statement:
     ld      a,(hl)
     ld      ixl,a
     inc     hl
@@ -255,12 +252,9 @@ exec_next_statement:
     rst     CHRGET              ; Skip Token and Eat Spaces
     jp      (ix)                ; Go Do It
 
-    dc $C1C0-$,$FF
-
 ; ------------------------------------------------------------------------------
 ;  Hook 27 - Execute Function
 ; ------------------------------------------------------------------------------
-
 execute_function:
     push    af                  ; Save A
     exx                         ; save BC,DE,HL
@@ -276,6 +270,10 @@ execute_function:
     pop     af                  ; Restore A
     jp      (ix)                ; Go Do It
 
+extended_statement:
+extended_function:
+    jp      SNERR
+
 ; ------------------------------------------------------------------------------
 ;  Issue Statement not implemented err
 ; ------------------------------------------------------------------------------
@@ -283,3 +281,7 @@ execute_function:
 GSERR:
     ld    e,ERRGS
     jp    force_error    
+
+
+
+    

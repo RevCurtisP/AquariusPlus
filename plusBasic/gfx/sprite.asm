@@ -52,8 +52,8 @@ sprite_set_attrs:
     ld      ix,spritle_set_attr
     jr      _sprite_attrs
 
-sprite_set_colors:
-    ld      ix,spritle_set_color
+sprite_set_palettes:
+    ld      ix,spritle_set_palette
 
 _sprite_attrs:
     push    hl                    ; Stack = SprAdr, RtnAdr
@@ -101,11 +101,11 @@ spritle_set_attr:
     ret
     
 ;-----------------------------------------------------------------------------
-; Set spritle color
+; Set spritle palette
 ; Input: A: sprite #  0-63
 ;        C: color palette  0-3
 ;-----------------------------------------------------------------------------
-spritle_set_color:
+spritle_set_palette:
     out   (IO_VSPRSEL),a          ; Select sprite
     ex    af,af'
     ld    a,c                     ; Get palette #

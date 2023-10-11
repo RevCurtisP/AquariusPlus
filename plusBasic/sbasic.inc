@@ -146,6 +146,8 @@ CHEAD       equ $0489   ; Link Lines
 FNDLIN      equ $049F   ; Find BASIC line wirh line number in [DE]
 KLOOP       equ $04C5   ; Keyword to token loop
 CRUNCX      equ $04F9   ; Tokenize text at [HL]
+NOTGOS      equ $0536   ; Return point for CRUNCX
+STUFFH      equ $053C   ; Copy character to crunch buffer
 RESSRC:     equ $05A8
 NEWSTT:     equ $062C
 CHRGTR      equ $066B   ; CALLable CHRGET

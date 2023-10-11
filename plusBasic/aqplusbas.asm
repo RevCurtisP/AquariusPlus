@@ -202,7 +202,7 @@ print_copyright:
 .print_basic
     call    print_string_immd
 .plus_text
-    db "plusBASIC v0.14d", 0
+    db "plusBASIC v0.15", 0
 .plus_len   equ   $ - .plus_text
     call    CRDO
     jp      CRDO
@@ -266,7 +266,7 @@ _ctrl_keys:
 ;-----------------------------------------------------------------------------
 select_chrset:
     or      a                     ; If A = 0
-    jr      z,init_charram        ;   Copy standard character set
+    jr      z,_reset_charram      ;   Copy standard character set
     dec     a                     ; If A = 1
     ld      hl,CHAR_ROM_L1        ;   Copy Latin-1 character set  
     jr      z,_copy_charram       ; Else
@@ -285,7 +285,7 @@ init_charram:
     ex      af,af'
     ld      a,BAS_BUFFR
     call    page_fast_copy
-
+_reset_charram
     ld      hl,CHAR_ROM_AQ        ; and fall into _copy_charram
 _copy_charram:
     ld      a,ROM_SYS_PG          ; Set source page and address

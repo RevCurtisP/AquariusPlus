@@ -14,8 +14,8 @@ gfx_jump_table
     jp      tile_get              ; $801B
     jp      spritle_set_attr      ; $801E
     jp      sprite_set_attrs      ; $8021
-    jp      spritle_set_color     ; $8024
-    jp      sprite_set_colors     ; $8027
+    jp      spritle_set_palette   ; $8024
+    jp      sprite_set_palettes   ; $8027
     jp      spritle_set_tile      ; $802A
     jp      sprite_set_tiles      ; $802D
     jp      spritle_get_attrs     ; $8030

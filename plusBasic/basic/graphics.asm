@@ -4,10 +4,11 @@
 
 
 ;-----------------------------------------------------------------------------
-; CHRSET - Change Character Set
+; USE CHRSET - Change Character Set
 ; Syntax: 
 ;-----------------------------------------------------------------------------
-ST_CHR:
+ST_USECHR:
+    rst     CHRGET                ; Skip CHR
     rst     SYNCHR                ; Require SET
     byte    SETTK
     call    GETBYT                ; Evaluate Argument
@@ -17,21 +18,14 @@ ST_CHR:
     call    select_chrset         ;
     pop     hl                    ; HL - TxtPtr; Stack = RtnAdr
     ret
- 
+
 ;-----------------------------------------------------------------------------
-; COLOR statement
-; syntax: [SET] COLOR [#] palette [, index] [TO | ;] rgb, ...
-;         [SET] COLOR [#] palette [, index] [TO | ;] rgblist$
+; SET PALETTE statement
+; syntax: SET PALETTE palette# [, index] TO rgblist$
 ;-----------------------------------------------------------------------------
-ST_COLOR:
-    call    SYNCHR                ; Require OR after COL
-    byte    ORTK
-    cp      '#'                   ; If followed with '#'
-    jr      z,ST_SETCOLOR         ;   Set palette
-    jp      SNERR                 ; No other syntax supported yet
-    rst     CHRGET                ; Skip '#'
-ST_SETCOLOR:
-    call    GETBYT                ; E = Palette#
+ST_SETPALETTE:
+    rst     CHRGET                ; Skip PALETTE
+    call    getbyte4              ; E = Palette#
     ld      c,0                   ; Default Entry# to 0
     ld      a,(hl)
     cp      ','                   ; If followed by comma
@@ -43,42 +37,16 @@ ST_SETCOLOR:
     jp      nc,FCERR              ;   Error out
     ld      c,e                   ; C = Entry #
     pop     de                    ; DE = Palette#
-.not_comma:
-    ld      a,(hl)                ; Get next character
-    cp      TOTK                  ; Must be followed by
-    jr      nz,.notto             ; either TO
-    rst     CHRGET
-    jr      .wasto
-.notto
-    SYNCHK  ';'                   ; or semicolon
-.wasto
+.not_comma
+    rst     SYNCHR
+    byte    TOTK                  ; Require TO
     ld      a,e                   ; Get palette#
     cp      4                     ; If greater than 3
     jp      nc,FCERR              ;   Error
     call    palette_shift_num     ;
     ld      b,a                   ; B = Shifted palette#
     push    bc                    ; Stack = PltOfs+Entry
-    call    FRMEVL                ; Get DataAddr or String
-    call    GETYPE                ; If a String
-    jr      z,.string             ;   Process and set Tile
-    call    FRCINT
-    jr      .skip
-.loop
-    call    GETINT                ; DE = RGB palette entry
-.skip
-    pop     bc                    ; Get back palette select
-    scf
-    call    palette_set_entry     ; Set the entry (increments C)
-    push    bc                    ; Save palette select again
-    call    CHRGT2                ; Reget current character
-    jr      z,.done               ; Finish up if terminator
-    SYNCHK  ','                   ; Require comma
-    jr      .loop
-.done
-    pop     bc                    ; Take palette select off stack
-    ret
-
-.string:
+    call    FRMEVL                ; Evaluate RGB list
     ex      (sp),hl               ; HL = PltOfs+Entry; Stack = TxtPtr
     push    hl                    ; Stack = PltOfs+Entry, TxtPtr
     call    free_addr_len         ; DE = DataAddr, BC = Count
@@ -90,7 +58,6 @@ ST_SETCOLOR:
     jp      c,OVERR               ; Error if Overflow
     pop     hl                    ; HL = TxtPtr
     ret
-
 
 ;-----------------------------------------------------------------------------
 ; SCREEN statement
@@ -414,9 +381,9 @@ _get_attr_colors:
     jr      .loop
 .notattrs
     rst     SYNCHR                ; Else
-    byte    COLTK                 ;   Require COLOR
+    byte    XTOKEN                ;   Require PALETTE
     rst     SYNCHR
-    byte    ORTK
+    byte    PALETK
     call    getbyte4              ;   Get palette#
     pop     bc                    ;   BC = Props; Stack = Tile#, RtnAdr
     ld      c,a                   ;   C = palette#
@@ -490,13 +457,11 @@ ST_DEFATTR:
     jr      .loop                 ;   and get next tile#
 
 ;-----------------------------------------------------------------------------
-; DEF COLORLIST C$ = palette#, palette#, ...
+; DEF PALETTELIST P$ = palette#, palette#, ...
 ; palette# is an integer between 0 and 3
 ;-----------------------------------------------------------------------------
-ST_DEFCOLOR:
-    rst     CHRGET                ; Skip COL
-    rst     SYNCHR
-    byte    ORTK                  ; Require OR
+ST_DEFPALETTE:
+    rst     CHRGET                ; Skip PALETTE
     call    _setupdef
 .loop
     call    getbyte4              ; Get palette#
@@ -521,12 +486,42 @@ ST_DEFINT:
     SYNCHK  ','                   ;   Require comma
     jr      .loop                 ;   and get next tile#
 
+;-----------------------------------------------------------------------------
+; DEF RGBLIST R$ = r,b,g; r,b,g; ...
+; int is a integer between 0 and 65535
+;-----------------------------------------------------------------------------
+ST_DEFRGB:
+    rst     CHRGET                ; Skip INT
+    call    _setupdef             ; Stack = VarPtr, RtnAdr
+.loop
+    call    get_byte16            ; Get Red
+    push    af                    ; Stack = Red, VarPtr, RtnAdr
+    SYNCHK  ','
+    call    get_byte16            ; Get Green
+    push    af                    ; Stack = Green, Red, VarPtr, RtnAdr
+    SYNCHK  ','
+    call    get_byte16            ; E = Blue
+    pop     af                    ; A = Green; Stack = Red, VarPtr, RtnAdr
+    and     $0F                   ; Shift Green to high nybble
+    rla
+    rla
+    rla
+    rla
+    or      e                     ; A = Green + Blue
+    pop     de                    ; D = Red
+    ld      e,a                   ; E = Green + Blue
+    call    sbuff_write_de        ; Write RGB to String Buffer
+    call    CHRGT2                ; Reget next character
+    jr      z,_finish_def         ; If not end of statement
+    SYNCHK  ';'                   ;   Require semicolon
+    jr      .loop                 ;   and get next RGB
+
 _finish_def:
     ex      (sp),hl               ; HL = VarPtr; Stack = TxtPtr
     push    hl                    ; Stack = VarPtr, TxtPtr
     call    sbuff_create_string   ; Copy Buffer to Temporary. Return HL = StrDsc
     push    hl                    ; Stack = StrDsc, VarPtr, TxtPtr
-    jp      INBUFC                ; Copy Temporary to Variable and hwx:
+    jp      INBUFC                ; Copy Temporary to Variable and return
 
 _setupdef:
     rst     SYNCHR
@@ -693,25 +688,25 @@ ST_SETSPRITE:
     jr      z,.pos
     cp      ATTRTK
     jr      z,.attrs
-    cp      COLTK
-    jr      z,.color
     cp      TILETK
     jr      z,.tiles
     cp      ONTK
     jr      z,.on
     cp      OFFTK
     jr      z,.off
+    cp      XTOKEN
+    jr      z,.extended
     jp      SNERR
 
 .nextsprite
     pop     de                    ; HL = TxtPtr; Stack = RtnAdr
     jr      ST_SETSPRITE
 
-.color
-    rst     CHRGET                ; Skip COL
-    rst     SYNCHR                ; Require OR
-    byte    ORTK
-    ld      ix,sprite_set_colors  ; IX = jump address
+.extended
+    rst     CHRGET                ; Skip Token Prefix
+    rst     SYNCHR                ; Require PALETTE
+    byte    PALETK
+    ld      ix,sprite_set_palettes; IX = jump address
     jr      .string_arg
 
 .tiles
