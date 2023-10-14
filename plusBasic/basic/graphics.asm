@@ -222,14 +222,12 @@ ST_FILL_SCREEN:
 
 
 ;-----------------------------------------------------------------------------
-; FILL TILEMAP TILE tile# ATTR attrs COLOR palette#
-; FILL TILEMAP (col,row)-(col,row) TILE tile# ATTR attrs COLOR palette#
+; FILL TILEMAP TILE tile# ATTR attrs PALETTE palette#
+; FILL TILEMAP (col,row)-(col,row) TILE tile# ATTR attrs PALETTE palette#
 ;-----------------------------------------------------------------------------
 ;FILL TILEMAP (5,4) - (12,11) TILE 128
 ;FILL TILEMAP TILE 511
 ST_FILL_TILE:
-    jp      GSERR
-
     rst     CHRGET                ; Skip TILE
     rst     SYNCHR                ; Require MAP
     byte    MAPTK
@@ -301,8 +299,8 @@ ST_GET_TILEMAP:
     ret
 
 ;----------------------------------------------------------------------------
-; PUT Statement
-; Syntax: PUT (x1,y1),*arrayvar
+; PUT SCREEN Statement
+; Syntax: PUT SCREEN (x1,y1),*arrayvar
 ;----------------------------------------------------------------------------
 ;PUT SCREEN (4,4),*A
 ST_PUT_SCREEN: 
@@ -658,8 +656,9 @@ _get_byte:
     ret
 
 ;-----------------------------------------------------------------------------
-; SET SPRITE sprite$ [ON/OFF] [POS x,y] [TILE tilelist$] COLOR [colorlist$] [ATTR attrlist$]
+; SET SPRITE sprite$ [ON|OFF] [POS x,y] [TILE tilelist$] [PALETTE palettelist$] [ATTR attrlist$]
 ; SET SPRITE sprite$ TO proplist$
+; SET SPRITE * OFF|CLEAR
 ; Attributes: Priority (64), Double-Height (8), Vertical Flip (4), Horizontal Flip (2)
 ;-----------------------------------------------------------------------------
 ST_SETSPRITE:

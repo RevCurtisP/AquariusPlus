@@ -202,7 +202,7 @@ print_copyright:
 .print_basic
     call    print_string_immd
 .plus_text
-    db "plusBASIC v0.15a", 0
+    db "plusBASIC v0.15b", 0
 .plus_len   equ   $ - .plus_text
     call    CRDO
     jp      CRDO
