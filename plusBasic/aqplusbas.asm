@@ -107,6 +107,10 @@ _reset:
     ld      hl,key_table-1
     ld      (KEYADR), hl
 
+    ; Turn on Keyboard Buffer
+    ld      a,KB_ENABLE | KB_ASCII
+    call    key_set_keymode
+
     ; Back to system ROM init
     jp      JMPINI
 
@@ -138,10 +142,6 @@ _coldboot:
     ; Install BASIC HOOK
     ld      hl,fast_hook_handler
     ld      (HOOK), hl
-
-    ; Turn on Keyboard Buffer
-    ld      a,KB_ENABLE | KB_ASCII
-    call    key_set_keymode
 
     ; Zero out plusBASIC system vars
     xor     a
@@ -202,7 +202,7 @@ print_copyright:
 .print_basic
     call    print_string_immd
 .plus_text
-    db "plusBASIC v0.15b", 0
+    db "plusBASIC v0.15c", 0
 .plus_len   equ   $ - .plus_text
     call    CRDO
     jp      CRDO
