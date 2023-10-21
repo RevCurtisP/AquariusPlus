@@ -47,6 +47,7 @@
     jp      _scan_label     ; $200F Called from GOTO and RESTORE
     jp      _keyread        ; $2012 Called from COLORS
     jp      _ctrl_keys      ; $2015
+    jp      _iscntc_hook    ; $2018
     jp      do_cls_default  ; $20??
     jp      _inlin_hook     ; $20?? Jump from INLIN for command history recall
     jp      _inlin_done     ; $20?? Jumped from FININL to save command to history
@@ -202,7 +203,7 @@ print_copyright:
 .print_basic
     call    print_string_immd
 .plus_text
-    db "plusBASIC v0.15c", 0
+    db "plusBASIC v0.15d", 0
 .plus_len   equ   $ - .plus_text
     call    CRDO
     jp      CRDO
@@ -250,15 +251,50 @@ _ctrl_keys:
     jr      .inlinc               ;   Wait for next key
 .notrepeat:
     cp      'Q'-'K'               ; If not ^N through ^P
-    jr      c,.keyrepeat
+    jr      c,.charset
+;ToDo: Add Ctrl-W = 80 columns, Crtl-T = 40 col screen 0, Ctrl-Y is 40 col screen 1
+;Save cursor position and character under RAM in screen RAM hole
+
 .notrub   
     jp      NOTRUB                ;   Continue standard Ctrl-key check
-.keyrepeat
+.charset
     sub     a,'N'-'K'             ; ^N = 0, ^O = 1, ^P = 2
     xor     1                     ; ^O = 1, ^O = 0, ^P = 2
     call    select_chrset         ; Select the character set
 .inlinc
     jp      INLINC                ;   Wait for next key
+
+
+;-----------------------------------------------------------------------------
+; Check for Control Keys before fetching next statement
+; returns to NEWSTT
+;-----------------------------------------------------------------------------
+_iscntc_hook:
+    ld      (CHARC),a             ; Save character
+    cp      'D'-64                ; If Ctrl-D
+    jr      z,.turbo_off          ;   Disable Turbo Mode
+    cp      'F'-64                ; If not Ctrl-F
+    jp      nz,ISCNTS             ;   Back to INCNTC
+    byte    $3E                   ; LD A,$AF to Enable Turbo Mode
+.turbo_off
+    xor     a
+
+;-----------------------------------------------------------------------------
+; Enable/Disable Turbo mode
+; Input: A = $FF for On, 0 for Off
+; Clobbers: B
+;-----------------------------------------------------------------------------
+sys_turbo_mode:
+    and     SYSCTRL_TURBO         ; Isolate Fast Mode bit
+    ld      b,a                   ;   and copy to B
+_turbo_mode
+    in      a,(IO_SYSCTRL)        ; Read SYSCTRL 
+    and     ~SYSCTRL_TURBO        ;   mask out Fast Mode bit
+    or      b                     ;   and copy the new Fast Mode bit in
+    out     (IO_SYSCTRL),a        ; Write back to SYSCTRL
+    ret
+
+
 
 ;-----------------------------------------------------------------------------
 ; Copy selected character set into Character RAM
@@ -296,7 +332,6 @@ _copy_charram:
 ;       HL = Source Address
 ; Clobbered: AF',BC,DE,HL,IX
 ;-----------------------------------------------------------------------------
-
 copy_char_ram:
     ex      af,af'
     ld      a,CHAR_RAM

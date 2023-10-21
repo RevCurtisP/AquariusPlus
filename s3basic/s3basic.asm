@@ -123,6 +123,7 @@ XWARM   equ     $200C   ;; | plusBASIC Warm Start`
 SCNLBL  equ     $200F   ;; | Line label hook for GOTO, GOSUB, and RESTORE
 XINCHR  equ     $2012   ;; | Alternate keyboard read
 XFUNKY  equ     $2015   ;; | Set Character RAM
+XCNTC   equ     $2018   ;; | ISCNTC hook
 endif                   
 EXTBAS  equ     $2000   ;;Start of Extended Basic
 XSTART  equ     $2010   ;;Extended BASIC Startup Routine
@@ -276,7 +277,7 @@ COLOR1: ld      (hl),b            ;;memory, addresses $3400 through $3FFF
         ld      hl,$4000          ;;Loop 12,288 times
 COLOR2: 
 ifdef aqplus
-;;; Code Change: Directly read alt port so, network key stuffing works    
+;;; Code Change: Directly read alt port so network key stuffing works    
         call    XINCHR            ;;Read Keyboard
 else
         call    INCHRC            ;;Check for keypress
@@ -653,7 +654,7 @@ NOTTK   equ     TK                ;
         byte    'N'+$80,"OT"      ;;$A6
 TK      =            TK+1
 STEPTK  equ     TK                ;
-        byte    'S'+$80,"TEP"     ;;$A7
+        byte    'S'+$80,"TEP"     ;;$A7f
 TK      =            TK+1
 ;;Operators
 PLUSTK  equ     TK                ;
@@ -1251,9 +1252,8 @@ NXTCON: ld      b,FORTK           ;[M80] PUT A 'FOR' TOKEN ONTO THE STACK
         push    bc                ;
         inc     sp                ;[M80] THE "TOKEN" ONLY TAKES ONE BYTE OF STACK SPACE
 ;[M80] NEW STATEMENT FETCHER
-NEWSTT:
-        ld      (SAVTXT),hl       ;USED BY CONTINUE AND INPUT AND CLEAR AND PRINT USING
-        call    INCNTC            ;;*** might be [M65] ISCNTC
+NEWSTT: ld      (SAVTXT),hl       ;USED BY CONTINUE AND INPUT AND CLEAR AND PRINT USING
+        call    INCNTC            ;
         ld      a,(hl)            ;;Get Terminator
         cp      ':'               ;[M80] IS IT A COLON?
         jr      z,GONE            ;
@@ -1526,7 +1526,7 @@ LOOPON: dec     c                 ;[M80] SEE IF ENOUGH SKIPS
 ;[M80] IF ... THEN CODE
 IFS:    call    FRMEVL            ;[M80] EVALUATE A FORMULA
         ld      a,(hl)            ;[M80] GET TERMINATING CHARACTER OF FORMULA
-        cp      GOTOTK            ;[M80] ALLOW "GOTO" AS WELL
+IFGOTO: cp      GOTOTK            ;[M80] ALLOW "GOTO" AS WELL
         jr      z,OKGOTO          ;
         rst     SYNCHK            ;
         byte    THENTK            ;[M80] MUST HAVE A THEN
@@ -2534,7 +2534,7 @@ CHKFUN: cp      7                 ;[M80] IS IT BOB ALBRECHT RINGING THE BELL
         cp      8                 ;[M80] BACKSPACE? (CONTROL-H)?
         jp      z,LINLIN          ;[M65] YES
         cp      24                ;[M80] AT START OF LINE?
-        jr      nz,NTCTLX         ;[M80] IS IT CONTROL-X (LINE DELETE)
+        jr      nz,NTCTLX         ;[M80] IS IT  X (LINE DELETE)
         ld      a,'#'             ;[M80] SEND NUMBER SIGN
         jp      INLINN            ;[M80] SEND # SIGN AND ECHO
 NTCTLX: cp      18                ;[M80] CONTROL-R?
@@ -4627,8 +4627,13 @@ CHARCG: push    hl                ;
 ;;Check for ^C and ^S
 ISCNTC: call    CNTCCN            ;{M80} SEE IF ITS CONTROL-C
         ret     z                 ;[M80] IF NONE, RETURN
+ifdef aqplus
+;;Code change: Extended Control-Character check 
+        jp      XCNTC
+else
         ld      (CHARC),a         ;{M80} SAVE CHAR
-        cp      $13               ;[M80] PAUSE? (^S)
+endif
+ISCNTS: cp      $13               ;[M80] PAUSE? (^S)
         ret     nz                ;{M80} IF PAUSE, READ NEXT CHAR
 TRYIN:  xor     a                 ;;Wait for character from keyboard
         ld      (CHARC),a         ;{M80} CLEAR SAVED CHAR
