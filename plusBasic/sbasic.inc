@@ -218,6 +218,9 @@ CRDO:       equ $19EA   ; Print CR+LF
 BUFCIN      equ $1A02   ; Return A as string from function 
 NULRT       equ $1A0B   ; Return null string
 CHARCG      equ $1A18   ; Get keypress, check for Ctrl-C
+ISCNTC      equ $1A25   ; Check for Ctrl-C
+ISCNTS      equ $1A2C   ; Check for Ctrl-S
+TRYIN       equ $1A2F   ; Wait for character from keyboard
 WRMCON:     equ $1A40
 RSETCC      equ $1A5D   ; Partway into PSET/PRESET`
 SCAND       equ $1A7F   ; Get parameters for PSET, PRESET, POINT, and SOUND

@@ -27,6 +27,7 @@ page_fast_copy:
     and     $3F                   ;  
     or      $80
     ld      h,a
+    or      a                     ; Clear Carry, Zero flags
     ldir                          ; Do the copy
     call    page_restore_two
     xor     a
@@ -48,6 +49,7 @@ page_full_copy:
     ld      hl,$8000              ; Copying from page in bank 2
     ld      de,$C000              ; to page in bank 3
     ld      bc,$4000              ; Entire bank/page
+    xor     a                     ; Clear Carry
     ldir
     call    page_restore_two
     pop     hl                    ; Stack = RetAddr
@@ -80,6 +82,7 @@ page_fast_write_bytes:
     call    page_coerce_address   ; Coerce DstAdr
 _page_copy:
     out     (IO_BANK3),a          ; Map DestPg
+    or      a                     ; Clear Carry, Zero flags
     ldir                          ; Do the Copy
     jp      page_restore_plus     ; Restore ROM Page and return
 

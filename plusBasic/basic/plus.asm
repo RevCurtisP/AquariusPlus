@@ -35,16 +35,12 @@ FN_DATE:
 ;-----------------------------------------------------------------------------
 FN_GET:
     rst     CHRGET                ; Skip GET Token
-    cp      TILETK
-    jp      z,FN_GETTILE
-    cp      SPRITK
-    jp      z,FN_GETSPRITE
-    cp      MOUSTK
-    jr      z,FN_MOUSE
-    cp      KEYTK
-    jr      z,FN_GETKEY
     rst     SYNCHR
     byte    XTOKEN                ; Check Extended Tokens
+    cp      KEYTK
+    jr      z,FN_GETKEY
+    cp      SPRITK
+    jp      z,FN_GETSPRITE
     cp      PALETK                
     jp      z,FN_GETPALETTE
     jp      SNERR
@@ -54,8 +50,12 @@ FN_GET:
 ; GETKEY$  - Wait for key and return as string
 ;-----------------------------------------------------------------------------
 FN_GETKEY:
+    rst     CHRGET                ; Skip KEY
+    push    hl
+.loop
     call    CHARCG                ; Wait for keypress
-    jr      z,FN_GETKEY
+    jr      z,.loop
+    pop     hl
     ld      e,a                   ; Save ASCII Code
     ld      a,(hl)                ; Get character after KEY
     cp      '$'                   ; Check for GETKEY$
@@ -174,11 +174,11 @@ LSERR:
 ; FILL! [@page], startaddr, count, word
 ;-----------------------------------------------------------------------------
  ST_FILL:
-    cp    TILETK
-    jp    z,ST_FILL_TILE
-    cp    SCRNTK
-    jp    z,ST_FILL_SCREEN
-    jp    SNERR
+    cp      SCRNTK
+    jp      z,ST_FILL_SCREEN
+    cp      TILETK
+    jp      z,ST_FILL_TILE
+    jp      SNERR
 
 ;----------------------------------------------------------------------------
 ; GET Statement stub
@@ -188,6 +188,8 @@ ST_GET:
     jp      z,ST_GETARGS
     cp      SCRNTK
     jp      z,ST_GET_SCREEN
+    rst     SYNCHR
+    byte    XTOKEN
     cp      TILETK                ; If GET TILEMAP
     jp      z, ST_GET_TILEMAP     ;   Go do it
     jp      GSERR
@@ -199,24 +201,28 @@ ST_GET:
 ST_PUT:
     cp      SCRNTK
     jp      z,ST_PUT_SCREEN
+    rst     SYNCHR
+    byte    XTOKEN
     cp      TILETK                ; If GET TILEMAP
-    jp      z, ST_PUT_TILEMAP     ;   Go do it
-    jp      GSERR
+    jp      z,ST_PUT_TILEMAP      ;   Go do it
+    jp      SNERR
 
 ;-----------------------------------------------------------------------------
 ; SET Statement stub
 ;-----------------------------------------------------------------------------
 ST_SET:
-    cp      SPRITK
-    jp      z,ST_SETSPRITE
     cp      TILETK
     jp      z,ST_SET_TILE
-    cp      KEYTK      
-    jr      z,ST_SETKEY
     rst     SYNCHR                ; Must be extended Token
     byte    XTOKEN
+    cp      SPRITK
+    jp      z,ST_SETSPRITE
     cp      PALETK
     jp      z,ST_SETPALETTE
+    cp      KEYTK      
+    jr      z,ST_SETKEY
+    cp      FASTK      
+    jr      z,ST_SETFAST
     jp      SNERR
 
 ;-----------------------------------------------------------------------------
@@ -224,12 +230,21 @@ ST_SET:
 ; Syntax: SET KEY mode
 ;-----------------------------------------------------------------------------
 ST_SETKEY:
+    rst     CHRGET                ; Skip KEY
     call    GETBYT                ; Get key mode
     push    hl
     call    key_set_keymode       ; Set the mode
     jp      m,FCERR
     pop     hl
     ret
+
+;-----------------------------------------------------------------------------
+; Set Fast Mode
+; Syntax: SET FAST ON/OFF
+;-----------------------------------------------------------------------------
+ST_SETFAST:
+    call    get_on_off            ; A = $FF if ON, $00 if OFF
+    jp      sys_turbo_mode
 
 ;-----------------------------------------------------------------------------
 ; USE Statement stub

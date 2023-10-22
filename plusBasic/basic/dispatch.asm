@@ -130,10 +130,10 @@ STJUMPS:
     dw      SNERR                 ;$EB 
     dw      SNERR                 ;$EC 
     dw      SNERR                 ;$ED EVAL
-    dw      SNERR                 ;$EE 
+    dw      SNERR                 ;$EE PAUSE
     dw      SNERR                 ;$EF SPRITE
     dw      SNERR                 ;$F0 TILE
-    dw      SNERR                 ;$F1 OFF
+    dw      SNERR                 ;$F1 RGB
     dw      SNERR                 ;$F2 MAP
     dw      SNERR                 ;$F3 
     dw      ST_RESUME             ;$F4 RESUME
@@ -214,10 +214,10 @@ FNJUMPS:
     dw      SNERR                 ;$EB 
     dw      SNERR                 ;$EC 
     dw      FN_EVAL               ;$ED EVAL
-    dw      SNERR                 ;$EE 
-    dw      SNERR                 ;$EF SPRITE
+    dw      SNERR                 ;$EE PAUSE
+    dw      SNERR                 ;$EF 
     dw      FN_TILE               ;$F0 TILE
-    dw      SNERR                 ;$F1 OFF
+    dw      FN_RGB                ;$F1 RGB
     dw      SNERR                 ;$F2 MAP
     dw      SNERR                 ;$F3 
     dw      SNERR                 ;$F4 RESUME

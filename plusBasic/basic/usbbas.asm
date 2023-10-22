@@ -98,9 +98,9 @@ _null_string:
 ; syntax: var = IN(port)
 ;-----------------------------------------------------------------------------
 FN_IN:
-    rst     CHRGET                ; Skip Token and Eat Spaces
-    cp      KEYTK                 ; If followed by KEY
-    jp      z,FN_INKEY            ; It's INKEY
+    rst     CHRGET                ; Skip IN and Eat Spaces
+    cp      XTOKEN                ; If followed by KEY
+    jr      z,.extended           ; It's INKEY
     call    PARCHK
     push    hl
     ld      bc,LABBCK
@@ -112,6 +112,13 @@ FN_IN:
     ; Read from port
     in      a, (c)           ; A = in(port)
     jp      SNGFLT           ; Return with 8 bit input value in variable var
+
+
+.extended
+    rst     CHRGET                ; Skip XTOKEN
+    cp      KEYTK                 ; If followed by KEY
+    jp      z,FN_INKEY            ; It's INKEY
+    jp      SNERR
 
 ;-----------------------------------------------------------------------------
 ; JOY() function

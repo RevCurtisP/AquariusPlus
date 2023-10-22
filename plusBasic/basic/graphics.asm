@@ -28,16 +28,18 @@ ST_SETPALETTE:
     call    getbyte4              ; E = Palette#
     ld      c,0                   ; Default Entry# to 0
     ld      a,(hl)
-    cp      ','                   ; If followed by comma
-    jr      nz,.not_comma         ;
-    rst     CHRGET                ; Eat It
-    push    de                    ; Stack = Palette#
-    call    GETBYT                ; E = Entry#
-    cp      16                    ; If greater than 15
-    jp      nc,FCERR              ;   Error out
-    ld      c,e                   ; C = Entry #
-    pop     de                    ; DE = Palette#
-.not_comma
+    cp      INTK                  ; If followed by IN
+    jr      nz,.not_index         ;
+    rst     CHRGET                ;   Eat It
+    rst     SYNCHR
+    byte    XTOKEN
+    rst     SYNCHR
+    byte    DEXTK                 ;   Require DEX
+    push    de                    ;   Stack = Palette#
+    call    get_byte16            ;   Parse Byte between 0 and 15
+    ld      c,e                   ;   C = Entry #
+    pop     de                    ;   DE = Palette#
+.not_index
     rst     SYNCHR
     byte    TOTK                  ; Require TO
     ld      a,e                   ; Get palette#
@@ -59,6 +61,12 @@ ST_SETPALETTE:
     pop     hl                    ; HL = TxtPtr
     ret
 
+
+;-----------------------------------------------------------------------------
+; Proposed new syntax
+; SCREEN [TEXT] [WIDE] [0|1] [TILEMAP|BITMAP|COLMAP] [SPRITE ON/OFF] [MAPCHR]
+; TEXT... + TILEMAP|BITMAP|COLMAP enables text screen in front graphics screen
+; TILEMAP|BITMAP|COLMAP + TEXT... enables text screen behind graphics screen
 ;-----------------------------------------------------------------------------
 ; SCREEN statement
 ; syntax: SCREEN mode
@@ -119,8 +127,8 @@ ST_SCREEN_SWAP:
 
 ;-----------------------------------------------------------------------------
 ; SET TILE Statement
-; SETTILE tile# TO color_index, ...
-; SETTILE tile# TO tiledata$
+; SET TILE tile# TO color_index, ...
+; SET TILE tile# TO tiledata$
 ;-----------------------------------------------------------------------------
 ST_SET_TILE:
     rst     CHRGET                ; Skip TILE Token
@@ -131,44 +139,11 @@ ST_SET_TILE:
     rst     SYNCHR                ; Require TO
     byte    TOTK
     call    FRMEVL                ; Get DataAddr or String
-    call    GETYPE                ; If a String
-    jr      z,.string             ;   Process and set Tile
-    ld      e,0                   ; Pixel# = 0
-    push    de                    ; Stack = Pixel#, Tile#, RtnAdr
-    call    CONINT
-    jr      .skip
-.loop
-    call    GETBYT                ; A = Color Index
-.skip
-    cp      16
-    jp      nc,FCERR              ; Error if > 15
-    ld      c,a                   ; C = Color
-    pop     de                    ; DE = Pixel#; Stack = Tile#, RtnAdr
-    ld      c,e                   ; C = Pixel#
-    ex      (sp),hl               ; HL = Tile#, Stack = TxtPtr, RtnAdr
-    call    tile_set_pixel
-    ld      e,c                   ; E = Pixel#
-    inc     e                     ; Increment Pixel#
-    ld      a,15
-    cp      e
-    jp      c,OVERR               ; Error if > 15
-    ex      (sp),hl               ; HL = TxtPtr, Stack = Tile#, RtnAdr
-    push    de                    ; Stack = Pixel#, Tile#, RtnAdr
-    call    CHRGT2                ; Reget current character
-    jr      z,.done               ; Finish up if terminator
-    SYNCHK  ','                   ; Require comma
-    jr      .loop
-.done
-    pop     bc                    ; Stack = Tile#, RtnAdr
-    pop     bc                    ; Stack = RtnAdr
-    ret
-.string:
     ex      (sp),hl               ; HL = Tile#; Stack = TxtPtr, RtnAdr
     push    hl                    ; Stack = Tile#, TxtPtr, RtnAdr
     call    free_addr_len         ; DE = DataAddr, BC = Count
     pop     hl                    ; HL = Tile#; Stack = TxtPtr, RtnAdr
-.set_it:
-    call    tile_set
+      call    tile_set
     jp      c,OVERR               ; Error if Overflow
     pop     hl                    ; HL = TxtPtr
     ret
@@ -350,21 +325,27 @@ ST_PUT_TILEMAP:
 
 ;-----------------------------------------------------------------------------
 ; SET TILEMAP
-; SET TILEMAP (x,y) TO TILE tile# ATTR attrs COLOR palette#
+; SET TILEMAP (x,y) TO TILE tile# ATTR attrs PALETTE palette#
 ; SET TILEMAP (x,y) TO integer
 ; SET TILEMAP OFFSET x,y
 ;-----------------------------------------------------------------------------
 ST_SET_TILEMAP:
     rst     CHRGET                ; Skip MAP
+    rst     SYNCHR                ;
+    byte    XTOKEN                ; Only Extended Tokeb
+
+
     cp      OFFTK                 ; If OFF
     jr      z,_tilemap_offset     ;   Do SET TILEMAP OFFSET
     jp      SNERR
 
+;ToDo: get TileMap (X,Y) working 
+;Note: TILE is not an extended token, the rest are
 _get_tile_props:
     rst     SYNCHR                ; Require TILE
     byte    TILETK
     call    get_int512            ; DE = Tile#
-_get_attr_colors:
+_get_attr_palette:
     push    de                    ; Stack = Tile# , RtnAdr
     ld      bc,0                  ; Default to Attrs 0, Palette# 0
 .loop
@@ -378,8 +359,6 @@ _get_attr_colors:
     ld      b,a                   ;   B = attributes
     jr      .loop
 .notattrs
-    rst     SYNCHR                ; Else
-    byte    XTOKEN                ;   Require PALETTE
     rst     SYNCHR
     byte    PALETK
     call    getbyte4              ;   Get palette#
@@ -492,22 +471,7 @@ ST_DEFRGB:
     rst     CHRGET                ; Skip INT
     call    _setupdef             ; Stack = VarPtr, RtnAdr
 .loop
-    call    get_byte16            ; Get Red
-    push    af                    ; Stack = Red, VarPtr, RtnAdr
-    SYNCHK  ','
-    call    get_byte16            ; Get Green
-    push    af                    ; Stack = Green, Red, VarPtr, RtnAdr
-    SYNCHK  ','
-    call    get_byte16            ; E = Blue
-    pop     af                    ; A = Green; Stack = Red, VarPtr, RtnAdr
-    and     $0F                   ; Shift Green to high nybble
-    rla
-    rla
-    rla
-    rla
-    or      e                     ; A = Green + Blue
-    pop     de                    ; D = Red
-    ld      e,a                   ; E = Green + Blue
+    call    _get_rgb              ; DE = RGB value
     call    sbuff_write_de        ; Write RGB to String Buffer
     call    CHRGT2                ; Reget next character
     jr      z,_finish_def         ; If not end of statement
@@ -537,7 +501,7 @@ _defnolist:
 ; DEF TILELIST T$ = tile#, tile#, ...
 ; tile# is a integer between 0 and 511
 ;-----------------------------------------------------------------------------
-ST_DEFTILE:
+ST_DEF_TILELIST:
     rst     CHRGET                ; Skip TILE
     call    _setupdef
 .loop
@@ -683,26 +647,25 @@ ST_SETSPRITE:
     jr      z,.nextsprite
     cp      POSTK
     jr      z,.pos
-    cp      ATTRTK
-    jr      z,.attrs
-    cp      TILETK
-    jr      z,.tiles
     cp      ONTK
     jr      z,.on
+    cp      TILETK
+    jr      z,.tiles
+    rst     SYNCHR
+    byte    XTOKEN
+    cp      ATTRTK
+    jr      z,.attrs
     cp      OFFTK
     jr      z,.off
-    cp      XTOKEN
-    jr      z,.extended
+    cp      PALETK
+    jr      z,.palette
     jp      SNERR
 
 .nextsprite
     pop     de                    ; HL = TxtPtr; Stack = RtnAdr
     jr      ST_SETSPRITE
 
-.extended
-    rst     CHRGET                ; Skip Token Prefix
-    rst     SYNCHR                ; Require PALETTE
-    byte    PALETK
+.palette
     ld      ix,sprite_set_palettes; IX = jump address
     jr      .string_arg
 
@@ -756,6 +719,8 @@ ST_SETSPRITE:
     cp      CLRTK                 ; If CLEAR
     jr      z,.allreset           ;   Reset all spritles
     rst     SYNCHR                ; Else
+    byte    XTOKEN
+    rst     SYNCHR
     byte    OFFTK                 ;   SNERR if not OFF
 .alloff
     ld      c,0
@@ -809,4 +774,44 @@ FN_GETSPRITE:
     pop     hl                    ; HL = BufDsc; Stack = DummyAdr, TxtPtr, RtnAdr
     jp      FINBCK                ; Return String
 
+
+;-----------------------------------------------------------------------------
+; RGB$(r,g,b)
+;-----------------------------------------------------------------------------
+FN_RGB:
+    inc     hl                    ; Skip RGB
+    SYNCHK  '$'                   ; Require $
+    SYNCHK  '('                   ; Require Open Paren
+    call    _get_rgb              ; DE = RGB value
+    SYNCHK  ')'                   ; Require Close Paren
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    push    de                    ; Stack = RGB, TxtPtr, RtnAdr
+    ld      a,2
+    call    STRINI                ; Allocate two character string
+    ex      de,hl                 ; HL = String Text Address
+    pop     de                    ; DE = RGB; Stack = TxtPtr, RtnAdr
+    ld      (hl),e                ; Store LSB
+    inc     hl                    
+    ld      (hl),d                ; Store MSB
+    jp      PUTNEW                ; Set Pointer to StringDesc and return
+
+; Parse RGB triplet, returns DE = RGB integer
+_get_rgb:
+    call    get_byte16            ; Get Red
+    push    af                    ; Stack = Red, RtnAdr
+    SYNCHK  ','
+    call    get_byte16            ; Get Green
+    push    af                    ; Stack = Green, Red, RtnAdr
+    SYNCHK  ','
+    call    get_byte16            ; E = Blue
+    pop     af                    ; A = Green; Stack = Red, RtnAdr
+    and     $0F                   ; Shift Green to high nybble
+    rla
+    rla
+    rla
+    rla
+    or      e                     ; A = Green + Blue
+    pop     de                    ; D = Red; Stack = RtnAdr
+    ld      e,a                   ; E = Green + Blue
+    ret
 

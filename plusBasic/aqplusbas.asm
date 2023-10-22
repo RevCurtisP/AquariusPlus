@@ -203,7 +203,7 @@ print_copyright:
 .print_basic
     call    print_string_immd
 .plus_text
-    db "plusBASIC v0.15d", 0
+    db "plusBASIC v0.15e", 0
 .plus_len   equ   $ - .plus_text
     call    CRDO
     jp      CRDO
@@ -231,8 +231,25 @@ _autodesc
 ;-----------------------------------------------------------------------------
 ; Extended line editor function keys
 ; Jumped to from INLNC
+; On entry: A,C = character typed, B = input buffer character count
 ;-----------------------------------------------------------------------------
 _ctrl_keys:
+    push    bc                    ; Save character count
+    ld      a,(CURLIN)
+    ld      b,a
+    ld      a,(CURLIN+1)
+    and     b
+    cp      $FE                   
+    jr      nz,.dontscreen        ; If Not in Direct Mode
+    xor     a
+    cp      b                     
+    jr      nz,.dontscreen        ; and Input Buffer is empty
+    ld      a,c
+;ToDo: Add Ctrl-W = 80 columns, Crtl-T = 40 col screen 0, Ctrl-Y is 40 col screen 1
+;Save cursor position and character under RAM in screen RAM hole
+    
+.dontscreen
+    ld      a,c                   ; Get typed character
     sub     a,'K'-64              ; 
     jr      c,.notrub             ; 
     cp      'M'-'K'               ; 
@@ -252,18 +269,16 @@ _ctrl_keys:
 .notrepeat:
     cp      'Q'-'K'               ; If not ^N through ^P
     jr      c,.charset
-;ToDo: Add Ctrl-W = 80 columns, Crtl-T = 40 col screen 0, Ctrl-Y is 40 col screen 1
-;Save cursor position and character under RAM in screen RAM hole
-
 .notrub   
+    pop     bc                    ;   Restore character count
     jp      NOTRUB                ;   Continue standard Ctrl-key check
 .charset
     sub     a,'N'-'K'             ; ^N = 0, ^O = 1, ^P = 2
     xor     1                     ; ^O = 1, ^O = 0, ^P = 2
     call    select_chrset         ; Select the character set
 .inlinc
+    pop     bc                    ;   Restore character count
     jp      INLINC                ;   Wait for next key
-
 
 ;-----------------------------------------------------------------------------
 ; Check for Control Keys before fetching next statement

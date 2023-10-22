@@ -38,24 +38,24 @@ TBLCMDS:
     db $80 + 'R',"ENAME"          ; $E4
     db $80 + 'D',"ATE"            ; $E5   Replaces MX-BASIC keyword DTM$
     db $80 + ' '                  ; $E6             
-    db $80 + 'K',"EY"             ; $E7             
+    db $80 + ' '                  ; $E7             
     db $80 + 'A',"RGS"            ; $E8   Replaces MX-BASIC keyword DEEK
     db $80 + 'E',"RR"             ; $E9             
     db $80 + 'S',"TRING"          ; $EA             
     db $80 + 'B',"IT"             ; $EB             
     db $80 + ' '                  ; $EC             
     db $80 + 'E',"VAL"            ; $ED             
-    db $80 + ' '                  ; $EE             
-    db $80 + 'S',"PRITE"          ; $EF             
+    db $80 + 'P',"AUSE"           ; $EE   Renamed MX-BASIC keyword SLEEP             
+    db $80 + ' '                  ; $EF             
     db $80 + 'T',"ILE"            ; $F0             
-    db $80 + 'O',"FF"             ; $F1             
+    db $80 + 'R',"GB"             ; $F1             
     db $80 + 'M',"AP"             ; $F2             
     db $80 + 'F',"ILE"            ; $F3             
     db $80 + 'R',"ESUME"          ; $F4             
     db $80 + 'C',"OL"             ; $F5             
     db $80 + 'S',"CREEN"          ; $F6             
     db $80 + 'S',"ET"             ; $F7             
-    db $80 + 'A',"TTR"            ; $F8             
+    db $80 + ' '                  ; $F8             
     db $80 + 'U',"SE"             ; $F9             
     db $80 + 'O',"PEN"            ; $FA             
     db $80 + 'C',"LOSE"           ; $FB             
@@ -63,18 +63,35 @@ TBLCMDS:
     db $80 + ' '                  ; $FD             
     db $80             ; End of table marker
 
+
 XTOKEN = $FE
 XPSVAR = $FF
 
 BXTOKEN = $80           ; First Extended Token
 
 EXTCMDS:
-    db $80 + 'P',"ALETTE"         ; $80            
-    db $80 + 'R',"GB"             ; $81            
-    db $80 + 'C',"HR"             ; $82            
+    db $80 + 'A',"TTR"            ; $80
+    db $80 + 'P',"ALETTE"         ; $81            
+    db $80 + 'O',"FF"             ; $82             
+    db $80 + 'S',"PRITE"          ; $83
+    db $80 + 'C',"HR"             ; $84            
+    db $80 + 'K',"EY"             ; $85             
+    db $80 + 'D',"EX"             ; $86             
+    db $80 + 'F',"AST"            ; $87            
+    db $80 + 'W',"IDE"            ; $88             
+    db $80 + ' '                  ; $89             
+    db $80 + ' '                  ; $8A             
+    db $80 + ' '                  ; $8B             
+    db $80 + ' '                  ; $8C             
+    db $80 + ' '                  ; $8D             
+    db $80 + ' '                  ; $8E             
+    db $80 + ' '                  ; $8F             
+    ; Primary Tokens grouped together, so extended dispatch can use DEC A
+    db $80 + 'R',"ESET"           ; $90             
+    db $80 + 'P',"T3"             ; $91             
     db $80             ; End of table marker
 
-EXTOKEN = $83
+EXTOKEN = $92     ; Last Token + 1
 
 ;-----------------------------------------------------------------------------
 ; plusBASIC tokens
@@ -84,28 +101,33 @@ SWAPTK    equ     $D1
 TIMETK    equ     $D3    
 MOUSTK    equ     $D9
 CDTK      equ     $E0
-KEYTK     equ     $E7
+INTK      equ     $E1
 ARGSTK    equ     $E8
 ERRTK     equ     $E9
 BITTK     equ     $EB
-SPRITK    equ     $EF
 LINETK    equ     $D0
 SAVETK    equ     $DC
 TILETK    equ     $F0
-OFFTK     equ     $F1
+RGBTK     equ     $F1
 MAPTK     equ     $F2
 COLTK     equ     $F5
 SCRNTK    equ     $F6
 SETTK     equ     $F7
-ATTRTK    equ     $F8
 USETK     equ     $F9
 
 ;-----------------------------------------------------------------------------
 ; Extended tokens
 ;-----------------------------------------------------------------------------
-PALETK    equ     $80
-RGBTK     equ     $81
-CHRTK     equ     $82
+ATTRTK    equ     $80
+PALETK    equ     $81
+OFFTK     equ     $82
+SPRITK    equ     $83
+CHRTK     equ     $84
+KEYTK     equ     $85
+DEXTK     equ     $86
+FASTK     equ     $87
+WIDETK    equ     $88
+PT3TK     equ     $91
 
 ;-----------------------------------------------------------------------------
 ; Convert keyword to token - hook 10
@@ -225,26 +247,39 @@ token_to_keyword:
 ; $EB BIT         XOR           (a XOR b) <--> XOR(a,b)
 ; $EC             MENU
 ; $ED EVAL        EVAL                 compatible
-; $EE             SLEEP
-; $EF SPRITE      MKDIR
-; $F0 TILE        RMDIR               DEL <--> RMDIR
-; $F1 OFF         OFF
+; $EE PAUSE       SLEEP
+; $EF ELSE        MKDIR
+; $F0             RMDIR               DEL <--> RMDIR
+; $F1 RGB         OFF
 ; $F2 MAP         WAIT
 ; $F3 FILE        FILE
 ; $F4 RESUME      RESUME
 ; $F5 COL         COL [OR]
 ; $F6 SCREEN
 ; $F7 SET
-; $F8 ATTR
+; $F8 
 ; $F9 USE
 ; $FA OPEN
 ; $FB CLOSE
-; $FC extended prefix
-; $FD possibly pseudovar prefix
-; $FE
-; $FF
+; $FC 
+; $FD 
+; $FE extended token prefix
+; $FF (pseudovar prefix)
 
 ; Extended tokens
-; $80 PALETTE                    
-; $81 RGB
-; $82 CHR                      
+; $80 ATTR
+; $81 PALETTE                    
+; $82 OFF
+; $83 SPRITE
+; $84 CHR                      
+; $85 KEY
+; $86 DEX
+; $87 FAST
+; $88
+; $89
+; $8A
+; $8D
+; $8E
+; $8F
+; $90 RESET
+; $91 PT3

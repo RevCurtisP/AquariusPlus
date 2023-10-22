@@ -8,6 +8,9 @@ Requires S3 BASIC assembled with "aqplus" switch
   - `GETCOLOR` function changed to `GETPALETTE`
   - `COLOR` option changed to `PALETTE` in `SPRITE` and `TILE` commands
   - `CHRSET` statement changed to `USE CHRSET`
+  - `POKE!` and `PEEK!` changed to `POKEINT` and `PEEKINT`
+  - `COPY!` changed to `COPY ... FAST`
+  - `SET TILE` syntax `TO color_index, ...` removed
 
 ## BASIC Language Enhancements 
 

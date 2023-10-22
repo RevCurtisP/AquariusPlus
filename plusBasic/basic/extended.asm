@@ -26,20 +26,20 @@ ST_CLS:
 ; DEF statement stub
 ;-----------------------------------------------------------------------------
 ST_DEF:
-    cp      ATTRTK
-    jp      z,ST_DEFATTR            ; DEF ATTRLIST
     cp      INTTK         
     jp      z,ST_DEFINT             ; DEF INTLIST
-    cp      SPRITK
-    jp      z,ST_DEFSPRITE          ; DEF TILELIST
     cp      TILETK
-    jp      z,ST_DEFTILE            ; DEF TILELIST
+    jp      z,ST_DEF_TILELIST       ; DEF TILELIST
+    cp      RGBTK                   
+    jp      z,ST_DEFRGB             ; DEF RGBLIST
     cp      XTOKEN          
     jp      nz,SNERR                ; Extended Token Prefix
     inc     hl
     ld      a,(hl)                  ; Get Extended Token
+    cp      SPRITK
+    jp      z,ST_DEFSPRITE          ; DEF TILELIST
+    cp      ATTRTK
+    jp      z,ST_DEFATTR            ; DEF ATTRLIST
     cp      PALETK
     jp      z,ST_DEFPALETTE         ; DEF PALETTELIST
-    cp      RGBTK                   
-    jp      z,ST_DEFRGB             ; DEF RGBLIST
     jp      SNERR

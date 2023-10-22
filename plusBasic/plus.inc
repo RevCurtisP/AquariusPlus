@@ -52,31 +52,20 @@ TILE_MAP_LEN    equ 64*32*2
 ;-----------------------------------------------------------------------------
 ; plusBASIC System variables
 ;-----------------------------------------------------------------------------
-; Screen RAM Hole
-; Used to save registers during interrupt, during which the mapping of pages 
-; into banks is unknown and the stack may not be visible to the Z80
-
-        ; $33E8-$33E9   ; Unused
-INTSAVB0    equ $33F0
-INTSAVB2    equ $33F1
-INTSAVB3    equ $33F2
-INTSAVAF    equ $33F4
-INTSAVBC    equ $33F6
-INTSAVDE    equ $33F8
-INTSAVHL    equ $33FA
-INTSAVSP    equ $33FC   ; Interrupt Stack Pointer Save
-;               $33FE   ; Unused
-BORDERCHR   equ $33FF   ; Border character alternate memory location
+; Screen RAM Hole $33E8-$33FF exists only in 40 column mode
+BORDERCHR   equ $33FF   ; Border character alternate memory location (40 column mode)
 ; Color RAM Hole
-; Used as a temporary stack while alternate pages are mapped into banks 1 and 2
-PLUSTCK     equ $37ED   ; Top of plusBASIC temporary stack $37E8 - $37FF
-BORDERCLR   equ $37FF   ; Border character alternate memory location
+PLUSTCK     equ $37FA   ; Top of page swap temporary stack $37E8 - $37F9 (18 bytes)
+SAVTTYPOS   equ $37FB   ; Save cursor column
+SAVCURRAM   equ $37FC   ; Save cursor position in Screen RAM
+SAVCURCHR   equ $37FE   ; Save character under cursor
+BORDERCLR   equ $37FF   ; Border color alternate memory location
+
 ; RNDTAB ($3821-$3840) - Deprecated RND Permutation Table
 BASINTPG    equ $3821   ; BASIC Interrupt Routine Page (swapped into BANK 3)
 BASINTJP    equ $3822   ; BASIC Interrupt Routine JP instruction
               ; $3823   ; BASIC Interrupt Routine JP Address
-BASYSCTL    equ $3825   ; System Control Bits: 2 = Key Repeat
-; Paging Variables
+BASYSCTL    equ $3825   ; System Control Bits: 2 = Key Repeat, 6 = 80 Column Mode
 BANK0PAGE   equ $3826   ; Page that was in Bank 0
 BANK1PAGE   equ $3827   ; Page that was in Bank 1
 BANK2PAGE   equ $3828   ; Page that was in Bank 2
@@ -146,12 +135,20 @@ IO_PRINTER:     equ $FE
 IO_SCRAMBLE:    equ $FF     ; Write-only
 IO_KEYBOARD:    equ $FF     ; Read-only
 
-VCTRL_TEXT_EN:   equ (1<<0)
-VCTRL_MODE_OFF:  equ (0<<1)
-VCTRL_MODE_TILE: equ (1<<1)
-VCTRL_MODE_BM:   equ (2<<1)
-VCTRL_SPR_EN:    equ (1<<3)
-VCTRL_TEXT_PRIO: equ (1<<4)
+VCTRL_TEXT_OFF  equ $00     ; xxxxxxx0  Disable Text Screen
+VCTRL_TEXT_EN   equ $01     ; xxxxxxx1  Enable Text Screen
+VCTRL_MODE_TILE equ $02     ; xxxxx01x  Select Tilemap Mode
+VCTRL_MODE_BM   equ $04     ; xxxxx10x  Select 1bpp Bitmap Mode
+VCTRL_MODE_MC   equ $06     ; xxxxx11x  Select 4bpp Bitmap Mode
+VCTRL_SPR_EN    equ $08     ; xxxx1xxx  Enable Sprites
+VCTRL_TEXT_PRIO equ $10     ; xxx1xxxx  Text Screen Priority 
+VCTRL_REMAP_BC  equ $20     ; xx1xxxxx  Remap Text Border Characters
+VCRTL_80COL_EN  equ $40     ; x1xxxxxx  Enable 80-column mode
+VCTRL_TEXT_PAGE equ $80     ; 1xxxxxxx  Select Text Page
+
+SYSCTRL_XRG_DIS equ $01     ; xxxxxxx1  Disable registers $E0-$F5, $F8-$F9
+SYSCTRL_PSG_DIS equ $02     ; xxxxxx1x  Disable PSGs
+SYSCTRL_TURBO   equ $04     ; xxxxx1xx  Turbo mode (7.16MHz)
 
 
 ;-----------------------------------------------------------------------------

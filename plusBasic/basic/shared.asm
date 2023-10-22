@@ -60,13 +60,16 @@ get_array:
 ;-----------------------------------------------------------------------------
 get_page_arg:
     cp      '@'                   
-    jr      nz,.notat             ; If page prefix
+    jr      nz,_notat             ; If page prefix
     rst     CHRGET                ;   Skip '@'
+    byte    $11                   ;   LD DE, over SYNCHK
+req_page_arg:
+    SYNCHK  '@'
     call    GETBYT                ;   Parse byte into E
     ld      a,e
     scf                           ;   Return Carry Set
     ret
-.notat
+_notat
     or      a                     ; Else return Carry Clear
     ret     
 
@@ -82,6 +85,9 @@ get_page_addr:
     push    af                    ; Stack = Page+Flag
     jr      nc,.no_page           ; If Page specified
     SYNCHK  ','                   ;   Require Comma
+    call    get_int16k            ;   DE = Address
+    pop     af                    ; AF = Page+Flag
+    ret
 .no_page:
     call    GETINT                ; DE = Address
     pop     af                    ; AF = Page+Flag
@@ -181,6 +187,40 @@ get_int4096:
     cp      16                     ; If not 0-4095
     ret     c
     jp      FCERR
+
+;-----------------------------------------------------------------------------
+; Parse Integer between 0 and 16383
+; Output: DE = Integer
+; Clobbers: A,BC
+;-----------------------------------------------------------------------------
+get_int16k:
+    call    GETINT                ; Get integer
+    ld      a,d
+    cp      64                    ; If not 0-4095
+    ret     c
+    jp      FCERR
+
+;-----------------------------------------------------------------------------
+; Parse ON or OFF
+; Output: A = $FF for ON, 0 for OFF
+; Clobbers: BC, DE
+;-----------------------------------------------------------------------------
+get_on_off:
+    rst     CHRGET                ; Get argument
+    cp      ONTK                  ;  
+    jr      nz,.not_on            ; If ON
+    rst     CHRGET                ;   Skip it
+    or      $FF                   ;   Return $FF with flags set
+    ret 
+.not_on
+    rst     SYNCHR
+    byte    XTOKEN                
+    rst     SYNCHR                ; Else
+    byte    OFFTK                 ;   Require OFF
+    xor     a                     ;   Returb 0 with flags set
+    ret
+    
+
 
 ;-----------------------------------------------------------------------------
 ; Parse String Variable Name
