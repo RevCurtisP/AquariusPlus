@@ -148,25 +148,37 @@ tokens = {
     0xE3: "HEX$",
     0xE4: "RENAME",
     0xE5: "DATE", 
-    0XE7: "KEY",
     0xE8: "ARGS",
     0xE9: "ERR",
     0xEA: "STRING",
     0xEB: "BIT",
     0xED: "EVAL",
-    0xEF: "SPRITE",
     0xF0: "TILE",
-    0xF1: "OFF",
+    0xF1: "RGB",
     0xF2: "MAP",
     0xF3: "FILE",
     0xF4: "RESUME",
     0xF5: "COL",
     0xF6: "SCREEN",
     0xF7: "SET",
-    0xF8: "ATTR",
     0xF9: "CHR",
     0xFA: "OPEN",
     0xFB: "CLOSE"
+}
+
+xprefix = 0xFE
+xtokens = {
+    0x80: "ATTR",        
+    0x81: "PALETTE",          
+    0x82: "OFF",               
+    0x83: "SPRITE",      
+    0x84: "CHR",              
+    0x85: "KEY",               
+    0x86: "DEX",               
+    0x87: "FAST",               
+    0x88: "WIDE",               
+    0x90: "RESET",
+    0x91: "PT3"
 }
 
 def error(idx, message):
@@ -230,6 +242,17 @@ for idx, line in enumerate(args.input.readlines()):
                     if keyword in ["REM", "DATA"]:
                         in_rem = True
 
+                    break
+
+            if found:
+                continue
+
+            for (token, keyword) in xtokens.items():
+                if upper.startswith(keyword):
+                    buf.append(xprefix)
+                    buf.append(token)
+                    line = line[len(keyword) :]
+                    found = True
                     break
 
             if found:

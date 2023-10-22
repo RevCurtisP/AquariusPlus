@@ -152,19 +152,32 @@ tokens = {
     0xEA: "STRING",
     0xEB: "BIT",
     0xED: "EVAL",
-    0xEF: "SPRITE",
     0xF0: "TILE",
-    0xF1: "OFF",
+    0xF1: "RGB",
     0xF2: "MAP",
     0xF3: "FILE",
     0xF4: "RESUME",
     0xF5: "COL",
     0xF6: "SCREEN",
     0xF7: "SET",
-    0xF8: "ATTR",
     0xF9: "CHR",
     0xFA: "OPEN",
     0xFB: "CLOSE"
+}
+
+xprefix = 0xFE
+xtokens = {
+    0x80: "ATTR",        
+    0x81: "PALETTE",          
+    0x82: "OFF",               
+    0x83: "SPRITE",      
+    0x84: "CHR",              
+    0x85: "KEY",               
+    0x86: "DEX",               
+    0x87: "FAST",               
+    0x88: "WIDE",               
+    0x90: "RESET",
+    0x91: "PT3"
 }
 
 with open(args.input, "rb") as f:
@@ -205,9 +218,16 @@ with open(args.input, "rb") as f:
             if ch & 0x80 == 0:
                 linedata.append(data[idx])
             else:
-                tokenVal = tokens.get(ch)
+                if ch == xprefix:
+                    idx += 1
+                    ch = data[idx]
+                    tokenVal = xtokens.get(ch)
+                    tokenType = "extended "
+                else:
+                    tokenVal = tokens.get(ch)
+                    tokenType = ""
                 if tokenVal == None:
-                    print(f"Unknown token: 0x{ch:02X}")
+                    print(f"Unknown "+tokenType+"token: 0x{ch:02X}")
                 linedata += tokenVal.encode()
             idx += 1
         idx += 1
