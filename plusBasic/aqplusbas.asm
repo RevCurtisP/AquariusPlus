@@ -127,6 +127,7 @@ _coldboot:
     ld      a, plus_page        ; plusBASIC extended ROM
     out     (IO_BANK3), a
 
+    Call    _clear_basic_ram    ; Init BASIC RAM to zeroes
 
     ; Set memory size
     ld      hl, BASIC_RAM_END   ; Top of public RAM
@@ -203,7 +204,7 @@ print_copyright:
 .print_basic
     call    print_string_immd
 .plus_text
-    db "plusBASIC v0.15f", 0
+    db "plusBASIC v0.15g", 0
 .plus_len   equ   $ - .plus_text
     call    CRDO
     jp      CRDO
@@ -308,6 +309,31 @@ _turbo_mode
     and     ~SYSCTRL_TURBO        ;   mask out Fast Mode bit
     or      b                     ;   and copy the new Fast Mode bit in
     out     (IO_SYSCTRL),a        ; Write back to SYSCTRL
+    ret
+
+
+;-----------------------------------------------------------------------------
+; Fill BASIC RAM with 0
+; Clobbers: AF, BC, DE, HL
+;-----------------------------------------------------------------------------
+_clear_basic_ram:
+    xor     a                   ; Fill with 0
+    ld      hl,$3900            ; From beginning of BASIC RAM
+    ld      bc,$C000-$3900      ; to end of BASIC RAM
+
+;-----------------------------------------------------------------------------
+; Fast Fill memory
+; Input: A: Fill Byte
+;       BC: Byte Count
+;       HL: Start Address
+; Clobbers: BC, DE, HL
+;-----------------------------------------------------------------------------
+sys_fill_mem:
+    ld      (hl),a                ; Set First Byte
+    ld      d,h
+    ld      e,l                   
+    inc     de                    ; DstAdr = SrcAdr + 1
+    ldir                          ; Overlap will propogate start byte
     ret
 
 ;-----------------------------------------------------------------------------
