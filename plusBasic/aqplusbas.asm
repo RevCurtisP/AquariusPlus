@@ -203,7 +203,7 @@ print_copyright:
 .print_basic
     call    print_string_immd
 .plus_text
-    db "plusBASIC v0.15e", 0
+    db "plusBASIC v0.15f", 0
 .plus_len   equ   $ - .plus_text
     call    CRDO
     jp      CRDO
@@ -285,7 +285,8 @@ _ctrl_keys:
 ; returns to NEWSTT
 ;-----------------------------------------------------------------------------
 _iscntc_hook:
-    ld      (CHARC),a             ; Save character
+    call    CNTCCN                ; Check for Control-C
+    ret     z                     ; Return if no keypress
     cp      'D'-64                ; If Ctrl-D
     jr      z,.turbo_off          ;   Disable Turbo Mode
     cp      'F'-64                ; If not Ctrl-F
@@ -296,7 +297,7 @@ _iscntc_hook:
 
 ;-----------------------------------------------------------------------------
 ; Enable/Disable Turbo mode
-; Input: A = $FF for On, 0 for Off
+; Input: A = Bit 2 set for On, reset for Off
 ; Clobbers: B
 ;-----------------------------------------------------------------------------
 sys_turbo_mode:
@@ -308,8 +309,6 @@ _turbo_mode
     or      b                     ;   and copy the new Fast Mode bit in
     out     (IO_SYSCTRL),a        ; Write back to SYSCTRL
     ret
-
-
 
 ;-----------------------------------------------------------------------------
 ; Copy selected character set into Character RAM

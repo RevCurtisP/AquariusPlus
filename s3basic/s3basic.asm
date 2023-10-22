@@ -4625,15 +4625,16 @@ CHARCG: push    hl                ;
         pop     hl                ;
         ret                       ;
 ;;Check for ^C and ^S
-ISCNTC: call    CNTCCN            ;{M80} SEE IF ITS CONTROL-C
-        ret     z                 ;[M80] IF NONE, RETURN
+ISCNTC: 
 ifdef aqplus
 ;;Code change: Extended Control-Character check 
         jp      XCNTC
 else
-        ld      (CHARC),a         ;{M80} SAVE CHAR
+        call    CNTCCN            ;{M80} SEE IF ITS CONTROL-C
 endif
-ISCNTS: cp      $13               ;[M80] PAUSE? (^S)
+        ret     z                 ;[M80] IF NONE, RETURN
+ISCNTS: ld      (CHARC),a         ;{M80} SAVE CHAR
+        cp      $13               ;[M80] PAUSE? (^S)
         ret     nz                ;{M80} IF PAUSE, READ NEXT CHAR
 TRYIN:  xor     a                 ;;Wait for character from keyboard
         ld      (CHARC),a         ;{M80} CLEAR SAVED CHAR
