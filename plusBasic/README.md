@@ -3,7 +3,7 @@
 Requires S3 BASIC assembled with "aqplus" switch
 
 ## Breaking changes
-  - `SET COLOR` statement changed to `SET PALETTE`
+  - `SET COLOR palette# [,index]` statement changed to `SET PALETTE palette# [TO INDEX]`
   - `DEF COLORLIST` statement changed to `DEF PALETTELIST`
   - `GETCOLOR` function changed to `GETPALETTE`
   - `COLOR` option changed to `PALETTE` in `SPRITE` and `TILE` commands
