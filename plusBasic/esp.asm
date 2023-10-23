@@ -49,8 +49,38 @@ esp_get_result:
     ret
 
 ;-----------------------------------------------------------------------------
+; Get system version string
+;  Input: HL: String buffer address
+; Output: BC: String length
+; Clobbered: A
+;-----------------------------------------------------------------------------
+esp_get_version:
+    ld      a, ESPCMD_VERSION
+    call    esp_cmd
+
+;-----------------------------------------------------------------------------
+; Read null-terminated string
+;  Input: HL: String buffer address
+; Output: BC: String length
+; Clobbered: A
+;-----------------------------------------------------------------------------
+esp_read_string:
+    push    hl
+.loop
+    ld      bc,0
+    call    esp_get_byte
+    ld      (hl),a
+    or      a
+    jr      z,pop_de_ret
+    inc     hl
+    inc     bc
+    jr      .loop
+pop_de_ret:
+    pop     hl
+    ret
+
+;-----------------------------------------------------------------------------
 ; Open file to String Descriptor in HL
-;
 ; Clobbered registers: A, HL, DE
 ;-----------------------------------------------------------------------------
 esp_open:

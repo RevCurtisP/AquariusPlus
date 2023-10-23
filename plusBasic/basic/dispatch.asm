@@ -271,7 +271,13 @@ execute_function:
     jp      (ix)                ; Go Do It
 
 extended_statement:
+    jp      SNERR
+
 extended_function:
+    inc     hl                  ; Skip extended prefix
+    ld      a,(hl)              ; Get Extended token
+    sub     VERTOK              ; Work backwords from VER
+    jp      FN_VER
     jp      SNERR
 
 ; ------------------------------------------------------------------------------

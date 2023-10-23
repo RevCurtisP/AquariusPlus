@@ -25,7 +25,7 @@ ST_USECHR:
 ;-----------------------------------------------------------------------------
 ST_SETPALETTE:
     rst     CHRGET                ; Skip PALETTE
-    call    getbyte4              ; E = Palette#
+    call    get_byte4             ; E = Palette#
     ld      c,0                   ; Default Entry# to 0
     ld      a,(hl)
     cp      INTK                  ; If followed by IN
@@ -350,7 +350,7 @@ _get_attr_palette:
     ld      bc,0                  ; Default to Attrs 0, Palette# 0
 .loop
     call    CHRGT2                ; Reget character
-    jr      z,_pop_de_ret         ; Return if terminator
+    jp      z,pop_de_ret          ; Return if terminator
     push    bc                    ; Stack = Props, Tile #, RtnAdr
     cp      ATTRTK                ; If ATTR
     jr      nz,.notattrs
@@ -361,13 +361,10 @@ _get_attr_palette:
 .notattrs
     rst     SYNCHR
     byte    PALETK
-    call    getbyte4              ;   Get palette#
+    call    get_byte4             ;   Get palette#
     pop     bc                    ;   BC = Props; Stack = Tile#, RtnAdr
     ld      c,a                   ;   C = palette#
     jr      .loop
-_pop_de_ret:
-    pop     de                    ; DE = tile#, Stack = RtnAdr
-    ret
 
 _tilemap_offset:
     rst     CHRGET                ; Skip OFF
@@ -441,7 +438,7 @@ ST_DEFPALETTE:
     rst     CHRGET                ; Skip PALETTE
     call    _setupdef
 .loop
-    call    getbyte4              ; Get palette#
+    call    get_byte4             ; Get palette#
     call    sbuff_write_byte      ; Write it to string buffer
     call    CHRGT2                ; Reget next character
     jr      z,_finish_def         ; If not end of statement

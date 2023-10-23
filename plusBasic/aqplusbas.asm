@@ -206,7 +206,7 @@ print_copyright:
 _plus_text:
     db "plusBASIC "
 _plus_version:
-    db "v0.15h", 0
+    db "v0.15i", 0
 _plus_len   equ   $ - _plus_text
     call    CRDO
     jp      CRDO
@@ -278,7 +278,9 @@ _ctrl_keys:
 .charset
     sub     a,'N'-'K'             ; ^N = 0, ^O = 1, ^P = 2
     xor     1                     ; ^O = 1, ^O = 0, ^P = 2
+    push    hl                    ; 
     call    select_chrset         ; Select the character set
+    pop     hl
 .inlinc
     pop     bc                    ;   Restore character count
     jp      INLINC                ;   Wait for next key
@@ -315,16 +317,25 @@ _turbo_mode
 
 ;-----------------------------------------------------------------------------
 ; Return BASIC Version
-; Input: DE: String Buffer address
+; Input: HL: String Buffer address
 ; Output: BC: Version String Length
+; Clobbers: A,DE
 ;-----------------------------------------------------------------------------
 sys_ver_basic:
-    push    hl
-    push    de                    ; Stack = BufAdr, RetAdr
-    ld      bc,0                  ; Init StrLen
+    ex      de,hl                 ; DE = BufAdr
     ld      hl,_plus_version      ; HL = VerAdr
-.loop
-
+    call    string_copy           ; Copy VerStr to StrBuf
+    ex      de,hl                 ; HL = BufAdr
+    ret
+    
+;-----------------------------------------------------------------------------
+; Convert Version string to 24-bit integer
+; Input: HL: Version String Address
+; Output: BC: Version String Length
+; Clobbers: A,DE
+;-----------------------------------------------------------------------------
+sys_num_ver:    
+    
 ;-----------------------------------------------------------------------------
 ; Fill BASIC RAM with 0
 ; Clobbers: AF, BC, DE, HL

@@ -255,3 +255,25 @@ ST_USE:
     cp      CHRTK
     jp      z,ST_USECHR           ; USE CHRSET
     jp      SNERR
+
+;-----------------------------------------------------------------------------
+; VER Function
+; Syntax: VER$(x)
+; x = 0 for System, 1 for plusBASIC
+;-----------------------------------------------------------------------------
+FN_VER:
+    inc     hl                    ; Skip VER 
+    SYNCHK  '$'                   
+    SYNCHK  '('
+    call    get_byte2             ; Get VERSION
+    ld      ix,esp_get_version
+    or      a
+    jr      z,.zero
+    ld      ix,sys_ver_basic
+.zero
+    SYNCHK  ')'
+    push    hl
+    ld      hl,FBUFFR
+    call    jump_ix
+    push    bc
+    jp      TIMSTR

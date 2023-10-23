@@ -132,11 +132,22 @@ get_addr_len:
 
 
 ;-----------------------------------------------------------------------------
+; Parse Byte between 0 - 1
+; Output: A,E = Nybble
+; Clobbers: A,BC
+;-----------------------------------------------------------------------------
+get_byte2:
+    call    GETBYT                ; get foreground color in e
+    cp      2                     ; if > 15
+    jp      nc,FCERR              ;   FC Error
+    ret
+
+;-----------------------------------------------------------------------------
 ; Parse Byte between 0 - 3
 ; Output: A,E = Nybble
 ; Clobbers: A,BC
 ;-----------------------------------------------------------------------------
-getbyte4:
+get_byte4:
     call    GETBYT                ; get foreground color in e
     cp      4                     ; if > 15
     jp      nc,FCERR              ;   FC Error

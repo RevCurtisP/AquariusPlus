@@ -124,6 +124,7 @@ HOOKDO      equ $30     ; 6 Extended BASIC Hook Dispatch
 INTRPT      equ $38     ; 7 (S3BASIC) Execute Interrupt Routine
 
 RESET:      equ $0089
+MAKUPR      equ $012D   ; Convert character in A to uppercase
 INITFF:     equ $0153   ; Initialize I/O Port 255
 REDDY       equ $036E   ; Text "Ok"
 FNDFOR      equ $039F   ; Find FOR/GOSUB entry on stack
@@ -208,6 +209,7 @@ CHR         equ $1013   ; CHR$ Function
 FINBCK      equ $101D   ; Return a String
 PTRGET:     equ $10D1   ; Get variable (out: BC = addr, DE = len)
 FONE        equ $135F   ; Floating point constant 1
+POPHRT      equ $141A   ; Pop HL and return
 FIN         equ $15E5   ; Parse floating point number
 FIN0        equ $15EE   ; Parse floating point number wihout leading + or -
 LINPRT      equ $1675   ; Print Two Byte Number in HL as Decimal - Alters all Registers
