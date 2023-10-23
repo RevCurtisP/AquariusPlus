@@ -387,6 +387,7 @@ print_hl_4digits:
 ; LOAD "filename",address         Load file as raw binary to address
 ; LOAD "filename",@page,address   Load file as raw binary to address in page
 ; LOAD "filename",*a              Load data into numeric array a
+; LOAD CHRSET "filename"          Load character set into character RAM buffer
 ;-----------------------------------------------------------------------------
 ST_LOAD:
     ; Close any open files

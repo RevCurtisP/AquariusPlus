@@ -625,7 +625,7 @@ _get_byte:
 ; SET SPRITE * OFF|CLEAR
 ; Attributes: Priority (64), Double-Height (8), Vertical Flip (4), Horizontal Flip (2)
 ;-----------------------------------------------------------------------------
-ST_SETSPRITE:
+ST_SET_SPRITE:
     rst     CHRGET                ; Skip SPRITE
     cp      MULTK                 ; If *
     jp      z,.all                ;   Set all Sprites
@@ -663,7 +663,7 @@ ST_SETSPRITE:
 
 .nextsprite
     pop     de                    ; HL = TxtPtr; Stack = RtnAdr
-    jr      ST_SETSPRITE
+    jr      ST_SET_SPRITE
 
 .palette
     ld      ix,sprite_set_palettes; IX = jump address

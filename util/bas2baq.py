@@ -161,7 +161,7 @@ tokens = {
     0xF5: "COL",
     0xF6: "SCREEN",
     0xF7: "SET",
-    0xF9: "CHR",
+    0xF9: "USE",
     0xFA: "OPEN",
     0xFB: "CLOSE"
 }
@@ -171,12 +171,12 @@ xtokens = {
     0x80: "ATTR",        
     0x81: "PALETTE",          
     0x82: "OFF",               
-    0x83: "SPRITE",      
-    0x84: "CHR",              
-    0x85: "KEY",               
-    0x86: "DEX",               
-    0x87: "FAST",               
-    0x88: "WIDE",               
+    0x84: "SPRITE",      
+    0x85: "CHR",              
+    0x86: "KEY",               
+    0x87: "DEX",               
+    0x88: "FAST",               
+    0x89: "WIDE",               
     0x90: "RESET",
     0x91: "PT3"
 }

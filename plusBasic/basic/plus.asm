@@ -216,7 +216,7 @@ ST_SET:
     rst     SYNCHR                ; Must be extended Token
     byte    XTOKEN
     cp      SPRITK
-    jp      z,ST_SETSPRITE
+    jp      z,ST_SET_SPRITE
     cp      PALETK
     jp      z,ST_SETPALETTE
     cp      KEYTK      

@@ -92,7 +92,7 @@ dos_get_filestat:
 
 
 ;-----------------------------------------------------------------------------
-; Load file into character RAM
+; Load file into character RAM buffer
 ; Clobbered registers: A, BC, DE, HL
 ;-----------------------------------------------------------------------------
 dos_load_chrset:

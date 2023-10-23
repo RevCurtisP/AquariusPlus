@@ -190,7 +190,7 @@ print_copyright:
     inc     b
     jr      .print_version
 .print_done:
-    ld      a,38-.plus_len        ; Print spaces to right justify +BASIC text
+    ld      a,38-_plus_len        ; Print spaces to right justify +BASIC text
     sub     b
     jr      nc,.space_it
     call    CRDO
@@ -203,9 +203,11 @@ print_copyright:
     djnz    .space_loop
 .print_basic
     call    print_string_immd
-.plus_text
-    db "plusBASIC v0.15g", 0
-.plus_len   equ   $ - .plus_text
+_plus_text:
+    db "plusBASIC "
+_plus_version:
+    db "v0.15h", 0
+_plus_len   equ   $ - _plus_text
     call    CRDO
     jp      CRDO
 
@@ -311,6 +313,17 @@ _turbo_mode
     out     (IO_SYSCTRL),a        ; Write back to SYSCTRL
     ret
 
+;-----------------------------------------------------------------------------
+; Return BASIC Version
+; Input: DE: String Buffer address
+; Output: BC: Version String Length
+;-----------------------------------------------------------------------------
+sys_ver_basic:
+    push    hl
+    push    de                    ; Stack = BufAdr, RetAdr
+    ld      bc,0                  ; Init StrLen
+    ld      hl,_plus_version      ; HL = VerAdr
+.loop
 
 ;-----------------------------------------------------------------------------
 ; Fill BASIC RAM with 0

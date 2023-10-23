@@ -73,25 +73,26 @@ EXTCMDS:
     db $80 + 'A',"TTR"            ; $80
     db $80 + 'P',"ALETTE"         ; $81            
     db $80 + 'O',"FF"             ; $82             
-    db $80 + 'S',"PRITE"          ; $83
-    db $80 + 'C',"HR"             ; $84            
-    db $80 + 'K',"EY"             ; $85             
-    db $80 + 'D',"EX"             ; $86             
-    db $80 + 'F',"AST"            ; $87            
-    db $80 + 'W',"IDE"            ; $88             
-    db $80 + ' '                  ; $89             
+    db $80 + ' '                  ; $83 unused (DATA)             
+    db $80 + 'S',"PRITE"          ; $84
+    db $80 + 'C',"HR"             ; $85            
+    db $80 + 'K',"EY"             ; $86             
+    db $80 + 'D',"EX"             ; $87             
+    db $80 + 'F',"AST"            ; $88            
+    db $80 + 'W',"IDE"            ; $89             
     db $80 + ' '                  ; $8A             
     db $80 + ' '                  ; $8B             
     db $80 + ' '                  ; $8C             
     db $80 + ' '                  ; $8D             
-    db $80 + ' '                  ; $8E             
+    db $80 + ' '                  ; $8E unused (REM)             
     db $80 + ' '                  ; $8F             
     ; Primary Tokens grouped together, so extended dispatch can use DEC A
     db $80 + 'R',"ESET"           ; $90             
     db $80 + 'P',"T3"             ; $91             
+    db $80 + 'V',"ER"             ; $92             
     db $80             ; End of table marker
 
-EXTOKEN = $92     ; Last Token + 1
+EXTOKEN = $93     ; Last Token + 1
 
 ;-----------------------------------------------------------------------------
 ; plusBASIC tokens
@@ -121,13 +122,14 @@ USETK     equ     $F9
 ATTRTK    equ     $80
 PALETK    equ     $81
 OFFTK     equ     $82
-SPRITK    equ     $83
-CHRTK     equ     $84
-KEYTK     equ     $85
-DEXTK     equ     $86
-FASTK     equ     $87
-WIDETK    equ     $88
+SPRITK    equ     $84
+CHRTK     equ     $85
+KEYTK     equ     $86
+DEXTK     equ     $87
+FASTK     equ     $88
+WIDETK    equ     $89
 PT3TK     equ     $91
+VERTOK    equ     $92
 
 ;-----------------------------------------------------------------------------
 ; Convert keyword to token - hook 10
@@ -270,16 +272,19 @@ token_to_keyword:
 ; $80 ATTR
 ; $81 PALETTE                    
 ; $82 OFF
-; $83 SPRITE
-; $84 CHR                      
-; $85 KEY
-; $86 DEX
-; $87 FAST
-; $88
-; $89
+; $83 unusable (DATA)
+; $84 SPRITE
+; $85 CHR                      
+; $86 KEY
+; $87 DEX
+; $88 FAST
+; $89 WIDE
 ; $8A
+; $8B
+; $8C
 ; $8D
-; $8E
+; $8E unusable (REM)
 ; $8F
 ; $90 RESET
 ; $91 PT3
+; $92 VER
