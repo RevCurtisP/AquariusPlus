@@ -10,6 +10,7 @@ Requires S3 BASIC assembled with "aqplus" switch
   - `CHRSET` statement changed to `USE CHRSET`
   - `POKE!` and `PEEK!` changed to `POKEINT` and `PEEKINT`
   - `COPY!` changed to `COPY ... FAST`
+  - `SCREEN mode` changed to `SCREEN [text],[textpage],[graphics],[sprites],[wide],[priority],[remap]`
   - `SET TILE` syntax `TO color_index, ...` removed
 
 ## BASIC Language Enhancements 

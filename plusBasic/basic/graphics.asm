@@ -64,37 +64,77 @@ ST_SETPALETTE:
 
 ;-----------------------------------------------------------------------------
 ; Proposed new syntax
-; SCREEN [TEXT] [WIDE] [0|1] [TILEMAP|BITMAP|COLMAP] [SPRITE ON/OFF] [MAPCHR]
-; TEXT... + TILEMAP|BITMAP|COLMAP enables text screen in front graphics screen
-; TILEMAP|BITMAP|COLMAP + TEXT... enables text screen behind graphics screen
-;-----------------------------------------------------------------------------
-; SCREEN statement
-; syntax: SCREEN mode
-;              b p s gm t
-;   mode:  0 ( 0 0 0 00 1) Text
-;          1 ( 0 0 0 01 0) 64 x 32 Color Tilemap
-;          2 ( 0 0 0 10 0) 320 x 200 Bitmap mode ON
-;          3 ( 0 0 0 11 0) Multicolor Bitmap Mode
-;         +4 ( 0 x 1 xx x) Sprites On
-;         +8 ( 0 0 x xx 1) Text Behind Graphics
-;        +16 ( 0 1 x xx 1) Text in Front of Graphics
-;        +24 ( 1 x x xx x) Remap Border Character
+; SCREEN SAVE|RESTORE|SWAP|RESET
+; SCREEN [text],[textpage],[graphics],[sprites],[wide],[priority],[remap]
 ;-----------------------------------------------------------------------------
 ST_SCREEN:
+    jp      m,.is_token           ; If a token, go process it
+    in      a,(IO_VCTRL)
+    ld      c,a                   ; C = Current VCTRL
+
+    call    get_byte_optional     ; Do Text Enabled
+    ld      b,VCTRL_TEXT_EN
+    call    nc,.update_bit
+
+    call    get_byte_optional     ; Do Text Page
+    ld      b,VCTRL_TEXT_PAGE
+    call    nc,.update_bit
+
+    call    get_byte_optional     ; Do graphics
+    call    nc,.do_gfx_mode
+
+    call    get_byte_optional     ; Do Sprites
+    ld      b,VCTRL_SPR_EN
+    call    nc,.update_bit
+    
+    call    get_byte_optional     ; Do Wide
+    ld      b,VCRTL_80COL_EN
+    call    nc,.update_bit
+    
+    call    get_byte_optional     ; Do Priority
+    ld      b,VCTRL_TEXT_PRIO
+    call    nc,.update_bit
+    
+    call    get_byte_optional     ; Do Border Remap
+    ld      b,VCTRL_REMAP_BC
+    call    nc,.update_bit
+    
+    ld      a,c
+    out     (IO_VCTRL),a          ; Write back out
+    ret
+
+.is_token
     cp      SAVETK                ; If SAVE
     jr      z,ST_SCREEN_SAVE      ;   Do SCREEN SAVE
     cp      RESTK                 ; If RESTORE
     jr      z,ST_SCREEN_RESTORE   ;   Do SCREEN RESTORE
     cp      SWAPTK                ; If RESTORE
     jr      z,ST_SCREEN_SWAP      ;   Do SCREEN RESTORE
-    call    GETBYT                ; Get Mode
-    push    hl                    ; Stack = TxtPtr, RtnAdr
-    cp      48                    ; If greater than 47
-    jp      nc,FCERR              ;   Illegal quantity error
-    call    screen_set_mode       ;
-    pop     hl                    ; HL - TxtPtr; Stack = RtnAdr
-    ret
+    rst     SYNCHR
+    byte    XTOKEN                ; Else
+    rst     SYNCHR                ;  Require RESET
+    byte    RESETK
+    jp      reset_screen
 
+.do_gfx_mode
+    cp      4                     
+    jp      nc,FCERR              ; Error if > 3
+    add     a,a                   ; Shift 1 bit left
+    ld      b,a                   ; B = Gfx Mode
+    ld      a,~6                  ; A = Mask
+    jr      .do_bit
+.update_bit
+    ld      a,b                   ; A = Option bit
+    jr      nz,.not_zero          ; If operand is zero
+    ld      b,0                   ;   Clear Option bit
+.not_zero
+    xor     $FF                   ; A = Bit Mask
+.do_bit
+    and     c                     ; A = Masked VCTRL     
+    or      b                     ; A = New VCTRL
+    ld      c,a                   ; C = New VCTRL
+    ret
+ 
 ;-----------------------------------------------------------------------------
 ; SCREEN RESTORE - Copy Screen Buffer to Text Screen
 ;-----------------------------------------------------------------------------
@@ -621,6 +661,7 @@ _get_byte:
 ; SET SPRITE sprite$ TO proplist$
 ; SET SPRITE * OFF|CLEAR
 ; Attributes: Priority (64), Double-Height (8), Vertical Flip (4), Horizontal Flip (2)
+; ToDo: SET SPRITE spritle# ...
 ;-----------------------------------------------------------------------------
 ST_SET_SPRITE:
     rst     CHRGET                ; Skip SPRITE

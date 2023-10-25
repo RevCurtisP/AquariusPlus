@@ -79,7 +79,7 @@ EXTCMDS:
     db $80 + 'K',"EY"             ; $86             
     db $80 + 'D',"EX"             ; $87             
     db $80 + 'F',"AST"            ; $88            
-    db $80 + 'W',"IDE"            ; $89             
+    db $80 + 'T',"EXT"            ; $89             
     db $80 + ' '                  ; $8A             
     db $80 + ' '                  ; $8B             
     db $80 + ' '                  ; $8C             
@@ -127,7 +127,8 @@ CHRTK     equ     $85
 KEYTK     equ     $86
 DEXTK     equ     $87
 FASTK     equ     $88
-WIDETK    equ     $89
+TEXTK     equ     $89
+RESETK    equ     $90
 PT3TK     equ     $91
 VERTOK    equ     $92
 
@@ -278,9 +279,9 @@ token_to_keyword:
 ; $86 KEY
 ; $87 DEX
 ; $88 FAST
-; $89 WIDE
-; $8A
-; $8B
+; $89 TEXT
+; $8A 
+; $8B 
 ; $8C
 ; $8D
 ; $8E unusable (REM)

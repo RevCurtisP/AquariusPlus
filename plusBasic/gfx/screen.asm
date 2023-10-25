@@ -212,6 +212,22 @@ screen_swap:
     ld      hl,SCREEN             ; with Text and Color RAM
     jp      page_mem_swap_bytes   ; Do it
 
+
+
+;-----------------------------------------------------------------------------
+; Update VCTRL Register
+; Input: C: Bit Pattern
+;        B: Bit Mask 
+; Returns: A: New VCTRL value
+;          C: Bit Pattern
+;-----------------------------------------------------------------------------
+screen_set_vctrl:
+    in      a,(IO_VCTRL)
+    and     b
+    or      c
+    out     (IO_VCTRL),a
+    ret
+
 ;-----------------------------------------------------------------------------
 ; Set Screen Mode
 ; Input: A: Mode (see SCREEN statement)
