@@ -2473,8 +2473,6 @@ BSFIX:  or      a                 ;;If not at position 0                      ; 
         ld       a,38                                                         ; 0D71  
                                                                               ; 0D72  rst     OUTCHR
 BSFIN:  jp       DOBS             ;;Do the backspace                          ; 0D73  inc     b     
-                                                                              ; 0D74  dec     b  
-                                                                              ; 0D75  dec     hl 
 ;; Deprecated code - 7 bytes
         jr      z,INLINN          ;[M80] AND RE-SET UP INPUT
         ld      a,(hl)            ;[M80] OTHERWISE GET CHAR TO ECHO
@@ -5274,7 +5272,8 @@ TTYCLR: ld      b,' '             ;
         xor     a                 ;;Column = 0
         jp      TTYFIS            ;;Save and Finish
 ;;Fill 1024 bytes atarting at HL with A
-FILLIT: ld      de,$3FF           ;;Count down from 1023
+;;;Code Change - Fill all 1024 bytes
+FILLIT: ld      de,$400           ;;Count down from 1023
 ;;Fill BC bytes atarting at HL with A
 FILLIP: ld      (hl),b            ;;Store byte
         inc     hl                ;;Increment pointer
