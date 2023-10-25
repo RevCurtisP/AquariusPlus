@@ -155,3 +155,59 @@ shift_hl_left:
 pop_ret_nullstr:
     push    hl
     jp      NULRT                 ; Pop HL abd return Null String
+
+;-----------------------------------------------------------------------------
+; Convert null-terminated Version string to BCD integer
+; Input: HL: Version String Address - ['V']major.minor[letter]
+; Output: C,D,E = Major,Minor,Letter
+;         HL = Address after Version string
+; Clobbered: A, B
+;-----------------------------------------------------------------------------
+sys_num_ver:    
+    ld      a,(hl)
+    call    MAKUPR                ; Skip 'V'
+    cp      'V'                 
+    jr      nz,.notv
+    inc     hl
+.notv
+    call    asc_to_bcd_byte       ; Get Major number
+    ld      c,e                   ;   and put in C
+    ld      de,0                  ; Init minor to 0
+    cp      '.'                   ; If no dot
+    ret     nz                    ;   Return
+    inc     hl                    ; Skip .
+    call    asc_to_bcd_byte       ; Get Minor number
+    ld      d,e                   ;   and put in D
+    ld      e,0                   ; Init letter to none
+    call    MAKUPR                ; Capitalize 
+    cp      'A'                   ; If not a letter
+    ret     c                     ;    Return
+    cp      'Z'+1
+    ret     nc                    
+    ld      e,a                   ; Else put in E
+    ret
+    
+;-----------------------------------------------------------------------------
+; Convert ASCII to BCD
+;  Input: HL: String address
+; Output: A: Character after last digit
+;        DE: BCD Result
+;        HL: Address after last digit 
+; Clobbers: A, B
+;----------------------------------------------------------------------------
+asc_to_bcd_byte:
+    ld      de,0                  ; Init Result
+    dec     hl                    ; Back up for chrget
+.loop
+    rst     CHRGET                ; Get next character
+    ret     nc                    ; Return if not a digit
+    sub     a,'0'                 ; Convert digit to BCD
+    ld      b,4
+.rollde
+    rl      e                     ; Shift DE left 4 bits
+    rl      d
+    djnz    .rollde
+    or      e
+    ld      e,a                   ; Move digit into bottom nybble                  
+    jr      .loop
+    

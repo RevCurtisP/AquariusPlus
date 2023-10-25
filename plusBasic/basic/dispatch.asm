@@ -130,7 +130,7 @@ STJUMPS:
     dw      SNERR                 ;$EB 
     dw      SNERR                 ;$EC 
     dw      SNERR                 ;$ED EVAL
-    dw      SNERR                 ;$EE PAUSE
+    dw      ST_PAUSE              ;$EE PAUSE
     dw      SNERR                 ;$EF SPRITE
     dw      SNERR                 ;$F0 TILE
     dw      SNERR                 ;$F1 RGB

@@ -48,7 +48,7 @@
     jp      _keyread        ; $2012 Called from COLORS
     jp      _ctrl_keys      ; $2015
     jp      _iscntc_hook    ; $2018
-    jp      do_cls_default  ; $20??
+    jp      do_cls_default  ; $201? Clear both text screens
     jp      _inlin_hook     ; $20?? Jump from INLIN for command history recall
     jp      _inlin_done     ; $20?? Jumped from FININL to save command to history
 
@@ -159,7 +159,9 @@ _coldboot:
     ld      (BASYSCTL),a
 
     call    clear_esp_fdesc
-    call    spritle_clear_all   ; Clear all sprite properties
+    call    spritle_clear_all     ; Clear all sprite properties
+    call    do_cls_wide           ; Do 80 column clear screen
+    
     call    print_copyright
 
     jp      INITFF              ; Continue in ROM
@@ -206,7 +208,7 @@ print_copyright:
 _plus_text:
     db "plusBASIC "
 _plus_version:
-    db "v0.15i", 0
+    db "v0.15k", 0
 _plus_len   equ   $ - _plus_text
     call    CRDO
     jp      CRDO
@@ -328,13 +330,6 @@ sys_ver_basic:
     ex      de,hl                 ; HL = BufAdr
     ret
     
-;-----------------------------------------------------------------------------
-; Convert Version string to 24-bit integer
-; Input: HL: Version String Address
-; Output: BC: Version String Length
-; Clobbers: A,DE
-;-----------------------------------------------------------------------------
-sys_num_ver:    
     
 ;-----------------------------------------------------------------------------
 ; Fill BASIC RAM with 0
@@ -472,7 +467,6 @@ descramble_rom:
 
 ;-----------------------------------------------------------------------------
 ; VBLANK Interrupt Handler
-; Use screen holes for temporary stack
 ;
 ;-----------------------------------------------------------------------------
 _interrupt:
@@ -507,8 +501,7 @@ _inlin_done:
 ; Hook 2 - READY (Enter Direct Mode
 ;-----------------------------------------------------------------------------
 direct_mode:
-    ld      a,0                    ; Return to Text mode
-    call    screen_set_mode
+    call    reset_screen
 
     ld      a,(BASYSCTL)
     and     KB_REPEAT
@@ -531,6 +524,10 @@ clear_esp_fdesc:
     ld      (ESP_FDESC),a         ; Set to No File
     ret
 
+reset_screen:
+    ld      a,VCTRL_TEXT_EN
+    out     (IO_VCTRL),a
+    ret
 
 ;-----------------------------------------------------------------------------
 ; Hook 12 - SCRTCH (Execute NEW statement)
@@ -706,11 +703,33 @@ run_cmd:
     ld      bc, NEWSTT
     jp      RUNC2              ; GOTO line number
 
+
+do_cls_wide:
+    in      a,(IO_VCTRL)
+    push    af
+    ld      a,VCTRL_TEXT_EN+VCRTL_80COL_EN
+    out     (IO_VCTRL),a
+    ld      a,' '                 ; Fill with spaces
+    call    .fill
+    ld      a,VCTRL_TEXT_EN+VCRTL_80COL_EN+VCTRL_TEXT_PAGE
+    out     (IO_VCTRL),a
+    ld      a,6
+    call    .fill
+    pop     af
+    out     (IO_VCTRL),a
+    ret
+
+.fill
+    ld      hl,$3000
+    ld      bc,2000
+    jp      sys_fill_mem
+
 do_cls_default:
     ld      a,6                   ; default to black on cyan
 
 do_cls:
     call    clear_screen
+_init_cursor
     ld      a,' '
     ld      (CURCHR),a            ; SPACE under cursor
     ld      de,$3000+41           ; Point Address for (0,0)

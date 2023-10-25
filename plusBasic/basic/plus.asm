@@ -169,7 +169,7 @@ LSERR:
 
 
 ;-----------------------------------------------------------------------------
-; GET Statement stub
+; FILL Statement stub
 ; FILL [@page], startaddr, oount, byte
 ; FILL! [@page], startaddr, count, word
 ;-----------------------------------------------------------------------------
@@ -247,6 +247,13 @@ ST_SETFAST:
     jp      sys_turbo_mode
 
 ;-----------------------------------------------------------------------------
+; PAUSE Statement 
+;-----------------------------------------------------------------------------
+ST_PAUSE:
+    jp      z,TRYIN               ; If no argument, wait for key and return
+    jp      SNERR                 ; Else Syntax error for now
+
+;-----------------------------------------------------------------------------
 ; USE Statement stub
 ;-----------------------------------------------------------------------------
 ST_USE:
@@ -263,17 +270,37 @@ ST_USE:
 ;-----------------------------------------------------------------------------
 FN_VER:
     inc     hl                    ; Skip VER 
-    SYNCHK  '$'                   
+    ld      a,(hl)                ; Get following character
+    cp      '$'                   ; 
+    push    af                    ; Stack = StrFlg, RetAdr
+    jr      nz,.notstring         ; If '$'
+    inc     hl                    ;   Skip it
+.notstring
     SYNCHK  '('
-    call    get_byte2             ; Get VERSION
+    call    FRMEVL                ; Evaluate argument
+    SYNCHK  ')'
+    call    GETYPE
+    jr      nz,.getver            ; If it's a string
+    ex      (sp),hl               ; HL = StrFlg, Stack = TxtPtr, RetAdr
+    push    hl                    ; Stack = StrFlg, TxtPtr, RetAdr
+    call    free_addr_len         
+    ex      de,hl                 ; HL = TxtAdr
+    jr      .return_ver
+.getver    
+    call    CONINT                ; Convert argument to byte
     ld      ix,esp_get_version
     or      a
     jr      z,.zero
     ld      ix,sys_ver_basic
 .zero
-    SYNCHK  ')'
-    push    hl
+    ex      (sp),hl               ; HL = StrFlg, Stack = TxtPtr, RetAdr
+    push    hl                    ; Stack = StrFlg, TxtPtr, RetAdr
     ld      hl,FBUFFR
-    call    jump_ix
-    push    bc
-    jp      TIMSTR
+    call    jump_ix               ; Get version string
+.return_ver
+    pop     af                    ; F = StrFlg, 
+    ld      bc,LABBCK
+    push    bc                    ; Stack = LABBCK, TxtPtr, RetAdr
+    jp      z,TIMSTR              ; If VER$(), return version string
+    call    sys_num_ver           ; Else convert to integer
+    jp      FLOAT_CDE             ; and return it

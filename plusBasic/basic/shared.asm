@@ -6,15 +6,16 @@ FLOAT_BC:
     ld      d,b                   ;  Copy into DE
     ld      e,c                   ;  
 FLOAT_DE:
+    ld      c,0                   ; Set HO to 0
+FLOAT_CDE:
     push    hl
-    xor     a                     ; Set HO to 0
+    xor     a
     ld      (VALTYP),a            ; Force Return Type to numeric
+    ld      a,c
     ld      b,$98                 ; Exponent = 2^24
     call    FLOATR                ; Float It
     pop     hl
     ret
-
-
 
 ;-----------------------------------------------------------------------------
 ; Parse Array Variable without subscript
@@ -129,6 +130,32 @@ get_addr_len:
     pop     de                    ; DE = Address, Stack = Page+Flag
     ret
 
+;-----------------------------------------------------------------------------
+; Parse Optional Byte Operand
+; Output: A = Operand (terminator or comma if none)
+;         Carry Set if no argument (terminator or skipped comma)
+;-----------------------------------------------------------------------------
+get_byte_optional:
+    push  bc                      ; Save BC
+    push  de                      ; Save DE
+    call  CHRGT2                  ; If terminator
+    jr    z,.scf_ret              ;   Set carry and return
+    cp    ','                     ; If comma
+    jr    z,.skip_scf_ref         ;   Eat it, set carry and return
+    call  GETBYT                  ; Parse the operand
+    ld    a,(hl)                  ; Get character after operand
+    cp    ','                     ; If it's a comma
+    call  z,CHRGTR                ;   Skip it
+    ld    a,e                     ; A = Operand
+    or    a                       ; Clear carry and set flags
+    byte  $01                     ; LD BC over rst and scf
+.skip_scf_ref
+    rst   CHRGET                  ; Skip comma
+.scf_ret
+    scf                           ; Set Carry
+    pop   de                      ; Restore DE
+    pop   bc                      ; Restore BC
+    ret
 
 
 ;-----------------------------------------------------------------------------

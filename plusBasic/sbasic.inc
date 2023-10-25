@@ -124,7 +124,7 @@ HOOKDO      equ $30     ; 6 Extended BASIC Hook Dispatch
 INTRPT      equ $38     ; 7 (S3BASIC) Execute Interrupt Routine
 
 RESET:      equ $0089
-MAKUPR      equ $012D   ; Convert character in A to uppercase
+MAKUPR      equ $0135   ; Convert character in A to uppercase
 INITFF:     equ $0153   ; Initialize I/O Port 255
 REDDY       equ $036E   ; Text "Ok"
 FNDFOR      equ $039F   ; Find FOR/GOSUB entry on stack
@@ -235,6 +235,7 @@ TTYCHR:     equ $1D72   ; Print character in A with pause/break at end of page
 TTYOUT:     equ $1D94   ; Print character in A
 TTYFIS:     equ $1DE7   ; Save Column and Position
 FLOATR      equ $14FB   ; Float signed number in B,A,D,E
+TTYCLR      equ $1E45   ; Clear screen (EXX before calling)
 JMPINI:     equ $1FE1   ; Power Up/Reset Routine: Jumped to from RST 0
 PRNTIT:     equ $1FF2   ; Print copyright message and return
 
