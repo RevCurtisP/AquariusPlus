@@ -124,6 +124,8 @@ SCNLBL  equ     $200F   ;; | Line label hook for GOTO, GOSUB, and RESTORE
 XINCHR  equ     $2012   ;; | Alternate keyboard read
 XFUNKY  equ     $2015   ;; | Set Character RAM
 XCNTC   equ     $2018   ;; | ISCNTC hook
+XMAIN   equ     $201B   ;; | Line Crunch Hook
+XSTUFF  equ     $201E   ;; | STUFFH hook
 endif                   
 EXTBAS  equ     $2000   ;;Start of Extended Basic
 XSTART  equ     $2010   ;;Extended BASIC Startup Routine
@@ -316,7 +318,7 @@ ifdef aqplus
                                   ;; |                                        0110  
                                   ;; |                                        0111
 ;; If label at beginning of line: don't tokenize, just stuff it                                  
-STFLBL: cp      '_'               ;; | If not a period                        0112  inc     hl      
+STFLBL: cp      '_'               ;; | If not a undersoore                    0112  inc     hl      
                                   ;; |                                        0113  ld      c,(hl)  
         jp      nz,STRNGR         ;; |   Keep on truckin'                     0114  ld      a,h     
                                   ;; |                                        0115  or      l       
@@ -325,7 +327,7 @@ STFLBL: cp      '_'               ;; | If not a period                        01
                                   ;; |                                        0118  xor     c       
                                   ;; |                                        0119  ld      (hl),a  
 STLOOP: ld      a,(hl)            ;; | Get character from buf                 011A  ld      b,(hl)  
-        or      a                 ;; | If end of linw                         011B  cpl             
+        or      a                 ;; | If end of line                         011B  cpl             
         jp      z,CRDONE          ;; |   Finish it up                         011C  ld      (hl),a
                                   ;; |                                        011D  ld      a,(hl)  
                                   ;; |                                        011E  cpl             
@@ -893,7 +895,11 @@ MAIN:   ld      hl,$FFFF          ;
         dec     a                 ;
         jr      z,MAIN            ;[M80] IF SO, A BLANK LINE WAS INPUT
         push    af                ;[M80] SAVE STATUS INDICATOR FOR 1ST CHARACTER
+ifdef aqplus
+        call    XMAIN
+else
         call    SCNLIN            ;[M80] READ IN A LINE #
+endif  
 ;;Tokenize Entered Line
 EDENT:  push    de                ;[M80] SAVE LINE #
         call    CRUNCH            ;[M80] CRUNCH THE LINE DOWN
@@ -1102,8 +1108,15 @@ STUFFH: inc     hl                ;[M80] ENTRY TO BUMP [H,L]
         inc     c                 ;;Increment buffer count
         sub     ':'               ;[M65] IS IT A ":"?"
         jr      z,COLIS           ;[M65] YES, ALLOW CRUNCHING AGAIN.
+ifdef aqplus
+        jp      XSTUFF            ; | Check for DATA and DOS statements               ; 0544  cp      DATATK-':'
+                                                                                      ; 0545
+                                                                                      ; 0546  jr      nz,NODATT
+        byte    $03                                                                   ; 0547
+else
         cp      DATATK-':'        ;[M65] IS IT A DATATK?
         jr      nz,NODATT         ;[M65] NO, SEE IF IT IS REM TOKEN.
+endif
 COLIS:  ld      (DORES),a         ;[M65] SETUP FLAG.
 NODATT: sub     REMTK-':'         ;[M65] REM ONLY STOPS ON NULL.
         jp      nz,KLOOP          ;[M65] NO, CONTINUE CRUNCHING.
@@ -2473,7 +2486,6 @@ BSFIX:  or      a                 ;;If not at position 0                      ; 
         ld       a,38                                                         ; 0D71  
                                                                               ; 0D72  rst     OUTCHR
 BSFIN:  jp       DOBS             ;;Do the backspace                          ; 0D73  inc     b     
-;; Deprecated code - 7 bytes
         jr      z,INLINN          ;[M80] AND RE-SET UP INPUT
         ld      a,(hl)            ;[M80] OTHERWISE GET CHAR TO ECHO
         rst     OUTCHR            ;[M80] SEND IT

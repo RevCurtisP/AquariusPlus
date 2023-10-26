@@ -48,6 +48,8 @@
     jp      _keyread        ; $2012 Called from COLORS
     jp      _ctrl_keys      ; $2015
     jp      _iscntc_hook    ; $2018
+    jp      _main_ext       ; $201A Save Line# Flag`
+    jp      _stuffh_ext     ; $201D Check for additional tokens when stuffing
     jp      do_cls_default  ; $201? Clear both text screens
     jp      _inlin_hook     ; $20?? Jump from INLIN for command history recall
     jp      _inlin_done     ; $20?? Jumped from FININL to save command to history
@@ -161,7 +163,7 @@ _coldboot:
     call    clear_esp_fdesc
     call    spritle_clear_all     ; Clear all sprite properties
     call    do_cls_wide           ; Do 80 column clear screen
-    
+
     call    print_copyright
 
     jp      INITFF              ; Continue in ROM
@@ -208,7 +210,7 @@ print_copyright:
 _plus_text:
     db "plusBASIC "
 _plus_version:
-    db "v0.15k", 0
+    db "v0.15m", 0
 _plus_len   equ   $ - _plus_text
     call    CRDO
     jp      CRDO
@@ -240,25 +242,21 @@ _autodesc
 ;-----------------------------------------------------------------------------
 _ctrl_keys:
     push    bc                    ; Save character count
-    ld      a,(CURLIN)
-    ld      b,a
-    ld      a,(CURLIN+1)
-    and     b
-    cp      $FE                   
-    jr      nz,.dontscreen        ; If Not in Direct Mode
+    call    in_direct
+    jr      c,.dontscreen         ; If Not in Direct Mode
     xor     a
-    cp      b                     
+    cp      b
     jr      nz,.dontscreen        ; and Input Buffer is empty
     ld      a,c
 ;ToDo: Add Ctrl-W = 80 columns, Crtl-T = 40 col screen 0, Ctrl-Y is 40 col screen 1
 ;Save cursor position and character under RAM in screen RAM hole
-    
+
 .dontscreen
     ld      a,c                   ; Get typed character
-    sub     a,'K'-64              ; 
-    jr      c,.notrub             ; 
-    cp      'M'-'K'               ; 
-    jr      z,.notrub             ;  
+    sub     a,'K'-64              ;
+    jr      c,.notrub             ;
+    cp      'M'-'K'               ;
+    jr      z,.notrub             ;
     jr      nc,.notrepeat         ; If ^K or ^L
     dec     a                     ;   ^K = $FF, ^L = 0
     and     KB_REPEAT             ;   ^K = Repeat on, ^L = off
@@ -268,24 +266,37 @@ _ctrl_keys:
     or      b                     ;   OR new value back in
     ld      (BASYSCTL),a          ;   And write it back out
     ld      a,KB_ENABLE | KB_ASCII
-    or      b                     ;   
+    or      b                     ;
     call    key_set_keymode       ;   Now set new keybuffer mode
     jr      .inlinc               ;   Wait for next key
 .notrepeat:
     cp      'Q'-'K'               ; If not ^N through ^P
     jr      c,.charset
-.notrub   
+.notrub
     pop     bc                    ;   Restore character count
     jp      NOTRUB                ;   Continue standard Ctrl-key check
 .charset
     sub     a,'N'-'K'             ; ^N = 0, ^O = 1, ^P = 2
     xor     1                     ; ^O = 1, ^O = 0, ^P = 2
-    push    hl                    ; 
+    push    hl                    ;
     call    select_chrset         ; Select the character set
     pop     hl
 .inlinc
     pop     bc                    ;   Restore character count
     jp      INLINC                ;   Wait for next key
+
+;-----------------------------------------------------------------------------
+; Check for Direct Mode
+; Output: Carry clear if in Direct Mode
+; Clobbered: B
+;-----------------------------------------------------------------------------
+in_direct:
+    ld      a,(CURLIN)
+    ld      b,a
+    ld      a,(CURLIN+1)
+    and     b
+    cp      $FE
+    ret
 
 ;-----------------------------------------------------------------------------
 ; Check for Control Keys before fetching next statement
@@ -311,7 +322,7 @@ sys_turbo_mode:
     and     SYSCTRL_TURBO         ; Isolate Fast Mode bit
     ld      b,a                   ;   and copy to B
 _turbo_mode
-    in      a,(IO_SYSCTRL)        ; Read SYSCTRL 
+    in      a,(IO_SYSCTRL)        ; Read SYSCTRL
     and     ~SYSCTRL_TURBO        ;   mask out Fast Mode bit
     or      b                     ;   and copy the new Fast Mode bit in
     out     (IO_SYSCTRL),a        ; Write back to SYSCTRL
@@ -329,8 +340,8 @@ sys_ver_basic:
     call    string_copy           ; Copy VerStr to StrBuf
     ex      de,hl                 ; HL = BufAdr
     ret
-    
-    
+
+
 ;-----------------------------------------------------------------------------
 ; Fill BASIC RAM with 0
 ; Clobbers: AF, BC, DE, HL
@@ -350,7 +361,7 @@ _clear_basic_ram:
 sys_fill_mem:
     ld      (hl),a                ; Set First Byte
     ld      d,h
-    ld      e,l                   
+    ld      e,l
     inc     de                    ; DstAdr = SrcAdr + 1
     ldir                          ; Overlap will propogate start byte
     ret
@@ -363,20 +374,20 @@ select_chrset:
     or      a                     ; If A = 0
     jr      z,_reset_charram      ;   Copy standard character set
     dec     a                     ; If A = 1
-    ld      hl,CHAR_ROM_L1        ;   Copy Latin-1 character set  
+    ld      hl,CHAR_ROM_L1        ;   Copy Latin-1 character set
     jr      z,_copy_charram       ; Else
 custom_chrset:
     ld      hl,CHRSETBUF          ;   Copy Custom Character Set
     ld      a,BAS_BUFFR
-    jr      copy_char_ram         ;   
+    jr      copy_char_ram         ;
 
 ;-----------------------------------------------------------------------------
 ; Character RAM initialization
 ;-----------------------------------------------------------------------------
 init_charram:
     ld      hl,CHAR_ROM_AQ        ; Copy AQUASCII in to Custom Char ROM buffer
-    ld      a,ROM_SYS_PG          
-    ld      de,CHRSETBUF          
+    ld      a,ROM_SYS_PG
+    ld      de,CHRSETBUF
     ex      af,af'
     ld      a,BAS_BUFFR
     call    page_fast_copy
@@ -661,6 +672,56 @@ ULERR:
     ld      e,ERRUL
     jp      force_error
 
+;-----------------------------------------------------------------------------
+; Save MAIN Line Number Flag
+;-----------------------------------------------------------------------------
+_main_ext:
+    pop     de                    ; Pop Return Address
+    pop     bc                    ; C = Line Number Flag
+    ld      (TEMP3),bc            ; Save it
+    push    bc                    ; Flag back on stack
+    push    de                      ; Return address back on stack
+    jp      SCNLIN                ; Continue to SCNLIN
+
+;-----------------------------------------------------------------------------
+; Don't tokenize unquoted literal string after DOS command in direct mode
+;-----------------------------------------------------------------------------
+_stuffh_ext:
+    cp      DATATK-':'            ; If DATA
+    jp      z,COLIS               ;   Continue STUFFH
+    ex      af,af'
+    ld      a,(TEMP3)             ; Get Line# Flag
+    and     $01                   ; If carry set
+    jr      nz,.exaf_nodatt       ;   Continue  STUFFH
+    ex      af,af'
+    cp      DIRTK-':'             ; If Not DIRTK through CDTK
+
+    jp      c,NODATT              ;
+    cp      CDTK-':'+1            ;
+    jp      nc,NODATT             ;  Continue STUFFH
+.space_loop
+    ld      a,(hl)                ; Eat Spaces
+    cp      ' '
+    jr      nz,.not_space
+    call    STUFFS
+    jr      .space_loop
+.not_space
+    ld      b,a                   ; Set up delimiter for STRNG
+    cp      '"'                   ; If quotes
+    jp      z,STRNG               ;   Go stuff quoted string
+.string_loop
+    ld      a,(hl)                ; Get character
+    or      a                     ; If end of line
+    jp      z,CRDONE              ;   Finish it up
+    cp      ' '                   ; If space
+    jp      z,KLOOP               ;   Stuff it and continue
+    cp      ':'                   ; If colon
+    jp      z,KLOOP               ;   Stuff it and continue
+    call    STUFFS                ; Else Stiff it
+    jr      .string_loop          ;   and check next character
+.exaf_nodatt:
+    ex      af,af'
+    jp      NODATT
 
 ;-----------------------------------------------------------------------------
 ; bas_read_to_buff - Read String from ESP to BASIC String Buffer

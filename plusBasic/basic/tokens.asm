@@ -101,6 +101,9 @@ GETTK     equ     $CD
 SWAPTK    equ     $D1
 TIMETK    equ     $D3    
 MOUSTK    equ     $D9
+DIRTK     equ     $DD
+MKDTK     equ     $DE
+DELTK     equ     $DF
 CDTK      equ     $E0
 INTK      equ     $E1
 ARGSTK    equ     $E8

@@ -35,7 +35,7 @@ ST_CD:
 
     ; -- Argument given -> change directory ----------------------------------
 .change_dir:
-    call    get_string_arg       ; Get String Ar
+    call    get_string_direct     ; Get String Ar
     call    dos_change_dir
 
 _done
@@ -62,7 +62,7 @@ FN_CD:
 ; Syntax: DEL filespec$
 ;-----------------------------------------------------------------------------
 ST_DEL:
-    call    get_string_arg
+    call    get_string_direct
     call    dos_delete_file
     jr      _done
 
@@ -71,7 +71,7 @@ ST_DEL:
 ; Syntax: MKDIR dirname$
 ;-----------------------------------------------------------------------------
 ST_MKDIR:
-    call    get_string_arg
+    call    get_string_direct
     call    dos_create_dir
     jr      _done
 
@@ -119,7 +119,7 @@ ST_DIR:
     jr      .esp_command
 
 .witharg:
-    call    get_string_arg        ; Get FileSpec pointer in HL
+    call    get_string_direct        ; Get FileSpec pointer in HL
 
 .esp_command:
     call    esp_close_all
@@ -846,17 +846,36 @@ check_sync_bytes:
     jp      nz, err_bad_file
     ret
 
+
+
+
+;-----------------------------------------------------------------------------
+; Parse literal string only in Direct Mode
+; Parse string expression only during RUN
+;-----------------------------------------------------------------------------
+get_string_direct:
+    call    in_direct             ; If not direct mode
+    jr      c,get_string_arg      ;   Parse string expression
+    ld      a,(hl)                ; A = First character of argument
+    cp      '"'                   ; 
+    jr      z,get_string_arg      ; If not a quote
+    dec     hl                    ;   Back up text pointer for STRLT2
+    ld      b,' '                 ;   Delimters are space
+    ld      d,':'                 ;   and colon
+    call    STRLT2                ;   Build temp string from literal
+    jr      _proc_string_arg      ;   and process it
+
 ;-----------------------------------------------------------------------------
 ; Parse string at text pointer, return String Length and Text Address
-; Input: HL = Text Pointee
+;         HL = Text Pointee
 ; Output: BC = String Length
 ;         DE = String Address
 ;         HL = String Descriptor
 ;         Text Pointer on Stack
 ;-----------------------------------------------------------------------------
-
 get_string_arg:
     call    FRMEVL                ; Get Path
+_proc_string_arg:
     pop     IX                    ; IX = Return Address
     push    hl                    ; Text Pointer on stack
     call    FRESTR                ; HL = StrDsc

@@ -124,6 +124,7 @@ HOOKDO      equ $30     ; 6 Extended BASIC Hook Dispatch
 INTRPT      equ $38     ; 7 (S3BASIC) Execute Interrupt Routine
 
 RESET:      equ $0089
+STUFFS      equ $0130   ; Stuff character in KRUNCH buffer
 MAKUPR      equ $0135   ; Convert character in A to uppercase
 INITFF:     equ $0153   ; Initialize I/O Port 255
 REDDY       equ $036E   ; Text "Ok"
@@ -146,9 +147,14 @@ MAIN        equ $0414   ; Immediate Mode loop
 CHEAD       equ $0489   ; Link Lines
 FNDLIN      equ $049F   ; Find BASIC line wirh line number in [DE]
 KLOOP       equ $04C5   ; Keyword to token loop
+STRNGR      equ $04D1   ; Continue C
 CRUNCX      equ $04F9   ; Tokenize text at [HL]
 NOTGOS      equ $0536   ; Return point for CRUNCX
 STUFFH      equ $053C   ; Copy character to crunch buffer
+COLIS       equ $0548   ; Enter STUFFH after DATA token detected
+NODATT      equ $054B   ; Enter STUFFH at check for REM token
+STRNG       equ $0558   ; Stuff Quoted String
+CRDONE      equ $055E   ; Finish CRUNCH
 RESSRC:     equ $05A8
 NEWSTT:     equ $062C
 CHRGTR      equ $066B   ; CALLable CHRGET
@@ -196,6 +202,8 @@ TIMSTR      equ $0E2F   ; Create tempory string from null-terminated string
 STRINI      equ $0E50   ; Reserve space for new string and create descriptor
 STRLIT      equ $0E5F   ; Build descriptor for string litersl
 STRLTI      equ $0E60   ; Do STRLIT, without decrementing HL
+STRLT3      equ $0E62   ; Do STRLTI with delimiter in B 
+STRLT2      equ $0E63   ; Do STRLTI with delimiters in B and C
 PUTNEW      equ $0E7E   ; Set Pointer to Temporary String
 STROUT:     equ $0E9D   ; Print null-terminated string in HL
 FRESTR      equ $0FC6   ; Free tempory string, return string descriptor address in HL
@@ -247,6 +255,7 @@ SCNLBL  equ     $200F   ;; | Line label hook for GOTO, GOSUB, and RESTORE
 XINIT:      equ $E010   ; Cartridge entry point
 
 ; Standard BASIC Tokens
+DATATK      equ $83     ; DATA
 GOTOTK      equ $88     ; GOTO
 RESTK       equ $8B     ; RESTORE    
 GOSUTK      equ $8C     ; GOSUB
