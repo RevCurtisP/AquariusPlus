@@ -126,7 +126,7 @@ tokens = {
     0xCD: "GET",
     0xD0: "LINE",
     0xD1: "SWAP",
-    0xD2: "FILL",
+    0xD2: "DOKE",
     0xD3: "TIME",
     0xD4: "EDIT",
     0xD5: "CLS",
@@ -146,8 +146,7 @@ tokens = {
     0xE3: "HEX$",
     0xE4: "RENAME",
     0xE5: "DATE", 
-    0XE7: "KEY",
-    0xE8: "ARGS",
+    0xE8: "DEEK",
     0xE9: "ERR",
     0xEA: "STRING",
     0xEB: "BIT",
@@ -172,12 +171,16 @@ xtokens = {
     0x82: "OFF",               
     0x84: "SPRITE",      
     0x85: "CHR",              
-    0x86: "KEY",               
+    0x86: "KEY",              
     0x87: "DEX",               
     0x88: "FAST",               
-    0x89: "WIDE",               
+    0x89: "TEXT",               
+    0x8A: "ARGS",               
+    0x8B: "OVER",               
     0x90: "RESET",
-    0x91: "PT3"
+    0x91: "PT3",
+    0x92: "VER",
+    0x93: "FILL"
 }
 
 with open(args.input, "rb") as f:

@@ -1,7 +1,8 @@
 890 _finish
-892 _passed: GOSUB _output:ARGS "Passed:"+STR$(QR(1))
-894 _failed: GOSUB _output:ARGS "Failed:"+STR$(QR(0))
-896 END
+892 SCREEN RESET
+894 _passed: GOSUB _output:ARGS "Passed:"+STR$(QR(1))
+896 _failed: GOSUB _output:ARGS "Failed:"+STR$(QR(0))
+898 END
 
 900 _init:IF QU=0 THEN CLS
 902 GOSUB _output:ARGS "Running Tests":QR$(0)="Fail: ":QR$(1)="Pass: ":RETURN
@@ -31,4 +32,6 @@
 986 _lprint:LPRINT QU$:RETURN
 
 990 _pause:IF QU OR QK='c' THEN RETURN
-992 PRINT:PRINT "...Press a key...":QL=0:QK=GETKEY:PRINT:RETURN
+992 QS=IN($E0):OUT $E0,1
+994 PRINT:PRINT "...Press a key...":QL=0:QK=GETKEY:PRINT
+996 OUT $E0,QS:RETURN

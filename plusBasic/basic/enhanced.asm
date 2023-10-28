@@ -141,8 +141,6 @@ ST_COPY:
 ;         POKEINT @page, address, word
 ;-----------------------------------------------------------------------------
 ST_POKE:
-    cp      INTTK                 ; If POKEINT
-    jr      z,.pokeword           ;   Poke a word
     call    parse_page_arg        ; Parse page
     push    af                    ; Stack = Page, RtnAdr
     call    GETINT                ; Parse Address
@@ -176,8 +174,20 @@ ST_POKE:
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     ret
 
-.pokeword
-    rst     CHRGET                ; Eat the INT
+.write_paged_byte:
+    call    check_paged_address
+    call    page_write_byte     ; If page specified, write to it
+    jp      z,IQERR             ; FC error if illegal page
+    ret
+
+.write_paged_bytes:
+    call    check_paged_address
+    call    page_write_bytes    ; If page specified, write to it
+    jp      z,IQERR             ; FC error if illegal page
+    pop     hl
+    ret
+
+ST_DOKE:
     call    parse_page_arg        ; Parse page
     push    af                    ; Save it
     call    GETINT                ; Parse Address
@@ -194,19 +204,6 @@ ST_POKE:
     inc     de
     ld      a,b                   ; Get MSV
     ld      (de),a                ; Write to address
-    ret
-
-.write_paged_byte:
-    call    check_paged_address
-    call    page_write_byte     ; If page specified, write to it
-    jp      z,IQERR             ; FC error if illegal page
-    ret
-
-.write_paged_bytes:
-    call    check_paged_address
-    call    page_write_bytes    ; If page specified, write to it
-    jp      z,IQERR             ; FC error if illegal page
-    pop     hl
     ret
 
 .write_paged_word
@@ -237,8 +234,6 @@ check_paged_address:
 ;ToDo: Add PEEK$
 FN_PEEK:
     rst     CHRGET                ; Skip token
-    cp      INTTK                 ; If POKEINT
-    jr      z,.peekword           ;   Poke a word
     cp      '$'                   ; If followed by dollar sign
     jr      z,.peekstring         ;   Do PEEK$()
     SYNCHK  '('                   ; Require open paren
@@ -262,24 +257,6 @@ FN_PEEK:
     ld      a,c
     jr      .float_it
 
-.peekword:
-    rst     CHRGET                ; Skip INT
-    SYNCHK  '('                   ; Require open paren
-    call    parse_page_arg        ; Parse page
-    push    af                    ; Save it
-    call    GETINT                ; Parse Address
-    SYNCHK  ')'                   ; Require close paren
-    pop     af                    ; Get page
-    push    hl                    ; Save text pointer
-    ld      bc,LABBCK             ; Return address for FLOAT_BC
-    push    bc
-    jr      c,.read_page_word     ; If not specified
-    ld      a,(de)                ;   Get LSB
-    ld      c,a
-    inc     de
-    ld      a,(de)
-    ld      b,a
-    jp      FLOAT_BC
 
 .peekstring:
     rst     CHRGET                ; Skip token
@@ -311,6 +288,25 @@ FN_PEEK:
     ldir                          ;   Copy from Main Memory to String
 .do_putnew
     jp      PUTNEW                ; Return the Temporary String
+
+FN_DEEK:
+    rst     CHRGET                ; Skip DEEK
+    SYNCHK  '('                   ; Require open paren
+    call    parse_page_arg        ; Parse page
+    push    af                    ; Save it
+    call    GETINT                ; Parse Address
+    SYNCHK  ')'                   ; Require close paren
+    pop     af                    ; Get page
+    push    hl                    ; Save text pointer
+    ld      bc,LABBCK             ; Return address for FLOAT_BC
+    push    bc
+    jr      c,.read_page_word     ; If not specified
+    ld      a,(de)                ;   Get LSB
+    ld      c,a
+    inc     de
+    ld      a,(de)
+    ld      b,a
+    jp      FLOAT_BC
 
 .read_page_word
     call    check_paged_address

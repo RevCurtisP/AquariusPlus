@@ -1,3 +1,4 @@
+
 100 REM POKE and PEEK Unit Tests
 110 QU=0:REM 0=Screen,1=Printer
 130 GOSUB _init
@@ -19,7 +20,7 @@
 286 _peek_err:GETARGS PA,PE:GOSUB _assert_err:ARGS "PEEK(%%)" % (PA),PE:RETURN
 288 _poke_err:GETARGS PA,PB,QE:QA$="POKE %%,%%" % (PA,PB):ON ERROR GOTO _yes_err:POKE PA,PB:GOTO _no_err
 
-300 GOSUB _title:ARGS "POKEINT & PEEKINT"
+300 GOSUB _title:ARGS "DOKE & DEEK"
 310 GOSUB _pokew:ARGS $3008,$0607
 312 GOSUB _peek:ARGS $3008,7
 314 GOSUB _peek:ARGS $3009,6
@@ -27,12 +28,12 @@
 
 330 GOSUB _peekw_err:ARGS -65536,5
 332 GOSUB _peekw_err:ARGS 65536,5
-334 GOSUB _assert_err:ARGS "PEEKINT(`string`)",13
+334 GOSUB _assert_err:ARGS "DEEK(`string`)",13
 
 380 GOTO 400
-382 _pokew:GETARGS PA,PB:GOSUB _output:ARGS "POKEINT %%,%%" % (PA,PB):POKEINT PA,PB:RETURN
-384 _peekw:GETARGS PA,PB:GOSUB _assert:ARGS "PEEKINT(%%)=%%" % (PA,PB):RETURN
-386 _peekw_err:GETARGS PA,PE:GOSUB _assert_err:ARGS "PEEKINT(%%)" % (PA),PE:RETURN
+382 _pokew:GETARGS PA,PB:GOSUB _output:ARGS "DOKE %%,%%" % (PA,PB):DOKE PA,PB:RETURN
+384 _peekw:GETARGS PA,PB:GOSUB _assert:ARGS "DEEK(%%)=%%" % (PA,PB):RETURN
+386 _peekw_err:GETARGS PA,PE:GOSUB _assert_err:ARGS "DEEK(%%)" % (PA),PE:RETURN
 
 400 GOSUB _title:ARGS "POKE @ & PEEK(@"
 410 GOSUB _pokep:ARGS 40,$100,69:GOSUB _peekp:ARGS 40,$100,69
@@ -63,10 +64,10 @@
 474 _peekp:GETARGS PP,PA,PB:GOSUB _assert:ARGS "PEEK(@%%,%%)=%%" % (PP,PA,PB):RETURN
 476 _peekp_err:GETARGS PP,PA,PE:GOSUB _assert_err:ARGS "PEEK(@%%,%%)" % (PP,PA),PE:RETURN
 478 _pokep_err:GETARGS PP,PA,PB,QE:QA$="POKE @%%,%%,%%" % (PP,PA,PB):ON ERROR GOTO _yes_err:POKE @PP,PA,PB:GOTO _no_err
-482 _pokewp:GETARGS PP,PA,PB:GOSUB _output:ARGS "POKEINT @%%,%%,%%" % (PP,PA,PB):POKEINT @PP,PA,PB:RETURN
-484 _peekwp:GETARGS PP,PA,PB:GOSUB _assert:ARGS "PEEKINT(@%%,%%)=%%" % (PP,PA,PB):RETURN
-486 _peekwp_err:GETARGS PP,PA,PE:GOSUB _assert_err:ARGS "PEEKINT(@%%,%%)" % (PP,PA),PE:RETURN
-488 _pokewp_err:GETARGS PP,PA,PB,QE:QA$="POKEINT @%%,%%,%%" % (PP,PA,PB):ON ERROR GOTO _yes_err:POKEINT @PP,PA,PB:GOTO _no_err
+482 _pokewp:GETARGS PP,PA,PB:GOSUB _output:ARGS "DOKE @%%,%%,%%" % (PP,PA,PB):DOKE @PP,PA,PB:RETURN
+484 _peekwp:GETARGS PP,PA,PB:GOSUB _assert:ARGS "DEEK(@%%,%%)=%%" % (PP,PA,PB):RETURN
+486 _peekwp_err:GETARGS PP,PA,PE:GOSUB _assert_err:ARGS "DEEK(@%%,%%)" % (PP,PA),PE:RETURN
+488 _pokewp_err:GETARGS PP,PA,PB,QE:QA$="DOKE @%%,%%,%%" % (PP,PA,PB):ON ERROR GOTO _yes_err:DOKE @PP,PA,PB:GOTO _no_err
 
 500 REM
 

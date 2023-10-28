@@ -101,8 +101,8 @@ STJUMPS:
     dw      SNERR                 ;$CE  
     dw      SNERR                 ;$CF  
     dw      GSERR                 ;$D0 LINE
-    dw      SNERR                 ;$D1  
-    dw      SNERR                 ;$D2 FILL
+    dw      SNERR                 ;$D1 SWAP 
+    dw      ST_DOKE               ;$D2 DOKE
     dw      SNERR                 ;$D3 TIME 
     dw      SNERR                 ;$D4 EDIT   
     dw      ST_CLS                ;$D5 CLS    
@@ -127,11 +127,11 @@ STJUMPS:
     dw      SNERR                 ;$E8 DEEK
     dw      SNERR                 ;$E9 ERR
     dw      SNERR                 ;$EA STRING$
-    dw      SNERR                 ;$EB 
+    dw      SNERR                 ;$EB BIT
     dw      SNERR                 ;$EC 
     dw      SNERR                 ;$ED EVAL
     dw      ST_PAUSE              ;$EE PAUSE
-    dw      SNERR                 ;$EF SPRITE
+    dw      SNERR                 ;$EF ELSE
     dw      SNERR                 ;$F0 TILE
     dw      SNERR                 ;$F1 RGB
     dw      SNERR                 ;$F2 MAP
@@ -140,7 +140,7 @@ STJUMPS:
     dw      SNERR                 ;$F5 COL
     dw      ST_SCREEN             ;$F6 SCREEN 
     dw      ST_SET                ;$F7 SET
-    dw      SNERR                 ;$F8 ATTR
+    dw      SNERR                 ;$F8 WRITE
     dw      ST_USE                ;$F9 USE
     dw      SNERR                 ;$FA OPEN
     dw      SNERR                 ;$FB CLOSE
@@ -179,14 +179,14 @@ FNJUMPS:
     dw      HOOK27+1              ;$C9 MID$     
     dw      HOOK27+1              ;$CA POINT
 ; PlusBASIC Statements and Functions
-    dw      SNERR                 ;$CB  
-    dw      SNERR                 ;$CC   
+    dw      SNERR                 ;$CB XOR
+    dw      SNERR                 ;$CC PUT  
     dw      FN_GET                ;$CD GET   
     dw      SNERR                 ;$CE   
     dw      SNERR                 ;$CF   
     dw      SNERR                 ;$D0 LINE
-    dw      SNERR                 ;$D1   
-    dw      SNERR                 ;$D2 FILL
+    dw      SNERR                 ;$D1 SWAP  
+    dw      SNERR                 ;$D2 DOKE
     dw      FN_TIME               ;$D3 TIME$
     dw      SNERR                 ;$D4 EDIT   
     dw      SNERR                 ;$D5 CLS    
@@ -198,7 +198,7 @@ FNJUMPS:
     dw      SNERR                 ;$DB LOAD   
     dw      SNERR                 ;$DC SAVE   
     dw      SNERR                 ;$DD DIR    
-    dw      SNERR                 ;$DE CAT    
+    dw      SNERR                 ;$DE MKDIR    
     dw      SNERR                 ;$DF DEL    
     dw      FN_CD                 ;$E0 CD$()     
     dw      FN_IN                 ;$E1 IN()
@@ -207,25 +207,25 @@ FNJUMPS:
     dw      SNERR                 ;$E4 RENAME
     dw      FN_DATE               ;$E5 DATE$
     dw      SNERR                 ;$E6 
-    dw      SNERR                 ;$E7 KEY
-    dw      SNERR                 ;$E8 ARGS
+    dw      SNERR                 ;$E7 
+    dw      FN_DEEK               ;$E8 DEEK
     dw      FN_ERR                ;$E9 ERR
     dw      FN_STRING             ;$EA STRING$
-    dw      SNERR                 ;$EB 
+    dw      SNERR                 ;$EB BIT
     dw      SNERR                 ;$EC 
     dw      FN_EVAL               ;$ED EVAL
     dw      SNERR                 ;$EE PAUSE
-    dw      SNERR                 ;$EF 
+    dw      SNERR                 ;$EF ELSE
     dw      FN_TILE               ;$F0 TILE
     dw      FN_RGB                ;$F1 RGB
     dw      SNERR                 ;$F2 MAP
-    dw      SNERR                 ;$F3 
+    dw      SNERR                 ;$F3 FILE
     dw      SNERR                 ;$F4 RESUME
     dw      SNERR                 ;$F5 COL
     dw      SNERR                 ;$F6 SCREEN 
     dw      SNERR                 ;$F7 SET
-    dw      SNERR                 ;$F8 ATTR
-    dw      SNERR                 ;$F9 CHR
+    dw      SNERR                 ;$F8 WRITE
+    dw      SNERR                 ;$F9 USE
     dw      SNERR                 ;$FA OPEN
     dw      SNERR                 ;$FB CLOSE
     dw      SNERR                 ;$FC

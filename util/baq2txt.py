@@ -147,7 +147,7 @@ tokens = {
     0xE4: "RENAME",
     0xE5: "DATE", 
     0XE7: "KEY",
-    0xE8: "ARGS",
+    0xE8: "DEEK",
     0xE9: "ERR",
     0xEA: "STRING",
     0xEB: "BIT",

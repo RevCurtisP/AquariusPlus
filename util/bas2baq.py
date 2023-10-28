@@ -33,19 +33,44 @@
 #-----------------------------------------------------------------------------
 
 import argparse
+from os import path
+import re
 import struct
 import sys
-import re
 from xmlrpc.client import TRANSPORT_ERROR
 
 parser = argparse.ArgumentParser(
     description="Convert text file to Aquarius BASIC .BAS file"
 )
-parser.add_argument("input", help="Input file", type=argparse.FileType("r"))
-parser.add_argument("output", help="Output file", type=argparse.FileType("wb"))
+parser.add_argument("input", type=str, help="Input file")
+parser.add_argument("output", type=str, nargs="?", help="Output file")
 
 args = parser.parse_args()
 
+input_spec = args.input
+output_spec= args.output
+
+input_base, input_ext = path.splitext(input_spec)
+if not input_ext: input_ext = ".bas"
+input_name = input_base + input_ext
+
+if output_spec: output_base, output_ext = path.splitext(output_spec)
+else: output_base, output_ext = input_base, ""
+if not output_ext: output_ext = ".baq"
+output_name = output_base + output_ext
+
+try: 
+    input_file = open(input_name, "r")
+except OSError as err:
+    print(input_name+":", err.strerror)
+    exit(err.errno)
+  
+try:
+    output_file = open(output_name, "wb")    
+except OSError as err:
+    print(output_name+":", err.strerror)
+    exit(err.errno)
+  
 tokens = {
     0x80: "END",
     0x81: "FOR",
@@ -128,7 +153,7 @@ tokens = {
     0xCD: "GET",
     0xD0: "LINE",
     0xD1: "SWAP",
-    0xD2: "FILL",
+    0xD2: "DOKE",
     0xD3: "TIME",
     0xD4: "EDIT",
     0xD5: "CLS",
@@ -148,7 +173,7 @@ tokens = {
     0xE3: "HEX$",
     0xE4: "RENAME",
     0xE5: "DATE", 
-    0xE8: "ARGS",
+    0xE8: "DEEK",
     0xE9: "ERR",
     0xEA: "STRING",
     0xEB: "BIT",
@@ -173,21 +198,25 @@ xtokens = {
     0x82: "OFF",               
     0x84: "SPRITE",      
     0x85: "CHR",              
-    0x86: "KEY",               
+    0x86: "KEY",              
     0x87: "DEX",               
     0x88: "FAST",               
-    0x89: "WIDE",               
+    0x89: "TEXT",               
+    0x8A: "ARGS",               
+    0x8B: "OVER",               
     0x90: "RESET",
-    0x91: "PT3"
+    0x91: "PT3",
+    0x92: "VER",
+    0x93: "FILL"
 }
 
 def error(idx, message):
-    print(f"{args.input.name}:{idx+1} {message}", file=sys.stderr)
+    print(f"{input_name}:{idx+1} {message}", file=sys.stderr)
     exit(1)
 
 
 # Write header
-args.output.write(
+output_file.write(
     12 * b"\xFF"
     + b"\x00"
     + "AQPLUS".encode()
@@ -200,7 +229,7 @@ last_linenr = -1
 addr = 0x3903
 
 # Tokenize lines
-for idx, line in enumerate(args.input.readlines()):
+for idx, line in enumerate(input_file.readlines()):
     line = line.strip()
     if not line:
         continue
@@ -271,11 +300,11 @@ for idx, line in enumerate(args.input.readlines()):
     addr += len(buf)
     last_linenr = linenr
 
-    args.output.write(buf)
+    output_file.write(buf)
 
-args.output.write(struct.pack("<H", 0))
+output_file.write(struct.pack("<H", 0))
     
 # Write trailer
-args.output.write(
+output_file.write(
     15 *  b"\x00"
 )
