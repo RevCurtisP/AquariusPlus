@@ -71,11 +71,11 @@ esp_read_string:
     call    esp_get_byte
     ld      (hl),a
     or      a
-    jr      z,pop_de_ret
+    jr      z,pop_hl_ret
     inc     hl
     inc     bc
     jr      .loop
-pop_de_ret:
+pop_hl_ret:
     pop     hl
     ret
 
@@ -578,6 +578,7 @@ esp_get_datetime:
 ;         BC: X-position
 ;          E: Button State      
 ;          D: Y-position
+;          L: Wheel delta
 ;-----------------------------------------------------------------------------
 esp_get_mouse:
     ld      a,ESPCMD_GETMOUSE     ; Issue MOUSE command
@@ -585,7 +586,10 @@ esp_get_mouse:
     call    esp_get_byte
     or      a
     ret     m                     
-    call    esp_get_long
+    call    esp_get_long          ; BC = X, D = Y, E = Buttons
+    xor     a
+;   call    esp_get_byte          ; A = Wheel Delta
+    ld      l,a                   ; L = Wheel Delta
     xor     a                     ; Return success
     ret
 

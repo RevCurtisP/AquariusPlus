@@ -2,11 +2,21 @@
 ; Shared BASIC Statement and Function Subroutines
 ;====================================================================
 
+;-----------------------------------------------------------------------------
+; Convert BC into an unsigned Floating Point number in FACC
+;-----------------------------------------------------------------------------
 FLOAT_BC:
     ld      d,b                   ;  Copy into DE
     ld      e,c                   ;  
+;-----------------------------------------------------------------------------
+; Convert DE into an unsigned Floating Point number in FACC
+;-----------------------------------------------------------------------------
 FLOAT_DE:
     ld      c,0                   ; Set HO to 0
+;-----------------------------------------------------------------------------
+; Convert CDE into an unsigned Floating Point number in FACC
+; Clobbers: A,BC,DE
+;-----------------------------------------------------------------------------
 FLOAT_CDE:
     push    hl
     xor     a
@@ -17,6 +27,23 @@ FLOAT_CDE:
     pop     hl
     ret
 
+;-----------------------------------------------------------------------------
+; Convert A into a signed Floating Point number in FACC
+; Clobbers: A,BC,DE
+;-----------------------------------------------------------------------------
+float_signed_byte:
+    push    hl
+    ld      b,0
+    ld      c,a
+    cp      128                   ; If A < 128
+    ld      a,0                   ;   Return Positive Integer
+    jr      c,.positive           ; Else
+    dec     a                     ;   Return Negative Integer
+.positive
+    call    GIVINT
+    pop     hl
+    ret
+    
 ;-----------------------------------------------------------------------------
 ; Parse Array Variable without subscript
 ; Output: DE = First Byte of Data

@@ -17,7 +17,7 @@ TBLCMDS:
     db $80 + ' '                  ; $CF             
     db $80 + 'L',"INE"            ; $D0             
     db $80 + 'S',"WAP"            ; $D1            
-    db $80 + 'F',"ILL"            ; $D2   Paint/Fill
+    db $80 + 'D',"OKE"            ; $D2   
     db $80 + 'T',"IME"            ; $D3   Replaces MX-BASIC keyword SDTM
     db $80 + 'E',"DIT"            ; $D4   Not Implemented
     db $80 + 'C',"LS"             ; $D5
@@ -39,14 +39,14 @@ TBLCMDS:
     db $80 + 'D',"ATE"            ; $E5   Replaces MX-BASIC keyword DTM$
     db $80 + ' '                  ; $E6             
     db $80 + ' '                  ; $E7             
-    db $80 + 'A',"RGS"            ; $E8   Replaces MX-BASIC keyword DEEK
+    db $80 + 'D',"EEK"            ; $E8   
     db $80 + 'E',"RR"             ; $E9             
     db $80 + 'S',"TRING"          ; $EA             
     db $80 + 'B',"IT"             ; $EB             
     db $80 + ' '                  ; $EC             
     db $80 + 'E',"VAL"            ; $ED             
     db $80 + 'P',"AUSE"           ; $EE   Renamed MX-BASIC keyword SLEEP             
-    db $80 + ' '                  ; $EF             
+    db $80 + 'E',"LSE"            ; $EF             
     db $80 + 'T',"ILE"            ; $F0             
     db $80 + 'R',"GB"             ; $F1             
     db $80 + 'M',"AP"             ; $F2             
@@ -55,7 +55,7 @@ TBLCMDS:
     db $80 + 'C',"OL"             ; $F5             
     db $80 + 'S',"CREEN"          ; $F6             
     db $80 + 'S',"ET"             ; $F7             
-    db $80 + ' '                  ; $F8             
+    db $80 + 'W',"RITE"           ; $F8             
     db $80 + 'U',"SE"             ; $F9             
     db $80 + 'O',"PEN"            ; $FA             
     db $80 + 'C',"LOSE"           ; $FB             
@@ -80,7 +80,7 @@ EXTCMDS:
     db $80 + 'D',"EX"             ; $87             
     db $80 + 'F',"AST"            ; $88            
     db $80 + 'T',"EXT"            ; $89             
-    db $80 + ' '                  ; $8A             
+    db $80 + 'A',"RGS"            ; $8A             
     db $80 + ' '                  ; $8B             
     db $80 + ' '                  ; $8C             
     db $80 + ' '                  ; $8D             
@@ -90,9 +90,10 @@ EXTCMDS:
     db $80 + 'R',"ESET"           ; $90             
     db $80 + 'P',"T3"             ; $91             
     db $80 + 'V',"ER"             ; $92             
+    db $80 + 'F',"ILL"            ; $93
     db $80             ; End of table marker
 
-EXTOKEN = $93     ; Last Token + 1
+EXTOKEN = $94     ; Last Token + 1
 
 ;-----------------------------------------------------------------------------
 ; plusBASIC tokens
@@ -106,7 +107,6 @@ MKDTK     equ     $DE
 DELTK     equ     $DF
 CDTK      equ     $E0
 INTK      equ     $E1
-ARGSTK    equ     $E8
 ERRTK     equ     $E9
 BITTK     equ     $EB
 LINETK    equ     $D0
@@ -131,9 +131,11 @@ KEYTK     equ     $86
 DEXTK     equ     $87
 FASTK     equ     $88
 TEXTK     equ     $89
+ARGSTK    equ     $8A
 RESETK    equ     $90
 PT3TK     equ     $91
-VERTOK    equ     $92
+VERTK     equ     $92
+FILLTK    equ     $93
 
 ;-----------------------------------------------------------------------------
 ; Convert keyword to token - hook 10
@@ -246,8 +248,8 @@ token_to_keyword:
 ; $E4 RENAME      VER
 ; $E5 DATE        DTM           DATETIME$ <--> DTM$(0)
 ; $E6             DEC
-; $E7 KEY         KEY             
-; $E8 ARGS        DEEK              PEEK! <--> DEEK
+; $E7             KEY             
+; $E8 DEEK        DEEK              
 ; $E9 ERR         ERR [OR]            ERR <--> ERR(0), ERRLINE <--> ERR(1), ERR$ <--> ERR$(1)
 ; $EA STRING      STRING
 ; $EB BIT         XOR           (a XOR b) <--> XOR(a,b)
@@ -255,7 +257,7 @@ token_to_keyword:
 ; $ED EVAL        EVAL                 compatible
 ; $EE PAUSE       SLEEP
 ; $EF ELSE        MKDIR
-; $F0             RMDIR               DEL <--> RMDIR
+; $F0 TILE        RMDIR               DEL <--> RMDIR
 ; $F1 RGB         OFF
 ; $F2 MAP         WAIT
 ; $F3 FILE        FILE
@@ -263,7 +265,7 @@ token_to_keyword:
 ; $F5 COL         COL [OR]
 ; $F6 SCREEN
 ; $F7 SET
-; $F8 
+; $F8 WRITE 
 ; $F9 USE
 ; $FA OPEN
 ; $FB CLOSE
@@ -283,7 +285,7 @@ token_to_keyword:
 ; $87 DEX
 ; $88 FAST
 ; $89 TEXT
-; $8A 
+; $8A ARGS
 ; $8B 
 ; $8C
 ; $8D
@@ -292,3 +294,4 @@ token_to_keyword:
 ; $90 RESET
 ; $91 PT3
 ; $92 VER
+; $93 FILL

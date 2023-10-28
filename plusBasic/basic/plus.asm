@@ -92,6 +92,8 @@ FN_MOUSE:
     jr      z,.ypos
     cp      'B'
     jr      z,.buttons
+    cp      'W'
+    jr      .wheel
 .snerr:
     jp      SNERR
 .buttons
@@ -101,11 +103,14 @@ FN_MOUSE:
     ld      a,e
     jp      SNGFLT
 .not_found:
-    ld      a,255                 ; Return -1
-    ld      c,a
-    jp      GIVINT
+    ld      a,-1                  ; Return Not found
+    jr      .signed_byte
 .xpos:
     jp      FLOAT_BC
+.wheel
+    ld      a,l
+.signed_byte
+    jp      float_signed_byte
 
 ;-----------------------------------------------------------------------------
 ; INKEY - Return ASCII code of currently pressed key
@@ -174,6 +179,7 @@ LSERR:
 ; FILL! [@page], startaddr, count, word
 ;-----------------------------------------------------------------------------
  ST_FILL:
+    rst     CHRGET                ; Skip FILL
     cp      SCRNTK
     jp      z,ST_FILL_SCREEN
     cp      TILETK
@@ -184,15 +190,15 @@ LSERR:
 ; GET Statement stub
 ;----------------------------------------------------------------------------
 ST_GET:
-    cp      ARGSTK
-    jp      z,ST_GETARGS
     cp      SCRNTK
     jp      z,ST_GET_SCREEN
     rst     SYNCHR
     byte    XTOKEN
     cp      TILETK                ; If GET TILEMAP
-    jp      z, ST_GET_TILEMAP     ;   Go do it
-    jp      GSERR
+    jp      z,ST_GET_TILEMAP      ;   Go do it
+    cp      ARGSTK
+    jp      z,ST_GETARGS
+    jp      SNERR
 
 ;----------------------------------------------------------------------------
 ; PUT Statement stub

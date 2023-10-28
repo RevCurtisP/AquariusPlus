@@ -10,7 +10,7 @@
 ;-----------------------------------------------------------------------------
 ST_GETARGS:
     rst     CHRGET                ; Skip ARGS Token
-    jp      z,MOERR               ; "Missing operand" if end of state
+    jp      z,MOERR               ; "Missing operand" if end of statement
     ex      de,hl                 ; DE = Text Pointer
     ld      hl,2
     add     hl,sp                 ; HL = Top FOR/GOSUB stack entry
@@ -35,14 +35,16 @@ ST_GETARGS:
     jr      nz,.find_colon
 ; Skip Colon and Check for ARGS token
     rst     CHRGET                ; Get next character
+    cp      XTOKEN                ; If not ARGS token
+    jr      nz,.moerr
+    rst     CHRGET                ; Get next character
     cp      ARGSTK                ; If not ARGS token
+.moerr
     jp      nz,MOERR
     rst     CHRGET                ; Skip the ARGS Token
     push    hl                    ; Save *ArgVals                             Stack: *ArgVals, ra_ptr
     ex      de,hl                 ; HL = *ArgVars
 .get_arg:
-;    ld      a,128
-;    ld      (SUBFLG),a            ; Arrays not allowed
     call    PTRGET                ; DE = VarPtr
     ex      (sp),hl               ; HL = *ArgVals                             Stack: *ArgVars, ra_ptr
     call    LETDO                 ; Evaluate ArgVal into ArgVar
@@ -125,10 +127,9 @@ ST_RETURN:
     ex      (sp),hl               ; HL = *RetVars; Stack: *RetVals, NEWSTT
     ld      a,(hl)                ; Check character after RetVar
     cp      ','
-    jr      nz,.done              ; If comma
+    jr      nz,pop_de_ret         ; If comma
     rst     CHRGET                ;   Skip it
     jr      .get_arg              ;   and do next argument
-
-.done
+pop_de_ret:
     pop     de                    ; HL = *RetVars; Stack = NEWSTT
     ret

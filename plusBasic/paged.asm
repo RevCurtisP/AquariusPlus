@@ -390,20 +390,22 @@ page_write_word:
 ;-----------------------------------------------------------------------------
 page_restore_plus:
     ex      af,af'
-    ld      a,plus_page
+    ld      a,ROM_EXT_PG
     out     (IO_BANK3),a
     ex      af,af'
     ret
 
 ;-----------------------------------------------------------------------------
-; Restore Bank 3 to Page 1
+; Map Bank 3 to Page 2
 ;-----------------------------------------------------------------------------
-page_restore_ram2:
+page_map_aux:
     ex      af,af'
-    ld      a,plus_page
+    ld      a,ROM_AUX_PG
     out     (IO_BANK3),a
     ex      af,af'
     ret
+
+
 
 ;-----------------------------------------------------------------------------
 ; Write Bytes to Page - wraps to next page if address is 16383

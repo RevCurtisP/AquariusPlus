@@ -86,12 +86,6 @@ FILEATTR    equ $383C   ; File Attribute
 FILEDATE    equ $383D   ; File Datestamp ($383D-$383E)
 FILETIME    equ $383F   ; File Timestamp ($383F-$3840)
 
-plus_page   equ 1       ; plusBASIC ROM BANK3 page
-aux_page    equ 2       ; Auxillary ROM page
-
-
-
-
 ;-----------------------------------------------------------------------------
 ; Variables
 ;-----------------------------------------------------------------------------

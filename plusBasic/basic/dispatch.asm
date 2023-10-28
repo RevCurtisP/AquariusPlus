@@ -102,7 +102,7 @@ STJUMPS:
     dw      SNERR                 ;$CF  
     dw      GSERR                 ;$D0 LINE
     dw      SNERR                 ;$D1  
-    dw      ST_FILL               ;$D2 FILL
+    dw      SNERR                 ;$D2 FILL
     dw      SNERR                 ;$D3 TIME 
     dw      SNERR                 ;$D4 EDIT   
     dw      ST_CLS                ;$D5 CLS    
@@ -124,7 +124,7 @@ STJUMPS:
     dw      SNERR                 ;$E5 DATE
     dw      SNERR                 ;$E6 
     dw      SNERR                 ;$E7 KEY
-    dw      SNERR                 ;$E8 ARGS
+    dw      SNERR                 ;$E8 DEEK
     dw      SNERR                 ;$E9 ERR
     dw      SNERR                 ;$EA STRING$
     dw      SNERR                 ;$EB 
@@ -271,13 +271,15 @@ execute_function:
     jp      (ix)                ; Go Do It
 
 extended_statement:
+    sub     FILLTK              ; Work backwords from FILL
+    jp      z,ST_FILL
     jp      SNERR
 
 extended_function:
     inc     hl                  ; Skip extended prefix
     ld      a,(hl)              ; Get Extended token
-    sub     VERTOK              ; Work backwords from VER
-    jp      FN_VER
+    sub     VERTK               ; Work backwords from VER
+    jp      z,FN_VER
     jp      SNERR
 
 ; ------------------------------------------------------------------------------
