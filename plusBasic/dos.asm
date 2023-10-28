@@ -102,6 +102,7 @@ dos_load_chrset:
     call    dos_load_paged
     jp      custom_chrset
 
+
 ;-----------------------------------------------------------------------------
 ; Load binary file into paged memory`
 ; Input: A: Page

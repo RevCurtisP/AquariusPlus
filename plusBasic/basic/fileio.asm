@@ -388,6 +388,7 @@ print_hl_4digits:
 ; LOAD "filename",@page,address   Load file as raw binary to address in page
 ; LOAD "filename",*a              Load data into numeric array a
 ; LOAD CHRSET "filename"          Load character set into character RAM buffer
+; LOAD PALETTE p,"filename"       Load one or all palettes
 ;-----------------------------------------------------------------------------
 ST_LOAD:
     ; Close any open files
@@ -398,6 +399,7 @@ ST_LOAD:
     jp      z,_load_extended
 
     ; Get string parameter with path
+
     call    get_strdesc_arg        ; Get FileSpec pointer in HL
 
     ex      (sp),hl                 ; HL = Text Pointer, Stack = String Descriptor
@@ -633,16 +635,22 @@ get_array_argument:
 
     ret
 
+;;;ToDo: Add LOAD PALETTE
 _load_extended:
     rst     CHRGET                ; Skip XTOKEN
+    cp      PALETK                ; 
+    jr      z,_load_palette
     rst     SYNCHR
-    byte    CHRTK                 ; Only CHRSET for now
+    byte    CHRTK                 ;   Must be CHRSET
     rst     SYNCHR
     byte    SETTK
     call    get_strdesc_arg       ; HL = FileSpec StrDsc; Stack = TxtPtr
     call    dos_load_chrset
     pop     hl
     ret
+
+_load_palette:
+    jp      GSERR
 
 ;-----------------------------------------------------------------------------
 ; Run file
