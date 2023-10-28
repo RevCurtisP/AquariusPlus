@@ -126,7 +126,7 @@ _reset:
 ;-----------------------------------------------------------------------------
 _coldboot:
     ; No Cartridge - Map RAM into Bank 3
-    ld      a, plus_page        ; plusBASIC extended ROM
+    ld      a, ROM_EXT_PG        ; plusBASIC extended ROM
     out     (IO_BANK3), a
 
     Call    _clear_basic_ram    ; Init BASIC RAM to zeroes
@@ -210,7 +210,7 @@ print_copyright:
 _plus_text:
     db "plusBASIC "
 _plus_version:
-    db "v0.15m", 0
+    db "v0.15n", 0
 _plus_len   equ   $ - _plus_text
     call    CRDO
     jp      CRDO
@@ -491,7 +491,7 @@ _interrupt:
 ; Intercept WRMCON call
 ;-----------------------------------------------------------------------------
 _warm_boot:
-    ld      a, plus_page          ; Page 1 ROM
+    ld      a, ROM_EXT_PG          ; Page 1 ROM
     out     (IO_BANK3), a         ; into Bank 3
     jp      WRMCON                ; Go back to S3 BASIC
 
@@ -512,7 +512,7 @@ _inlin_done:
 ; Hook 2 - READY (Enter Direct Mode
 ;-----------------------------------------------------------------------------
 direct_mode:
-    call    reset_screen
+    call    text_screen
 
     ld      a,(BASYSCTL)
     and     KB_REPEAT
@@ -533,6 +533,13 @@ direct_mode:
 clear_esp_fdesc:
     ld      a,128
     ld      (ESP_FDESC),a         ; Set to No File
+    ret
+
+text_screen:
+    in      a,(IO_VCTRL)
+    and     a,~VCTRL_MODE_MC
+    or      a,VCTRL_TEXT_EN
+    out     (IO_VCTRL),a
     ret
 
 reset_screen:
@@ -581,7 +588,7 @@ _next_statement:
     push    af                    ; Save Token and Flags
     in      a,(IO_BANK3)          ; Get Current Page
     ld      (BANK3PAGE),a         ; Save It
-    ld      a,plus_page           ; Page 1 - Extended BASIC
+    ld      a,ROM_EXT_PG           ; Page 1 - Extended BASIC
     out     (IO_BANK3),a          ; Page it in
     pop     af                    ; Restore Token and Flags
     jp      exec_next_statement   ; Go do the Statement
@@ -672,57 +679,7 @@ ULERR:
     ld      e,ERRUL
     jp      force_error
 
-;-----------------------------------------------------------------------------
-; Save MAIN Line Number Flag
-;-----------------------------------------------------------------------------
-_main_ext:
-    pop     de                    ; Pop Return Address
-    pop     bc                    ; C = Line Number Flag
-    ld      (TEMP3),bc            ; Save it
-    push    bc                    ; Flag back on stack
-    push    de                      ; Return address back on stack
-    jp      SCNLIN                ; Continue to SCNLIN
-
-;-----------------------------------------------------------------------------
-; Don't tokenize unquoted literal string after DOS command in direct mode
-;-----------------------------------------------------------------------------
-_stuffh_ext:
-    cp      DATATK-':'            ; If DATA
-    jp      z,COLIS               ;   Continue STUFFH
-    ex      af,af'
-    ld      a,(TEMP3)             ; Get Line# Flag
-    and     $01                   ; If carry set
-    jr      nz,.exaf_nodatt       ;   Continue  STUFFH
-    ex      af,af'
-    cp      DIRTK-':'             ; If Not DIRTK through CDTK
-
-    jp      c,NODATT              ;
-    cp      CDTK-':'+1            ;
-    jp      nc,NODATT             ;  Continue STUFFH
-.space_loop
-    ld      a,(hl)                ; Eat Spaces
-    cp      ' '
-    jr      nz,.not_space
-    call    STUFFS
-    jr      .space_loop
-.not_space
-    ld      b,a                   ; Set up delimiter for STRNG
-    cp      '"'                   ; If quotes
-    jp      z,STRNG               ;   Go stuff quoted string
-.string_loop
-    ld      a,(hl)                ; Get character
-    or      a                     ; If end of line
-    jp      z,CRDONE              ;   Finish it up
-    cp      ' '                   ; If space
-    jp      z,KLOOP               ;   Stuff it and continue
-    cp      ':'                   ; If colon
-    jp      z,KLOOP               ;   Stuff it and continue
-    call    STUFFS                ; Else Stiff it
-    jr      .string_loop          ;   and check next character
-.exaf_nodatt:
-    ex      af,af'
-    jp      NODATT
-
+    
 ;-----------------------------------------------------------------------------
 ; bas_read_to_buff - Read String from ESP to BASIC String Buffer
 ; Input: IX: DOS or ESP routine to call
@@ -925,6 +882,26 @@ fast_hook_handler:
     jp      (ix)
 
 ;-----------------------------------------------------------------------------
+; S3 BASIC extensions routines in Auxillary ROM Page
+;-----------------------------------------------------------------------------
+_keyword_to_token
+    ld    ix,keyword_to_token
+_token_to_keyword
+    ld    ix,token_to_keyword
+    jr    _call_aux_routine
+_main_ext:
+    ld    ix,s3_main_ext
+    jr    _call_aux_routine
+
+_stuffh_ext:
+    ld    ix,s3_stuffh_ext
+    
+_call_aux_routine:                
+    call    page_map_aux          ;  Map Auxillary ROM page into Bank 3
+    call    jump_ix               ;  Call Routine
+    jp      page_restore_plus
+
+;-----------------------------------------------------------------------------
 ; Keyboard Decode Tables for S3 BASIC with Extended Keyboard Support
 ; $2F00 - $2FFF
 ;-----------------------------------------------------------------------------
@@ -973,6 +950,19 @@ fast_hook_handler:
     assert !($FFFF<$)   ; ROM full!
 
     free_rom_16k = $10000 - $
+
+    dc $10000-$,$76
+
+    dephase
+
+;-----------------------------------------------------------------------------
+; Auxilary ROM Routines
+;-----------------------------------------------------------------------------
+
+    phase   $C000     ;Assemble in ROM Page 1 which will be in Bank 3
+
+    include "editor.asm"        ; Advanced line editor
+    include "s3hooks.asm"       ; S3 BASIC direct mode hooks  
 
     dc $10000-$,$76
 
