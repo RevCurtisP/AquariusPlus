@@ -970,9 +970,9 @@ _trap_error:
 
     free_rom_8k = $E000 - $
 
-    dc $10000-$,$76
+    dc $E000-$,$76
 
-    dephase
+      
 
     end
 
