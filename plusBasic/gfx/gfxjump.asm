@@ -4,7 +4,7 @@
 gfx_jump_table
     jp      gfx_startup           ; $8000
     jp      gfx_init              ; $8003
-    jp      screen_set_mode       ; $8006 
+    jp      screen_switch         ; $8006 
     jp      palette_shift_num     ; $8009 
     jp      palette_set_entry     ; $800C 
     jp      palette_set           ; $800F

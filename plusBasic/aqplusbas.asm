@@ -162,7 +162,7 @@ _coldboot:
 
     call    clear_esp_fdesc
     call    spritle_clear_all     ; Clear all sprite properties
-    call    do_cls_wide           ; Do 80 column clear screen
+    call    init_screen_buffers
 
     call    print_copyright
 
@@ -210,7 +210,7 @@ print_copyright:
 _plus_text:
     db "plusBASIC "
 _plus_version:
-    db "v0.15n", 0
+    db "v0.15o", 0
 _plus_len   equ   $ - _plus_text
     call    CRDO
     jp      CRDO
@@ -693,6 +693,9 @@ bas_read_to_buff:
 jump_ix:
     jp      (ix)                  ; Execute routine and return
 
+jump_iy:
+    jp      (iy)
+
 ;-----------------------------------------------------------------------------
 ; RUN command - hook 24
 ;-----------------------------------------------------------------------------
@@ -722,25 +725,74 @@ run_cmd:
     jp      RUNC2              ; GOTO line number
 
 
-do_cls_wide:
-    in      a,(IO_VCTRL)
+init_screen_buffers:
+    ld      a,SCR_BUFFR
+    out     (IO_BANK3),a
+    ld      a,' '
+    ld      hl,SCRN40SWAP
+    ld      bc,1000
+    call    sys_fill_mem
+    ld      hl,SCRN41SWAP
+    ld      bc,1000
+    call    sys_fill_mem
+    ld      hl,SCRN80SWAP
+    ld      bc,2000
+    call    sys_fill_mem
+    ld      a,6 
+    ld      hl,SCRN40SWAP+1024
+    ld      bc,1000
+    call    sys_fill_mem
+    ld      hl,SCRN41SWAP+1024
+    ld      bc,1000
+    call    sys_fill_mem
+    ld      hl,SCRN80SWAP+2048
+    ld      bc,2000
+    call    sys_fill_mem
+
+
+;-----------------------------------------------------------------------------
+; initialization screen variable buffers
+; Exits with Extended ROM in Bank 3
+; Output: B: (TTYPOS)
+;         C: (CURCHR)
+;        DE: (CURRAM)
+;        HL: Address after end of last Save Buffer
+;-----------------------------------------------------------------------------
+init_screen_vars:
+    ld    bc,' '                  
+    ld    de,SCREEN+41
+    ld    hl,SAVSCREEN40
+    call  save_screen_vars        ; 40 column primary
+    call  save_screen_vars        ; 40 column secondary
+                                  ; 80 column
+
+;-----------------------------------------------------------------------------
+; Copy text screen variables to Save Buffer
+; Exits with Extended ROM in Bank 3
+; Input: B: TTYPOS
+;        C: CURCHR
+;       DE: CURRAM
+;       HL: Save Buffer offset
+; Output: HL: Address after end of Save Buffer
+;-----------------------------------------------------------------------------
+save_screen_vars:
     push    af
-    ld      a,VCTRL_TEXT_EN+VCRTL_80COL_EN
-    out     (IO_VCTRL),a
-    ld      a,' '                 ; Fill with spaces
-    call    .fill
-    ld      a,VCTRL_TEXT_EN+VCRTL_80COL_EN+VCTRL_TEXT_PAGE
-    out     (IO_VCTRL),a
-    ld      a,6
-    call    .fill
+    ld      a,BAS_BUFFR
+    out     (IO_BANK3),a
+    ld      h,$C0                 ; HL = Bank 3 Address
+    ld      (hl),b                ; SAVTTYPOS
+    inc     hl
+    ld      (hl),c                ; SAVCURCHR
+    inc     hl
+    ld      (hl),e                ; SAVCURRAM
+    inc     hl
+    ld      (hl),d                
+    inc     hl
+    ld      a,ROM_EXT_PG          
+    out     (IO_BANK3),a
     pop     af
-    out     (IO_VCTRL),a
     ret
 
-.fill
-    ld      hl,$3000
-    ld      bc,2000
-    jp      sys_fill_mem
 
 do_cls_default:
     ld      a,6                   ; default to black on cyan
@@ -808,16 +860,13 @@ _trap_error:
 ;-----------------------------------------------------------------------------
     include "util.asm"
 
-;-----------------------------------------------------------------------------
-; plusBASIC tokens
-;-----------------------------------------------------------------------------
-    include "tokens.asm"        ; Keyword list and tokenize/expand routines
-
 free_rom_2k = hook_table - $
 
 ;------------------------------------------------------------------------------
 ; Hook, Dispatch Tables and Handlers
 ;------------------------------------------------------------------------------
+
+    include "tokens.asm"        ; Keyword lists and tokenize/expand routines
 
 ; ------------------------------------------------------------------------------
 ;  Hook Jump Table
@@ -839,7 +888,7 @@ hook_table:                     ; ## caller   addr  performing function
     dw      HOOK7+1             ;  7 FINPRT   0866  End of PRINT Statement
     dw      HOOK8+1             ;  8 TRMNOK   0880  Improperly Formatted INPUT or DATA handler
     dw      eval_extension      ;  9 EVAL     09FD  Evaluate Number or String
-    dw      keyword_to_token    ; 10 NOTGOS   0536  Converting Keyword to Token
+    dw      keyword_to_token   ; 10 NOTGOS   0536  Converting Keyword to Token
     dw      HOOK11+1            ; 11 CLEAR    0CCD  Execute CLEAR Statement
     dw      _scratch            ; 12 SCRTCH   0BBE  Execute NEW Statement
     dw      HOOK13+1            ; 13 OUTDO    198A  Execute OUTCHR
@@ -851,7 +900,7 @@ hook_table:                     ; ## caller   addr  performing function
     dw      HOOK19+1            ; 19 TTYCHR   1D72  Print Character to Screen
     dw      HOOK20+1            ; 20 CLOAD    1C2C  Load File from Tape
     dw      HOOK21+1            ; 21 CSAVE    1C09  Save File to Tape
-    dw      token_to_keyword    ; 22 LISPRT   0598  expanding a token
+    dw      token_to_keyword   ; 22 LISPRT   0598  expanding a token
     dw      _next_statement     ; 23 GONE2    064B  interpreting next BASIC statement
     dw      run_cmd             ; 24 RUN      06BE  starting BASIC program
     dw      on_error            ; 25 ONGOTO   0780  ON statement
@@ -886,9 +935,13 @@ fast_hook_handler:
 ;-----------------------------------------------------------------------------
 _keyword_to_token
     ld    ix,keyword_to_token
+    jr    _call_token_routine
 _token_to_keyword
     ld    ix,token_to_keyword
-    jr    _call_aux_routine
+_call_token_routine
+    jr    _call_aux_routine       ; Call the routine
+    jp    (ix)                    ; Jump back to S3BASIC
+
 _main_ext:
     ld    ix,s3_main_ext
     jr    _call_aux_routine

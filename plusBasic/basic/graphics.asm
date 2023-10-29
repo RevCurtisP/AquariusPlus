@@ -69,6 +69,10 @@ ST_SETPALETTE:
 ;-----------------------------------------------------------------------------
 ST_SCREEN:
     jp      m,.is_token           ; If a token, go process it
+
+    xor     a
+    call    .switch_screen
+    
     in      a,(IO_VCTRL)
     ld      c,a                   ; C = Current VCTRL
 
@@ -101,6 +105,12 @@ ST_SCREEN:
     
     ld      a,c
     out     (IO_VCTRL),a          ; Write back out
+
+    ld      a,1
+.switch_screen
+    push    hl                    ; Save TxtPtr
+    call    screen_switch         ; Save to / restore from buffer
+    pop     hl                    ; Restore TxtPtr
     ret
 
 .is_token
@@ -134,6 +144,8 @@ ST_SCREEN:
     or      b                     ; A = New VCTRL
     ld      c,a                   ; C = New VCTRL
     ret
+
+
  
 ;-----------------------------------------------------------------------------
 ; SCREEN RESTORE - Copy Screen Buffer to Text Screen

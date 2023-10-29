@@ -30,7 +30,7 @@ RAM_BAS_3       equ 35      ; RAM for BASIC mapped into Bank 3, switched in as n
 BAS_BUFFR       equ 36      ; plusBASIC extended system variables and buffers, mapped in bank 3 as needed
 VID_BUFFR       equ 37      ; Video RAM Shadow Buffer
 PT3_BUFFR       equ 38      ; PT3 Player Buffer
-;Reserved       equ 39      ; Reserved for future use    
+SCR_BUFFR       equ 39      ; Screen Buffers
     
 USER_RAM        equ 40      ; Start of User RAM
 
@@ -56,9 +56,6 @@ TILE_MAP_LEN    equ 64*32*2
 BORDERCHR   equ $33FF   ; Border character alternate memory location (40 column mode)
 ; Color RAM Hole
 PLUSTCK     equ $37FA   ; Top of page swap temporary stack $37E8 - $37F9 (18 bytes)
-SAVTTYPOS   equ $37FB   ; Save cursor column
-SAVCURRAM   equ $37FC   ; Save cursor position in Screen RAM
-SAVCURCHR   equ $37FE   ; Save character under cursor
 BORDERCLR   equ $37FF   ; Border color alternate memory location
 
 ; RNDTAB ($3821-$3840) - Deprecated RND Permutation Table
@@ -147,7 +144,7 @@ SYSCTRL_TURBO   equ $04     ; xxxxx1xx  Turbo mode (7.16MHz)
 
 ;-----------------------------------------------------------------------------
 ; BASIC Extended System Constants, Variables and Buffers
-; Page 36, swapped into Bank 3
+; Page 36 (BAS_BUFFR), swapped into Bank 3
 ;-----------------------------------------------------------------------------
 GFX_SYSVARS equ $C000   ; Extended BASIC Graphics System Variables
                         ; defined in gfx/gfx.asm
@@ -156,7 +153,18 @@ STRBUFF     equ $0100   ; Page Address: String Buffer  - up to 255 chars plus nu
                         ; Must be on 256 byte boundary
 EDITBUFF    equ $0200   ; 256 Byte Edit Buffer
 CHRSETBUF   equ $3000   ; Page Address: Custom Character Set Buffer
-SCREENBUFF  equ $F800   ; For saving screen memory or double-buffering
+
+;-----------------------------------------------------------------------------
+; BASIC Text Screen Buffers
+; Page 39 (SCR_BUFFR), swapped into Bank 3
+;-----------------------------------------------------------------------------
+SCRN40SWAP  equ $C000   ; Primary 40 column buffer for screen switching
+SCRN41SWAP  equ $C800   ; Secondary 40 column buffer for screen switching
+SCRN80SWAP  equ $D000   ; 80 column buffer for screen switching
+
+SCRN40BUFF  equ $E000   ; Used by screen save, restore and swap
+SCRN41BUFF  equ $E800   ; Used by screen save, restore and swap
+SCRN80BUFF  equ $F000   ; Used by screen save, restore and swap
 
 
 ;-----------------------------------------------------------------------------

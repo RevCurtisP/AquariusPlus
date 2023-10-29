@@ -184,10 +184,10 @@ _screen_bounds:
 ; Clobbered: A,BC,DE,HL
 ;-----------------------------------------------------------------------------
 screen_restore:
-    ld      a,BAS_BUFFR
+    ld      a,SCR_BUFFR
     ld      bc,2048
     ld      de,SCREEN             ; Copying from Text and Color RAM
-    ld      hl,SCREENBUFF         ; Copying to Text Screen Buffer
+    ld      hl,SCRN40BUFF         ; Copying to Text Screen Buffer
     jp      page_fast_read_bytes  ; Do it
 
 ;-----------------------------------------------------------------------------
@@ -195,9 +195,9 @@ screen_restore:
 ; Clobbered: A,BC,DE,HL
 ;-----------------------------------------------------------------------------
 screen_save:
-    ld      a,BAS_BUFFR
+    ld      a,SCR_BUFFR
     ld      bc,2048
-    ld      de,SCREENBUFF         ; Copying to Text Screen Buffer
+    ld      de,SCRN40BUFF         ; Copying to Text Screen Buffer
     ld      hl,SCREEN             ; Copying from Text and Color RAM
     jp      page_fast_write_bytes ; Do it
 
@@ -206,13 +206,11 @@ screen_save:
 ; Clobbered: A,BC,DE,HL
 ;-----------------------------------------------------------------------------
 screen_swap:
-    ld      a,BAS_BUFFR
+    ld      a,SCR_BUFFR
     ld      bc,2048
-    ld      de,SCREENBUFF         ; Swapping Text Screen Buffer
+    ld      de,SCRN40BUFF         ; Swapping Text Screen Buffer
     ld      hl,SCREEN             ; with Text and Color RAM
     jp      page_mem_swap_bytes   ; Do it
-
-
 
 ;-----------------------------------------------------------------------------
 ; Update VCTRL Register
@@ -229,78 +227,94 @@ screen_set_vctrl:
     ret
 
 ;-----------------------------------------------------------------------------
-; Set Screen Mode
-; Input: A: Mode (see SCREEN statement)
-; Output: A: Byte written to Video Control Regiter
-;        BC: Mode
-;        HL: Address in lookup table
+; Switch Screens
+; Input: A: If 0, save screen RAM to respective buffer
+;           Else restore screen to respective buffer
+; Clobbered: A,BC,DE,HL
 ;-----------------------------------------------------------------------------
-screen_set_mode:
-    ld      hl,_screen_modes
-    ld      b,0
-    ld      c,a
-    add     hl,bc
-    ld      a,(hl)
+screen_switch:
+    ret
+;;; ToDo: Finish this
+    or      a                     ; Set flags on argument
+    call    nz,.get_screen_vars   ; B = TTYPOS, C = CURCHR, DE = CURRAM
+    ex      af,af'                ; AF' = Flags
+    in      a,(IO_VCTRL)          ; AF = VCTRL
+    bit     6,a                   ; 
+    jr      nz,.switch80          ; If not in 80 column mode
+    bit     7,a                   ;   If auxilary screen page
+;;;ToDo: ld hl accordingly and call save_screen_vars
+
+    ld      bc,2048               ;   Copy 2048
+    ld      hl,SCREEN             ;   
+    jr      nz,.switch41          ;   If RAM Page 1
+    ld      de,SCRN40SWAP
+
+
+
+.switch41
+    ex      af,af'                ; AF = Flags, AF' = VCTRL
+    ld      a,SCR_BUFFR           ; A = 39
+    jr      nz,.restore40
+    jp      page_fast_write_bytes 
+
+
+
+.restore40
+    ld      a,SCR_BUFFR
+    ex      de,hl
+    call    page_fast_read_bytes
+    jr     .restore_screen_vars
+   
+.switch80
+    ex      af,af'
+    jr      nz,.restore80
+    ex      af,af'
+    set     7,a                   ; Select Color RAM
+    ld      hl,SCRN80SWAP+2048
+    call    .write80
+    res     7,a                   ; Select Screen RAM
+    ld      hl,SCRN80SWAP
+.write80:
     out     (IO_VCTRL),a
+    ld      bc,2048
+    ld      de,SCRN80SWAP
+    ld      hl,SCREEN
+    push    af                    ; 
+    ld      a,SCR_BUFFR
+;    call    .save_screen_vars
+    call    page_fast_write_bytes
+    pop     af
+    ret
+.restore80
+    ex      af,af'
+    set     7,a                   ; Select Color RAM
+    ld      hl,SCRN80SWAP
+    call    .read80
+    ld      hl,SCRN80SWAP
+    res     7,a                   ; Select Screen RAM
+    call    .read80
+    jr      .restore_screen_vars
+
+.read80:
+    out     (IO_VCTRL),a
+    ld      bc,2048
+    ld      de,SCREEN
+    push    af
+    ld      a,SCR_BUFFR
+    call    page_fast_read_bytes
+    pop     af
     ret
 
-_screen_modes:                    ; mode  b p s gm t
-    byte    $01                   ;   0   0 0 0 00 1 Text
-    byte    $02                   ;   1   0 0 0 01 0 64 x 32 Color Tilemap
-    byte    $04                   ;   2   0 0 0 10 0 320 x 200 Bitmap mode ON
-    byte    $06                   ;   3   0 0 0 11 0 Multicolor Bitmap Mode
-
-    byte    $09                   ;   4   0 0 1 00 1 Text    + Sprites
-    byte    $0A                   ;   5   0 0 1 01 0 Tilemap + Sprites
-    byte    $0C                   ;   6   0 0 1 10 0 Bitmap  + Sprites
-    byte    $0E                   ;   7   0 0 1 11 0 Multi   + Sprites
-
-    byte    $01                   ;   8   0 0 0 00 1 Text
-    byte    $03                   ;   9   0 0 0 01 1 Tilemap + BackText
-    byte    $05                   ;  10   0 0 0 10 1 Bitmap  + BackText
-    byte    $07                   ;  11   0 0 0 11 1 Multi   + BackText
-
-    byte    $09                   ;  12   0 0 1 00 1 Text    + Sprites
-    byte    $0B                   ;  13   0 0 1 01 1 Tilemap + BackText = Sprites
-    byte    $0D                   ;  14   0 0 1 10 1 Bitmap  + BackText = Sprites
-    byte    $0F                   ;  15   0 0 1 11 1 Multi   + BackText = Sprites
-
-    byte    $01                   ;  16   0 0 0 00 1 Text
-    byte    $13                   ;  17   0 1 0 01 1 Tilemap + FrontText
-    byte    $15                   ;  18   0 1 0 10 1 Bitmap  + FrontText
-    byte    $17                   ;  19   0 1 0 11 1 Multi   + FrontText
-
-    byte    $09                   ;  20   0 0 1 00 1 Text    + Sprites
-    byte    $1B                   ;  21   0 1 1 01 1 Tilemap + FrontText = Sprites
-    byte    $1D                   ;  22   0 1 1 10 1 Bitmap  + FrontText = Sprites
-    byte    $1F                   ;  23   0 1 1 11 1 Multi   + FrontText = Sprites
-
-    byte    $21                   ;  24   1 0 0 00 1 Remap + Text
-    byte    $22                   ;  25   1 0 0 01 0 Remap + 64 x 32 Color Tilemap
-    byte    $24                   ;  26   1 0 0 10 0 Remap + 320 x 200 Bitmap mode ON
-    byte    $26                   ;  27   1 0 0 11 0 Remap + Multicolor Bitmap Mode
-
-    byte    $29                   ;  28   1 0 1 00 1 Remap + Text    + Sprites
-    byte    $2A                   ;  29   1 0 1 01 0 Remap + Tilemap + Sprites
-    byte    $2C                   ;  30   1 0 1 10 0 Remap + Bitmap  + Sprites
-    byte    $2E                   ;  31   1 0 1 11 0 Remap + Multi   + Sprites
-
-    byte    $21                   ;  32   1 0 0 00 1 Remap + Text
-    byte    $23                   ;  33   1 0 0 01 1 Remap + Tilemap + BackText
-    byte    $25                   ;  34   1 0 0 10 1 Remap + Bitmap  + BackText
-    byte    $27                   ;  35   1 0 0 11 1 Remap + Multi   + BackText
-
-    byte    $29                   ;  36   1 0 1 00 1 Remap + Text    + Sprites
-    byte    $2B                   ;  37   1 0 1 01 1 Remap + Tilemap + BackText = Sprites
-    byte    $2D                   ;  38   1 0 1 10 1 Remap + Bitmap  + BackText = Sprites
-    byte    $2F                   ;  39   1 0 1 11 1 Remap + Multi   + BackText = Sprites
-
-    byte    $21                   ;  40   1 0 0 00 1 Remap + Text
-    byte    $33                   ;  41   1 1 0 01 1 Remap + Tilemap + FrontText
-    byte    $35                   ;  42   1 1 0 10 1 Remap + Bitmap  + FrontText
-    byte    $37                   ;  43   1 1 0 11 1 Remap + Multi   + FrontText
-
-    byte    $29                   ;  44   1 0 1 00 1 Remap + Text    + Sprites
-    byte    $3B                   ;  45   1 1 1 01 1 Remap + Tilemap + FrontText = Sprites
-    byte    $3D                   ;  46   1 1 1 10 1 Remap + Bitmap  + FrontText = Sprites
-    byte    $3F                   ;  47   1 1 1 11 1 Remap + Multi   + FrontText = Sprites
+.get_screen_vars:
+    ex      af,af'
+    ld      a,(TTYPOS)
+    ld      b,a
+    ld      a,(CURCHR)
+    ld      c,a
+    ld      de,(CURRAM)
+    ex      af,af'
+    ret
+    
+    
+    
+.restore_screen_vars:
