@@ -162,7 +162,7 @@ FN_EVAL:
     xor     a                 ; Tokenize String
     ld      (DORES),a         ;
     ld      c,5               ;
-    call    KLOOP             ;
+    call    tokenize          ; Call KLOOP, restore Extended ROM
     ld      hl,BUF            ; Point to Line Buffer
     call    FRMEVL            ; Evaluate Formula
     pop     hl                ; Restore Text Pointer

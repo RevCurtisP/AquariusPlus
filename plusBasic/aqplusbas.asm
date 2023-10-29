@@ -210,7 +210,7 @@ print_copyright:
 _plus_text:
     db "plusBASIC "
 _plus_version:
-    db "v0.15o", 0
+    db "v0.15p", 0
 _plus_len   equ   $ - _plus_text
     call    CRDO
     jp      CRDO
@@ -551,9 +551,10 @@ reset_screen:
 ; Hook 12 - SCRTCH (Execute NEW statement)
 ;-----------------------------------------------------------------------------
 _scratch:
+    call    page_restore_plus
     call    clear_all_errvars
     ld      c,0
-    call    spritle_toggle_all    ; Disable all sprites
+    call    spritle_toggle_all    ; Disable all sprite
     jp      HOOK12+1
 
 ;-----------------------------------------------------------------------------
@@ -582,23 +583,6 @@ read_key:
     jp      key_read_ascii    ; Read key from keyboard and return
 
 ;-----------------------------------------------------------------------------
-; Hook 23 - GONE2 (Handle Extended BASIC Statement Tokens)
-;-----------------------------------------------------------------------------
-_next_statement:
-    push    af                    ; Save Token and Flags
-    in      a,(IO_BANK3)          ; Get Current Page
-    ld      (BANK3PAGE),a         ; Save It
-    ld      a,ROM_EXT_PG           ; Page 1 - Extended BASIC
-    out     (IO_BANK3),a          ; Page it in
-    pop     af                    ; Restore Token and Flags
-    jp      exec_next_statement   ; Go do the Statement
-
-statement_ret:
-    ld      a,(BANK3PAGE)         ; Get Saved Page
-    out     (IO_BANK3),a          ; Bank it Back in
-    ret                           ; Return to NEWSTT
-
-;-----------------------------------------------------------------------------
 ; GOTO and RESUME hack
 ; Check for label at beginning of line, then search for it's line
 ;-----------------------------------------------------------------------------
@@ -623,19 +607,11 @@ _scan_label:
     jr      nz,.next_line         ;   Skip to next lines
 .label_loop:
     ld      a,(de)                ; Next character from label
-;    cp      ' '                   ; If space
-;    jr      nz,.not_lspace        ;   Skip it
-;    inc     de
-;    jr      .label_loop
 .not_lspace
     call    .check_colon          ; Treat colon as terminator
     ld      b,a                   ; Put in B for compare
 .text_loop:
     ld      a,(hl)                ; Get character from line
-;    cp      ' '                   ; If space
-;    jr      nz,.not_tspace        ;   Skip it
-;    inc     hl
-;    jr      .text_loop
 .not_tspace
     call    .check_colon          ; Treat colon as terminator
     cp      b                     ; If characters don't match
@@ -695,35 +671,6 @@ jump_ix:
 
 jump_iy:
     jp      (iy)
-
-;-----------------------------------------------------------------------------
-; RUN command - hook 24
-;-----------------------------------------------------------------------------
-run_cmd:
-    push    af
-    ld      a,KB_ENABLE | KB_ASCII
-    call    key_set_keymode       ; Turn off key repeat
-    pop     af
-
-    jp      z, RUNC            ; If no argument then RUN from 1st line
-
-    push    hl
-    call    FRMEVL             ; Get argument type
-    ld      a, (VALTYP)
-    dec     a                  ; 0 = string
-    jr      nz,.not_file
-    call    FRESTR
-    pop     hl
-    jp      run_file
-
-.not_file:
-    pop     hl
-
-    ; RUN with line number
-    call    CLEARC             ; Init BASIC run environment
-    ld      bc, NEWSTT
-    jp      RUNC2              ; GOTO line number
-
 
 init_screen_buffers:
     ld      a,SCR_BUFFR
@@ -826,9 +773,6 @@ clear_screen:
     pop     hl
     ret
 
-_trap_error:
-    call    page_restore_plus     ; Map Extended ROM into bank 3
-    jp      trap_error
 
 ;-----------------------------------------------------------------------------
 ; DOS routines
@@ -879,7 +823,7 @@ free_rom_2k = hook_table - $
 ; 58 Bytes
 hook_table:                     ; ## caller   addr  performing function
     dw      _trap_error         ;  0 ERROR    03DB  Initialize Stack, Display Error, and Stop Program
-    dw      force_error         ;  1 ERRCRD   03E0  Print Error Message
+    dw      _force_error        ;  1 ERRCRD   03E0  Print Error Message
     dw      direct_mode         ;  2 READY    0402  BASIC command line (immediate mode)
     dw      HOOK3+1             ;  3 EDENT    0428  Save Tokenized Line
     dw      HOOK4+1             ;  4 FINI     0480  Finish Adding/Removing Line or Loading Program
@@ -887,8 +831,8 @@ hook_table:                     ; ## caller   addr  performing function
     dw      HOOK6+1             ;  6 PRINT    07BC  Execute PRINT Statement
     dw      HOOK7+1             ;  7 FINPRT   0866  End of PRINT Statement
     dw      HOOK8+1             ;  8 TRMNOK   0880  Improperly Formatted INPUT or DATA handler
-    dw      eval_extension      ;  9 EVAL     09FD  Evaluate Number or String
-    dw      keyword_to_token   ; 10 NOTGOS   0536  Converting Keyword to Token
+    dw      _eval_extension     ;  9 EVAL     09FD  Evaluate Number or String
+    dw      keyword_to_token    ; 10 NOTGOS   0536  Converting Keyword to Token
     dw      HOOK11+1            ; 11 CLEAR    0CCD  Execute CLEAR Statement
     dw      _scratch            ; 12 SCRTCH   0BBE  Execute NEW Statement
     dw      HOOK13+1            ; 13 OUTDO    198A  Execute OUTCHR
@@ -900,9 +844,9 @@ hook_table:                     ; ## caller   addr  performing function
     dw      HOOK19+1            ; 19 TTYCHR   1D72  Print Character to Screen
     dw      HOOK20+1            ; 20 CLOAD    1C2C  Load File from Tape
     dw      HOOK21+1            ; 21 CSAVE    1C09  Save File to Tape
-    dw      token_to_keyword   ; 22 LISPRT   0598  expanding a token
+    dw      token_to_keyword    ; 22 LISPRT   0598  expanding a token
     dw      _next_statement     ; 23 GONE2    064B  interpreting next BASIC statement
-    dw      run_cmd             ; 24 RUN      06BE  starting BASIC program
+    dw      _run_cmd            ; 24 RUN      06BE  starting BASIC program
     dw      on_error            ; 25 ONGOTO   0780  ON statement
     dw      HOOK26+1            ; 26 INPUT    0893  Execute INPUT, bypassing Direct Mode check
     dw      execute_function    ; 27 ISFUN    0A5F  Executing a Function
@@ -933,27 +877,35 @@ fast_hook_handler:
 ;-----------------------------------------------------------------------------
 ; S3 BASIC extensions routines in Auxillary ROM Page
 ;-----------------------------------------------------------------------------
-_keyword_to_token
-    ld    ix,keyword_to_token
-    jr    _call_token_routine
-_token_to_keyword
-    ld    ix,token_to_keyword
-_call_token_routine
-    jr    _call_aux_routine       ; Call the routine
-    jp    (ix)                    ; Jump back to S3BASIC
+
+_eval_extension:
+    call    page_restore_plus     
+    jp      eval_extension        
+
+_force_error:                     
+    call    page_restore_plus     
+    jp      force_error
 
 _main_ext:
-    ld    ix,s3_main_ext
-    jr    _call_aux_routine
+    call    page_map_aux          
+    jp      s3_main_ext
 
+_next_statement:
+    call    page_restore_plus
+    jp      exec_next_statement   ; Go do the Statement
+                                  
+_run_cmd:                         
+    call    page_restore_plus     
+    jp      run_cmd        
+                                  
 _stuffh_ext:
-    ld    ix,s3_stuffh_ext
+    call    page_map_aux          
+    jp      s3_stuffh_ext
     
-_call_aux_routine:                
-    call    page_map_aux          ;  Map Auxillary ROM page into Bank 3
-    call    jump_ix               ;  Call Routine
-    jp      page_restore_plus
-
+_trap_error:                      
+    call    page_restore_plus     
+    jp      trap_error            
+                                  
 ;-----------------------------------------------------------------------------
 ; Keyboard Decode Tables for S3 BASIC with Extended Keyboard Support
 ; $2F00 - $2FFF

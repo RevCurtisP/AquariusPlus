@@ -381,20 +381,22 @@ print_hl_4digits:
     ret 
 
 ;-----------------------------------------------------------------------------
-; LOAD
-;
 ; LOAD "filename"                 Load BASIC program
 ; LOAD "filename",address         Load file as raw binary to address
 ; LOAD "filename",@page,address   Load file as raw binary to address in page
 ; LOAD "filename",*a              Load data into numeric array a
 ; LOAD CHRSET "filename"          Load character set into character RAM buffer
 ; LOAD PALETTE p,"filename"       Load one or all palettes
+; LOAD SCREEN "filename"          Load screen with optional embedded palette
 ;-----------------------------------------------------------------------------
 ST_LOAD:
     ; Close any open files
     call    esp_close_all
 
     ld      a,(hl)
+    cp      SCRNTK
+    jp      z,_load_screen
+
     cp      XTOKEN
     jp      z,_load_extended
 
@@ -651,6 +653,45 @@ _load_extended:
 
 _load_palette:
     jp      GSERR
+
+
+;-----------------------------------------------------------------------------
+; .SCR format: 2048 byte Screen+Color RAM ($3000-$3FFF)
+; .SCP format
+;  40 column: 2048 byte Screen+Color RAM + 32 byte palette + 1 byte border flag
+;  80 column: 2048 byte Screen + 32 byte palette + 1 byte border flag + 2048 byte Color
+;-----------------------------------------------------------------------------
+_load_screen:
+    jp      GSERR
+
+
+;-----------------------------------------------------------------------------
+; RUN command - hook 24
+;-----------------------------------------------------------------------------
+run_cmd:
+    push    af
+    ld      a,KB_ENABLE | KB_ASCII
+    call    key_set_keymode       ; Turn off key repeat
+    pop     af
+
+    jp      z, RUNC            ; If no argument then RUN from 1st line
+
+    push    hl
+    call    FRMEVL             ; Get argument type
+    ld      a, (VALTYP)
+    dec     a                  ; 0 = string
+    jr      nz,.not_file
+    call    FRESTR
+    pop     hl
+    jr      run_file
+
+.not_file:
+    pop     hl
+
+    ; RUN with line number
+    call    CLEARC             ; Init BASIC run environment
+    ld      bc, NEWSTT
+    jp      RUNC2              ; GOTO line number
 
 ;-----------------------------------------------------------------------------
 ; Run file

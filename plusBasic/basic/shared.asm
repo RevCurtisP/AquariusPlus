@@ -266,6 +266,24 @@ get_int16k:
     jp      FCERR
 
 ;-----------------------------------------------------------------------------
+; Parse Foreground and Background Colors
+; Output: A = Combined coloe
+; Clobbers: BC, DE
+;-----------------------------------------------------------------------------
+get_screen_colors:
+    call    get_byte16            ; A = FColor
+    sla     a                     ;
+    sla     a                     ;
+    sla     a                     ;
+    sla     a                     ;
+    push    af                    ; Stack = FColor, Char, Cols, Rows, RtnAdr
+    SYNCHK  ','                   ; Require comma
+    call    get_byte16            ; A = BColor
+    pop     bc                    ; D = FColor; Stack = Char, Cols, Rows, RtnAdr
+    or      b                     ; A = Colors    
+    ret
+
+;-----------------------------------------------------------------------------
 ; Parse ON or OFF
 ; Output: A = $FF for ON, 0 for OFF
 ; Clobbers: BC, DE
@@ -284,8 +302,6 @@ get_on_off:
     byte    OFFTK                 ;   Require OFF
     xor     a                     ;   Returb 0 with flags set
     ret
-    
-
 
 ;-----------------------------------------------------------------------------
 ; Parse String Variable Name

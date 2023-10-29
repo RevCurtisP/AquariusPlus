@@ -206,8 +206,11 @@ ST_SET_TILE:
 ;-----------------------------------------------------------------------------
 ;FILL SCREEN (5,10) - (25,15) "X",7,0
 ;FILL SCREEN (20,8) - (38,20) $86,5,0
+;FILL SCREEN COLOR 1,7
 ST_FILL_SCREEN:
     rst     CHRGET                ; Skip SCREEN
+    cp      '('
+    jr      nz,.fill_screen_ext
     call    scan_rect             ; B = BgnCol, C = EndCol, D = BgnRow, E= EndRow  
     push    de                    ; Stack = Rows, RtnAdr
     push    bc                    ; Stack = Cols, Rows, RtnAdr
@@ -227,16 +230,7 @@ ST_FILL_SCREEN:
 .gotit    
     push    af                    ; Stack = Char, Cols, Rows, RtnAdr
     SYNCHK  ','                   ; Require comma
-    call    get_byte16            ; A = FColor
-    sll     a                     ; 
-    sll     a                     ; 
-    sll     a                     ; 
-    sll     a                     ; 
-    push    af                    ; Stack = FColor, Char, Cols, Rows, RtnAdr
-    SYNCHK  ','                   ; Require comma
-    call    get_byte16            ; A = BColor
-    pop     bc                    ; D = FColor; Stack = Char, Cols, Rows, RtnAdr
-    or      b                     ; A = Colors
+    call    get_screen_colors
     pop     de                    ; D = Char; Stack = Cols, Rows, RtnAdr
     ld      e,a                   ; DE = ChrClr
     pop     bc                    ; BC = Cols; Stack = Rows, RtnAdr
@@ -247,6 +241,33 @@ ST_FILL_SCREEN:
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     ret
 
+.fill_screen_ext:
+    cp      COLTK
+    jr      z,.fill_screen_color
+    rst     SYNCHR
+    byte    XTOKEN
+    rst     SYNCHR
+    byte    CHRTK
+    call    GETBYT              
+    ld      b,a
+    push    hl
+    call    screen_fill_chr
+    jr      .fill_screen_next
+.fill_screen_color
+    rst     CHRGET                ; Skip COL`
+    rst     SYNCHR                ; Require OR
+    byte    ORTK
+    call    get_screen_colors
+    ld      c,a
+    push    hl
+    call    screen_fill_color
+.fill_screen_next:
+    pop     hl
+    call    CHRGT2
+    ret     z
+    jr      .fill_screen_ext
+    
+    
 
 ;-----------------------------------------------------------------------------
 ; FILL TILEMAP TILE tile# ATTR attrs PALETTE palette#
@@ -259,10 +280,10 @@ ST_FILL_TILE:
     rst     SYNCHR                ; Require MAP
     byte    MAPTK
     cp      '('
-    jr      nz,.fill_all
+    jr      nz,.fill_tile_all
     call    scan_rect             ; B = BgnCol, C = EndCol, D = BgnRow, E= EndRow  
     jr      .get_props
-.fill_all
+.fill_tile_all
     ld      bc,63                 ; BgnRow = 0, EndRow = 31
     ld      de,31                 ; BgnCol = 0, EndCol = 63
 .get_props
@@ -513,7 +534,7 @@ ST_DEFINT:
     jr      .loop                 ;   and get next tile#
 
 ;-----------------------------------------------------------------------------
-; DEF RGBLIST R$ = r,b,g; r,b,g; ...
+; DEF RGBLIST R$ = r,g,b; r,g,b; ...
 ; int is a integer between 0 and 65535
 ;-----------------------------------------------------------------------------
 ST_DEFRGB:

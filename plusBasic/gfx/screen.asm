@@ -39,6 +39,28 @@ screen_fill:
     ret
 
 ;-----------------------------------------------------------------------------
+; Fill color memory with value
+; Input: B: Character
+; Destroys: A,BC,DE,HL
+;-----------------------------------------------------------------------------
+screen_fill_chr:
+   ld       hl,SCREEN
+   ld       a,b
+   jr       _screen_fill
+   
+;-----------------------------------------------------------------------------
+; Fill color memory with value
+; Input: C: Color Byte
+; Destroys: A,BC,DE,HL
+;-----------------------------------------------------------------------------
+screen_fill_color:
+   ld       hl,COLOR
+   ld       a,c
+_screen_fill:
+   ld       bc,1000
+   jp       sys_fill_mem
+   
+;-----------------------------------------------------------------------------
 ; Read Text Screen Section into Buffer
 ; Input: B: Start Column
 ;        C: End Column

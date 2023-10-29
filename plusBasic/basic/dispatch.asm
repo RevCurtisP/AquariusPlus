@@ -233,8 +233,8 @@ FNJUMPS:
     dw      extended_function     ;$FE
     dw      SNERR                 ;$FF
 
-; ------------------------------------------------------------------------------
-;  Execute Statement with Token in A
+;-----------------------------------------------------------------------------
+; Hook 23 - GONE2 (Execute Statement with Token in A)
 ; ------------------------------------------------------------------------------
 exec_next_statement:
     exx                         ; save BC,DE,HL

@@ -1,5 +1,11 @@
-;; Utility Routines from Aquarius Extended BASIC
+;; Miscellaneous utility routines
 
+;-----------------------------------------------------------------------------
+; Call Statement Tokenizer Loop
+;-----------------------------------------------------------------------------
+tokenize:
+    call    KLOOP
+    jp      page_restore_plus
 
 ;-----------------------------------------------------------------------------
 ; Convert byte to two digit number
