@@ -76,22 +76,7 @@ _reset:
     out     (IO_BANK3), a
 
     ; Init video mode
-    ld      a, 1
-    out     (IO_VCTRL), a
-
-    ; Init palette 0
-    ld      hl, .default_palette
-    ld      c, IO_VPALSEL
-    ld      b, 0
-    ld      d, 32
-.palloop:
-    out     (c), b
-    ld      a, (hl)
-    out     (IO_VPALDATA), a
-    inc     hl
-    inc     b
-    dec     d
-    jr      nz, .palloop
+    call    reset_screen
 
     ; Initialize character RAM
     call    init_charram
@@ -117,9 +102,6 @@ _reset:
     ; Back to system ROM init
     jp      JMPINI
 
-.default_palette:
-    dw $111, $F11, $1F1, $FF1, $22E, $F1F, $3CC, $FFF
-    dw $CCC, $3BB, $C2C, $419, $FF7, $2D4, $B22, $333
 
 ;-----------------------------------------------------------------------------
 ; Cold boot entry point
@@ -210,7 +192,7 @@ print_copyright:
 _plus_text:
     db "plusBASIC "
 _plus_version:
-    db "v0.15p", 0
+    db "v0.16", 0
 _plus_len   equ   $ - _plus_text
     call    CRDO
     jp      CRDO
@@ -545,7 +527,24 @@ text_screen:
 reset_screen:
     ld      a,VCTRL_TEXT_EN
     out     (IO_VCTRL),a
+; Init palette 0
+    ld      hl, .default_palette
+    ld      c, IO_VPALSEL
+    ld      b, 0
+    ld      d, 32
+.palloop:
+    out     (c), b
+    ld      a, (hl)
+    out     (IO_VPALDATA), a
+    inc     hl
+    inc     b
+    dec     d
+    jr      nz, .palloop
     ret
+
+.default_palette:
+    dw $111, $F11, $1F1, $FF1, $22E, $F1F, $3CC, $FFF
+    dw $CCC, $3BB, $C2C, $419, $FF7, $2D4, $B22, $333
 
 ;-----------------------------------------------------------------------------
 ; Hook 12 - SCRTCH (Execute NEW statement)
@@ -968,6 +967,8 @@ _trap_error:
 
     include "editor.asm"        ; Advanced line editor
     include "s3hooks.asm"       ; S3 BASIC direct mode hooks  
+
+    free_rom_8k = $E000 - $
 
     dc $10000-$,$76
 

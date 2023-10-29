@@ -124,7 +124,10 @@ ST_SCREEN:
     byte    XTOKEN                ; Else
     rst     SYNCHR                ;  Require RESET
     byte    RESETK
-    jp      reset_screen
+    push    hl
+    call    reset_screen
+    pop     hl
+    ret
 
 .do_gfx_mode
     cp      4                     
