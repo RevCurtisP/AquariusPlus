@@ -203,9 +203,12 @@ _screen_bounds:
 
 ;-----------------------------------------------------------------------------
 ; Copy Screen Buffer to Text Screen
+; Input: A: BUFSCREEN40 or SWPSCREEN40
 ; Clobbered: A,BC,DE,HL
 ;-----------------------------------------------------------------------------
 screen_restore:
+    ld      ix,restore_screen_vars
+    call    aux_rom_call
     ld      a,SCR_BUFFR
     ld      bc,2048
     ld      de,SCREEN             ; Copying from Text and Color RAM
@@ -214,9 +217,12 @@ screen_restore:
 
 ;-----------------------------------------------------------------------------
 ; Copy Text Screen to Screen Buffer
+; Input: A: BUFSCREEN40 or SWPSCREEN40
 ; Clobbered: A,BC,DE,HL
 ;-----------------------------------------------------------------------------
 screen_save:
+    ld      ix,save_screen_vars
+    call    aux_rom_call
     ld      a,SCR_BUFFR
     ld      bc,2048
     ld      de,SCRN40BUFF         ; Copying to Text Screen Buffer
@@ -228,6 +234,8 @@ screen_save:
 ; Clobbered: A,BC,DE,HL
 ;-----------------------------------------------------------------------------
 screen_swap:
+    ld      ix,swap_screen_vars
+    call    aux_rom_call
     ld      a,SCR_BUFFR
     ld      bc,2048
     ld      de,SCRN40BUFF         ; Swapping Text Screen Buffer
@@ -303,7 +311,6 @@ screen_switch:
     ld      hl,SCREEN
     push    af                    ; 
     ld      a,SCR_BUFFR
-;    call    .save_screen_vars
     call    page_fast_write_bytes
     pop     af
     ret

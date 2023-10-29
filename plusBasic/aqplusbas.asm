@@ -62,6 +62,11 @@
 ;          that uses the stack.
 ;-----------------------------------------------------------------------------
 _reset:
+    ; Disable interrupts
+    di      
+    xor     a
+    out     (IO_IRQMASK),a
+
     ; Set up temp stack in text line buffer
     ld      sp, $38A0
 
@@ -105,10 +110,16 @@ _reset:
 
 ;-----------------------------------------------------------------------------
 ; Cold boot entry point
+; Executed on RESET if no cartridge detected
 ;-----------------------------------------------------------------------------
 _coldboot:
-    ; No Cartridge - Map RAM into Bank 3
-    ld      a, ROM_EXT_PG        ; plusBASIC extended ROM
+    
+    ld      a,ROM_AUX_PG        ; System Auxiliary ROM
+    out     (IO_BANK3),a
+    call    init_screen_buffers
+    call    init_screen_vars
+
+    ld      a,ROM_EXT_PG        ; plusBASIC extended ROM
     out     (IO_BANK3), a
 
     Call    _clear_basic_ram    ; Init BASIC RAM to zeroes
@@ -144,7 +155,6 @@ _coldboot:
 
     call    clear_esp_fdesc
     call    spritle_clear_all     ; Clear all sprite properties
-    call    init_screen_buffers
 
     call    print_copyright
 
@@ -192,7 +202,7 @@ print_copyright:
 _plus_text:
     db "plusBASIC "
 _plus_version:
-    db "v0.16", 0
+    db "v0.16a", 0
 _plus_len   equ   $ - _plus_text
     call    CRDO
     jp      CRDO
@@ -341,9 +351,10 @@ _clear_basic_ram:
 ; Clobbers: BC, DE, HL
 ;-----------------------------------------------------------------------------
 sys_fill_mem:
-    ld      (hl),a                ; Set First Byte
+    ld      (hl),a                ; Set first byte
     ld      d,h
     ld      e,l
+    dec     bc                    ; First byte already filled
     inc     de                    ; DstAdr = SrcAdr + 1
     ldir                          ; Overlap will propogate start byte
     ret
@@ -668,78 +679,6 @@ bas_read_to_buff:
 jump_ix:
     jp      (ix)                  ; Execute routine and return
 
-jump_iy:
-    jp      (iy)
-
-init_screen_buffers:
-    ld      a,SCR_BUFFR
-    out     (IO_BANK3),a
-    ld      a,' '
-    ld      hl,SCRN40SWAP
-    ld      bc,1000
-    call    sys_fill_mem
-    ld      hl,SCRN41SWAP
-    ld      bc,1000
-    call    sys_fill_mem
-    ld      hl,SCRN80SWAP
-    ld      bc,2000
-    call    sys_fill_mem
-    ld      a,6 
-    ld      hl,SCRN40SWAP+1024
-    ld      bc,1000
-    call    sys_fill_mem
-    ld      hl,SCRN41SWAP+1024
-    ld      bc,1000
-    call    sys_fill_mem
-    ld      hl,SCRN80SWAP+2048
-    ld      bc,2000
-    call    sys_fill_mem
-
-
-;-----------------------------------------------------------------------------
-; initialization screen variable buffers
-; Exits with Extended ROM in Bank 3
-; Output: B: (TTYPOS)
-;         C: (CURCHR)
-;        DE: (CURRAM)
-;        HL: Address after end of last Save Buffer
-;-----------------------------------------------------------------------------
-init_screen_vars:
-    ld    bc,' '                  
-    ld    de,SCREEN+41
-    ld    hl,SAVSCREEN40
-    call  save_screen_vars        ; 40 column primary
-    call  save_screen_vars        ; 40 column secondary
-                                  ; 80 column
-
-;-----------------------------------------------------------------------------
-; Copy text screen variables to Save Buffer
-; Exits with Extended ROM in Bank 3
-; Input: B: TTYPOS
-;        C: CURCHR
-;       DE: CURRAM
-;       HL: Save Buffer offset
-; Output: HL: Address after end of Save Buffer
-;-----------------------------------------------------------------------------
-save_screen_vars:
-    push    af
-    ld      a,BAS_BUFFR
-    out     (IO_BANK3),a
-    ld      h,$C0                 ; HL = Bank 3 Address
-    ld      (hl),b                ; SAVTTYPOS
-    inc     hl
-    ld      (hl),c                ; SAVCURCHR
-    inc     hl
-    ld      (hl),e                ; SAVCURRAM
-    inc     hl
-    ld      (hl),d                
-    inc     hl
-    ld      a,ROM_EXT_PG          
-    out     (IO_BANK3),a
-    pop     af
-    ret
-
-
 do_cls_default:
     ld      a,6                   ; default to black on cyan
 
@@ -874,7 +813,7 @@ fast_hook_handler:
     jp      (ix)
 
 ;-----------------------------------------------------------------------------
-; S3 BASIC extensions routines in Auxillary ROM Page
+; S3 BASIC extensions routines in Auxiliary ROM Page
 ;-----------------------------------------------------------------------------
 
 _eval_extension:
@@ -904,6 +843,11 @@ _stuffh_ext:
 _trap_error:                      
     call    page_restore_plus     
     jp      trap_error            
+
+aux_rom_call:
+    call    page_map_aux          
+    call    jump_ix
+    jp      page_restore_plus
                                   
 ;-----------------------------------------------------------------------------
 ; Keyboard Decode Tables for S3 BASIC with Extended Keyboard Support
@@ -960,13 +904,14 @@ _trap_error:
     dephase
 
 ;-----------------------------------------------------------------------------
-; Auxilary ROM Routines
+; Auxiliary ROM Routines
 ;-----------------------------------------------------------------------------
 
     phase   $C000     ;Assemble in ROM Page 1 which will be in Bank 3
 
     include "editor.asm"        ; Advanced line editor
     include "s3hooks.asm"       ; S3 BASIC direct mode hooks  
+    include "screen_aux.asm"    ; Auxiliary 
 
     free_rom_8k = $E000 - $
 

@@ -68,7 +68,8 @@ ST_SETPALETTE:
 ; SCREEN [text],[textpage],[graphics],[sprites],[wide],[priority],[remap]
 ;-----------------------------------------------------------------------------
 ST_SCREEN:
-    jp      m,.is_token           ; If a token, go process it
+    or      a                     ; If token
+    jp      m,.is_token           ;   Process it
 
     xor     a
     call    .switch_screen
@@ -148,14 +149,13 @@ ST_SCREEN:
     ld      c,a                   ; C = New VCTRL
     ret
 
-
- 
 ;-----------------------------------------------------------------------------
 ; SCREEN RESTORE - Copy Screen Buffer to Text Screen
 ;-----------------------------------------------------------------------------
 ST_SCREEN_RESTORE:
     rst     CHRGET                ; Skip RESTORE
     push    hl                    ; Stack = TxtPtr, RtnAdr
+    ld      a,SWPSCREEN40
     call    screen_restore        ; Do the Copy  
     pop     hl                    ; HL = TxtPtr; HL = RtnAdr
     ret
@@ -166,6 +166,7 @@ ST_SCREEN_RESTORE:
 ST_SCREEN_SAVE:
     rst     CHRGET                ; Skip SAVE
     push    hl                    ; Stack = TxtPtr, RtnAdr
+    ld      a,SWPSCREEN40
     call    screen_save           ; Do the Copy  
     pop     hl                    ; HL = TxtPtr; HL = RtnAdr
     ret

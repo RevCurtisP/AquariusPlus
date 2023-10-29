@@ -23,6 +23,7 @@ ROM_AUX_PG      equ 2       ; plusBASIC auxillary ROM, mapped into Bank 3 as nee
 VIDEO_RAM       equ 20
 CHAR_RAM        equ 21
     
+RAM_BAS_0       equ 32      ; RAM for Soft ROM mapped into Bank 0
 RAM_BAS_1       equ 33      ; RAM for BASIC mapped into Bank 1
 RAM_BAS_2       equ 34      ; RAM for BASIC mapped into Bank 2
 RAM_BAS_3       equ 35      ; RAM for BASIC mapped into Bank 3, switched in as needed
@@ -61,7 +62,7 @@ BORDERCLR   equ $37FF   ; Border color alternate memory location
 ; RNDTAB ($3821-$3840) - Deprecated RND Permutation Table
 BASINTPG    equ $3821   ; BASIC Interrupt Routine Page (swapped into BANK 3)
 BASINTJP    equ $3822   ; BASIC Interrupt Routine JP instruction
-              ; $3823   ; BASIC Interrupt Routine JP Address
+              ; $3823   ; BASIC Interrupt Routine JP Address ($3823-$3824)
 BASYSCTL    equ $3825   ; System Control Bits: 2 = Key Repeat, 6 = 80 Column Mode
 BANK0PAGE   equ $3826   ; Page that was in Bank 0
 BANK1PAGE   equ $3827   ; Page that was in Bank 1
@@ -156,15 +157,15 @@ CHRSETBUF   equ $3000   ; Page Address: Custom Character Set Buffer
 
 ;-----------------------------------------------------------------------------
 ; BASIC Text Screen Buffers
-; Page 39 (SCR_BUFFR), swapped into Bank 3
+; Offsets into Page 39 (SCR_BUFFR)
 ;-----------------------------------------------------------------------------
-SCRN40SWAP  equ $C000   ; Primary 40 column buffer for screen switching
-SCRN41SWAP  equ $C800   ; Secondary 40 column buffer for screen switching
-SCRN80SWAP  equ $D000   ; 80 column buffer for screen switching
+SCRN40SWAP  equ $0000   ; Primary 40 column buffer for screen switching
+SCRN41SWAP  equ $0800   ; Secondary 40 column buffer for screen switching
+SCRN80SWAP  equ $1000   ; 80 column buffer for screen switching
 
-SCRN40BUFF  equ $E000   ; Used by screen save, restore and swap
-SCRN41BUFF  equ $E800   ; Used by screen save, restore and swap
-SCRN80BUFF  equ $F000   ; Used by screen save, restore and swap
+SCRN40BUFF  equ $2000   ; Used by screen save, restore and swap
+SCRN41BUFF  equ $2800   ; Used by screen save, restore and swap
+SCRN80BUFF  equ $3000   ; Used by screen save, restore and swap
 
 
 ;-----------------------------------------------------------------------------

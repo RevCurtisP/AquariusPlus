@@ -260,12 +260,14 @@ _map_setup:
     ret
 
 ;-----------------------------------------------------------------------------
-; Set up temporary Stack and Swap Pages into Banks 2 and 3
+; Disable interrupts, set up temporary stack, and swap pages into Banks 2 and 3
 ; Input: A: Page to Swap into Bank 3
 ;       A': Page to Swap into Bank 2
+; Writes: BANK2PAGE, BANK3PAGE, PLUSTCK
 ; Clobbers: AF,AF',HL',IX
 ;-----------------------------------------------------------------------------
 page_swap_two:
+    di                            ; Disable interrupts
     pop     ix                    ; Get Return Address
     exx                           ; Save Registers
     ld      hl,0
@@ -285,7 +287,8 @@ page_swap_two:
     jp      (ix)                  ; Return
 
 ;-----------------------------------------------------------------------------
-; Restore Original Pages and Stack
+; Restore original pages and stack and enable interrupts
+; Reads: BANK2PAGE, BANK3PAGE, PLUSTCK
 ; Clobbers: AF',IX
 ;-----------------------------------------------------------------------------
 page_restore_two:
@@ -297,6 +300,7 @@ page_restore_two:
     out     (IO_BANK3),a          ; Restore bank 3 page
     ld      sp,(PLUSTCK)          ; Back to original stack
     ex      af,af'
+    ei                            ; Enable interrupts
     jp      (ix)
 
 ;-----------------------------------------------------------------------------
