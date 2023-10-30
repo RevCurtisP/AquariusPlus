@@ -126,6 +126,8 @@ XFUNKY  equ     $2015   ;; | Set Character RAM
 XCNTC   equ     $2018   ;; | ISCNTC hook
 XMAIN   equ     $201B   ;; | Line Crunch Hook
 XSTUFF  equ     $201E   ;; | STUFFH hook
+XCLS    equ     $2021   ;; | CLS Extension
+XCLEAR  equ     $2024   ;; | Issue Error if TOPMEM too low
 endif                   
 EXTBAS  equ     $2000   ;;Start of Extended Basic
 XSTART  equ     $2010   ;;Extended BASIC Startup Routine
@@ -2406,7 +2408,11 @@ CLEARS: ld      a,l               ;[M80] SUBTRACT [H,L]-[D,E] INTO [D,E]
         rst     COMPAR            ;[M80] ROOM?
         jp      nc,OMERR          ;[M80] NO, DON'T EVEN CLEAR
         ex      de,hl             ;[M80] NEW STACK LOCATION [H,L]
+ifdef aqplus
+        call    XCLEAR            ;; Validate value before setting TOPMEM
+else        
         ld      (TOPMEM),hl       ;[M80] SET UP NEW STACK LOCATION
+endif
         pop     hl                ;[M80] GET BACK MEMSIZ
         ld      (MEMSIZ),hl       ;[M80] SET IT UP, MUST BE OK
         pop     hl                ;[M80] REGAIN THE TEXT POINTER

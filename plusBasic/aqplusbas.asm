@@ -48,9 +48,10 @@
     jp      _keyread        ; $2012 Called from COLORS
     jp      _ctrl_keys      ; $2015
     jp      _iscntc_hook    ; $2018
-    jp      _main_ext       ; $201A Save Line# Flag`
-    jp      _stuffh_ext     ; $201D Check for additional tokens when stuffing
-    jp      do_cls_default  ; $201? Clear both text screens
+    jp      _main_ext       ; $201B Save Line# Flag`
+    jp      _stuffh_ext     ; $201E Check for additional tokens when stuffing
+    jp      do_cls_default  ; $2021 Clear both text screens
+    jp      _check_topmem   ; $2024 Verify TOPMEM is in Bank 2
     jp      _inlin_hook     ; $20?? Jump from INLIN for command history recall
     jp      _inlin_done     ; $20?? Jumped from FININL to save command to history
 
@@ -202,7 +203,7 @@ print_copyright:
 _plus_text:
     db "plusBASIC "
 _plus_version:
-    db "v0.16a", 0
+    db "v0.16b", 0
 _plus_len   equ   $ - _plus_text
     call    CRDO
     jp      CRDO
@@ -226,6 +227,17 @@ _autolen = $ - _autotext
     db      $0D
 _autodesc
     dw      _autolen,_autotext
+
+;-----------------------------------------------------------------------------
+; Issue OV Error if TOPMEM will put stack in Bank 1
+; Calle from CLEARS
+;-----------------------------------------------------------------------------
+_check_topmem:
+    ld      de,$8000+1024         ; Leave 1024 bytes for stack
+    rst     COMPAR                ; If new TOPMEM < Minimum
+    jp      c,OVERR               ;   Overflow error
+    ld      (TOPMEM),hl           ; Else Set TOPMEM
+    ret                           ;   and Return
 
 ;-----------------------------------------------------------------------------
 ; Extended line editor function keys
