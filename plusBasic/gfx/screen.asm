@@ -203,43 +203,102 @@ _screen_bounds:
 
 ;-----------------------------------------------------------------------------
 ; Copy Screen Buffer to Text Screen
-; Input: A: BUFSCREEN40 or SWPSCREEN40
+; Input: A: BUFSCRN40 or SWPSCRN40
 ; Clobbered: A,BC,DE,HL
 ;-----------------------------------------------------------------------------
 screen_restore:
+    push    hl                    ; Stack = ScrBuf, RtnAdr
     ld      ix,restore_screen_vars
     call    aux_rom_call
+    pop     hl                    ; HL = ScrBuf, RtnAdr
+    in      a,(IO_VCTRL)
+    bit     6,a                   
+    jr      nz,.restore80         ; If 40 column screen
+    bit     7,a                   ;   If primary page
+    ld      de,SCRN40BUF          ;     Write to primary buffer
+    jr      z,.restore_screen        ;   Else 
+    ld      de,SCRN41BUF          ;     Write to auxiliary buffer
+    jr      .restore_screen          ; Else
+.restore80    
+    set     7,a                   ;   Select Color RAM
+    ld      de,SCRN80BUF+2048     ;   and Write it     
+    call    .restore_screen           
+    in      a,(IO_VCTRL)
+    res     7,a                   ;   Select Screen RAM
+    ld      de,-4096              ;   and Write it
+.restore_screen
+    add     hl,de                 
     ld      a,SCR_BUFFR
     ld      bc,2048
     ld      de,SCREEN             ; Copying from Text and Color RAM
-    ld      hl,SCRN40BUFF         ; Copying to Text Screen Buffer
     jp      page_fast_read_bytes  ; Do it
 
 ;-----------------------------------------------------------------------------
 ; Copy Text Screen to Screen Buffer
-; Input: A: BUFSCREEN40 or SWPSCREEN40
+; Input: A: Cursor buffer offset: BUFSCRN40 or SWPSCRN40
+;       HL: Screen buffer offset: SCRN40BUF or SCRN40SWP 
 ; Clobbered: A,BC,DE,HL
 ;-----------------------------------------------------------------------------
 screen_save:
+    push    hl                    ; Stack = ScrBuf, RtnAdr
     ld      ix,save_screen_vars
     call    aux_rom_call
+    pop     hl                    ; HL = ScrBuf, RtnAdr
+    in      a,(IO_VCTRL)
+    bit     6,a                   
+    jr      nz,.save80            ; If 40 column screen
+    bit     7,a                   ;   If primary page
+    ld      de,SCRN40BUF          ;     Write to primary buffer
+    jr      z,.save_screen        ;   Else 
+    ld      de,SCRN41BUF          ;     Write to auxiliary buffer
+    jr      .save_screen          ; Else
+.save80    
+    set     7,a                   ;   Select Color RAM
+    ld      de,SCRN80BUF+2048     ;   and Write it     
+    call    .save_screen           
+    in      a,(IO_VCTRL)
+    res     7,a                   ;   Select Screen RAM
+    ld      de,-4096              ;   and Write it
+.save_screen
+    add     hl,de                 
+    ex      de,hl
     ld      a,SCR_BUFFR
     ld      bc,2048
-    ld      de,SCRN40BUFF         ; Copying to Text Screen Buffer
     ld      hl,SCREEN             ; Copying from Text and Color RAM
     jp      page_fast_write_bytes ; Do it
 
 ;-----------------------------------------------------------------------------
 ; Swap Text Screen with Screen Buffer
+; Input: A: Cursor buffer offset: BUFSCRN40 or SWPSCRN40
+;       HL: Screen buffer offset: SCRN40BUF or SCRN40SWP 
 ; Clobbered: A,BC,DE,HL
 ;-----------------------------------------------------------------------------
 screen_swap:
+    push    hl                    ; Stack = ScrBuf, RtnAdr
     ld      ix,swap_screen_vars
     call    aux_rom_call
+    pop     hl                    ; HL = ScrBuf, RtnAdr
+    in      a,(IO_VCTRL)
+    bit     6,a                   
+    jr      nz,.swap80            ; If 40 column screen
+    bit     7,a                   ;   If primary page
+    ld      de,SCRN40BUF          ;     Write to primary buffer
+    jr      z,.swap_screen        ;   Else 
+    ld      de,SCRN41BUF          ;     Write to auxiliary buffer
+    jr      .swap_screen          ; Else
+.swap80    
+    set     7,a                   ;   Select Color RAM
+    ld      de,SCRN80BUF+2048     ;   and Write it     
+    call    .swap_screen           
+    in      a,(IO_VCTRL)
+    res     7,a                   ;   Select Screen RAM
+    ld      de,-4096              ;   and Write it
+.swap_screen
+    add     hl,de                 
+    ex      de,hl
     ld      a,SCR_BUFFR
     ld      bc,2048
-    ld      de,SCRN40BUFF         ; Swapping Text Screen Buffer
-    ld      hl,SCREEN             ; with Text and Color RAM
+    ld      hl,SCREEN             ; Copying from Text and Color RAM
     jp      page_mem_swap_bytes   ; Do it
 
 ;-----------------------------------------------------------------------------
@@ -255,95 +314,3 @@ screen_set_vctrl:
     or      c
     out     (IO_VCTRL),a
     ret
-
-;-----------------------------------------------------------------------------
-; Switch Screens
-; Input: A: If 0, save screen RAM to respective buffer
-;           Else restore screen to respective buffer
-; Clobbered: A,BC,DE,HL
-;-----------------------------------------------------------------------------
-screen_switch:
-    ret
-;;; ToDo: Finish this
-    or      a                     ; Set flags on argument
-    call    nz,.get_screen_vars   ; B = TTYPOS, C = CURCHR, DE = CURRAM
-    ex      af,af'                ; AF' = Flags
-    in      a,(IO_VCTRL)          ; AF = VCTRL
-    bit     6,a                   ; 
-    jr      nz,.switch80          ; If not in 80 column mode
-    bit     7,a                   ;   If auxilary screen page
-;;;ToDo: ld hl accordingly and call save_screen_vars
-
-    ld      bc,2048               ;   Copy 2048
-    ld      hl,SCREEN             ;   
-    jr      nz,.switch41          ;   If RAM Page 1
-    ld      de,SCRN40SWAP
-
-
-
-.switch41
-    ex      af,af'                ; AF = Flags, AF' = VCTRL
-    ld      a,SCR_BUFFR           ; A = 39
-    jr      nz,.restore40
-    jp      page_fast_write_bytes 
-
-
-
-.restore40
-    ld      a,SCR_BUFFR
-    ex      de,hl
-    call    page_fast_read_bytes
-    jr     .restore_screen_vars
-   
-.switch80
-    ex      af,af'
-    jr      nz,.restore80
-    ex      af,af'
-    set     7,a                   ; Select Color RAM
-    ld      hl,SCRN80SWAP+2048
-    call    .write80
-    res     7,a                   ; Select Screen RAM
-    ld      hl,SCRN80SWAP
-.write80:
-    out     (IO_VCTRL),a
-    ld      bc,2048
-    ld      de,SCRN80SWAP
-    ld      hl,SCREEN
-    push    af                    ; 
-    ld      a,SCR_BUFFR
-    call    page_fast_write_bytes
-    pop     af
-    ret
-.restore80
-    ex      af,af'
-    set     7,a                   ; Select Color RAM
-    ld      hl,SCRN80SWAP
-    call    .read80
-    ld      hl,SCRN80SWAP
-    res     7,a                   ; Select Screen RAM
-    call    .read80
-    jr      .restore_screen_vars
-
-.read80:
-    out     (IO_VCTRL),a
-    ld      bc,2048
-    ld      de,SCREEN
-    push    af
-    ld      a,SCR_BUFFR
-    call    page_fast_read_bytes
-    pop     af
-    ret
-
-.get_screen_vars:
-    ex      af,af'
-    ld      a,(TTYPOS)
-    ld      b,a
-    ld      a,(CURCHR)
-    ld      c,a
-    ld      de,(CURRAM)
-    ex      af,af'
-    ret
-    
-    
-    
-.restore_screen_vars:

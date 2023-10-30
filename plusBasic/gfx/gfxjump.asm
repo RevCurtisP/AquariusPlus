@@ -4,7 +4,7 @@
 gfx_jump_table
     jp      gfx_startup           ; $8000
     jp      gfx_init              ; $8003
-    jp      screen_switch         ; $8006 
+    jp      _return               ; $8006 
     jp      palette_shift_num     ; $8009 
     jp      palette_set_entry     ; $800C 
     jp      palette_set           ; $800F
@@ -28,3 +28,5 @@ gfx_jump_table
     jp      spritle_clear         ; $8045
     jp      spritle_clear_all     ; $8048
     
+_return:
+    ret

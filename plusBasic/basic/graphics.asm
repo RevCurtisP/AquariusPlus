@@ -70,9 +70,6 @@ ST_SETPALETTE:
 ST_SCREEN:
     or      a                     ; If token
     jp      m,.is_token           ;   Process it
-
-    xor     a
-    call    .switch_screen
     
     in      a,(IO_VCTRL)
     ld      c,a                   ; C = Current VCTRL
@@ -107,11 +104,6 @@ ST_SCREEN:
     ld      a,c
     out     (IO_VCTRL),a          ; Write back out
 
-    ld      a,1
-.switch_screen
-    push    hl                    ; Save TxtPtr
-    call    screen_switch         ; Save to / restore from buffer
-    pop     hl                    ; Restore TxtPtr
     ret
 
 .is_token
@@ -155,7 +147,8 @@ ST_SCREEN:
 ST_SCREEN_RESTORE:
     rst     CHRGET                ; Skip RESTORE
     push    hl                    ; Stack = TxtPtr, RtnAdr
-    ld      a,SWPSCREEN40
+    ld      a,SWPSCRN40
+    ld      hl,SCRN40SWP
     call    screen_restore        ; Do the Copy  
     pop     hl                    ; HL = TxtPtr; HL = RtnAdr
     ret
@@ -166,7 +159,8 @@ ST_SCREEN_RESTORE:
 ST_SCREEN_SAVE:
     rst     CHRGET                ; Skip SAVE
     push    hl                    ; Stack = TxtPtr, RtnAdr
-    ld      a,SWPSCREEN40
+    ld      a,SWPSCRN40
+    ld      hl,SCRN40SWP
     call    screen_save           ; Do the Copy  
     pop     hl                    ; HL = TxtPtr; HL = RtnAdr
     ret
@@ -177,6 +171,7 @@ ST_SCREEN_SAVE:
 ST_SCREEN_SWAP:
     rst     CHRGET                ; Skip SWAP
     push    hl                    ; Stack = TxtPtr, RtnAdr
+    ld      hl,SCRN40SWP
     call    screen_swap           ; Do the Copy  
     pop     hl                    ; HL = TxtPtr; HL = RtnAdr
     ret

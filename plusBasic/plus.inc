@@ -159,13 +159,13 @@ CHRSETBUF   equ $3000   ; Page Address: Custom Character Set Buffer
 ; BASIC Text Screen Buffers
 ; Offsets into Page 39 (SCR_BUFFR)
 ;-----------------------------------------------------------------------------
-SCRN40SWAP  equ $0000   ; Primary 40 column buffer for screen switching
-SCRN41SWAP  equ $0800   ; Secondary 40 column buffer for screen switching
-SCRN80SWAP  equ $1000   ; 80 column buffer for screen switching
+SCRN40BUF  equ $0000   ; Primary 40 column buffer for screen switching
+SCRN41BUF  equ $0800   ; Secondary 40 column buffer for screen switching
+SCRN80BUF  equ $1000   ; 80 column buffer for screen switching
 
-SCRN40BUFF  equ $2000   ; Used by screen save, restore and swap
-SCRN41BUFF  equ $2800   ; Used by screen save, restore and swap
-SCRN80BUFF  equ $3000   ; Used by screen save, restore and swap
+SCRN40SWP  equ $2000   ; Used by screen save, restore and swap
+SCRN41SWP  equ $2800   ; Used by screen save, restore and swap
+SCRN80SWP  equ $3000   ; Used by screen save, restore and swap
 
 
 ;-----------------------------------------------------------------------------
