@@ -65,7 +65,7 @@ ST_SETPALETTE:
 ;-----------------------------------------------------------------------------
 ; Proposed new syntax
 ; SCREEN SAVE|RESTORE|SWAP|RESET
-; SCREEN [text],[textpage],[graphics],[sprites],[wide],[priority],[remap]
+; SCREEN [text],[graphics],[sprites],[priority],[remap]
 ;-----------------------------------------------------------------------------
 ST_SCREEN:
     or      a                     ; If token
@@ -74,23 +74,14 @@ ST_SCREEN:
     in      a,(IO_VCTRL)
     ld      c,a                   ; C = Current VCTRL
 
-    call    get_byte_optional     ; Do Text Enabled
-    ld      b,VCTRL_TEXT_EN
-    call    nc,.update_bit
+    call    get_byte_optional     ; Do Text
+    call    nc,.do_text_mode
 
-    call    get_byte_optional     ; Do Text Page
-    ld      b,VCTRL_TEXT_PAGE
-    call    nc,.update_bit
-
-    call    get_byte_optional     ; Do graphics
+    call    get_byte_optional     ; Do Graphics
     call    nc,.do_gfx_mode
 
     call    get_byte_optional     ; Do Sprites
     ld      b,VCTRL_SPR_EN
-    call    nc,.update_bit
-    
-    call    get_byte_optional     ; Do Wide
-    ld      b,VCRTL_80COL_EN
     call    nc,.update_bit
     
     call    get_byte_optional     ; Do Priority
@@ -122,6 +113,14 @@ ST_SCREEN:
     pop     hl
     ret
 
+.do_text_mode:
+    cp      4                     ; If > 3
+    jp      nc,FCERR              ;   Illegal Quantity error
+    ld      de,.text_mode_table
+    call    table_lookup          ; Look up Text Mode bits
+    ld      b,a                   ; B = Mode Bits
+    ld      a,$3E                 ; A = Text Mode mask
+    jr      .do_bit               ; Mask, combine, and return
 .do_gfx_mode
     cp      4                     
     jp      nc,FCERR              ; Error if > 3
@@ -140,6 +139,12 @@ ST_SCREEN:
     or      b                     ; A = New VCTRL
     ld      c,a                   ; C = New VCTRL
     ret
+
+.text_mode_table:
+    byte    VCTRL_TEXT_OFF                  ; 0 = Text Off
+    byte    VCTRL_TEXT_EN                   ; 1 = 40 Column Primary
+    byte    VCTRL_TEXT_EN+VCTRL_TEXT_PAGE   ; 2 = 40 Column Secondary
+    byte    VCTRL_TEXT_EN+VCRTL_80COL_EN    ; 3 = 80 Column
 
 ;-----------------------------------------------------------------------------
 ; SCREEN RESTORE - Copy Screen Buffer to Text Screen
