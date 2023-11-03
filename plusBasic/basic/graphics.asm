@@ -310,13 +310,18 @@ ST_FILL_TILE:
 ;GET SCREEN (2,2) - (10,10),*A
 ST_GET_SCREEN:
     rst     CHRGET                ; Skip SCREEN
+    call    _screen_suffix        ; Check for CHR and ATTR
+    push    bc                    ; Stack = Mode, RtnAdr
     call    scan_rect             ; B = BgnCol, C = EndCol, D = BgnRow, E = EndRow  
     SYNCHK  ','                   ; Require comma
     rst     SYNCHR
     byte    MULTK                 ; Require * - for now
+    pop     af                    ; A = Mode; Stack = RtnAdr
     push    de                    ; Stack = Rows, RtnAdr
     push    bc                    ; Stack = Cols, Rows, RtnAdr
+    push    af                    ; Stack = Mode, Cols, Rows, RtnAdr
     call    get_array             ; DE = Array Data Address
+    pop     af                    ; A = Mode, Stack = Cols, Rows, RtnAdr
     pop     bc                    ; B = BgnCol, C = EndCol; Stack = Rows, RtnAdr
     ex      (sp),hl               ; HL = Rows; Stack = TxtPtr, RtnAdr
     ex      de,hl                 ; D = BgnRow, E = EndRow, HL = AryAdr
@@ -357,13 +362,18 @@ ST_GET_TILEMAP:
 ;PUT SCREEN (4,4),*A
 ST_PUT_SCREEN: 
     rst     CHRGET                ; Skip SCREEN
+    call    _screen_suffix        ; Check for CHR and ATTR
+    push    bc                    ; Stack = Mode, RtnAdr
     call    SCAND                 ; C = Col, E = Row
     SYNCHK  ','                   ; Require comma
     rst     SYNCHR
     byte    MULTK                 ; Require * - for now
+    pop     af                    ; A = Mode; Stack = RtnAdr
     push    de                    ; Stack = Row, RtnAdr
     push    bc                    ; Stack = Col, Row, RtnAdr
+    push    af                    ; Stack = Mode, Col, Row, RtnAdr
     call    get_array             ; DE = Array Data Address
+    pop     af                    ; A = Mode, Stack = Col, Row, RtnAdr
     pop     bc                    ; C = Col; Stack = Row, RtnAdr
     ex      (sp),hl               ; HL = Row; Stack = TxtPtr, RtnAdr
     ex      de,hl                 ; E = Row, HL = AryAdr
@@ -371,6 +381,20 @@ ST_PUT_SCREEN:
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     ret
 
+_screen_suffix:
+    ld      b,3                   
+    cp      XTOKEN                ; If Not Extended Token
+    ret     nz                    ;   Return 3 (SCREEN+COLOR)
+    rst     CHRGET                ; Else Eat Token
+    ld      b,1
+    cp      CHRTK                 ; If CHR
+    jp      z,CHRGTR              ;   Eat it and return 1 (SCREEN)
+    ld      b,2
+synchk_color:
+    rst     SYNCHR                ; Else
+    byte    ATTRTK                ;   Require ATTRS
+    ret
+    
 ;-----------------------------------------------------------------------------
 ; PUT TILEMAP (col,row),*arrayvar
 ;-----------------------------------------------------------------------------

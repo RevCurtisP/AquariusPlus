@@ -62,40 +62,43 @@ _screen_fill:
    
 ;-----------------------------------------------------------------------------
 ; Read Text Screen Section into Buffer
-; Input: B: Start Column
+; Input: A: Mode: 1 = SCREEN, 2 = COLOR, 3 = Both
+;        B: Start Column
 ;        C: End Column
 ;        D: Start Row
 ;        E: End Row
 ;        HL: Buffer Address
-; Clobbered: A, BC, DE
-;-----------------------------------------------------------------------------
+; Output: Zero Flag set if invalid mode 
+; Clobbered: A, BC, DE, HL
+;--------------`---------------------------------------------------------------
 screen_get:
+    and     3                     ; If Mode is not 1, 2, or 3
+    ret     z                     ; Return error
+    ex      af,af'                ; A' = Mode
     call    screen_convert_rect   ; A = RowCnt, C = ColCnt, DE = RowAdr
     ret     c
     ld      (hl),c                ; Buffer[0] = Columns
     inc     hl
     ld      (hl),a                ; Buffer[1] = Rows
     inc     hl
-    ex      af,af'
+    push    af                    ; Stack = RowCnt, RtnAdr
 .rows:
-    push    de                    ; Stack = RowAdr, RtnAdr
+    push    de                    ; Stack = RowAdr, RowCnt RtnAdr
     ld      b,c                   ; B = Column Countdown
 .columns
-    ld      a,(de)                ; A = Character
-    ld      (hl),a                ; Put in buffer
-    inc     hl
-    set     2,d
-    ld      a,(de)                ; A = Colors
-    ld      (hl),a                ; Put in buffer
-    inc     hl
-    res     2,d
+    ex      af,af'                ; A = Mode
+    bit     0,a                   ; If 1 or 3
+    call    nz,.screen            ;   Get Screen byte
+    bit     1,a                   ; If 2 or 3
+    call    nz,.color             ;   Get Color byte
+    ex      af,af'                ; A = Mode
     inc     de
     djnz    .columns
-    pop     de                    ; DE = RowAdr; Stack = RtnAdr
-    ex      af,af'
+    pop     de                    ; DE = RowAdr; Stack = RowAdr, RtnAdr
+    pop     af                    ; A = RowCnt; Stack = RtnAdr
     dec     a                     ; If no more rows
     ret     z                     ; Return
-    ex      af,af'
+    push    af                    ; Stack = RowCnt, RtnAdr
     ld      a,40
     add     e
     ld      e,a
@@ -104,14 +107,35 @@ screen_get:
     ld      d,a                   ; DE = Next RowAdr
     jr      .rows
 
+.screen
+    ex      af,af'                ; A' = Mode
+    ld      a,(de)                ; A = Character
+    ld      (hl),a                ; Put in buffer
+    inc     hl
+    ex      af,af'                ; A = Mode
+    ret
+
+.color
+    ex      af,af'                ; A' = Mode
+    set     2,d
+    ld      a,(de)                ; A = Colors
+    ld      (hl),a                ; Put in buffer
+    inc     hl
+    res     2,d
+    ex      af,af'                ; A = Mode
+    ret
 ;-----------------------------------------------------------------------------
 ; Write Text Screen Section from Buffer
-; Input: C: Column
+; Input: A: Mode: 1 = SCREEN, 2 = COLOR, 3 = Both
+;        C: Column
 ;        E: Row
 ;       HL: Buffer Address
 ; Clobbered: A, BC, DE
 ;-----------------------------------------------------------------------------
 screen_put:
+    and     3                     ; If Mode is not 1, 2, or 3
+    ret     z                     ; Return error
+    ex      af,af'                ; A' = Mode
     call    _screen_bounds
     ret     c
     call    screen_pos_addr       ; DE = RowAdr
@@ -119,26 +143,24 @@ screen_put:
     inc     hl
     ld      a,(hl)                ; A = RowCnt
     inc     hl
-    ex      af,af'
+    push    af                    ; Stack = RowCnt, RtnAdr
 .rows:
-    push    de                    ; Stack = RowAdr, RtnAdr
+    push    de                    ; Stack = RowAdr, RowCnt RtnAdr
     ld      b,c                   ; B = Column Countdown
 .columns
-    ld      a,(hl)                ; A = Character
-    ld      (de),a                ; Write it
-    inc     hl
-    ld      a,(hl)                ; A = Colors
-    set     2,d
-    ld      (de),a                ; Write it
-    inc     hl
-    res     2,d
+    ex      af,af'                ; A = Mode
+    bit     0,a                   ; If 1 or 3
+    call    nz,.screen            ;   Get Screen byte
+    bit     1,a                   ; If 2 or 3
+    call    nz,.color             ;   Get Color byte
+    ex      af,af'                ; A = Mode
     inc     de
     djnz    .columns
-    pop     de                    ; DE = RowAdr; Stack = RtnAdr
-    ex      af,af'
+    pop     de                    ; DE = RowAdr; Stack = RowAdr, RtnAdr
+    pop     af                    ; A = RowCnt; Stack = RtnAdr
     dec     a                     ; If no more rows
     ret     z                     ; Return
-    ex      af,af'
+    push    af                    ; Stack = RowCnt, RtnAdr
     ld      a,40
     add     e
     ld      e,a
@@ -146,6 +168,24 @@ screen_put:
     adc     d
     ld      d,a                   ; DE = Next RowAdr
     jr      .rows
+
+.screen
+    ex      af,af'                ; A' = Mode
+    ld      a,(hl)                ; A = Character
+    ld      (de),a                ; Write it
+    inc     hl
+    ex      af,af'                ; A = Mode
+    ret
+
+.color
+    ex      af,af'                ; A' = Mode
+    set     2,d
+    ld      a,(hl)                ; A = Colors
+    ld      (de),a                ; Write it
+    inc     hl
+    res     2,d
+    ex      af,af'                ; A = Mode
+    ret
 
 ;-----------------------------------------------------------------------------
 ; Convert Screen Coordinates to Size and Start Address

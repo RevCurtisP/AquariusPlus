@@ -111,7 +111,12 @@ RESHO   equ     $38F6   ;[M65] RESULT OF MULTIPLIER AND DIVIDER
 RESMO   equ     $38F7   ;;RESMO and RESLO are loaded into and stored from HL
 SAVSTK  equ     $38F9   ;[M80] NEWSTT SAVES STACK HERE BEFORE SO THAT ERROR REVERY CAN
 INTJMP  equ     $38FB   ;;RST 7 Interrupt JMP
+ifdef aqlplus
+LPTWID  equ     $38FE   ;;Printer width in columns
+TTYWID  equ     $38FF   ;;Screen width in columns - single byte but can be read as integer.
+else
 ;;        $38FE-$38FF   ;;??Unused
+endif
 ;;              $3900   ;;This is always 0
 BASTXT  equ     $3901   ;;Start of Basic Program
 ifdef aqplus            

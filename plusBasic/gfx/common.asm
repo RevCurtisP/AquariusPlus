@@ -24,17 +24,13 @@ gfx_convert_rect:
     sub     d                     ; A= EndRow - BgnRow
     ret     c                     ; If EndRow < BgnRow Return error
     inc     a                     ; A = RowCnt 
-
-    ex      af,af'
+    push    af                    ; Stack = RowCnt, RtnAdr
     ld      e,d                   ; E = BgnRow
     call    jump_ix               ; Calculate cell address
     ret     c                     ; Return if error
     ld      c,b                   
     ld      b,0                   ; BC = ColCnt
-    ex      af,af'
-    ret
-_ccf_ret:
-    ccf
+    pop     af                    ; A = RowCnt; Stack = RtnAdr
     ret
 
 
