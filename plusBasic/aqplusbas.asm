@@ -63,10 +63,11 @@
 ;          that uses the stack.
 ;-----------------------------------------------------------------------------
 _reset:
-    ; Disable interrupts
+    ; Disable interrupts and turbo mode
     di      
     xor     a
     out     (IO_IRQMASK),a
+    out     (IO_SYSCTRL),a
 
     ; Set up temp stack in text line buffer
     ld      sp, $38A0
