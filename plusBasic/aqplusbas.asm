@@ -97,10 +97,6 @@ _reset:
     ld      hl,_interrupt       ; Interrupt Address
     ld      (INTJMP+1), hl
 
-    ; Set Extended Key Table Address
-    ld      hl,key_table-1
-    ld      (KEYADR), hl
-
     ; Turn on Keyboard Buffer
     ld      a,KB_ENABLE | KB_ASCII
     call    key_set_keymode
@@ -203,7 +199,7 @@ print_copyright:
 _plus_text:
     db "plusBASIC "
 _plus_version:
-    db "v0.16e", 0
+    db "v0.16f", 0
 _plus_len   equ   $ - _plus_text
     call    CRDO
     jp      CRDO
@@ -550,7 +546,20 @@ text_screen:
 reset_screen:
     ld      a,VCTRL_TEXT_EN
     out     (IO_VCTRL),a
-; Init palette 0
+    call    reset_palette
+    
+set_ttywid:
+    in      a,(IO_VCTRL)
+set_ttywid_a:
+    and     VCRTL_80COL_EN
+    ld      a,40                  ; A = 40
+    jr      z,.not80              ; If 80 column bitset
+    rla                           ;   A = 80
+.not80
+    ld      (TTYWID),a            ; Save it
+    ret
+
+reset_palette:
     ld      hl, .default_palette
     ld      c, IO_VPALSEL
     ld      b, 0
@@ -564,6 +573,7 @@ reset_screen:
     dec     d
     jr      nz, .palloop
     ret
+
 
 .default_palette:
     dw $111, $F11, $1F1, $FF1, $22E, $F1F, $3CC, $FFF
@@ -684,7 +694,7 @@ ULERR:
 ; Output: E: String Length
 ;        DE: Address of Terminator
 ;        HL: Buffer Address
-; Clobbers: B
+; Clobbers: 
 ;-----------------------------------------------------------------------------
 bas_read_to_buff:
     ld      hl,FBUFFR             ; Use FBUFFR for now
@@ -694,20 +704,36 @@ jump_ix:
 do_cls_default:
     ld      a,6                   ; default to black on cyan
 
+;-----------------------------------------------------------------------------
+; Clear Screen and init cursor
+; Input: A: Color Attributes
+;-----------------------------------------------------------------------------
 do_cls:
+;-----------------------------------------------------------------------------
+; Clear Screen
+; Input: A: Color Attributes
+;-----------------------------------------------------------------------------
+    push    hl
     call    clear_screen
+    pop     hl
 _init_cursor
     ld      a,' '
     ld      (CURCHR),a            ; SPACE under cursor
-    ld      de,$3000+41           ; Point Address for (0,0)
+    ld      de,(TTYWID)
+    inc     de
+    ld      d,high(SCREEN)
     ld      (CURRAM),de
     xor     a
     ld      (TTYPOS),a            ; column 0
     ret
 
 clear_screen:
-    push    hl
-    ld      hl,$3000
+    ld      c,IO_VCTRL
+    in      b,(c)
+    bit     6,b
+    jr      nz,clear_screen80
+clear_screen40:
+    ld      hl,SCREEN
     ld      c,25
 .line:
     ld      b,40
@@ -720,8 +746,20 @@ clear_screen:
     djnz    .char
     dec     c
     jr      nz,.line
-    pop     hl
     ret
+
+clear_screen80:
+    set     7,b
+    push    bc
+    call    .fill80               ; Fill COLOR RAM
+    pop     bc
+    res     7,b
+    ld      a,' '
+.fill80
+    out     (c),b
+    ld      hl,SCREEN
+    ld      bc,2048
+    jp      sys_fill_mem
 
 
 ;-----------------------------------------------------------------------------

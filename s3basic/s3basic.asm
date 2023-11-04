@@ -5286,8 +5286,14 @@ TTYSAV: ld      (CURRAM),hl       ;;Position in Screen RAM
         ld      (TTYPOS),a        ;;Cursor Column
         ret                       ;
 ;;Clear Screen
-TTYCLR: ld      b,' '             ;
+TTYCLR: 
+ifdef aqplus
+        call    XCLS              ;;Do Extended Clear Screen
+        jr      TTYXPR            ;;Save and Finish
+else
+        ld      b,' '             ;
         ld      hl,SCREEN         ;
+endif
         call    FILLIT            ;;Write to Sreen RAM
         ld      b,6               ;;Black on Light Cyan
         call    FILLIT            ;;Write to Color RAM

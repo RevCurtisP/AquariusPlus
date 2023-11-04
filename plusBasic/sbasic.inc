@@ -106,7 +106,8 @@ RESLO:      equ $38F8   ;
 SAVSTK:     equ $38F9   ; [M80] NEWSTT SAVES STACK HERE BEFORE SO THAT ERROR REVERY CAN
                         ; [M80] CAN DATPTR THE STACK WHEN AN ERROR OCCURS
 INTJMP  equ     $38FB   ; RST 7 Interrupt JMP (3 bytes)
-KEYADR  equ     $38FE   ;;Extended Key Tables Base Address minus 1
+LPTWID  equ     $38FE   ; Printer width in columns
+TTYWID  equ     $38FF   ;;Screen width in columns - single byte but can be read as integer.
 ;               $3900   ; This is always 0
 BASTXT:     equ $3901   ; Start of Basic Program
 
@@ -124,6 +125,7 @@ HOOKDO      equ $30     ; 6 Extended BASIC Hook Dispatch
 INTRPT      equ $38     ; 7 (S3BASIC) Execute Interrupt Routine
 
 RESET:      equ $0089
+HEDING      equ $015F   ; Microsoft copyright message
 STUFFS      equ $0130   ; Stuff character in KRUNCH buffer
 MAKUPR      equ $0135   ; Convert character in A to uppercase
 INITFF:     equ $0153   ; Initialize I/O Port 255

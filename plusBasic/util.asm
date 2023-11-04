@@ -33,6 +33,25 @@ byte_to_hex:
     ret
 
 ;-----------------------------------------------------------------------------
+; Multiply A * DE
+; Input: A: Multiplier
+;       DE: Multiplicand
+; Output: HL: Product
+;       A, B: 0
+;-----------------------------------------------------------------------------
+mult_a_de:
+    ld      hl,0
+    ld      b,8
+.loop
+    add     hl,hl
+    add     a,a
+    jr      nc,.next
+    add     hl,de
+.next
+    djnz    .loop
+    ret
+
+;-----------------------------------------------------------------------------
 ; ToDo: Change calls to this to MAKUPR in S3
 ; Convert character to uppercase
 ;  Input: A: Character

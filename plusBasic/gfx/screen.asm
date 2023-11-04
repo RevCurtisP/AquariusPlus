@@ -161,7 +161,7 @@ screen_put:
     dec     a                     ; If no more rows
     ret     z                     ; Return
     push    af                    ; Stack = RowCnt, RtnAdr
-    ld      a,40
+    ld      a,(TTYWID)
     add     e
     ld      e,a
     ld      a,0
@@ -212,6 +212,19 @@ screen_convert_rect:
 ; Clobbered: A
 ;-----------------------------------------------------------------------------
 screen_pos_addr:
+    push    hl
+    push    bc
+    ld      a,e                   ; A = Row
+    ld      de,(TTYWID)           ; DE = Screen width
+    call    mult_a_de             ; HL = Row Address, BC = Column, A = 0
+    add     hl,bc                 ; Add column address
+    ld      bc,SCREEN             ; Add to Text Screen base address
+    add     hl,bc
+    ex      de,hl                 ; DE = Cursor address
+    pop     bc
+    pop     hl
+    ret
+
     ld      a,e
     add     a,a
     add     a,a
@@ -222,6 +235,7 @@ screen_pos_addr:
     add     hl,hl
     add     hl,hl
     add     hl,hl                 ; HL = Row * 40
+ 
     push    bc
     ld      b,0                   ; BC = Column
     add     hl,bc                 ; HL = Row * 40 + Column
@@ -234,7 +248,7 @@ screen_pos_addr:
 ; In: C=Column, E=Row
 ; Out: Carry set if out of bounds
 _screen_bounds:
-    ld      a,40
+    ld      a,(TTYWID)
     cp      b                     ; If EndCol > 39
     ret     c                     ;   Return Carry Set
     ld      a,25
@@ -341,16 +355,20 @@ screen_swap:
     ld      hl,SCREEN             ; Copying from Text and Color RAM
     jp      page_mem_swap_bytes   ; Do it
 
+
 ;-----------------------------------------------------------------------------
 ; Update VCTRL Register
 ; Input: C: Bit Pattern
 ;        B: Bit Mask 
-; Returns: A: New VCTRL value
-;          C: Bit Pattern
+; Returns: B: New VCTRL value
 ;-----------------------------------------------------------------------------
 screen_set_vctrl:
+    push    a
     in      a,(IO_VCTRL)
     and     b
     or      c
     out     (IO_VCTRL),a
+    ld      b,a
+    pop     a
     ret
+
