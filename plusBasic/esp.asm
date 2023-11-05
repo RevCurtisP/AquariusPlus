@@ -43,7 +43,7 @@ esp_cmd_string:
 ; Get first result byte
 ; Output: A: Result, negativ if error
 ;-----------------------------------------------------------------------------
-esp_get_result_new:
+esp__get_result:
     call    esp_get_byte
     or      a
     ret
@@ -134,15 +134,11 @@ esp_read_to_buff:
     ld      e,l
 .loop
     call    esp_get_byte          ; Get character
-    jp      m,.error              ; If Error, terminate string and return
     ld      (de),a                ; Store in Buffer
     or      a
     jr      z,.done               ; Return if end of String
     inc     de
     djnz    .loop     
-.error
-    xor     a
-    ld      (de),a                ; Add Null Terminator
 .done
     ex      de,hl                 ; HL = Terminator Address, DE = Buffer Address
     sbc     hl,de                 ; HL = Length

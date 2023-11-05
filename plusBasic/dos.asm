@@ -40,14 +40,12 @@ _dos_command:
 ; Output:  A: Result, E: String Length, DE = End of String, HL = Buffer Address
 ;-----------------------------------------------------------------------------
 dos_get_cwd:
-;    call    swap_basic_buffs      ; Swap in Extended Work Area
     ld      a,ESPCMD_GETCWD       ; Issue CWD command
     call    esp_cmd
-    call    esp_get_result
+    call    esp__get_result
     jp      m,.done               ; Return if Error
     call    esp_read_to_buff      ; Get current directory and write to buffer
 .done
-;    jp     restore_bank3         ; Back to Original Bank 3
     ret
 
 ;-----------------------------------------------------------------------------
@@ -64,7 +62,7 @@ dos_rename_file:
     call    esp_send_strdesc      ; Send old name    
     pop     hl                    ; HL = new name descriptor
     call    esp_send_strdesc      ; Send new name
-    jp      esp_get_result_new    ; Get result and return
+    jp      esp__get_result       ; Get result and return
 
 ;-----------------------------------------------------------------------------
 ; dos_get_file_stat - Return File Status

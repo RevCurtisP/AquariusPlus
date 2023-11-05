@@ -16,7 +16,7 @@ ST_CD:
 .show_path:
     ld      a, ESPCMD_GETCWD
     call    esp_cmd
-    call    esp_get_result_new
+    call    esp__get_result
     jp      m,_dos_error
 
     ; Print current working directory
@@ -134,6 +134,7 @@ ST_DIR:
 
     ld      a, ESPCMD_OPENDIR     ; Set ESP Command
     call    esp_cmd_string        ; Get FileSpec and Do Command
+    jp      m,_dos_error
 
     ; Set initial number of lines per page
     ld      a, 24
@@ -152,7 +153,7 @@ ST_DIR:
     or      a
     jp      p, .ok2
     pop     hl              ; Restore BASIC text pointer
-    jp      esp_error
+    jp      _dos_error
 
 .ok2:
     ;-- Date -----------------------------------------------------------------
@@ -301,7 +302,7 @@ ST_DIR:
     call    esp_send_byte
     call    esp_get_byte
     or      a
-    jp      m, esp_error
+    jp      m, _dos_error
 
     pop     hl      ; Restore BASIC text pointer
     ret
