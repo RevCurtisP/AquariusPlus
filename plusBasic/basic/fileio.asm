@@ -16,7 +16,8 @@ ST_CD:
 .show_path:
     ld      a, ESPCMD_GETCWD
     call    esp_cmd
-    call    esp_get_result
+    call    esp_get_result_new
+    jp      m,_dos_error
 
     ; Print current working directory
 .print_cwd:
@@ -38,11 +39,18 @@ ST_CD:
     call    get_string_direct     ; Get String Ar
     call    dos_change_dir
 
+_check_error
+    jp      m,_dos_error
 _done
     pop     hl                    ; Restore Text Pointrt
     ret     z
-file_error:
-    jp      esp_error
+
+_dos_error:
+    cpl                           ; Convert -1 to 0, -1 to 2, etc
+    add     a,a                   ; Multiply by 2 to get offset
+    add     a,ERRFNF              ; Add to start of DOS errors
+    ld      e,a
+    jp      ERROR
 
 ;-----------------------------------------------------------------------------
 ; CD$ - Get Current Directory
@@ -64,7 +72,7 @@ FN_CD:
 ST_DEL:
     call    get_string_direct
     call    dos_delete_file
-    jr      _done
+    jr      _check_error
 
 ;-----------------------------------------------------------------------------
 ; MKDIR - Create directory
@@ -73,7 +81,7 @@ ST_DEL:
 ST_MKDIR:
     call    get_string_direct
     call    dos_create_dir
-    jr      _done
+    jr      _check_error
 
 ;-----------------------------------------------------------------------------
 ; RENAME - Rename a file
@@ -98,7 +106,7 @@ ST_RENAME:
     call    FRETM2                ; HL = olddesc
     pop     de                    ; DE = newdesc, Stack = txptr
     call    dos_rename_file       ; Do the rename
-    jr      _done                 ; Restore textptr and check for error
+    jr      _check_error          ; Restore textptr and check for error
 
 ;-----------------------------------------------------------------------------
 ; DIR - Directory listing
@@ -894,7 +902,6 @@ check_sync_bytes:
     or      a
     jp      nz, err_bad_file
     ret
-
 
 
 

@@ -30,17 +30,17 @@ ERRLBO  equ     $2C   ; 23 Line buffer overflow
 ERRGS   equ     $2E   ; 24 Statement not implemented
 ERRUL   equ     $30   ; 25 Undefined label
 ERRAG   equ     $32   ; 26 ARG without GOSUB
-NONDSK  equ     $34   ; 28 Last non disk error
+NONDSK  equ     $34   ; 27 Last non disk error
 ; Disk errors
-ERRFNF  equ     $64   ; 50 File / directory not found         
-ERRTMF  equ     $66   ; 51 Too many open files / directories  
-ERRIPR  equ     $68   ; 52 Invalid parameter                
-ERRRPE  equ     $6A   ; 53 End of file / directory            
-ERRFAE  equ     $6C   ; 54 File already exists                
-ERRIOE  equ     $6E   ; 55 Other error                        
-ERRNOD  equ     $70   ; 56 No disk                            
-ERRNEM  equ     $72   ; 57 Not empty                          
-LSTERR  equ     $74   ; 58  Last error used for range checks
+ERRFNF  equ     $62   ; 50 File / directory not found         
+ERRTMF  equ     $64   ; 51 Too many open files / directories  
+ERRIPR  equ     $66   ; 52 Invalid parameter                
+ERRRPE  equ     $68   ; 53 End of file / directory            
+ERRFAE  equ     $6A   ; 54 File already exists                
+ERRIOE  equ     $6C   ; 55 Other error                        
+ERRNOD  equ     $7E   ; 56 No disk                            
+ERRNEM  equ     $70   ; 57 Not empty                          
+LSTERR  equ     $72   ; 58 Last error used for range checks
 
 ;===========================================================================
 ; The error routines fit in the space between the end of the dispatch 
@@ -51,23 +51,27 @@ LSTERR  equ     $74   ; 58  Last error used for range checks
 ; Print error message and return to direct mode
 ;----------------------------------------------------------------------------
 force_error:
-    call    get_errmsg_ptr   ; Get Pointer into Error Table
+    ld      a,7                   ; Ring the bell
+    rst     OUTCHR
+    call    get_errmsg_ptr        ; Get Pointer into Error Table
+    call    STROUT
+    ld      hl,ERRTXT
     jp      ERRFN1
 
 ; -------------------------------------------------------------------------------
 ;  Error Message Lookup Routines`
 ; ------------------------------------------------------------------------------
 get_errno_ptr:
-    dec     a                  ; Convert to Error# to offset
+    dec     a                     ; Convert to Error# to offset
     sla     a     
-    ld      e,a                ; Put in E
+    ld      e,a                   ; Put in E
 get_errcode_ptr:
     ld      a,e                   ; Get Error Table Offset into A
     cp      ERRFNF                
     jr      c,.not_dos
     sub     ERRFNF-NONDSK
 .not_dos
-    cp      NONDSK                ; Compare to End of Table
+    cp      LSTERR                ; Compare to End of Table
     jr      c,.load_ptr           ; If Past End of Table
     ld      a,ERRUE               ;   Display "UE" - Unprintable Error
 .load_ptr
@@ -89,7 +93,6 @@ _errmag_ptr:
     ld      h,(hl)
     ld      l,a
     ret
-
 
 ;Put the lookup table at 256 byte boundary
 if $ & $FF
@@ -135,11 +138,13 @@ err_disk:
         word    MSGNOD
         word    MSGNEM
 
+; The word error
+ERRTXT: byte    " error",0
 
 ; Long Error Descriptions
 err_messages:
 MSGNF:  byte    "NEXT without FOR",0            ; 1
-MSGSN:  byte    "Syntax error",0                ; 2
+MSGSN:  byte    "Syntax",0                      ; 2
 MSGRG:  byte    "RETURN without GOSUB",0        ; 3
 MSGOD:  byte    "Out of DATA",0                 ; 4
 MSGFC:  byte    "Illegal Quantity",0            ; 5

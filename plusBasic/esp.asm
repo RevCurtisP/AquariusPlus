@@ -40,6 +40,15 @@ esp_cmd_string:
     call    esp_send_string
 
 ;-----------------------------------------------------------------------------
+; Get first result byte
+; Output: A: Result, negativ if error
+;-----------------------------------------------------------------------------
+esp_get_result_new:
+    call    esp_get_byte
+    or      a
+    ret
+
+;-----------------------------------------------------------------------------
 ; Get first result byte, and jump to error handler if it was an error
 ;-----------------------------------------------------------------------------
 esp_get_result:

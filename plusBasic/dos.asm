@@ -9,7 +9,6 @@ dos_change_dir:
     ld      a, ESPCMD_CHDIR       ; Set ESP Command
     jp      esp_cmd_string        ; Issue ESP command
 
-
 ;-----------------------------------------------------------------------------
 ; dos_delete_file - Delete file/directory
 ; Input: BC: String Length
@@ -32,6 +31,8 @@ dos_create_dir:
     ld      a, ESPCMD_MKDIR       ; Set ESP Command
     jp      esp_cmd_string        ; Issue ESP command
 
+
+_dos_command:
 
 ;-----------------------------------------------------------------------------
 ; dos_get_cwd - Get Current Directory
@@ -63,7 +64,7 @@ dos_rename_file:
     call    esp_send_strdesc      ; Send old name    
     pop     hl                    ; HL = new name descriptor
     call    esp_send_strdesc      ; Send new name
-    jp      esp_get_result        ; Get result and return
+    jp      esp_get_result_new    ; Get result and return
 
 ;-----------------------------------------------------------------------------
 ; dos_get_file_stat - Return File Status

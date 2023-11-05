@@ -142,6 +142,7 @@ TMERR:      equ $03D9   ; Type mismatch error
 ERROR:      equ $03DB   ; Process error code, E = code (offset to 2 char error name)
 ERRCRD      equ $03E0   ; Print Error Message and Return to Immediate Mode
 ERRPRT      equ $03EA   ; Print Error pointed to by HL and Return to Immediate Mode
+ERRFNE      equ $03F1   ; Print "Error in " + line number and Return to Immediate Mode
 ERRFN1:     equ $03F4   ; Print String in HL + " in " + line number, Return to Immediate mode 
 STPRDY      equ $0401   ; For LIST command stopping
 READY:      equ $0402
