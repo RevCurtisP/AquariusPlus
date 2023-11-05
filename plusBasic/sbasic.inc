@@ -218,6 +218,9 @@ ASC2        equ $1006   ; Return DE = Pointer to String Text, A=First Character
 CHR         equ $1013   ; CHR$ Function
 FINBCK      equ $101D   ; Return a String
 PTRGET:     equ $10D1   ; Get variable (out: BC = addr, DE = len)
+EATEM       equ $10EA   ; Continue PTRGET at skip extra alphanumerics loop
+NOSEC       equ $10F2   ; Continue PTRGET at check for '$'
+SKIPDS      equ $10FD   ; Continue PTRGET at skip of '$'
 FONE        equ $135F   ; Floating point constant 1
 POPHRT      equ $141A   ; Pop HL and return
 FIN         equ $15E5   ; Parse floating point number
@@ -270,8 +273,10 @@ PLUSTK      equ $A8     ; +
 TOTK        equ $A1     ; TO
 MINUTK      equ $A9     ; -
 MULTK       equ $AA     ; *
+EXPTK       equ $AC     ; ^
 ORTK        equ $AE     ; OR
 EQUATK      equ $B0     ; = 
+LESSTK      equ $B1     ; <
 ONEFUN      equ $B2     ; First Function Token
 INTTK       equ $B3     ; INT
 POSTK       equ $B8     ; POS

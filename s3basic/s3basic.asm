@@ -111,12 +111,7 @@ RESHO   equ     $38F6   ;[M65] RESULT OF MULTIPLIER AND DIVIDER
 RESMO   equ     $38F7   ;;RESMO and RESLO are loaded into and stored from HL
 SAVSTK  equ     $38F9   ;[M80] NEWSTT SAVES STACK HERE BEFORE SO THAT ERROR REVERY CAN
 INTJMP  equ     $38FB   ;;RST 7 Interrupt JMP
-ifdef aqlplus
-LPTWID  equ     $38FE   ;;Printer width in columns
-TTYWID  equ     $38FF   ;;Screen width in columns - single byte but can be read as integer.
-else
 ;;        $38FE-$38FF   ;;??Unused
-endif
 ;;              $3900   ;;This is always 0
 BASTXT  equ     $3901   ;;Start of Basic Program
 ifdef aqplus            
@@ -133,6 +128,7 @@ XMAIN   equ     $201B   ;; | Line Crunch Hook
 XSTUFF  equ     $201E   ;; | STUFFH hook
 XCLS    equ     $2021   ;; | CLS Extension
 XCLEAR  equ     $2024   ;; | Issue Error if TOPMEM too low
+XPTRGT  equ     $2027   ;; | PTRGET Hook
 endif                   
 EXTBAS  equ     $2000   ;;Start of Extended Basic
 XSTART  equ     $2010   ;;Extended BASIC Startup Routine
@@ -663,7 +659,7 @@ NOTTK   equ     TK                ;
         byte    'N'+$80,"OT"      ;;$A6
 TK      =            TK+1
 STEPTK  equ     TK                ;
-        byte    'S'+$80,"TEP"     ;;$A7f
+        byte    'S'+$80,"TEP"     ;;$A7
 TK      =            TK+1
 ;;Operators
 PLUSTK  equ     TK                ;
@@ -3100,8 +3096,12 @@ PTRGT2: call    ISLET             ;[M80] CHECK FOR LETTER
         xor     a                 ;
         ld      b,a               ;[M80] ASSUME NO SECOND CHARACTER
         ld      (VALTYP),a        ;[M80] ZERO NAMCNT
+ifdef aqplus
+        jp      XPTRGT            ;;Check for underscore extension
+else        
         rst     CHRGET            ;[M80] GET CHAR
         jr      c,ISSEC           ;[M80] YES, WAS NUMERIC
+endif
         call    ISLETC            ;[M80] SET CARRY IF NOT ALPHABETIC
         jr      c,NOSEC           ;[M80] ALLOW ALPHABETICS
 ISSEC:  ld      b,a               ;[M80] IT IS A NUMBER--SAVE IN B
@@ -3113,10 +3113,10 @@ NOSEC:  sub     '$'               ;[M65] IS IT A STRING?
         jr      nz,NOTSTR         ;[M65] IF NOT, [VALTYP]=0.
         inc     a                 ;[M65] SET [VALTYP]=1 (STRING !)
         ld      (VALTYP),a        ;
-        rrca                      ;
-        add     a,b               ;
-        ld      b,a               ;
-        rst     CHRGET            ;[M80] READ PAST TYPE MARKER
+        rrca                      ;; Make A = $80
+        add     a,b               ;; Add to second character to signify string
+        ld      b,a               ;; and put back in B
+SKIPDS: rst     CHRGET            ;[M80] READ PAST TYPE MARKER
 NOTSTR: ld      a,(SUBFLG)        ;[M80] GET FLAG WHETHER TO ALLOW ARRAYS
         dec     a                 ;[M80] IF SUBFLG=1, "ERASE" HAS CALLED
         jp      z,ERSFIN          ;[M80] PTRGET, AND SPECIAL HANDLING MUST BE DONE

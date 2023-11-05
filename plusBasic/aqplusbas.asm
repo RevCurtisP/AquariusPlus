@@ -52,6 +52,7 @@
     jp      _stuffh_ext     ; $201E Check for additional tokens when stuffing
     jp      do_cls_default  ; $2021 Clear both text screens
     jp      _check_topmem   ; $2024 Verify TOPMEM is in Bank 2
+    jp      _ptrget_hook    ; $2027 Allow _Alphanumunder sftar var name 
     jp      _inlin_hook     ; $20?? Jump from INLIN for command history recall
     jp      _inlin_done     ; $20?? Jumped from FININL to save command to history
 
@@ -200,7 +201,7 @@ print_copyright:
 _plus_text:
     db "plusBASIC "
 _plus_version:
-    db "v0.16f", 0
+    db "v0.17", 0
 _plus_len   equ   $ - _plus_text
     call    CRDO
     jp      CRDO
@@ -614,6 +615,59 @@ read_key:
 .readkey
     exx
     jp      key_read_ascii    ; Read key from keyboard and return
+
+;-----------------------------------------------------------------------------
+; Allow underscore after 1 or 2 letter variable name, then skip all
+; letters, numbers, underscores, and tokens for aphabetic keywords
+; On entry, B = second character of variable name, initialized to NUL
+;-----------------------------------------------------------------------------
+_ptrget_hook
+    rst     CHRGET                ; Get character after first letter variable name
+    jr      c,.is_second          ; If not a digit
+    cp      '~'
+    jr      z,.eat_suffix         ; or tilde
+    call    ISLETC                ; or letter
+    jr      c,.nosec              ;   Get out
+.is_second
+    ld      b,a                   ; Make it the second character 
+    rst     CHRGET                ; Get following character
+    cp      '~'                   ; 
+    jr      z,.eat_suffix         ; If not underscore
+    dec     hl                    ;  Back up
+    jp      EATEM                 ;  and continue with normal skip
+.eat_suffix
+    inc     hl
+    ld      a,(hl)                ; Get next character
+    or      a                     ; If NUL
+    jr      z,.nosec              ;   Get out
+    cp      ' '                   ; If Space
+    jp      z,SKIPDS              ;   Get out
+    cp      '~'                   ; If underscore
+    jr      z,.eat_suffix         ;   Skip it
+    cp      '0'                   ; If < '0'
+    jp      c,NOSEC               ;   Get out
+    cp      ':'                   ; If ':'
+    jr      z,.nosec              ;   Get out
+    jr      c,.eat_suffix         ; If <= '9', skip it
+    cp      'A'                   ; If < 'A'
+    jp      c,NOSEC               ;   Get out
+    cp      'Z'+1                 ; If <= 'Z'
+    jr      c,.eat_suffix         ;   Skip it
+    cp      $80                   ; If not token
+    jp      c,NOSEC               ;   Get out
+    cp      PLUSTK                ; If < '+'
+    jr      c,.eat_suffix         ;   Skip it
+    cp      EXPTK+1               ; If <= '^'
+    jp      c,NOSEC               ;   Get out
+    cp      ORTK+1                ; If AND or OR
+    jr      c,.eat_suffix         ;   Skip it
+    cp      LESSTK+1              ; If < '<'
+    jp      c,NOSEC               ;   Get out
+    jr      .eat_suffix           ; Else skip it
+.nosec
+    scf
+    jp      NOSEC                 ;   jump to NOSEC with carry set
+
 
 ;-----------------------------------------------------------------------------
 ; GOTO and RESUME hack
