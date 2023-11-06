@@ -158,6 +158,7 @@ COLIS       equ $0548   ; Enter STUFFH after DATA token detected
 NODATT      equ $054B   ; Enter STUFFH at check for REM token
 STRNG       equ $0558   ; Stuff Quoted String
 CRDONE      equ $055E   ; Finish CRUNCH
+LIST3       equ $0579   ; Start list at line pointed to by BC
 RESSRC:     equ $05A8
 NEWSTT:     equ $062C
 CHRGTR      equ $066B   ; CALLable CHRGET
@@ -165,10 +166,11 @@ CHRGT2      equ $066C   ; Get Current Character and Set Flags
 CHRGT3      equ $066D   ; Test character in A and set flags
 GONE4       equ $063C   ; Execute next line
 FRCINT:     equ $0682   ; Convert fp number to 16 bit signed integer in DE
+CONRUN      equ $06C3
 RETURN      equ $06F8   ; Execute RETURN statement
 FCERR:      equ $0697   ; Function call error
-SCNLIN      equ $069C   ; Get line number from text at (HL)
 IQERR       equ FCERR   ; Illegal quantity error (future expansion)
+SCNLIN      equ $069C   ; Get line number from text at (HL)
 RUNC2:      equ $06DB
 GOTO        equ $06DC   ; Execute GOTO Statement
 GOTOLN      equ $06DF   ; GOTO line# in DE

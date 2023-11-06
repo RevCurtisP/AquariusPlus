@@ -201,7 +201,7 @@ print_copyright:
 _plus_text:
     db "plusBASIC "
 _plus_version:
-    db "v0.17f", 0
+    db "v0.17g", 0
 _plus_len   equ   $ - _plus_text
     call    CRDO
     jp      CRDO
@@ -674,7 +674,8 @@ _ptrget_hook
 ; Check for label at beginning of line, then search for it's line
 ;-----------------------------------------------------------------------------
 _scan_label:
-    ld      a,(hl)                ; Reget current character
+    dec     hl                    ; Back up in case of space
+    rst     CHRGET                ; Reget current character
     cp      '_'
     jr      nz,.not_label         ; If not underscore
     ex      de,hl                 ; DE = Text Pointer
@@ -687,8 +688,11 @@ _scan_label:
     ld      b,(hl)
     inc     hl
     ld      (TEMP3),bc            ; Save for later
-    inc     hl                    ; Skip line number
-    inc     hl                    ;
+    ld      c,(hl)                ; BC = line#
+    inc     hl
+    ld      b,(hl)
+    inc     hl
+    ld      (OLDLIN),bc           ; Save it
     ld      a,(hl)                ; Get first character
     cp      '_'                   ; If not underscore
     jr      nz,.next_line         ;   Skip to next lines
@@ -711,15 +715,24 @@ _scan_label:
 .no_match
     ld      de,(TEMP8)            ; Restore pointer to label
 .next_line
-    ld      hl,(TEMP3)            ; Get Link to next linr
+    ld      hl,(TEMP3)            ; Get Link to next line
     ld      a,h                   ; If link to next line is $0000
     or      l                     ;   End of program
     jp      z,ULERR               ;   So Undefined Line error
     jr      .line_loop            ; Scan the next line
 .found_it
     pop     af                    ; Get return address
-    cp      $06                   ; If we came from GOTO
-    ret     z                     ;   Return to NEWSTT
+    cp      $06                   
+    jr      nz,.not_goto          ; If we came from GOTO
+    ld      bc,(OLDLIN)           ;   Retrieve the line #
+    ld      (CURLIN),bc           ;   and make it the current line
+    ret                           ;   Return to NEWSTT
+.not_goto
+    cp      $05
+    jr      nz,.not_list          ; If we came from LIST
+    ld      bc,(TEMP2)            ;   BC = Pointer to Line
+    jp      LIST3                 ;   Start listing
+.not_list
     cp      $0C                   ; If we came from RESTORE
     jp      z,BGNRST              ;   Load DATPTR, HL = Text Pointer, and Return
     ex      de,hl                 ; HL = New text pointer
@@ -730,9 +743,11 @@ _scan_label:
     jp      SCNLIN                ;   Scan line number and return to GOTO
 
 .check_colon:
-    cp      ' '                   ; Check A
-    jr      z,.ret_zero           ; If colon
-    cp      ':'                   ; Check A
+    cp      ' '                   ; If space
+    jr      z,.ret_zero           ; 
+    cp      ','                   ; or comma
+    jr      z,.ret_zero           ; 
+    cp      ':'                   ; or colon
     ret     nz
 .ret_zero
     xor     a                     ;   Treat like terminator
@@ -889,7 +904,7 @@ hook_table:                     ; ## caller   addr  performing function
     dw      HOOK21+1            ; 21 CSAVE    1C09  Save File to Tape
     dw      token_to_keyword    ; 22 LISPRT   0598  expanding a token
     dw      _next_statement     ; 23 GONE2    064B  interpreting next BASIC statement
-    dw      _run_cmd            ; 24 RUN      06BE  starting BASIC program
+    dw      _run_cmd            ; 24       06BE  starting BASIC program
     dw      on_error            ; 25 ONGOTO   0780  ON statement
     dw      HOOK26+1            ; 26 INPUT    0893  Execute INPUT, bypassing Direct Mode check
     dw      execute_function    ; 27 ISFUN    0A5F  Executing a Function
