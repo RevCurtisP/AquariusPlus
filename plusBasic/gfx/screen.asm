@@ -322,6 +322,21 @@ screen_save:
     jp      page_fast_write_bytes ; Do it
 
 ;-----------------------------------------------------------------------------
+; Get the screen buffer address offset
+; Output: DE: Screen Buffer Offset
+; Sets Flags: S if 80 column screen, C if secondary 40 column screen
+;-----------------------------------------------------------------------------
+screen_get_buff_ofs:
+    in      a,(IO_VCTRL)
+    rla                           ; Shift TEXT_PAGE into carry, 80COL_EN into bit 7
+    ld      de,SCRN80BUF          
+    ret     m                     
+    ld      de,SCRN41BUF          ;     Write to auxiliary buffer
+    ret     c
+    ld      de,SCRN40BUF          ;     Write to primary buffer
+    ret
+
+;-----------------------------------------------------------------------------
 ; Swap Text Screen with Screen Buffer
 ; Input: A: Cursor buffer offset: BUFSCRN40 or SWPSCRN40
 ;       HL: Screen buffer offset: SCRN40BUF or SCRN40SWP 

@@ -682,11 +682,15 @@ _load_palette:
 ; .SCR format: 2048 byte Screen+Color RAM ($3000-$3FFF)
 ; .SCP format
 ;  40 column: 2048 byte Screen+Color RAM + 32 byte palette + 1 byte border flag
-;  80 column: 2048 byte Screen + 32 byte palette + 1 byte border flag + 2048 byte Color
+;  80 column: 2048 byte Screen + 2048 byte Color + 32 byte palette + 1 byte border flag
 ;-----------------------------------------------------------------------------
 _load_screen:
-    jp      GSERR
-
+    rst     CHRGET                ; Skip SCREEN
+    call    get_strdesc_arg       ; HL = FileSpec StrDsc; Stack = TxtPtr
+    call    file_load_screen      ; Load character set and copy to character RAM
+    jp      m,_dos_error
+    pop     hl
+    ret
 
 ;-----------------------------------------------------------------------------
 ; RUN command - hook 24

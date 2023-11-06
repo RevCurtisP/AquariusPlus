@@ -26,7 +26,7 @@ CHAR_RAM        equ 21
 RAM_BAS_0       equ 32      ; RAM for Soft ROM mapped into Bank 0
 RAM_BAS_1       equ 33      ; RAM for BASIC mapped into Bank 1
 RAM_BAS_2       equ 34      ; RAM for BASIC mapped into Bank 2
-RAM_BAS_3       equ 35      ; RAM for BASIC mapped into Bank 3, switched in as needed
+RAM_BAS_3       equ 35      ; RAM for BASIC mapped into Bank 3
                             ; If a cartrige is present, it is copied here unencrypted, then executed
 BAS_BUFFR       equ 36      ; plusBASIC extended system variables and buffers, mapped in bank 3 as needed
 VID_BUFFR       equ 37      ; Video RAM Shadow Buffer

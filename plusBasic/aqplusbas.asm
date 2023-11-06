@@ -10,25 +10,6 @@
 ; - Excellent Aquarius S2 ROM disassembly by Curtis F Kaylor:
 ; https://github.com/RevCurtisP/Aquarius/blob/main/disassembly/aquarius-rom.lst
 ;
-; Extra BASIC commands:
-; EDIT   - ** Not supported **
-; CLS    - Clear screen
-; LOCATE - Position on screen
-; OUT    - Output data to I/O port
-; PSG    - Program PSG register, value
-; DEBUG  - ** Not supported **
-; CALL   - Call machine code subroutine
-; LOAD   - Load file from USB disk
-; SAVE   - Save file to USB disk
-; DIR    - Display USB disk directory with wildcard
-; MKDIR  - Create directory
-; DEL    - Delete file
-; CD     - Change directory
-;
-; Extra BASIC functions:
-; IN()   - Get data from I/O port
-; JOY()  - Read joystick
-; HEX$() - Convert number to hexadecimal string
 ;-----------------------------------------------------------------------------
 
 ; To assemble:
@@ -157,6 +138,8 @@ _coldboot:
 
     call    print_copyright
 
+    call    check_autoexec        ; Check for autoexec file
+
     jp      INITFF              ; Continue in ROM
 
     dc $2100-$,$76
@@ -201,7 +184,7 @@ print_copyright:
 _plus_text:
     db "plusBASIC "
 _plus_version:
-    db "v0.17h", 0
+    db "v0.17i", 0
 _plus_len   equ   $ - _plus_text
     call    CRDO
     jp      CRDO
@@ -209,10 +192,12 @@ _plus_len   equ   $ - _plus_text
 ; If autorun exists, push RUN "autoexec to key buffer
 ; ToDo: make esp functions return error code instead of generating BASIC error
 check_autoexec:
+    call    ctrl_check
+    ret     nz
     ld      hl,_autodesc
-    call    esp_open
+    call    esp_open_read
     ret     m
-    call    esp_close_all
+    call    esp_close
     ld      hl,_autocmd-1
     ld      (RESPTR),hl
 .nope
@@ -220,11 +205,19 @@ check_autoexec:
 _autocmd:
     db      'RUN "'
 _autotext
-    db      "autoexec.baq"
+    db      "autoexec"
 _autolen = $ - _autotext
     db      $0D
 _autodesc
     dw      _autolen,_autotext
+
+; See if control is currently pressed
+ctrl_check:
+    ld      bc,$7FFF              ; Scan column 8
+    in      a,(c)
+    xor     $FF
+    and     $20                   ; Isolate control key
+    ret
 
 ;-----------------------------------------------------------------------------
 ; Issue OV Error if TOPMEM will put stack in Bank 1
@@ -595,7 +588,7 @@ _scratch:
 ; Hook 18 - INCHRC (Get character from keyboard)
 ;-----------------------------------------------------------------------------
 read_key:
-    jp      key_read_ascii        ; Skip autotype for now
+;    jp      key_read_ascii        ; Skip autotype for now
     exx
 .autotype
     ld      hl,(RESPTR)

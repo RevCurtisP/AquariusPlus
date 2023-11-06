@@ -68,3 +68,32 @@ _discard:
     inc     sp                    ; Discard top entry on stack
     inc     sp
     ret
+
+;-----------------------------------------------------------------------------
+; Load binary file into main memory
+; Input: HL: String descriptor address
+; Output: A: result code
+; Flags Set: S if I/O error
+; Clobbered: CD, DE, EF
+;-----------------------------------------------------------------------------
+file_load_screen:
+    call    esp_open_read
+    ret     m
+; Read first 2k into Screen RAM
+    ld      bc,2048
+    ld      de,SCREEN
+    call    esp_read_bytes
+    ret     m
+; Read second 2k into scratch RAM
+    ld      a,RAM_BAS_3
+    ld      bc,2048
+    ld      de,$3000
+    call    esp_read_paged
+
+    
+    
+    push    af
+    call    esp_close
+    pop     af
+    or      a
+    ret

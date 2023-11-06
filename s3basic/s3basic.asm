@@ -806,6 +806,8 @@ ERRUF   equ     $-ERRTAB          ;;$22
         byte    "UF"              ;[M80] Undefined user function
 ERRMO   equ     $-ERRTAB          ;;$24
         byte    "MO"              ;[M80] Missing operand
+ERRUD   equ     $34               ;;Undimensioned array
+
 ;[M80] FIND A "FOR" ENTRY ON THE STACK WITH THE VARIABLE POINTER PASSED IN [D,E]
 FORSIZ  equ     13                ;;Size of a FOR entry on the stack
 FNDFOR: ld      hl,4+0            ;[M80] IGNORING THE RETURN ADDRESS OF
@@ -3265,7 +3267,11 @@ BSERR:  ld      de,ERRBS          ;[M80] "SUBSCRIPT OUT OF RANGE"
 ;[M80] HERE WHEN VARIABLE IS NOT FOUND IN THE ARRAY TABLE
 NOTFDD: ld      de,4              ;[M80] [D,E]=SIZE OF ONE VALUE (VALTYP)
         pop     af                ;[M80] [A]=NUMBER OF DIMENSIONS
+ifdef aqplus
+        jp      z,UDERR           ;; Undimensioned array
+else
         jp      z,FCERR           ;[M80] "ILLEGAL FUNCTION CALL"
+endif
         ld      (hl),c            ;[M80] PUT DOWN THE DESCRIPTOR
         inc     hl
         ld      (hl),b
@@ -5316,8 +5322,11 @@ SKPLOL: rst     CHRGET            ;;Get next character                        ; 
         ret     z                 ;;Return if colon                           ; 1E57
         jr      SKPLOL            ;;Check next character                      ; 1E58
                                                                               ; 1E59  ld      de,$3FF  
-        byte    $FF                                                           ; 1E5A  
-        byte    $03                                                           ; 1E5B  
+UDERR:  ld      e,ERRUD           ;;Undimensioned Array error                 ; 1E5A
+                                                                              ; 1E5B
+        jp      ERROR                                                         ; 1E5C  ld      de,$400
+                                                                              ; 1E5D
+                                                                              ; 1E6E
 else
         ld      b,' '             ;
         ld      hl,SCREEN         ;
