@@ -176,7 +176,7 @@ CHRGET: inc     hl                ;[M65] INCREMENT THE TEXT PNTR
         ld      a,(hl)            ;;Entry point to get current character
         cp      ':'               ;[M65] IS IT A ":"?
         ret     nc                ;[M65] IT IS .GE. ":"
-        jp      CHRCON            ;;Continue in CHRGETR
+        jp      CHRCON            ;;Continue in CHRGTR
 ;;RST 3 - Output Character
 OUTCHR: jp      OUTDO             ;;Execute print character routine           
         byte    0,0,0,0,0         ;;Pad out the RST routine
@@ -1146,11 +1146,15 @@ LLIST:  ld      a,1               ;[M80] PRTFLG=1 FOR REGULAR LIST
         ld      (PRTFLG),a        ;[M80] SAVE IN I/O FLAG (END OF LPT)
 LIST:   ld      a,23              ;;Set line count to 23
         ld      (CNTOFL),a        ;
+ifdef aqplus
+        call    SCNLBL            ;[M80] SCAN LINE RANGE
+else
         call    SCNLIN            ;[M80] SCAN LINE RANGE
+endif
         ret     nz                ;
         pop     bc                ;[M80] GET RID OF NEWSTT RETURN ADDR
         call    FNDLIN            ;[M80] DONT EVEN LIST LINE #
-        push    bc                ;[M80] SAVE POINTER TO 1ST LINE
+LIST3:  push    bc                ;[M80] SAVE POINTER TO 1ST LINE
 LIST4:  pop     hl                ;[M80] GET POINTER TO LINE
         ld      c,(hl)            ;[M80] [B,C]=THE LINK POINTING TO THE NEXT
         inc     hl                ;
@@ -1394,7 +1398,7 @@ POPHSR: pop     af                ;[M80] GET OFF TERMINATING DIGIT
 RUN:    rst     HOOKDO            ;Call Hook Routine
 HOOK24: byte    24                ;
         jp      z,RUNC            ;[M80] NO LINE # ARGUMENT
-        call    CLEARC            ;RESET THE STACK,DATPTR,VARIABLES ...
+CONRUN: call    CLEARC            ;RESET THE STACK,DATPTR,VARIABLES ...
         ld      bc,NEWSTT         ;
         jr      RUNC2             ;[M80] PUT "NEWSTT" ON AND FALL INTO "GOTO"
 ;[M80] GOSUB STATEMENT
@@ -1412,7 +1416,6 @@ RUNC2:  push    bc                ;[M80] RESTORE RETURN ADDRESS OF "NEWSTT"
 GOTO:   
 ifdef aqplus
 ;; Code Change: Allow GOTO and GOSUB to line label
-
         call    SCNLBL            ; | See if it's a label                     
 else
         call    SCNLIN            ; / [M80] PICK UP THE LINE # AND PUT IT IN [D,E]
@@ -1535,7 +1538,11 @@ ISGOSU: ld      c,e               ;[M80] GET COUNT INTO [C]
 LOOPON: dec     c                 ;[M80] SEE IF ENOUGH SKIPS
         ld      a,b               ;[M80] PUT DISPATCH CHARACTER IN PLACE
         jp      z,GONE2           ;[M80] IF DONE, GO OFF
-        call    LINGET            ;[M80] SKIP OVER A LINE #
+ifdef aqplus
+        call    SKPLOG            ; | Skip Label or Line#
+else
+        call    LINGET            ; \ [M80] SKIP OVER A LINE #
+endif
         cp      ','               ;[M80] IS IT A COMMA?
         ret     nz                ;{M80} NO COMMA MUST BE THE END OF THE LINE
         jr      LOOPON            ;[M80] CONTINUE GOBBLING LINE #S
@@ -5286,14 +5293,34 @@ TTYSAV: ld      (CURRAM),hl       ;;Position in Screen RAM
         ld      (TTYPOS),a        ;;Cursor Column
         ret                       ;
 ;;Clear Screen
-TTYCLR: 
-ifdef aqplus
-        call    XCLS              ;;Do Extended Clear Screen
-        jr      TTYXPR            ;;Save and Finish
+TTYCLR:                                                                       ;Original Code 
+ifdef aqplus                                                                  ;
+        call    XCLS              ;;Do Extended Clear Screen                  ; 1E45  ld      b,' '    
+                                                                              ; 1E46  
+                                                                              ; 1E47  
+        jr      TTYXPR            ;;Save and Finish                           ; 1E48  ld      hl,SCREEN
+;;Skip Lable in ON GOTO/GOSUB                                                 ; 1E49  
+SKPLOG: rst     CHRGET            ;;Get first character of LineRef            ; 1E4A  call    FILLIT  
+        cp      '_'               ;;If not a label                            ; 1E4B
+                                                                              ; 1E4C 
+        jp      nz,SCNLIN         ;;  Scan Line Number                        ; 1E4D  ld      b,6
+                                                                              ; 1E4E 
+                                                                              ; 1E4F  call    FILLIT
+SKPLOL: rst     CHRGET            ;;Get next character                        ; 1E50
+        ret     z                 ;;Return if end of line                     ; 1E51
+        cp      ','                                                           ; 1E52  ld      hl,SCREEN+41
+                                                                              ; 1E53
+        ret     z                 ;;Return if comma                           ; 1E54
+        cp      ':'                                                           ; 1E55  xor     a
+                                                                              ; 1E56  jp      TTYFIS
+        ret     z                 ;;Return if colon                           ; 1E57
+        jr      SKPLOL            ;;Check next character                      ; 1E58
+                                                                              ; 1E59  ld      de,$3FF  
+        byte    $FF                                                           ; 1E5A  
+        byte    $03                                                           ; 1E5B  
 else
         ld      b,' '             ;
         ld      hl,SCREEN         ;
-endif
         call    FILLIT            ;;Write to Sreen RAM
         ld      b,6               ;;Black on Light Cyan
         call    FILLIT            ;;Write to Color RAM
@@ -5303,6 +5330,7 @@ endif
 ;;Fill 1024 bytes atarting at HL with A
 ;;;Code Change - Fill all 1024 bytes
 FILLIT: ld      de,$400           ;;Count down from 1023
+endif
 ;;Fill BC bytes atarting at HL with A
 FILLIP: ld      (hl),b            ;;Store byte
         inc     hl                ;;Increment pointer
