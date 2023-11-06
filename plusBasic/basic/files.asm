@@ -449,7 +449,7 @@ ST_LOAD:
 .load_paged
     ld      bc,$FFFF                ; Load up to 64k
     call    check_paged_address     ; Verify pages addres is between 0 and 16383
-    call    dos_load_paged
+    call    file_load_paged
     jp      z,FCERR
     jp      c,OVERR
     jp      m,_dos_error
@@ -697,6 +697,9 @@ run_cmd:
 
     jp      z, RUNC            ; If no argument then RUN from 1st line
 
+    cp      '_'                ; If it's a label
+    jp      z,CONRUN           ;   Do RUN line#
+    
     push    hl
     call    FRMEVL             ; Get argument type
     ld      a, (VALTYP)
