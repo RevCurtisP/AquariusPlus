@@ -437,18 +437,25 @@ ST_LOAD:
     ; Get back page filespec
     pop     af                      ; AF = Page, Stack = String Descriptor
     ex      (sp),hl                 ; HL = String Descriptor, Stack = Text Pointer
-
-
     jr      c,.load_paged
     call    dos_load_binary
-    pop     hl                    ; Get Back Text Pointer
+    pop     hl                      ; Get Back Text Pointer
     ret
     
-.load_paged    
+; Load raw binary into paged memory
+; LOAD "tron.bin",@40,$1234
+; LOAD "tron.bin",@63,1
+; LOAD "trom.bin",@52,0
+; LOAD "tron.bin",@1,0
+; LOAD "tron.bin",@64,0
+; LOAD "tron.bin",@50,$4000
+.load_paged
+    ld      bc,$FFFF                ; Load up to 64k
     call    check_paged_address     ; Verify pages addres is between 0 and 16383
     call    dos_load_paged
-    jp      z,IQERR
+    jp      z,FCERR
     jp      c,OVERR
+    jp      m,_dos_error
     pop     hl
     ret
     

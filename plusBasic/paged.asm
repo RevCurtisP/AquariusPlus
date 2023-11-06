@@ -31,7 +31,7 @@ page_fast_copy:
     ldir                          ; Do the copy
     call    page_restore_two
     xor     a
-    inc     a                     ; Clear carry and zero flag
+    inc     a                     ; Clear carry, zero, sign flags
     ret
 
 ;-----------------------------------------------------------------------------

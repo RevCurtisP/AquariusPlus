@@ -90,22 +90,6 @@ dos_get_filestat:
     ret
 
 ;-----------------------------------------------------------------------------
-; Load file into character RAM buffer
-; Input: HL: File name string descriptor address
-; Output: A: Result
-; Clobbered registers: A,BC,DE,HL,AF',BC',DE',HL'
-;-----------------------------------------------------------------------------
-dos_load_chrset:
-    ld      a,BAS_BUFFR
-    ld      bc,CHRSETLEN
-    ld      de,CHRSETBUF
-    call    dos_load_paged
-    ret     z                     ; Illegal page
-    ret     c                     ; Page overflow
-    ret     m                     ; I/O error
-    jp      custom_chrset    
-
-;-----------------------------------------------------------------------------
 ; Load binary file into paged memory`
 ; Input: A: Page
 ;        BC: Maximum Length
