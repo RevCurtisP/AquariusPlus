@@ -163,12 +163,11 @@ esp_read_to_buff:
 
 ;-----------------------------------------------------------------------------
 ; Read bytes from ESP to main memory
-; Input:  BC: number of bytes to read
-;         DE: destination address
-; Output: BC: number of bytes actually read
-;      DE,HL: next address (start address if no bytes read)
-;         
-; Clobbered registers: A
+; Input: BC: number of bytes to read
+;        DE: destination address
+; Output: A: Result
+;        BC: number of bytes actually read
+;     DE,HL: next address (start address if no bytes read)
 ;-----------------------------------------------------------------------------
 esp_read_bytes:
     ld      a, ESPCMD_READ
@@ -183,6 +182,7 @@ esp_read_bytes:
     
     ; Get result
     call    esp_get_result
+    ret     m
 
     ; Get number of bytes actual read
     call    esp_get_bc

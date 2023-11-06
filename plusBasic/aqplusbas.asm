@@ -201,7 +201,7 @@ print_copyright:
 _plus_text:
     db "plusBASIC "
 _plus_version:
-    db "v0.17e", 0
+    db "v0.17f", 0
 _plus_len   equ   $ - _plus_text
     call    CRDO
     jp      CRDO
@@ -220,7 +220,7 @@ check_autoexec:
 _autocmd:
     db      'RUN "'
 _autotext
-    db      "autoexec"
+    db      "autoexec.baq"
 _autolen = $ - _autotext
     db      $0D
 _autodesc

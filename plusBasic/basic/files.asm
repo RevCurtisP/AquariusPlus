@@ -424,31 +424,28 @@ ST_LOAD:
     cp      ','
     jr      nz, .basic              ; No parameter -> load as basic program
     rst     CHRGET
-    cp      $AA                     ; Token for '*'
+    cp      MULTK                   ; Token for '*'
     jp      z, .array               ; Array parameter -> load as array
 
-    ; Load as binary to address
+; Load raw binary to address
+; LOAD "tron.bin",$4200
+; LOAD "tron.bim",$4200
     call    parse_page_arg          ; Check for page specifier
     push    af                      ; Stack = Page, String Descriptor
     call    FRMNUM                  ; Get number
     call    FRCINT                  ; Convert to 16 bit integer
-    ld      (BINSTART), de
-
     ; Get back page filespec
     pop     af                      ; AF = Page, Stack = String Descriptor
     ex      (sp),hl                 ; HL = String Descriptor, Stack = Text Pointer
     jr      c,.load_paged
-    call    dos_load_binary
+    ld      bc,$FFFF                ; Load up to 64k   
+    call    file_load_binary
+    jp      m,_dos_error
     pop     hl                      ; Get Back Text Pointer
     ret
     
 ; Load raw binary into paged memory
 ; LOAD "tron.bin",@40,$1234
-; LOAD "tron.bin",@63,1
-; LOAD "trom.bin",@52,0
-; LOAD "tron.bin",@1,0
-; LOAD "tron.bin",@64,0
-; LOAD "tron.bin",@50,$4000
 .load_paged
     ld      bc,$FFFF                ; Load up to 64k
     call    check_paged_address     ; Verify pages addres is between 0 and 16383

@@ -121,18 +121,26 @@ _discard:
 
 ;-----------------------------------------------------------------------------
 ; Load binary file into main memory
-; Input: HL: String descriptor address
-; Clobbered registers: A, DE
+; Input: BC: Maximum Length
+;        DE: Start Address
+;        HL: String descriptor address
+; Output: A: result code
+;        BC: number of bytes actually read
+;     DE,HL: next address (start address if no bytes read)
+; Flags Set: Z if llegal page
+;            C if page overflow
+;            S if I/O error
 ;-----------------------------------------------------------------------------
 dos_load_binary:
-    call    esp_open
-    ld      de, (BINSTART)
-    ld      bc, $FFFF
+    call    esp_open_read
+    ret     m
     call    esp_read_bytes
-    call    esp_close_all
-    or      $FF                   ; Clear zero and carry flags
+    ret     m
+    push    af
+    call    esp_close
+    pop     af
+    or      a
     ret
-
 
 ;-----------------------------------------------------------------------------
 ; Save binary data from paged memory to file
