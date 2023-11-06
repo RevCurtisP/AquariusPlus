@@ -655,8 +655,12 @@ _load_extended:
     byte    CHRTK                 ;   Must be CHRSET
     rst     SYNCHR
     byte    SETTK
+; load chrset "demos/charmaps/charmaps/bold.chr
+; load chrset "future.chr
+_load_chrset:
     call    get_strdesc_arg       ; HL = FileSpec StrDsc; Stack = TxtPtr
-    call    dos_load_chrset
+    call    dos_load_chrset       ; Load character set and copy to character RAM
+    jp      m,_dos_error
     pop     hl
     ret
 

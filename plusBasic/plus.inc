@@ -154,6 +154,7 @@ STRBUFF     equ $0100   ; Page Address: String Buffer  - up to 255 chars plus nu
                         ; Must be on 256 byte boundary
 EDITBUFF    equ $0200   ; 256 Byte Edit Buffer
 CHRSETBUF   equ $3000   ; Page Address: Custom Character Set Buffer
+CHRSETLEN   equ 2048    ; Size of character set ROM
 
 ;-----------------------------------------------------------------------------
 ; BASIC Text Screen Buffers

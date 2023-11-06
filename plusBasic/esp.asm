@@ -89,6 +89,19 @@ pop_hl_ret:
     ret
 
 ;-----------------------------------------------------------------------------
+; Open file to string descriptor
+; Input: HL: string descriptor
+; Output: A: file descriptor
+;-----------------------------------------------------------------------------
+esp_open_read:
+    ld      a, ESPCMD_OPEN
+    call    esp_cmd
+    ld      a, FO_RDONLY
+    call    esp_send_byte
+    call    esp__send_strdesc
+    jp      esp__get_result
+
+;-----------------------------------------------------------------------------
 ; Open file to String Descriptor in HL
 ; Clobbered registers: A, HL, DE
 ;-----------------------------------------------------------------------------
@@ -102,12 +115,14 @@ esp_open:
 
 ;-----------------------------------------------------------------------------
 ; Close file or directory
-; Clobbered registers: A
+;  Input: A: File descriptor
+; Output: A: Result
 ;-----------------------------------------------------------------------------
 esp_close:
     ld      a, ESPCMD_CLOSE
     call    esp_cmd
-    jp      esp_get_result
+    call    esp_send_byte
+    jp      esp__get_result
 
 ;-----------------------------------------------------------------------------
 ; Close all files and directories
@@ -195,17 +210,19 @@ esp_read_bytes:
 
 ;-----------------------------------------------------------------------------
 ; Read bytes from ESP to paged memory
-; Input:   A: page
-;         BC: number of bytes to read
-;         DE: destination address
-; Output: BC: number of bytes actually read
-;      DE,HL: next address (start address if no bytes read)
-;         
-; Clobbered registers: A
+; Input: A: page
+;       BC: number of bytes to read
+;       DE: destination address
+; Output: A: result code
+;        BC: number of bytes actually read
+;     DE,HL: next address (start address if no bytes read)
+; Flags Set: Z if llegal page
+;            C if page overflow
+;            S if I/O error
 ;-----------------------------------------------------------------------------
 esp_read_paged:
     call    page_set4write_coerce
-    jp      z,page_restore_plus  ; Return if illegal page
+    jp      z,page_restore_plus   ; Return if illegal page
 
     ld      a, ESPCMD_READ
     call    esp_cmd
@@ -219,11 +236,12 @@ esp_read_paged:
     
     ; Get result
     call    esp_get_result
+    ret     m                     ; Return if error
 
     ; Get number of bytes actual read
     call    esp_get_bc
 
-    push    bc
+    push    bc                    ; Stack = BytCnt, RtnAdr
 
     dec     de
 .loop:
@@ -241,18 +259,16 @@ esp_read_paged:
 .read_byte
     call    esp_get_byte
     ld      (de), a
-    dec     bc
+    dec     bc                    
     jr      .loop
 
-.done:
-    
-    ld      h,a
-    or      $FF                   ; Clear zero and carry flags
-    ld      a,h
+.done:   
+    or      $7F                   ; Clear zero, carry, sign flags
+    ld      a,0
     ld      h,d                   ; Return end address in DE and HL
     ld      l,e
 .error
-    pop     bc
+    pop     bc                    ; 
     jp      page_restore_plus     ; Restore original page
 
 
@@ -313,25 +329,46 @@ esp_get_byte:
 
 
 ;-----------------------------------------------------------------------------
-; Send String from String Descriptor
-; Input:    HL: String Descriptor Address
-; Output:   DE: Address of Byte after String
-;           BC: String Length
-; Destroys: HL
+; Send string pointed to by string descriptor
+; Input: HL: String descriptor address
 ;-----------------------------------------------------------------------------
-esp_send_strdesc: 
+esp__send_strdesc: 
+    push    af
+    push    bc
+    push    de
     ld      a,h                   ; If HL is 0
     or      l
-    jp      z,esp_send_byte       ; Send Null Terminator
+    jr      z,.terminate          ; Send Null Terminator
     call    string_addr_len       ; Get Text Address in DE and Length in BC
+    call    esp_send_bytes        ; Send Command String  
+.terminate
+    xor     a 
+    call    esp_send_byte         ; Send String Terminator
+    pop     de
+    pop     bc
+    pop     af
+    ret
 
 ;-----------------------------------------------------------------------------
+; Send String from String Descriptor
+; Input:  HL: String Descriptor Address
+; Output: BC: number of bytes written
+;         DE: end address+1
+; Clobbered: A
+;-----------------------------------------------------------------------------
+esp_send_strdesc: 
+    ld      a,h                   
+    or      l                     ; If NULL StringDesc address
+    jp      z,esp_send_byte       ;   Send Null Terminator
+    call    string_addr_len       ; Get Text Address in DE and Length in BC
+ 
+;-----------------------------------------------------------------------------
 ; Send String
-; Input:  DE: String Address
-;         BC: String Length
-; Output: DE: Address of Byte after String
-;         BC: Bytes Written
-; Destroys: HL
+; Input:  DE: string address
+;         BC: string length
+; Output: BC: number of bytes written
+;         DE: end address+1
+; Clobbered: A
 ;-----------------------------------------------------------------------------
 
 esp_send_string: 
@@ -410,20 +447,19 @@ esp_write_repbyte:
     ret
 
 ;-----------------------------------------------------------------------------
-; Send bytes from main memory
-; Input:  DE: source address
+; Send bytes from main memory to ESP32
+; Input:  DE: start address
 ;         BC: number of bytes to write
-; Output: DE: next address
-;         BC: number of bytes actually written
+; Output: BC: number of bytes actually written
+;         DE: end address+1
+; Clobbers: A
 ;-----------------------------------------------------------------------------
 esp_send_bytes:
     push    bc
-
 .loop:
-    ; Done sending? (BC=0)
     ld      a, b
-    or      a, c
-    jr      z, .done
+    or      a, c                  ; If BC = 0
+    jr      z, .done              ;   Finish up
 
     ld      a, (de)
     call    esp_send_byte
@@ -432,7 +468,7 @@ esp_send_bytes:
     jr      .loop
 
 .done:
-    pop     bc
+    pop     bc                    ; Return Bytes written
     ret
 
 ;-----------------------------------------------------------------------------
@@ -440,10 +476,9 @@ esp_send_bytes:
 ; Input:   A: page
 ;         DE: source address
 ;         BC: number of bytes to write
-; Output: DE: next address
-;         BC: number of bytes actually written
+; Output: BC: number of bytes actually written
 ;
-; Clobbered registers: A, HL, DE
+; Clobbered registers: A, DE
 ;-----------------------------------------------------------------------------
 esp_write_paged:
     call    page_set4read_coerce
@@ -519,16 +554,15 @@ esp_send_de:
 
 ;-----------------------------------------------------------------------------
 ; Write data to ESP
+; Input: A: byte
 ;-----------------------------------------------------------------------------
 esp_send_byte:
-    push    a
-
+    push    af
 .wait:
     in      a, (IO_ESPCTRL)
     and     a, 2
     jr      nz, .wait
-
-    pop     a
+    pop     af
     out     (IO_ESPDATA), a
     ret
 

@@ -89,35 +89,50 @@ dos_get_filestat:
 .done
     ret
 
-
 ;-----------------------------------------------------------------------------
 ; Load file into character RAM buffer
-; Clobbered registers: A, BC, DE, HL
+; Input: HL: File name string descriptor address
+; Output: A: Result
+; Clobbered registers: A,BC,DE,HL,AF',BC',DE',HL'
 ;-----------------------------------------------------------------------------
 dos_load_chrset:
     ld      a,BAS_BUFFR
+    ld      bc,CHRSETLEN
     ld      de,CHRSETBUF
-    ld      (BINSTART),de
     call    dos_load_paged
-    jp      custom_chrset
-
+    ret     z                     ; Illegal page
+    ret     c                     ; Page overflow
+    ret     m                     ; I/O error
+    jp      custom_chrset    
 
 ;-----------------------------------------------------------------------------
 ; Load binary file into paged memory`
 ; Input: A: Page
+;        BC: Maximum Length
+;        DE: Start Address
 ;        HL: String descriptor address
-; Clobbered registers: A, DE
+; Output: A: result code
+;        BC: number of bytes actually read
+;     DE,HL: next address (start address if no bytes read)
+; Flags Set: Z if llegal page
+;            C if page overflow
+;            S if I/O error
 ;-----------------------------------------------------------------------------
 dos_load_paged:
-    push    af                    
-    call    esp_open
-    pop     af
-    ld      de, (BINSTART)
-    ld      bc, $FFFF
-    call    esp_read_paged
+    push    af                    ; Stack = Page
+    call    esp_open_read         ;
+    jp      m,_discard
+    pop     af                    ; AF = Page
+    call    esp_read_paged        ;
+    ret     z                     ; Illegal page
+    ret     c                     ; Page overflow
     push    af
-    call    esp_close_all
+    call    esp_close
     pop     af
+    ret
+_discard:
+    inc     sp                    ; Discard top entry on stack
+    inc     sp
     ret
 
 ;-----------------------------------------------------------------------------
@@ -151,7 +166,7 @@ dos_save_paged:
     ld      bc, (BINLEN)
     call    esp_write_paged
     push    af
-    call    esp_close_all
+    call    esp_close
     pop     af
     ret
 

@@ -417,10 +417,10 @@ page_map_aux:
 ;       BC: Byte Count
 ;       DE: Destination address 0-16383 
 ;       HL: Source Address
-; Output: DE = Updated destination address (coerced)
-;           Zero: Cleared if succesful, Set if invalid page
-;         Carry: Cleared if succesful, Set if overflow
-; Clobbers: A, BC, DE, HL
+; Output: DE: Updated destination address (coerced)
+; Flags Set: Z if llegal page
+;            C if page overflow
+; Clobbers: A, AF', BC, HL
 ;-----------------------------------------------------------------------------
 page_write_bytes:
     call    page_set4write_coerce
@@ -487,7 +487,9 @@ page_set4read_coerce:
 ; Map Page into valid Bank 3 and coerce address to bank 3
 ; Input: A: Bank to map into bank 3
 ;       DE: Address to coerce
-; Zero Flag: Set if trying to page into bank that isn't ram
+; Output: DE: Coerced address
+; Flags Set: Z if page not RAM
+; Clobbers: AF'
 ;-----------------------------------------------------------------------------
 page_set4write_coerce:
     call    page_set_for_write
@@ -517,7 +519,8 @@ page_next_address:
 ; Coerce address into bank 3
 ; Input: DE: Address to coerce
 ; Output: DE: Coerced address
-; Zero Flag: Set if trying to page into bank that isn't ram
+; Zero Flag: Set if trying to page into bank that isn't RAM
+; Clobberes: AF'
 ;-----------------------------------------------------------------------------
 page_coerce_address:
     ex      af,af'                ; Save page and flags
