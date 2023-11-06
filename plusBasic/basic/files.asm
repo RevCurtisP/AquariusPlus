@@ -1,3 +1,7 @@
+;====================================================================
+; File I/O Statements and Functions
+;====================================================================
+
 ;-----------------------------------------------------------------------------
 ; CD - Change directory
 ;
@@ -659,7 +663,7 @@ _load_extended:
 ; load chrset "future.chr
 _load_chrset:
     call    get_strdesc_arg       ; HL = FileSpec StrDsc; Stack = TxtPtr
-    call    dos_load_chrset       ; Load character set and copy to character RAM
+    call    file_load_chrset      ; Load character set and copy to character RAM
     jp      m,_dos_error
     pop     hl
     ret

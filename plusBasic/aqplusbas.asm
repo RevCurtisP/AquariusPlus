@@ -201,7 +201,7 @@ print_copyright:
 _plus_text:
     db "plusBASIC "
 _plus_version:
-    db "v0.17c", 0
+    db "v0.17d", 0
 _plus_len   equ   $ - _plus_text
     call    CRDO
     jp      CRDO
@@ -986,6 +986,7 @@ aux_rom_call:
     include "enhanced.asm"      ; Enhanced stardard BASIC statements and functions
     include "evalext.asm"       ; EVAL extension - hook 9
     include "extended.asm"      ; Statements and functions from Aquarius Extended BASIC
+    include "files.asm"         ; Disk and File I/O machine assembly routines
     include "fileio.asm"        ; Disk and File I/O statements and functions
     include "graphics.asm"      ; Graphics statements and functions
     include "plus.asm"          ; plusBASIC unique statements and functions
