@@ -472,7 +472,8 @@ ST_LOAD:
 ;-----------------------------------------------------------------------------
 load_basic_program:
     ; Open file
-    call    esp_open
+    call    esp_open_read
+    jp      m,_dos_error
 
     ; Check CAQ header
     call    check_sync_bytes    ; Sync bytes
@@ -487,7 +488,7 @@ load_basic_program:
     call    esp_read_bytes
 
     ; Close file
-    call    esp_close_all
+    call    esp_close
 
     ; Back up to last line of BASIC program
 .backup:
@@ -501,7 +502,7 @@ load_basic_program:
     ld      b,3
 .zeros
     cp      (hl)
-    ;jp      nz,err_bad_file
+    ;jp      nz,BDFERR
     inc     hl
     djnz    .zeros
 
@@ -594,8 +595,9 @@ load_caq_array:
     ex      (sp),hl               ; HL = String Descriptor, Stack = Text Pointer
 
     ; Open file
-    call    esp_open
-
+    call    esp_open_read
+    jp      m,_dos_error
+    
     ; Check CAQ header
     call    check_sync_bytes    ; Sync bytes
     ld      bc, 6               ; Check that filename is '######'
@@ -606,7 +608,7 @@ load_caq_array:
 .backup:
     ld      a, (de)
     cp      '#'
-    jp      nz, err_bad_file
+    jp      nz, BDFERR
     inc     de
     djnz    .backup
 
@@ -616,7 +618,7 @@ load_caq_array:
     call    esp_read_bytes
 
     ; Close file
-    call    esp_close_all
+    call    esp_close
 
     pop     hl
     ret
@@ -633,7 +635,7 @@ get_array_argument:
     ld      (SUBFLG), a         ; Set array flag
     call    PTRGET              ; Get array (out: BC = pointer to number of dimensions, DE = next array entry)
     ld      (SUBFLG), a         ; Clear array flag
-    jp      nz, FCERR           ; FC Error if array not found
+    jp      nz,UDERR            ; FC Error if array not found
     call    CHKNUM              ; TM error if not numeric
 
     ; Get start address and length of array
@@ -901,7 +903,7 @@ check_sync_bytes:
     call    esp_read_bytes
     ld      a, c
     cp      13
-    jp      nz, err_bad_file
+    jp      nz, BDFERR
 
     ; Check for 12x$FF
     ld      b, 12
@@ -909,14 +911,14 @@ check_sync_bytes:
 .backup:
     ld      a, (de)
     cp      $FF
-    jp      nz, err_bad_file
+    jp      nz, BDFERR
     inc     de
     djnz    .backup
 
     ; Check for $00
     ld      a, (de)
     or      a
-    jp      nz, err_bad_file
+    jp      nz, BDFERR
     ret
 
 
@@ -970,3 +972,10 @@ get_strdesc_arg:
     push    hl                    ; Text Pointer on stack
     call    FRESTR                ; Free Temporary String
     jp      (IX)                  ; Fast Return
+
+;-----------------------------------------------------------------------------
+; Bad file error
+;-----------------------------------------------------------------------------
+BDFERR:
+    ld      e,ERRBDF
+    jp      ERROR

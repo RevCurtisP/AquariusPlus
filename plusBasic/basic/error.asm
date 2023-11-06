@@ -30,8 +30,11 @@ ERRLBO  equ     $2C   ; 23 Line buffer overflow
 ERRGS   equ     $2E   ; 24 Statement not implemented
 ERRUL   equ     $30   ; 25 Undefined label
 ERRAG   equ     $32   ; 26 ARG without GOSUB
-NONDSK  equ     $34   ; 27 Last non disk error
+ERRUD   equ     $34   ; 27 Undimensioned array
+NONDSK  equ     $36   ; 28 Last non disk error
 ; Disk errors
+DSKERRS equ     $60   ; Start of Disk Errors
+ERRBDF  equ     $60   ; 49 Bad File
 ERRFNF  equ     $62   ; 50 File / directory not found         
 ERRTMF  equ     $64   ; 51 Too many open files / directories  
 ERRIPR  equ     $66   ; 52 Invalid parameter                
@@ -67,9 +70,9 @@ get_errno_ptr:
     ld      e,a                   ; Put in E
 get_errcode_ptr:
     ld      a,e                   ; Get Error Table Offset into A
-    cp      ERRFNF                
+    cp      DSKERRS                
     jr      c,.not_dos
-    sub     ERRFNF-NONDSK
+    sub     DSKERRS-NONDSK
 .not_dos
     cp      LSTERR                ; Compare to End of Table
     jr      c,.load_ptr           ; If Past End of Table
@@ -127,8 +130,9 @@ err_codes:
         word    MSGGS
         word    MSGUL
         word    MSGAG
-
+        word    MSGUD
 err_disk:
+        word    MSGBDF
         word    MSGFNF
         word    MSGTMF
         word    MSGIPR
@@ -170,10 +174,12 @@ MSGLBO: byte    "Line buffer overflow",0        ; 23
 MSGGS:  byte    "Statement not implemented",0   ; 24
 MSGUL:  byte    "Undefined line label",0        ; 25
 MSGAG:  byte    "ARGS without GOSUB",0          ; 26
-        byte    0                               ; 27  Last non disk error                             
+MSGUD:  byte    "Undimensioned Array",0         ; 27 
+        byte    0                               ; 28  Last non disk error                             
 
 ; File System Errors                            ;     ESP32 Error
 doserr_messages:
+MSGBDF: byte    "Bad file",0                    ; 49  Bad File
 MSGFNF: byte    "File not found",0              ; 50  -1: File / directory not found         
 MSGTMF: byte    "Too many files",0              ; 51  -2: Too many open files / directories  
 MSGIPR: byte    "Invalid parameter"             ; 52  -3: Invalid parameter                

@@ -55,7 +55,7 @@ get_array:
     ld      a,1                   ; SEARCH ARRAYS ONLY
     ld      (SUBFLG),a            
     call    PTRGET                ; GET PTR TO ARRAY
-    jp      nz,FCERR              ; NOT THERE - ERROR
+    jp      nz,UDERR              ; NOT THERE - ERROR
     ld      (SUBFLG),a            ; CLEAR THIS
     push    hl                    ; SAVE TXTPTR
     ld      h,b                   ; HL = PTR TO ARRAY
@@ -79,6 +79,10 @@ get_array:
     pop     hl                    ; HL = TxtPtr
     ret
 
+;Undimensioned Array Error
+UDERR:
+    ld      e,ERRUD
+    jp      ERROR
 
 ;-----------------------------------------------------------------------------
 ; Parse @Page

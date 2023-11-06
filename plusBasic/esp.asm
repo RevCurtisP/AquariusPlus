@@ -700,16 +700,4 @@ esp_error:
 .msg_err_not_empty:     db "Not empty",0
 .msg_err_write_protect  db "Write protected",0
 
-;-----------------------------------------------------------------------------
-; Bad file error
-;-----------------------------------------------------------------------------
-err_bad_file:
-    ld      hl, .msg_bad_file
-
-    ; Print error message
-    ld      a, '?'
-    rst     OUTCHR
-    jp      ERRFN1
-
-.msg_bad_file:       db "Bad file",0
 
