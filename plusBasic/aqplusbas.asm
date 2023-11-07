@@ -188,7 +188,7 @@ print_copyright:
 _plus_text:
     db "plusBASIC "
 _plus_version:
-    db "v0.17j", 0
+    db "v0.17k", 0
 _plus_len   equ   $ - _plus_text
     call    CRDO
     jp      CRDO
@@ -498,11 +498,37 @@ descramble_rom:
     jp      $E010
 
 ;-----------------------------------------------------------------------------
-; VBLANK Interrupt Handler
-;
+; Default Interrupt Handler
+; Save registers, Calls address in BASINTJP
+; Restores registers and re-enables interrupts on return
 ;-----------------------------------------------------------------------------
+;;; ToDo: Save stack position, so interrupt can jump back if needed
 _interrupt:
-
+    push    af
+    push    bc
+    push    de
+    push    hl
+    push    ix
+    push    iy
+    in      a,(IO_BANK3)
+    push    af
+    ld      a,(BASINTPG)
+    or      a
+    jr      z,.nopage
+    out     (IO_BANK3),a
+.nopage
+    call    BASINTJP
+_interrupt_return:
+    pop     af
+    out     (IO_BANK3),a
+    pop     iy
+    pop     ix
+    pop     hl
+    pop     de
+    pop     bc
+    pop     af
+    ret
+    
 
 
 

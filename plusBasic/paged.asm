@@ -25,7 +25,7 @@ page_fast_copy:
     call    page_coerce_address   ; Coerce DstAdr to Bank3
     ld      a,h                   ; Coerce SrcAdr to Bank2
     and     $3F                   ;  
-    or      $80
+    or      $40
     ld      h,a
     or      a                     ; Clear Carry, Zero flags
     ldir                          ; Do the copy
@@ -46,7 +46,7 @@ page_full_copy:
     ret     z
     push    hl                    ; Stack = HL, RetAddr
     call    page_swap_two         ; Bank3 = A, Bank4 = A'
-    ld      hl,$8000              ; Copying from page in bank 2
+    ld      hl,$4000              ; Copying from page in bank 1
     ld      de,$C000              ; to page in bank 3
     ld      bc,$4000              ; Entire bank/page
     xor     a                     ; Clear Carry
@@ -157,16 +157,16 @@ _inc_hl:
     cp      h
     ret     nz
 
-    in      a,(IO_BANK2)
+    in      a,(IO_BANK1)
     call    page_check_next
     ret     c
     inc     a
-    out     (IO_BANK2),a
+    out     (IO_BANK1),a
 
 _coerce_hl:
     ld      a,h                   ; Coerce HL
     and     $3F
-    or      $80
+    or      $40
     ld      h,a
     ret
 
@@ -226,82 +226,43 @@ page_fill_word:
     jr      .loop
 
 ;-----------------------------------------------------------------------------
-; Map Page into Bank
-; Input: A = Page
-;        C = Bank
-; Clobbers: A,BC,HL
-;-----------------------------------------------------------------------------
-page_map:
-    call    _map_setup
-    in      a,(c)                 ; Get current bank
-    ld      (hl),a                ; Save in SYSVAR
-    out     (c),b                 ; Map Page into Bank
-    ret
-
-;-----------------------------------------------------------------------------
-; Map Original Page into Bank
-; Input: C = Bank
-; Clobbers: A,BC,HL
-;-----------------------------------------------------------------------------
-page_restore:
-    call    _map_setup
-    ld      a,(hl)                ; A = Original Page
-    out     (c),a                 ; Map into Bank
-    ret
-    
-_map_setup:
-    ld      b,c                   ; BC = I/O Port / System Variable offset
-    ld      hl,BANK0PAGE          ; 
-    add     hl,bc                 ; HL = BANKxPAGE System Variable
-    ld      b,a                   ; B = Page
-    ld      a,IO_BANK0
-    add     a,c
-    ld      c,a                   ; C = I/O Port for bank
-    ret
-
-;-----------------------------------------------------------------------------
-; Disable interrupts, set up temporary stack, and swap pages into Banks 2 and 3
+; Swap pages into Banks 1 and 3
 ; Input: A: Page to Swap into Bank 3
-;       A': Page to Swap into Bank 2
-; Writes: BANK2PAGE, BANK3PAGE, PLUSTCK
-; Clobbers: AF,AF',HL',IX
+;       A': Page to Swap into Bank 1
+; Leaves previous pages in banks stack
+; Clobbers: IX
 ;-----------------------------------------------------------------------------
 page_swap_two:
-    di                            ; Disable interrupts
-    pop     ix                    ; Get Return Address
-    exx                           ; Save Registers
-    ld      hl,0
-    add     hl,sp                 ; Get Stack Pointer
-    ld      (PLUSTCK),hl          ; Save it
-    ld      sp,PLUSTCK            ; Use temporary stack
-    ld      l,a                   ; Save Bank Page
-    in      a,(IO_BANK3)          ; Save current page# in bank 2
-    ld      (BANK3PAGE),a
-    in      a,(IO_BANK2)          ; Save current page# in bank 2
-    ld      (BANK2PAGE),a
-    ld      a,l                   
-    out     (IO_BANK3),a          ; Map destination page into bank 3         
-    ex      af,af'                
-    out     (IO_BANK2),a          ; Map source page into bank 2         
-    exx                           ; Restore Registers
+    pop     ix                    ; IX = RtnAdr
+    push    hl                    ; Stack = OldHL
+    push    af                    ; Stack = NewPg3, OldHL
+    in      a,(IO_BANK3)
+    ld      h,a                   ; H = OrgPg3
+    in      a,(IO_BANK1)
+    ld      l,a                   ; L = OrgPg1
+    pop     af                    ; A = NewPg3
+    ex      (sp),hl               ; HL = OldHL, Stack = OrgPgs
+    out     (IO_BANK3),a          ; Set Bank 3 to A
+    ex      af,af'
+    out     (IO_BANK1),a          ; Set Bank 1 to A'
+    ex      af,af'
     jp      (ix)                  ; Return
 
 ;-----------------------------------------------------------------------------
 ; Restore original pages and stack and enable interrupts
-; Reads: BANK2PAGE, BANK3PAGE, PLUSTCK
 ; Clobbers: AF',IX
 ;-----------------------------------------------------------------------------
 page_restore_two:
-    pop     ix                    ; Get Return Address
+    pop     ix                    ; IX = RtnAdr
     ex      af,af'
-    ld      a,(BANK2PAGE)
-    out     (IO_BANK2),a          ; Restore bank 2 page
-    ld      a,(BANK3PAGE)
-    out     (IO_BANK3),a          ; Restore bank 3 page
-    ld      sp,(PLUSTCK)          ; Back to original stack
+    ex      (sp),hl               ; HL = OrgPgs, Stack = OldHL
+    ld      a,h                   ; A = OrgPg3
+    out     (IO_BANK3),a          ; Restore Bank 3
+    ld      a,l                   ; A = OrgPg1
+    out     (IO_BANK1),a          ; Restore Bank 1
     ex      af,af'
-    ei                            ; Enable interrupts
-    jp      (ix)
+    pop     hl                    ; HL = OldHL
+    jp      (ix)                  ; Return
 
 ;-----------------------------------------------------------------------------
 ; Read Byte from Page

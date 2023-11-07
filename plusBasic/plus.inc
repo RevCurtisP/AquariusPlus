@@ -60,14 +60,14 @@ PLUSTCK     equ $37FA   ; Top of page swap temporary stack $37E8 - $37F9 (18 byt
 BORDERCLR   equ $37FF   ; Border color alternate memory location
 
 ; RNDTAB ($3821-$3840) - Deprecated RND Permutation Table
-BASINTPG    equ $3821   ; BASIC Interrupt Routine Page (swapped into BANK 3)
+BASINTPG    equ $3821   ; BASIC Interrupt Routine Page, 0=None (swapped into BANK 3)
 BASINTJP    equ $3822   ; BASIC Interrupt Routine JP instruction
-              ; $3823   ; BASIC Interrupt Routine JP Address ($3823-$3824)
+BASINTADR   equ $3823   ; BASIC Interrupt Routine JP Address ($3823-$3824)
 BASYSCTL    equ $3825   ; System Control Bits: 2 = Key Repeat, 6 = 80 Column Mode
-BANK0PAGE   equ $3826   ; Page that was in Bank 0
-BANK1PAGE   equ $3827   ; Page that was in Bank 1
-BANK2PAGE   equ $3828   ; Page that was in Bank 2
-BANK3PAGE   equ $3829   ; Page that was in Bank 3
+;           equ $3826   ; 
+;           equ $3827   ; 
+;           equ $3828   ; 
+;           equ $3829   ; 
 ;Used by ON ERROR. Must be in in consecutive order: ERRLIN,ERRFLG,ONEFLG,ONELIN
 ERRLIN      equ $382A   ; LINE NUMBER WHERE LAST ERROR OCCURED.
 ERRFLG      equ $382C   ; USED TO SAVE THE ERROR NUMBER SO EDIT CAN BE
