@@ -219,16 +219,18 @@ ST_PUT:
 ST_SET:
     cp      TILETK
     jp      z,ST_SET_TILE
+    cp      FNTK      
+    jr      z,ST_SETFNKEY
     rst     SYNCHR                ; Must be extended Token
     byte    XTOKEN
     cp      SPRITK
     jp      z,ST_SET_SPRITE
     cp      PALETK
     jp      z,ST_SETPALETTE
-    cp      KEYTK      
-    jr      z,ST_SETKEY
     cp      FASTK      
     jr      z,ST_SETFAST
+    cp      KEYTK      
+    jr      z,ST_SETKEY
     jp      SNERR
 
 ;-----------------------------------------------------------------------------
@@ -251,6 +253,35 @@ ST_SETKEY:
 ST_SETFAST:
     call    get_on_off            ; A = $FF if ON, $00 if OFF
     jp      sys_turbo_mode
+
+;-----------------------------------------------------------------------------
+; Write string to FNKEY buffer
+; Syntax: SET FNKEY TO string$
+;-----------------------------------------------------------------------------
+; SET FNKEY 3 TO "CD"+CHR$(13)
+ST_SETFNKEY:
+    rst     CHRGET                ; Skip FN
+    rst     SYNCHR
+    byte    XTOKEN                ; Require KEY
+    rst     SYNCHR
+    byte    KEYTK
+    call    GETBYT                ; Get Function Key Number
+    dec     a                     ; Make it 0 to 15
+    cp      16                    ; If > 15
+    jp      nc,FCERR              ;   Illegal quantity
+    push    af                    ; Stack = FnkNum, RtnAdr
+    rst     SYNCHR                
+    byte    TOTK                  ; Require TO
+    call    get_string_arg        ; BC = StrLen, DE = StrAdr; Stack = TxtPtr, FnkNum, RtnAdr
+    ld      a,c
+    cp      32                    ; If longer than 31
+    jp      nc,ERRLS              ;   String too long error
+    pop     hl                    ; HL = TxtPtr; Stack = FnkNum, RtnAdr
+    ex      (sp),hl               ; H = FnkNum; Stack = TxtPtr, RtnAdr
+    ld      a,h                   ; A = FnkNum
+    call    fnkey_write_buffer    ; Write to the buffer
+    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
+    ret
 
 ;-----------------------------------------------------------------------------
 ; PAUSE Statement 

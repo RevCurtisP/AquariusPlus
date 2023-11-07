@@ -93,7 +93,11 @@ _reset:
 ; Executed on RESET if no cartridge detected
 ;-----------------------------------------------------------------------------
 _coldboot:
-    
+
+    ld      a,BAS_BUFFR         
+    out     (IO_BANK3),a
+    call    _clear_bank3        ; Zero out BASIC buffers page
+
     ld      a,ROM_AUX_PG        ; System Auxiliary ROM
     out     (IO_BANK3),a
     call    init_screen_buffers
@@ -102,7 +106,7 @@ _coldboot:
     ld      a,ROM_EXT_PG        ; plusBASIC extended ROM
     out     (IO_BANK3), a
 
-    Call    _clear_basic_ram    ; Init BASIC RAM to zeroes
+    call    _clear_basic_ram    ; Init BASIC RAM to zeroes
 
     ; Set memory size
     ld      hl, BASIC_RAM_END   ; Top of public RAM
@@ -184,7 +188,7 @@ print_copyright:
 _plus_text:
     db "plusBASIC "
 _plus_version:
-    db "v0.17i", 0
+    db "v0.17j", 0
 _plus_len   equ   $ - _plus_text
     call    CRDO
     jp      CRDO
@@ -239,6 +243,9 @@ _ctrl_keys:
     push    bc                    ; Save character count
     call    in_direct
     jr      c,.dontscreen         ; If Not in Direct Mode
+    ld      a,c
+    or      a
+    jp      m,.extended
     xor     a
     cp      b
     jr      nz,.dontscreen        ; and Input Buffer is empty
@@ -279,6 +286,14 @@ _ctrl_keys:
 .inlinc
     pop     bc                    ;   Restore character count
     jp      INLINC                ;   Wait for next key
+.extended
+    call    fnkey_get_buff_addr   ; DE = Key Buffer Address
+    jr      nz,.inlinc            ; If Function Key
+    dec     de                    ;   Back up for autotype
+    ld      (RESPTR),de           ;   Set pointer to buffer
+    jr      .inlinc               ;   and return
+    
+
 
 ;-----------------------------------------------------------------------------
 ; Check for Direct Mode
@@ -336,6 +351,16 @@ sys_ver_basic:
     ex      de,hl                 ; HL = BufAdr
     ret
 
+
+;-----------------------------------------------------------------------------
+; Fill RAM in Bank 3 with 0
+; Clobbers: AF, BC, DE, HL
+;-----------------------------------------------------------------------------
+_clear_bank3:
+    xor     a
+    ld      hl,$C000
+    ld      bc,$4000
+    jr      sys_fill_mem
 
 ;-----------------------------------------------------------------------------
 ; Fill BASIC RAM with 0
@@ -595,6 +620,13 @@ read_key:
     ld      a,h
     or      a
     jr      z,.readkey
+    ld      c,IO_BANK3
+    in      b,(c)
+    cp      $C0
+    jr      c,.not_fkey
+    ld      a,BAS_BUFFR
+    out     (c),a
+.not_fkey
     inc     hl
     ld      a,(hl)
     ld      (RESPTR),hl
@@ -603,6 +635,7 @@ read_key:
     xor     a
     ld      (RESPTR+1),a
 .done
+    out     (c),b
     exx
     ret
 .readkey
@@ -1000,6 +1033,7 @@ aux_rom_call:
     include "plus.asm"          ; plusBASIC unique statements and functions
     include "usbbas.asm"        ; Statements and functions from USB BASIC
     include "shared.asm"        ; Shared subroutines
+    include "misc.asm"          ; Miscellaneous subroutines
 
     ; Graphics modules
     include "gfx.asm"           ; Main graphics module

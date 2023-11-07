@@ -147,13 +147,15 @@ SYSCTRL_TURBO   equ $04     ; xxxxx1xx  Turbo mode (7.16MHz)
 ; BASIC Extended System Constants, Variables and Buffers
 ; Page 36 (BAS_BUFFR), swapped into Bank 3
 ;-----------------------------------------------------------------------------
-GFX_SYSVARS equ $C000   ; Extended BASIC Graphics System Variables
-                        ; defined in gfx/gfx.asm
-STRBUFFLEN  equ $00FF   ; Page Address: Length of String in Buffer
-STRBUFF     equ $0100   ; Page Address: String Buffer  - up to 255 chars plus null terminator 
+BASBUF_BASE equ $C000   ; Base Address of BASIC Buffers
+GFX_SYSVARS equ $C000   ; Graphics module System Variables (defined in gfx/gfx.asm)
+STRBUFFLEN  equ $00FF   ; Page Offset: Length of String in Buffer
+STRBUFF     equ $0100   ; Page Offset: String Buffer  - up to 255 chars plus null terminator 
                         ; Must be on 256 byte boundary
-EDITBUFF    equ $0200   ; 256 Byte Edit Buffer
-CHRSETBUF   equ $3000   ; Page Address: Custom Character Set Buffer
+FKEYDEFS    equ $0200   ; Function Key Definitions (32 bytes each)
+FKEYBASE    equ BASBUF_BASE + FKEYDEFS
+;         $0400-$2FFF   ; Unused
+CHRSETBUF   equ $3000   ; Page Offset: Custom Character Set Buffer
 CHRSETLEN   equ 2048    ; Size of character set ROM
 
 ;-----------------------------------------------------------------------------

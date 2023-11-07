@@ -274,6 +274,7 @@ LISTTK      equ $97     ; LIST
 CLRTK       equ $99     ; CLEAR
 PLUSTK      equ $A8     ; +
 TOTK        equ $A1     ; TO
+FNTK        equ $A2     ; FN
 MINUTK      equ $A9     ; -
 MULTK       equ $AA     ; *
 EXPTK       equ $AC     ; ^
