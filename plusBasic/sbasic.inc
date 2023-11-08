@@ -226,6 +226,7 @@ NOSEC       equ $10F2   ; Continue PTRGET at check for '$'
 SKIPDS      equ $10FD   ; Continue PTRGET at skip of '$'
 FONE        equ $135F   ; Floating point constant 1
 POPHRT      equ $141A   ; Pop HL and return
+QINT        equ $1586   ; Convert FAC to integer in C,D,E
 FIN         equ $15E5   ; Parse floating point number
 FIN0        equ $15EE   ; Parse floating point number wihout leading + or -
 LINPRT      equ $1675   ; Print Two Byte Number in HL as Decimal - Alters all Registers

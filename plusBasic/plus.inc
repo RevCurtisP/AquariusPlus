@@ -64,10 +64,8 @@ BASINTPG    equ $3821   ; BASIC Interrupt Routine Page, 0=None (swapped into BAN
 BASINTJP    equ $3822   ; BASIC Interrupt Routine JP instruction
 BASINTADR   equ $3823   ; BASIC Interrupt Routine JP Address ($3823-$3824)
 BASYSCTL    equ $3825   ; System Control Bits: 2 = Key Repeat, 6 = 80 Column Mode
-;           equ $3826   ; 
-;           equ $3827   ; 
-;           equ $3828   ; 
-;           equ $3829   ; 
+IRQEVENTS   equ $3826   ; Controls which actions get executed during interrupt
+TIMERCNT    equ $3827   ; TIMER counter LSB = $3827, MSB = $3829
 ;Used by ON ERROR. Must be in in consecutive order: ERRLIN,ERRFLG,ONEFLG,ONELIN
 ERRLIN      equ $382A   ; LINE NUMBER WHERE LAST ERROR OCCURED.
 ERRFLG      equ $382C   ; USED TO SAVE THE ERROR NUMBER SO EDIT CAN BE
@@ -142,6 +140,8 @@ SYSCTRL_XRG_DIS equ $01     ; xxxxxxx1  Disable registers $E0-$F5, $F8-$F9
 SYSCTRL_PSG_DIS equ $02     ; xxxxxx1x  Disable PSGs
 SYSCTRL_TURBO   equ $04     ; xxxxx1xx  Turbo mode (7.16MHz)
 
+IRQ_VBLANK      equ $01     ; VBLANK interrupt
+IRQ_VLINE       equ $02     ; Video LINE interrupt
 
 ;-----------------------------------------------------------------------------
 ; BASIC Extended System Constants, Variables and Buffers

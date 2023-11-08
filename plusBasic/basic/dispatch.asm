@@ -103,7 +103,7 @@ STJUMPS:
     dw      GSERR                 ;$D0 LINE
     dw      SNERR                 ;$D1 SWAP 
     dw      ST_DOKE               ;$D2 DOKE
-    dw      SNERR                 ;$D3 TIME 
+    dw      ST_TIMER              ;$D3 TIME 
     dw      SNERR                 ;$D4 EDIT   
     dw      ST_CLS                ;$D5 CLS    
     dw      ST_LOCATE             ;$D6 LOCATE 

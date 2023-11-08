@@ -236,3 +236,58 @@ asc_to_bcd_byte:
     ld      e,a                   ; Move digit into bottom nybble                  
     jr      .loop
     
+;----------------------------------------------------------------------------
+; Set Timer
+; Input C,DE = Timer count
+; Flags: N if stopped 
+;----------------------------------------------------------------------------
+timer_write:
+    ld      a,c
+    and     $7F                   ; Clear high bit
+    jr      _twrite
+    
+;----------------------------------------------------------------------------
+; Decrement timer one tick
+; Output: C,DE = Timer count
+; Flags: N if stopped 
+; Clobbers: D
+;----------------------------------------------------------------------------
+timer_tick:
+    call    timer_read            ; C,A = HiByt, D = MdByt, E = LoByt
+    ret     m                     ; If stopped, Return
+
+    ld      a,e
+    sub     1                     
+    ld      e,a                   ; LoByt -= 1
+
+    ld      a,d                   
+    sbc     0
+    ld      d,a                   ; MdByt -= Carry
+
+    ld      a,c                   ; A = HiByt
+    sbc     0                     ; HiByt -= Carry
+    ld      c,a
+_twrite:
+    ld      (TIMERCNT),de         ; 
+    ld      (TIMERCNT+2),a        ; Put it back
+    ret     p                     ; If >= 0, return it
+    jr      _tstopped             ; Else return 0
+    
+;----------------------------------------------------------------------------
+; Read Timer
+; Output: C,DE = Timer count
+; Flags: N if stopped 
+;----------------------------------------------------------------------------
+timer_read:
+    ld      de,(TIMERCNT)         ; E = LoByt, D = MdByt
+    ld      a,(TIMERCNT+2)        ; A = HiByt
+    or      a                     ; If count < 0
+    ld      c,a                   ; C = HiByt
+    ret     p
+_tstopped:
+    ld      a,0
+    ld      c,a
+    ld      d,a
+    ld      e,a
+    ret
+

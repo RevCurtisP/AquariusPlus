@@ -79,7 +79,7 @@ _reset:
     ld      (INTJMP),a          ;
     ld      hl,_interrupt       ; Interrupt Address
     ld      (INTJMP+1), hl
-
+    
     ; Turn on Keyboard Buffer
     ld      a,KB_ENABLE | KB_ASCII
     call    key_set_keymode
@@ -133,6 +133,15 @@ _coldboot:
     inc     hl
     djnz    .sysvar_loop
 
+    ; Set Default Interrupt Vector
+    ld      a,$C3               ; Jump Instruction
+    ld      (BASINTJP),a        
+    ld      hl,$0025            ; RET in COMPAR
+    ld      (BASINTJP+1), hl
+
+    ld      a,$FF               ; Set TIMER to stopped
+    ld      (TIMERCNT+2),a    
+
     ; Default direct mode to keyrepeat on
     ld      a,KB_REPEAT
     ld      (BASYSCTL),a
@@ -143,6 +152,8 @@ _coldboot:
     call    print_copyright
 
     call    check_autoexec        ; Check for autoexec file
+
+    call    _enable_vblank_irq    ; Enable interrupts
 
     jp      INITFF              ; Continue in ROM
 
@@ -188,7 +199,7 @@ print_copyright:
 _plus_text:
     db "plusBASIC "
 _plus_version:
-    db "v0.17k", 0
+    db "v0.17m",0
 _plus_len   equ   $ - _plus_text
     call    CRDO
     jp      CRDO
@@ -508,39 +519,40 @@ _interrupt:
     push    bc
     push    de
     push    hl
-    push    ix
-    push    iy
-    in      a,(IO_BANK3)
-    push    af
-    ld      a,(BASINTPG)
-    or      a
-    jr      z,.nopage
-    out     (IO_BANK3),a
-.nopage
+    call    _timer
     call    BASINTJP
-_interrupt_return:
-    pop     af
-    out     (IO_BANK3),a
-    pop     iy
-    pop     ix
+    ld      a,IRQ_VBLANK
+    out     (IO_IRQSTAT),a
     pop     hl
     pop     de
     pop     bc
     pop     af
+    ei
     ret
+
+_enable_vblank_irq:
+    im1
+    ei                            ; Enable Interrupts
+    ld      a,IRQ_VBLANK   
+    out     (IO_IRQMASK),a        ; Turn on VBLANK interrupts
+    ret
+
     
-
+_timer:
+    call    timer_tick
 
 
     ret
+
 
 ;-----------------------------------------------------------------------------
 ; Intercept WRMCON call
 ;-----------------------------------------------------------------------------
 _warm_boot:
-    ld      a, ROM_EXT_PG          ; Page 1 ROM
+    ld      a, ROM_EXT_PG         ; Page 1 ROM
     out     (IO_BANK3), a         ; into Bank 3
     jp      WRMCON                ; Go back to S3 BASIC
+
 
 ;-----------------------------------------------------------------------------
 ; Directly read alternate keyboard port
