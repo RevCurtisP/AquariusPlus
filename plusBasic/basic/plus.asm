@@ -128,7 +128,9 @@ FN_INKEY:
 ;-----------------------------------------------------------------------------
 FN_TIME:
     rst     CHRGET                ; Skip Token
-    SYNCHK  '$'                   ; Require Dollar Sign
+    cp      'R'                   ; If TIMER
+    jr      z,FN_TIMER            ;   Read Countdown Timer
+    SYNCHK  '$'                   ; Require dollar sign
     push    hl
     ld      bc,LABBCK
     push    bc
@@ -137,6 +139,28 @@ FN_TIME:
     ld      bc,8
     add     hl,bc                 ; Start of Date String
     jp      TIMSTR
+
+;-----------------------------------------------------------------------------
+; TIMER - Get Timer Count
+;-----------------------------------------------------------------------------
+FN_TIMER:
+    rst     CHRGET                ; Skip 'R'
+    push    hl                    ; Text Pointer on Stack
+    ld      hl,LABBCK
+    push    hl                    ; Return to LABBCK
+    call    timer_read            ; Read timer
+    jp      FLOAT_CDE             ; Return as 23 bit integer
+
+;-----------------------------------------------------------------------------
+; TIMER - Set Timer Count
+; Syntax: TIMER = Expression
+;-----------------------------------------------------------------------------
+ST_TIMER:
+    SYNCHK  'R'                   ; Require 'R'
+    rst     SYNCHR
+    byte    EQUATK                ; Require '='
+    call    GET_LONG              ; Get count into C,D,E
+    jp      timer_write           ; Set the timer
 
 ;----------------------------------------------------------------------------
 ; EVAL - Evaluate string
@@ -282,6 +306,7 @@ ST_SETFNKEY:
     call    fnkey_write_buffer    ; Write to the buffer
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     ret
+
 
 ;-----------------------------------------------------------------------------
 ; PAUSE Statement 
