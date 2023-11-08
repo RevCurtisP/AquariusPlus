@@ -129,6 +129,7 @@ XSTUFF  equ     $201E   ;; | STUFFH hook
 XCLS    equ     $2021   ;; | CLS Extension
 XCLEAR  equ     $2024   ;; | Issue Error if TOPMEM too low
 XPTRGT  equ     $2027   ;; | PTRGET Hook
+SKPLOG  equ     $202A   ;; | Skip Label in ON GOTO/GOSUB
 endif                   
 EXTBAS  equ     $2000   ;;Start of Extended Basic
 XSTART  equ     $2010   ;;Extended BASIC Startup Routine
@@ -200,6 +201,7 @@ HOOKDO: ld      ix,(HOOK)         ;;Get hook routine address
 JUMPIX: jp      (ix)              ;;and jump to it
         byte    0,0               ;;Pad out RST routine
 ;;RST 7 - Execute USR Routine
+;;;Code change: Jump to new Interrupt Vector instead of USRPOK
 USRFN:  jp      INTJMP            ;;Execute Interrupt routine
 ;;Default Extended BASIC Hook Routine
 NOHOOK: exx                       ;;Save BC, DE, and HL
@@ -1856,7 +1858,7 @@ NTPLUS: rlca                      ;[M65] MULTIPLY BY 2
         ld      hl,OPTAB          ;[M80] CREATE INDEX INTO OPTAB
         ld      d,0               ;[M80] MAKE HIGH BYTE OF OFFSET=0
         add     hl,de             ;[M80] ADD IN CALCULATED OFFSET
-        ld      a,b               ;[M80] [A] GETS OLD PRECEDENCE
+EVALOP: ld      a,b               ;[M80] [A] GETS OLD PRECEDENCE    ;;Hook29 jumps back to here with HL = Alt OPTAB entry
         ld      d,(hl)            ;[M80] REMEMBER NEW PRECEDENCE
         cp      d                 ;[M80] OLD-NEW
         ret     nc                ;[M80] APPLY OLD OP IF >= PRECEDENCE
@@ -2506,7 +2508,6 @@ BSFIN:  jp       DOBS             ;;Do the backspace                          ; 
         ld      a,(hl)            ;[M80] OTHERWISE GET CHAR TO ECHO
         rst     OUTCHR            ;[M80] SEND IT
         jr      INLINC            ;[M80] AND GET NEXT CHAR
-;; End deprecated code
 LINLIN: dec     b                 ;[M80] AT START OF LINE?
         dec     hl                ;[M65] BACKARROW SO BACKUP PNTR AND
         rst     OUTCHR            ;[M80] SEND BACKSPACE
@@ -2523,17 +2524,21 @@ INLNC1: ld      c,a               ;[M80] SAVE CURRENT CHAR IN [C]
 ifdef aqplus
         jp      XFUNKY            ;;Check for Extended Ctrl-Keys              ; 0D92  cp      127 
                                                                               ; 0D93    
-                                                                              ; 0D94  jr      z,RUBOUT
-        byte    $CE                                                           ; 0D95
+                                                                              ; 0D94  jr      z,RUBOUT          
+UDERR:  ld      e,ERRUD           ;;Undimensioned Array error                 ; 0D95
+                                                                              ; 0D96  ld      a,(RUBSW)
+        jp      ERROR                                                         ; 0D97
+                                                                              ; 0D98
+                                                                              ; 0D99  or      a
                                                                               
 else
 ;;;Code Change: Remove ancient TTY Delete code
         jr      CHKFUN                                                        
 ;;; Deprecated code - 16 bytes
         jr      z,RUBOUT          ;[M80] DO IT
-endif
         ld      a,(RUBSW)         ;[M80] BEEN DOING A RUBOUT?
         or      a                 ;[M80] SET CC'S
+endif
         jr      z,NOTRUB          ;[M80] NOPE.
         ld      a,'\'             ;[M80] GET READY TO TYPE SLASH
         rst     OUTCHR            ;[M80] SEND IT
@@ -5299,36 +5304,7 @@ TTYSAV: ld      (CURRAM),hl       ;;Position in Screen RAM
         ld      (TTYPOS),a        ;;Cursor Column
         ret                       ;
 ;;Clear Screen
-TTYCLR:                                                                       ;Original Code 
-ifdef aqplus                                                                  ;
-        call    XCLS              ;;Do Extended Clear Screen                  ; 1E45  ld      b,' '    
-                                                                              ; 1E46  
-                                                                              ; 1E47  
-        jr      TTYXPR            ;;Save and Finish                           ; 1E48  ld      hl,SCREEN
-;;Skip Lable in ON GOTO/GOSUB                                                 ; 1E49  
-SKPLOG: rst     CHRGET            ;;Get first character of LineRef            ; 1E4A  call    FILLIT  
-        cp      '_'               ;;If not a label                            ; 1E4B
-                                                                              ; 1E4C 
-        jp      nz,SCNLIN         ;;  Scan Line Number                        ; 1E4D  ld      b,6
-                                                                              ; 1E4E 
-                                                                              ; 1E4F  call    FILLIT
-SKPLOL: rst     CHRGET            ;;Get next character                        ; 1E50
-        ret     z                 ;;Return if end of line                     ; 1E51
-        cp      ','                                                           ; 1E52  ld      hl,SCREEN+41
-                                                                              ; 1E53
-        ret     z                 ;;Return if comma                           ; 1E54
-        cp      ':'                                                           ; 1E55  xor     a
-                                                                              ; 1E56  jp      TTYFIS
-        ret     z                 ;;Return if colon                           ; 1E57
-        jr      SKPLOL            ;;Check next character                      ; 1E58
-                                                                              ; 1E59  ld      de,$3FF  
-UDERR:  ld      e,ERRUD           ;;Undimensioned Array error                 ; 1E5A
-                                                                              ; 1E5B
-        jp      ERROR                                                         ; 1E5C  ld      de,$400
-                                                                              ; 1E5D
-                                                                              ; 1E6E
-else
-        ld      b,' '             ;
+TTYCLR: ld      b,' '             ;
         ld      hl,SCREEN         ;
         call    FILLIT            ;;Write to Sreen RAM
         ld      b,6               ;;Black on Light Cyan
@@ -5339,7 +5315,6 @@ else
 ;;Fill 1024 bytes atarting at HL with A
 ;;;Code Change - Fill all 1024 bytes
 FILLIT: ld      de,$400           ;;Count down from 1023
-endif
 ;;Fill BC bytes atarting at HL with A
 FILLIP: ld      (hl),b            ;;Store byte
         inc     hl                ;;Increment pointer
