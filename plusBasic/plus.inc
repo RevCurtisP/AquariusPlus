@@ -63,8 +63,8 @@ BORDERCLR   equ $37FF   ; Border color alternate memory location
 BASINTPG    equ $3821   ; BASIC Interrupt Routine Page, 0=None (swapped into BANK 3)
 BASINTJP    equ $3822   ; BASIC Interrupt Routine JP instruction
 BASINTADR   equ $3823   ; BASIC Interrupt Routine JP Address ($3823-$3824)
-BASYSCTL    equ $3825   ; System Control Bits: 2 = Key Repeat, 6 = 80 Column Mode
-IRQEVENTS   equ $3826   ; Controls which actions get executed during interrupt
+BASYSCTL    equ $3825   ; System Control Bits: 2 = Key Repeat, 6 = 80 Column Mode, 7 = Timer Elapsed
+IRQACTIVE   equ $3826   ; Active IRQ Routines Bits
 TIMERCNT    equ $3827   ; TIMER counter LSB = $3827, MSB = $3829
 ;Used by ON ERROR. Must be in in consecutive order: ERRLIN,ERRFLG,ONEFLG,ONELIN
 ERRLIN      equ $382A   ; LINE NUMBER WHERE LAST ERROR OCCURED.
@@ -162,14 +162,18 @@ CHRSETLEN   equ 2048    ; Size of character set ROM
 ; BASIC Text Screen Buffers
 ; Offsets into Page 39 (SCR_BUFFR)
 ;-----------------------------------------------------------------------------
-SCRN40BUF  equ $0000   ; Primary 40 column buffer for screen switching
-SCRN41BUF  equ $0800   ; Secondary 40 column buffer for screen switching
-SCRN80BUF  equ $1000   ; 80 column buffer for screen switching
+SCRN40BUF   equ $0000   ; Primary 40 column buffer for screen switching
+SCRN41BUF   equ $0800   ; Secondary 40 column buffer for screen switching
+SCRN80BUF   equ $1000   ; 80 column buffer for screen switching
 
-SCRN40SWP  equ $2000   ; Used by screen save, restore and swap
-SCRN41SWP  equ $2800   ; Used by screen save, restore and swap
-SCRN80SWP  equ $3000   ; Used by screen save, restore and swap
+SCRN40SWP   equ $2000   ; Used by screen save, restore and swap
+SCRN41SWP   equ $2800   ; Used by screen save, restore and swap
+SCRN80SWP   equ $3000   ; Used by screen save, restore and swap
 
+;-----------------------------------------------------------------------------
+; IRQACTIVE Bits
+;-----------------------------------------------------------------------------
+IRQ_TIMER  equ  $01     ; Bit 0 - Timer active
 
 ;-----------------------------------------------------------------------------
 ; Macros

@@ -89,23 +89,10 @@ pop_hl_ret:
     ret
 
 ;-----------------------------------------------------------------------------
-; Open file to string descriptor
-; Input: HL: string descriptor
-; Output: A: file descriptor
-;-----------------------------------------------------------------------------
-esp_open_read:
-    ld      a, ESPCMD_OPEN
-    call    esp_cmd
-    ld      a, FO_RDONLY
-    call    esp_send_byte
-    call    esp__send_strdesc
-    jp      esp__get_result
-
-;-----------------------------------------------------------------------------
 ; Open file to String Descriptor in HL
 ; Clobbered registers: A, HL, DE
 ;-----------------------------------------------------------------------------
-esp_open:
+;esp_open:
     ld      a, ESPCMD_OPEN
     call    esp_cmd
     ld      a, FO_RDONLY

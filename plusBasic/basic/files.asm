@@ -13,42 +13,20 @@ ST_CD:
     or      a
     jr      nz, .change_dir     ; Yes
 
-    ; Push BASIC text pointer
     push    hl
-
-    ; -- No argument -> show current path ------------------------------------
-.show_path:
-    ld      a, ESPCMD_GETCWD
-    call    esp_cmd
-    call    esp__get_result
-    jp      m,_dos_error
-
-    ; Print current working directory
-.print_cwd:
-    call    esp_get_byte
-    or      a
-    jr      z, .print_done
-    rst     OUTCHR
-    jr      .print_cwd
-.print_done:
-    call    CRDO
-
-.done:
-    ; Restore BASIC text pointer
+    call    _get_cd
+    call    print_c_string        ; Print it
     pop     hl
     ret
 
     ; -- Argument given -> change directory ----------------------------------
 .change_dir:
-    call    get_string_direct     ; Get String Ar
+    call    get_string_direct     ; Get String Argument
     call    dos_change_dir
-
 _check_error
     jp      m,_dos_error
-_done
-    pop     hl                    ; Restore Text Pointrt
+    pop     hl                    ; Restore Text Pointer
     ret     z
-
 _dos_error:
     cpl                           ; Convert -1 to 0, -1 to 2, etc
     add     a,a                   ; Multiply by 2 to get offset
@@ -56,6 +34,11 @@ _dos_error:
     ld      e,a
     jp      ERROR
 
+_get_cd:
+    ld      ix,dos_get_cwd        ; Read current directory into buffer
+    call    bas_read_to_buff      ; Set buffer address and call routine
+    jp      m,_dos_error
+    ret
 ;-----------------------------------------------------------------------------
 ; CD$ - Get Current Directory
 ;-----------------------------------------------------------------------------
@@ -65,8 +48,7 @@ FN_CD:
     push    hl
     ld      bc,LABBCK
     push    bc
-    ld      ix,dos_get_cwd        ; Read current directory into buffer
-    call    bas_read_to_buff      ; Set buffer address and call routine
+    call    _get_cd
     jp      TIMSTR
 
 ;-----------------------------------------------------------------------------
@@ -136,8 +118,7 @@ ST_DIR:
 .esp_command:
     call    esp_close_all
 
-    ld      a, ESPCMD_OPENDIR     ; Set ESP Command
-    call    esp_cmd_string        ; Get FileSpec and Do Command
+    call    dos_open_dir
     jp      m,_dos_error
 
     ; Set initial number of lines per page
@@ -472,7 +453,7 @@ ST_LOAD:
 ;-----------------------------------------------------------------------------
 load_basic_program:
     ; Open file
-    call    esp_open_read
+    call    dos_open_read
     jp      m,_dos_error
 
     ; Check CAQ header
@@ -595,7 +576,7 @@ load_caq_array:
     ex      (sp),hl               ; HL = String Descriptor, Stack = Text Pointer
 
     ; Open file
-    call    esp_open_read
+    call    dos_open_read
     jp      m,_dos_error
     
     ; Check CAQ header
@@ -747,7 +728,7 @@ run_file:
     ld      b,4                   ; Comparing 4 bytes
     call    string_cmp_upper      ; Compare Them
     pop     hl                    ; Get String Descriptor
-    jp      z, dos_load_rom
+    jr      z,.load_rom
 
 .load_basic:
     call    clear_all_errvars     ; Clear ON ERROR sytem variables
@@ -755,6 +736,10 @@ run_file:
     ld      bc,RUNC
     push    bc                    ; Return to RUNC
     call    load_basic_program
+
+.load_rom:
+    call    dos_load_rom
+    jp      _dos_error
 
 .romext: db ".ROM",0
 

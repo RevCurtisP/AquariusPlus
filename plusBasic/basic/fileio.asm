@@ -13,7 +13,7 @@
 ; Flags Set: S if I/O error
 ;-----------------------------------------------------------------------------
 file_load_binary:
-    call    esp_open_read
+    call    dos_open_read
     ret     m
     call    esp_read_bytes
     ret     m
@@ -54,7 +54,7 @@ file_load_chrset:
 ;-----------------------------------------------------------------------------
 file_load_paged:
     push    af                    ; Stack = Page
-    call    esp_open_read         ;
+    call    dos_open_read         ;
     jp      m,_discard
     pop     af                    ; AF = Page
     call    esp_read_paged        ;
@@ -77,7 +77,7 @@ _discard:
 ; Clobbered: CD, DE, EF
 ;-----------------------------------------------------------------------------
 file_load_screen:
-    call    esp_open_read
+    call    dos_open_read
     ret     m
 ; Read first 2k into Screen RAM
     ld      bc,2048

@@ -34,6 +34,9 @@
     jp      do_cls_default  ; $2021 Clear both text screens
     jp      _check_topmem   ; $2024 Verify TOPMEM is in Bank 2
     jp      _ptrget_hook    ; $2027 Allow _Alphanumunder sftar var name 
+    jp      _stuff_label    ; $202A Don't tokenize label at beginning of Line (STFLBL)  
+    jp      _skip_label     ; $202D Skip label at beginning of line (SKPLBL)
+    jp      _skip_on_label  ; $2030 Skip label in ON GOTO
     jp      _inlin_hook     ; $20?? Jump from INLIN for command history recall
     jp      _inlin_done     ; $20?? Jumped from FININL to save command to history
 
@@ -139,7 +142,7 @@ _coldboot:
     ld      hl,$0025            ; RET in COMPAR
     ld      (BASINTJP+1), hl
 
-    ld      a,$FF               ; Set TIMER to stopped
+    ld      a,$FF                 ; Set TIMER to stopped
     ld      (TIMERCNT+2),a    
 
     ; Default direct mode to keyrepeat on
@@ -153,9 +156,7 @@ _coldboot:
 
     call    check_autoexec        ; Check for autoexec file
 
-    call    _enable_vblank_irq    ; Enable interrupts
-
-    jp      INITFF              ; Continue in ROM
+    jp      INITFF                ; Continue in ROM
 
     dc $2100-$,$76
 
@@ -199,7 +200,7 @@ print_copyright:
 _plus_text:
     db "plusBASIC "
 _plus_version:
-    db "v0.17m",0
+    db "v0.17n",0
 _plus_len   equ   $ - _plus_text
     call    CRDO
     jp      CRDO
@@ -210,7 +211,7 @@ check_autoexec:
     call    ctrl_check
     ret     nz
     ld      hl,_autodesc
-    call    esp_open_read
+    call    dos_open_read
     ret     m
     call    esp_close
     ld      hl,_autocmd-1
@@ -502,6 +503,16 @@ descramble_rom:
     ld      a, 35 | BANK_READONLY
     out     (IO_BANK3), a
 
+    ; Turn off Interrupts, Reset Screen, and Remove Hook
+    di
+    xor     a
+    out     (IO_IRQMASK),a
+    out     (IO_KEYBUFF),a
+    inc     a
+    out     (IO_VCTRL)
+    ld      hl,NOHOOK
+    ld      (HOOK),hl
+  
     ; Reinit stack pointer
     ld      sp, $38A0
 
@@ -516,9 +527,13 @@ descramble_rom:
 ;;; ToDo: Save stack position, so interrupt can jump back if needed
 _interrupt:
     push    af
+    ld      a,(IRQACTIVE)
+    or      a
+    jp      z,.stop_irqs
     push    bc
     push    de
     push    hl
+    
     call    _timer
     call    BASINTJP
     ld      a,IRQ_VBLANK
@@ -528,22 +543,35 @@ _interrupt:
     pop     bc
     pop     af
     ei
-    ret
+    reti
 
-_enable_vblank_irq:
+.stop_irqs
+    out     (IO_IRQMASK)
+    pop     af
+    reti
+
+;-----------------------------------------------------------------------------
+; Enable VBLANK Interrupts
+; Input: B: IRQ Routine Bit(s)
+; Clobbers: A
+;-----------------------------------------------------------------------------
+enable_vblank_irq:
+    ld      a,(IRQACTIVE)
+    or      b
+    ld      (IRQACTIVE),a
     im1
-    ei                            ; Enable Interrupts
+    ei
     ld      a,IRQ_VBLANK   
     out     (IO_IRQMASK),a        ; Turn on VBLANK interrupts
     ret
-
     
 _timer:
     call    timer_tick
-
-
+    ret     nc
+    ld      a,(BASYSCTL)
+    or      $80
+    ld      (BASYSCTL),a
     ret
-
 
 ;-----------------------------------------------------------------------------
 ; Intercept WRMCON call
@@ -825,10 +853,11 @@ ULERR:
 ;-----------------------------------------------------------------------------
 ; bas_read_to_buff - Read String from ESP to BASIC String Buffer
 ; Input: IX: DOS or ESP routine to call
-; Output: E: String Length
-;        DE: Address of Terminator
-;        HL: Buffer Address
-; Clobbers: 
+; Output: A: Result
+;        E: String Length
+;       DE: Address of Terminator
+;       HL: Buffer Address
+; Clobbers: B
 ;-----------------------------------------------------------------------------
 bas_read_to_buff:
     ld      hl,FBUFFR             ; Use FBUFFR for now
@@ -1032,6 +1061,14 @@ aux_rom_call:
     call    page_map_aux          
     call    jump_ix
     jp      page_restore_plus
+
+_stuff_label    ; $202A Don't tokenize label at beginning of Line (STFLBL)  
+_skip_label     ; $202D Skip label at beginning of line (SKPLBL)
+    ret
+
+_skip_on_label  ; $2030 Skip label in ON GOTO
+    call    page_restore_plus     
+    jp      skip_on_label
                                   
 ;-----------------------------------------------------------------------------
 ; Keyboard Decode Tables for S3 BASIC with Extended Keyboard Support
@@ -1071,6 +1108,7 @@ aux_rom_call:
     include "plus.asm"          ; plusBASIC unique statements and functions
     include "usbbas.asm"        ; Statements and functions from USB BASIC
     include "shared.asm"        ; Shared subroutines
+    include "labels.asm"        ; Line label extensions
     include "misc.asm"          ; Miscellaneous subroutines
 
     ; Graphics modules

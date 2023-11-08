@@ -350,27 +350,33 @@ page_write_word:
     ld      (de),a
     dec     de                    ; Restore DE and fall into page_restore
 
-;-----------------------------------------------------------------------------
-; Restore Bank 3 to Page 1
-;-----------------------------------------------------------------------------
-page_restore_plus:
-    ex      af,af'
-    ld      a,ROM_EXT_PG
-    out     (IO_BANK3),a
-    ex      af,af'
-    ret
-
+    
 ;-----------------------------------------------------------------------------
 ; Map Bank 3 to Page 2
 ;-----------------------------------------------------------------------------
 page_map_aux:
-    ex      af,af'
+    push    af
     ld      a,ROM_AUX_PG
+    jr      _map_page_bank3
+
+;-----------------------------------------------------------------------------
+; Map Bank 3 to Page 36
+;-----------------------------------------------------------------------------
+page_map_basbuf:
+    push    af
+    ld      a,BAS_BUFFR
+    jr      _map_page_bank3
+
+;-----------------------------------------------------------------------------
+; Restore Bank 3 to Page 1
+;-----------------------------------------------------------------------------
+page_restore_plus:
+    push    af
+    ld      a,ROM_EXT_PG
+_map_page_bank3:
     out     (IO_BANK3),a
-    ex      af,af'
+    pop     af
     ret
-
-
 
 ;-----------------------------------------------------------------------------
 ; Write Bytes to Page - wraps to next page if address is 16383

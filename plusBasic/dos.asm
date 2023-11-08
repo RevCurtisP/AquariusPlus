@@ -31,12 +31,9 @@ dos_create_dir:
     ld      a, ESPCMD_MKDIR       ; Set ESP Command
     jp      esp_cmd_string        ; Issue ESP command
 
-
-_dos_command:
-
 ;-----------------------------------------------------------------------------
 ; dos_get_cwd - Get Current Directory
-; Input: Buffer address
+; Input: HL: Buffer address
 ; Output:  A: Result, E: String Length, DE = End of String, HL = Buffer Address
 ;-----------------------------------------------------------------------------
 dos_get_cwd:
@@ -90,6 +87,40 @@ dos_get_filestat:
     ret
 
 ;-----------------------------------------------------------------------------
+; dos_open_dir - Open Directory for Read
+; Input: BC: String Length
+;        DE: String Address
+; Output:  A: Result
+; Clobbered: BC, DE
+;-----------------------------------------------------------------------------
+dos_open_dir:
+    ld      a, ESPCMD_OPENDIR     ; Set ESP Command
+    jp      esp_cmd_string        ; Get FileSpec and Do Command
+
+;-----------------------------------------------------------------------------
+; Open file to string descriptor
+; Input: HL: string descriptor
+; Output: A: file descriptor
+;-----------------------------------------------------------------------------
+dos_open_read:
+    ld      a, ESPCMD_OPEN
+
+;-----------------------------------------------------------------------------
+; Open file to string descriptor
+; Input: A: File Open Mode 
+;       HL: string descriptor
+; Output: A: file descriptor
+;-----------------------------------------------------------------------------
+dos_open_file:
+    push    af                    ; 
+    ld      a, ESPCMD_OPEN
+    call    esp_cmd
+    pop     af
+    call    esp_send_byte
+    call    esp__send_strdesc
+    jp      esp__get_result
+
+;-----------------------------------------------------------------------------
 ; Save binary data from paged memory to file
 ; Input: A: Page
 ;        HL: Filename atring descriptor address
@@ -135,7 +166,8 @@ dos_save_binary:
 ;-----------------------------------------------------------------------------
 dos_load_rom:
     ; Open file
-    call    esp_open
+    call    dos_open_read
+    ret     m
 
     ; Map RAM in bank3
     ld      a, 35

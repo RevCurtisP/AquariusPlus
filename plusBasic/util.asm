@@ -239,9 +239,14 @@ asc_to_bcd_byte:
 ;----------------------------------------------------------------------------
 ; Set Timer
 ; Input C,DE = Timer count
-; Flags: N if stopped 
+; Clobbers: A,B
 ;----------------------------------------------------------------------------
 timer_write:
+    ld      a,(BASYSCTL)
+    and     $7F
+    ld      (BASYSCTL),a
+    ld      b,IRQ_TIMER
+    call    enable_vblank_irq
     ld      a,c
     and     $7F                   ; Clear high bit
     jr      _twrite
@@ -250,7 +255,7 @@ timer_write:
 ; Decrement timer one tick
 ; Output: C,DE = Timer count
 ; Flags: N if stopped 
-; Clobbers: D
+; Clobbers: A
 ;----------------------------------------------------------------------------
 timer_tick:
     call    timer_read            ; C,A = HiByt, D = MdByt, E = LoByt
@@ -271,12 +276,19 @@ _twrite:
     ld      (TIMERCNT),de         ; 
     ld      (TIMERCNT+2),a        ; Put it back
     ret     p                     ; If >= 0, return it
-    jr      _tstopped             ; Else return 0
-    
+_stop_timer:
+    dec     a
+    ld      (TIMERCNT+2),a
+    ld      a,(IRQACTIVE)
+    and     ~IRQ_TIMER
+    ld      (IRQACTIVE),a
+    jr      _tstopped             ;   and return 0
+
 ;----------------------------------------------------------------------------
 ; Read Timer
 ; Output: C,DE = Timer count
 ; Flags: N if stopped 
+; Clobbers: A
 ;----------------------------------------------------------------------------
 timer_read:
     ld      de,(TIMERCNT)         ; E = LoByt, D = MdByt

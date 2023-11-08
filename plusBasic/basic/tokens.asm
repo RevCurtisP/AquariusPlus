@@ -81,7 +81,7 @@ EXTCMDS:
     db $80 + 'F',"AST"            ; $88            
     db $80 + 'T',"EXT"            ; $89             
     db $80 + 'A',"RGS"            ; $8A             
-    db $80 + ' '                  ; $8B             
+    db $80 + 'M',"OD"             ; $8B             
     db $80 + ' '                  ; $8C             
     db $80 + ' '                  ; $8D             
     db $80 + ' '                  ; $8E unused (REM)             
@@ -132,6 +132,7 @@ DEXTK     equ     $87
 FASTK     equ     $88
 TEXTK     equ     $89
 ARGSTK    equ     $8A
+MODTK     equ     $8B
 RESETK    equ     $90
 PT3TK     equ     $91
 VERTK     equ     $92
@@ -286,7 +287,7 @@ token_to_keyword:
 ; $88 FAST
 ; $89 TEXT
 ; $8A ARGS
-; $8B 
+; $8B MOD
 ; $8C
 ; $8D
 ; $8E unusable (REM)

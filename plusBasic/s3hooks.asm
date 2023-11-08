@@ -1,9 +1,7 @@
 ;=====================================================================================
 ; S3BASIC Enhancement Hooks 
-; These routines are located in the 8K ROM in Bank 2 and neither call nor are 
-; called by routines in Bank 1 ROM
-; The routines are called through a jump table at $2000, then routed through 
-; routine _call_bank2_routine which destroys AF'
+; These routines are located in the 8K ROM in ROM Bank 2
+; They called from S3BASIC and are routed through a jump table at $2000
 ;=====================================================================================
 
 ;-----------------------------------------------------------------------------

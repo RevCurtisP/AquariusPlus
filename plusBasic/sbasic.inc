@@ -124,6 +124,8 @@ FSIGN       equ $28     ; 5 Get sign of Floating Point Argument
 HOOKDO      equ $30     ; 6 Extended BASIC Hook Dispatch
 INTRPT      equ $38     ; 7 (S3BASIC) Execute Interrupt Routine
 
+JUMPIX      equ $0034   ; Jump to address in IX
+NOHOOK      equ $003B   ; Default Hook routine
 RESET:      equ $0089
 HEDING      equ $015F   ; Microsoft copyright message
 STUFFS      equ $0130   ; Stuff character in KRUNCH buffer
