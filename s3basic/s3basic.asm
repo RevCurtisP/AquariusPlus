@@ -132,7 +132,7 @@ XPTRGT  equ     $2027   ;; | PTRGET Hook
 SKPLBL  equ     $202D   ;; | Skip label at beginning of line (SKPLBL)
 STFLBL  equ     $202A   ;; | Don't tokenize label at beginning of Line (STFLBL)  
 SKPLOG  equ     $2030   ;; | Skip Label in ON GOTO/GOSUB
-
+STRNGX  equ     $2033   ;; | Don't capitalize letters between single quotes
 endif                   
 EXTBAS  equ     $2000   ;;Start of Extended Basic
 XSTART  equ     $2010   ;;Extended BASIC Startup Routine
@@ -5471,26 +5471,11 @@ endif
 KEYRES: inc     hl                ;;Bump pointer                              
         ld      a,(hl)            ;;Get next character                        
         or      a                 ;;First letter of reserved word?            
-ifdef aqplus
-;;; Code Change: Patch to not uppercase characters between single quotes                     
-STRNGX: jp      z,STRNG           ;; | Special Handling for Double Quote      1F2B  jp      p,KEYRES
-                                  ;; |                                        1F2C
-                                  ;; |                                        1F2D  
-        cp      $27               ;; |                                        1F2E  dec     c             
-                                  ;; |                                        1F2F  jr      nz,KEYRES   
-        jp      z,STRNG           ;; | Do the same for Single Quote           1F30
-                                  ;; |                                        1F31  ld      (RESPTR),hl
-                                  ;; |                                        1F32  
-        jp      STFLBL            ;; | Otherwise, see if it's a label         1F33
-                                  ;; |                                        1F34 and     $7F
-                                  ;; |                                        1F35  
-else
         jp      p,KEYRES          ;; / `No, loop                                  
         dec     c                 ;; / `Decrement Count                           
         jr      nz,KEYRES         ;; / `Not 0? Find next word                     
         ld      (RESPTR),hl       ;; / `Save Keyword Address                      
         and     $7F               ;; / `Strip high bit from first character       
-endif
 KEYRET: exx                       ;;Restore Registers
         ret
 ;;Key Lookup Tables - 46 bytes each

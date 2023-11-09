@@ -33,10 +33,11 @@
     jp      _stuffh_ext     ; $201E Check for additional tokens when stuffing
     jp      do_cls_default  ; $2021 Clear both text screens
     jp      _check_topmem   ; $2024 Verify TOPMEM is in Bank 2
-    jp      _ptrget_hook    ; $2027 Allow _Alphanumunder sftar var name 
-    jp      _stuff_label    ; $202A Don't tokenize label at beginning of Line (STFLBL)  
+    jp      _ptrget_hook    ; $2027 Allow _Alphanumunder sftar var name
+    jp      _stuff_label    ; $202A Don't tokenize label at beginning of Line (STFLBL)
     jp      _skip_label     ; $202D Skip label at beginning of line (SKPLBL)
     jp      _skip_on_label  ; $2030 Skip label in ON GOTO
+    jp      _s3_string_ext  ; $2033 Don't capitalize letters between single quotes (STRNGX)
     jp      _inlin_hook     ; $20?? Jump from INLIN for command history recall
     jp      _inlin_done     ; $20?? Jumped from FININL to save command to history
 
@@ -49,7 +50,7 @@
 ;-----------------------------------------------------------------------------
 _reset:
     ; Disable interrupts and turbo mode
-    di      
+    di
     xor     a
     out     (IO_IRQMASK),a
     out     (IO_SYSCTRL),a
@@ -82,7 +83,7 @@ _reset:
     ld      (INTJMP),a          ;
     ld      hl,_interrupt       ; Interrupt Address
     ld      (INTJMP+1), hl
-    
+
     ; Turn on Keyboard Buffer
     ld      a,KB_ENABLE | KB_ASCII
     call    key_set_keymode
@@ -97,7 +98,7 @@ _reset:
 ;-----------------------------------------------------------------------------
 _coldboot:
 
-    ld      a,BAS_BUFFR         
+    ld      a,BAS_BUFFR
     out     (IO_BANK3),a
     call    _clear_bank3        ; Zero out BASIC buffers page
 
@@ -138,12 +139,12 @@ _coldboot:
 
     ; Set Default Interrupt Vector
     ld      a,$C3               ; Jump Instruction
-    ld      (BASINTJP),a        
+    ld      (BASINTJP),a
     ld      hl,$0025            ; RET in COMPAR
     ld      (BASINTJP+1), hl
 
     ld      a,$FF                 ; Set TIMER to stopped
-    ld      (TIMERCNT+2),a    
+    ld      (TIMERCNT+2),a
 
     ; Default direct mode to keyrepeat on
     ld      a,KB_REPEAT
@@ -200,7 +201,7 @@ print_copyright:
 _plus_text:
     db "plusBASIC "
 _plus_version:
-    db "v0.17r",0
+    db "v0.17s",0
 _plus_len   equ   $ - _plus_text
     call    CRDO
     jp      CRDO
@@ -304,7 +305,7 @@ _ctrl_keys:
     dec     de                    ;   Back up for autotype
     ld      (RESPTR),de           ;   Set pointer to buffer
     jr      .inlinc               ;   and return
-    
+
 
 
 ;-----------------------------------------------------------------------------
@@ -512,7 +513,7 @@ descramble_rom:
     out     (IO_VCTRL)
     ld      hl,NOHOOK
     ld      (HOOK),hl
-  
+
     ; Reinit stack pointer
     ld      sp, $38A0
 
@@ -533,7 +534,7 @@ _interrupt:
     push    bc
     push    de
     push    hl
-    
+
     call    _timer
     call    BASINTJP
     ld      a,IRQ_VBLANK
@@ -561,10 +562,10 @@ enable_vblank_irq:
     ld      (IRQACTIVE),a
     im1
     ei
-    ld      a,IRQ_VBLANK   
+    ld      a,IRQ_VBLANK
     out     (IO_IRQMASK),a        ; Turn on VBLANK interrupts
     ret
-    
+
 _timer:
     call    timer_tick
     ret     nc
@@ -633,7 +634,7 @@ reset_screen:
     ld      a,VCTRL_TEXT_EN
     out     (IO_VCTRL),a
     call    reset_palette
-    
+
 set_ttywid:
     in      a,(IO_VCTRL)
 set_ttywid_a:
@@ -721,9 +722,9 @@ _ptrget_hook
     call    ISLETC                ; or letter
     jr      c,.nosec              ;   Get out
 .is_second
-    ld      b,a                   ; Make it the second character 
+    ld      b,a                   ; Make it the second character
     rst     CHRGET                ; Get following character
-    cp      '~'                   ; 
+    cp      '~'                   ;
     jr      z,.eat_suffix         ; If not underscore
     dec     hl                    ;  Back up
     jp      EATEM                 ;  and continue with normal skip
@@ -814,7 +815,7 @@ _scan_label:
     jr      .line_loop            ; Scan the next line
 .found_it
     pop     af                    ; Get return address
-    cp      $06                   
+    cp      $06
     jr      nz,.not_goto          ; If we came from GOTO
     ld      bc,(OLDLIN)           ;   Retrieve the line #
     ld      (CURLIN),bc           ;   and make it the current line
@@ -836,9 +837,9 @@ _scan_label:
 
 .check_colon:
     cp      ' '                   ; If space
-    jr      z,.ret_zero           ; 
+    jr      z,.ret_zero           ;
     cp      ','                   ; or comma
-    jr      z,.ret_zero           ; 
+    jr      z,.ret_zero           ;
     cp      ':'                   ; or colon
     ret     nz
 .ret_zero
@@ -849,7 +850,7 @@ ULERR:
     ld      e,ERRUL
     jp      force_error
 
-    
+
 ;-----------------------------------------------------------------------------
 ; bas_read_to_buff - Read String from ESP to BASIC String Buffer
 ; Input: IX: DOS or ESP routine to call
@@ -1030,50 +1031,57 @@ fast_hook_handler:
 ;-----------------------------------------------------------------------------
 
 _eval_extension:
-    call    page_restore_plus     
-    jp      eval_extension        
+    call    page_restore_plus
+    jp      eval_extension
 
-_force_error:                     
-    call    page_restore_plus     
+_force_error:
+    call    page_restore_plus
     jp      force_error
 
 _main_ext:
-    call    page_map_aux          
+    call    page_map_aux
     jp      s3_main_ext
 
 _next_statement:
     call    page_restore_plus
     jp      exec_next_statement   ; Go do the Statement
-                                  
-_run_cmd:                         
-    call    page_restore_plus     
-    jp      run_cmd        
-                                  
+
+_run_cmd:
+    call    page_restore_plus
+    jp      run_cmd
+
 _stuffh_ext:
-    call    page_map_aux          
+    call    page_map_aux
     jp      s3_stuffh_ext
-    
-_trap_error:                      
-    call    page_restore_plus     
-    jp      trap_error            
+
+_trap_error:
+    call    page_restore_plus
+    jp      trap_error
 
 aux_rom_call:
-    call    page_map_aux          
+    call    page_map_aux
     call    jump_ix
     jp      page_restore_plus
 
-_stuff_label    ; $202A Don't tokenize label at beginning of Line (STFLBL)  
+; $202A Don't tokenize label at beginning of Line (STFLBL)
+_stuff_label
     call    page_map_aux
     jp      stuff_label
 
-_skip_label     ; $202D Skip label at beginning of line (SKPLBL)
+; $202D Skip label at beginning of line (SKPLBL)
+_skip_label
     call    page_map_aux
     jp      skip_label
 
-_skip_on_label  ; $2030 Skip label in ON GOTO
-    call    page_restore_plus     
+; $2030 Skip label in ON GOTO
+_skip_on_label
+    call    page_restore_plus
     jp      skip_on_label
-                                  
+
+_s3_string_ext
+    call    page_map_aux
+    jp      s3_string_ext
+
 ;-----------------------------------------------------------------------------
 ; Keyboard Decode Tables for S3 BASIC with Extended Keyboard Support
 ; $2F00 - $2FFF
@@ -1137,14 +1145,14 @@ _skip_on_label  ; $2030 Skip label in ON GOTO
     phase   $C000     ;Assemble in ROM Page 1 which will be in Bank 3
 
     include "editor.asm"        ; Advanced line editor
-    include "s3hooks.asm"       ; S3 BASIC direct mode hooks  
-    include "screen_aux.asm"    ; Auxiliary 
+    include "s3hooks.asm"       ; S3 BASIC direct mode hooks
+    include "screen_aux.asm"    ; Auxiliary
 
     free_rom_8k = $E000 - $
 
     dc $E000-$,$76
 
-      
+
 
     end
 

@@ -16,91 +16,6 @@ s3_main_ext:
     jp      SCNLIN                ; Continue to SCNLIN
 
 ;-----------------------------------------------------------------------------
-; Don't tokenize unquoted literal string after DOS command in direct mode
-;-----------------------------------------------------------------------------
-s3_stuffh_ext:
-    cp      DATATK-':'            ; If DATA
-    jp      z,COLIS               ;   Continue STUFFH
-    ex      af,af'
-    ld      a,(TEMP3)             ; Get Line# Flag
-    and     $01                   ; If carry set
-    jr      nz,.exaf_nodatt       ;   Continue  STUFFH
-    ex      af,af'
-    cp      DIRTK-':'             ; If Not DIRTK through CDTK
-
-    jp      c,NODATT              ;
-    cp      CDTK-':'+1            ;
-    jp      nc,NODATT             ;  Continue STUFFH
-.space_loop
-    ld      a,(hl)                ; Eat Spaces
-    cp      ' '
-    jr      nz,.not_space
-    call    _stuff_chr
-    jr      .space_loop
-.not_space
-    ld      b,a                   ; Set up delimiter for STRNG
-    cp      '"'                   ; If quotes
-    jp      z,STRNG               ;   Go stuff quoted string
-.string_loop
-    ld      a,(hl)                ; Get character
-    or      a                     ; If end of line
-    jp      z,CRDONE              ;   Finish it up
-    cp      ' '                   ; If space
-    jp      z,KLOOP               ;   Stuff it and continue
-    cp      ':'                   ; If colon
-    jp      z,KLOOP               ;   Stuff it and continue
-    call    _stuff_chr                ; Else Stiff it
-    jr      .string_loop          ;   and check next character
-.exaf_nodatt:
-    ex      af,af'
-    jp      NODATT
-
-;; If label at beginning of line: don't tokenize, just stuff it                                  
-stuff_label: 
-    cp      '_'                   ;; If not a undersoore                   
-    jp      nz,STRNGR             ;;   Keep on truckin'                    
-    call    _stuff_chr            ;; Stuff character in KRUNCH buffer      
-.loop                                                                    
-    ld      a,(hl)                ;; Get character from buf                
-    or      a                   ;; If end of line                      
-    jp      z,CRDONE            ;;   Finish it up                      
-    cp      ' '                 ;; If Space                            
-    jr      z,.stuff_it         ;;   Stuff it and keep going         
-    cp      ':'                 ;; If colon                            
-    jp      z,STRNGR            ;;   Stuff it and return               
-.stuff_it:                                                               
-    call    _stuff_upper          ;; Stuff character in KRUNCH buffer      
-    jr      .loop                 ;; Next character                         
-
-;; Uppercase and stuff character  
-_stuff_upper: call    uppercase_char                                        
-                                                                            
-;; Stuff char in KRUNCH buffer                                              
-_stuff_chr:                                                                 
-    inc     hl                    ;; Bump BUF pointer                       
-    ld      (de),a                ;; Save byte in KRUNCH buffer             
-    inc     de                    ;; Bump KRUNCH pointer                    
-    inc     c                     ;; Increment buffer count                 
-    ret                                                                   
-                                                                            
-;; Skip label at begin of line                                           
-skip_label: 
-    ld      (CURLIN),hl           ;; Save the Line #                        
-    ex      de,hl                 ;; DE = Line#, HL = Text Pointer          
-    rst     CHRGET                ;; Get first character                    
-    cp      '_'                   ;; If not underscore                      
-    jr      nz,.gone              ;;   Execute rest of line                 
-.loop      
-    rst     CHRGET                ;; Get next charcter                      
-    or      a                     ;; If end of line                         
-    jr      z,.gone               ;;   done                                 
-    cp      ':'                   ;; If not a colon                         
-    jr      nz,.loop              ;;   Keep going                           
-.gone    
-    dec     hl                    ;; Back up text pointer                   
-    jp      GONE                  ;; Execute rest of line                   
-
-;-----------------------------------------------------------------------------
 ; Extended line editor function keys
 ; Jumped to from INLNC
 ; On entry: A,C = character typed, B = input buffer character count
@@ -164,4 +79,98 @@ s3_outdo:
   
   
 _beep:
-;;;ToDo: check for fast mod e
+;;ToDo: check for fast mod e
+
+;-----------------------------------------------------------------------------
+; Don't tokenize unquoted literal string after DOS command in direct mode
+;-----------------------------------------------------------------------------
+s3_stuffh_ext:
+    cp      DATATK-':'            ; If DATA
+    jp      z,COLIS               ;   Continue STUFFH
+    ex      af,af'
+    ld      a,(TEMP3)             ; Get Line# Flag
+    and     $01                   ; If carry set
+    jr      nz,.exaf_nodatt       ;   Continue  STUFFH
+    ex      af,af'
+    cp      DIRTK-':'             ; If Not DIRTK through CDTK
+
+    jp      c,NODATT              ;
+    cp      CDTK-':'+1            ;
+    jp      nc,NODATT             ;  Continue STUFFH
+.space_loop
+    ld      a,(hl)                ; Eat Spaces
+    cp      ' '
+    jr      nz,.not_space
+    call    _stuff_chr
+    jr      .space_loop
+.not_space
+    ld      b,a                   ; Set up delimiter for STRNG
+    cp      '"'                   ; If quotes
+    jp      z,STRNG               ;   Go stuff quoted string
+.string_loop
+    ld      a,(hl)                ; Get character
+    or      a                     ; If end of line
+    jp      z,CRDONE              ;   Finish it up
+    cp      ' '                   ; If space
+    jp      z,KLOOP               ;   Stuff it and continue
+    cp      ':'                   ; If colon
+    jp      z,KLOOP               ;   Stuff it and continue
+    call    _stuff_chr                ; Else Stiff it
+    jr      .string_loop          ;   and check next character
+.exaf_nodatt:
+    ex      af,af'
+    jp      NODATT
+
+; If label at beginning of line: don't tokenize, just stuff it                                  
+stuff_label: 
+    cp      '_'                   ; If not a undersoore                   
+    jp      nz,STRNGR             ;   Keep on truckin'                    
+    call    _stuff_chr            ; Stuff character in KRUNCH buffer      
+.loop                                                                    
+    ld      a,(hl)                ; Get character from buf                
+    or      a                   ; If end of line                      
+    jp      z,CRDONE            ;   Finish it up                      
+    cp      ' '                 ; If Space                            
+    jr      z,.stuff_it         ;   Stuff it and keep going         
+    cp      ':'                 ; If colon                            
+    jp      z,STRNGR            ;   Stuff it and return               
+.stuff_it:                                                               
+    call    _stuff_upper          ; Stuff character in KRUNCH buffer      
+    jr      .loop                 ; Next character                         
+
+; Uppercase and stuff character  
+_stuff_upper: call    uppercase_char                                        
+                                                                            
+; Stuff char in KRUNCH buffer                                              
+_stuff_chr:                                                                 
+    inc     hl                    ; Bump BUF pointer                       
+    ld      (de),a                ; Save byte in KRUNCH buffer             
+    inc     de                    ; Bump KRUNCH pointer                    
+    inc     c                     ; Increment buffer count                 
+    ret                                                                   
+                                                                            
+; Skip label at begin of line                                           
+skip_label: 
+    ld      (CURLIN),hl           ; Save the Line #                        
+    ex      de,hl                 ; DE = Line#, HL = Text Pointer          
+    rst     CHRGET                ; Get first character                    
+    cp      '_'                   ; If not underscore                      
+    jr      nz,.gone              ;   Execute rest of line                 
+.loop      
+    rst     CHRGET                ; Get next charcter                      
+    or      a                     ; If end of line                         
+    jr      z,.gone               ;   done                                 
+    cp      ':'                   ; If not a colon                         
+    jr      nz,.loop              ;   Keep going                           
+.gone    
+    dec     hl                    ; Back up text pointer                   
+    jp      GONE                  ; Execute rest of line                   
+
+
+
+; Don't capitalize letters between single quotes
+s3_string_ext:
+    jp      z,STRNG               ; Special Handling for Double Quote      
+    cp      $27                   ;                                         
+    jp      z,STRNG               ; Do the same for Single Quote           
+    jp      stuff_label           ; Otherwise, see if it's a label         
