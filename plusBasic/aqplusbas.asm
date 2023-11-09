@@ -200,7 +200,7 @@ print_copyright:
 _plus_text:
     db "plusBASIC "
 _plus_version:
-    db "v0.17q",0
+    db "v0.17r",0
 _plus_len   equ   $ - _plus_text
     call    CRDO
     jp      CRDO
@@ -1063,8 +1063,12 @@ aux_rom_call:
     jp      page_restore_plus
 
 _stuff_label    ; $202A Don't tokenize label at beginning of Line (STFLBL)  
+    call    page_map_aux
+    jp      stuff_label
+
 _skip_label     ; $202D Skip label at beginning of line (SKPLBL)
-    ret
+    call    page_map_aux
+    jp      skip_label
 
 _skip_on_label  ; $2030 Skip label in ON GOTO
     call    page_restore_plus     
@@ -1108,7 +1112,6 @@ _skip_on_label  ; $2030 Skip label in ON GOTO
     include "plus.asm"          ; plusBASIC unique statements and functions
     include "usbbas.asm"        ; Statements and functions from USB BASIC
     include "shared.asm"        ; Shared subroutines
-    include "labels.asm"        ; Line label extensions
     include "misc.asm"          ; Miscellaneous subroutines
 
     ; Graphics modules

@@ -35,7 +35,7 @@ s3_stuffh_ext:
     ld      a,(hl)                ; Eat Spaces
     cp      ' '
     jr      nz,.not_space
-    call    STUFFS
+    call    _stuff_chr
     jr      .space_loop
 .not_space
     ld      b,a                   ; Set up delimiter for STRNG
@@ -49,11 +49,56 @@ s3_stuffh_ext:
     jp      z,KLOOP               ;   Stuff it and continue
     cp      ':'                   ; If colon
     jp      z,KLOOP               ;   Stuff it and continue
-    call    STUFFS                ; Else Stiff it
+    call    _stuff_chr                ; Else Stiff it
     jr      .string_loop          ;   and check next character
 .exaf_nodatt:
     ex      af,af'
     jp      NODATT
+
+;; If label at beginning of line: don't tokenize, just stuff it                                  
+stuff_label: 
+    cp      '_'                   ;; If not a undersoore                   
+    jp      nz,STRNGR             ;;   Keep on truckin'                    
+    call    _stuff_chr            ;; Stuff character in KRUNCH buffer      
+.loop                                                                    
+    ld      a,(hl)                ;; Get character from buf                
+    or      a                   ;; If end of line                      
+    jp      z,CRDONE            ;;   Finish it up                      
+    cp      ' '                 ;; If Space                            
+    jr      z,.stuff_it         ;;   Stuff it and keep going         
+    cp      ':'                 ;; If colon                            
+    jp      z,STRNGR            ;;   Stuff it and return               
+.stuff_it:                                                               
+    call    _stuff_upper          ;; Stuff character in KRUNCH buffer      
+    jr      .loop                 ;; Next character                         
+
+;; Uppercase and stuff character  
+_stuff_upper: call    uppercase_char                                        
+                                                                            
+;; Stuff char in KRUNCH buffer                                              
+_stuff_chr:                                                                 
+    inc     hl                    ;; Bump BUF pointer                       
+    ld      (de),a                ;; Save byte in KRUNCH buffer             
+    inc     de                    ;; Bump KRUNCH pointer                    
+    inc     c                     ;; Increment buffer count                 
+    ret                                                                   
+                                                                            
+;; Skip label at begin of line                                           
+skip_label: 
+    ld      (CURLIN),hl           ;; Save the Line #                        
+    ex      de,hl                 ;; DE = Line#, HL = Text Pointer          
+    rst     CHRGET                ;; Get first character                    
+    cp      '_'                   ;; If not underscore                      
+    jr      nz,.gone              ;;   Execute rest of line                 
+.loop      
+    rst     CHRGET                ;; Get next charcter                      
+    or      a                     ;; If end of line                         
+    jr      z,.gone               ;;   done                                 
+    cp      ':'                   ;; If not a colon                         
+    jr      nz,.loop              ;;   Keep going                           
+.gone    
+    dec     hl                    ;; Back up text pointer                   
+    jp      GONE                  ;; Execute rest of line                   
 
 ;-----------------------------------------------------------------------------
 ; Extended line editor function keys

@@ -52,7 +52,6 @@ mult_a_de:
     ret
 
 ;-----------------------------------------------------------------------------
-; ToDo: Change calls to this to MAKUPR in S3
 ; Convert character to uppercase
 ;  Input: A: Character
 ; Output: A: Uppercased character
@@ -190,7 +189,7 @@ pop_ret_nullstr:
 ;-----------------------------------------------------------------------------
 sys_num_ver:    
     ld      a,(hl)
-    call    MAKUPR                ; Skip 'V'
+    call    uppercase_char        ; Skip 'V'
     cp      'V'                 
     jr      nz,.notv
     inc     hl
@@ -204,7 +203,7 @@ sys_num_ver:
     call    asc_to_bcd_byte       ; Get Minor number
     ld      d,e                   ;   and put in D
     ld      e,0                   ; Init letter to none
-    call    MAKUPR                ; Capitalize 
+    call    uppercase_char        ; Capitalize 
     cp      'A'                   ; If not a letter
     ret     c                     ;    Return
     cp      'Z'+1

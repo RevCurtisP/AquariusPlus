@@ -126,10 +126,8 @@ INTRPT      equ $38     ; 7 (S3BASIC) Execute Interrupt Routine
 
 JUMPIX      equ $0034   ; Jump to address in IX
 NOHOOK      equ $003B   ; Default Hook routine
-RESET:      equ $0089
+RESET:      equ $0089   ; Display start up screen 
 HEDING      equ $015F   ; Microsoft copyright message
-STUFFS      equ $0130   ; Stuff character in KRUNCH buffer
-MAKUPR      equ $0135   ; Convert character in A to uppercase
 INITFF:     equ $0153   ; Initialize I/O Port 255
 REDDY       equ $036E   ; Text "Ok"
 FNDFOR      equ $039F   ; Find FOR/GOSUB entry on stack
@@ -147,7 +145,7 @@ ERRPRT      equ $03EA   ; Print Error pointed to by HL and Return to Immediate M
 ERRFNE      equ $03F1   ; Print "Error in " + line number and Return to Immediate Mode
 ERRFN1:     equ $03F4   ; Print String in HL + " in " + line number, Return to Immediate mode 
 STPRDY      equ $0401   ; For LIST command stopping
-READY:      equ $0402
+READY:      equ $0402   ; Enter direct mode
 MAIN        equ $0414   ; Immediate Mode loop     
 CHEAD       equ $0489   ; Link Lines
 FNDLIN      equ $049F   ; Find BASIC line wirh line number in [DE]
@@ -161,14 +159,15 @@ NODATT      equ $054B   ; Enter STUFFH at check for REM token
 STRNG       equ $0558   ; Stuff Quoted String
 CRDONE      equ $055E   ; Finish CRUNCH
 LIST3       equ $0579   ; Start list at line pointed to by BC
-RESSRC:     equ $05A8
-NEWSTT:     equ $062C
+RESSRC:     equ $05A8   ; Search keyword list
+NEWSTT:     equ $062C   ; Execute next statement
+GONE        equ $064B   ; Execute statement
 CHRGTR      equ $066B   ; CALLable CHRGET
 CHRGT2      equ $066C   ; Get Current Character and Set Flags
 CHRGT3      equ $066D   ; Test character in A and set flags
 GONE4       equ $063C   ; Execute next line
 FRCINT:     equ $0682   ; Convert fp number to 16 bit signed integer in DE
-CONRUN      equ $06C3
+CONRUN      equ $06C3   ; RUN specied line number
 RETURN      equ $06F8   ; Execute RETURN statement
 FCERR:      equ $0697   ; Function call error
 IQERR       equ FCERR   ; Illegal quantity error (future expansion)
@@ -188,7 +187,7 @@ FRMCHK      equ $0986   ; Skip current character, then evaluate formula
 EVALOP      equ $09C3   ; Operator evaluator in FRMEVL
 QDOT:       equ $0A14   ; Continue EVAL routine
 PARCHK:     equ $0A37   ; Evaluate expression in brackets
-LABBCK:     equ $0A49
+LABBCK:     equ $0A49   ; Return numeric value from function
 ISVAR       equ $0A4E   ; Get variable value or string pointer
 GIVINT      equ $0B21   ; Float Integer MSB=[A], LSB=[C]
 SNGFLT:     equ $0B36   ; Store variable 8 bit (out: B = value)
@@ -197,11 +196,11 @@ GTBYTC      equ $0B53   ; Skip character, evaluate expression (integer 0-255)
 GETBYT:     equ $0B54   ; Evaluate numeric expression (integer 0-255)
 CONINT      equ $0B57   ; Convert FAC to byte
 OMERR:      equ $0BB7   ; Out of memory error
-SCRTCH:     equ $0BBE
-RUNC:       equ $0BCB
-CLEARC:     equ $0BCF
-STKINI:     equ $0BE5
-;FRMINT         $0B7F   ; Deprecated in S3BASIC, use GETINT instead
+SCRTCH:     equ $0BBE   ; Execute NEW command
+RUNC:       equ $0BCB   ; Do the RUN
+CLEARC:     equ $0BCF   ; Clear variable and array space, then initialize stack
+STKINI:     equ $0BE5   ; Initialize stack
+;FRMINT         $0B7F   ; Use GETINT instead. This routine has an unnecessary PUSH/POP HL
 BGNRST      equ $0C19   ; Finish up RESTORE
 ISLETC:     equ $0CC6   ; Test for a letter
 NOTRUB      equ $0DA3   ; Continue Ctrl-key check
