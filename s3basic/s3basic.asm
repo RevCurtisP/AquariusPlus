@@ -1858,7 +1858,7 @@ NTPLUS: rlca                      ;[M65] MULTIPLY BY 2
         ld      hl,OPTAB          ;[M80] CREATE INDEX INTO OPTAB
         ld      d,0               ;[M80] MAKE HIGH BYTE OF OFFSET=0
         add     hl,de             ;[M80] ADD IN CALCULATED OFFSET
-EVALOP: ld      a,b               ;[M80] [A] GETS OLD PRECEDENCE    ;;Hook29 jumps back to here with HL = Alt OPTAB entry
+EVALOP: ld      a,b               ;[M80] [A] GETS OLD PRECEDENCE    ;;Hook29 jumps back to here with HL = OPTAB entry
         ld      d,(hl)            ;[M80] REMEMBER NEW PRECEDENCE
         cp      d                 ;[M80] OLD-NEW
         ret     nc                ;[M80] APPLY OLD OP IF >= PRECEDENCE
@@ -4580,7 +4580,7 @@ OUTCON: push    af                ;
         or      a                 ;[M80] TEST BITS
         jp      z,TTYPOP          ;[M80] IF ZERO THEN NOT
 ;;Print character in [A] to printer
-        pop     af                ;
+OUTLPT: pop     af                ;
         push    af                ;
         cp      9                 ;[M80] TAB
         jr      nz,NOTABL         ;[M80] NO

@@ -38,7 +38,7 @@ TBLCMDS:
     db $80 + 'R',"ENAME"          ; $E4
     db $80 + 'D',"ATE"            ; $E5   Replaces MX-BASIC keyword DTM$
     db $80 + ' '                  ; $E6             
-    db $80 + ' '                  ; $E7             
+    db $80 + 'M',"OD"             ; $E7             
     db $80 + 'D',"EEK"            ; $E8   
     db $80 + 'E',"RR"             ; $E9             
     db $80 + 'S',"TRING"          ; $EA             
@@ -81,7 +81,7 @@ EXTCMDS:
     db $80 + 'F',"AST"            ; $88            
     db $80 + 'T',"EXT"            ; $89             
     db $80 + 'A',"RGS"            ; $8A             
-    db $80 + 'M',"OD"             ; $8B             
+    db $80 + ' '                  ; $8B             
     db $80 + ' '                  ; $8C             
     db $80 + ' '                  ; $8D             
     db $80 + ' '                  ; $8E unused (REM)             
@@ -98,6 +98,7 @@ EXTOKEN = $94     ; Last Token + 1
 ;-----------------------------------------------------------------------------
 ; plusBASIC tokens
 ;-----------------------------------------------------------------------------
+XORTK     equ     $CB
 GETTK     equ     $CD
 SWAPTK    equ     $D1
 TIMETK    equ     $D3    
@@ -107,6 +108,7 @@ MKDTK     equ     $DE
 DELTK     equ     $DF
 CDTK      equ     $E0
 INTK      equ     $E1
+MODTK     equ     $E7
 ERRTK     equ     $E9
 BITTK     equ     $EB
 LINETK    equ     $D0
@@ -132,7 +134,6 @@ DEXTK     equ     $87
 FASTK     equ     $88
 TEXTK     equ     $89
 ARGSTK    equ     $8A
-MODTK     equ     $8B
 RESETK    equ     $90
 PT3TK     equ     $91
 VERTK     equ     $92
@@ -249,7 +250,7 @@ token_to_keyword:
 ; $E4 RENAME      VER
 ; $E5 DATE        DTM           DATETIME$ <--> DTM$(0)
 ; $E6             DEC
-; $E7             KEY             
+; $E7 MOD         KEY             
 ; $E8 DEEK        DEEK              
 ; $E9 ERR         ERR [OR]            ERR <--> ERR(0), ERRLINE <--> ERR(1), ERR$ <--> ERR$(1)
 ; $EA STRING      STRING
@@ -287,7 +288,7 @@ token_to_keyword:
 ; $88 FAST
 ; $89 TEXT
 ; $8A ARGS
-; $8B MOD
+; $8B 
 ; $8C
 ; $8D
 ; $8E unusable (REM)

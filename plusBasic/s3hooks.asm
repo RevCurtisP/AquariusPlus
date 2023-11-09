@@ -105,3 +105,18 @@ s3_ctrl_keys:
     pop     bc                    ;   Restore character count
     jp      INLINC                ;   Wait for next key
 
+;-----------------------------------------------------------------------------
+; HOOK12 - OUTDO 
+;-----------------------------------------------------------------------------
+s3_outdo:
+  push    af                ;
+  ld      a,(PRTFLG)        ;[M80] SEE IF WE WANT TO TALK TO LPT
+  or      a                 ;[M80] TEST BITS
+  
+  pop     af
+  cp      7
+  jr      z,_beep
+  
+  
+_beep:
+;;;ToDo: check for fast mod e

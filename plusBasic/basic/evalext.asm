@@ -159,7 +159,64 @@ eval_ascii:
 oper_extension:
     cp        '%'                 ; If string sub operator
     jr        z,oper_stringsub    ;   Go do it
-    jp        HOOK29+1            ; ELse Back to operator evaluator
+    cp        MODTK
+    jr        nz,.notmod
+    ld        hl,optab_mod        ;   HL = OPTAB entry
+    jp        EVALOP              ;   Do the operator
+.notmod
+    cp        XORTK
+    jp        nz,HOOK29+1         ; 
+    ld        hl,optab_xor        ;   HL = OPTAB entry
+    jp        EVALOP              ;   Do the operator
+
+optab_mod:
+    byte      60
+    word      oper_mod
+optab_xor:
+    byte      60
+    word      oper_xor
+
+; MOD operator: LeftArg - INT( LeftArg / RightArg ) * RightArg
+oper_mod:
+    pop     bc                    ; BCDE = LeftArg
+    pop     de  
+    push    de                    ; Stack = LeftArg
+    push    bc
+    ld      hl,(FACLO)            ; Stack = RightArg, LeftArg
+    push    hl
+    ld      hl,(FACHO)
+    push    hl
+    call    FDIV                  ; FACC = LeftArg/Right Arg
+    call    INT                   ; FACC = INT(LeftArg/Right)
+    pop     bc                    ; BCDE = RightArg; Stack = LeftArg
+    pop     de
+    call    FMULT                 ; FACC = RightArg * INT(LeftArg/Right)
+    pop     bc                    ; BCDE = LeftArg
+    pop     de  
+    jp      FSUB                  ; Return LeftArg - RightArg * INT(LeftArg/Right)
+
+; XOR operator - Copied from AND/OR
+oper_xor:
+    push    af                    ;[M80] SAVE THE PRECEDENCE or Operator...
+    call    CHKNUM                ;[M65] MUST BE NUMBER
+    call    FRCINT                ;COERCE RIGHT HAND ARGUMENT TO INTEGER
+    pop     af                    ;GET BACK THE PRECEDENCE TO DISTINGUISH "AND" AND "OR"
+    ex      de,hl             
+    pop     bc                
+    ex      (sp),hl           
+    ex      de,hl             
+    call    MOVFR             
+    push    af                
+    call    FRCINT            
+    pop     af                
+    pop     bc                
+    ld      a,c               
+    ld      hl,GIVINT             ;{M80} PLACE TO JUMP WHEN DONE
+    xor     e                     
+    ld      c,a                   
+    ld      a,b                   
+    xor     d                     
+    jp      (hl)                  ;[M80] RETURN THE INTEGER [A,L]
 
 
 oper_stringsub:

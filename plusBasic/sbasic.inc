@@ -185,6 +185,7 @@ CHKNUM:     equ $0975   ; Error if evaluated expression not a number
 CHKSTR:     equ $0976   ; Error if evaluated expression not string
 FRMEVL:     equ $0985   ; Evaluate formula
 FRMCHK      equ $0986   ; Skip current character, then evaluate formula
+EVALOP      equ $09C3   ; Operator evaluator in FRMEVL
 QDOT:       equ $0A14   ; Continue EVAL routine
 PARCHK:     equ $0A37   ; Evaluate expression in brackets
 LABBCK:     equ $0A49
@@ -226,9 +227,15 @@ PTRGET:     equ $10D1   ; Get variable (out: BC = addr, DE = len)
 EATEM       equ $10EA   ; Continue PTRGET at skip extra alphanumerics loop
 NOSEC       equ $10F2   ; Continue PTRGET at check for '$'
 SKIPDS      equ $10FD   ; Continue PTRGET at skip of '$'
+FSUB        equ $125E   ; Subtract: FACC = BCDE - FACC
+FADD        equ $1261   ; Add: FACC = BCDE + FACC
 FONE        equ $135F   ; Floating point constant 1
+FMULT       equ $13CB   ; Multiply: FACC = BCDE * FACC
 POPHRT      equ $141A   ; Pop HL and return
+FDIV        equ $142F   ; Divide: FACC = BCDE / FACC
+MOVFR       equ $1523   ; Move B,C,D,E to FACC
 QINT        equ $1586   ; Convert FAC to integer in C,D,E
+INT         equ $15B1   ; FACC = INT(FACC)
 FIN         equ $15E5   ; Parse floating point number
 FIN0        equ $15EE   ; Parse floating point number wihout leading + or -
 LINPRT      equ $1675   ; Print Two Byte Number in HL as Decimal - Alters all Registers
