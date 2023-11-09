@@ -170,7 +170,7 @@ oper_extension:
     jp        EVALOP              ;   Do the operator
 
 optab_mod:
-    byte      60
+    byte      124
     word      oper_mod
 optab_xor:
     byte      60
