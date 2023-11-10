@@ -201,7 +201,7 @@ print_copyright:
 _plus_text:
     db "plusBASIC "
 _plus_version:
-    db "v0.17t",0
+    db "v0.17u",0
 _plus_len   equ   $ - _plus_text
     call    CRDO
     jp      CRDO
