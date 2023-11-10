@@ -91,9 +91,10 @@ EXTCMDS:
     db $80 + 'P',"T3"             ; $91             
     db $80 + 'V',"ER"             ; $92             
     db $80 + 'F',"ILL"            ; $93
+    db $80 + 'C',"OMPARE"         ; $94
     db $80             ; End of table marker
 
-EXTOKEN = $94     ; Last Token + 1
+EXTOKEN = $95     ; Last Token + 1
 
 ;-----------------------------------------------------------------------------
 ; plusBASIC tokens
@@ -138,6 +139,7 @@ RESETK    equ     $90
 PT3TK     equ     $91
 VERTK     equ     $92
 FILLTK    equ     $93
+COMPTK    equ     $94
 
 ;-----------------------------------------------------------------------------
 ; Convert keyword to token - hook 10
@@ -297,3 +299,4 @@ token_to_keyword:
 ; $91 PT3
 ; $92 VER
 ; $93 FILL
+; $94 COMPARE

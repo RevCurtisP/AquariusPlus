@@ -190,6 +190,7 @@ PARCHK:     equ $0A37   ; Evaluate expression in brackets
 LABBCK:     equ $0A49   ; Return numeric value from function
 ISVAR       equ $0A4E   ; Get variable value or string pointer
 GIVINT      equ $0B21   ; Float Integer MSB=[A], LSB=[C]
+FLOATD      equ $0B23   ; Float Integer MSB=[A], LSB=[D]
 SNGFLT:     equ $0B36   ; Store variable 8 bit (out: B = value)
 ERRDIR      equ $0B45   ; Error if in direct mode
 GTBYTC      equ $0B53   ; Skip character, evaluate expression (integer 0-255)

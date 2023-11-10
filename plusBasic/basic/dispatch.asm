@@ -278,8 +278,11 @@ extended_statement:
 extended_function:
     inc     hl                  ; Skip extended prefix
     ld      a,(hl)              ; Get Extended token
-    sub     VERTK               ; Work backwords from VER
+    sub     VERTK               ; Work forward from VER
     jp      z,FN_VER
+    dec     a                   ; FILL
+    dec     a                   ; VER
+    jp      z,FN_COMPARE
     jp      SNERR
 
 ; ------------------------------------------------------------------------------

@@ -18,7 +18,7 @@ file_load_binary:
     call    esp_read_bytes
     ret     m
     push    af
-    call    esp_close
+    call    esp_close_all
     pop     af
     or      a
     ret
@@ -55,18 +55,14 @@ file_load_chrset:
 file_load_paged:
     push    af                    ; Stack = Page
     call    dos_open_read         ;
-    jp      m,_discard
+    jp      m,discard_ret
     pop     af                    ; AF = Page
     call    esp_read_paged        ;
     ret     z                     ; Illegal page
     ret     c                     ; Page overflow
     push    af
-    call    esp_close
+    call    esp_close_all
     pop     af
-    ret
-_discard:
-    inc     sp                    ; Discard top entry on stack
-    inc     sp
     ret
 
 ;-----------------------------------------------------------------------------
@@ -93,7 +89,7 @@ file_load_screen:
     
     
     push    af
-    call    esp_close
+    call    esp_close_all
     pop     af
     or      a
     ret

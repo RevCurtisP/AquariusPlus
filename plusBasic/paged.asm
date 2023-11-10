@@ -3,6 +3,87 @@
 ;=============================================================================
 
 ;-----------------------------------------------------------------------------
+; Compare paged memory to main memory
+; Input: A: Page
+;        BC: Compare Length
+;        DE: Memory Address
+;        HL: Page Address
+; Output: A: $FF if match, else 0
+;        DE: $FF if match, else 0
+;-----------------------------------------------------------------------------
+page_mem_compare:
+    ex      de,hl               ; DE = PgAdr, HL = MemAdr
+    call    page_set4read_coerce
+    jp      z,_cmp_error
+    dec     de
+.loop
+    ld      a,b
+    or      c                       
+    jr      z,_cmp_done                  
+    dec     bc
+    call    page_inc_de_addr
+    jr      c,_cmp_error
+    ld      a,(de)
+    cp      (hl)
+    inc     hl
+    jr      z,.loop
+    ld      a,$FF                   
+_cmp_done:
+    cpl                           ; Make $FF matched, 0 not
+    ld      d,a
+    ld      e,a
+    dec     a                     ; Clear Zero and Carry
+    ld      a,e
+_cmp_error:
+    call    page_restore_plus
+    ret
+      
+;-----------------------------------------------------------------------------
+; Compare paged memory to paged memory
+; Input: A: Destination Page
+;       A': Source Page
+;       BC: Byte Count
+;       DE: Destination Page Address
+;       HL: Source Page Address
+; Output: A: $FF if match, else 0
+;        DE: $FF if match, else 0
+; Flags: Zero if either page is not valid
+;        Carry if Overflow
+; Clobbers: BC,HL,AF',HL',IX
+
+;-----------------------------------------------------------------------------
+page_page_compare:
+    call    page_check_read_write
+    jp      z,_cpp_error
+    call    page_swap_two         ; Bank1 = Source, Bank3 = Dest
+    call    page_coerce_de_addr   
+    call    page_coerce_hl_addr
+    dec     de
+    dec     hl
+.loop
+    ld      a,b
+    or      c                       
+    jr      z,_cpp_done
+    dec     bc
+    call    page_inc_de_addr
+    jr      c,_cpp_error
+    call    page_inc_hl_addr
+    jr      c,_cpp_error
+    ld      a,(de)
+    cp      (hl)
+    jr      z,.loop
+    ld      a,$FF                   
+_cpp_done:
+    cpl                           ; Make $FF matched, 0 not
+    ld      d,a
+    ld      e,a
+    dec     a                     ; Clear Zero and Carry
+    ld      a,e
+_cpp_error:
+    call    page_restore_two      
+    ret
+
+;-----------------------------------------------------------------------------
 ; Copy bytes from one Page to another Page
 ; Input: A: Destination Page
 ;       A': Source Page
@@ -22,7 +103,7 @@ page_fast_copy:
     cp      ixl                   ; If SrcPg = DstPg
     ret     z                     ; Return Error
     call    page_swap_two         ; Bank3 = DstPg, Bank2 = SrcPg
-    call    page_coerce_address   ; Coerce DstAdr to Bank3
+    call    page_coerce_de_addr   ; Coerce DstAdr to Bank3
     ld      a,h                   ; Coerce SrcAdr to Bank2
     and     $3F                   ;  
     or      $40
@@ -66,9 +147,9 @@ page_full_copy:
 ;-----------------------------------------------------------------------------
 page_fast_read_bytes:
     ex      de,hl                 ; DE = SrcAdr, HL = DstAdr 
-    call    page_coerce_address   ; Coerce DstAdr
+    call    page_coerce_de_addr   ; Coerce DstAdr
     ex      de,hl                 ; DE = DstAdr, HL = SrcAdr
-    jr      _page_copy            ; Copy it
+    jr      _fast_copy            ; Copy it
 
 ;-----------------------------------------------------------------------------
 ; Input: A: Destination Page
@@ -79,8 +160,8 @@ page_fast_read_bytes:
 ; Clobbers: A,BC,DE,HL
 ;-----------------------------------------------------------------------------
 page_fast_write_bytes:
-    call    page_coerce_address   ; Coerce DstAdr
-_page_copy:
+    call    page_coerce_de_addr   ; Coerce DstAdr
+_fast_copy:
     out     (IO_BANK3),a          ; Map DestPg
     or      a                     ; Clear Carry, Zero flags
     ldir                          ; Do the Copy
@@ -95,7 +176,7 @@ _page_copy:
 ; Clobbers: A,BC,DE,HL
 ;-----------------------------------------------------------------------------
 page_mem_swap_bytes:
-    call    page_coerce_address   ; Coerce DstAdr
+    call    page_coerce_de_addr   ; Coerce DstAdr
     out     (IO_BANK3),a          ; Map DestPg
 .loop    
     ld      a,b
@@ -125,11 +206,9 @@ page_mem_swap_bytes:
 page_copy_bytes:
     call    page_check_read_write
     ret     z
-    ex      af,af'
-    call    page_swap_two         ; Bank4 = Source, Bank3 = Dest
-    ex      de,hl                 ; DE = Source, HL = Dest
-    call    page_coerce_address   ; Coerce DE
-    call    _coerce_hl
+    call    page_swap_two         ; Bank1 = Source, Bank3 = Dest
+    call    page_coerce_de_addr   
+    call    page_coerce_hl_addr
     dec     de
     dec     hl
 .loop
@@ -137,37 +216,18 @@ page_copy_bytes:
     or      c
     jr      z,.done
     dec     bc
-    call    page_inc_addr
+    call    page_inc_de_addr
     jr      c,.over
-    call    _inc_hl
+    call    page_inc_hl_addr
     jr      c,.over
-    ld      a,(de)
-    ld      (hl),a
+    ld      a,(hl)
+    ld      (de),a
     jr      .loop
 .done
     xor     a                     ; Clear Carry Flag
     inc     a                     ; Clear Zero Flag
 .over
     call    page_restore_two      
-    ret
-
-_inc_hl:
-    inc     hl                    ; Increment 
-    ld      a,$C0
-    cp      h
-    ret     nz
-
-    in      a,(IO_BANK1)
-    call    page_check_next
-    ret     c
-    inc     a
-    out     (IO_BANK1),a
-
-_coerce_hl:
-    ld      a,h                   ; Coerce HL
-    and     $3F
-    or      $40
-    ld      h,a
     ret
 
 ;-----------------------------------------------------------------------------
@@ -191,7 +251,7 @@ page_fill_byte:
     dec     bc
     ld      a,l
     ld      (de),a
-    call    page_inc_addr
+    call    page_inc_de_addr
     jp      c,page_restore_plus   
 
     jr      .loop
@@ -217,11 +277,11 @@ page_fill_word:
     dec     bc
     ld      a,l
     ld      (de),a
-    call    page_inc_addr
+    call    page_inc_de_addr
     jp      c,page_restore_plus
     ld      a,h
     ld      (de),a
-    call    page_inc_addr
+    call    page_inc_de_addr
     jp      c,page_restore_plus
     jr      .loop
 
@@ -315,7 +375,7 @@ page_read_word:
     ld      a,d
     or      e 
     jr      nz,.not_end
-    call    page_next_address
+    call    page_next_de_address
     jp      c,page_restore_plus    ; Return if overflow
 .not_end
     ld      a,(de)
@@ -343,7 +403,7 @@ page_write_word:
     ld      a,d
     or      e 
     jr      nz,.not_end
-    call    page_next_address
+    call    page_next_de_address
     jp      c,page_restore_plus   ; Return if overflow
 .not_end
     ld      a,b
@@ -397,7 +457,7 @@ page_write_bytes:
     ld      a,b 
     or      c
     jr      z,_success
-    call    page_inc_addr
+    call    page_inc_de_addr
     jr      c,page_restore_plus
     ld      a,(hl)
     ld      (de),a
@@ -428,7 +488,7 @@ page_read_bytes:
     ld      a,b 
     or      c
     jr      z,.done
-    call    page_inc_addr
+    call    page_inc_de_addr
     jr      c,page_restore_plus
     ld      a,(de)
     ld      (hl),a
@@ -448,7 +508,7 @@ page_read_bytes:
 ;-----------------------------------------------------------------------------
 page_set4read_coerce:
     call    page_set_for_read
-    jr      page_coerce_address
+    jr      page_coerce_de_addr
 
 ;-----------------------------------------------------------------------------
 ; Map Page into valid Bank 3 and coerce address to bank 3
@@ -460,17 +520,18 @@ page_set4read_coerce:
 ;-----------------------------------------------------------------------------
 page_set4write_coerce:
     call    page_set_for_write
-    jr      page_coerce_address
+    jr      page_coerce_de_addr
 
 ;-----------------------------------------------------------------------------
-; Increment Page Write Address
+; Increment Bank 3 Write Address in DE
 ; Sets carry if trying to move out of video, character, or end of main RAM
+; Clobbers: A
 ;-----------------------------------------------------------------------------
-page_inc_addr:
+page_inc_de_addr:
     inc     de                    ; Increment Address
     ld      a,d
     or      e                     ; If Rolled Over
-    ret     nz                    ;   Drop into page_next_address
+    ret     nz                    ;   Drop into page_next_de_address
     
 ;-----------------------------------------------------------------------------
 ; Map next Page into Bank 3 and coerce address to bank 3
@@ -479,8 +540,8 @@ page_inc_addr:
 ;        DE: Coerced address
 ; Sets carry if trying to move out of video, character, or end of main RAM
 ;-----------------------------------------------------------------------------
-page_next_address:
-    call    page_next             ; Move to next page and coerce address
+page_next_de_address:
+    call    page_next_bank3             ; Move to next page and coerce address
     
 ;-----------------------------------------------------------------------------
 ; Coerce address into bank 3
@@ -489,11 +550,47 @@ page_next_address:
 ; Zero Flag: Set if trying to page into bank that isn't RAM
 ; Clobberes: AF'
 ;-----------------------------------------------------------------------------
-page_coerce_address:
+page_coerce_de_addr:
     ex      af,af'                ; Save page and flags
     ld      a,d                   ; Address MSB    
     or      $C0                   ; Make 49152 - 65535
     ld      d,a                   ; Put back
+    ex      af,af'                ; Restore page and flags
+    ret
+
+;-----------------------------------------------------------------------------
+; Increment Page 1 Write Address in HL
+; Sets carry if trying to move past page 63 (end of paged memory).
+; Clobbers: A
+;-----------------------------------------------------------------------------
+page_inc_hl_addr:
+    inc     hl                    ; Increment 
+    ld      a,$80
+    cp      h
+    ret     nz
+
+;-----------------------------------------------------------------------------
+; Map next Page into Bank 3 and coerce address to bank 3
+; Input: HL: Address
+; Output: A: New page
+;        HL: Coerced address
+; Sets carry if trying to move out of video, character, or end of main RAM
+;-----------------------------------------------------------------------------
+page_next_hl_address:
+    call    page_next_bank1             ; Move to next page and coerce address
+    
+;-----------------------------------------------------------------------------
+; Coerce address into bank 1
+; Input: HL: Address to coerce
+; Output: HL: Coerced address
+; Clobbers: AF'
+;-----------------------------------------------------------------------------
+page_coerce_hl_addr:
+    ex      af,af'                ; Save page and flags
+    ld      a,h                   ; Address MSB    
+    and     $3F
+    or      $40                   ; Make 49152 - 65535
+    ld      h,a                   ; Put back
     ex      af,af'                ; Restore page and flags
     ret
 
@@ -546,24 +643,41 @@ _page_ok
     ccf                           ; Clear carry flag
     ret
 
+;-----------------------------------------------------------------------------
+; Map next Page into Bank 1
+; Sets carry if trying to move out of video, character, or end of main RAM
+;-----------------------------------------------------------------------------
+page_next_bank1:
+    in      a,(IO_BANK1)
+    call    page_check_next4read
+    ret     c
+    inc     a
+    out     (IO_BANK1),a
+    ret
 
 ;-----------------------------------------------------------------------------
 ; Map next Page into Bank 3 
 ; Sets carry if trying to move out of video, character, or end of main RAM
 ;-----------------------------------------------------------------------------
-page_next:
+page_next_bank3:
     in      a,(IO_BANK3)
-    call    page_check_next
+    call    page_check_next4write
     ret     c
     inc     a
     out     (IO_BANK3),a
     ret
 
-page_check_next:
+;-----------------------------------------------------------------------------
+; Check if next page is valid for read or write
+; Sets carry if trying to move out of video or character RAM (write)
+; or end of main RAM (read and write)
+;-----------------------------------------------------------------------------
+page_check_next4write:
     cp      VIDEO_RAM             ; If in video RAM
     jr      z,set_carry_flag      ;   error out
     cp      CHAR_RAM              ; If in character RAM
     jr      z,set_carry_flag      ;   error out
+page_check_next4read:
     cp      63                    ; If in last RAM page
     jr      z,set_carry_flag      ;   error out
     cp      0                     ; Clear carry and zero flags

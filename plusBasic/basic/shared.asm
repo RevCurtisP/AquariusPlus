@@ -42,7 +42,7 @@ FLOAT_CDE:
     call    FLOATR                ; Float It
     pop     hl
     ret
-
+ 
 ;-----------------------------------------------------------------------------
 ; Convert A into a signed Floating Point number in FACC
 ; Clobbers: A,BC,DE
@@ -59,12 +59,31 @@ float_signed_byte:
     call    GIVINT
     pop     hl
     ret
+
+;-----------------------------------------------------------------------------
+; Convert DE into a signed Floating Point number in FACC
+; Clobbers: A,BC,DE
+;-----------------------------------------------------------------------------
+float_signed_int:
+    push    hl
+    ld      a,d                   ; A = MSB
+    ld      d,e                   ; E = LSB
+    call    FLOATD
+    pop     hl
+    ret
+
+get_star_array: 
+    call    CHRGT2                ; Reget character
+    jp      z,MOERR               ; If terminator, MO Error
+    cp      MULTK                 ; If no *
+    jp      nz,TMERR              ;   Type mismatch error
+skip_star_array:    
+    rst     CHRGET                ; Skip *
     
 ;-----------------------------------------------------------------------------
 ; Parse Array Variable without subscript
 ; Output: DE = First Byte of Data
-;         BC = Last Byte of Data
-
+;         BC = Length of Data
 ; Clobbered: A
 ;-----------------------------------------------------------------------------
 get_array: 
@@ -83,13 +102,12 @@ get_array:
     add     a,a                   ; DOUBLE SINCE 2 BYTE ENTRIES
     ld      l,a                   
     ld      h,0                   
-    inc     bc                    ; SKIP NO. OF DIMS
+    inc     bc                    ; SKIP NO. OF DIMStion
     add     hl,bc                 
     ex      de,hl                 ; DE = PTR TO FIRST BYTE OF DATA
     xor     a                     ; Clear carry
     pop     hl                    ; HL = PTR TO LAST BYTE OF DATA
-    sbc     hl,de                 
-    inc     hl                    ; HL = Data Length
+    sbc     hl,de                 ; HL = Data Length
     ld      b,h
     ld      c,l                   ; BE = Data Length
     pop     hl                    ; HL = TxtPtr
@@ -99,6 +117,40 @@ get_array:
 UDERR:
     ld      e,ERRUD
     jp      ERROR
+
+;-----------------------------------------------------------------------------
+; Require Close Paren on Function
+;-----------------------------------------------------------------------------
+close_paren:
+    ld      a,(hl)
+    cp      ','
+    jp      z,TOERR
+    SYNCHK  ')'
+    ret
+
+TOERR:
+    ld      e,ERRTO
+    jp      ERROR
+
+
+;-----------------------------------------------------------------------------
+; Require comma, then parse integer
+;-----------------------------------------------------------------------------
+get_comma:
+    ld      a,(hl)
+    cp      ','
+    jp      nz,MOERR
+    jp      CHRGTR
+
+;-----------------------------------------------------------------------------
+; Require comma, then parse integer
+;-----------------------------------------------------------------------------
+get_comma_int:
+    ld      a,(hl)
+    cp      ','
+    jp      nz,MOERR
+    rst     CHRGET
+    jp      GETINT
 
 ;-----------------------------------------------------------------------------
 ; Parse @Page
@@ -128,6 +180,11 @@ _notat
 ;         Carry Set if page specified
 ; Clobbered: BC
 ;-----------------------------------------------------------------------------
+get_comma_page_addr:
+    ld      a,(hl)
+    cp      ','
+    jp      nz,MOERR
+    rst     CHRGET
 get_page_addr:
     call    get_page_arg          ; Get (optional) Page
     push    af                    ; Stack = Page+Flag

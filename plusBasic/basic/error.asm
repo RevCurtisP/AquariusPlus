@@ -31,7 +31,8 @@ ERRGS   equ     $2E   ; 24 Statement not implemented
 ERRUL   equ     $30   ; 25 Undefined label
 ERRAG   equ     $32   ; 26 ARG without GOSUB
 ERRUD   equ     $34   ; 27 Undimensioned array
-NONDSK  equ     $36   ; 28 Last non disk error
+ERRTO   equ     $36   ; 28 Too many operands
+NONDSK  equ     $38   ; 29 Last non disk error
 ; Disk errors
 DSKERRS equ     $60   ; Start of Disk Errors
 ERRBDF  equ     $60   ; 49 Bad File
@@ -131,6 +132,7 @@ err_codes:
         word    MSGUL
         word    MSGAG
         word    MSGUD
+        word    MSGTO
 err_disk:
         word    MSGBDF
         word    MSGFNF
@@ -175,14 +177,15 @@ MSGGS:  byte    "Statement not implemented",0   ; 24
 MSGUL:  byte    "Undefined line label",0        ; 25
 MSGAG:  byte    "ARGS without GOSUB",0          ; 26
 MSGUD:  byte    "Undimensioned Array",0         ; 27 
-        byte    0                               ; 28  Last non disk error                             
+MSGTO:  byte    "Too many operands",0           ; 28
+        byte    0                               ; 29  Last non disk error                             
 
 ; File System Errors                            ;     ESP32 Error
 doserr_messages:
 MSGBDF: byte    "Bad file",0                    ; 49  Bad File
 MSGFNF: byte    "File not found",0              ; 50  -1: File / directory not found         
 MSGTMF: byte    "Too many files",0              ; 51  -2: Too many open files / directories  
-MSGIPR: byte    "Invalid parameter"             ; 52  -3: Invalid parameter                
+MSGIPR: byte    "Invalid parameter",0           ; 52  -3: Invalid parameter                
 MSGRPE: byte    "Input past end",0              ; 53  -4: End of file / directory            
 MSGFAE: byte    "File already exists",0         ; 54  -5: File already exists                
 MSGIOE: byte    "Disk I/O error",0              ; 55  -6: Other error                        

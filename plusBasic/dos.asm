@@ -39,7 +39,7 @@ dos_create_dir:
 dos_get_cwd:
     ld      a,ESPCMD_GETCWD       ; Issue CWD command
     call    esp_cmd
-    call    esp__get_result
+    call    esp_get_result 
     jp      m,.done               ; Return if Error
     call    esp_read_to_buff      ; Get current directory and write to buffer
 .done
@@ -59,7 +59,7 @@ dos_rename_file:
     call    esp_send_strdesc      ; Send old name    
     pop     hl                    ; HL = new name descriptor
     call    esp_send_strdesc      ; Send new name
-    jp      esp__get_result       ; Get result and return
+    jp      esp_get_result        ; Get result and return
 
 ;-----------------------------------------------------------------------------
 ; dos_get_file_stat - Return File Status
@@ -82,7 +82,7 @@ dos_get_filestat:
     call    esp_get_long
     ld      (FILESIZE),bc
     ld      (FILESIZE+2),de
-    call    esp_get_result
+    call    esp_get_result 
 .done
     ret
 
@@ -98,12 +98,21 @@ dos_open_dir:
     jp      esp_cmd_string        ; Get FileSpec and Do Command
 
 ;-----------------------------------------------------------------------------
-; Open file to string descriptor
+; Open file for write to string descriptor
+; Input: HL: string descriptor
+; Output: A: file descriptor
+;-----------------------------------------------------------------------------
+dos_open_write:
+    ld      a, FO_WRONLY | FO_CREATE | FO_TRUNC
+    jr      dos_open_file
+
+;-----------------------------------------------------------------------------
+; Open file for read_only to string descriptor
 ; Input: HL: string descriptor
 ; Output: A: file descriptor
 ;-----------------------------------------------------------------------------
 dos_open_read:
-    ld      a, ESPCMD_OPEN
+    ld      a,FO_RDONLY
 
 ;-----------------------------------------------------------------------------
 ; Open file to string descriptor
@@ -113,12 +122,12 @@ dos_open_read:
 ;-----------------------------------------------------------------------------
 dos_open_file:
     push    af                    ; 
-    ld      a, ESPCMD_OPEN
+    ld      a,ESPCMD_OPEN
     call    esp_cmd
     pop     af
     call    esp_send_byte
     call    esp__send_strdesc
-    jp      esp__get_result
+    jp      esp_get_result 
 
 ;-----------------------------------------------------------------------------
 ; Save binary data from paged memory to file
@@ -130,13 +139,14 @@ dos_open_file:
 ;-----------------------------------------------------------------------------
 dos_save_paged:
     push    af                    
-    call    esp_create
+    call    dos_open_write
+    jp      m,discard_ret
     pop     af
     ld      de, (BINSTART)
     ld      bc, (BINLEN)
     call    esp_write_paged
     push    af
-    call    esp_close
+    call    esp_close_all
     pop     af
     ret
 
@@ -149,7 +159,8 @@ dos_save_paged:
 ;-----------------------------------------------------------------------------
 dos_save_binary:
     ; Create file
-    call    esp_create
+    call    dos_open_write
+    ret     m
 
     ; Write binary data
     ld      de, (BINSTART)
@@ -157,8 +168,10 @@ dos_save_binary:
     call    esp_write_bytes
 
     ; Close file
+    push    af
     call    esp_close_all
-    or      $FF                   ; Clear zero and carry flags
+    pop     af
+    and     $01                   ; Clear zero and carry flags
     ret
 
 ;-----------------------------------------------------------------------------

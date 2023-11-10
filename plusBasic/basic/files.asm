@@ -32,6 +32,7 @@ _dos_error:
     add     a,a                   ; Multiply by 2 to get offset
     add     a,ERRFNF              ; Add to start of DOS errors
     ld      e,a
+    call    esp_close_all
     jp      ERROR
 
 _get_cd:
@@ -421,6 +422,7 @@ ST_LOAD:
     jr      c,.load_paged
     ld      bc,$FFFF                ; Load up to 64k   
     call    file_load_binary
+    call    esp_close_all
     jp      m,_dos_error
     pop     hl                      ; Get Back Text Pointer
     ret
@@ -469,7 +471,7 @@ load_basic_program:
     call    esp_read_bytes
 
     ; Close file
-    call    esp_close
+    call    esp_close_all
 
     ; Back up to last line of BASIC program
 .backup:
@@ -599,7 +601,7 @@ load_caq_array:
     call    esp_read_bytes
 
     ; Close file
-    call    esp_close
+    call    esp_close_all
 
     pop     hl
     ret
@@ -793,12 +795,14 @@ ST_SAVE:
     ; Do the save
     jr      c,.save_paged
     call    dos_save_binary
+    jp      m,_dos_error
     pop     hl
     ret
 
 .save_paged
     call    check_paged_address   ; Verify pages addres is between 0 and 16383
     call    dos_save_paged
+    jp      m,_dos_error
     jp      z,IQERR
     jp      c,OVERR
     pop     hl
@@ -814,7 +818,8 @@ ST_SAVE:
 ;-----------------------------------------------------------------------------
 save_basic_program:
     ex      (sp),hl               ; HL = String Descriptor, Stack = Text Pointer
-    call    esp_create            ; Create file
+    call    dos_open_write        ; Create file
+    jp      m,_dos_error
 
     ; Write CAQ header
     ld      de, sync_bytes      ; Sync bytes
@@ -854,7 +859,8 @@ save_basic_program:
 ;-----------------------------------------------------------------------------
 save_caq_array:
     ex      (sp),hl               ; HL = String Descriptor, Stack = Text Pointer
-    call    esp_create            ; Create file
+    call    dos_open_write       ; Create file
+    jp      m,_dos_error
 
     ; Write CAQ header
     ld      de, sync_bytes      ; Sync bytes

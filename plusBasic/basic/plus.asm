@@ -163,6 +163,79 @@ ST_TIMER:
     jp      timer_write           ; Set the timer
 
 ;----------------------------------------------------------------------------
+; Compare blocks of memory
+; Syntax: COMPARE( [@page,] address, [@page,] address, length)
+;----------------------------------------------------------------------------
+FN_COMPARE:
+    rst     CHRGET                ; Skip COMPARE
+    SYNCHK  '('
+    cp      MULTK                 ; If *
+    jp      z,.compare_arrays     ;   Compare Arrays
+    call    get_page_addr         ; AF = PgFlg1, DE = Addr1
+    push    de                    ; Stack = Addr1, RtnAdr
+    push    af                    ; Stack = PgFlg1, Addr1, RtnAdr
+    call    get_comma_page_addr   ; AF = PgFlg2, DE = Addr2
+    push    af                    ; Stack = PgFlg2, PgFlg1, Addr1, RtnAdr
+    push    de                    ; Stack = Addr2, PgFlg2, PgFlg1, Addr1, RtnAdr
+    call    get_comma_int         ; DE = Length
+    call    close_paren
+    ld      b,d
+    ld      c,e                   ; BC = Length
+    pop     de                    ; DE = Addr2 ; Stack = PgFlg2, PgFlg1, Addr1, RtnAdr
+    pop     af                    ; AF = PgFlg2; Stack = PgFlg1, Addr1, RtnAdr
+    ex      af,af'                ; AF' = PgFlg2
+    pop     af                    ; AF = PgFlg1; Stack = Addr1, RtnAdr
+    ex      (sp),hl               ; HL = Addr1 ; Stack = TxtPtr, RtnAdr
+    push    hl                    ; Stack = Addr1, TxtPtr, RtnAdr
+    ld      hl,LABBCK             
+    ex      (sp),HL               ; HL = Addr1; Stack = LABBCK, TxtPtr, RtnAdr
+    jr      c,.page1              ; If Addr1 not paged
+    ex      af,af'                ;   AF = PgFlg2, AF' = PgFlg1
+    jr      c,.mem2page           ;   If Addr2 not paged
+.mem2mem
+    call    sys_mem_compare       ;     Do Memory to Memory Compare
+    jr      .float_it             ;     Return Result
+.mem2page                         ;   Else
+    ex      de,hl                 ;     AF = PgFlg2, HL = Addr2, DE = Addr1
+    jr      .page_mem             ;     Compare Paged to Memory and return result
+.page1                            ; Else
+    ex      af,af'                ;   AF = PgFlg2, AF' = PgFlg1
+    jr      c,.page2page          ;   If Addr2 not paged
+    ex      af,af'                ;     AF = PgFlg1, HL = Addr1, DE = Addr2
+.page_mem
+    call    page_mem_compare      ;      Compare Paged to Memory`
+    jr      .float_it             ;      and return result
+.page2page:                       ;   Else
+    call    page_page_compare     ;     GS error for now
+.float_it
+    jp      float_signed_int
+
+.compare_arrays
+    call    skip_star_array       ; DE = Addr1, BC = Len1
+    push    de                    ; Stack = Addr1, RtnAdr
+    push    bc                    ; Stack = Len1, Addr1, RtnAdr
+    call    get_comma             ; MO Error if no Comma
+    call    get_star_array        ; DE = Addr2, BC = Len2
+    call    close_paren           ; Require ')', TOERR if ','
+    ex      (sp),hl               ; HL = Len1; Stack = TxtPtr, Addr1, RtnAdr
+    sbc     hl,bc                 ; If Len1 - Len2 <> 0
+    jr      nz,.badlen            ;   Return 0 (not equal)
+    pop     hl                    ; HL = TxtPtr; Stack = Addr1, RtnAdr
+    ex      (sp),hl               ; HL = Addr1, Stack = TxtPtr, Rtn Addr
+    call    sys_mem_compare       ;      Compare Paged to Memory`
+    ld      hl,LABBCK             
+    push    hl                    ; Stack = LABBCK, TxtPtr, RtnAdr
+    jp      float_signed_int      ; Return result
+.badlen
+    pop     hl                    ; HL = TxtPtr; Stack = Addr1, RtnAdr
+    pop     de                    ; Stack = RtnAdr
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    ld      hl,LABBCK             
+    push    hl                    ; Stack = LABBCK, TxtPtr, RtnAdr
+    xor     a
+    jp      SNGFLT                ; Return 0
+    
+;----------------------------------------------------------------------------
 ; EVAL - Evaluate string
 ;----------------------------------------------------------------------------
 FN_EVAL:

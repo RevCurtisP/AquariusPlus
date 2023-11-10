@@ -1,6 +1,14 @@
 ;; Miscellaneous utility routines
 
 ;-----------------------------------------------------------------------------
+; Discard top entry on stack and return
+;-----------------------------------------------------------------------------
+discard_ret:
+    inc     sp
+    inc     sp
+    ret
+    
+;-----------------------------------------------------------------------------
 ; Call Statement Tokenizer Loop
 ;-----------------------------------------------------------------------------
 tokenize:
@@ -179,6 +187,32 @@ shift_hl_left:
 pop_ret_nullstr:
     push    hl
     jp      NULRT                 ; Pop HL abd return Null String
+
+
+;-----------------------------------------------------------------------------
+; Compare blocks of memory
+; Input: BC: Compare Length
+;        DE: First Address
+;        HL: Second Address
+; Output: A: $FF if match, else 0
+;        DE: $FF if match, else 0
+;-----------------------------------------------------------------------------
+sys_mem_compare:
+    ld    a,b
+    or    c                       
+    jr    z,.done                  
+    dec   bc
+    ld    a,(de)
+    cp    (hl)
+    inc   de
+    inc   hl
+    jr    z,sys_mem_compare
+    ld    a,$FF                   
+.done    
+    cpl                           ; Make $FF matched, 0 not
+    ld    d,a
+    ld    e,a
+    ret
 
 ;-----------------------------------------------------------------------------
 ; Convert null-terminated Version string to BCD integer

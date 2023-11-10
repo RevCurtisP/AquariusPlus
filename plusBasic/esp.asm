@@ -43,18 +43,9 @@ esp_cmd_string:
 ; Get first result byte
 ; Output: A: Result, negativ if error
 ;-----------------------------------------------------------------------------
-esp__get_result:
+esp_get_result :
     call    esp_get_byte
     or      a
-    ret
-
-;-----------------------------------------------------------------------------
-; Get first result byte, and jump to error handler if it was an error
-;-----------------------------------------------------------------------------
-esp_get_result:
-    call    esp_get_byte
-    or      a
-    jp      m, esp_error
     ret
 
 ;-----------------------------------------------------------------------------
@@ -89,18 +80,6 @@ pop_hl_ret:
     ret
 
 ;-----------------------------------------------------------------------------
-; Open file to String Descriptor in HL
-; Clobbered registers: A, HL, DE
-;-----------------------------------------------------------------------------
-;esp_open:
-    ld      a, ESPCMD_OPEN
-    call    esp_cmd
-    ld      a, FO_RDONLY
-    call    esp_send_byte
-    call    esp_send_strdesc
-    jp      esp_get_result
-
-;-----------------------------------------------------------------------------
 ; Close file or directory
 ;  Input: A: File descriptor
 ; Output: A: Result
@@ -109,7 +88,7 @@ esp_close:
     ld      a, ESPCMD_CLOSE
     call    esp_cmd
     call    esp_send_byte
-    jp      esp__get_result
+    jp      esp_get_result 
 
 ;-----------------------------------------------------------------------------
 ; Close all files and directories
@@ -119,7 +98,7 @@ esp_close:
 esp_close_all:
     ld      a, ESPCMD_CLOSEALL
     call    esp_cmd
-    jp      esp_get_result
+    jp      esp_get_result 
 
 ;-----------------------------------------------------------------------------
 ; esp_read_to_buff - Read bytes from ESP to string buffer
@@ -168,7 +147,7 @@ esp_read_bytes:
     call    esp_send_bc
     
     ; Get result
-    call    esp_get_result
+    call    esp_get_result 
     ret     m
 
     ; Get number of bytes actual read
@@ -222,7 +201,7 @@ esp_read_paged:
     call    esp_send_bc
     
     ; Get result
-    call    esp_get_result
+    call    esp_get_result 
     ret     m                     ; Return if error
 
     ; Get number of bytes actual read
@@ -241,7 +220,7 @@ esp_read_paged:
     ld      a,d
     or      a,e
     jr      nz,.read_byte
-    call    page_next_address
+    call    page_next_de_address
     jr      c,.error              ; Return if overflow
 .read_byte
     call    esp_get_byte
@@ -257,19 +236,6 @@ esp_read_paged:
 .error
     pop     bc                    ; 
     jp      page_restore_plus     ; Restore original page
-
-
-;-----------------------------------------------------------------------------
-; Create file from string descriptor in HL
-;-----------------------------------------------------------------------------
-esp_create:
-    ld      a, ESPCMD_OPEN
-    call    esp_cmd
-    ld      a, FO_WRONLY | FO_CREATE | FO_TRUNC
-    call    esp_send_byte
-    call    esp_send_strdesc
-    jp      esp_get_result
-
 
 ;-----------------------------------------------------------------------------
 ; Read 32-bit long from ESP32 into BC,DE
@@ -386,7 +352,8 @@ esp_write_bytes:
     call    esp_send_bytes
 
     ; Get result
-    call    esp_get_result
+    call    esp_get_result 
+    ret     m
 
     ; Get number of bytes actual written
     call    esp_get_bc
@@ -426,7 +393,8 @@ esp_write_repbyte:
 
 .done:
     ; Get result
-    call    esp_get_result
+    call    esp_get_result 
+    ret     m
 
     ; Get number of bytes actual written
     call    esp_get_bc
@@ -494,7 +462,7 @@ esp_write_paged:
     ld      a,d
     or      a,e
     jr      nz,.not_end
-    call    page_next_address
+    call    page_next_de_address
     jr      c,.error              ; Return if overflow
 .not_end
     dec     bc
@@ -503,13 +471,14 @@ esp_write_paged:
 .done:
 
     ; Get result
-    call    esp_get_result
+    call    esp_get_result 
+    ret     m
 
     ; Get number of bytes actual written
     call    esp_get_bc
 
     ld      h,a
-    or      $FF                   ; Clear zero and carry flags
+    or      $01                   ; Clear zero and carry flags
     ld      a,h
 .error
     jp      page_restore_plus     ; Restore original page
@@ -571,7 +540,7 @@ esp_seek:
     call    esp_send_long
 
     ; Get result
-    call    esp_get_result
+    call    esp_get_result 
     ret
 
 ;-----------------------------------------------------------------------------
@@ -594,7 +563,7 @@ esp_get_datetime:
     call    esp_cmd
     xor     a     
     call    esp_send_byte         ; Response Type ($00)
-    call    esp_get_result
+    call    esp_get_result 
     ret     m                     
     jp      esp_read_to_buff      
 
