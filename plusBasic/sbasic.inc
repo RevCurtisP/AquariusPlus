@@ -233,6 +233,7 @@ FONE        equ $135F   ; Floating point constant 1
 FMULT       equ $13CB   ; Multiply: FACC = BCDE * FACC
 POPHRT      equ $141A   ; Pop HL and return
 FDIV        equ $142F   ; Divide: FACC = BCDE / FACC
+FLOATR      equ $14FB   ; Float signed number in B,A,D,E
 MOVFR       equ $1523   ; Move B,C,D,E to FACC
 QINT        equ $1586   ; Convert FAC to integer in C,D,E
 INT         equ $15B1   ; FACC = INT(FACC)
@@ -260,8 +261,8 @@ COPY        equ $1B15   ; Execute COPY statement
 TTYCHR:     equ $1D72   ; Print character in A with pause/break at end of page
 TTYOUT:     equ $1D94   ; Print character in A
 TTYFIS:     equ $1DE7   ; Save Column and Position
-FLOATR      equ $14FB   ; Float signed number in B,A,D,E
 TTYCLR      equ $1E45   ; Clear screen (EXX before calling)
+SOUNDS      equ $1E64   ; Play frequency DEfor duration BC
 JMPINI:     equ $1FE1   ; Power Up/Reset Routine: Jumped to from RST 0
 PRNTIT:     equ $1FF2   ; Print copyright message and return
 

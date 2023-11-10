@@ -38,6 +38,7 @@
     jp      _skip_label     ; $202D Skip label at beginning of line (SKPLBL)
     jp      _skip_on_label  ; $2030 Skip label in ON GOTO
     jp      _s3_string_ext  ; $2033 Don't capitalize letters between single quotes (STRNGX)
+    jp      _sounds_hook    ; $2036 Adjust SOUNDS for turbo mode
     jp      _inlin_hook     ; $20?? Jump from INLIN for command history recall
     jp      _inlin_done     ; $20?? Jumped from FININL to save command to history
 
@@ -201,7 +202,7 @@ print_copyright:
 _plus_text:
     db "plusBASIC "
 _plus_version:
-    db "v0.17u",0
+    db "v0.17v",0
 _plus_len   equ   $ - _plus_text
     call    CRDO
     jp      CRDO
@@ -335,6 +336,20 @@ _iscntc_hook:
     byte    $3E                   ; LD A,$AF to Enable Turbo Mode
 .turbo_off
     xor     a
+
+;-----------------------------------------------------------------------------
+; Double SOUNDS delay timer if in Turbo Mode
+;-----------------------------------------------------------------------------
+_sounds_hook:
+    in      a,(IO_SYSCTRL)
+    and     SYSCTRL_TURBO
+    jr      z,.not_turbo
+    ld      h,d
+    ld      l,e
+    add     hl,de                 ; HL = DE + DE
+    ex      de,hl                 ; DE = HL
+.not_turbo
+    jp      SOUNDS
 
 ;-----------------------------------------------------------------------------
 ; Enable/Disable Turbo mode

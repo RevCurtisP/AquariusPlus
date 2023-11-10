@@ -133,6 +133,7 @@ SKPLBL  equ     $202D   ;; | Skip label at beginning of line (SKPLBL)
 STFLBL  equ     $202A   ;; | Don't tokenize label at beginning of Line (STFLBL)  
 SKPLOG  equ     $2030   ;; | Skip Label in ON GOTO/GOSUB
 STRNGX  equ     $2033   ;; | Don't capitalize letters between single quotes
+SOUNDX  equ     $2036   ;; | Adjust SOUNDS delay counter in turbo mode
 endif                   
 EXTBAS  equ     $2000   ;;Start of Extended Basic
 XSTART  equ     $2010   ;;Extended BASIC Startup Routine
@@ -4721,7 +4722,11 @@ GETINT: call    FRMNUM            ;;Get a number
 SOUND:  push    de
         call    SCAND
         push    hl
+ifdef aqplus
+        call    SOUNDX            ;; Adjust DE in turbo mode
+else
         call    SOUNDS
+endif
         pop     hl
         pop     de
         ret
@@ -5212,7 +5217,11 @@ SCROLP: ld      (hl),' '          ;;Put Space
 ;;Make a Beep Sound
 BEEP:   ld      bc,200            ;
         ld      de,50             ;
+ifdef aqplus
+        call    SOUNDX            ;; Adjust DE in turbo mode
+else
         call    SOUNDS            ;;Play freq 50, delay 300
+endif
         jr      TTYXPR            ;;Restore Registers and return
 ;;Move Cursor one character to the right
 TTYMOV: ld      hl,(CURRAM)       ;
