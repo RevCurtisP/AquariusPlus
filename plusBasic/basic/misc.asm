@@ -3,30 +3,6 @@
 ;====================================================================
 
 ;-----------------------------------------------------------------------------
-; Get Function Key Buffer Address
-; Input: A: Key ASCII Code
-; Output: DE: Buffer Address
-; Flags Set: Z if A = Function key
-; Clobbered: A
-;-----------------------------------------------------------------------------
-fnkey_get_buff_addr:
-    ld      e,a                                             
-    and     $97                   ;            100X0XXX   
-    cp      e
-    ret     nz
-    ld      d,FKEYBASE/512        ; 011??000                
-    rla                           ; 011??000 1 00X0XXX0     
-    ccf                           ; 011??000 0 00X0XXX0   
-    rla                           ; 011??000 0 0X0XXX00   
-    rla                           ; 011??000 0 X0XXX000   
-    rla                           ; 011??000 X 0XXX0000   
-    rl      d                     ; 11??000X 0 0XXX0000   
-    rla                           ; 11??000X 0 XXX00000   
-    ld      e,a
-    xor     a
-    ret
-
-;-----------------------------------------------------------------------------
 ; Write string to Function Key buffer
 ; Input: A: Function Key (0-15)
 ;       BC: String length

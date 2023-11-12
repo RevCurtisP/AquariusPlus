@@ -206,6 +206,7 @@ BGNRST      equ $0C19   ; Finish up RESTORE
 ISLETC:     equ $0CC6   ; Test for a letter
 NOTRUB      equ $0DA3   ; Continue Ctrl-key check
 INLINC      equ $0D8E   ; Wait for and process direct mode keypress
+GOODCH      equ $0DE9   ; INLINC - Put key in input buffer
 TIMSTR      equ $0E2F   ; Create tempory string from null-terminated string
 STRINI      equ $0E50   ; Reserve space for new string and create descriptor
 STRLIT      equ $0E5F   ; Build descriptor for string litersl

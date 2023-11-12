@@ -24,6 +24,12 @@ s3_ctrl_keys:
     push    bc                    ; Save character count
     call    in_direct
     jr      c,.dontscreen         ; If Not in Direct Mode
+    ld      a,c
+    or      a
+    jp      m,.extended
+
+
+
     xor     a
     cp      b
     jr      nz,.dontscreen        ; and Input Buffer is empty
@@ -64,6 +70,12 @@ s3_ctrl_keys:
 .inlinc
     pop     bc                    ;   Restore character count
     jp      INLINC                ;   Wait for next key
+.extended
+    call    fnkey_get_buff_addr   ; DE = Key Buffer Address
+    jr      nz,.inlinc            ; If Function Key
+    dec     de                    ;   Back up for autotype
+    ld      (RESPTR),de           ;   Set pointer to buffer
+    jr      .inlinc               ;   and return
 
 ;-----------------------------------------------------------------------------
 ; HOOK12 - OUTDO 
@@ -174,3 +186,28 @@ s3_string_ext:
     cp      $27                   ;                                         
     jp      z,STRNG               ; Do the same for Single Quote           
     jp      stuff_label           ; Otherwise, see if it's a label         
+
+;-----------------------------------------------------------------------------
+; Get Function Key Buffer Address
+; Input: A: Key ASCII Code
+; Output: DE: Buffer Address
+; Flags Set: Z if A = Function key
+; Clobbered: A
+;-----------------------------------------------------------------------------
+fnkey_get_buff_addr:
+    ld      e,a                                             
+    and     $97                   ;            100X0XXX   
+    cp      e
+    ret     nz
+    ld      d,FKEYBASE/512        ; 011??000                
+    rla                           ; 011??000 1 00X0XXX0     
+    ccf                           ; 011??000 0 00X0XXX0   
+    rla                           ; 011??000 0 0X0XXX00   
+    rla                           ; 011??000 0 X0XXX000   
+    rla                           ; 011??000 X 0XXX0000   
+    rl      d                     ; 11??000X 0 0XXX0000   
+    rla                           ; 11??000X 0 XXX00000   
+    ld      e,a
+    xor     a
+    ret
+
