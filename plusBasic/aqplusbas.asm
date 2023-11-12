@@ -23,7 +23,7 @@
     jp      _reset          ; $2000 Called from main ROM at reset vector
     jp      _coldboot       ; $2003 Called from main ROM for cold boot
     jp      _start_cart     ; $2006
-    jp      _interrupt      ; $2009
+    jp      irq_handler     ; $2009 interrupt haandler
     jp      _warm_boot      ; $200C Called from main ROM for warm boot
     jp      _scan_label     ; $200F Called from GOTO and RESTORE
     jp      _keyread        ; $2012 Called from COLORS
@@ -42,6 +42,20 @@
     jp      _inlin_hook     ; $20?? Jump from INLIN for command history recall
     jp      _inlin_done     ; $20?? Jumped from FININL to save command to history
 
+plus_text:
+    db "plusBASIC "
+plus_version:
+    db "v0.18b",0
+plus_len   equ   $ - plus_text
+
+auto_cmd:
+    db      'RUN "'
+auto_text
+    db      "autoexec"
+auto_len = $ - auto_text
+    db      $0D
+auto_desc
+    dw      auto_len,auto_text
 
 ;-----------------------------------------------------------------------------
 ; Reset vector
@@ -79,12 +93,6 @@ _reset:
     ld      a, ESPCMD_RESET
     call    esp_cmd
 
-    ; Install Interrupt Handler
-    ld      a,$C3               ; Jump Instruction
-    ld      (INTJMP),a          ;
-    ld      hl,_interrupt       ; Interrupt Address
-    ld      (INTJMP+1), hl
-
     ; Turn on Keyboard Buffer
     ld      a,KB_ENABLE | KB_ASCII
     call    key_set_keymode
@@ -92,150 +100,85 @@ _reset:
     ; Back to system ROM init
     jp      JMPINI
 
-
 ;-----------------------------------------------------------------------------
 ; Cold boot entry point
 ; Executed on RESET if no cartridge detected
 ;-----------------------------------------------------------------------------
 _coldboot:
 
-    ld      a,BAS_BUFFR
-    out     (IO_BANK3),a
-    call    _clear_bank3        ; Zero out BASIC buffers page
+; Fill BASIC Buffers Page with zeroes from 0 to $2FFF
+; leaving custom character set buffer untouched
+    call    page_map_basbuf
+    ld      hl,$C000
+    ld      bc,CHRSETBUF-1
+    call    sys_fill_zero
 
-    ld      a,ROM_AUX_PG        ; System Auxiliary ROM
-    out     (IO_BANK3),a
-    call    init_screen_buffers
-    call    init_screen_vars
-
-    ld      a,ROM_EXT_PG        ; plusBASIC extended ROM
-    out     (IO_BANK3), a
-
-    call    _clear_basic_ram    ; Init BASIC RAM to zeroes
-
-    ; Set memory size
-    ld      hl, BASIC_RAM_END   ; Top of public RAM
-    ld      (MEMSIZ), hl        ; MEMSIZ, Contains the highest RAM location
-    ld      de, -1024           ; Subtract 1k for strings space
-    add     hl, de
-    ld      (TOPMEM), hl        ; TOPMEM, Top location to be used for stack
-    ld      hl, BASTXT-1
-    ld      (hl), $00           ; NULL at start of BASIC program
-    inc     hl
-    ld      (TXTTAB), hl        ; Beginning of BASIC program text
-    call    SCRTCH              ; ST_NEW2 - NEW without syntax check
-
-    ; Install BASIC HOOK
-    ld      hl,fast_hook_handler
-    ld      (HOOK), hl
-
-    ; Zero out plusBASIC system vars
-    xor     a
-    ld      b,BAS_FDESC-RNDTAB
-    ld      hl,RNDTAB
-.sysvar_loop
-    ld      (hl),a
-    inc     hl
-    djnz    .sysvar_loop
-
-    ; Set Default Interrupt Vector
-    ld      a,$C3               ; Jump Instruction
-    ld      (BASINTJP),a
-    ld      hl,$0025            ; RET in COMPAR
-    ld      (BASINTJP+1), hl
-
-    ld      a,$FF                 ; Set TIMER to stopped
-    ld      (TIMERCNT+2),a
-
-    ; Default direct mode to keyrepeat on
-    ld      a,KB_REPEAT
-    ld      (BASYSCTL),a
-
-    call    clear_bas_fdesc
+    call    page_restore_plus
     call    spritle_clear_all     ; Clear all sprite properties
 
-    call    print_copyright
-
-    call    check_autoexec        ; Check for autoexec file
+    call    page_map_aux
+    jp      do_coldboot
+coldboot_done:    
+    call    page_restore_plus
 
     jp      INITFF                ; Continue in ROM
 
-    dc $2100-$,$76
+;-----------------------------------------------------------------------------
+; Intercept WRMCON call
+;-----------------------------------------------------------------------------
+_warm_boot:
+    ld      a, ROM_EXT_PG         ; Page 1 ROM
+    out     (IO_BANK3), a         ; into Bank 3
+    jp      WRMCON                ; Go back to S3 BASIC
 
-ifdef _____   ; Waiting for modules to stablize
-    org     $2100
-    include "kernel.asm"    ; Kernal jump table
-endif
 
-; Show our copyright message
-print_copyright:
-    call    PRNTIT              ; Print copyright string in ROM
-    call    print_string_immd
-    db $0D, $0A
-.systext:
-    db "Aquarius+ System ", 0
-.syslen = $ - .systext
-    ld      a, ESPCMD_VERSION
-    call    esp_cmd
-    ld      b,.syslen
-.print_version:
-    call    esp_get_byte
+;-----------------------------------------------------------------------------
+; Default Interrupt Handler
+; Save registers, Calls address in BASINTJP
+; Restores registers and re-enables interrupts on return
+;-----------------------------------------------------------------------------
+;;; ToDo: Save stack position, so interrupt can jump back if needed
+irq_handler:
+    push    af
+    ld      a,(IRQACTIVE)
     or      a
-    jr      z, .print_done
-    call    TTYCHR
-    inc     b
-    jr      .print_version
-.print_done:
-    ld      a,38-_plus_len        ; Print spaces to right justify +BASIC text
-    sub     b
-    jr      nc,.space_it
-    call    CRDO
-    jr      .print_basic
-.space_it
-    ld      b,a
-    ld      a,' '
-.space_loop
-    call    TTYCHR
-    djnz    .space_loop
-.print_basic
-    call    print_string_immd
-_plus_text:
-    db "plusBASIC "
-_plus_version:
-    db "v0.18a",0
-_plus_len   equ   $ - _plus_text
-    call    CRDO
-    jp      CRDO
+    jp      z,.stop_irqs
+    push    bc
+    push    de
+    push    hl
 
-; If autorun exists, push RUN "autoexec to key buffer
-; ToDo: make esp functions return error code instead of generating BASIC error
-check_autoexec:
-    call    ctrl_check
-    ret     nz
-    ld      hl,_autodesc
-    call    dos_open_read
-    ret     m
-    call    esp_close_all
-    ld      hl,_autocmd-1
-    ld      (RESPTR),hl
-.nope
-    ret
-_autocmd:
-    db      'RUN "'
-_autotext
-    db      "autoexec"
-_autolen = $ - _autotext
-    db      $0D
-_autodesc
-    dw      _autolen,_autotext
+    call    _timer
+    call    BASINTJP
+    ld      a,IRQ_VBLANK
+    out     (IO_IRQSTAT),a
+    pop     hl
+    pop     de
+    pop     bc
+    pop     af
+    ei
+    reti
 
-; See if control is currently pressed
-ctrl_check:
-    ld      bc,$7FFF              ; Scan column 8
-    in      a,(c)
-    xor     $FF
-    and     $20                   ; Isolate control key
+.stop_irqs
+    out     (IO_IRQMASK)
+    pop     af
+    reti
+
+_timer:
+    call    timer_tick
+    ret     nc
+    ld      a,(BASYSCTL)
+    or      $80
+    ld      (BASYSCTL),a
     ret
+
+    assert !($20FF<$)   ; Overflow into Kernel jump table
+
+;=====================================================================================
+; KERNEL JUMP TABLE GOES HERE
+;=====================================================================================
+    dc $2100-$,$76
+jump_table:
+
 
 ;-----------------------------------------------------------------------------
 ; Issue OV Error if TOPMEM will put stack in Bank 1
@@ -330,31 +273,10 @@ _sounds_hook:
 ;-----------------------------------------------------------------------------
 sys_ver_basic:
     ex      de,hl                 ; DE = BufAdr
-    ld      hl,_plus_version      ; HL = VerAdr
+    ld      hl,plus_version       ; HL = VerAdr
     call    string_copy           ; Copy VerStr to StrBuf
     ex      de,hl                 ; HL = BufAdr
     ret
-
-
-;-----------------------------------------------------------------------------
-; Fill RAM from 0 to $2FFF in Bank 3 with 0
-; Leaves Custom Character set buffer untouched
-; Clobbers: AF, BC, DE, HL
-;-----------------------------------------------------------------------------
-_clear_bank3:
-    xor     a
-    ld      hl,$C000
-    ld      bc,CHRSETBUF-1
-    jr      sys_fill_mem
-
-;-----------------------------------------------------------------------------
-; Fill BASIC RAM with 0
-; Clobbers: AF, BC, DE, HL
-;-----------------------------------------------------------------------------
-_clear_basic_ram:
-    xor     a                   ; Fill with 0
-    ld      hl,$3900            ; From beginning of BASIC RAM
-    ld      bc,$C000-$3900      ; to end of BASIC RAM
 
 ;-----------------------------------------------------------------------------
 ; Fast Fill memory
@@ -363,6 +285,8 @@ _clear_basic_ram:
 ;       HL: Start Address
 ; Clobbers: BC, DE, HL
 ;-----------------------------------------------------------------------------
+sys_fill_zero:
+    xor     a
 sys_fill_mem:
     ld      (hl),a                ; Set first byte
     ld      d,h
@@ -492,36 +416,6 @@ descramble_rom:
     ; Start ROM
     jp      $E010
 
-;-----------------------------------------------------------------------------
-; Default Interrupt Handler
-; Save registers, Calls address in BASINTJP
-; Restores registers and re-enables interrupts on return
-;-----------------------------------------------------------------------------
-;;; ToDo: Save stack position, so interrupt can jump back if needed
-_interrupt:
-    push    af
-    ld      a,(IRQACTIVE)
-    or      a
-    jp      z,.stop_irqs
-    push    bc
-    push    de
-    push    hl
-
-    call    _timer
-    call    BASINTJP
-    ld      a,IRQ_VBLANK
-    out     (IO_IRQSTAT),a
-    pop     hl
-    pop     de
-    pop     bc
-    pop     af
-    ei
-    reti
-
-.stop_irqs
-    out     (IO_IRQMASK)
-    pop     af
-    reti
 
 ;-----------------------------------------------------------------------------
 ; Enable VBLANK Interrupts
@@ -538,21 +432,6 @@ enable_vblank_irq:
     out     (IO_IRQMASK),a        ; Turn on VBLANK interrupts
     ret
 
-_timer:
-    call    timer_tick
-    ret     nc
-    ld      a,(BASYSCTL)
-    or      $80
-    ld      (BASYSCTL),a
-    ret
-
-;-----------------------------------------------------------------------------
-; Intercept WRMCON call
-;-----------------------------------------------------------------------------
-_warm_boot:
-    ld      a, ROM_EXT_PG         ; Page 1 ROM
-    out     (IO_BANK3), a         ; into Bank 3
-    jp      WRMCON                ; Go back to S3 BASIC
 
 
 ;-----------------------------------------------------------------------------
@@ -884,19 +763,10 @@ clear_screen40:
     jr      nz,.line
     ret
 
-clear_screen80:
-    set     7,b
-    push    bc
-    call    .fill80               ; Fill COLOR RAM
-    pop     bc
-    res     7,b
-    ld      a,' '
-.fill80
-    out     (c),b
-    ld      hl,SCREEN
-    ld      bc,2048
-    jp      sys_fill_mem
-
+;-----------------------------------------------------------------------------
+; 80 column screen driver
+;-----------------------------------------------------------------------------
+    include "text80.asm"
 
 ;-----------------------------------------------------------------------------
 ; DOS routines
@@ -1119,6 +989,7 @@ _s3_string_ext
     include "editor.asm"        ; Advanced line editor
     include "s3hooks.asm"       ; S3 BASIC direct mode hooks
     include "screen_aux.asm"    ; Auxiliary
+    include "coldboot.asm"      ; Cold boot code
 
     free_rom_8k = $E000 - $
 

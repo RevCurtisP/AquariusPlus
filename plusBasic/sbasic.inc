@@ -261,7 +261,8 @@ GETINT      equ $1AD0   ; Parse an Integer
 COPY        equ $1B15   ; Execute COPY statement
 TTYCHR:     equ $1D72   ; Print character in A with pause/break at end of page
 TTYOUT:     equ $1D94   ; Print character in A
-TTYFIS:     equ $1DE7   ; Save Column and Position
+TTYFIS:     equ $1DE7   ; Finish up TTYOUT
+TTYSAV      equ $1E3E   ; Save Column and Position
 TTYCLR      equ $1E45   ; Clear screen (EXX before calling)
 SOUNDS      equ $1E64   ; Play frequency DEfor duration BC
 JMPINI:     equ $1FE1   ; Power Up/Reset Routine: Jumped to from RST 0

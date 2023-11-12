@@ -170,8 +170,8 @@ MSGUF:  byte    "Undefined user function",0     ; 18
 MSGMO:  byte    "Missing operand",0             ; 19
 ; Errors from CP/M BASIC                        
 MSGNR:  byte    "No RESUME",0                   ; 20
-MSGRE:  byte    "RESUME without ERROR",0        ; 21
-MSGUE:  byte    "Unprintable error",0           ; 22
+MSGRE:  byte    "RESUME without GOSUB",0        ; 21
+MSGUE:  byte    "Unprintable",0                 ; 22
 MSGLBO: byte    "Line buffer overflow",0        ; 23      
 MSGGS:  byte    "Statement not implemented",0   ; 24
 MSGUL:  byte    "Undefined line label",0        ; 25
@@ -188,7 +188,7 @@ MSGTMF: byte    "Too many files",0              ; 51  -2: Too many open files / 
 MSGIPR: byte    "Invalid parameter",0           ; 52  -3: Invalid parameter                
 MSGRPE: byte    "Input past end",0              ; 53  -4: End of file / directory            
 MSGFAE: byte    "File already exists",0         ; 54  -5: File already exists                
-MSGIOE: byte    "Disk I/O error",0              ; 55  -6: Other error                        
+MSGIOE: byte    "Disk I/O",0                    ; 55  -6: Other error                        
 MSGNOD: byte    "No disk",0                     ; 56  -7: No disk                             
 MSGNEM: byte    "Not empty",0                   ; 57  -8: Not empty                           
         byte    0                               ; 58  Last error used for range checks
