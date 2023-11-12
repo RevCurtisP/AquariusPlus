@@ -202,7 +202,7 @@ print_copyright:
 _plus_text:
     db "plusBASIC "
 _plus_version:
-    db "v0.17v",0
+    db "v0.17w",0
 _plus_len   equ   $ - _plus_text
     call    CRDO
     jp      CRDO
@@ -260,6 +260,9 @@ _ctrl_keys:
     ld      a,c
     or      a
     jp      m,.extended
+
+
+
     xor     a
     cp      b
     jr      nz,.dontscreen        ; and Input Buffer is empty
@@ -336,21 +339,6 @@ _iscntc_hook:
     byte    $3E                   ; LD A,$AF to Enable Turbo Mode
 .turbo_off
     xor     a
-
-;-----------------------------------------------------------------------------
-; Double SOUNDS delay timer if in Turbo Mode
-;-----------------------------------------------------------------------------
-_sounds_hook:
-    in      a,(IO_SYSCTRL)
-    and     SYSCTRL_TURBO
-    jr      z,.not_turbo
-    ld      h,d
-    ld      l,e
-    add     hl,de                 ; HL = DE + DE
-    ex      de,hl                 ; DE = HL
-.not_turbo
-    jp      SOUNDS
-
 ;-----------------------------------------------------------------------------
 ; Enable/Disable Turbo mode
 ; Input: A = Bit 2 set for On, reset for Off
@@ -367,6 +355,24 @@ _turbo_mode
     ret
 
 ;-----------------------------------------------------------------------------
+; Double SOUNDS delay timer if in Turbo Mode
+;-----------------------------------------------------------------------------
+_sounds_hook:
+    in      a,(IO_SYSCTRL)
+    and     SYSCTRL_TURBO
+    jr      z,.not_turbo
+    ld      hl,2
+    add     hl,de
+    add     hl,de                 ; HL = DE + DE
+    ex      de,hl                 ; DE = HL
+.not_turbo
+    ; Normal: 1102 Hz [3.579545 MHz / (149 + 3100) cycles] - Divisor 3249 
+    ; New Turbo: 1105 Hz [7.157090 Mhz / (149 + 6324) cycles] - Divisor 6473
+    ; Old Turbo: 1127 Hz [7.157090 Mhz / (149 + 6200) cycles] - Divisor 6349
+    ; Unmodified: 2203 Hz  [7.157090 Mhz / (149 + 3100) cycles] - Divisor 3249 
+    jp      SOUNDS                ; Total wavelength: 148 + DE * 62 cycles 
+
+;-----------------------------------------------------------------------------
 ; Return BASIC Version
 ; Input: HL: String Buffer address
 ; Output: BC: Version String Length
@@ -381,13 +387,14 @@ sys_ver_basic:
 
 
 ;-----------------------------------------------------------------------------
-; Fill RAM in Bank 3 with 0
+; Fill RAM from 0 to $2FFF in Bank 3 with 0
+; Leaves Custom Character set buffer untouched
 ; Clobbers: AF, BC, DE, HL
 ;-----------------------------------------------------------------------------
 _clear_bank3:
     xor     a
     ld      hl,$C000
-    ld      bc,$4000
+    ld      bc,CHRSETBUF-1
     jr      sys_fill_mem
 
 ;-----------------------------------------------------------------------------

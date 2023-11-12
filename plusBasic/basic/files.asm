@@ -422,8 +422,8 @@ ST_LOAD:
     jr      c,.load_paged
     ld      bc,$FFFF                ; Load up to 64k   
     call    file_load_binary
-    call    esp_close_all
     jp      m,_dos_error
+    call    esp_close_all
     pop     hl                      ; Get Back Text Pointer
     ret
     

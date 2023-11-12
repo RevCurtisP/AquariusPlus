@@ -63,8 +63,10 @@ BORDERCLR   equ $37FF   ; Border color alternate memory location
 BASINTPG    equ $3821   ; BASIC Interrupt Routine Page, 0=None (swapped into BANK 3)
 BASINTJP    equ $3822   ; BASIC Interrupt Routine JP instruction
 BASINTADR   equ $3823   ; BASIC Interrupt Routine JP Address ($3823-$3824)
-BASYSCTL    equ $3825   ; System Control Bits: 2 = Key Repeat, 6 = 80 Column Mode, 7 = Timer Elapsed
+BASYSCTL    equ $3825   ; System Control Bits
+                        ; 2 = Key Repeat, 6 = 80 Column Mode, 7 = Timer Elapsed
 IRQACTIVE   equ $3826   ; Active IRQ Routines Bits
+                        ; 0 = Timer
 TIMERCNT    equ $3827   ; TIMER counter LSB = $3827, MSB = $3829
 ;Used by ON ERROR. Must be in in consecutive order: ERRLIN,ERRFLG,ONEFLG,ONELIN
 ERRLIN      equ $382A   ; LINE NUMBER WHERE LAST ERROR OCCURED.
@@ -152,10 +154,11 @@ GFX_SYSVARS equ $C000   ; Graphics module System Variables (defined in gfx/gfx.a
 STRBUFFLEN  equ $00FF   ; Page Offset: Length of String in Buffer
 STRBUFF     equ $0100   ; Page Offset: String Buffer  - up to 255 chars plus null terminator 
                         ; Must be on 256 byte boundary
+;         $0200-$03FF   ; Unused
 FKEYDEFS    equ $0200   ; Function Key Definitions (32 bytes each)
 FKEYBASE    equ BASBUF_BASE + FKEYDEFS
-;         $0400-$2FFF   ; Unused
-CHRSETBUF   equ $3000   ; Page Offset: Custom Character Set Buffer
+;         $0500-$2FFF   ; Unused
+CHRSETBUF   equ $3800   ; Page Offset: Custom Character Set Buffer
 CHRSETLEN   equ 2048    ; Size of character set ROM
 
 ;-----------------------------------------------------------------------------

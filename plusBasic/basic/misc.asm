@@ -10,19 +10,18 @@
 ; Clobbered: A
 ;-----------------------------------------------------------------------------
 fnkey_get_buff_addr:
-    ld      e,a                   
-    and     $97                   ;            100X0XXX
+    ld      e,a                                             
+    and     $97                   ;            100X0XXX   
     cp      e
     ret     nz
-    ld      d,FKEYBASE/512        ; 011??000
-.nosub
-    rla                           ; 011??000 1 00X0XXX0  
-    ccf                           ; 011??000 0 00X0XXX0
-    rla                           ; 011??000 0 0X0XXX00  
-    rla                           ; 011??000 0 X0XXX000 
+    ld      d,FKEYBASE/512        ; 011??000                
+    rla                           ; 011??000 1 00X0XXX0     
+    ccf                           ; 011??000 0 00X0XXX0   
+    rla                           ; 011??000 0 0X0XXX00   
+    rla                           ; 011??000 0 X0XXX000   
     rla                           ; 011??000 X 0XXX0000   
-    sll     d                     ; 11??000X 0 0XXX0000   
-    rla                           ; 11??000X 0 XXX00000
+    rl      d                     ; 11??000X 0 0XXX0000   
+    rla                           ; 11??000X 0 XXX00000   
     ld      e,a
     xor     a
     ret
@@ -42,8 +41,8 @@ fnkey_write_buffer:
     rla                           ; 011??000 0 00XXXX00
     rla                           ; 011??000 0 0XXXX000
     rla                           ; 011??000 0 XXXX0000
-    rla                           ; 011??000 1 XXX00000
-    sll     d                     ; 11??000X 1 XXX00000   
+    rla                           ; 011??000 X XXX00000
+    rl      d                     ; 11??000X 0 XXX00000   
     ld      e,a                   ; DE = Buffer Address
     ld      a,BAS_BUFFR
     call    page_write_bytes
