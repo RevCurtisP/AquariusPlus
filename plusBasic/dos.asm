@@ -130,6 +130,19 @@ dos_open_file:
     jp      esp_get_result 
 
 ;-----------------------------------------------------------------------------
+; Close file pointed to by descriptor
+; Input: A: file descriptor
+; Output: A: result
+;-----------------------------------------------------------------------------
+dos_close:
+    push    af
+    ld      a, ESPCMD_CLOSE
+    call    esp_cmd
+    pop     af
+    call    esp_send_byte
+    jp      esp_get_result 
+
+;-----------------------------------------------------------------------------
 ; Save binary data from paged memory to file
 ; Input: A: Page
 ;        HL: Filename atring descriptor address

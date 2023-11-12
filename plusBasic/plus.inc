@@ -75,7 +75,7 @@ ONEFLG      equ $382D   ; ONEFLG=1 IF WERE ARE EXECUTING AN ERROR TRAP ROUTINE
 ONELIN      equ $382E   ; THE pointer to the LINE TO GOTO WHEN AN ERROR OCCURS
 ; DOS Variables - These can get overwritten between BASIC file operations
 ; They might also be re-used by other modules
-ESP_FDESC   equ $3830   ; ESP file descriptor to close on Error or Ctrl-C
+BAS_FDESC   equ $3830   ; ESP file descriptor to close on Error or Ctrl-C
 BINPAGE     equ $3831   ; Binary file load/save page
 BINSTART    equ $3832   ; Binary file load/save address
 BINLEN:     equ $3834   ; Binary file load length (32-bits $3838-$383B)
@@ -210,7 +210,7 @@ ESPCMD_CHDIR:      equ $1C     ; Change directory
 ESPCMD_STAT:       equ $1D     ; Get file status
 ESPCMD_GETCWD:     equ $1E     ; Get current working directory
 ESPCMD_CLOSEALL:   equ $1F     ; Close any open file/directory descriptor
-
+ESPCMD_LOADFPGA    equ $40     ; Load FPGA core
 
 ;-----------------------------------------------------------------------------
 ; ESP32 error codes

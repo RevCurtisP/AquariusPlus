@@ -1,6 +1,6 @@
-;-----------------------------------------------------------------------------
+;=====================================================================================
 ; esp.asm - ESP32 routines
-;-----------------------------------------------------------------------------
+;=====================================================================================
 
 ;-----------------------------------------------------------------------------
 ; Issue command to ESP
@@ -26,6 +26,13 @@ esp_cmd:
     jp      esp_send_byte
 
 ;-----------------------------------------------------------------------------
+; Load FPGA Core 
+; Input:  DE: path string address
+;         BC: path string length
+;-----------------------------------------------------------------------------
+esp_load_fpga:
+    ld      a,ESPCMD_LOADFPGA
+;-----------------------------------------------------------------------------
 ; Issue ESP command with string argument
 ; Input:  A: Command
 ;        DE: String Address
@@ -34,7 +41,6 @@ esp_cmd:
 ;        DE: Address of Byte after String
 ;        BC: String Length
 ;-----------------------------------------------------------------------------
-
 esp_cmd_string:
     call    esp_cmd
     call    esp_send_string
@@ -43,7 +49,7 @@ esp_cmd_string:
 ; Get first result byte
 ; Output: A: Result, negativ if error
 ;-----------------------------------------------------------------------------
-esp_get_result :
+esp_get_result:
     call    esp_get_byte
     or      a
     ret
@@ -78,17 +84,6 @@ esp_read_string:
 pop_hl_ret:
     pop     hl
     ret
-
-;-----------------------------------------------------------------------------
-; Close file or directory
-;  Input: A: File descriptor
-; Output: A: Result
-;-----------------------------------------------------------------------------
-esp_close:
-    ld      a, ESPCMD_CLOSE
-    call    esp_cmd
-    call    esp_send_byte
-    jp      esp_get_result 
 
 ;-----------------------------------------------------------------------------
 ; Close all files and directories
@@ -323,7 +318,6 @@ esp_send_strdesc:
 ;         DE: end address+1
 ; Clobbered: A
 ;-----------------------------------------------------------------------------
-
 esp_send_string: 
     call    esp_send_bytes        ; Send Command String  
     xor     a 
@@ -603,57 +597,3 @@ esp_set_keymode:
     or      a
     ret
     
-;-----------------------------------------------------------------------------
-; esp_error
-;-----------------------------------------------------------------------------
-esp_error:
-    push    af
-    call    page_restore_plus     ; In case of paged LOAD or SAVE
-    pop     af
-    
-    neg
-    dec     a
-    cp      -ERR_WRITE_PROTECT
-    jr      c, .ok
-    ld      a, -ERR_OTHER - 1
-
-.ok:
-    ld      hl, .error_msgs
-    add     a,a
-    add     l
-    ld      l, a
-    ld      a, h
-    adc     a, 0
-    ld      h, a
-    ld      a, (hl)
-    inc     hl
-    ld      h, (hl)
-    ld      l, a
-
-    ; Print error message
-    ld      a, '?'
-    rst     OUTCHR
-    jp      ERRFN1
-
-.error_msgs:
-    dw .msg_err_not_found     ; -1: File / directory not found
-    dw .msg_err_too_many_open ; -2: Too many open files / directories
-    dw .msg_err_param         ; -3: Invalid parameter
-    dw .msg_err_eof           ; -4: End of file / directory
-    dw .msg_err_exists        ; -5: File already exists
-    dw .msg_err_other         ; -6: Other error
-    dw .msg_err_no_disk       ; -7: No disk
-    dw .msg_err_not_empty     ; -8: Not empty
-    dw .msg_err_write_protect ; -9: Write protected
-
-.msg_err_not_found:     db "Not found",0
-.msg_err_too_many_open: db "Too many open",0
-.msg_err_param:         db "Invalid param",0
-.msg_err_eof:           db "EOF",0
-.msg_err_exists:        db "Already exists",0
-.msg_err_other:         db "Unknown error",0
-.msg_err_no_disk:       db "No disk",0
-.msg_err_not_empty:     db "Not empty",0
-.msg_err_write_protect  db "Write protected",0
-
-

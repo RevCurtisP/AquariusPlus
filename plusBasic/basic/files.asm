@@ -720,7 +720,7 @@ run_file:
     call    string_addr_len       ; Get String Length in BC, Address in DE
     ld      a, c                  ; A = String Length
     cp      a, 5                  ; If less thsn 5
-    jr      c, .load_basic        ; Too short to ha3ve ROM extension
+    jr      c, .load_basic        ; Too short to have ROM extension
     sub     a, 4                  ; Position of last four characters of String
     ld      c, a
     ex      de,hl                 ; HL = String Address
@@ -728,9 +728,18 @@ run_file:
     ex      de,hl                 ; DE = String Address
     ld      hl,.romext            ; HL = ".ROM"
     ld      b,4                   ; Comparing 4 bytes
+    push    de
     call    string_cmp_upper      ; Compare Them
-    pop     hl                    ; Get String Descriptor
+    pop     de
+    pop     hl
     jr      z,.load_rom
+    push    hl
+    dec     de
+    ld      hl,.coreext
+    ld      b,5
+    call    string_cmp_upper      ; Compare Them
+    pop     hl
+    jr      z,.load_core
 
 .load_basic:
     call    clear_all_errvars     ; Clear ON ERROR sytem variables
@@ -743,6 +752,12 @@ run_file:
     call    dos_load_rom
     jp      _dos_error
 
+.load_core:
+    call    string_addr_len
+    call    esp_load_fpga
+    jp      _dos_error
+
+.coreext db ".CORE",0
 .romext: db ".ROM",0
 
 ;-----------------------------------------------------------------------------

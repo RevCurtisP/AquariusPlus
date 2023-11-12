@@ -131,7 +131,7 @@ _coldboot:
 
     ; Zero out plusBASIC system vars
     xor     a
-    ld      b,ESP_FDESC-RNDTAB
+    ld      b,BAS_FDESC-RNDTAB
     ld      hl,RNDTAB
 .sysvar_loop
     ld      (hl),a
@@ -151,7 +151,7 @@ _coldboot:
     ld      a,KB_REPEAT
     ld      (BASYSCTL),a
 
-    call    clear_esp_fdesc
+    call    clear_bas_fdesc
     call    spritle_clear_all     ; Clear all sprite properties
 
     call    print_copyright
@@ -202,7 +202,7 @@ print_copyright:
 _plus_text:
     db "plusBASIC "
 _plus_version:
-    db "v0.18",0
+    db "v0.18a",0
 _plus_len   equ   $ - _plus_text
     call    CRDO
     jp      CRDO
@@ -215,7 +215,7 @@ check_autoexec:
     ld      hl,_autodesc
     call    dos_open_read
     ret     m
-    call    esp_close
+    call    esp_close_all
     ld      hl,_autocmd-1
     ld      (RESPTR),hl
 .nope
@@ -582,17 +582,17 @@ direct_mode:
     jp      HOOK2+1
 
 ; To clean up after aborted DOS command after allowing multiple files open
-    ld      a,(ESP_FDESC)         ; Get File Descriptor in Use
-    or      a
-    jp      m,.no_fdesc           ; If Valid Descriptor
-    call    esp_close             ;   Close the File
-    call    clear_esp_fdesc       ;
+    ld      a,(BAS_FDESC)         ; Get File Descriptor in Use
+    or      a                     ; If Valid Descriptor
+    call    m,close_bas_fdesc     ;   Close file and clear saved Descriptofr
 .no_fdesc
     jp      HOOK2+1
 
-clear_esp_fdesc:
+close_bas_fdesc:
+    call    dos_close             ;   Close the File
+clear_bas_fdesc:
     ld      a,128
-    ld      (ESP_FDESC),a         ; Set to No File
+    ld      (BAS_FDESC),a         ; Set to No File
     ret
 
 text_screen:
