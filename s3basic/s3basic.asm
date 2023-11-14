@@ -19,7 +19,6 @@
 ;
 ifdef aqplus                
 noreskeys   equ   1               ;; |
-addkeyrows  equ   1               ;; |
 endif
 
 ;BASIC Constants
@@ -50,7 +49,8 @@ LPTPOS  equ     $3846   ;[M80] POSITION OF LPT PRINT HEAD
 PRTFLG  equ     $3847   ;[M80] WHETHER OUTPUT GOES TO LPT
 LINLEN  equ     $3848   ;;Length of a Screen Line
 CLMLST  equ     $3849   ;[M80] POSITION OF LAST COMMA COLUMN
-RUBSW   equ     $384A   ;[M80] RUBOUT SWITCH =1 INSIDE THE PROCESSING OF A RUBOUT (INLIN)
+SCOLOR  equ     $384A   ;;; Screen Colors for TTYCHR
+RUBSW   equ     SCOLOR  ;;; So deprecated code assembles
 TOPMEM  equ     $384B   ;[M80] TOP LOCATION TO USE FOR THE STACK INITIALLY SET UP BY INIT
                         ;[M80] ACCORDING TO MEMORY SIZE TO ALLOW FOR 50 BYTES OF STRING SPACE.
                         ;[M80] CHANGED BY A CLEAR COMMAND WITH AN ARGUMENT.
@@ -134,6 +134,8 @@ STFLBL  equ     $202A   ;; | Don't tokenize label at beginning of Line (STFLBL)
 SKPLOG  equ     $2030   ;; | Skip Label in ON GOTO/GOSUB
 STRNGX  equ     $2033   ;; | Don't capitalize letters between single quotes
 SOUNDX  equ     $2036   ;; | Adjust SOUNDS delay counter in turbo mode
+TTYMOX  equ     $2039   ;; | TTYMOV extension
+SCROLX  equ     $203C   ;; | SCROLL extension
 endif                   
 EXTBAS  equ     $2000   ;;Start of Extended Basic
 XSTART  equ     $2010   ;;Extended BASIC Startup Routine
@@ -2449,11 +2451,14 @@ INLINU: call    CRDO              ;[M80] TYPE A CRLF
 INLIN:  ld      hl,BUF            ;
         ld      b,1               ;[M80] CHARACTER COUNT
         xor     a                 ;[M80] CLEAR TYPE AHEAD CHAR
-        ld      (RUBSW),a         ;[M80] LIKE SO
+;;;Code change: RUBSW no longer used
+        nop                                                                   ;       ld      (RUBSW),a
+        nop
+        nop
 INLINC: call    INCHR             ;[M80] GET A CHAR
 INLNC1: ld      c,a               ;[M80] SAVE CURRENT CHAR IN [C]
-;;;Code Change: Aquarius+ character set switch
 ifdef aqplus
+;;;Code Change: Aquarius+ extended Ctrl-keys
         jp      XFUNKY            ;;Check for Extended Ctrl-Keys              ; 0D92  cp      127 
                                                                               ; 0D93    
                                                                               ; 0D94  jr      z,RUBOUT          
@@ -5175,7 +5180,12 @@ LF:     ld      de,SCREEN+960     ;
         add     hl,de             ;;Add 40 to Move Down One Line
         ld      (CURRAM),hl       ;;Save New Screen Position
         jr      TTYFIN            ;
-LFS:    call    SCROLL            ;;Scroll Up and Keep Screen Position
+LFS:    
+ifdef aqplus
+        call    SCROLX
+else
+        call    SCROLL            ;;Scroll Up and Keep Screen Position
+endif
         jr      TTYFIN            ;
 ;;Back Space: Move Cursor Left and Delete Character
 BS:     ld      a,(TTYPOS)        ;
@@ -5224,8 +5234,13 @@ else
 endif
         jr      TTYXPR            ;;Restore Registers and return
 ;;Move Cursor one character to the right
-TTYMOV: ld      hl,(CURRAM)       ;
-        ld      a,(TTYPOS)        ;
+TTYMOV: 
+ifdef aqplus
+        call    TTYMOX
+else
+        ld      hl,(CURRAM)       ;
+endif
+TTYMOP: ld      a,(TTYPOS)        ; 
         inc     hl                ;;Increment Position in Memory
         inc     a                 ;;Increment Cursor Column
         cp      38                ;;Less than 39?
@@ -5238,7 +5253,11 @@ TTYMOV: ld      hl,(CURRAM)       ;
         jr      c,TTYSAV          ;;No, Save Position and Column
         ld      hl,033C1H         ;;Yes, Position = Row 24, Column 0
         call    TTYSAV            ;Save Position and Column
+ifdef aqplus
+        jp      SCROLX
+else
         jp      SCROLL            ;Scroll Screen
+endif
 ;;Update Current Screen Position and Cursor Column
 TTYSAV: ld      (CURRAM),hl       ;;Position in Screen RAM
         ld      (TTYPOS),a        ;;Cursor Column

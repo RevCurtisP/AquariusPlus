@@ -51,22 +51,22 @@ ttychr80pop:
     pop     af
 ttychr80:
     push    af                    ; Save character
-    cp      10                    ;[M80] LINE FEED?
+    cp      10                    ; If LineFeed
     jr      z,_islf
     ld      a,(TTYPOS)
-    or      a                     ; At beginning of line?
-    jr      nz,_islf              ; No, skip line counter check
-    ld      a,(CNTOFL)
-    or      a                     ; Is line Counter 0?
-    jr      z,_islf               ; Then no pauses
-    dec     a
-    ld      (CNTOFL),a            ; Decrement Line Counter
-    jr      nz,_islf              ; Not 0, don't pause
-    ld      a,23
-    ld      (CNTOFL),a            ; Reset line counter
-    call    TRYIN                 ; Wait for character from keyboard
+    or      a                     ;   At beginning of line?
+    jr      nz,_islf              ;   No, skip line counter check
+    ld      a,(CNTOFL)  
+    or      a                     ;   Is line Counter 0?
+    jr      z,_islf               ;   Then no pauses
+    dec     a 
+    ld      (CNTOFL),a            ;   Decrement Line Counter
+    jr      nz,_islf              ;   Not 0, don't pause
+    ld      a,23  
+    ld      (CNTOFL),a            ;   Reset line counter
+    call    TRYIN                 ;   Wait for character from keyboard
 _islf:
-    pop     af                    ; Retrieve Character
+    pop     af                    ; Restore Character
 ;-----------------------------------------------------------------------------
 ; Print character to 80 column screen
 ; Input: A: Character to print
@@ -159,6 +159,25 @@ _lf:
 
 ; Scroll Screen Up one Line
 scroll80:
+    push    af
+    ld      a,(BASYSCTL)
+    rra     
+    jr      nc,.nocolor
+    in      a,(IO_VCTRL)
+    set     7,a                   ; Select COLOR RAM
+    out     (IO_VCTRL),a          ; Select Screen RAM
+    push    af
+    ld      a,(SCOLOR)            ; Get screen color
+    call    .scroll
+    pop     af
+    res     7,a
+    out     (IO_VCTRL),a          ; Select Screen RAM
+.nocolor
+    ld      a,' '
+    call    .scroll
+    pop     af
+    ret   
+.scroll    
     ld      bc,1920               ; Move 23 * 80 bytes
     ld      de,SCREEN+80          ; To Row 1 Column 0
     ld      hl,SCREEN+160         ; From Row 2 Column 1
@@ -166,18 +185,37 @@ scroll80:
     ld      b,80                  ; Loop 80 Times
     ld      hl,SCREEN+1921        ; Starting at Row 23, Column 0
 .loop
-    ld      (hl),' '              ; Put Space
+    ld      (hl),a                ; Put Space
     inc     hl                    ; Next Column
     djnz    .loop                 ; Do it again
     ret
 
 _ttyclr:
+    ld      a,(BASYSCTL)
+    rra     
+    jr      nc,.default
+    ld      a,(SCOLOR)
+    byte    $01
+.default
+    ld      a,6                   ; default to black on cyan
     call    cls80                 ; Clear Screen
     ld      de,$7F                ; Display Cursor
     jr      _exx_pop_ret
 
 ttymove80:
-    ld      hl,(CURRAM)
+    ld      a,(BASYSCTL)
+    rra     
+    jr      nc,.nocolor
+    in      a,(IO_VCTRL)
+    set     7,a                   ; Select COLOR RAM
+    out     (IO_VCTRL),a          ; Select Screen RAM
+    push    af
+    ld      a,(SCOLOR)            ; Get screen color
+    ld      (hl),a                ; Write to color RAM
+    pop     af
+    res     7,a
+    out     (IO_VCTRL),a          ; Select Screen RAM
+.nocolor
     ld      a,(TTYPOS)
     inc     hl                    ;Increment Position in Memory
     inc     a                     ;Increment Cursor Column
@@ -192,6 +230,8 @@ ttymove80:
     ld      hl,SCREEN+1921        ;Yes, Position = Row 24, Column 0
     call    TTYSAV                ;Save Position and Column
     jp      scroll80              ;Scroll Screen
+
+
 
 move_cursor:
     push    af
@@ -230,7 +270,6 @@ move_cursor:
     add     hl, de              ; Putting it all together
     ex      af,af'
     jp      TTYFIS              ; Save cursor position and return
-
 
 set_linlen:
     in      a,(IO_VCTRL)
