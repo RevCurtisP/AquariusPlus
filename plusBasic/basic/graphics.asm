@@ -20,6 +20,31 @@ ST_USECHR:
     ret
 
 ;-----------------------------------------------------------------------------
+; SET COLOR statement
+; syntax: SET COLOR foreground, background
+;-----------------------------------------------------------------------------
+ST_SETCOLOR:
+    rst     CHRGET                ; Skip CHR
+    rst     SYNCHR                ; Require OR
+    byte    ORTK
+    cp      XTOKEN
+    jr      z,.extended
+    call    get_color_args
+    ld      (SCOLOR),a
+    ld      a,(BASYSCTL)
+    or      a,$01
+    jr      .done
+.extended
+    rst     CHRGET                ; Skip XTOKEN
+    rst     SYNCHR                ; Require OFF
+    byte    OFFTK
+    ld      a,(BASYSCTL)
+    and     $FE
+.done
+    ld      (BASYSCTL),a
+    ret
+
+;-----------------------------------------------------------------------------
 ; SET PALETTE statement
 ; syntax: SET PALETTE palette# [, index] TO rgblist$
 ;-----------------------------------------------------------------------------

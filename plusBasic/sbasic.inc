@@ -40,7 +40,7 @@ LPTPOS:     equ $3846   ; [M80] POSITION OF LPT PRINT HEAD
 PRTFLG:     equ $3847   ; [M80] WHETHER OUTPUT GOES TO LPT
 LINLEN:     equ $3848   ; Length of a Screen Line
 CLMLST:     equ $3849   ;
-RUBSW:      equ $384A   ; [M80] RUBOUT SWITCH =1 INSIDE THE PROCESSING OF A RUBOUT (INLIN)
+SCOLOR      equ $384A   ; Screen colors for TTYOUT
 TOPMEM:     equ $384B   ; [M80] TOP LOCATION TO USE FOR THE STACK INITIALLY SET UP BY INIT
                         ; [M80] ACCORDING TO MEMORY SIZE TO ALLOW FOR 50 BYTES OF STRING SPACE.
                         ; [M80] CHANGED BY A CLEAR COMMAND WITH AN ARGUMENT.
@@ -262,6 +262,9 @@ TTYCH:      equ $1D74   ; Print character, bypassing Hook 19
 TTYCHP      equ $1D75   ; Enter TTYCH after PUSH AF
 TTYOUT:     equ $1D94   ; Print character in A
 TTYFIS:     equ $1DE7   ; Finish up TTYOUT
+SCROLL      equ $1DFE   ; Scroll screen up one line
+TTYMOV      equ $1E1F   ; Move Cursor one character to the right
+TTYMOP      equ $1E22   ; Enter TTYMOV after LD HL,(CURRAM)
 TTYSAV      equ $1E3E   ; Save Column and Position
 TTYCLR      equ $1E45   ; Clear screen (EXX before calling)
 SOUNDS      equ $1E64   ; Play frequency DEfor duration BC

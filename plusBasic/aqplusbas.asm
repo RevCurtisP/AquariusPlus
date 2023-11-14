@@ -31,7 +31,7 @@
     jp      _iscntc_hook    ; $2018
     jp      _main_ext       ; $201B Save Line# Flag`
     jp      _stuffh_ext     ; $201E Check for additional tokens when stuffing
-    jp      do_cls_default  ; $2021 Clear both text screens
+    jp      clear_default   ; $2021 Clear both text screens
     jp      _check_topmem   ; $2024 Verify TOPMEM is in Bank 2
     jp      _ptrget_hook    ; $2027 Allow _Alphanumunder sftar var name
     jp      _stuff_label    ; $202A Don't tokenize label at beginning of Line (STFLBL)
@@ -39,13 +39,15 @@
     jp      _skip_on_label  ; $2030 Skip label in ON GOTO
     jp      _s3_string_ext  ; $2033 Don't capitalize letters between single quotes (STRNGX)
     jp      _sounds_hook    ; $2036 Adjust SOUNDS for turbo mode
+    jp      _ttymove_hook   ; $2039 TTYMOV extension - set screen colors if SYSCTRL bit set
+    jp      _scroll_hook    ; $203C SCROLL extension - scroll color memory if SYSCTRL bit set
     jp      _inlin_hook     ; $20?? Jump from INLIN for command history recall
     jp      _inlin_done     ; $20?? Jumped from FININL to save command to history
 
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.18e",0
+    db "v0.18f",0
 plus_len   equ   $ - plus_text
 
 auto_cmd:
@@ -137,7 +139,7 @@ _warm_boot:
 ; Save registers, Calls address in BASINTJP
 ; Restores registers and re-enables interrupts on return
 ;-----------------------------------------------------------------------------
-;;; ToDo: Save stack position, so interrupt can jump back if needed
+; ; ToDo: Save stack position, so interrupt can jump back if needed
 irq_handler:
     push    af
     ld      a,(IRQACTIVE)
@@ -177,8 +179,8 @@ _timer:
 ; KERNEL JUMP TABLE GOES HERE
 ;=====================================================================================
     dc $2100-$,$76
-jump_table:
 
+    include "kernel.asm"
 
 ;-----------------------------------------------------------------------------
 ; Issue OV Error if TOPMEM will put stack in Bank 1
@@ -705,14 +707,19 @@ bas_read_to_buff:
 jump_ix:
     jp      (ix)                  ; Execute routine and return
 
-do_cls_default:
+do_cls:
+    ld      a,(BASYSCTL)
+    rra     
+    jr      nc,clear_default
+    ld      a,(SCOLOR)
+    jr      clear_home
+clear_default:
     ld      a,6                   ; default to black on cyan
-
 ;-----------------------------------------------------------------------------
 ; Clear Screen and init cursor
 ; Input: A: Color Attributes
 ;-----------------------------------------------------------------------------
-do_cls:
+clear_home:
 ;-----------------------------------------------------------------------------
 ; Clear Screen
 ; Input: A: Color Attributes
@@ -754,12 +761,53 @@ clear_screen40:
 
 _ttychr_hook:
     push    af
+    cp      11
+    jr      nz,.not_cls
+    ld      a,(BASYSCTL)
+    and     $FE
+    ld      (BASYSCTL),a
+.not_cls
     in      a,(IO_VCTRL)
     and     VCRTL_80COL_EN
     jp      nz,ttychr80pop
     pop     af
     jp      TTYCH
     
+_ttymove_hook:
+    ld      hl,(CURRAM)
+    ld      a,(BASYSCTL)
+    rra     
+    ret     nc
+    ld      a,(SCOLOR)            ; Get screen color
+    set     2,h
+    ld      (hl),a                ; Write to color RAM
+    res     2,h
+    ret     
+
+_scroll_hook:
+    push    af
+    ld      a,(BASYSCTL)
+    rra     
+    jr      nc,.nocolor
+    ld      bc,920                ; Move 23 * 40 bytes
+    ld      de,COLOR+40           ; To Row 1 Column 0
+    ld      hl,COLOR+80           ; From Row 2 Column 1
+    ldir                          ;
+    ld      a,(SCOLOR)
+    ld      b,40                  ; Loop 40 Times
+    ld      hl,COLOR+961          ; Starting at Row 23, Column 0
+.loop:      
+    ld      (hl),a                ; Put Space
+    inc     hl                    ; Next Column
+    djnz    .loop                 ; Do it again
+.nocolor
+    pop     af
+    jp      SCROLL
+    
+
+; poke $384A,$70:poke $3825,5
+
+
 ;-----------------------------------------------------------------------------
 ; 80 column screen driver
 ;-----------------------------------------------------------------------------
@@ -807,8 +855,8 @@ free_rom_2k = hook_table - $
 ;  Hook Jump Table
 ; ------------------------------------------------------------------------------
 
-    assert !($2DFF<$)   ; ROM full!
-    dc $2E00-$,$76
+    assert !($2EFF<$)   ; ROM full!
+    dc $2F00-$,$76
 
 ; BASIC Hook Jump Table
 ; 58 Bytes
@@ -922,19 +970,14 @@ _s3_string_ext
     jp      s3_string_ext
 
 ;-----------------------------------------------------------------------------
-; Keyboard Decode Tables for S3 BASIC with Extended Keyboard Support
-; $2F00 - $2FFF
+; Pad ROM
 ;-----------------------------------------------------------------------------
-
-    assert !($2EFF<$)   ; ROM full!
-    dc $2F00-$,$76
-
-    include "keytable.asm"
+    assert !($2FFF<$)   ; ROM full!
+    dc $3000-$,$76
 
 ;-----------------------------------------------------------------------------
 ; Verify ROM is correct length
 ;-----------------------------------------------------------------------------
-
     assert !($3000<>$)   ; Incorrect ROM! length
 
 ;-----------------------------------------------------------------------------

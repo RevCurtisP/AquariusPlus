@@ -318,6 +318,8 @@ ST_SET:
     jp      z,ST_SET_TILE
     cp      FNTK      
     jr      z,ST_SETFNKEY
+    cp      COLTK      
+    jp      z,ST_SETCOLOR
     rst     SYNCHR                ; Must be extended Token
     byte    XTOKEN
     cp      SPRITK

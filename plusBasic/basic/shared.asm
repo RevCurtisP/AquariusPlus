@@ -134,6 +134,24 @@ TOERR:
 
 
 ;-----------------------------------------------------------------------------
+; Parse foreground and background color arguments
+; Output: A: Screen memory byte value
+;-----------------------------------------------------------------------------
+get_color_args:
+    call    get_byte16            ; get foreground color
+    push    af                    ; save it
+    SYNCHK  ','                   ; require commae
+    call    get_byte16            ; get background color
+    pop     af                    ; get back foreground color
+    or      a                     ; clear carry
+    rla       
+    rla       
+    rla       
+    rla                           ; shift to high nybble
+    or      e                     ; combine background color
+    ret
+
+;-----------------------------------------------------------------------------
 ; Require comma, then parse integer
 ;-----------------------------------------------------------------------------
 get_comma:

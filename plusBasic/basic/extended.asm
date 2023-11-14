@@ -8,19 +8,9 @@
 ;-----------------------------------------------------------------------------
 
 ST_CLS:
-    jp      z,do_cls_default      ; no parameters, use default
-    call    get_byte16             ; get foreground color
-    push    af                    ; save it
-    SYNCHK  ','                   ; require commae
-    call    get_byte16             ; get background color
-    pop     af                    ; get back foreground color
-    or      a                     ; clear carry
-    rla       
-    rla       
-    rla       
-    rla                           ; shift to high nybble
-    or      e                     ; combine background color
-    jp      do_cls                ; Clear screen and homecursor
+    jp      z,do_cls              ; No parameters, use default
+    call    get_color_args        ; Pares foreground and background colors
+    jp      clear_home            ; Clear screen and homecursor
 
 ;-----------------------------------------------------------------------------
 ; DEF statement stub
