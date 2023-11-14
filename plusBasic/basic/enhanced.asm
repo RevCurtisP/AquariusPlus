@@ -135,12 +135,14 @@ ST_COPY:
 ; Enhanced POKE
 ; syntax: POKE address, byte
 ;         POKE address, string$
-;         POKEINT address, word
 ;         POKE @page, address, byte
 ;         POKE @page, address, string$
-;         POKEINT @page, address, word
 ;-----------------------------------------------------------------------------
 ST_POKE:
+    cp      SCRNTK
+    jr      z,.poke_screen
+    cp      COLTK
+    jr      z,.poke_color
     call    parse_page_arg        ; Parse page
     push    af                    ; Stack = Page, RtnAdr
     call    GETINT                ; Parse Address
@@ -187,6 +189,49 @@ ST_POKE:
     pop     hl
     ret
 
+.poke_screen
+    rst     CHRGET                ; Skip SCREEN
+    jp      GSERR
+    call    GETINT                ; Get Address
+    SYNCHK  ','                   ; Require comma
+    call    FRMEVL                ; Evaluate argumenr
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    call    GETYPE                ; If String
+    jr      z,.screenstring       ;   Poke It
+
+.screenstring
+    jp      GSERR
+
+
+.poke_color
+    rst     CHRGET                ; Skip COL
+    rst     SYNCHR
+    byte    ORTK
+    jp      GSERR
+
+
+.get_screen_addr
+    call    GETINT                ;
+    push    hl
+    ex      de,hl                 ; HL = Address
+    ld      de,1024
+    in      a,(IO_VCTRL)            
+    and     VCRTL_80COL_EN        
+    jr      z,.not80  
+    sla     d                     ; DE = Max +  1  
+.not80
+    rst     COMPAR                ; If Addr > Max
+    jp      nc,FCERR              ;   Error
+    add     hl,bc                 ; HL = Base + Address
+    pop     hl
+    ret
+
+
+;-----------------------------------------------------------------------------
+; DOKE
+; syntax: DOKE address, word
+;         DOKE @page, address, word
+;-----------------------------------------------------------------------------
 ST_DOKE:
     call    parse_page_arg        ; Parse page
     push    af                    ; Save it
@@ -227,13 +272,16 @@ check_paged_address:
 ;-----------------------------------------------------------------------------
 ; Enhanced PEEK
 ; syntax: PEEK(address)
-;         PEEKINT(address)
 ;         PEEK(@page, address)
-;         PEEKINT(@page, address)
+;         PEEK$(address, length)
+;         PEEK$(@page, address, length)
 ;-----------------------------------------------------------------------------
-;ToDo: Add PEEK$
 FN_PEEK:
     rst     CHRGET                ; Skip token
+    cp      SCRNTK
+    jr      z,.peek_screen
+    cp      COLTK
+    jr      z,.peek_color
     cp      '$'                   ; If followed by dollar sign
     jr      z,.peekstring         ;   Do PEEK$()
     SYNCHK  '('                   ; Require open paren
@@ -289,6 +337,22 @@ FN_PEEK:
 .do_putnew
     jp      PUTNEW                ; Return the Temporary String
 
+.peek_screen
+    rst     CHRGET                ; Skip SCREEN
+    jp      GSERR
+
+.peek_color
+    rst     CHRGET                ; Skip COL
+    rst     SYNCHR                ; Require OR
+    byte    ORTK                    
+    jp      GSERR
+
+
+;-----------------------------------------------------------------------------
+; DEEK
+; syntax: DEEK(address)
+;         DEEK(@page, address)
+;-----------------------------------------------------------------------------
 FN_DEEK:
     rst     CHRGET                ; Skip DEEK
     SYNCHK  '('                   ; Require open paren

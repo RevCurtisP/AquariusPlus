@@ -71,6 +71,12 @@ ST_SCREEN:
     or      a                     ; If token
     jp      m,.is_token           ;   Process it
     
+    push    hl
+    ld      a,BUFSCRN40           ; Save current text screen to buffer
+    ld      hl,SCRN40BUF
+    call    screen_save           
+    pop     hl
+
     in      a,(IO_VCTRL)
     ld      c,a                   ; C = Current VCTRL
 
@@ -95,7 +101,13 @@ ST_SCREEN:
     ld      a,c
     out     (IO_VCTRL),a          ; Write back out
 
-    jp      set_linlen_a          ; Set TTYWID to screen columns and return
+    push    hl
+    ld      a,BUFSCRN40           ; Restore current text screen from buffer
+    ld      hl,SCRN40BUF
+    call    screen_restore        ; 
+    pop     hl
+
+    jp      set_linlen            ; Set TTYWID to screen columns and return
 
 .is_token
     cp      SAVETK                ; If SAVE
@@ -103,7 +115,7 @@ ST_SCREEN:
     cp      RESTK                 ; If RESTORE
     jr      z,ST_SCREEN_RESTORE   ;   Do SCREEN RESTORE
     cp      SWAPTK                ; If RESTORE
-    jr      z,ST_SCREEN_SWAP      ;   Do SCREEN RESTORE
+    jr      z,ST_SCREEN_SWAP      ;   Do SCREEN SWAP
     rst     SYNCHR
     byte    XTOKEN                ; Else
     rst     SYNCHR                ;  Require RESET
