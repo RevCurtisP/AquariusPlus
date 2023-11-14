@@ -107,8 +107,6 @@ SAVSTK:     equ $38F9   ; [M80] NEWSTT SAVES STACK HERE BEFORE SO THAT ERROR REV
                         ; [M80] CAN DATPTR THE STACK WHEN AN ERROR OCCURS
 INTJMP  equ     $38FB   ; RST 7 Interrupt JMP (3 bytes)
 LPTWID  equ     $38FE   ; Printer width in columns
-TTYWID  equ     $38FF   ;;Screen width in columns - single byte but can be read as integer.
-;               $3900   ; This is always 0
 BASTXT:     equ $3901   ; Start of Basic Program
 
 ;-----------------------------------------------------------------------------
