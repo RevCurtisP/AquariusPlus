@@ -260,6 +260,8 @@ BITTAB      equ $1ACA   ; Semigraphic Pixel Index to Bit Mask Table
 GETINT      equ $1AD0   ; Parse an Integer
 COPY        equ $1B15   ; Execute COPY statement
 TTYCHR:     equ $1D72   ; Print character in A with pause/break at end of page
+TTYCH:      equ $1D74   ; Print character, bypassing Hook 19
+TTYCHP      equ $1D75   ; Enter TTYCH after PUSH AF
 TTYOUT:     equ $1D94   ; Print character in A
 TTYFIS:     equ $1DE7   ; Finish up TTYOUT
 TTYSAV      equ $1E3E   ; Save Column and Position

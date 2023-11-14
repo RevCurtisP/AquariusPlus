@@ -45,7 +45,7 @@
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.18b",0
+    db "v0.18c",0
 plus_len   equ   $ - plus_text
 
 auto_cmd:
@@ -201,7 +201,7 @@ _ctrl_keys:
     jr      c,.is_ctrl            ; If >= ' ' and and < DEL
     cp      $7F                     
     jp      c,GOODCH              ;    Stuff in Input Buffer
-.is_ctrl
+.is_ctrl    
     call    page_map_aux
     jp      s3_ctrl_keys
 
@@ -486,17 +486,6 @@ reset_screen:
     out     (IO_VCTRL),a
     call    reset_palette
 
-set_ttywid:
-    in      a,(IO_VCTRL)
-set_ttywid_a:
-    and     VCRTL_80COL_EN
-    ld      a,40                  ; A = 40
-    jr      z,.not80              ; If 80 column bitset
-    rla                           ;   A = 80
-.not80
-    ld      (TTYWID),a            ; Save it
-    ret
-
 reset_palette:
     ld      hl, .default_palette
     ld      c, IO_VPALSEL
@@ -734,7 +723,7 @@ do_cls:
 _init_cursor
     ld      a,' '
     ld      (CURCHR),a            ; SPACE under cursor
-    ld      de,(TTYWID)
+    ld      de,(LINLEN)
     inc     de
     ld      d,high(SCREEN)
     ld      (CURRAM),de
@@ -763,6 +752,14 @@ clear_screen40:
     jr      nz,.line
     ret
 
+_ttychr_hook:
+    push    af
+    in      a,(IO_VCTRL)
+    and     VCRTL_80COL_EN
+    jp      nz,ttychr80pop
+    pop     af
+    jp      TTYCH
+    
 ;-----------------------------------------------------------------------------
 ; 80 column screen driver
 ;-----------------------------------------------------------------------------
@@ -835,7 +832,7 @@ hook_table:                     ; ## caller   addr  performing function
     dw      HOOK16+1            ; 16 FNDOER   0B40  FNxx() call
     dw      HOOK17+1            ; 17 LPTOUT   1AE8  Print Character to Printer
     dw      read_key            ; 18 INCHRH   1E7E  Read Character from Keyboard
-    dw      HOOK19+1            ; 19 TTYCHR   1D72  Print Character to Screen
+    dw      _ttychr_hook        ; 19 TTYCHR   1D72  Print Character to Screen
     dw      HOOK20+1            ; 20 CLOAD    1C2C  Load File from Tape
     dw      HOOK21+1            ; 21 CSAVE    1C09  Save File to Tape
     dw      token_to_keyword    ; 22 LISPRT   0598  expanding a token

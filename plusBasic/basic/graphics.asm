@@ -95,7 +95,7 @@ ST_SCREEN:
     ld      a,c
     out     (IO_VCTRL),a          ; Write back out
 
-    jp      set_ttywid_a          ; Set TTYWID to screen columns and return
+    jp      set_linlen_a          ; Set TTYWID to screen columns and return
 
 .is_token
     cp      SAVETK                ; If SAVE

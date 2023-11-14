@@ -161,7 +161,7 @@ screen_put:
     dec     a                     ; If no more rows
     ret     z                     ; Return
     push    af                    ; Stack = RowCnt, RtnAdr
-    ld      a,(TTYWID)
+    ld      a,(LINLEN)
     add     e
     ld      e,a
     ld      a,0
@@ -215,7 +215,7 @@ screen_pos_addr:
     push    hl
     push    bc
     ld      a,e                   ; A = Row
-    ld      de,(TTYWID)           ; DE = Screen width
+    ld      de,(LINLEN)           ; DE = Screen width
     call    mult_a_de             ; HL = Row Address, BC = Column, A = 0
     add     hl,bc                 ; Add column address
     ld      bc,SCREEN             ; Add to Text Screen base address
@@ -248,7 +248,7 @@ screen_pos_addr:
 ; In: C=Column, E=Row
 ; Out: Carry set if out of bounds
 _screen_bounds:
-    ld      a,(TTYWID)
+    ld      a,(LINLEN)
     cp      b                     ; If EndCol > 39
     ret     c                     ;   Return Carry Set
     ld      a,25

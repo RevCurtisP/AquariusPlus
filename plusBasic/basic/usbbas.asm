@@ -210,15 +210,18 @@ FN_JOY:
 ST_LOCATE:
     call    GETBYT              ; Read number from command line (column). Stored in A and E
     push    af                  ; Column store on stack for later use
+    dec     e
+    ld      a,(LINLEN)
     dec     a
-    cp      38                  ; Compare with 38 decimal (max cols on screen)
-    jp      nc, FCERR           ; If higher then 38 goto FC error
+    dec     a                   ; A = 38 or 78
+    cp      e                   ; If less than screen position
+    jp      c, FCERR            ; If w, Illegal Quantity
 
     ; Expect comma
     SYNCHK  ','
 
     call    GETBYT              ; Read number from command line (row). Stored in A and E
-    cp      $18                 ; Compare with 24 decimal (max rows on screen)
+    cp      24                  ; Compare with 24 decimal (max rows on screen)
     jp      nc,FCERR            ; If higher then 24 goto FC error
 
     inc     e

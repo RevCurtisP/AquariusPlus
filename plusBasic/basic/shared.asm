@@ -392,37 +392,6 @@ get_stringvar:
     jp      nz,TMERR          ;   Type Mismatch error
     jp      CHRGT2            ; Reget Character and Return
 
-move_cursor:
-    push    af
-
-    ; Restore character behind cursor
-    push    hl
-    exx
-    ld      hl, (CURRAM)        ; CHRPOS - address of cursor within matrix
-    ld      a, (CURCHR)         ; BUFO - storage of the character behind the cursor
-    ld      (hl), a             ; Put original character on screen
-    pop     hl
-
-    ; Calculate new cursor location
-    ld      a, l
-    add     a, a
-    add     a, a
-    add     a, l
-    ex      de, hl
-    ld      e, d
-    ld      d, $00
-    ld      h, d
-    ld      l, a
-    ld      a, e
-    dec     a
-    add     hl, hl
-    add     hl, hl
-    add     hl, hl              ; HL is now 40 * rows
-    add     hl, de              ; Added the columns
-    ld      de, SCREEN          ; Screen character-matrix (= 12288 dec)
-    add     hl, de              ; Putting it all together
-    jp      TTYFIS              ; Save cursor position and return
-
 ; ------------------------------------------------------------------------------
 ; Increment text pointer, push it then LABBCK
 ; ------------------------------------------------------------------------------
