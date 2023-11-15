@@ -191,13 +191,15 @@ ST_POKE:
 
 .poke_screen
     rst     CHRGET                ; Skip SCREEN
-    jp      GSERR
     call    GETINT                ; Get Address
     SYNCHK  ','                   ; Require comma
     call    FRMEVL                ; Evaluate argumenr
     push    hl                    ; Stack = TxtPtr, RtnAdr
     call    GETYPE                ; If String
     jr      z,.screenstring       ;   Poke It
+    call    CONINT                ; Else convert to byte
+    
+
 
 .screenstring
     jp      GSERR

@@ -47,7 +47,7 @@
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.18g",0
+    db "v0.18h",0
 plus_len   equ   $ - plus_text
 
 auto_cmd:
@@ -1035,7 +1035,6 @@ _s3_string_ext
 
     dc $E000-$,$76
 
-
-
     end
+
 

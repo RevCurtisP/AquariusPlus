@@ -27,16 +27,20 @@ s3_ctrl_keys:
     ld      a,c
     or      a
     jp      m,.extended
-
-
-
-    xor     a
-    cp      b
+    pop     bc
+    push    bc
+    dec     b
     jr      nz,.dontscreen        ; and Input Buffer is empty
     ld      a,c
-;ToDo: Add Ctrl-W = 80 columns, Crtl-T = 40 col screen 0, Ctrl-Y is 40 col screen 1
-;Save cursor position and character under RAM in screen RAM hole
-
+    ld      b,1
+    cp      'T'-64
+    jr      z,.switch_screen
+    inc     b
+    cp      'Y'-64
+    jr      z,.switch_screen
+    inc     b
+    cp      'W'-64
+    jr      z,.switch_screen
 .dontscreen
     ld      a,c                   ; Get typed character
     sub     a,'K'-64              ;
@@ -69,13 +73,23 @@ s3_ctrl_keys:
     pop     hl
 .inlinc
     pop     bc                    ;   Restore character count
-    jp      INLINC                ;   Wait for next key
+    jp      INLINC                ;   Wait for next keyhl
 .extended
     call    fnkey_get_buff_addr   ; DE = Key Buffer Address
     jr      nz,.inlinc            ; If Function Key
     dec     de                    ;   Back up for autotype
     ld      (RESPTR),de           ;   Set pointer to buffer
     jr      .inlinc               ;   and return
+.switch_screen
+    ld      a,b                   ; Set screen number
+    push    de
+    push    hl
+    call    screen_switch
+    ld      hl,(CURRAM)
+    ld      (hl),$7F
+    pop     hl
+    pop     de
+    jr      .inlinc
 
 ;-----------------------------------------------------------------------------
 ; HOOK12 - OUTDO 

@@ -143,7 +143,7 @@ page_full_copy:
 ;       DE: Destination address
 ;       HL: Source Address (0-16383)
 ; No rollover or error checking 
-; Clobbers: A,BC,DE,HL
+; Clobbers: AF,AF',BC,DE,HL
 ;-----------------------------------------------------------------------------
 page_fast_read_bytes:
     ex      de,hl                 ; DE = SrcAdr, HL = DstAdr 
@@ -157,15 +157,22 @@ page_fast_read_bytes:
 ;       DE: Destination address (0-16383)
 ;       HL: Source Address
 ; No rollover or error checking
-; Clobbers: A,BC,DE,HL
+; Clobbers: AF,AF',BC,DE,HL
 ;-----------------------------------------------------------------------------
 page_fast_write_bytes:
     call    page_coerce_de_addr   ; Coerce DstAdr
 _fast_copy:
+    ex      af,af'
+    in      a,(IO_BANK3)
+    push    af
+    ex      af,af'
     out     (IO_BANK3),a          ; Map DestPg
     or      a                     ; Clear Carry, Zero flags
     ldir                          ; Do the Copy
-    jp      page_restore_plus     ; Restore ROM Page and return
+_fast_done:
+    pop     af
+    out     (IO_BANK3),a          ; Restore Original Page
+    ret
 
 ;-----------------------------------------------------------------------------
 ; Input: A: Page
@@ -173,15 +180,19 @@ _fast_copy:
 ;       DE: Page Start Address (0-16383)
 ;       HL: RAM Start Address
 ; No rollover or error checking
-; Clobbers: A,BC,DE,HL
+; Clobbers: AF,AF',BC,DE,HL
 ;-----------------------------------------------------------------------------
 page_mem_swap_bytes:
     call    page_coerce_de_addr   ; Coerce DstAdr
+    ex      af,af'
+    in      a,(IO_BANK3)
+    push    af
+    ex      af,af'
     out     (IO_BANK3),a          ; Map DestPg
 .loop    
     ld      a,b
     or      c                     ; If BC = 0
-    jp      z,page_restore_plus   ;   Restore ROM Page and return
+    jr      z,_fast_done          ;   Restore ROM Page and return
     ld      a,(hl)                ; Get RAM byte
     ex      af,af'
     ld      a,(de)                ; Copy paged byte
@@ -435,6 +446,8 @@ page_map_basbuf:
     push    af
     ld      a,BAS_BUFFR
     jr      _map_page_bank3
+
+
 
 ;-----------------------------------------------------------------------------
 ; Write Bytes to Page - wraps to next page if address is 16383

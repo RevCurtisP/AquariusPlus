@@ -449,18 +449,3 @@ scan_rect:
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     ret
 
-;-----------------------------------------------------------------------------
-; Look up byte in table
-; Input: A: Offset
-;       DE: Table base address
-; Output: A: Value at offset
-;        DE: Address of offset
-;-----------------------------------------------------------------------------
-table_lookup:
-    add     a,e
-    ld      e,a
-    jr      nc,.no_carry
-    inc     e
-.no_carry
-    ld      a,(de)
-    ret

@@ -99,7 +99,8 @@ ST_SCREEN:
     push    hl
     ld      a,BUFSCRN40           ; Save current text screen to buffer
     ld      hl,SCRN40BUF
-    call    screen_save           
+    ld      ix,screen_save           
+    call    aux_rom_call          
     pop     hl
 
     in      a,(IO_VCTRL)
@@ -129,7 +130,8 @@ ST_SCREEN:
     push    hl
     ld      a,BUFSCRN40           ; Restore current text screen from buffer
     ld      hl,SCRN40BUF
-    call    screen_restore        ; 
+    ld      ix,screen_restore        ; 
+    call    aux_rom_call          
     pop     hl
 
     jp      set_linlen            ; Set TTYWID to screen columns and return
@@ -191,7 +193,8 @@ ST_SCREEN_RESTORE:
     push    hl                    ; Stack = TxtPtr, RtnAdr
     ld      a,SWPSCRN40
     ld      hl,SCRN40SWP
-    call    screen_restore        ; Do the Copy  
+    ld      ix,screen_restore
+    call    aux_rom_call          
     pop     hl                    ; HL = TxtPtr; HL = RtnAdr
     ret
 
@@ -203,7 +206,8 @@ ST_SCREEN_SAVE:
     push    hl                    ; Stack = TxtPtr, RtnAdr
     ld      a,SWPSCRN40
     ld      hl,SCRN40SWP
-    call    screen_save           ; Do the Copy  
+    ld      ix,screen_save           
+    call    aux_rom_call          
     pop     hl                    ; HL = TxtPtr; HL = RtnAdr
     ret
 
@@ -214,7 +218,8 @@ ST_SCREEN_SWAP:
     rst     CHRGET                ; Skip SWAP
     push    hl                    ; Stack = TxtPtr, RtnAdr
     ld      hl,SCRN40SWP
-    call    screen_swap           ; Do the Copy  
+    ld      ix,screen_swap           
+    call    aux_rom_call          ; Do the Copy  
     pop     hl                    ; HL = TxtPtr; HL = RtnAdr
     ret
 
