@@ -221,7 +221,7 @@ FN_COMPARE:
     sbc     hl,bc                 ; If Len1 - Len2 <> 0
     jr      nz,.badlen            ;   Return 0 (not equal)
     pop     hl                    ; HL = TxtPtr; Stack = Addr1, RtnAdr
-    ex      (sp),hl               ; HL = Addr1, Stack = TxtPtr, Rtn Addr
+    ex      (sp),hl               ; HL = Addr1, Stack = TxtPtr, RtnAdr
     call    sys_mem_compare       ;      Compare Paged to Memory`
     ld      hl,LABBCK             
     push    hl                    ; Stack = LABBCK, TxtPtr, RtnAdr
@@ -387,9 +387,18 @@ ST_SETFNKEY:
 ; PAUSE Statement 
 ;-----------------------------------------------------------------------------
 ST_PAUSE:
-    jp      z,TRYIN               ; If no argument, wait for key and return
-    jp      SNERR                 ; Else Syntax error for now
-
+    jp      z,.tryin              ; If no argument, wait for key and return
+    call    FRMEVL                ; Get Operand
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    call    GETYPE                ; 
+    jp      z,.string             ; If Numeric
+    jp      SNERR                 ;   Syntax error
+.string
+    call    STRPRT
+    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
+.tryin
+    jp      TRYIN                 ; Wait for key and return
+    
 ;-----------------------------------------------------------------------------
 ; USE Statement stub
 ;-----------------------------------------------------------------------------
@@ -420,7 +429,7 @@ FN_VER:
     jr      nz,.getver            ; If it's a string
     ex      (sp),hl               ; HL = StrFlg, Stack = TxtPtr, RetAdr
     push    hl                    ; Stack = StrFlg, TxtPtr, RetAdr
-    call    free_addr_len         
+    call    free_addr_len         ; BC = StrLen, DE = StrAdr, HL = StrDsc
     ex      de,hl                 ; HL = TxtAdr
     jr      .return_ver
 .getver    

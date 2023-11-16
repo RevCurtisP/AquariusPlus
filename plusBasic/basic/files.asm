@@ -89,9 +89,9 @@ ST_RENAME:
     pop     bc                    ; BC = textptr, Stack = olddesc
     pop     hl                    ; HL = olddesc
     push    bc                    ; Stack = textptr
-    push    de                    ; Stack = newdesc, txtptr
+    push    de                    ; Stack = newdesc, TxtPtr
     call    FRETM2                ; HL = olddesc
-    pop     de                    ; DE = newdesc, Stack = txptr
+    pop     de                    ; DE = newdesc, Stack = TxtPtr
     call    dos_rename_file       ; Do the rename
     jr      _check_error          ; Restore textptr and check for error
 
@@ -392,6 +392,9 @@ ST_LOAD:
     cp      SCRNTK
     jp      z,_load_screen
 
+    cp      FNTK
+    jp      z,_load_fnkeys
+
     cp      XTOKEN
     jp      z,_load_extended
 
@@ -636,7 +639,33 @@ get_array_argument:
     dec     de
     ld      (BINLEN), de
     pop     hl                  ; Pop text pointer
+    ret
 
+_load_fnkeys:
+    call    _set_up_fnkeys
+    call    file_load_paged
+    jp      m,_dos_error
+    pop     hl
+    ret
+
+_set_up_fnkeys:
+    rst     CHRGET                ; Skip FN
+    rst     SYNCHR
+    byte    XTOKEN      
+    rst     SYNCHR                ; Require KEY
+    byte    KEYTK
+    SYNCHK  'S'                   ; Require S
+    call    get_strdesc_arg       ; HL = FilDsc; Stack = TxtPtr, RtnAdr
+    ex      de,hl                 ; DE = FilDsc
+    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
+    ex      (sp),hl               ; HL = RtnAdr; Stack = TxtPtr
+    push    hl                    ; Stack = RtnAdr, TxtPtr
+    ex      de,hl                 ; HL = FilDsc
+    ld      a,BAS_BUFFR
+    ld      de,FKEYDEFS
+    ld      bc,512
+    ld      (BINSTART),de
+    ld      (BINLEN),de
     ret
 
 ;;;ToDo: Add LOAD PALETTE
@@ -772,6 +801,10 @@ ST_SAVE:
     ; Close any open files
     call    esp_close_all
 
+    ld      a,(hl)
+    cp      FNTK
+    jp      z,.save_fnkeys
+
     call    get_strdesc_arg         ; Get FileSpec pointer in HL
     ex      (sp),hl                 ; HL = Text Pointer, Stack = String Descriptor
 
@@ -813,6 +846,9 @@ ST_SAVE:
     jp      m,_dos_error
     pop     hl
     ret
+
+.save_fnkeys
+    call    _set_up_fnkeys        ; A = BAS_BUFFR, BC = 512, DE = FKEYDEFS, HL = FilDsc
 
 .save_paged
     call    check_paged_address   ; Verify pages addres is between 0 and 16383
