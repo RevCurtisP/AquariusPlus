@@ -191,42 +191,49 @@ ST_POKE:
 
 .poke_screen
     rst     CHRGET                ; Skip SCREEN
-    call    GETINT                ; Get Address
-    SYNCHK  ','                   ; Require comma
-    call    FRMEVL                ; Evaluate argumenr
-    push    hl                    ; Stack = TxtPtr, RtnAdr
-    call    GETYPE                ; If String
-    jr      z,.screenstring       ;   Poke It
-    call    CONINT                ; Else convert to byte
-    
-
-
+    call    .screen_args          ; Stack = AdrOfs, TxtPtr, RtnAdr
+    jr      z,.screenstring       ; If Poking byte
+    call    CONINT                ;   A = Byte
+    pop     de                    ;   DE = AdrOfs; Stack = TxtPtr, RtnAdr
+    call    screen_write_byte     ;   Write byte
+    jr      .screen_done          ; Else
 .screenstring
-    jp      GSERR
-
+    call    FRESTR                ;   Free Temporary
+    pop     de                    ;   DE = AdrOfs; Stack = TxtPtr, RtnAdr
+    call    screen_write_string   ;   Write wtring
+.screen_done
+    jp      c,FCERR               ; Error if Offset too large
+    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr 
+    ret                           
 
 .poke_color
     rst     CHRGET                ; Skip COL
     rst     SYNCHR
-    byte    ORTK
-    jp      GSERR
+    byte    ORTK                  ; Require OR
+    call    .screen_args          ; Stack = AdrOfs, TxtPtr, RtnAdr
+    jr      z,.colorstring        ; If Poking byte
+    call    CONINT                ;   A = Byte
+    pop     de                    ;   DE = AdrOfs; Stack = TxtPtr, RtnAdr
+    call    color_write_byte      ;   Write byte
+    jr      .screen_done          ; Else
+.colorstring
+    call    FRESTR                ;   Free Temporary
+    pop     de                    ;   DE = AdrOfs; Stack = TxtPtr, RtnAdr
+    call    color_write_string    ;   Write wtring
+    jr      .screen_done          ; Else
 
 
-.get_screen_addr
-    call    GETINT                ;
-    push    hl
-    ex      de,hl                 ; HL = Address
-    ld      de,1024
-    in      a,(IO_VCTRL)            
-    and     VCRTL_80COL_EN        
-    jr      z,.not80  
-    sla     d                     ; DE = Max +  1  
-.not80
-    rst     COMPAR                ; If Addr > Max
-    jp      nc,FCERR              ;   Error
-    add     hl,bc                 ; HL = Base + Address
-    pop     hl
-    ret
+.screen_args
+    call    GETINT                ; Get Address Offset
+    push    de                    ; Stack = AdrOfs, RtnAdr
+    SYNCHK  ','                   ; Require comma
+    call    FRMEVL                ; Evaluate argumenr
+    pop     de                    ; DE = AdrOfs; Stack = RtnAdr
+    ex      (sp),hl               ; HL = RtnAdr; Stack = TxtPtr
+    push    de                    ; Stack = AdrOfs, TxtPtr
+    push    hl                    ; Stack = RtnAdr, AdrOfs, TxtPtr
+    jp      GETYPE                ; Get Operand Type 
+    
 
 
 ;-----------------------------------------------------------------------------
@@ -321,7 +328,7 @@ FN_PEEK:
     pop     bc                    ; BC = PkAdr; Stack = PgArg, RtnAdr
     pop     af                    ; AF = PgArg; Stack = RtnAdr
     push    hl                    ; Stack = TxtPtr, RtnAdr
-    push    af                    ; Stack = PgArg, TxtPtr, RtnAr
+    push    af                    ; Stack = PgArg, TxtPtr, RtnAdr
     ld      a,e                   ; A = Length
     or      a                     ; If Length is 0
     jp      z,null_string         ;   Return Empty String
