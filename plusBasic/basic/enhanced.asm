@@ -222,7 +222,6 @@ ST_POKE:
     call    color_write_string    ;   Write wtring
     jr      .screen_done          ; Else
 
-
 .screen_args
     call    GETINT                ; Get Address Offset
     push    de                    ; Stack = AdrOfs, RtnAdr
@@ -290,7 +289,7 @@ FN_PEEK:
     cp      SCRNTK
     jr      z,.peek_screen
     cp      COLTK
-    jr      z,.peek_color
+    jp      z,.peek_color
     cp      '$'                   ; If followed by dollar sign
     jr      z,.peekstring         ;   Do PEEK$()
     SYNCHK  '('                   ; Require open paren
@@ -313,7 +312,6 @@ FN_PEEK:
     jp      z,IQERR               ; FC error if illegal page
     ld      a,c
     jr      .float_it
-
 
 .peekstring:
     rst     CHRGET                ; Skip token
@@ -346,16 +344,61 @@ FN_PEEK:
 .do_putnew
     jp      PUTNEW                ; Return the Temporary String
 
-.peek_screen
-    rst     CHRGET                ; Skip SCREEN
-    jp      GSERR
 
 .peek_color
     rst     CHRGET                ; Skip COL
     rst     SYNCHR                ; Require OR
     byte    ORTK                    
-    jp      GSERR
+    xor     a                     ; Z = Color RAM
+    push    af                    ; Stack = PkRAM, TxtPtr
+    jr      .do_screen_color   
+.peek_screen
+    rst     CHRGET                ; Skip SCREEN
+    or      $FF                   ; NZ = Screen RAM
+    push    af
+.do_screen_color
+    ld      a,(hl)
+    cp      '$'                   ; Check for PEEK$
+    jr      z,.screenstring       ; If not PEEKSTRING$
+    call    GETINT                ; DE = Address
+    pop     af                    ; AF = PkRAM, Stack = RtnAdr
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    jr      z,.color
+    call    screen_read_byte
+    jr      .done_screen_color    
+.color
+    call    oolor_read_byte
+.done_screen_color
+    jp      c,FCERR
+    ld      bc,LABBCK             ; 
+    push    bc                    ; Stack = LABBCK, TxtPtr, RtnAdr
+    jp      SNGFLT
 
+.screenstring
+    rst     CHRGET                ; Skip $
+    SYNCHK  '('                   ; Require '('
+    call    get_addr_len          ; DE = ScrOfs, BC = PkLen
+    SYNCHK  ')'                   ; Require ')'
+    pop     af                    ; AF = PkRAM; Stack = RtnAdr
+    ex      af,af'                ; AF' = PkRAM
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    ld      a,c                   ; A = PkLen
+    or      a                     ; If 0
+    jp      z,null_string         ;   Return Empty String
+    push    bc                    ; Stack = PkLen, TxtPtr, RtnAdr
+    push    de                    ; Stack = ScrOfs, PkLen, TxtPtr, RtnAdr
+    call    STRINI                ; Make String with Length A, HL=StrDsc, DE=StrTxt
+    pop     de                    ; DE = ScrOfs; Stack = PkLen, TxtPtr, RtnAdr
+    pop     bc                    ; BC = PkLen; Stack = TxtPtr, RtnAdr
+    ex      af,af'                ; AF = PkRAM
+    jr      z,.colorstring
+    call    screen_read_string    ; Read string
+    jr      .done_screen_string
+.colorstring
+    call    color_read_string
+.done_screen_string
+    jp      c,FCERR
+    jp      PUTNEW                ; and return it
 
 ;-----------------------------------------------------------------------------
 ; DEEK
