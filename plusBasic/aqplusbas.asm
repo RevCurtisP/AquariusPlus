@@ -41,13 +41,14 @@
     jp      _sounds_hook    ; $2036 Adjust SOUNDS for turbo mode
     jp      _ttymove_hook   ; $2039 TTYMOV extension - set screen colors if SYSCTRL bit set
     jp      _scroll_hook    ; $203C SCROLL extension - scroll color memory if SYSCTRL bit set
+    jp      _line_edit      ; $203F Advanced line editor
     jp      _inlin_hook     ; $20?? Jump from INLIN for command history recall
     jp      _inlin_done     ; $20?? Jumped from FININL to save command to history
 
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.18n",0
+    db "v0.18o",0
 plus_len   equ   $ - plus_text
 
 auto_cmd:
@@ -184,13 +185,19 @@ _timer:
 
 ;-----------------------------------------------------------------------------
 ; Issue OV Error if TOPMEM will put stack in Bank 1
-; Calle from CLEARS
+; Called from CLEARS
+; Input: HL = Bottom of String Space
 ;-----------------------------------------------------------------------------
 _check_topmem:
+    push    hl                    ; Stack = StrBottom, RtnAdr
+    ld      bc,-512               ; 
+    add     hl,bc                 ; HL = StrBottom - 512
     ld      de,$8000+1024         ; Leave 1024 bytes for stack
     rst     COMPAR                ; If new TOPMEM < Minimum
     jp      c,OVERR               ;   Overflow error
     ld      (TOPMEM),hl           ; Else Set TOPMEM
+    pop     hl                    ;   HL = StrBottom; Stack = RtnAdr
+    ld      (STRSPC),hl           ;   Set bottom of string space
     ret                           ;   and Return
 
 ;-----------------------------------------------------------------------------
@@ -550,6 +557,19 @@ read_key:
 .readkey
     exx
     jp      key_read_ascii    ; Read key from keyboard and return
+
+;-----------------------------------------------------------------------------
+; Invoke advanced line editor
+; Currently writtec to be executed via BASIC CALL for development
+;-----------------------------------------------------------------------------
+_line_edit:
+    push    hl
+    ld      hl,(TOPMEM)       ; BufAdr = Top of string space
+    ld      c,0               ; C = ChrCnt
+    call    page_map_aux
+    call    edit              ; Edit the line
+    pop     hl
+    ret
 
 ;-----------------------------------------------------------------------------
 ; Allow underscore after 1 or 2 letter variable name, then skip all

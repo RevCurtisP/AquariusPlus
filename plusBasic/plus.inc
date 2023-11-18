@@ -56,7 +56,6 @@ TILE_MAP_LEN    equ 64*32*2
 ; Screen RAM Hole $33E8-$33FF exists only in 40 column mode
 BORDERCHR   equ $33FF   ; Border character alternate memory location (40 column mode)
 ; Color RAM Hole
-PLUSTCK     equ $37FA   ; Top of page swap temporary stack $37E8 - $37F9 (18 bytes)
 BORDERCLR   equ $37FF   ; Border color alternate memory location
 
 ; RNDTAB ($3821-$3840) - Deprecated RND Permutation Table

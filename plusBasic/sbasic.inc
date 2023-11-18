@@ -106,7 +106,7 @@ RESLO:      equ $38F8   ;
 SAVSTK:     equ $38F9   ; [M80] NEWSTT SAVES STACK HERE BEFORE SO THAT ERROR REVERY CAN
                         ; [M80] CAN DATPTR THE STACK WHEN AN ERROR OCCURS
 INTJMP  equ     $38FB   ; RST 7 Interrupt JMP (3 bytes)
-LPTWID  equ     $38FE   ; Printer width in columns
+STRSPC  equ     $38FE   ; Start of String Space. TOPMEM is 512 bytes below this.
 BASTXT:     equ $3901   ; Start of Basic Program
 
 ;-----------------------------------------------------------------------------

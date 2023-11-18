@@ -111,7 +111,11 @@ RESHO   equ     $38F6   ;[M65] RESULT OF MULTIPLIER AND DIVIDER
 RESMO   equ     $38F7   ;;RESMO and RESLO are loaded into and stored from HL
 SAVSTK  equ     $38F9   ;[M80] NEWSTT SAVES STACK HERE BEFORE SO THAT ERROR REVERY CAN
 INTJMP  equ     $38FB   ;;RST 7 Interrupt JMP
+ifdef aqplus
+STRSPC  equ     $38FE   ;; | Start of String Space. TOPMEM is 512 bytes below this.
+else
 ;;        $38FE-$38FF   ;;??Unused
+endif
 ;;              $3900   ;;This is always 0
 BASTXT  equ     $3901   ;;Start of Basic Program
 ifdef aqplus            
@@ -2338,8 +2342,16 @@ HOOK11: byte    11                ;
         ex      (sp),hl           ;;Get String Size, Save Text Pointer
         ex      de,hl             ;;DE=String Size, HL=Top of Memory
 ;;Set VARTAB, TOPMEM, and MEMSIZ
+;;VARTAB points to start of simple variables, immediately after 0,0,0 at end of program
+;;TOPMEM is the bottom of string storage and top of stack
+;;MEMSIZ is the top of string storage, the highest address used by BASIC
 ;;On Entry HL = top of memory, from MEMSIZ or second parameter
 ;;         DE = string space, from the first parameter
+ifdef aqplus
+;;Code change: Add 512 byte of buffer space between top of stack and bottom of string space
+;;STRSPC is new system variable - bottom of string space
+;;TOPMEM is 512 bytes below STRSPC
+endif
 CLEARS: ld      a,l               ;[M80] SUBTRACT [H,L]-[D,E] INTO [D,E]
         sub     e                 ;
         ld      e,a               ;;Leaving start of String Space in [D,E]
@@ -2349,13 +2361,17 @@ CLEARS: ld      a,l               ;[M80] SUBTRACT [H,L]-[D,E] INTO [D,E]
         jp      c,OMERR           ;[M80] WANTED MORE THAN TOTAL!
         push    hl                ;[M80] SAVE MEMSIZ
         ld      hl,(VARTAB)       ;[M80] TOP LOCATION IN USE
-        ld      bc,40             ;[M80] TOP LOCATION IN USE
+ifdef aqplus        
+        ld      bc,512+40         ; Include buffer space
+else
+        ld      bc,40             ;
+endif
         add     hl,bc             ;[M80] LEAVE BREATHING ROOM
         rst     COMPAR            ;[M80] ROOM?
         jp      nc,OMERR          ;[M80] NO, DON'T EVEN CLEAR
         ex      de,hl             ;[M80] NEW STACK LOCATION [H,L]
 ifdef aqplus
-        call    XCLEAR            ;; Validate value before setting TOPMEM
+        call    XCLEAR            ;; Validate value, set TOPMEM and STRSPC
 else        
         ld      (TOPMEM),hl       ;[M80] SET UP NEW STACK LOCATION
 endif
@@ -2662,7 +2678,11 @@ GETSPA: or      a                 ;[M80] MUST BE NON ZERO. SIGNAL NO GARBAG YET
         byte    $0E               ;[M80] "MVI C" AROUND THE NEXT BYTE
 TRYGI2: pop     af                ;[M80] IN CASE COLLECTED WHAT WAS LENGTH?
         push    af                ;[M80] SAVE IT BACK
+ifdef aqplus
+        ld      hl,(STRSPC)       ;; Bottom of String Space
+else
         ld      hl,(TOPMEM)       ;
+endif
         ex      de,hl             ;[M80] IN [D,E]
         ld      hl,(FRETOP)       ;[M80] GET TOP OF FREE SPACE IN [H,L]
         cpl                       ;[M80] -# OF CHARS
@@ -3024,7 +3044,11 @@ FRE:    ld      hl,(STREND)       ;
         jp      z,GIVFLT          ;
         call    FREFAC            ;[M80] FREE UP ARGUMENT AND SETUP TO GIVE FREE STRING SPACE
         call    GARBA2            ;[M80] DO GARBAGE COLLECTION
+ifdef aqplus
+        ld      de,(STRSPC)       ;;End of String Space
+else
         ld      de,(TOPMEM)       ;
+endif
         ld      hl,(FRETOP)       ;[M80] TOP OF FREE AREA
         jp      GIVFLT            ;[M80] RETURN [H,L]-[D,E]
 DIMCON: dec     hl                ;[M80] SEE IF COMMA ENDED THIS VARIABLE

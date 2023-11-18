@@ -280,7 +280,7 @@ table_lookup:
     add     a,e
     ld      e,a
     jr      nc,.no_carry
-    inc     e
+    inc     d
 .no_carry
     ld      a,(de)
     ret
