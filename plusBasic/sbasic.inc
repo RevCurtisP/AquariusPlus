@@ -145,8 +145,10 @@ ERRFN1:     equ $03F4   ; Print String in HL + " in " + line number, Return to I
 STPRDY      equ $0401   ; For LIST command stopping
 READY:      equ $0402   ; Enter direct mode
 MAIN        equ $0414   ; Immediate Mode loop     
-CHEAD       equ $0489   ; Link Lines
-FNDLIN      equ $049F   ; Find BASIC line wirh line number in [DE]
+LINKIT      equ $0487   ; Link Line with starting address minus 1 in HL
+CHEAD       equ $0489   ; Link Lines with starting address in DE
+FNDLIN      equ $049F   ; Find BASIC line with line number in DE
+FNDLOP      equ $04A2   ; Find BASIC line with line number in DE starting at address in DE
 KLOOP       equ $04C5   ; Keyword to token loop
 STRNGR      equ $04D1   ; Continue C
 CRUNCX      equ $04F9   ; Tokenize text at [HL]

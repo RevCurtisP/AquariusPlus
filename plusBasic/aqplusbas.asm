@@ -29,7 +29,7 @@
     jp      _keyread        ; $2012 Called from COLORS
     jp      _ctrl_keys      ; $2015
     jp      _iscntc_hook    ; $2018
-    jp      _main_ext       ; $201B Save Line# Flag`
+    jp      _main_ext       ; $201B MAINX: Save Line# Flag`
     jp      _stuffh_ext     ; $201E Check for additional tokens when stuffing
     jp      clear_default   ; $2021 Clear both text screens
     jp      _check_topmem   ; $2024 Verify TOPMEM is in Bank 2
@@ -48,7 +48,7 @@
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.18o",0
+    db "v0.18p",0
 plus_len   equ   $ - plus_text
 
 auto_cmd:
@@ -558,6 +558,15 @@ read_key:
     exx
     jp      key_read_ascii    ; Read key from keyboard and return
 
+
+;-----------------------------------------------------------------------------
+; Hook 5: Push MAIN onto stack so modified CHEAD will return to it
+;-----------------------------------------------------------------------------
+_linker_hook:
+    ld    de,MAIN                 ; DE will get trashed anyway
+    push  de                      ; Make MAIN the return address
+    jp    LINKIT                  ; Link the lines
+
 ;-----------------------------------------------------------------------------
 ; Invoke advanced line editor
 ; Currently writtec to be executed via BASIC CALL for development
@@ -825,9 +834,6 @@ _scroll_hook:
     jp      SCROLL
     
 
-; poke $384A,$70:poke $3825,5
-
-
 ;-----------------------------------------------------------------------------
 ; 80 column screen driver
 ;-----------------------------------------------------------------------------
@@ -886,7 +892,7 @@ hook_table:                     ; ## caller   addr  performing function
     dw      direct_mode         ;  2 READY    0402  BASIC command line (immediate mode)
     dw      HOOK3+1             ;  3 EDENT    0428  Save Tokenized Line
     dw      HOOK4+1             ;  4 FINI     0480  Finish Adding/Removing Line or Loading Program
-    dw      HOOK5+1             ;  5 LINKER   0485  Update BASIC Program Line Links
+    dw      _linker_hook        ;  5 LINKER   0485  Update BASIC Program Line Links
     dw      HOOK6+1             ;  6 PRINT    07BC  Execute PRINT Statement
     dw      HOOK7+1             ;  7 FINPRT   0866  End of PRINT Statement
     dw      HOOK8+1             ;  8 TRMNOK   0880  Improperly Formatted INPUT or DATA handler

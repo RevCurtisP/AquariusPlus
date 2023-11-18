@@ -913,7 +913,7 @@ HOOK4:  byte    4                 ;
         call    RUNC              ;[M80] DO CLEAR & SET UP STACK
 LINKER: rst     HOOKDO            ;
 HOOK5:  byte    5                 ;
-        inc     hl                ;;HL=TXTTAB
+LINKIT: inc     hl                ;;HL=TXTTAB
         ex      de,hl             ;;DE=TXTTAB
 ;;Fix Basic Line Links
 CHEAD:  ld      h,d               ;[H,L]=[D,E]
@@ -921,7 +921,12 @@ CHEAD:  ld      h,d               ;[H,L]=[D,E]
         ld      a,(hl)            ;[M80] SEE IF END OF CHAIN
         inc     hl                ;[M80] BUMP POINTER
         or      (hl)              ;[M80] 2ND BYTE
+ifdef aqplus
+;;; Enhancement: Make CHEAD return
+        jp      z,CRCONT          ; RET
+else
         jp      z,MAIN            ;
+endif
         inc     hl                ;[M80] FIX HL TO START OF TEXT
         inc     hl                ;
         inc     hl                ;

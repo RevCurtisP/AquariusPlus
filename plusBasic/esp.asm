@@ -123,6 +123,31 @@ esp_read_to_buff:
     ret
 
 ;-----------------------------------------------------------------------------
+; Read a byte from ESP to main memory
+; Output: A: Result
+;         C: 1 if succesful, else 0
+;         B: Byte read (0 if none)
+;-----------------------------------------------------------------------------
+esp_read_byte:
+    ld      a, ESPCMD_READ
+    call    esp_cmd               ; Issue read command
+    xor     a
+    call    esp_send_byte         ; Send file descriptor
+    ld      bc,1
+    call    esp_send_bc           ; Number of bytes to read
+    call    esp_get_result 
+    ret     m                     ; Return if error
+    call    esp_get_bc            ; Get number of bytes actual read
+    ld      a,c
+    or      a
+    ret     z                     ; Return if EOF
+    call    esp_get_byte          ; Read the byte
+    ld      b,a                   ; Return it in B
+    xor     a                     ; Return No Error
+    ret
+
+
+;-----------------------------------------------------------------------------
 ; Read bytes from ESP to main memory
 ; Input: BC: number of bytes to read
 ;        DE: destination address

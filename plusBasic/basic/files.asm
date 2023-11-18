@@ -546,31 +546,7 @@ init_basic_program:
     ; Clear Variable Name
     ld      (VARNAM), hl
 
-    ; Fix up next line addresses in loaded BASIC program
-.link_lines:
-    ld      de, (TXTTAB)        ; DE = start of BASIC program
-.next_line:
-    ld      h, d
-    ld      l, e                ; HL = DE
-    ld      a, (hl)
-    inc     hl                  ; Test nextline address
-    or      (hl)
-    jr      z, .init_done       ; If $0000 then done
-    inc     hl
-    inc     hl                  ; Skip line number
-    inc     hl
-    xor     a                   ; End of line = $00
-.find_eol:
-    cp      (hl)                ; Search for end of line
-    inc     hl
-    jr      nz, .find_eol
-    ex      de, hl              ; HL = current line, DE = next line
-    ld      (hl), e
-    inc     hl                  ; Set address of next line
-    ld      (hl), d
-    jr      .next_line
-.init_done:
-    ret
+    jp      basic_link_lines      ; Link lines and return
 
 ;-----------------------------------------------------------------------------
 ; Load CAQ array file in File into BINSTART (BINLEN length)

@@ -300,3 +300,56 @@ token_to_keyword:
 ; $92 VER
 ; $93 FILL
 ; $94 COMPARE
+
+;-----------------------------------------------------------------------------
+; Tokenize zero terminated string
+; Input: DE = Output buffer address
+;        HL = Input buffer address
+; Clobbers: Everything else
+;-----------------------------------------------------------------------------
+tokenize_string:
+    push    de                ; Stack = OutAdr, RtnAdr
+    push    hl                ; Stack = InpAdr, OutAdr, RtnAdr
+    xor     a                 ; Tokenize String
+    ld      (DORES),a         ;
+    ld      c,5               ;
+    call    KLOOP
+    pop     hl                ; HL = InpAdr; Stack = OutAdr, RtnAdr
+    pop     de                ; DE = OutAdr; Stack = RtnAdr
+    ret
+
+;-----------------------------------------------------------------------------
+; Tokenize zero terminated string with line number
+; Input: DE: Output buffer address
+;        HL: Input buffer address
+; Output: A: Tokenized line length 
+;        BC: Line# ($FFFF if no line number and line is not tokenized)
+; Clobbers: Everything else
+;-----------------------------------------------------------------------------
+tokenize_line:
+    ld    BC,-1               ; Default line number to 65535
+    rst   CHRGET              ; Get first non-space character
+    ret   nc                  ; If not a digit, return no line number
+    push  de                  ; Stack = OutPtr, RtnAdr
+    call  SCNLIN              ; DE = Line#
+    ex    de,hl               ; HL = Line#, DE = InpPtr
+    ex    (sp),hl             ; HL = OutPtr, Stack = Line#, RtnAdr
+    ex    de,hl               ; DE = OutPtr, HL = InpPtr; Stack = Line#, RtnAdr
+    call  tokenize_string     ; Tokenize rest of line
+    
+    
+basic_delete_line:
+; Create a flag for RET from MLOOP, clear it in _main_ext
+; Add HOOK4 to RET after MLOOP if flag set
+; Set up for and execute MLOOP
+
+basic_inster_line:
+; HOOK4 will cause LEVFRE to RET if flag set
+; Set up for and execute LEVFRE
+
+;-----------------------------------------------------------------------------
+; Relink BASIC program lines, starting from beginning of program
+;-----------------------------------------------------------------------------
+basic_link_lines:
+    ld      de,(TXTTAB)           ; Star at beginning of program
+    jp      CHEAD                 ; Link lines and return
