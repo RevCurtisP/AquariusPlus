@@ -48,7 +48,7 @@
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.18p",0
+    db "v0.18q",0
 plus_len   equ   $ - plus_text
 
 auto_cmd:
@@ -232,6 +232,7 @@ in_direct:
 ; returns to NEWSTT
 ;-----------------------------------------------------------------------------
 _iscntc_hook:
+
     call    CNTCCN                ; Check for Control-C
     ret     z                     ; Return if no keypress
     cp      'D'-64                ; If Ctrl-D
@@ -241,6 +242,16 @@ _iscntc_hook:
     byte    $3E                   ; LD A,$AF to Enable Turbo Mode
 .turbo_off
     xor     a
+
+;;; Todo: SET BREAK ON/OFF - BASYSCTL bit 5    
+_check_ctrl_c:    
+    ld      a,(BASYSCTL)
+    and     $20
+    jp      z,CNTCCN
+    call    INCHRH
+    or      a
+    ret
+
 ;-----------------------------------------------------------------------------
 ; Enable/Disable Turbo mode
 ; Input: A = Bit 2 set for On, reset for Off
@@ -351,6 +362,8 @@ copy_char_ram:
 ;-----------------------------------------------------------------------------
 ; Cartridge start entry point - A hold scramble value
 ;-----------------------------------------------------------------------------
+;;; ToDo: When starting cart from power up, clear BASIC RAM
+
 _start_cart:
     cp      $00
     jp      nz, .descramble
@@ -424,7 +437,6 @@ descramble_rom:
 
     ; Start ROM
     jp      $E010
-
 
 ;-----------------------------------------------------------------------------
 ; Enable VBLANK Interrupts
@@ -833,7 +845,6 @@ _scroll_hook:
     pop     af
     jp      SCROLL
     
-
 ;-----------------------------------------------------------------------------
 ; 80 column screen driver
 ;-----------------------------------------------------------------------------
@@ -869,13 +880,10 @@ _scroll_hook:
 ;-----------------------------------------------------------------------------
     include "util.asm"
 
-free_rom_2k = hook_table - $
-
-;------------------------------------------------------------------------------
-; Hook, Dispatch Tables and Handlers
-;------------------------------------------------------------------------------
-
     include "tokens.asm"        ; Keyword lists and tokenize/expand routines
+
+
+free_rom_2k = hook_table - $
 
 ; ------------------------------------------------------------------------------
 ;  Hook Jump Table
@@ -1015,6 +1023,7 @@ _s3_string_ext
     include "gfxjump.asm"
     ; dispatch and error tables align to 256 byte boundary
     include "dispatch.asm"      ; Statement/Function dispatch tables and routiness
+    include "baslines.asm"      ; (De)tokenize, add, insert, delete program lines
     include "error.asm"         ; Error lookup table, messages and handling routines
     include "args.asm"          ; ARGS statement and function
     include "basic80.asm"       ; Statements and functions from MBASIC 80
@@ -1052,10 +1061,11 @@ _s3_string_ext
 
     phase   $C000     ;Assemble in ROM Page 1 which will be in Bank 3
 
+    include "coldboot.asm"      ; Cold boot code
     include "editor.asm"        ; Advanced line editor
+    include "esp_aux.asm"       ; ESP routines in auxiliary ROM
     include "s3hooks.asm"       ; S3 BASIC direct mode hooks
     include "screen_aux.asm"    ; Auxiliary
-    include "coldboot.asm"      ; Cold boot code
 
     free_rom_8k = $E000 - $
 

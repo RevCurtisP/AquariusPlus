@@ -63,9 +63,9 @@ BASINTPG    equ $3821   ; BASIC Interrupt Routine Page, 0=None (swapped into BAN
 BASINTJP    equ $3822   ; BASIC Interrupt Routine JP instruction
 BASINTADR   equ $3823   ; BASIC Interrupt Routine JP Address ($3823-$3824)
 BASYSCTL    equ $3825   ; System Control Bits
-                        ; 2 = Key Repeat, 6 = 80 Column Mode, 7 = Timer Elapsed
+                        ; 2: Key Repeat, 5: Ctrl-C, 6: 80 Column Mode, 7: Timer Elapsed
 IRQACTIVE   equ $3826   ; Active IRQ Routines Bits
-                        ; 0 = Timer
+                        ; 0: Timer
 TIMERCNT    equ $3827   ; TIMER counter LSB = $3827, MSB = $3829
 ;Used by ON ERROR. Must be in in consecutive order: ERRLIN,ERRFLG,ONEFLG,ONELIN
 ERRLIN      equ $382A   ; LINE NUMBER WHERE LAST ERROR OCCURED.
@@ -87,6 +87,12 @@ FILETIME    equ $383F   ; File Timestamp ($383F-$3840)
 ; Variables
 ;-----------------------------------------------------------------------------
 BASIC_RAM_END: equ $BFFF    ; End of BASIC RAM, $BF00-$BFFF is reserved for our extensions
+
+;-----------------------------------------------------------------------------
+; Extended Tokens
+;-----------------------------------------------------------------------------
+XTOKEN = $FE
+XPSVAR = $FF
 
 ;-----------------------------------------------------------------------------
 ; IO registers
@@ -209,6 +215,8 @@ ESPCMD_CHDIR:      equ $1C     ; Change directory
 ESPCMD_STAT:       equ $1D     ; Get file status
 ESPCMD_GETCWD:     equ $1E     ; Get current working directory
 ESPCMD_CLOSEALL:   equ $1F     ; Close any open file/directory descriptor
+ESPCMD_OPENDIR83   equ $20     ; Open directory in 8.3 filename mode
+ESPCMD_READLINE    equ $21     ; Read line from file
 ESPCMD_LOADFPGA    equ $40     ; Load FPGA core
 
 ;-----------------------------------------------------------------------------

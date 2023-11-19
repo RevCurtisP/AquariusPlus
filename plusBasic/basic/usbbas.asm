@@ -14,10 +14,52 @@
 ; on exit from user code, HL should point to end of statement
 ;-----------------------------------------------------------------------------
 ST_CALL:
-    call    FRMNUM           ; Get number from BASIC text
-    call    FRCINT           ; Convert to 16 bit integer
-    push    de
-    ret                      ; Jump to user code, HL = BASIC text pointer
+    call    GETINT                ; Convert to 16 bit integer
+    push    de                    ; Stack = CalAdr, RtnAdr
+    ld      a,(hl)      
+    cp      XTOKEN                ; If no Extended token
+    ret     nz                    ;   Jump to user code, HL = BASIC text pointer
+    inc     hl
+    ld      a,(hl)                ; Get extended token
+    cp      ARGSTK                
+    jr      z,.call_args          ; If not ARGS
+    dec     hl                    ;   Back up pointer
+    ret     z                     ;   and Jump to user code
+    
+.call_args
+    call    .get_arg              ; Stack = ArgHL, CalAdr, RtnAdr
+    jr      nz,.arg_hl
+    call    .get_arg              ; Stack = ArgDE, ArgHL, CalAdr, RtnAdr
+    jr      nz,.arg_de
+    call    .get_arg              ; Stack = ArgBC, ArgDE, ArgHL, CalAdr, RtnAdr
+    jr      nz,.arg_bc
+    call    .get_arg              ; Stack = ArgAF, ArgBC, ArgDE, ArgHL, CalAdr, RtnAdr
+.arg_af:
+    pop     af                    ; AF = ArgAF; Stack = ArgAF, ArgHL, ArgHL, CalAdr, RtnAdr
+.arg_bc:                                        
+    pop     bc                    ; BC = ArgBC; Stack = ArgDE, ArgHL, CalAdr, RtnAdr
+.arg_de:                                        
+    pop     de                    ; DE = ArgDE; Stack = ArgHL, CalAdr, RtnAdr
+.arg_hl                              
+    exx
+    pop     hl                    ; HL' = ArgHL; Stack = CalAdr, RtnAdr
+    pop     ix                    ; IX = CalAdr; Stack = RtnAdr
+    push    hl                    ; Stack = ArgHL, RtnAdr
+    exx
+    ex      (sp),hl               ; HL = ArgHL; Stack = TxtPtr, RtnAdr
+    call    jumpix                ; Call the routine
+    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
+    ret
+
+.get_arg
+    rst     CHRGET                ; Skip comma
+    call    GETINT                ; Get Arg
+    pop     ix                    ; IX = RtnAdr
+    push    de                    ; Arg onto staclk
+    ld      a,(hl)
+    cp      ','                   ; Check for comma
+    jp      (ix)                  ; and Return
+    
 
 ;-----------------------------------------------------------------------------
 ; HEX$() function

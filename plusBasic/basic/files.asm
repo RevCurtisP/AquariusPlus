@@ -411,6 +411,8 @@ ST_LOAD:
     rst     CHRGET
     cp      MULTK                   ; Token for '*'
     jp      z, .array               ; Array parameter -> load as array
+    cp      ASCTK
+    jr      z, .asc    
 
 ; Load raw binary to address
 ; LOAD "tron.bin",$4200
@@ -441,8 +443,12 @@ ST_LOAD:
     jp      m,_dos_error
     pop     hl
     ret
-    
-    ; Load into array
+
+.asc
+    rst     CHRGET                ; Skip ASC
+    ex      (sp),hl               ; HL = String Descriptor, Stack = Text Pointer
+    jp      load_ascii_program
+
 .array:
     call    get_array_argument
     jp      load_caq_array
@@ -450,6 +456,36 @@ ST_LOAD:
 .basic:
     ex      (sp),hl               ; HL = String Descriptor, Stack = Text Pointer
     jp      load_basic_program
+
+;-----------------------------------------------------------------------------
+; Load BASIC Program in ASCII format
+; Input: HL: String descriptor address
+;-----------------------------------------------------------------------------
+;; LOAD "/t/ascprog.bas",ASC
+load_ascii_program:
+    call    dos_open_read
+    jp      m,_dos_error
+    ld      hl,(TXTTAB)
+    inc     hl
+    inc     hl
+    ld      (VARTAB),hl
+
+.lineloop
+    ld      bc,256
+    ld      hl,(TOPMEM)
+    add     hl,bc
+    call    esp_read_line
+    jp      m,.done
+    call    basic_add_line
+    jr      .lineloop
+.done
+    push    af
+    call    init_basic_program
+    pop     af
+    cp      ERR_EOF
+    jp      nz,_dos_error
+    pop     hl
+    ret
 
 ;-----------------------------------------------------------------------------
 ; Load CAQ/BAS file
@@ -943,8 +979,83 @@ check_sync_bytes:
     jp      nz, BDFERR
     ret
 
+;-----------------------------------------------------------------------------
+; Open File
+; Syntax: OPEN(filename$ FOR INPUT)
+;-----------------------------------------------------------------------------
+; A=OPEN("autokeys" FOR INPUT)
+; A=OPEN("autokeys" FOR OUTPUT)
+FN_OPEN:
+    call    esp_close_all         ; Only one file at a time, for now
+    rst     CHRGET                ; Skip OPEN Token
+    SYNCHK  '('                   ; `OPEN(filename$ `
+    call    get_strdesc_arg       ; HL = StrDsc; Stack = TxtPtr, RtnAdr
+    ex      (sp),hl               ; HL = TxtPtr; Stack = StrDsc, RtnAdr
+    rst     SYNCHR                ; `FOR`
+    byte    FORTK
+    jp      z,SNERR               ; Syntax error if end of statement
+    push    af                    ; Stack = IN/PUT, Stack = StrDsc, RtnAdr
+    cp      INPUTK
+    jr      nz,.notinput          ; If `INPUT`
+    rst     CHRGET                ;   Skip INPUT`
+    jr      .paren                ; else
+.notinput
+    rst     SYNCHR                ;   Require `OUTPUT`
+    byte    OUTTK
+    rst     SYNCHR
+    byte    PUTTK
+.paren
+    SYNCHK  ')'                   ; `)`
+    pop     af                    ; A = IN/OUT, StrDsc, RtnAdr
+    ex      (sp),hl               ; HL = StrDsc; Stack = TxtPtr, RtnAdr
+    ld      bc,LABBCK              
+    push    bc                    ; Stack = LABBCK, TxtPtr, RtnAdr
+    cp      INPUTK                ; If INPUT
+    jr      nz,.notread
+    call    dos_open_read         ;   Open for Read
+    jr      .done                 ; Else
+.notread
+    call    dos_open_write        ;   Open for Write
+.done
+    jp      m,_dos_error
+    jp      SNGFLT
+    
 
+;-----------------------------------------------------------------------------
+; Input full line
+; Syntax: LINE INPUT# channel,var$
+;-----------------------------------------------------------------------------
+; A=OPEN("/t/test.txt" FOR INPUT)
+; LINE INPUT# 0, A$
+; PRINT A$
 
+ST_LINE_INPUT:
+    rst     CHRGET            ; Skip INPUT
+    SYNCHK  '#'               ; Require #
+    call    GETINT            ; Parse FilDsc
+    or      a                 ; If not 0
+    jp      nz,FCERR          ;   Error - For now
+    push    af                ; Stack = FilDsc, RtnAdr
+    SYNCHK  ','               ; Require comma
+    call    PTRGET            ; Get pointer to variable
+    call    GETYPE            ; If not string
+    jp      nz,TMERR          ;   Type mismatch error
+    pop     af                ; A = FilDsc; Stack = TxtPtr  
+    push    hl                ; Stack = TxtPtr, RtnAdr
+    push    de                ; Stack = VarPtr, TxtPtr, RtnAdr
+    ld      bc,256            ; Maximum bytes
+    ld      hl,(TOPMEM)       
+    add     hl,bc             ; Work buffer
+    call    esp_read_line
+    jp      m,_dos_error
+    call    TIMSTR            ; Copy buffer into temporary string
+    call    FREFAC            ; HL = TmpDsc
+    ex      de,hl             ; DE = TmpDsc
+    pop     hl                ; HL = VarPtr; Stack = TxtPtr, RtnAdr
+    call    MOVE              ; Copy descriptor to variable
+    pop     hl                ; HL = TxtPtr; Stack = RtnAdr
+    ret
+    
 ;-----------------------------------------------------------------------------
 ; Parse literal string only in Direct Mode
 ; Parse string expression only during RUN

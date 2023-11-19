@@ -193,7 +193,6 @@ esp_read_bytes:
     pop     bc
     ret
 
-
 ;-----------------------------------------------------------------------------
 ; Read bytes from ESP to paged memory
 ; Input: A: page
@@ -622,3 +621,8 @@ esp_set_keymode:
     or      a
     ret
     
+esp_read_line:
+    call    page_map_aux
+    call    esp_aux_read_line
+    jp      page_restore_plus
+

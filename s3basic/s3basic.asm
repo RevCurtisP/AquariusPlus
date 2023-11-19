@@ -870,7 +870,7 @@ HOOK3:  byte    3                 ;
 LEXIST: push    bc                ;[M80] SAVE THE POINTER
         jr      nc,NODEL          ;
 ;[M80] DELETE THE LINE
-        ex      de,hl             ;[M80] [D,E] NOW HAVE THE POINTER TO NEXT LINE
+DEL:    ex      de,hl             ;[M80] [D,E] NOW HAVE THE POINTER TO NEXT LINE
         ld      hl,(VARTAB)       ;[M80] COMPACTIFYING TO VARTAB
 MLOOP:  ld      a,(de)            ;
         ld      (bc),a            ;[M80] SHOVING DOWN TO ELIMINATE A LINE

@@ -204,8 +204,6 @@ SPLP:   ld      (hl),a            ;SAVE CHAR
         djnz    SPLP              ;KEEP STORING CHAR
         jp      FINBCK            ;PUT TEMP DESC WHEN DONE
 
-
-
 ;----------------------------------------------------------------------------
 ; Get Evaluated Formula Type
 ; Output: Zero Set if String, Clear if Number

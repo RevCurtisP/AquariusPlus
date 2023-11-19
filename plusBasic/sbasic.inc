@@ -145,6 +145,7 @@ ERRFN1:     equ $03F4   ; Print String in HL + " in " + line number, Return to I
 STPRDY      equ $0401   ; For LIST command stopping
 READY:      equ $0402   ; Enter direct mode
 MAIN        equ $0414   ; Immediate Mode loop     
+DEL         equ $044B   ; Delete BASIC line
 LINKIT      equ $0487   ; Link Line with starting address minus 1 in HL
 CHEAD       equ $0489   ; Link Lines with starting address in DE
 FNDLIN      equ $049F   ; Find BASIC line with line number in DE
@@ -237,6 +238,8 @@ POPHRT      equ $141A   ; Pop HL and return
 FDIV        equ $142F   ; Divide: FACC = BCDE / FACC
 FLOATR      equ $14FB   ; Float signed number in B,A,D,E
 MOVFR       equ $1523   ; Move B,C,D,E to FACC
+MOVE        equ $153D   ; Copy 4 bytes from (DE) to (HL)
+MOVE1       equ $153F   ; Copy B bytes from (DE) to (HL)
 QINT        equ $1586   ; Convert FAC to integer in C,D,E
 INT         equ $15B1   ; FACC = INT(FACC)
 FIN         equ $15E5   ; Parse floating point number
@@ -271,6 +274,7 @@ TTYMOP      equ $1E22   ; Enter TTYMOV after LD HL,(CURRAM)
 TTYSAV      equ $1E3E   ; Save Column and Position
 TTYCLR      equ $1E45   ; Clear screen (EXX before calling)
 SOUNDS      equ $1E64   ; Play frequency DEfor duration BC
+INCHRH      equ $1E7E   ; Read key from keyboard
 JMPINI:     equ $1FE1   ; Power Up/Reset Routine: Jumped to from RST 0
 PRNTIT:     equ $1FF2   ; Print copyright message and return
 
@@ -282,7 +286,9 @@ SCNLBL  equ     $200F   ;; | Line label hook for GOTO, GOSUB, and RESTORE
 XINIT:      equ $E010   ; Cartridge entry point
 
 ; Standard BASIC Tokens
+FORTK       equ $81     ; FOR
 DATATK      equ $83     ; DATA
+INPUTK      equ $84     ; INPUT
 GOTOTK      equ $88     ; GOTO
 RESTK       equ $8B     ; RESTORE    
 GOSUTK      equ $8C     ; GOSUB
@@ -303,6 +309,7 @@ LESSTK      equ $B1     ; <
 ONEFUN      equ $B2     ; First Function Token
 INTTK       equ $B3     ; INT
 POSTK       equ $B8     ; POS
+ASCTK       equ $C5     ; ASC
 
 ;Adddress of Byte following Hook RST
 HOOK0       = $03DF

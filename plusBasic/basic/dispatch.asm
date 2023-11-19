@@ -100,7 +100,7 @@ STJUMPS:
     dw      ST_GET                ;$CD GET
     dw      SNERR                 ;$CE  
     dw      SNERR                 ;$CF  
-    dw      GSERR                 ;$D0 LINE
+    dw      ST_LINE               ;$D0 LINE
     dw      SNERR                 ;$D1 SWAP 
     dw      ST_DOKE               ;$D2 DOKE
     dw      ST_TIMER              ;$D3 TIME 
@@ -226,7 +226,7 @@ FNJUMPS:
     dw      SNERR                 ;$F7 SET
     dw      SNERR                 ;$F8 WRITE
     dw      SNERR                 ;$F9 USE
-    dw      SNERR                 ;$FA OPEN
+    dw      FN_OPEN               ;$FA OPEN
     dw      SNERR                 ;$FB CLOSE
     dw      SNERR                 ;$FC
     dw      SNERR                 ;$FD
