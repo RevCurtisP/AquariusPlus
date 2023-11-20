@@ -725,10 +725,10 @@ run_cmd:
     call    key_set_keymode       ; Turn off key repeat
     pop     af
 
-    jp      z, RUNC            ; If no argument then RUN from 1st line
+    jr      z,run_c               ; If no argument then RUN from 1st line
 
     cp      '_'                ; If it's a label
-    jp      z,CONRUN           ;   Do RUN line#
+    jr      z,con_run             ;   Do RUN line#
     
     push    hl
     call    FRMEVL             ; Get argument type
@@ -745,7 +745,18 @@ run_cmd:
     ; RUN with line number
     call    CLEARC             ; Init BASIC run environment
     ld      bc, NEWSTT
+run_c2:
+    call    clear_all_errvars
     jp      RUNC2              ; GOTO line number
+
+con_run:
+    call    clear_all_errvars
+    jp      CONRUN
+
+run_c:
+    call    clear_all_errvars
+    jp      RUNC              ; GOTO line number
+
 
 ;-----------------------------------------------------------------------------
 ; Run file
@@ -785,7 +796,7 @@ run_file:
 .load_basic:
     call    clear_all_errvars     ; Clear ON ERROR sytem variables
     pop     bc                    ; Discard Text Pointer
-    ld      bc,RUNC
+    ld      bc,run_c
     push    bc                    ; Return to RUNC
     call    load_basic_program
 
