@@ -31,35 +31,13 @@ dos_create_dir:
     ld      a, ESPCMD_MKDIR       ; Set ESP Command
     jp      esp_cmd_string        ; Issue ESP command
 
-;-----------------------------------------------------------------------------
-; dos_get_cwd - Get Current Directory
-; Input: HL: Buffer address
-; Output:  A: Result, E: String Length, DE = End of String, HL = Buffer Address
-;-----------------------------------------------------------------------------
 dos_get_cwd:
-    ld      a,ESPCMD_GETCWD       ; Issue CWD command
-    call    esp_cmd
-    call    esp_get_result 
-    jp      m,.done               ; Return if Error
-    call    esp_read_to_buff      ; Get current directory and write to buffer
-.done
-    ret
+    call    page_map_auxrom
+    jp      dosx_get_cwd
 
-;-----------------------------------------------------------------------------
-; dos_rename_dir - Delete file/directory
-; Input: DE: New name string descriptor
-;        HL: Old name string descriptor
-; Output:  A: Result
-; Clobbered: BC, DE
-;-----------------------------------------------------------------------------
 dos_rename_file:
-    push    de                    ; Save new name descriptor
-    ld      a, ESPCMD_RENAME      ; Set ESP Command
-    call    esp_cmd               ; Issue ESP command 
-    call    esp_send_strdesc      ; Send old name    
-    pop     hl                    ; HL = new name descriptor
-    call    esp_send_strdesc      ; Send new name
-    jp      esp_get_result        ; Get result and return
+    call    page_map_auxrom
+    jp      dosx_rename_file
 
 ;-----------------------------------------------------------------------------
 ; dos_get_file_stat - Return File Status
@@ -69,22 +47,8 @@ dos_rename_file:
 ; Clobbered: BC, DE
 ;-----------------------------------------------------------------------------
 dos_get_filestat:
-    ld      a, ESPCMD_STAT        ; Set ESP Command
-    call    esp_cmd               ; Issue ESP command 
-    jp      m,.done               ; Return if Error
-    call    esp_send_string       ; Send filename  
-    call    esp_get_de
-    ld      (FILEDATE),de
-    call    esp_get_de
-    ld      (FILETIME),de
-    call    esp_get_byte
-    ld      (FILEATTR),de
-    call    esp_get_long
-    ld      (FILESIZE),bc
-    ld      (FILESIZE+2),de
-    call    esp_get_result 
-.done
-    ret
+    call    page_map_auxrom
+    jp      dosx_get_filestat
 
 ;-----------------------------------------------------------------------------
 ; dos_open_dir - Open Directory for Read

@@ -570,59 +570,20 @@ esp_seek:
 esp_tell:
     ret:
 
-;-----------------------------------------------------------------------------
-; esp_get_datetime - Read date and time into string buffer
-; Input: HL = Buffer Address
-; Sets: string_buff: Date and Time in format YYYYMMDDHHmmss
-; Output:  E: String Length, DE = End of String, HL = Buffer Address
-;-----------------------------------------------------------------------------
 esp_get_datetime:
-    ld      a,ESPCMD_DATETIME     ; Issue DATETIME command
-    call    esp_cmd
-    xor     a     
-    call    esp_send_byte         ; Response Type ($00)
-    call    esp_get_result 
-    ret     m                     
-    jp      esp_read_to_buff      
+    call    page_map_auxrom
+    jp      espx_get_datetime
 
-;-----------------------------------------------------------------------------
-; esp_get_mouse - Read date and time into string buffer
-; Output:  A: 0 if succesful, else error code
-;         BC: X-position
-;          E: Button State      
-;          D: Y-position
-;          L: Wheel delta
-;-----------------------------------------------------------------------------
 esp_get_mouse:
-    ld      a,ESPCMD_GETMOUSE     ; Issue MOUSE command
-    call    esp_cmd
-    call    esp_get_byte
-    or      a
-    ret     m                     
-    call    esp_get_long          ; BC = X, D = Y, E = Buttons
-    xor     a
-;   call    esp_get_byte          ; A = Wheel Delta
-    ld      l,a                   ; L = Wheel Delta
-    xor     a                     ; Return success
-    ret
+    call    page_map_auxrom
+    jp      espx_get_mouse
 
-;-----------------------------------------------------------------------------
-; esp_set_keymode - Set keyboard buffer mode
-;  Input: A: Buffer Mode (KB_ENABLE | KB_SCANCODE | KB_REPEAT) 
-; Output: A: 0 if succesful, else error code
-;-----------------------------------------------------------------------------
 esp_set_keymode:
-    push    a
-    ld      a,ESPCMD_KEYMODE     ; Issue DATETIME command
-    call    esp_cmd
-    pop     a
-    call    esp_send_byte        ; Keyboard buffer mode 
-    call    esp_get_byte         ; Get result
-    or      a
-    ret
+    call    page_map_auxrom
+    jp    espx_set_keymode
     
 esp_read_line:
-    call    page_map_aux
-    call    esp_aux_read_line
-    jp      page_restore_plus
+    call    page_map_auxrom
+    call    espx_read_line
+    jp      page_restore_bank3
 

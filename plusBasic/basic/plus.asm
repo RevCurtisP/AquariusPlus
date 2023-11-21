@@ -78,14 +78,15 @@ FN_GETKEY:
 FN_MOUSE:
     rst     CHRGET                ; Skip MOUSE token
     jr      z,.snerr              ;   Error
-    ex      af,af'
+    push    af                    ; Stack = SfxChr, RtnAdr
     rst     CHRGET                ; Skip Character after MOUSE
-    push    hl                    ; Stack = TxtPtr, RtnAdr
+    ex      (sp),hl               ; HL = SfxChr, Stack = TxtPtr, RtnAdr
     ld      bc,LABBCK
     push    bc                    ; Stack = LABBCK, TxtPtr, RtnAdr
+    push    hl                    ; Stack = SfxChr, LABBCK, TxtPtr, RtnAdr
     call    esp_get_mouse         ; BC = xpos, D = buttons, E = ypos
     jr      nz,.not_found
-    ex      af,af'
+    pop     af                    ; AF = SfxChr; Stack = LABBCK, TxtPtr, RtnAdr
     cp      'X'
     jr      z,.xpos
     cp      'Y'
@@ -103,6 +104,7 @@ FN_MOUSE:
     ld      a,e
     jp      SNGFLT
 .not_found:
+    pop     af                    ; Stack = LABBCK, TxtPtr, RtnAdr
     ld      a,-1                  ; Return Not found
     jr      .signed_byte
 .xpos:

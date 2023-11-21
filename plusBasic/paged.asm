@@ -440,6 +440,32 @@ page_map_aux:
     jr      _map_page_bank3
 
 ;-----------------------------------------------------------------------------
+; Map Bank 3 to Page 2
+; Clobbers AF',IX
+;-----------------------------------------------------------------------------
+page_map_auxrom:
+    pop     ix                    ; IX = RtnAdr
+    ex      af,af'
+    in      a,(IO_BANK3)          ; A = CurPg
+    push    af                    ; Stack = CurPg
+    ld      a,ROM_AUX_PG
+    out     (IO_BANK3),a
+    ex      af,af'
+    jp      (ix)
+
+;-----------------------------------------------------------------------------
+; Restore Bank 3 to Previous Page and Return to Caller
+; Clobbers AF'
+;-----------------------------------------------------------------------------
+page_restore_bank3:
+    ex      af,af'
+    pop     af                    ; A = OldPg
+_map_page:
+    out     (IO_BANK3),a
+    ex      af,af'
+    ret
+
+;-----------------------------------------------------------------------------
 ; Map Bank 3 to Page 36
 ;-----------------------------------------------------------------------------
 page_map_basbuf:

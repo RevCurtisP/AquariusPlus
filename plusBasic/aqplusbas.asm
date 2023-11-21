@@ -48,7 +48,7 @@
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.18r",0
+    db "v0.18s",0
 plus_len   equ   $ - plus_text
 
 auto_cmd:
@@ -472,35 +472,10 @@ _inlin_done:
 ; Hook 2 - READY (Enter Direct Mode
 ;-----------------------------------------------------------------------------
 direct_mode:
-    call    text_screen
-
-    ld      a,(BASYSCTL)
-    and     KB_REPEAT
-    or      KB_ENABLE | KB_ASCII
-    call    key_set_keymode       ; Turn on keybuffer, ASCII mode, no repeat
-
-    jp      HOOK2+1
-
-; To clean up after aborted DOS command after allowing multiple files open
-    ld      a,(BAS_FDESC)         ; Get File Descriptor in Use
-    or      a                     ; If Valid Descriptor
-    call    m,close_bas_fdesc     ;   Close file and clear saved Descriptofr
-.no_fdesc
-    jp      HOOK2+1
-
-close_bas_fdesc:
-    call    dos_close             ;   Close the File
-clear_bas_fdesc:
-    ld      a,128
-    ld      (BAS_FDESC),a         ; Set to No File
-    ret
-
-text_screen:
-    in      a,(IO_VCTRL)
-    and     a,~VCTRL_MODE_MC
-    or      a,VCTRL_TEXT_EN
-    out     (IO_VCTRL),a
-    ret
+    ld      hl,HOOK2+1            ; Make s3direct_mode return to HOOK2+1
+    push    hl                  
+    call    page_map_auxrom
+    jp      s3direct_mode
 
 reset_screen:
     ld      a,VCTRL_TEXT_EN
@@ -1062,6 +1037,7 @@ _s3_string_ext
     phase   $C000     ;Assemble in ROM Page 1 which will be in Bank 3
 
     include "coldboot.asm"      ; Cold boot code
+    include "dos_aux.asm"
     include "editor.asm"        ; Advanced line editor
     include "esp_aux.asm"       ; ESP routines in auxiliary ROM
     include "s3hooks.asm"       ; S3 BASIC direct mode hooks
