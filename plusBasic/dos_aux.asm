@@ -8,10 +8,8 @@ dosx_get_cwd:
     ld      a,ESPCMD_GETCWD       ; Issue CWD command
     call    esp_cmd
     call    esp_get_result 
-    jp      m,.done               ; Return if Error
-    call    espx_read_to_buff     ; Get current directory and write to buffer
-.done
-    jp      page_restore_bank3
+    jp      m,page_restore_bank3               ; Return if Error
+    jp      espx_read_to_buff     ; Get current directory and write to buffer
 
 ;-----------------------------------------------------------------------------
 ; dos_get_file_stat - Return File Status

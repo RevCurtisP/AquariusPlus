@@ -45,10 +45,12 @@
     jp      _inlin_hook     ; $20?? Jump from INLIN for command history recall
     jp      _inlin_done     ; $20?? Jumped from FININL to save command to history
 
+    jp      play_raw        ; $2048
+
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.18s",0
+    db "v0.18s1",0
 plus_len   equ   $ - plus_text
 
 auto_cmd:
@@ -1013,6 +1015,7 @@ _s3_string_ext
     include "usbbas.asm"        ; Statements and functions from USB BASIC
     include "shared.asm"        ; Shared subroutines
     include "misc.asm"          ; Miscellaneous subroutines
+    include "sound.asm"         ; Sound and Music
 
     ; Graphics modules
     include "gfx.asm"           ; Main graphics module
@@ -1021,6 +1024,7 @@ _s3_string_ext
     include "screen.asm"        ; Text screen graphics subroutines
     include "sprite.asm"        ; Sprite graphics module
     include "tile.asm"          ; Tile graphics module
+
 
     assert !($FFFF<$)   ; ROM full!
 

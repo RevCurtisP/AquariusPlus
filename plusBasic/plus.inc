@@ -109,6 +109,7 @@ IO_VSPRIDX:     equ $E8
 IO_VSPRATTR:    equ $E9
 IO_VPALSEL:     equ $EA
 IO_VPALDATA:    equ $EB
+IO_PCMDAC       equ $EC
 IO_VLINE:       equ $EC
 IO_VIRQLINE:    equ $ED
 IO_IRQMASK:     equ $EE
