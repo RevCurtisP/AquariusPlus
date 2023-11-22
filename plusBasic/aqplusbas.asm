@@ -46,11 +46,12 @@
     jp      _inlin_done     ; $20?? Jumped from FININL to save command to history
 
     jp      play_raw        ; $2048
+    jp      play_paged      ; $204B
 
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.18t",0
+    db "v0.18t2",0
 plus_len   equ   $ - plus_text
 
 auto_cmd:

@@ -35,7 +35,8 @@ ST_CALL:
     jr      nz,.arg_bc
     call    .get_arg              ; Stack = ArgAF, ArgBC, ArgDE, ArgHL, CalAdr, RtnAdr
 .arg_af:
-    pop     af                    ; AF = ArgAF; Stack = ArgAF, ArgHL, ArgHL, CalAdr, RtnAdr
+    pop     de                    ; DE = ArgAF; Stack = ArgAF, ArgHL, ArgHL, CalAdr, RtnAdr
+    ld      a,e                   ; A = ArgA
 .arg_bc:                                        
     pop     bc                    ; BC = ArgBC; Stack = ArgDE, ArgHL, CalAdr, RtnAdr
 .arg_de:                                        
