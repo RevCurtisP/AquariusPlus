@@ -2,80 +2,90 @@
 ; Sound and Music Routines
 ;=====================================================================================
 
-
-
 ;-----------------------------------------------------------------------------
-; Play Sample in Main Memory
-; Input: C: Delay
-;       DE: Length in bytes
-;       HL: Start address
-;-----------------------------------------------------------------------------
-play_raw:
-.loop
-    ld      a,d                   ; 4    4       ; CPU Cycles = 56 + 13 * Delay
-    or      e                     ; 4	   8       ; Rate = 3579545 / (56 + 13 * Delay)
-    jr      z,.done               ; 7   15       
-    dec     de                    ; 6	  21      
-    ld      a,(hl)                ; 7	  28
-    inc     hl                    ; 6	  34
-    out     (IO_PCMDAC),a         ; 11  45
-    ld      b,c                   ; 4   49
-.delay
-    djnz    .delay                ; 13 * B 
-    jr      .loop                 ; 12  61 - 5 
-    
-.done
-    out     (IO_PCMDAC),a
-    ret
-    
-    
-;-----------------------------------------------------------------------------
-; Play Sample in Paged Memory
+; Play Raw Sample in Paged Memory
 ; Input: A: Page
-;        C: Delay
-;       DE: Length in bytes
 ;       HL: Start address
-; Clobbers: BC,DE,HL
+;
+; Sample Format:
+;  0-1   Sample Length in Bytes
+;   2    0
+;   3    Sample Rate index (see delay table)
 ;-----------------------------------------------------------------------------
-play_paged:
-    ld      b,a                   ; B = SampPg
-    in      a,(IO_BANK1)          ; A = CrntPg
+play_sample:
+    ld      b,a                   ; B = SampPg    in      a,(IO_BANK1)          ; A = CrntPg
     push    af                    ; Stack = CrntPg, RtnAdr
     ld      a,b                   ; A = SampPg
     out     (IO_BANK1),a          ; Map SampPg into Bank 1
     ld      a,h                   ; Coerce start address in Bank 1
     and     $3F
-    or      $40                   ; 
-    ld      h,a                   ; 
+    or      $40                   ;
+    ld      h,a                   ;
+
+    ld      e,(hl)                ; Length LSB
+    inc     hl
+    ld      d,(hl)                ; Length MSB
+    inc     hl
+    inc     hl
+    ld      c,(hl)                ; Rate index
+    inc     hl
+    push    hl                    ; Stack = Length, RtnAdr
+    ld      hl,_delay_table
+    ld      b,0                   ; BC = Index
+    add     hl,bc                 ; HL = Address in Table
+    ld      c,(hl)                ; C = Delay value
+    pop     hl                    ; HL = Length; Stack = RtnAdr
+;-----------------------------------------------------------------------------
+;  A: Page
+;  C: Delay
+; DE: Length in bytes; Clobbers: BC,DE,HL
+; HL: Start address
+;-----------------------------------------------------------------------------
 .loop
-    ld      a,d                   ;  4   4    ; CPU Cycles = 105 + 13 * Delay
-    or      e                     ;  4	 8    ; Rate = 3579545 / (105 + 13 * Delay)
-    jr      z,.done               ;  7  15       
-    dec     de                    ;  6	21      
-    ld      a,(hl)                ;  7	28
-    out     (IO_PCMDAC),a         ; 11  39
-    ld      b,c                   ;  4  43
+    ld      a,$6F                 ;  7	 7
+    in      a,($FF)               ; 11  18
+    sub     $CF                   ;  7	25
+    jp      z,.done               ; 10  35
+    ld      a,d                   ;  4  39    ; CPU Cycles = 105 + 13 * Delay
+    or      e                     ;  4	43    ; Rate = 3579545 / (105 + 13 * Delay)
+    jr      z,.done               ;  7  50
+    dec     de                    ;  6	56
+    ld      a,(hl)                ;  7	63
+    out     (IO_PCMDAC),a         ; 11  74
+    ld      b,c                   ;  4  78
 .delay
-    djnz    .delay                ; 13 * B 
-                                  ; -5  38
-    inc     hl                    ;  6	44
-    bit     7,h                   ;  8  52    ; If H is $80
-    jr      z,.nocross            ;  7  59    ;   L will be $00 
+    djnz    .delay                ; 13 * B
+                                  ; -5  73
+    inc     hl                    ;  6	79
+    bit     7,h                   ;  8  87    ; If H is $80
+    jr      z,.nocross            ;  7  94    ;   L will be $00
 
-    in      a,(IO_BANK1)          ; 11  70
-    srl     h                     ;  8	78    ;   HL = $4000
-    inc     a                     ;  4	82    ;   Map next page into Bank 1
-    out     (IO_BANK1),a          ; 11  93
-    jr      .loop                 ; 12 105    ; Else
+    in      a,(IO_BANK1)          ; 11 105
+    srl     h                     ;  8 113    ;   HL = $4000
+    inc     a                     ;  4 117    ;   Map next page into Bank 1
+    out     (IO_BANK1),a          ; 11 128
+    jr      .loop                 ; 12 140    ; Else
 
-.nocross                          ;  5  64    ; need 29
-    push    ix                    ; 15  79
-    pop     ix                    ; 14  93
-    jr      .loop                 ; 12 105    
-    
+.nocross                          ;  5  99    ; need 29
+    push    ix                    ; 15 114
+    pop     ix                    ; 14 128
+    jr      .loop                 ; 12 140    ; NEW = 140
+
 .done
     out     (IO_PCMDAC),a
     pop     af                    ; A = OrigPg; Stack = RtnAdr
     out     (IO_BANK1),a          ; Restore original page
     ret
-    
+
+;-----------------------------------------------------------------------------
+; Sample Rate to Delay lookup table
+;-----------------------------------------------------------------------------
+_delay_table:
+    byte    58                    ; 0  4000
+    byte    35                    ; 1  6000
+    byte    24                    ; 2  8000
+    byte    14                    ; 3 11000
+    byte    12                    ; 4 12000
+    byte     9                    ; 5 14000
+    byte     6                    ; 6 16000
+    byte     3                    ; 7 20000`
