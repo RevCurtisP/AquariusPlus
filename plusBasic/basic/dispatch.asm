@@ -271,10 +271,13 @@ execute_function:
     jp      (ix)                ; Go Do It
 
 extended_statement:
-    sub     FILLTK              ; Work backwords from FILL
+    sub     FILLTK              ; Work upwards from FILL
     jp      z,ST_FILL
+    dec     a                   ; Skip COMPARE
+    dec     a                   ; 
+    jp      z,ST_PLAY
     jp      SNERR
-
+   
 extended_function:
     inc     hl                  ; Skip extended prefix
     ld      a,(hl)              ; Get Extended token

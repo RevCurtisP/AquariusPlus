@@ -179,11 +179,13 @@ xtokens = {
     0x88: "FAST",               
     0x89: "TEXT",               
     0x8A: "ARGS",               
+    0x8B: "SAMPLE",               
+    0x8C: "PT3",
     0x90: "RESET",
-    0x91: "PT3",
     0x92: "VER",
     0x93: "FILL",
-    0x94: "COMPARE"
+    0x94: "COMPARE",
+    0x95: "PLAY"
 }
 
 with open(args.input, "rb") as f:

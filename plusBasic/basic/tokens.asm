@@ -77,20 +77,21 @@ EXTCMDS:
     db $80 + 'F',"AST"            ; $88            
     db $80 + 'T',"EXT"            ; $89             
     db $80 + 'A',"RGS"            ; $8A             
-    db $80 + ' '                  ; $8B             
-    db $80 + ' '                  ; $8C             
+    db $80 + 'S',"AMPLE"          ; $8B             
+    db $80 + 'P',"T3"             ; $8C             
     db $80 + ' '                  ; $8D             
     db $80 + ' '                  ; $8E unused (REM)             
     db $80 + ' '                  ; $8F             
     ; Primary Tokens grouped together, so extended dispatch can use DEC A
     db $80 + 'R',"ESET"           ; $90             
-    db $80 + 'P',"T3"             ; $91             
+    db $80 + ' '                  ; $91             
     db $80 + 'V',"ER"             ; $92             
     db $80 + 'F',"ILL"            ; $93
     db $80 + 'C',"OMPARE"         ; $94
+    db $80 + 'P',"LAY"            ; $95
     db $80             ; End of table marker
 
-EXTOKEN = $95     ; Last Token + 1
+EXTOKEN = $96     ; Last Token + 1
 
 ;-----------------------------------------------------------------------------
 ; plusBASIC tokens
@@ -133,11 +134,13 @@ DEXTK     equ     $87
 FASTK     equ     $88
 TEXTK     equ     $89
 ARGSTK    equ     $8A
+SAMPTK    equ     $8B
+PT3TK     equ     $8C
 RESETK    equ     $90
-PT3TK     equ     $91
 VERTK     equ     $92
 FILLTK    equ     $93
 COMPTK    equ     $94
+PLAYTK    equ     $95
 
 ;-----------------------------------------------------------------------------
 ; Convert keyword to token - hook 10
@@ -288,14 +291,14 @@ token_to_keyword:
 ; $88 FAST
 ; $89 TEXT
 ; $8A ARGS
-; $8B 
-; $8C
+; $8B SAMPLE
+; $8C PT3
 ; $8D
 ; $8E unusable (REM)
 ; $8F
 ; $90 RESET
-; $91 PT3
+; $91 
 ; $92 VER
 ; $93 FILL
 ; $94 COMPARE
-
+; $95 PLAY

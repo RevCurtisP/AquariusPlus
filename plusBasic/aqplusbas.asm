@@ -48,7 +48,7 @@
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.18t3",0
+    db "v0.18u",0
 plus_len   equ   $ - plus_text
 
 auto_cmd:
@@ -1009,11 +1009,11 @@ _s3_string_ext
     include "files.asm"         ; Disk and File I/O machine assembly routines
     include "fileio.asm"        ; Disk and File I/O statements and functions
     include "graphics.asm"      ; Graphics statements and functions
-    include "plus.asm"          ; plusBASIC unique statements and functions
-    include "usbbas.asm"        ; Statements and functions from USB BASIC
-    include "shared.asm"        ; Shared subroutines
     include "misc.asm"          ; Miscellaneous subroutines
-    include "sound.asm"         ; Sound and Music
+    include "play.asm"
+    include "plus.asm"          ; plusBASIC unique statements and functions
+    include "shared.asm"        ; Shared subroutines
+    include "usbbas.asm"        ; Statements and functions from USB BASIC
 
     ; Graphics modules
     include "gfx.asm"           ; Main graphics module
@@ -1022,6 +1022,7 @@ _s3_string_ext
     include "screen.asm"        ; Text screen graphics subroutines
     include "sprite.asm"        ; Sprite graphics module
     include "tile.asm"          ; Tile graphics module
+    include "sound.asm"         ; Sound and Music
 
 
     assert !($FFFF<$)   ; ROM full!

@@ -35,6 +35,7 @@ play_sample:
     add     hl,bc                 ; HL = Address in Table
     ld      c,(hl)                ; C = Delay value
     pop     hl                    ; HL = Length; Stack = RtnAdr
+    di                            ; Disable interrupts
 ;-----------------------------------------------------------------------------
 ;  A: Page
 ;  C: Delay
@@ -75,17 +76,21 @@ play_sample:
     out     (IO_PCMDAC),a
     pop     af                    ; A = OrigPg; Stack = RtnAdr
     out     (IO_BANK1),a          ; Restore original page
+    ld      a,(IRQACTIVE)
+    or      a
+    ret     z                     ; If any IRQ routines are active
+    ei                            ;   Enable interrupts
     ret
 
 ;-----------------------------------------------------------------------------
 ; Sample Rate to Delay lookup table
 ;-----------------------------------------------------------------------------
-_delay_table:
-    byte    58                    ; 0  4000
-    byte    35                    ; 1  6000
-    byte    24                    ; 2  8000
-    byte    14                    ; 3 11000
-    byte    12                    ; 4 12000
-    byte     9                    ; 5 14000
-    byte     6                    ; 6 16000
-    byte     3                    ; 7 20000`
+_delay_table:                     
+    byte    58                    ; 0  4000    4003.97
+    byte    35                    ; 1  6000    6016.04
+    byte    24                    ; 2  8000    7919.35
+    byte    14                    ; 3 11000   11116.6
+    byte    12                    ; 4 12000   12093.1
+    byte     9                    ; 5 14000   13928.2
+    byte     6                    ; 6 16000   16419.9
+    byte     3                    ; 7 20000   19997.5
