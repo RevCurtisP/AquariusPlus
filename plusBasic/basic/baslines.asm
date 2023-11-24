@@ -32,6 +32,8 @@ tokenize_string:
 ; Input: DE: Output buffer address
 ;        HL: Input buffer address
 ; Output: BC: Line# ($FFFF if no line number and line is not tokenized)
+; Sets Flags: Zero if line is blank
+;             No Carry if no line number
 ; Clobbers: A, IX
 ;-----------------------------------------------------------------------------
 tokenize_line:
@@ -39,13 +41,16 @@ tokenize_line:
     dec     hl                    ; Back up for CHRGET
     rst     CHRGET                ; Get first non-space character
     ret     nc                    ; If not a digit, return no line number
-    push    de                    ; Stack = OutPtr, RtnAdr
+    cp      0                     ; If NULL
+    ret     z                     ;   Return empty, no line number
+    push    de                    ; Stack = OutBuf, RtnAdr
     call    SCNLIN                ; DE = Line#, HL = InpPtr
     ex      de,hl                 ; HL = Line#, DE = InpPtr
-    ex      (sp),hl               ; HL = OutPtr, Stack = Line#, RtnAdr
-    ex      de,hl                 ; DE = OutPtr, HL = InpPtr
+    ex      (sp),hl               ; HL = OutBuf, Stack = Line#, RtnAdr
+    ex      de,hl                 ; DE = OutBuf, HL = InpPtr
     call    tokenize_string       ; Tokenize rest of line
     pop     bc                    ; BC = Line#; Stack = RtnAdr
+    sub     a,1                   ; Return Not Zero, Carry Set
     ret
 
 ; PRINT HEX$(DEEK($384B))

@@ -35,6 +35,11 @@ _dos_error:
     call    esp_close_all
     jp      ERROR
 
+_not_eof_error:
+    cp      ERR_EOF
+    ret     nz
+    jr      _dos_error
+
 _get_cd:
     ld      ix,dos_get_cwd        ; Read current directory into buffer
     call    bas_read_to_buff      ; Set buffer address and call routine
@@ -460,6 +465,7 @@ ST_LOAD:
 ;-----------------------------------------------------------------------------
 ; Load BASIC Program in ASCII format
 ; Input: HL: String descriptor address
+;     Stack: TxtPtr, RtnAdr
 ;-----------------------------------------------------------------------------
 ;; LOAD "/t/ascprog.bas",ASC
 load_ascii_program:
@@ -468,24 +474,44 @@ load_ascii_program:
     ld      hl,(TXTTAB)
     inc     hl
     inc     hl
-    ld      (VARTAB),hl
+    ld      (VARTAB),hl           ; Start new program 
+    ld      bc,0                  ; Init Previous Line to 0
+    push    bc                    ; Stack = PrvLin, TxtPtr, RtnAdr
 
 .lineloop
     ld      bc,256
     ld      hl,(TOPMEM)
-    add     hl,bc
-    call    esp_read_line
+    add     hl,bc                 ; HL = StrBuf
+    call    esp_read_line         ; BC = LinLen
     jp      m,.done
-    call    basic_add_line
+    ld      d,h                   ; DE = StrBuf
+    ld      e,l
+    call    tokenize_line         ; BC = LinNum
+    jr      z,.lineloop           ; If blank, read next line
+    ex      de,hl                 ; HL = StrBuf
+    ld      d,b
+    ld      e,c                   ; DE = LinNum
+    inc     de                    ; DE = Bump LinNum for COMAP
+    ex      (sp),hl               ; HL = PrvLin; Stack = StrBuf, TxtPtr, RtnAdr
+    rst     COMPAR                ; If PrvLin >= LinNum
+    jr      nc,.badline           ;   Issue Error
+    ex      de,hl                 ; HL = LinNum+1
+    ex      (sp),hl               ; HL = StrBuf; Stack = LinNum+1, TxtPtr, RtnAdr
+    ex      de,hl                 ; DE = StrBuf
+    call    basic_append_line     ; Add line to BASIC program
     jr      .lineloop
+.badline
+    ld      a,ERRUS               ; 
 .done
-    push    af
+    pop     bc                    ; Discard PrvLin; Stack = TxtPtr, RtnAdr
+    push    af                    ; Stack = Status, TxtPtr, RtnAdr
     call    init_basic_program
-    pop     af
-    cp      ERR_EOF
-    jp      nz,_dos_error
-    pop     hl
-    ret
+    pop     af                    ; AF = Status; Stack = TxtPtr, RtnAdr
+    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
+    ret     z                     ; Return if no errors
+    jp      m,_not_eof_error      ; If DOS error, process it
+    ld      e,a
+    jp      ERROR                 ; Else issue BASIC error
 
 ;-----------------------------------------------------------------------------
 ; Load CAQ/BAS file

@@ -10,7 +10,7 @@ Text:
 
 # KEYWORD
 
-**TYPE:** _whichBASIC_ typeof [statement|function]
+**TYPE:** _whichBASIC_ typeof [statement|function|pseudovariable]
 
 ***
 

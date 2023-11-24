@@ -89,9 +89,10 @@ EXTCMDS:
     db $80 + 'F',"ILL"            ; $93
     db $80 + 'C',"OMPARE"         ; $94
     db $80 + 'P',"LAY"            ; $95
+    db $80 + 'A',"PPEND"          ; $96
     db $80             ; End of table marker
 
-EXTOKEN = $96     ; Last Token + 1
+EXTOKEN = $97     ; Last Token + 1
 
 ;-----------------------------------------------------------------------------
 ; plusBASIC tokens
@@ -141,6 +142,7 @@ VERTK     equ     $92
 FILLTK    equ     $93
 COMPTK    equ     $94
 PLAYTK    equ     $95
+APNDTK    equ     $96
 
 ;-----------------------------------------------------------------------------
 ; Convert keyword to token - hook 10
@@ -302,3 +304,4 @@ token_to_keyword:
 ; $93 FILL
 ; $94 COMPARE
 ; $95 PLAY
+; $96 APPEND

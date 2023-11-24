@@ -48,7 +48,7 @@
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.18u",0
+    db "v0.18v",0
 plus_len   equ   $ - plus_text
 
 auto_cmd:
@@ -1046,9 +1046,11 @@ _s3_string_ext
     include "s3hooks.asm"       ; S3 BASIC direct mode hooks
     include "screen_aux.asm"    ; Auxiliary
 
-    free_rom_8k = $E000 - $
+    free_rom_8k = $D7FF - $
 
-    dc $E000-$,$76
+    dc $D7FF-$,$76
+
+    dc $E000-$,$76              ; PT3 Player Binary goes here
 
     end
 
