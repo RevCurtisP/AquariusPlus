@@ -124,22 +124,6 @@ s3_ctrl_keys:
     jr      .inlinc
 
 ;-----------------------------------------------------------------------------
-; HOOK12 - OUTDO 
-;-----------------------------------------------------------------------------
-s3_outdo:
-  push    af                ;
-  ld      a,(PRTFLG)        ;[M80] SEE IF WE WANT TO TALK TO LPT
-  or      a                 ;[M80] TEST BITS
-  
-  pop     af
-  cp      7
-  jr      z,_beep
-  
-  
-_beep:
-;;ToDo: check for fast mod e
-
-;-----------------------------------------------------------------------------
 ; Don't tokenize unquoted literal string after DOS command in direct mode
 ;-----------------------------------------------------------------------------
 s3_stuffh_ext:

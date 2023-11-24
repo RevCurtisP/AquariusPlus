@@ -84,7 +84,7 @@ skip_star_array:
 ; Parse Array Variable without subscript
 ; Output: DE = First Byte of Data
 ;         BC = Length of Data
-; Clobbered: A
+; Clobber: A
 ;-----------------------------------------------------------------------------
 get_array: 
     ld      a,1                   ; SEARCH ARRAYS ONLY
@@ -396,6 +396,17 @@ get_on_off:
     rst     SYNCHR                ; Else
     byte    OFFTK                 ;   Require OFF
     xor     a                     ;   Returb 0 with flags set
+    ret
+
+;-----------------------------------------------------------------------------
+; Get String Buffer Address
+; Output: HL: String Buffer Address
+; Clobbers: BC
+;-----------------------------------------------------------------------------
+get_strbuf_addr:
+    ld      bc,256
+    ld      hl,(TOPMEM)
+    add     hl,bc                 ; HL = StrBuf
     ret
 
 ;-----------------------------------------------------------------------------

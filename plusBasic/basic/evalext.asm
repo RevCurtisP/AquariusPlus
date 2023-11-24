@@ -21,6 +21,8 @@ eval_extension:
     jr      z,.eval_hex     
     cp      $27                   ; Apostrophe                       
     jp      z,eval_ascii     
+    cp      LISTTK
+    jp      z,eval_list
     cp      PLUSTK                ; IGNORE "+"
     jp      z,eval_extension      ;
     jp      QDOT     
@@ -262,7 +264,7 @@ oper_stringsub:
     inc     de                  ; Skip second substitution character
     dec     c
     dec     b                   ; Update ReqComma
-    pop     hl                  ; HL = TextPtr
+    pop     hl                  ; HL = TxtPtr
     push    de                  ; Stack = StrPtr
     push    bc                  ; Stack = ReqComma+Counter, StrPtr
     jr      z,.nocomma          ; If not first arg
@@ -295,3 +297,36 @@ oper_stringsub:
     push    hl                  ; HL = TextPtr
     jp      c,OVERR             ; Error if Overflow
     jr      .loop               ; Do next StrChr
+    
+;-----------------------------------------------------------------------------
+; LIST$(line#) - Detozenize Line
+;-----------------------------------------------------------------------------
+eval_list:
+    rst     CHRGET                ; Skip LIST
+    SYNCHK  '$'                   ; Require $
+    SYNCHK  '('                   ; Requite (
+    call    GETINT                ; DE = LinNum
+    SYNCHK  ')'                   ; Require )
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    call    FNDLIN                ; BC = LinLnk
+    jp      nc,USERR              ; No Carry = Line not found
+    push    bc                    ; Stack = LinLnk, TxtPtr, RtnAdr
+    call    get_strbuf_addr       ; HL = StrBuf
+    ex      de,hl                 ; DE = StrBuf
+    pop     hl                    ; HL = LinLnk; Stack = TxtPtr, RtnAdr
+    inc     hl
+    inc     hl                    ; Skip Line Link
+    inc     hl
+    inc     hl                    ; Skip Line Label
+    call    unpack_line           ; Unpack the line
+    call    get_strbuf_addr       ; HL = StrBuf
+    push    hl                    ; Push Dummy Return Address
+return_strlit:
+    dec     hl                    ; Back up to before string
+    ld      b,0                   ; NUL is the only teminator
+    call    STRLT3            
+    call    FREFAC            
+    ld      bc,FINBCK             
+    push    bc                
+    jp      STRCPY
+

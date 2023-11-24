@@ -25,7 +25,7 @@
     jp      _start_cart     ; $2006
     jp      irq_handler     ; $2009 interrupt haandler
     jp      _warm_boot      ; $200C Called from main ROM for warm boot
-    jp      _scan_label     ; $200F Called from GOTO and RESTORE
+    jp      scan_label      ; $200F Called from GOTO and RESTORE
     jp      _keyread        ; $2012 Called from COLORS
     jp      _ctrl_keys      ; $2015
     jp      _iscntc_hook    ; $2018
@@ -48,7 +48,7 @@
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.18v",0
+    db "v0.18w",0
 plus_len   equ   $ - plus_text
 
 auto_cmd:
@@ -513,6 +513,19 @@ _scratch:
     jp      HOOK12+1
 
 ;-----------------------------------------------------------------------------
+; Hook 13 - OUTDO 
+;-----------------------------------------------------------------------------
+_outdo:
+  push    af                
+  ld      a,(BASYSCTL)            ; Get System Control Bits
+  rra                             ; Output to Buffer into Carry
+  jr      nc,.not_buffered        ; If bit set
+  jp      output_to_buffer        ;   Write to buffer 
+.not_buffered:
+  pop     af
+  jp      HOOK13+1
+
+;-----------------------------------------------------------------------------
 ; Hook 18 - INCHRC (Get character from keyboard)
 ;-----------------------------------------------------------------------------
 read_key:
@@ -624,7 +637,7 @@ _ptrget_hook
 ; GOTO and RESUME hack
 ; Check for label at beginning of line, then search for it's line
 ;-----------------------------------------------------------------------------
-_scan_label:
+scan_label:
     dec     hl                    ; Back up in case of space
     rst     CHRGET                ; Reget current character
     cp      '_'
@@ -883,7 +896,7 @@ hook_table:                     ; ## caller   addr  performing function
     dw      keyword_to_token    ; 10 NOTGOS   0536  Converting Keyword to Token
     dw      HOOK11+1            ; 11 CLEAR    0CCD  Execute CLEAR Statement
     dw      _scratch            ; 12 SCRTCH   0BBE  Execute NEW Statement
-    dw      HOOK13+1            ; 13 OUTDO    198A  Execute OUTCHR
+    dw      _outdo              ; 13 OUTDO    198A  Execute OUTCHR
     dw      HOOK14+1            ; 14 ATN      1985  ATN() function
     dw      HOOK15+1            ; 15 DEF      0B3B  DEF statement
     dw      HOOK16+1            ; 16 FNDOER   0B40  FNxx() call

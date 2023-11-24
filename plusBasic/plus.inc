@@ -58,12 +58,19 @@ BORDERCHR   equ $33FF   ; Border character alternate memory location (40 column 
 ; Color RAM Hole
 BORDERCLR   equ $37FF   ; Border color alternate memory location
 
+; plusBASIC temporary files
+; FILNAM ($3851-$3856) - CLOAD/CSAVE File Name
+; FILNAF ($3857-$385C) - File Name on Tape
+BUFPTR      equ $3857   ; Pointer into unpacking buffer
+BUFRET      equ $3859   ; unpack_line return address
+;         $385B-$385C   ; unallocated
+
 ; RNDTAB ($3821-$3840) - Deprecated RND Permutation Table
 BASINTPG    equ $3821   ; BASIC Interrupt Routine Page, 0=None (swapped into BANK 3)
 BASINTJP    equ $3822   ; BASIC Interrupt Routine JP instruction
 BASINTADR   equ $3823   ; BASIC Interrupt Routine JP Address ($3823-$3824)
 BASYSCTL    equ $3825   ; System Control Bits
-                        ; 2: Key Repeat, 5: Ctrl-C, 6: 80 Column Mode, 7: Timer Elapsed
+                        ; 0: Output to Buffer, 2: Key Repeat, 5: Ctrl-C, 6: 80 Column Mode, 7: Timer Elapsed
 IRQACTIVE   equ $3826   ; Active IRQ Routines Bits
                         ; 0: Timer
 TIMERCNT    equ $3827   ; TIMER counter LSB = $3827, MSB = $3829

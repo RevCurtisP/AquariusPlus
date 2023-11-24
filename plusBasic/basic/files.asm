@@ -479,9 +479,7 @@ load_ascii_program:
     push    bc                    ; Stack = PrvLin, TxtPtr, RtnAdr
 
 .lineloop
-    ld      bc,256
-    ld      hl,(TOPMEM)
-    add     hl,bc                 ; HL = StrBuf
+    call    get_strbuf_addr       ; HL = StrBuf
     call    esp_read_line         ; BC = LinLen
     jp      m,.done
     ld      d,h                   ; DE = StrBuf

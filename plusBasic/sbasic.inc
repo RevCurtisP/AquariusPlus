@@ -160,6 +160,7 @@ NODATT      equ $054B   ; Enter STUFFH at check for REM token
 STRNG       equ $0558   ; Stuff Quoted String
 CRDONE      equ $055E   ; Finish CRUNCH
 LIST3       equ $0579   ; Start list at line pointed to by BC
+LISPRT      equ $0598   ; Detokenize and print BASIC line
 RESSRC:     equ $05A8   ; Search keyword list
 NEWSTT:     equ $062C   ; Execute next statement
 GONE        equ $064B   ; Execute statement
@@ -187,7 +188,7 @@ FRMEVL:     equ $0985   ; Evaluate formula
 FRMCHK      equ $0986   ; Skip current character, then evaluate formula
 EVALOP      equ $09C3   ; Operator evaluator in FRMEVL
 QDOT:       equ $0A14   ; Continue EVAL routine
-PARCHK:     equ $0A37   ; Evaluate expression in brackets
+PARCHK:     equ $0A37   ; Evaluate expression in` brackets
 LABBCK:     equ $0A49   ; Return numeric value from function
 ISVAR       equ $0A4E   ; Get variable value or string pointer
 GIVINT      equ $0B21   ; Float Integer MSB=[A], LSB=[C]
@@ -209,6 +210,7 @@ NOTRUB      equ $0DA3   ; Continue Ctrl-key check
 INLINC      equ $0D8E   ; Wait for and process direct mode keypress
 GOODCH      equ $0DE9   ; INLINC - Put key in input buffer
 TIMSTR      equ $0E2F   ; Create tempory string from null-terminated string
+STRCPY      equ $0E39   ; Create copy of string
 STRINI      equ $0E50   ; Reserve space for new string and create descriptor
 STRLIT      equ $0E5F   ; Build descriptor for string litersl
 STRLTI      equ $0E60   ; Do STRLIT, without decrementing HL
