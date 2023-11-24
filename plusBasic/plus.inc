@@ -61,9 +61,9 @@ BORDERCLR   equ $37FF   ; Border color alternate memory location
 ; plusBASIC temporary files
 ; FILNAM ($3851-$3856) - CLOAD/CSAVE File Name
 ; FILNAF ($3857-$385C) - File Name on Tape
-BUFPTR      equ $3857   ; Pointer into unpacking buffer
-BUFRET      equ $3859   ; unpack_line return address
-;         $385B-$385C   ; unallocated
+BUFADR      equ $3857   ; unpack buffer address
+BUFPTR      equ $3859   ; Pointer into unpacking buffer
+BUFRET      equ $385B   ; unpack_line return address
 
 ; RNDTAB ($3821-$3840) - Deprecated RND Permutation Table
 BASINTPG    equ $3821   ; BASIC Interrupt Routine Page, 0=None (swapped into BANK 3)

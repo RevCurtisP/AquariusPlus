@@ -116,7 +116,7 @@ _test:
         
 ;-----------------------------------------------------------------------------
 ; Relink BASIC program lines, starting from beginning of program
-;-----------------------------------------------------------------------------
+;---------------------------------  --------------------------------------------
 basic_link_lines:
     ld      de,(TXTTAB)           ; Star at beginning of program
     jp      CHEAD                 ; Link lines and return
@@ -125,20 +125,19 @@ basic_link_lines:
 
 ;-----------------------------------------------------------------------------
 ; Unpack BASIC line into buffer
-; Input: DE = Buffer address
-;        HL = Pointer into Line
-; Clobbers: A, BC, IX
+; Input: DE: Buffer address
+;        HL: Pointer into Line
+; Output: HL: Pointer to beginning of next line
+; Clobbers: A, BC, DE, IX
 ;-----------------------------------------------------------------------------
 
 ;{M80} Unpack line into Buffer
 unpack_line: 
-    push    hl                    ; Stack = LinPtr, Rtn Adr
+    push    hl                    ; Stack = LinPtr, RtnAdr
     ld      hl,2                  ; 
     add     hl,sp                 ; 
     ld      (BUFRET),hl           ; BUFRET = RtnPtr
-    call    get_strbuf_addr       ; HL = StrBuf
     call    set_outdo_buffer      ; BUFPTR = StrBuf
-    ex      de,hl                 ; DE = StrBuf, HL = LinPtr
     pop     hl                    ; HL = LinPtr; Stack = RtnAdr
     push    hl                    ; Stack = Dummy, RtnAdr
     push    hl                    ; Stack = Dummy, RtnAdr
@@ -147,28 +146,31 @@ unpack_line:
 ; Output Character to BUF
 output_to_buffer: 
     pop     af                    ; Get Character to Output
-    push    hl                    ; Save HL
+    push    hl                    ; Stack = TxtPtr, RtnAdr
     ld      hl,(BUFPTR)
     cp      13                    ; 
     jr      z,.got_cr             ; If Not Carriage Return
     ld      (hl),a                ;   Store Character at Puffer Pointer
     inc     hl                    ;   Increment Buffer Pointer
     ld      (BUFPTR),hl           
-    pop     hl                    ; Restore HL
+    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     ret                           ; Return Out of OUTDO
 .got_cr
     xor     a                     ; Else
     ld      (hl),a                ;   Terminate Buffer Text
+    pop     de                    ; DE = TxtPtr; Stack = RtnAdr
+    ld      hl,(BUFRET)           ; HL = RtnPtr
+    ld      sp,hl                 ; StkPtr = RtnPtr
+    ex      de,hl                 ; HL = LinPtr
+disable_buffer_output:
     ld      a,(BASYSCTL)          ; Get system control bits
     and     $7E                   ; Reset Output to Buffer
     ld      (BASYSCTL),a          ; and write back out
-    ld      hl,(BUFRET)           ; HL = RtnPtr
-    ld      sp,hl                 ; StkPtr = RtnPtr
     ret                           ; Return from un
 
-
 set_outdo_buffer:
-    ld      (BUFPTR),hl           ; 
+    ld      (BUFPTR),de           ; 
+enable_buffer_output:
     ld      a,(BASYSCTL)          ; Get system control bits
     or      $01                   ; Set Output to Buffer
     ld      (BASYSCTL),a          ; and write back out

@@ -862,6 +862,8 @@ ST_SAVE:
     rst     CHRGET
     cp      $AA                     ; Token for '*'
     jp      z, .array               ; Array parameter -> save array
+    cp      ASCTK
+    jp      z, save_ascii_program
 
     ; Save binary data
 
@@ -911,6 +913,59 @@ ST_SAVE:
     call    get_array_argument
     jp      save_caq_array
 
+;-----------------------------------------------------------------------------
+; Save basic program in ASCII format
+;-----------------------------------------------------------------------------
+; 10 SAVE "/t/saveasc.bas",ASC
+save_ascii_program:
+    rst     CHRGET                ; Skip ASC
+    ex      (sp),hl               ; HL = StrDsc; Stack = TxtPtr, RtnAdr
+    call    dos_open_write        ; Create file
+    jp      m,_dos_error
+    call    get_strbuf_addr       ; HL = StrBuf
+    ld      (BUFADR),hl           ;
+    ld      hl,(TXTTAB)           ; HL = LinPtr
+.loop    
+    ld      c,(hl)
+    inc     hl
+    ld      b,(hl)                
+    inc     hl
+    ld      a,b
+    or      c
+    jr      z,.done               ; If LinLnk <> 0
+    push    bc                    ;   Stack = LinLnk, TxtPtr, RtnAdr
+    ld      de,(BUFADR)
+    call    set_outdo_buffer      ; Force output to buffer
+    ld      e,(hl)
+    inc     hl
+    ld      d,(hl)                ;   DE = LinNum
+    inc     hl  
+    push    hl                    ;   Stack = LinPtr, LinLnk, TxtPtr, RtnAdr
+    ex      de,hl                 ;   HL = LinNum
+    call    LINPRT                ;   Print line# to buffer
+    ld      a,' ' 
+    rst     OUTCHR                ;   Print space to buffer
+    ld      de,(BUFPTR)           ;   DE = BufPtr (byte after space)
+    pop     hl                    ;   HL = LinPtr; Stack = LinLnk, TxtPtr, RtnAdr
+    call    unpack_line           ;   Unpack code into buffer
+    ld      hl,(BUFPTR)             
+    ld      (hl),$0D  
+    inc     hl  
+    ld      (hl),$0A  
+    inc     hl  
+    ld      de,(BUFADR)           ;   DE = BufAdr
+    sbc     hl,de                 ;   HL = LinLen
+    ld      b,h 
+    ld      c,l                   ;   BC = LinLen
+    call    esp_write_bytes       ;   Write line to file
+    pop     hl                    ;   HL = LinLnk; Stack = TxtPtr, RtnAdr
+    jp      .loop
+.done
+    call    esp_close_all
+    pop     hl
+    ret
+
+    
 ;-----------------------------------------------------------------------------
 ; Save basic program
 ;-----------------------------------------------------------------------------
