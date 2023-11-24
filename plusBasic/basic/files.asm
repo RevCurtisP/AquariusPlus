@@ -416,8 +416,6 @@ ST_LOAD:
     rst     CHRGET
     cp      MULTK                   ; Token for '*'
     jp      z, .array               ; Array parameter -> load as array
-    cp      ASCTK
-    jr      z, .asc    
 
 ; Load raw binary to address
 ; LOAD "tron.bin",$4200
@@ -449,11 +447,6 @@ ST_LOAD:
     pop     hl
     ret
 
-.asc
-    rst     CHRGET                ; Skip ASC
-    ex      (sp),hl               ; HL = String Descriptor, Stack = Text Pointer
-    jp      load_ascii_program
-
 .array:
     call    get_array_argument
     jp      load_caq_array
@@ -467,10 +460,9 @@ ST_LOAD:
 ; Input: HL: String descriptor address
 ;     Stack: TxtPtr, RtnAdr
 ;-----------------------------------------------------------------------------
-;; LOAD "/t/ascprog.bas",ASC
-load_ascii_program:
-    call    dos_open_read
-    jp      m,_dos_error
+;; LOAD "/t/memvars.baq"
+;; LOAD "/t/ascprog.bas"
+_load_ascii:
     ld      hl,(TXTTAB)
     inc     hl
     inc     hl
@@ -516,10 +508,18 @@ load_ascii_program:
 ; Input: HL: String descriptor address
 ; Clobbered registers: A, DE
 ;-----------------------------------------------------------------------------
+; LOAD "/t/memvars.baq
 load_basic_program:
     ; Open file
     call    dos_open_read
     jp      m,_dos_error
+
+    call    esp_read_byte       ; B = First byte of file
+    jp      m,_dos_error        ; Check for error
+    call    dos_rewind_file     ; Reset file to beginning
+    jp      m,_dos_error        ; Check for error
+    inc     b                   ; If first byte <>$FF
+    jp      nz,_load_ascii      ;   Load program in ASCII format
 
     ; Check CAQ header
     call    check_sync_bytes    ; Sync bytes

@@ -52,3 +52,18 @@ dosx_rename_file:
     pop     hl                    ; HL = new name descriptor
     call    esp_send_strdesc      ; Send new name
     jp      espx_get_result       ; Get result and return
+
+;-----------------------------------------------------------------------------
+; dos_rewind_file
+; Move to beginning of file
+;-----------------------------------------------------------------------------
+dosx_rewind_file:
+    push    bc
+    push    de                    
+    ld      bc,0                  ; Seeking position 0
+    ld      de,0
+    call    esp_seek
+    pop     de
+    pop     bc
+    jp      page_restore_bank3
+    jp      espx_get_result       ; Get result and return

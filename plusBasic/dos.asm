@@ -39,6 +39,10 @@ dos_rename_file:
     call    page_map_auxrom
     jp      dosx_rename_file
 
+dos_rewind_file:
+    call    page_map_auxrom
+    jp      dosx_rewind_file
+
 ;-----------------------------------------------------------------------------
 ; dos_get_file_stat - Return File Status
 ; Input: BC: String Length
