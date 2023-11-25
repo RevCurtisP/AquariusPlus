@@ -107,6 +107,8 @@ s3_ctrl_keys:
     pop     bc                    ;   Restore character count
     jp      INLINC                ;   Wait for next keyhl
 .extended
+    cp      $A0                   ; If international character
+    jr      nc,.notrub            ;   use it
     call    fnkey_get_buff_addr   ; DE = Key Buffer Address
     jr      nz,.inlinc            ; If Function Key
     dec     de                    ;   Back up for autotype
@@ -208,14 +210,48 @@ skip_label:
     dec     hl                    ; Back up text pointer                   
     jp      GONE                  ; Execute rest of line                   
 
-
-
-; Don't capitalize letters between single quotes
+; Extended string processing during CRUNCH
 s3_string_ext:
     jp      z,STRNG               ; Special Handling for Double Quote      
     cp      $27                   ;                                         
     jp      z,STRNG               ; Do the same for Single Quote           
-    jp      stuff_label           ; Otherwise, see if it's a label         
+    cp      $5C                   ; If not backslash
+    jp      nz,stuff_label        ;   See if it's a label         
+
+    call    _stuff_chr            ; Copy backslash 
+    ld      a,(hl)                ; Get next character
+    cp      '"'                   ; If not quotes`
+    jp      nz,STRNGR             ;   Carry on
+.escape_char
+    call    _stuff_chr            ; Stuff quotes
+.escape_loop
+    ld      a,(hl)                ; Get next character
+    call    _stuff_chr            ; Else stuff it
+    or      a                     ; If EOL
+    jp      z,STRNGR              ;   Finish CRUNCH
+    cp      '"'                   ;
+    jr      nz,.not_quotes        ; If quotes
+    ld      a,(hl)                ;   Get next character
+    jp      STRNGR                ;   and pass it on
+.not_quotes
+    cp      $5C                   ; If not escape
+    jr      nz,.escape_loop       ;   check next character
+    ld      a,(hl)                ; Else get next character
+    jr      .escape_char          ;   escape it, and loop
+.done
+    push    hl                    ; Push text pointer
+    call    get_strbuf_addr       ; HL = StrBuf
+    push    hl                    ; Push Dummy Return Address
+    dec     hl                    ; Back up to before string
+    ld      b,0                   ; NUL is the only teminator
+    call    STRLT3            
+    call    FREFAC            
+    ld      bc,FINBCK             
+    push    bc                
+    jp      STRCPY
+
+
+
 
 ;-----------------------------------------------------------------------------
 ; Get Function Key Buffer Address

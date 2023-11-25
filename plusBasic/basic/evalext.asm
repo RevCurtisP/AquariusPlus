@@ -9,7 +9,6 @@
 ; Character Literal: 'x'
 ;-------------------------------------------------------------------------
 eval_extension:
-
     xor     a                     ;
     ld      (VALTYP),a            ; ASSUME VALUE WILL BE NUMERIC
     rst     CHRGET                ;
@@ -21,6 +20,8 @@ eval_extension:
     jr      z,.eval_hex     
     cp      $27                   ; Apostrophe                       
     jp      z,eval_ascii     
+    cp      $5C                   ; Backslash
+    jp      z,_escaped
     cp      LISTTK
     jp      z,eval_list
     cp      PLUSTK                ; IGNORE "+"
@@ -137,7 +138,6 @@ null_string:
 ;-------------------------------------------------------------------------
 ; Evaluate numeric character constant in the form of 'C'
 ;-------------------------------------------------------------------------
-
 eval_ascii:
     inc     hl              ; Skip single quote
     ld      c,(hl)          ; Get character
@@ -149,6 +149,83 @@ eval_ascii:
     call    SNGFLT          ; Float it
     pop     hl
     ret
+
+;-------------------------------------------------------------------------
+; Evaluate backslash escaped string
+;-------------------------------------------------------------------------
+_escaped:
+    inc     hl              ; Skip backslash
+    ld      a,(hl)          ; 
+    cp      '"'             ; If not followed by quotes
+    jp      nz,SNERR        ;   Syntax error
+    inc     hl              ; Skip quotes
+    ex      de,hl           ; DE = TxtPtr
+    call    get_strbuf_addr ; HL = StrBuf
+    ex      de,hl           ; DE = StrBuf, HL = TxtPtr
+    ld      bc,0            ; BC = StrLen
+.escape_loop
+    ld      a,(hl)          ; A = NxtChr
+    or      a               ; If EOL
+    jr      z,.done         ;   Finish up
+    inc     hl              ; Bump to NxtChr
+    cp      '"'             ; If double quote
+    jr      z,.done         ;   Finish up
+    cp      $5C            
+    jr      nz,.no_escape   ; If backslash
+    ld      a,(hl)
+    inc     hl              ;   Eat it
+    cp      '0'             ;
+    jr      c,.no_escape
+    cp      'a'             ;   If >= 'a'
+    jr      c,.no_escape
+    cp      'y'             ;   or <= 'x'
+    jr      c,.sequence     ;     Interpret escape sequence
+.no_escape
+    ld      (de),a          ;   
+    inc     de
+    inc     bc
+    jr      .escape_loop
+.sequence    
+    ld      c,a             ; Save character
+    ld      b,7             ; ^G
+    sub     'a'             ;
+    jr      z,.buff_it      ;   Ring the bell like Bob Dobbs
+    inc     b               ; ^H
+    dec     a               ; \b is for Backspace
+    jr      z,.buff_it      ;
+    sub     'n'-'b'         ; If \n
+    jr      z,.crlf         ;   It's a new line
+    ld      b,11            ; ^J
+    sub     'v'-'n'         ; If \v
+    jr      z,.buff_it      ;   Make it clear screen
+    dec     a               ; Wumbo
+    dec     a               ; If \x
+    jr      z,.hexit        ;   Do hex to ascii
+    ld      b,c             ; No map - write character
+.buff_it    
+    ld      a,b             ; Write mapped character to buffer
+    jr      .no_escape      ; and loop
+.crlf
+    ld      a,13            ; C/R
+    ld      (de),a          ;  in the buffer
+    inc     de
+    ld      a,10            ; L/F 
+    jr      .no_escape      ;  in and loop
+.hexit
+    call    get_hex
+    sla     a               ; Shift to High Nybble
+    sla     a
+    sla     a
+    sla     a
+    ld      b,a
+    call    get_hex
+    or      b
+    jr      .no_escape
+.done:
+    xor     a
+    ld      (de),a          ; Terminate string
+    push    hl              ; Save TxtPtr
+    jp      return_strbuf
 
 ;-------------------------------------------------------------------------
 ; RETAOP Extension - Hook 29
@@ -319,6 +396,7 @@ eval_list:
     inc     hl
     inc     hl                    ; Skip Line Label
     call    unpack_line           ; Unpack the line
+return_strbuf:
     call    get_strbuf_addr       ; HL = StrBuf
     push    hl                    ; Push Dummy Return Address
 return_strlit:

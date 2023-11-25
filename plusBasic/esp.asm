@@ -546,6 +546,7 @@ esp_send_byte:
 ;         DE = Offset high 16 bits
 ; Clobbered registers: A
 ;-----------------------------------------------------------------------------
+;; FILE #filenum GOTO position
 esp_seek:
     ld      a, ESPCMD_SEEK
     call    esp_cmd
@@ -567,6 +568,7 @@ esp_seek:
 ;         DE = Offset high 16 bits
 ; Clobbered registers: A
 ;-----------------------------------------------------------------------------
+; FILEPOS(#filenum)
 esp_tell:
     ret:
 

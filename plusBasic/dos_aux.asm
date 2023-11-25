@@ -18,6 +18,10 @@ dosx_get_cwd:
 ; Output:  A: Result
 ; Clobbered: BC, DE
 ;-----------------------------------------------------------------------------
+;; FILEDATE$(#filenum/filespec$)
+;; FILETIME$(#filenum/filespec$)
+;; FILEATTR(#filenum/filespec$)
+;; FILELEN(#filenum/filespec$)
 dosx_get_filestat:
     ld      a, ESPCMD_STAT        ; Set ESP Command
     call    esp_cmd               ; Issue ESP command 

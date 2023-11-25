@@ -37,7 +37,7 @@ _dos_error:
 
 _not_eof_error:
     cp      ERR_EOF
-    ret     nz
+    ret     z
     jr      _dos_error
 
 _get_cd:
@@ -791,6 +791,10 @@ run_file:
 
     call    get_strdesc_arg       ; Get FileSpec
     push    hl                    ; Save String Descriptor
+
+;For (16k) cartridge binaries
+;the bytes at 0x2003...05...07...09...0B...0D...0F are consistent.
+;2A, 9C, B0, 6C, 64, A8, 70
 
     ; Check for .ROM extension
     call    string_addr_len       ; Get String Length in BC, Address in DE
