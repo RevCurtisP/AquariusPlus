@@ -153,6 +153,12 @@ eval_ascii:
 ;-------------------------------------------------------------------------
 ; Evaluate backslash escaped string
 ;-------------------------------------------------------------------------
+;; Change to lookup tables should be smaller and faster
+;; Proposed
+;; \U CrsrUp, \D CrsrDn, \L CrsrLf, \R CrsrRt, \H Home, \E End, \G PgUp, \F PgDn
+;; \I Insert, \J Delete, \M Menu, \K BckTab, \1 F1, ... \0 F10, \- F11, \= F12
+;; \e $1B Escape, \l LineFeed
+;; \^x Control Key
 _escaped:
     inc     hl              ; Skip backslash
     ld      a,(hl)          ; 
@@ -174,8 +180,7 @@ _escaped:
     jr      nz,.no_escape   ; If backslash
     ld      a,(hl)
     inc     hl              ;   Eat it
-    cp      '0'             ;
-    jr      c,.no_escape
+    ld      b,0             ;   ^@
     cp      'a'             ;   If >= 'a'
     jr      c,.no_escape
     cp      'y'             ;   or <= 'x'
@@ -193,11 +198,22 @@ _escaped:
     inc     b               ; ^H
     dec     a               ; \b is for Backspace
     jr      z,.buff_it      ;
-    sub     'n'-'b'         ; If \n
+    ld      b,12            ; ^L
+    sub     'f'-'b'         ; If \f
+    jr      z,.buff_it      ;   Feed the form
+    sub     'n'-'f'         ; If \n
     jr      z,.crlf         ;   It's a new line
-    ld      b,11            ; ^J
-    sub     'v'-'n'         ; If \v
+    inc     b               ; ^M
+    sub     'r'-'n'         ; If \r
     jr      z,.buff_it      ;   Make it clear screen
+    ld      b,9             ; ^I
+    dec     a               ; \s
+    dec     a               ; If \t
+    jr      z,.buff_it      ;   Just a step to the right
+    ld      b,11            ; ^K
+    dec     a               ; \u
+    dec     a               ; If \v
+    jr      z,.buff_it      ;   Make it clear
     dec     a               ; Wumbo
     dec     a               ; If \x
     jr      z,.hexit        ;   Do hex to ascii
