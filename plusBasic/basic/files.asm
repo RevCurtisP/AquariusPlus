@@ -362,6 +362,7 @@ print_hl_4digits:
     call	  .num1
     ld	    c,-10
     call	  .num1
+    ld      e,0
     ld	    c,-1
 .num1:	
     ld	    a,-1
