@@ -514,11 +514,14 @@ load_basic_program:
     ; Open file
     call    dos_open_read
     jp      m,_dos_error
-
+    
     call    esp_read_byte       ; B = First byte of file
-    jp      m,_dos_error        ; Check for error
-    call    dos_rewind_file     ; Reset file to beginning
-    jp      m,_dos_error        ; Check for error
+    jp      m,_dos_error        ;
+
+    call    esp_close_all       ; Close and re-open file
+    call    dos_open_read
+    jp      m,_dos_error
+
     inc     b                   ; If first byte <>$FF
     jp      nz,_load_ascii      ;   Load program in ASCII format
 
