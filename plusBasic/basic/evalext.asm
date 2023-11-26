@@ -158,7 +158,6 @@ eval_ascii:
 ;; \U CrsrUp, \D CrsrDn, \L CrsrLf, \R CrsrRt, \H Home, \E End, \G PgUp, \F PgDn
 ;; \I Insert, \J Delete, \M Menu, \K BckTab, \1 F1, ... \0 F10, \- F11, \= F12
 ;; \e $1B Escape, \l LineFeed
-;; \^x Control Key
 _escaped:
     inc     hl              ; Skip backslash
     ld      a,(hl)          ; 
@@ -168,7 +167,6 @@ _escaped:
     ex      de,hl           ; DE = TxtPtr
     call    get_strbuf_addr ; HL = StrBuf
     ex      de,hl           ; DE = StrBuf, HL = TxtPtr
-    ld      bc,0            ; BC = StrLen
 .escape_loop
     ld      a,(hl)          ; A = NxtChr
     or      a               ; If EOL
@@ -180,7 +178,6 @@ _escaped:
     jr      nz,.no_escape   ; If backslash
     ld      a,(hl)
     inc     hl              ;   Eat it
-    ld      b,0             ;   ^@
     cp      'a'             ;   If >= 'a'
     jr      c,.no_escape
     cp      'y'             ;   or <= 'x'
@@ -188,7 +185,6 @@ _escaped:
 .no_escape
     ld      (de),a          ;   
     inc     de
-    inc     bc
     jr      .escape_loop
 .sequence    
     ld      c,a             ; Save character
@@ -242,6 +238,7 @@ _escaped:
     ld      (de),a          ; Terminate string
     push    hl              ; Save TxtPtr
     jp      return_strbuf
+
 
 ;-------------------------------------------------------------------------
 ; RETAOP Extension - Hook 29

@@ -98,51 +98,6 @@ _errmag_ptr:
     ld      l,a
     ret
 
-;Put the lookup table at 256 byte boundary
-if $ & $FF
-    dc ($FF00&$)+256-$,$FF
-endif
-
-; Pointers into err_mess
-err_codes:
-        word    MSGNF
-        word    MSGSN
-        word    MSGRG
-        word    MSGOD
-        word    MSGFC
-        word    MSGOV
-        word    MSGOM
-        word    MSGUS
-        word    MSGBS
-        word    MSGDD
-        word    MSGDV0
-        word    MSGID
-        word    MSGTM
-        word    MSGSO
-        word    MSGLS
-        word    MSGST
-        word    MSGCN
-        word    MSGUF
-        word    MSGMO
-        word    MSGNR
-        word    MSGRE
-        word    MSGUE
-        word    MSGLBO
-        word    MSGGS
-        word    MSGUL
-        word    MSGAG
-        word    MSGUD
-        word    MSGTO
-err_disk:
-        word    MSGBDF
-        word    MSGFNF
-        word    MSGTMF
-        word    MSGIPR
-        word    MSGRPE
-        word    MSGFAE
-        word    MSGIOE
-        word    MSGNOD
-        word    MSGNEM
 
 ; The word error
 ERRTXT: byte    " error",0

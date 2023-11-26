@@ -48,7 +48,7 @@
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.19c",0
+    db "v0.19c1",0
 plus_len   equ   $ - plus_text
 
 auto_cmd:
@@ -1009,12 +1009,12 @@ _s3_string_ext
     phase   $C000     ;Assemble in ROM Page 1 which will be in Bank 3
 
     include "gfxjump.asm"
-    ; dispatch and error tables align to 256 byte boundary
+    include "tables.asm"        ; Lookup tables aligned to 256 byte boundaries
     include "dispatch.asm"      ; Statement/Function dispatch tables and routiness
-    include "baslines.asm"      ; (De)tokenize, add, insert, delete program lines
     include "error.asm"         ; Error lookup table, messages and handling routines
     include "args.asm"          ; ARGS statement and function
     include "basic80.asm"       ; Statements and functions from MBASIC 80
+    include "baslines.asm"      ; (De)tokenize, add, insert, delete program lines
     include "draw.asm"          ; Bitmap drawing statements and functions
     include "enhanced.asm"      ; Enhanced stardard BASIC statements and functions
     include "evalext.asm"       ; EVAL extension - hook 9
