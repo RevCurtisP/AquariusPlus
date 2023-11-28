@@ -195,39 +195,39 @@ esp_read_bytes:
 
 ;-----------------------------------------------------------------------------
 ; Read bytes from ESP to paged memory
-; Input: A: page
+; Input: A: file descriptor
 ;       BC: number of bytes to read
 ;       DE: destination address
-; Output: A: result code
+;        H: destination page
+; Output: A: result code (clobbered if page error)
 ;        BC: number of bytes actually read
-;     DE,HL: next address (start address if no bytes read)
-; Flags Set: Z if llegal page
+;        DE: next destination address 
+;         H: destination page
+;         L: file descriptor
+; Flags Set: Z if illegal page
 ;            C if page overflow
 ;            S if I/O error
 ;-----------------------------------------------------------------------------
 esp_read_paged:
-    call    page_set4write_coerce
-    jp      z,page_restore_plus   ; Return if illegal page
-
-    ld      a, ESPCMD_READ
-    call    esp_cmd
-
-    ; Send file descriptor
-    xor     a
-    call    esp_send_byte
-
-    ; Send read size
-    call    esp_send_bc
+    ld      l,a                   ; L = FilDsc
+    ld      a,h                   ; A = Page
+    call    page_check_read       ; If illegal page
+    ret     z                     ;   Return error
+    call    page_map_bank3        ; Map page into bank 3
+    call    page_coerce_de_addr
     
-    ; Get result
+    ld      a, ESPCMD_READ        ; Send command
+    call    esp_cmd
+    ld      a,l                   ; Send file descriptor
+    call    esp_send_byte       
+
+    call    esp_send_bc           ; Send read size
     call    esp_get_result 
-    ret     m                     ; Return if error
+    jp      m,page_restore_bank3
 
     ; Get number of bytes actual read
     call    esp_get_bc
-
     push    bc                    ; Stack = BytCnt, RtnAdr
-
     dec     de
 .loop:
     ; Done reading? (BC=0)
@@ -238,11 +238,14 @@ esp_read_paged:
     inc     de
     ld      a,d
     or      a,e
-    jr      nz,.read_byte
-    call    page_next_de_address
+    call    z,page_next_de_address
     jr      c,.error              ; Return if overflow
 .read_byte
-    call    esp_get_byte
+    ;call    esp_get_byte
+    in      a, (IO_ESPCTRL)
+    rra
+    jr      nc,.read_byte
+    in      a, (IO_ESPDATA)
     ld      (de), a
     dec     bc                    
     jr      .loop
@@ -250,11 +253,9 @@ esp_read_paged:
 .done:   
     or      $7F                   ; Clear zero, carry, sign flags
     ld      a,0
-    ld      h,d                   ; Return end address in DE and HL
-    ld      l,e
 .error
     pop     bc                    ; 
-    jp      page_restore_plus     ; Restore original page
+    jp      page_restore_bank3    ; Restore original page
 
 ;-----------------------------------------------------------------------------
 ; Read 32-bit long from ESP32 into BC,DE
@@ -304,7 +305,7 @@ esp_get_byte:
 ; Send string pointed to by string descriptor
 ; Input: HL: String descriptor address
 ;-----------------------------------------------------------------------------
-esp__send_strdesc: 
+esp_send_strdesc: 
     push    af
     push    bc
     push    de
@@ -321,19 +322,6 @@ esp__send_strdesc:
     pop     af
     ret
 
-;-----------------------------------------------------------------------------
-; Send String from String Descriptor
-; Input:  HL: String Descriptor Address
-; Output: BC: number of bytes written
-;         DE: end address+1
-; Clobbered: A
-;-----------------------------------------------------------------------------
-esp_send_strdesc: 
-    ld      a,h                   
-    or      l                     ; If NULL StringDesc address
-    jp      z,esp_send_byte       ;   Send Null Terminator
-    call    string_addr_len       ; Get Text Address in DE and Length in BC
- 
 ;-----------------------------------------------------------------------------
 ; Send String
 ; Input:  DE: string address
@@ -451,11 +439,14 @@ esp_send_bytes:
 ;         BC: number of bytes to write
 ; Output: BC: number of bytes actually written
 ;
-; Clobbered registers: A, DE
+; Clobbered registers: A,AF',DE,IX
 ;-----------------------------------------------------------------------------
 esp_write_paged:
-    call    page_set4read_coerce
-    jp      z,page_restore_plus  ; Return if illegal page
+    call    page_check_write      ; If illegal page       
+    ret     z                     ;   Return error
+    call    page_map_bank3        ; Map page into bank 3
+    call    page_coerce_de_addr
+    
     ld      a, ESPCMD_WRITE
     call    esp_cmd
 
@@ -473,7 +464,6 @@ esp_write_paged:
     ld      a, b
     or      a, c
     jr      z, .done
-
     ld      a, (de)
     call    esp_send_byte
     inc     de
@@ -485,21 +475,17 @@ esp_write_paged:
 .not_end
     dec     bc
     jr      .loop
-
-.done:
-
-    ; Get result
+.done
     call    esp_get_result 
-    ret     m
-
-    ; Get number of bytes actual written
-    call    esp_get_bc
-
+    jp      m,page_restore_bank3
+   
+    call    esp_get_bc            ; Get number of bytes actual written
     ld      h,a
     or      $01                   ; Clear zero and carry flags
     ld      a,h
 .error
-    jp      page_restore_plus     ; Restore original page
+    jp      page_restore_bank3    ; Restore originl page and return
+    
 
 ;-----------------------------------------------------------------------------
 ; Write 16-bit word in BC to ESP32
@@ -539,38 +525,6 @@ esp_send_byte:
     pop     af
     out     (IO_ESPDATA), a
     ret
-
-;-----------------------------------------------------------------------------
-; Move to position in open file
-; Input:  BC = Offset low 16 bits
-;         DE = Offset high 16 bits
-; Clobbered registers: A
-;-----------------------------------------------------------------------------
-;; FILE #filenum GOTO position
-esp_seek:
-    ld      a, ESPCMD_SEEK
-    call    esp_cmd
-
-    ; Send file descriptor
-    xor     a
-    call    esp_send_byte
-
-    ; Send offset
-    call    esp_send_long
-
-    ; Get result
-    call    esp_get_result 
-    ret
-
-;-----------------------------------------------------------------------------
-; Get current position in open file
-; Output: BC = Offset low 16 bits
-;         DE = Offset high 16 bits
-; Clobbered registers: A
-;-----------------------------------------------------------------------------
-; FILEPOS(#filenum)
-esp_tell:
-    ret:
 
 esp_get_datetime:
     call    page_map_auxrom

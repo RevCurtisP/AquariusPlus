@@ -399,17 +399,6 @@ get_on_off:
     ret
 
 ;-----------------------------------------------------------------------------
-; Get String Buffer Address
-; Output: HL: String Buffer Address
-; Clobbers: BC
-;-----------------------------------------------------------------------------
-get_strbuf_addr:
-    ld      bc,256
-    ld      hl,(TOPMEM)
-    add     hl,bc                 ; HL = StrBuf
-    ret
-
-;-----------------------------------------------------------------------------
 ; Parse String Variable Name
 ; Syntax: VAR$ =
 ; Output: DE = Pointer to variable

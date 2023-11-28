@@ -4,13 +4,14 @@
 
 ;-----------------------------------------------------------------------------
 ; Load binary file into main memory
-; Input: BC: Maximum Length
-;        DE: Start Address
-;        HL: String descriptor address
+; Input: BC: maximum length
+;        DE: destination address
+;        HL: string descriptor address
 ; Output: A: result code
 ;        BC: number of bytes actually read
-;     DE,HL: next address (start address if no bytes read)
+;        DE: next destination address 
 ; Flags Set: S if I/O error
+; Clobbered: HL
 ;-----------------------------------------------------------------------------
 file_load_binary:
     call    dos_open_read
@@ -42,31 +43,57 @@ file_load_chrset:
 ;-----------------------------------------------------------------------------
 ; Load binary file into paged memory`
 ; Input: A: Page
-;        BC: Maximum Length
-;        DE: Start Address
-;        HL: String descriptor address
+;        BC: maximum length
+;        DE: destination address
+;        HL: string descriptor address
 ; Output: A: result code
 ;        BC: number of bytes actually read
-;     DE,HL: next address (start address if no bytes read)
+;        DE: next destination address 
+;         H: destination page
 ; Flags Set: Z if llegal page
 ;            C if page overflow
 ;            S if I/O error
+; Clobbered: AF',L
 ;-----------------------------------------------------------------------------
 file_load_paged:
-    push    af                    ; Stack = Page
-    call    dos_open_read         ;
-    jp      m,discard_ret
-    pop     af                    ; AF = Page
+    push    af                    ; Stack = Page, RtnAdr
+    call    dos_open_read
+    pop     hl                    ; H = Page, Stack = RtnAdr
+    ret     m
     call    esp_read_paged        ;
-    ret     z                     ; Illegal page
-    ret     c                     ; Page overflow
-    push    af
-    call    esp_close_all
-    pop     af
+    push    af                    ; Stack = Result, RtnAdr
+    ld      a,l
+    call    dos_close_file
+    pop     af                    ; AF = Result; Stack = RtnAdr
+    ret
+
+
+;-----------------------------------------------------------------------------
+; Load ROM file into page 35
+;        HL: string descriptor address
+;-----------------------------------------------------------------------------
+file_load_rom:
+    ld      a,35
+    ld      de, $C000
+    ld      bc, $4000
+    call    file_load_paged
+    ret     m
+
+    ; Check length
+    ld      a, b
+    cp      $20         ; 8KB ROM?
+    jr      nz,.done
+    
+    ld      hl, $0000
+    ld      de, $2000
+    ld      bc, $2000
+    call    page_fast_copy
+.done
+    xor     a
     ret
 
 ;-----------------------------------------------------------------------------
-; Load binary file into main memory
+; Load screen image
 ; Input: HL: String descriptor address
 ; Output: A: result code
 ; Flags Set: S if I/O error

@@ -19,20 +19,6 @@ jump_table:
     jp      byte_to_hex           ; Convert byte to hex
     jp      shift_hl_left         ; Shift HL left  
 
-
-; dos.asm
-    jp      dos_open_file         ; Open file
-    jp      dos_open_read         ; Open file for read
-    jp      dos_open_write        ; Open file for write
-    jp      dos_close             ; Close file or directory
-    jp      dos_change_dir        ; Change Directory
-    jp      dos_delete_file       ; Delete file/directory
-    jp      dos_create_dir        ; Create directory
-    jp      dos_get_cwd           ; Get Current Directory
-    jp      dos_rename_file       ; Delete file/directory
-    jp      dos_get_filestat      ; Return File Status
-    jp      dos_load_rom          ; Load and decrypt cartridge
-
 ; esp.asm
     jp      esp_cmd               ; Issue command 
     jp      esp_cmd_string        ; Issue ESP command with string argument
@@ -55,9 +41,7 @@ jump_table:
     jp      esp_write_bytes       ; Write bytes from main memory
     jp      esp_write_repbyte     ; Write byte repeatedly
     jp      esp_write_paged       ; Write bytes from paged memory
-    jp      esp_seek              ; Move to position in open file
     jp      esp_get_datetime      ; Read date and time into string buffer
-    jp      esp_tell              ; Get current position in open file
 
 ; page.asm
     jp      page_fast_copy        ; Copy entire Page to another Page

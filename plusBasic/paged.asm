@@ -97,18 +97,9 @@ _cpp_error:
 page_fast_copy:
     call    page_check_read_write
     ret     z
-    ex      af,af'
-    ld      ixl,a                 ; IXL = SrcPg
-    ex      af,af'
-    cp      ixl                   ; If SrcPg = DstPg
-    ret     z                     ; Return Error
     call    page_swap_two         ; Bank3 = DstPg, Bank2 = SrcPg
     call    page_coerce_de_addr   ; Coerce DstAdr to Bank3
-    ld      a,h                   ; Coerce SrcAdr to Bank2
-    and     $3F                   ;  
-    or      $40
-    ld      h,a
-    or      a                     ; Clear Carry, Zero flags
+    call    page_coerce_hl_addr   ; Coerce SrcAdr to Bank1
     ldir                          ; Do the copy
     call    page_restore_two
     xor     a
@@ -154,7 +145,7 @@ page_fast_read_bytes:
 ;-----------------------------------------------------------------------------
 ; Input: A: Destination Page
 ;       BC: Byte Count
-;       DE: Destination address (0-16383)
+;       DE: Destination address
 ;       HL: Source Address
 ; No rollover or error checking
 ; Clobbers: AF,AF',BC,DE,HL
@@ -438,6 +429,21 @@ page_map_aux:
     push    af
     ld      a,ROM_AUX_PG
     jr      _map_page_bank3
+
+;-----------------------------------------------------------------------------
+; Map Page into Bank 3
+; Input: A = Page
+; Returns with original page on stack
+; Clobbers AF',IX
+;-----------------------------------------------------------------------------
+page_map_bank3:
+    pop     ix                    ; IX = RtnAdr
+    ex      af,af'                ; A' = NewPg
+    in      a,(IO_BANK3)          ; A = CurPg
+    push    af                    ; Stack = CurPg
+    ex      af,af'                ; A = NewPg
+    out     (IO_BANK3),a          ; Map into Bank 3
+    jp      (ix)
 
 ;-----------------------------------------------------------------------------
 ; Map Bank 3 to Page 2

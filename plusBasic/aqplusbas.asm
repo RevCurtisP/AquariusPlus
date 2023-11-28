@@ -48,7 +48,7 @@
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.19c1",0
+    db "v0.19d",0
 plus_len   equ   $ - plus_text
 
 auto_cmd:
@@ -736,6 +736,9 @@ bas_read_to_buff:
 jump_ix:
     jp      (ix)                  ; Execute routine and return
 
+jump_iy:
+    jp      (iy)
+
 do_cls:
     ld      a,(BASYSCTL)
     rra     
@@ -841,7 +844,6 @@ _scroll_hook:
 ;-----------------------------------------------------------------------------
 ; DOS routines
 ;-----------------------------------------------------------------------------
-    include "dos.asm"
 
 ;-----------------------------------------------------------------------------
 ; ESP routines
@@ -907,7 +909,7 @@ hook_table:                     ; ## caller   addr  performing function
     dw      HOOK21+1            ; 21 CSAVE    1C09  Save File to Tape
     dw      token_to_keyword    ; 22 LISPRT   0598  expanding a token
     dw      _next_statement     ; 23 GONE2    064B  interpreting next BASIC statement
-    dw      _run_cmd            ; 24       06BE  starting BASIC program
+    dw      _run_cmd            ; 24 RUN      06BE  starting BASIC program
     dw      on_error            ; 25 ONGOTO   0780  ON statement
     dw      HOOK26+1            ; 26 INPUT    0893  Execute INPUT, bypassing Direct Mode check
     dw      execute_function    ; 27 ISFUN    0A5F  Executing a Function
@@ -967,6 +969,12 @@ _trap_error:
     call    page_restore_plus
     jp      trap_error
 
+
+aux_call:
+    call    page_map_auxrom
+    call    jump_iy
+    jp      page_restore_bank3
+
 aux_rom_call:
     call    page_map_aux
     call    jump_ix
@@ -1019,8 +1027,7 @@ _s3_string_ext
     include "enhanced.asm"      ; Enhanced stardard BASIC statements and functions
     include "evalext.asm"       ; EVAL extension - hook 9
     include "extended.asm"      ; Statements and functions from Aquarius Extended BASIC
-    include "files.asm"         ; Disk and File I/O machine assembly routines
-    include "fileio.asm"        ; Disk and File I/O statements and functions
+    include "files.asm"         ; Disk and File I/O statements and functions
     include "graphics.asm"      ; Graphics statements and functions
     include "misc.asm"          ; Miscellaneous subroutines
     include "play.asm"
@@ -1052,10 +1059,12 @@ _s3_string_ext
 
     phase   $C000     ;Assemble in ROM Page 1 which will be in Bank 3
 
+    include "jump_aux.asm"      ; Auxiliary routines jump tables
     include "coldboot.asm"      ; Cold boot code
-    include "dos_aux.asm"
+    include "dos.asm"           ; DOS routines
     include "editor.asm"        ; Advanced line editor
     include "esp_aux.asm"       ; ESP routines in auxiliary ROM
+    include "fileio.asm"        ; Disk and File I/O machine assembly routines
     include "s3hooks.asm"       ; S3 BASIC direct mode hooks
     include "screen_aux.asm"    ; Auxiliary
 

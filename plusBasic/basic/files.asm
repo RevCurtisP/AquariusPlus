@@ -22,7 +22,8 @@ ST_CD:
     ; -- Argument given -> change directory ----------------------------------
 .change_dir:
     call    get_string_direct     ; Get String Argument
-    call    dos_change_dir
+    ld      iy,dos_change_dir
+    call    aux_call
 _check_error
     jp      m,_dos_error
     pop     hl                    ; Restore Text Pointer
@@ -41,10 +42,11 @@ _not_eof_error:
     jr      _dos_error
 
 _get_cd:
-    ld      ix,dos_get_cwd        ; Read current directory into buffer
-    call    bas_read_to_buff      ; Set buffer address and call routine
+    ld      iy,dos_get_cwd        ; Read current directory into buffer
+    call    aux_call
     jp      m,_dos_error
     ret
+
 ;-----------------------------------------------------------------------------
 ; CD$ - Get Current Directory
 ;-----------------------------------------------------------------------------
@@ -63,7 +65,8 @@ FN_CD:
 ;-----------------------------------------------------------------------------
 ST_DEL:
     call    get_string_direct
-    call    dos_delete_file
+    ld      iy,dos_delete_file
+    call    aux_call
     jr      _check_error
 
 ;-----------------------------------------------------------------------------
@@ -72,7 +75,8 @@ ST_DEL:
 ;-----------------------------------------------------------------------------
 ST_MKDIR:
     call    get_string_direct
-    call    dos_create_dir
+    ld      iy,dos_create_dir
+    call    aux_call
     jr      _check_error
 
 ;-----------------------------------------------------------------------------
@@ -97,7 +101,8 @@ ST_RENAME:
     push    de                    ; Stack = newdesc, TxtPtr
     call    FRETM2                ; HL = olddesc
     pop     de                    ; DE = newdesc, Stack = TxtPtr
-    call    dos_rename_file       ; Do the rename
+    ld      iy,dos_rename_file    ; Do the rename
+    call    aux_call
     jr      _check_error          ; Restore textptr and check for error
 
 ;-----------------------------------------------------------------------------
@@ -124,7 +129,8 @@ ST_DIR:
 .esp_command:
     call    esp_close_all
 
-    call    dos_open_dir
+    ld      iy,dos_open_dir
+    call    aux_call
     jp      m,_dos_error
 
     ; Set initial number of lines per page
@@ -430,7 +436,8 @@ ST_LOAD:
     ex      (sp),hl                 ; HL = String Descriptor, Stack = Text Pointer
     jr      c,.load_paged
     ld      bc,$FFFF                ; Load up to 64k   
-    call    file_load_binary
+    ld      iy,file_load_binary
+    call    aux_call
     jp      m,_dos_error
     call    esp_close_all
     pop     hl                      ; Get Back Text Pointer
@@ -441,7 +448,8 @@ ST_LOAD:
 .load_paged
     ld      bc,$FFFF                ; Load up to 64k
     call    check_paged_address     ; Verify pages addres is between 0 and 16383
-    call    file_load_paged
+    ld      iy,file_load_paged
+    call    aux_call
     jp      z,FCERR
     jp      c,OVERR
     jp      m,_dos_error
@@ -512,15 +520,12 @@ _load_ascii:
 ; LOAD "/t/memvars.baq
 load_basic_program:
     ; Open file
-    call    dos_open_read
-    jp      m,_dos_error
-    
-    call    esp_read_byte       ; B = First byte of file
-    jp      m,_dos_error        ;
+    call    _open_read
 
+    call    esp_read_byte       ; B = First byte of file
+    jp      m,_dos_error        ; Check for error   
     call    esp_close_all       ; Close and re-open file
-    call    dos_open_read
-    jp      m,_dos_error
+    call    _open_read
 
     inc     b                   ; If first byte <>$FF
     jp      nz,_load_ascii      ;   Load program in ASCII format
@@ -621,8 +626,7 @@ load_caq_array:
     ex      (sp),hl               ; HL = String Descriptor, Stack = Text Pointer
 
     ; Open file
-    call    dos_open_read
-    jp      m,_dos_error
+    call    _open_read
     
     ; Check CAQ header
     call    check_sync_bytes    ; Sync bytes
@@ -683,7 +687,8 @@ get_array_argument:
 
 _load_fnkeys:
     call    _set_up_fnkeys
-    call    file_load_paged
+    ld      iy,file_load_paged
+    call    aux_call
     jp      m,_dos_error
     pop     hl
     ret
@@ -721,7 +726,8 @@ _load_extended:
 ; load chrset "future.chr
 _load_chrset:
     call    get_strdesc_arg       ; HL = FileSpec StrDsc; Stack = TxtPtr
-    call    file_load_chrset      ; Load character set and copy to character RAM
+    ld      iy,file_load_chrset      ; Load character set and copy to character RAM
+    call    aux_call
     jp      m,_dos_error
     pop     hl
     ret
@@ -739,7 +745,8 @@ _load_palette:
 _load_screen:
     rst     CHRGET                ; Skip SCREEN
     call    get_strdesc_arg       ; HL = FileSpec StrDsc; Stack = TxtPtr
-    call    file_load_screen      ; Load character set and copy to character RAM
+    ld      iy,file_load_screen      ; Load character set and copy to character RAM
+    call    aux_call
     jp      m,_dos_error
     pop     hl
     ret
@@ -833,8 +840,10 @@ run_file:
     call    load_basic_program
 
 .load_rom:
-    call    dos_load_rom
-    jp      _dos_error
+    ld      iy,file_load_rom
+    call    aux_call
+    jp      m,_dos_error
+    jp      descramble_rom
 
 .load_core:
     call    string_addr_len
@@ -899,7 +908,8 @@ ST_SAVE:
 
     ; Do the save
     jr      c,.save_paged
-    call    dos_save_binary
+    ld      iy,dos_save_binary
+    call    aux_call
     jp      m,_dos_error
     pop     hl
     ret
@@ -909,7 +919,8 @@ ST_SAVE:
 
 .save_paged
     call    check_paged_address   ; Verify pages addres is between 0 and 16383
-    call    dos_save_paged
+    ld      iy,dos_save_paged
+    call    aux_call
     jp      m,_dos_error
     jp      z,IQERR
     jp      c,OVERR
@@ -928,8 +939,7 @@ ST_SAVE:
 save_ascii_program:
     rst     CHRGET                ; Skip ASC
     ex      (sp),hl               ; HL = StrDsc; Stack = TxtPtr, RtnAdr
-    call    dos_open_write        ; Create file
-    jp      m,_dos_error
+    call    _open_write           ; Create file
     call    get_strbuf_addr       ; HL = StrBuf
     ld      (BUFADR),hl           ;
     ld      hl,(TXTTAB)           ; HL = LinPtr
@@ -979,8 +989,7 @@ save_ascii_program:
 ;-----------------------------------------------------------------------------
 save_basic_program:
     ex      (sp),hl               ; HL = String Descriptor, Stack = Text Pointer
-    call    dos_open_write        ; Create file
-    jp      m,_dos_error
+    call    _open_write           ; Create file
 
     ; Write CAQ header
     ld      de, sync_bytes      ; Sync bytes
@@ -1020,8 +1029,7 @@ save_basic_program:
 ;-----------------------------------------------------------------------------
 save_caq_array:
     ex      (sp),hl               ; HL = String Descriptor, Stack = Text Pointer
-    call    dos_open_write       ; Create file
-    jp      m,_dos_error
+    call    _open_write           ; Create file
 
     ; Write CAQ header
     ld      de, sync_bytes      ; Sync bytes
@@ -1110,14 +1118,25 @@ FN_OPEN:
     push    bc                    ; Stack = LABBCK, TxtPtr, RtnAdr
     cp      INPUTK                ; If INPUT
     jr      nz,.notread
-    call    dos_open_read         ;   Open for Read
+    call    _open_read            ;   Open for Read
     jr      .done                 ; Else
 .notread
-    call    dos_open_write        ;   Open for Write
+    call    _open_write           ;   Open for Write
 .done
     jp      m,_dos_error
     jp      SNGFLT
     
+_open_write:
+    ld      iy,dos_open_write
+    call    aux_call
+    jr      _open_error
+_open_read:
+    ld      iy,dos_open_read
+    call    aux_call
+_open_error:
+    jp      m,_dos_error
+    ret
+
 
 ;-----------------------------------------------------------------------------
 ; Input full line

@@ -43,6 +43,7 @@ espx_get_mouse:
 .return
     jp      page_restore_bank3
 
+
 ;-----------------------------------------------------------------------------
 ; Read CR, LF, CR/LF, or null terminated string
 ;  Input: A: File descriptor
@@ -83,6 +84,10 @@ espx_read_line:
 ; Clobbers: B
 ;-----------------------------------------------------------------------------
 espx_read_to_buff:
+    call    espx_read_buff
+    jp      page_restore_bank3
+
+espx_read_buff:
     push    af                    ; Save A
     ld      b,255                 ; Maximum Length, Length Counter
     ld      d,h
@@ -99,7 +104,7 @@ espx_read_to_buff:
     sbc     hl,de                 ; HL = Length
     ex      de,hl                 ; DE = Length, HL = Buffer Address
     pop     af                    ; Restore Result
-    jp      page_restore_bank3
+    ret
 
 ;-----------------------------------------------------------------------------
 ; esp_set_keymode - Set keyboard buffer mode

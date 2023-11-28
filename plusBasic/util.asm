@@ -7,6 +7,17 @@ discard_ret:
     inc     sp
     inc     sp
     ret
+
+;-----------------------------------------------------------------------------
+; Get String Buffer Address
+; Output: HL: String Buffer Address
+; Clobbers: BC
+;-----------------------------------------------------------------------------
+get_strbuf_addr:
+    ld      bc,256
+    ld      hl,(TOPMEM)
+    add     hl,bc                 ; HL = StrBuf
+    ret
     
 ;-----------------------------------------------------------------------------
 ; Call Statement Tokenizer Loop
