@@ -13,7 +13,8 @@
 ;   3    Sample Rate index (see delay table)
 ;-----------------------------------------------------------------------------
 play_sample:
-    ld      b,a                   ; B = SampPg    in      a,(IO_BANK1)          ; A = CrntPg
+    ld      b,a                   ; B = SampPg    
+    in      a,(IO_BANK1)          ; A = CrntPg
     push    af                    ; Stack = CrntPg, RtnAdr
     ld      a,b                   ; A = SampPg
     out     (IO_BANK1),a          ; Map SampPg into Bank 1
@@ -73,6 +74,7 @@ play_sample:
     jr      .loop                 ; 12 140    ; NEW = 140
 
 .done
+    ld      a,128                 ; Avoid clicks
     out     (IO_PCMDAC),a
     pop     af                    ; A = OrigPg; Stack = RtnAdr
     out     (IO_BANK1),a          ; Restore original page
