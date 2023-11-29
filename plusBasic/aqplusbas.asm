@@ -48,7 +48,7 @@
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.19d",0
+    db "v0.19e",0
 plus_len   equ   $ - plus_text
 
 auto_cmd:
@@ -118,13 +118,7 @@ _coldboot:
 
     call    page_restore_plus
     call    spritle_clear_all     ; Clear all sprite properties
-
-    call    page_map_aux
     jp      do_coldboot
-coldboot_done:    
-    call    page_restore_plus
-
-    jp      INITFF                ; Continue in ROM
 
 ;-----------------------------------------------------------------------------
 ; Intercept WRMCON call
@@ -132,8 +126,9 @@ coldboot_done:
 _warm_boot:
     ld      a, ROM_EXT_PG         ; Page 1 ROM
     out     (IO_BANK3), a         ; into Bank 3
+    call    esp_close_all
+    call    init_bas_fdesc
     jp      WRMCON                ; Go back to S3 BASIC
-
 
 ;-----------------------------------------------------------------------------
 ; Default Interrupt Handler
@@ -468,15 +463,6 @@ _inlin_hook:
 _inlin_done:
     ret
 
-;-----------------------------------------------------------------------------
-; Hook 2 - READY (Enter Direct Mode
-;-----------------------------------------------------------------------------
-direct_mode:
-    ld      hl,HOOK2+1            ; Make s3direct_mode return to HOOK2+1
-    push    hl                  
-    call    page_map_auxrom
-    jp      s3direct_mode
-
 reset_screen:
     ld      a,VCTRL_TEXT_EN
     out     (IO_VCTRL),a
@@ -502,70 +488,7 @@ reset_palette:
     dw $111, $F11, $1F1, $FF1, $22E, $F1F, $3CC, $FFF
     dw $CCC, $3BB, $C2C, $419, $FF7, $2D4, $B22, $333
 
-;-----------------------------------------------------------------------------
-; Hook 12 - SCRTCH (Execute NEW statement)
-;-----------------------------------------------------------------------------
-_scratch:
-    call    page_restore_plus
-    call    clear_all_errvars
-    ld      c,0
-    call    spritle_toggle_all    ; Disable all sprite
-    jp      HOOK12+1
 
-;-----------------------------------------------------------------------------
-; Hook 13 - OUTDO 
-;-----------------------------------------------------------------------------
-_outdo:
-  push    af                
-  ld      a,(BASYSCTL)            ; Get System Control Bits
-  rra                             ; Output to Buffer into Carry
-  jr      nc,.not_buffered        ; If bit set
-  jp      output_to_buffer        ;   Write to buffer 
-.not_buffered:
-  pop     af
-  jp      HOOK13+1
-
-;-----------------------------------------------------------------------------
-; Hook 18 - INCHRC (Get character from keyboard)
-;-----------------------------------------------------------------------------
-read_key:
-;    jp      key_read_ascii        ; Skip autotype for now
-    exx
-.autotype
-    ld      hl,(RESPTR)
-    ld      a,h
-    or      a
-    jr      z,.readkey
-    ld      c,IO_BANK3
-    in      b,(c)
-    cp      $C0
-    jr      c,.not_fkey
-    ld      a,BAS_BUFFR
-    out     (c),a
-.not_fkey
-    inc     hl
-    ld      a,(hl)
-    ld      (RESPTR),hl
-    or      a
-    jp      nz,.done
-    xor     a
-    ld      (RESPTR+1),a
-.done
-    out     (c),b
-    exx
-    ret
-.readkey
-    exx
-    jp      key_read_ascii    ; Read key from keyboard and return
-
-
-;-----------------------------------------------------------------------------
-; Hook 5: Push MAIN onto stack so modified CHEAD will return to it
-;-----------------------------------------------------------------------------
-_linker_hook:
-    ld    de,MAIN                 ; DE will get trashed anyway
-    push  de                      ; Make MAIN the return address
-    jp    LINKIT                  ; Link the lines
 
 ;-----------------------------------------------------------------------------
 ; Invoke advanced line editor
@@ -791,20 +714,6 @@ clear_screen40:
     jr      nz,.line
     ret
 
-_ttychr_hook:
-    push    af
-    cp      11
-    jr      nz,.not_cls
-    ld      a,(BASYSCTL)
-    and     $FE
-    ld      (BASYSCTL),a
-.not_cls
-    in      a,(IO_VCTRL)
-    and     VCRTL_80COL_EN
-    jp      nz,ttychr80pop
-    pop     af
-    jp      TTYCH
-    
 _ttymove_hook:
     ld      hl,(CURRAM)
     ld      a,(BASYSCTL)
@@ -842,7 +751,7 @@ _scroll_hook:
     include "text80.asm"
 
 ;-----------------------------------------------------------------------------
-; DOS routines
+; Cold Boot
 ;-----------------------------------------------------------------------------
 
 ;-----------------------------------------------------------------------------
@@ -870,7 +779,38 @@ _scroll_hook:
 ;-----------------------------------------------------------------------------
     include "util.asm"
 
-    include "tokens.asm"        ; Keyword lists and tokenize/expand routines
+;-----------------------------------------------------------------------------
+; Hook 18 - INCHRC (Get character from keyboard)
+;-----------------------------------------------------------------------------
+_read_key:
+;    jp      key_read_ascii        ; Skip autotype for now
+    exx
+.autotype
+    ld      hl,(RESPTR)
+    ld      a,h
+    or      a
+    jr      z,.readkey
+    ld      c,IO_BANK3
+    in      b,(c)
+    cp      $C0
+    jr      c,.not_fkey
+    ld      a,BAS_BUFFR
+    out     (c),a
+.not_fkey
+    inc     hl
+    ld      a,(hl)
+    ld      (RESPTR),hl
+    or      a
+    jp      nz,.done
+    xor     a
+    ld      (RESPTR+1),a
+.done
+    out     (c),b
+    exx
+    ret
+.readkey
+    exx
+    jp      key_read_ascii    ; Read key from keyboard and return
 
 
 free_rom_2k = hook_table - $
@@ -885,31 +825,31 @@ free_rom_2k = hook_table - $
 ; BASIC Hook Jump Table
 ; 58 Bytes
 hook_table:                     ; ## caller   addr  performing function
-    dw      _trap_error         ;  0 ERROR    03DB  Initialize Stack, Display Error, and Stop Program
-    dw      _force_error        ;  1 ERRCRD   03E0  Print Error Message
+    dw      trap_error          ;  0 ERROR    03DB  Initialize Stack, Display Error, and Stop Program
+    dw      force_error         ;  1 ERRCRD   03E0  Print Error Message
     dw      direct_mode         ;  2 READY    0402  BASIC command line (immediate mode)
     dw      HOOK3+1             ;  3 EDENT    0428  Save Tokenized Line
     dw      HOOK4+1             ;  4 FINI     0480  Finish Adding/Removing Line or Loading Program
-    dw      _linker_hook        ;  5 LINKER   0485  Update BASIC Program Line Links
+    dw      linker_hook         ;  5 LINKER   0485  Update BASIC Program Line Links
     dw      HOOK6+1             ;  6 PRINT    07BC  Execute PRINT Statement
     dw      HOOK7+1             ;  7 FINPRT   0866  End of PRINT Statement
     dw      HOOK8+1             ;  8 TRMNOK   0880  Improperly Formatted INPUT or DATA handler
-    dw      _eval_extension     ;  9 EVAL     09FD  Evaluate Number or String
+    dw      eval_extension      ;  9 EVAL     09FD  Evaluate Number or String
     dw      keyword_to_token    ; 10 NOTGOS   0536  Converting Keyword to Token
     dw      HOOK11+1            ; 11 CLEAR    0CCD  Execute CLEAR Statement
-    dw      _scratch            ; 12 SCRTCH   0BBE  Execute NEW Statement
-    dw      _outdo              ; 13 OUTDO    198A  Execute OUTCHR
+    dw      new_hook            ; 12 SCRTCH   0BBE  Execute NEW Statement
+    dw      outdo_hook          ; 13 OUTDO    198A  Execute OUTCHR
     dw      HOOK14+1            ; 14 ATN      1985  ATN() function
     dw      HOOK15+1            ; 15 DEF      0B3B  DEF statement
     dw      HOOK16+1            ; 16 FNDOER   0B40  FNxx() call
     dw      HOOK17+1            ; 17 LPTOUT   1AE8  Print Character to Printer
-    dw      read_key            ; 18 INCHRH   1E7E  Read Character from Keyboard
-    dw      _ttychr_hook        ; 19 TTYCHR   1D72  Print Character to Screen
+    dw      _read_key           ; 18 INCHRH   1E7E  Read Character from Keyboard
+    dw      ttychr_hook         ; 19 TTYCHR   1D72  Print Character to Screen
     dw      HOOK20+1            ; 20 CLOAD    1C2C  Load File from Tape
     dw      HOOK21+1            ; 21 CSAVE    1C09  Save File to Tape
     dw      token_to_keyword    ; 22 LISPRT   0598  expanding a token
-    dw      _next_statement     ; 23 GONE2    064B  interpreting next BASIC statement
-    dw      _run_cmd            ; 24 RUN      06BE  starting BASIC program
+    dw      exec_next_statement ; 23 GONE2    064B  interpreting next BASIC statement
+    dw      run_cmd             ; 24 RUN      06BE  starting BASIC program
     dw      on_error            ; 25 ONGOTO   0780  ON statement
     dw      HOOK26+1            ; 26 INPUT    0893  Execute INPUT, bypassing Direct Mode check
     dw      execute_function    ; 27 ISFUN    0A5F  Executing a Function
@@ -923,6 +863,8 @@ hook_table:                     ; ## caller   addr  performing function
 fast_hook_handler:
     ex      af,af'              ; save AF
     exx                         ; save BC,DE,HL
+    ld      a,ROM_EXT_PG        ; Ensure Extended ROM is paged in
+    out     (IO_BANK3),a
     pop     hl                  ; get hook return address
     ld      a,(hl)              ; A = byte (RST $30 parameter)
     add     a,a                 ; A * 2 to index WORD size vectors
@@ -941,14 +883,6 @@ fast_hook_handler:
 ; S3 BASIC extensions routines in Auxiliary ROM Page
 ;-----------------------------------------------------------------------------
 
-_eval_extension:
-    call    page_restore_plus
-    jp      eval_extension
-
-_force_error:
-    call    page_restore_plus
-    jp      force_error
-
 _main_ext:
     call    page_map_aux
     jp      s3_main_ext
@@ -964,11 +898,6 @@ _run_cmd:
 _stuffh_ext:
     call    page_map_aux
     jp      s3_stuffh_ext
-
-_trap_error:
-    call    page_restore_plus
-    jp      trap_error
-
 
 aux_call:
     call    page_map_auxrom
@@ -1023,16 +952,19 @@ _s3_string_ext
     include "args.asm"          ; ARGS statement and function
     include "basic80.asm"       ; Statements and functions from MBASIC 80
     include "baslines.asm"      ; (De)tokenize, add, insert, delete program lines
+    include "coldboot.asm"      ; Cold boot code
     include "draw.asm"          ; Bitmap drawing statements and functions
     include "enhanced.asm"      ; Enhanced stardard BASIC statements and functions
     include "evalext.asm"       ; EVAL extension - hook 9
     include "extended.asm"      ; Statements and functions from Aquarius Extended BASIC
     include "files.asm"         ; Disk and File I/O statements and functions
     include "graphics.asm"      ; Graphics statements and functions
+    include "hooks.asm"         ; Extended BASIC hooks
     include "misc.asm"          ; Miscellaneous subroutines
     include "play.asm"
     include "plus.asm"          ; plusBASIC unique statements and functions
     include "shared.asm"        ; Shared subroutines
+    include "tokens.asm"        ; Keyword lists and tokenize/expand routines
     include "usbbas.asm"        ; Statements and functions from USB BASIC
 
     ; Graphics modules
@@ -1060,7 +992,6 @@ _s3_string_ext
     phase   $C000     ;Assemble in ROM Page 1 which will be in Bank 3
 
     include "jump_aux.asm"      ; Auxiliary routines jump tables
-    include "coldboot.asm"      ; Cold boot code
     include "dos.asm"           ; DOS routines
     include "editor.asm"        ; Advanced line editor
     include "esp_aux.asm"       ; ESP routines in auxiliary ROM

@@ -5,37 +5,6 @@
 ;=====================================================================================
 
 ;-----------------------------------------------------------------------------
-; Hook 2 - READY (Enter Direct Mode
-;-----------------------------------------------------------------------------
-s3direct_mode:
-    call    s3text_screen
-
-    ld      a,(BASYSCTL)
-    and     KB_REPEAT
-    or      KB_ENABLE | KB_ASCII
-    call    key_set_keymode       ; Turn on keybuffer, ASCII mode, no repeat
-    jp      page_restore_bank3
-    call    close_bas_fdesc       ; Clean up after aborted file commnds
-    jp      page_restore_bank3
-
-close_bas_fdesc:
-    ld      a,(BAS_FDESC)         ; Get File Descriptor in Use
-    or      a                     ; If Valid Descriptor
-    ret     m
-    call    dos_close_file        ;   Close the File
-init_bas_fdesc:
-    ld      a,128
-    ld      (BAS_FDESC),a         ;   Set to No File
-    ret
-
-s3text_screen:
-    in      a,(IO_VCTRL)
-    and     a,~VCTRL_MODE_MC
-    or      a,VCTRL_TEXT_EN
-    out     (IO_VCTRL),a
-    ret
-
-;-----------------------------------------------------------------------------
 ; Save MAIN Line Number Flag
 ;-----------------------------------------------------------------------------
 s3_main_ext:
