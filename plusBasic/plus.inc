@@ -69,8 +69,8 @@ BUFRET      equ $385B   ; unpack_line return address
 BASINTPG    equ $3821   ; BASIC Interrupt Routine Page, 0=None (swapped into BANK 3)
 BASINTJP    equ $3822   ; BASIC Interrupt Routine JP instruction
 BASINTADR   equ $3823   ; BASIC Interrupt Routine JP Address ($3823-$3824)
-BASYSCTL    equ $3825   ; System Control Bits
-                        ; 0: Output to Buffer, 2: Key Repeat, 5: Ctrl-C, 6: 80 Column Mode, 7: Timer Elapsed
+BASYSCTL    equ $3825   ; System Control Bits - 0: Output to Buffer, 1: SAVE ASC 2: Key Repeat,
+                        ; 5: Ctrl-C, 6: 80 Column Mode, 7: Timer Elapsed
 IRQACTIVE   equ $3826   ; Active IRQ Routines Bits
                         ; 0: Timer
 TIMERCNT    equ $3827   ; TIMER counter LSB = $3827, MSB = $3829
@@ -173,6 +173,13 @@ FKEYBASE    equ BASBUF_BASE + FKEYDEFS
 ;         $0500-$2FFF   ; Unused
 CHRSETBUF   equ $3800   ; Page Offset: Custom Character Set Buffer
 CHRSETLEN   equ 2048    ; Size of character set ROM
+
+BASOUTBUF   equ $01     ; BASYSCTL: redirect OUTput to BUFfer
+BASSAVASC   equ $02     ; BASYSCTL: Default SAVe to ASC
+BASKEYRPT   equ $04     ; BASYSCTL: KEY RePeaI on
+BASBRKOFF   equ $20     ; BASYSCTL: BReak OFF (Disable Ctrl-C)
+BASSCRN80   equ $40     ; BASYSCTL: SCReeN 80 (80) column mode
+BASTMRSTS   equ $80     ; BASYSCTL: TiMeR STatuS
 
 ;-----------------------------------------------------------------------------
 ; BASIC Text Screen Buffers

@@ -385,6 +385,7 @@ get_screen_colors:
 ;-----------------------------------------------------------------------------
 get_on_off:
     rst     CHRGET                ; Get argument
+check_on_off:
     cp      ONTK                  ;  
     jr      nz,.not_on            ; If ON
     rst     CHRGET                ;   Skip it
@@ -395,7 +396,7 @@ get_on_off:
     byte    XTOKEN                
     rst     SYNCHR                ; Else
     byte    OFFTK                 ;   Require OFF
-    xor     a                     ;   Returb 0 with flags set
+    xor     a                     ;   Return 0 with flags set
     ret
 
 ;-----------------------------------------------------------------------------

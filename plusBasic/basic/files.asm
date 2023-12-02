@@ -938,6 +938,7 @@ ST_SAVE:
 ; 10 SAVE "/t/saveasc.bas",ASC
 save_ascii_program:
     rst     CHRGET                ; Skip ASC
+_save_ascii:
     ex      (sp),hl               ; HL = StrDsc; Stack = TxtPtr, RtnAdr
     call    _open_write           ; Create file
     call    get_strbuf_addr       ; HL = StrBuf
@@ -988,6 +989,9 @@ save_ascii_program:
 ; Save basic program
 ;-----------------------------------------------------------------------------
 save_basic_program:
+    ld      a,(BASYSCTL)
+    and     BASSAVASC             ; If SET SAVE ASC ON
+    jr      nz,_save_ascii        ;   SAVE as ASCII
     ex      (sp),hl               ; HL = String Descriptor, Stack = Text Pointer
     call    _open_write           ; Create file
 
@@ -1083,6 +1087,23 @@ check_sync_bytes:
     ld      a, (de)
     or      a
     jp      nz, BDFERR
+    ret
+
+;-----------------------------------------------------------------------------
+; Default SAVE to ASCII mode
+; SET SAVE ASC ON/OFF
+;-----------------------------------------------------------------------------
+ST_SET_SAVE:
+    rst     CHRGET                ; Skip SAVE
+    rst     SYNCHR
+    byte    ASCTK                 ; Require ASC
+    call    check_on_off          ; ON = $FF, OFF = 0
+    and     BASSAVASC             ; Isolate to SAVE ASC control bit
+    ld      b,a                   ; B = Control bit
+    ld      a,(BASYSCTL)          ; Get System control bits
+    and     $FF-BASSAVASC         ; Clear SAVE ASC control bit
+    or      b                     ; OR new bit value in
+    ld      (BASYSCTL),a          ; Write it back out
     ret
 
 ;-----------------------------------------------------------------------------

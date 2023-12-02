@@ -48,7 +48,7 @@
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.19f",0
+    db "v0.19g",0
 plus_len   equ   $ - plus_text
 
 auto_cmd:
@@ -128,6 +128,8 @@ _warm_boot:
     out     (IO_BANK3), a         ; into Bank 3
     call    esp_close_all
     call    init_bas_fdesc
+    ld      a,128
+    out     (IO_PCMDAC),a
     jp      WRMCON                ; Go back to S3 BASIC
 
 ;-----------------------------------------------------------------------------

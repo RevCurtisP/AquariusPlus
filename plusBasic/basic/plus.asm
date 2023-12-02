@@ -323,14 +323,16 @@ ST_PUT:
 ; SET Statement stub
 ;-----------------------------------------------------------------------------
 ST_SET:
-    cp      TILETK
+    cp      TILETK                ; $F0
     jp      z,ST_SET_TILE
-    cp      FNTK      
-    jr      z,ST_SETFNKEY
-    cp      COLTK      
+    cp      COLTK                 ; $F5
     jp      z,ST_SETCOLOR
+    cp      FNTK                  ; $A2
+    jr      z,ST_SETFNKEY
+    cp      SAVETK                ; $DC
+    jp      z,ST_SET_SAVE
     rst     SYNCHR                ; Must be extended Token
-    byte    XTOKEN
+    byte    XTOKEN                ; $FE
     cp      SPRITK
     jp      z,ST_SET_SPRITE
     cp      PALETK
