@@ -48,7 +48,7 @@
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.19g",0
+    db "v0.19h",0
 plus_len   equ   $ - plus_text
 
 auto_cmd:
@@ -377,11 +377,11 @@ _start_cart:
     ld      bc, $4000
     ldir
 
+descramble_rom:
     ; Map RAM in bank3
     ld      a, 35
     out     (IO_BANK3), a
 
-descramble_rom:
     ; Determine scramble value
     xor     a
     ld      hl, $E003
