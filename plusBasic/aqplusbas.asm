@@ -48,7 +48,7 @@
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.19h",0
+    db "v0.19h1",0
 plus_len   equ   $ - plus_text
 
 auto_cmd:
@@ -288,11 +288,46 @@ _sounds_hook:
 ; Output: BC: Version String Length
 ; Clobbers: A,DE
 ;-----------------------------------------------------------------------------
-sys_ver_basic:
+sys_ver_plusbasic:
     ex      de,hl                 ; DE = BufAdr
     ld      hl,plus_version       ; HL = VerAdr
     call    string_copy           ; Copy VerStr to StrBuf
     ex      de,hl                 ; HL = BufAdr
+    ret
+
+;-----------------------------------------------------------------------------
+; Return BASIC Version
+; Input: HL: String Buffer address
+; Output: BC: Version String Length
+; Clobbers: A,DE
+;-----------------------------------------------------------------------------
+sys_ver_s3basic:
+    push    hl                    ; Stack = BufAdr, RtnAdr
+    push    hl                    ; Stack = BufAdr, BufAdr, RtnAdr
+    ld      de,S3VER              ; DE = Version bytes
+    call    .str_byte             ; YY
+    call    .dash_byte            ; -MM
+    call    .dash_byte            ; -DD
+    ld      a,'r'
+    call    .prefix_byte          ; rREV
+    xor     a
+    ld      (hl),a                ; Terminate string
+    pop     de                    ; DE = BufAdr; Stack = BufAdr, RtnAdr           ; 
+    sbc     hl,bc                 ; HL = Length
+    ld      b,h 
+    ld      c,l                   ; BC = Length
+    pop     hl                    ; HL = BufAdr; Stack = RtnAdr
+    ret
+
+.dash_byte
+    ld      a,'-'
+.prefix_byte
+    ld      (hl),a                ;   Add dash to 
+    inc     hl
+.str_byte
+    ld      a,(de)                ;   Get BCD byte
+    call    byte_to_hex           ;   Convert BCD to ASCII
+    inc     de                    ;   Bump to next BCD byte
     ret
 
 ;-----------------------------------------------------------------------------
@@ -857,6 +892,7 @@ hook_table:                     ; ## caller   addr  performing function
     dw      execute_function    ; 27 ISFUN    0A5F  Executing a Function
     dw      HOOK28+1            ; 28 DATBK    08F1  Doing a READ from DATA
     dw      oper_extension      ; 29 NOTSTV   099E  Evaluate Operator (S3 BASIC Only)
+    dw      scan_label          ; 30 SCNLBL   0112  GOTO/GOSUB/LIST/RESTORE/RUN label
 
 ; ------------------------------------------------------------------------------
 ;  Execute Hook Routine

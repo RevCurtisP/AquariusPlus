@@ -124,7 +124,6 @@ XCOLD   equ     $2003   ;; | plusBASIC Cold Start`
 XCART   equ     $2006   ;; | plusBASIC Start Cartridge
 XINTR   equ     $2009   ;; | plusBASIC  Interrupt Handler
 XWARM   equ     $200C   ;; | plusBASIC Warm Start`
-SCNLBL  equ     $200F   ;; | Line label hook for GOTO, GOSUB, and RESTORE
 XINCHR  equ     $2012   ;; | Alternate keyboard read
 XFUNKY  equ     $2015   ;; | Set Character RAM
 XCNTC   equ     $2018   ;; | ISCNTC hook
@@ -172,7 +171,7 @@ else
 endif
 ;;RST 1 - Syntax Check
 
-        byte    $23,$11,$23       ;;Revision Date 
+S3VER:  byte    $23,$12,$02       ;;Revision Date 
         byte    1                 ;;Revision Number?
         nop                       ;;Pad out the RST routine
 ;;RST 1 - Syntax Check
@@ -332,14 +331,22 @@ ifdef aqplus
         jp      XCOLD             ;; | Do Extended BASIC Cold Start           010F  ld      hl,BASTXT+99
                                   ;; |                                        0110  
                                   ;; |                                        0111
+SCNLBL: rst     HOOKDO            ;; |                                        0112  inc     hl     
+HOOK30: byte    30                ;; |                                        0113  ld      c,(hl) 
+        jp      SCNLIN            ;; |                                        0114  ld      a,h    
+                                  ;; |                                        0115  or      l      
+        nop                       ;; |                                        0116  jr      z,MEMCHK
+                                  ;; |                                        0117  
+MEMTST  equ     SCNLBL            ;; | For deprecated code
+
 else                              ;;
         ld      hl,BASTXT+99      ;; \ Set RAM Test starting address
-endif
 MEMTST: inc     hl                ;; \ Bump pointer
         ld      c,(hl)            ;; \ Save contents of location
         ld      a,h               ;  \ 
         or      l                 ;; \ Wrapped around to $0000?
         jr      z,MEMCHK          ;; \ Yes, go on to check memory
+endif
         xor     c                 ;; \ Scramble bits into A
         ld      (hl),a            ;; \ and write to location
         ld      b,(hl)            ;; \ Read back into B

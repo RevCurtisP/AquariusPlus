@@ -423,7 +423,7 @@ ST_USE:
 ;-----------------------------------------------------------------------------
 ; VER Function
 ; Syntax: VER$(x)
-; x = 0 for System, 1 for plusBASIC
+; x = 0 for System, 1 for plusBASIC, 2 for S3 BASIC
 ;-----------------------------------------------------------------------------
 FN_VER:
     inc     hl                    ; Skip VER 
@@ -448,7 +448,10 @@ FN_VER:
     ld      ix,esp_get_version
     or      a
     jr      z,.zero
-    ld      ix,sys_ver_basic
+    ld      ix,sys_ver_plusbasic
+    cp      1
+    jr      z,.zero
+    ld      ix,sys_ver_s3basic
 .zero
     ex      (sp),hl               ; HL = StrFlg, Stack = TxtPtr, RetAdr
     push    hl                    ; Stack = StrFlg, TxtPtr, RetAdr
