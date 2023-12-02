@@ -4,4 +4,3 @@
   - LOAD/RUN ASCII BASIC programs
   - RUN ROM images
   
-  
