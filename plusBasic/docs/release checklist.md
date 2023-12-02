@@ -2,5 +2,7 @@
 
   - LOAD/RUN tokenized BASIC programs
   - LOAD/RUN ASCII BASIC programs
-  - RUN ROM images
-  
+  - RUN "esp:settings
+  - RUN ROM images  
+  - RUN "/aqds/aqds.aqx
+  - CD /CPM:RUN "gocpm.aqx
