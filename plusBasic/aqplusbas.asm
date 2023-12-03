@@ -25,9 +25,11 @@
     jp      _start_cart     ; $2006
     jp      irq_handler     ; $2009 interrupt haandler
     jp      _warm_boot      ; $200C Called from main ROM for warm boot
-    jp      scan_label      ; $200F Called from GOTO and RESTORE
-    jp      _keyread        ; $2012 Called from COLORS
-    jp      _ctrl_keys      ; $2015
+    jp      _keyread        ; $200F Called from COLORS
+    rst     HOOKDO          ; $2012
+    byte    31              ;
+    jp      CHKFUN          ;
+    nop
     jp      _iscntc_hook    ; $2018
     jp      _main_ext       ; $201B MAINX: Save Line# Flag`
     jp      _stuffh_ext     ; $201E Check for additional tokens when stuffing
@@ -42,13 +44,21 @@
     jp      _ttymove_hook   ; $2039 TTYMOV extension - set screen colors if SYSCTRL bit set
     jp      _scroll_hook    ; $203C SCROLL extension - scroll color memory if SYSCTRL bit set
     jp      _line_edit      ; $203F Advanced line editor
+
+    rst     HOOKDO          ; $2042
+    byte    30              ; 
+    jp      SCNLIN          
+    
+
     jp      _inlin_hook     ; $20?? Jump from INLIN for command history recall
     jp      _inlin_done     ; $20?? Jumped from FININL to save command to history
+
+
 
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.19h1",0
+    db "v0.19h2",0
 plus_len   equ   $ - plus_text
 
 auto_cmd:
@@ -820,7 +830,6 @@ _scroll_hook:
 ; Hook 18 - INCHRC (Get character from keyboard)
 ;-----------------------------------------------------------------------------
 _read_key:
-;    jp      key_read_ascii        ; Skip autotype for now
     exx
 .autotype
     ld      hl,(RESPTR)
@@ -893,6 +902,7 @@ hook_table:                     ; ## caller   addr  performing function
     dw      HOOK28+1            ; 28 DATBK    08F1  Doing a READ from DATA
     dw      oper_extension      ; 29 NOTSTV   099E  Evaluate Operator (S3 BASIC Only)
     dw      scan_label          ; 30 SCNLBL   0112  GOTO/GOSUB/LIST/RESTORE/RUN label
+    dw      _ctrl_keys          ; 31 XFUNKY   0117  Evaluate extended function keys
 
 ; ------------------------------------------------------------------------------
 ;  Execute Hook Routine

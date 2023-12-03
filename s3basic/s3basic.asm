@@ -122,10 +122,10 @@ ifdef aqplus
 XPLUS   equ     $2000   ;; | plusBASIC Reset
 XCOLD   equ     $2003   ;; | plusBASIC Cold Start`
 XCART   equ     $2006   ;; | plusBASIC Start Cartridge
-XINTR   equ     $2009   ;; | plusBASIC  Interrupt Handler
+XINTR   equ     $2009   ;; | plusBASIC Interrupt Handler
 XWARM   equ     $200C   ;; | plusBASIC Warm Start`
-XINCHR  equ     $2012   ;; | Alternate keyboard read
-XFUNKY  equ     $2015   ;; | Set Character RAM
+XINCHR  equ     $200F   ;; | Alternate keyboard read
+XFUNKY  equ     $2012   ;; | Extended function key check
 XCNTC   equ     $2018   ;; | ISCNTC hook
 XMAIN   equ     $201B   ;; | Line Crunch Hook
 XSTUFF  equ     $201E   ;; | STUFFH hook
@@ -139,6 +139,8 @@ STRNGX  equ     $2033   ;; | Don't capitalize letters between single quotes
 SOUNDX  equ     $2036   ;; | Adjust SOUNDS delay counter in turbo mode
 TTYMOX  equ     $2039   ;; | TTYMOV extension
 SCROLX  equ     $203C   ;; | SCROLL extension
+SCNLBL  equ     $2042   ;; | Scan line label or line number
+
 endif                   
 EXTBAS  equ     $2000   ;;Start of Extended Basic
 XSTART  equ     $2010   ;;Extended BASIC Startup Routine
@@ -172,7 +174,7 @@ endif
 ;;RST 1 - Syntax Check
 
 S3VER:  byte    $23,$12,$02       ;;Revision Date 
-        byte    1                 ;;Revision Number?
+        byte    2                 ;;Revision Number?
         nop                       ;;Pad out the RST routine
 ;;RST 1 - Syntax Check
 SYNCHK: ld      a,(hl)
@@ -331,22 +333,14 @@ ifdef aqplus
         jp      XCOLD             ;; | Do Extended BASIC Cold Start           010F  ld      hl,BASTXT+99
                                   ;; |                                        0110  
                                   ;; |                                        0111
-SCNLBL: rst     HOOKDO            ;; |                                        0112  inc     hl     
-HOOK30: byte    30                ;; |                                        0113  ld      c,(hl) 
-        jp      SCNLIN            ;; |                                        0114  ld      a,h    
-                                  ;; |                                        0115  or      l      
-        nop                       ;; |                                        0116  jr      z,MEMCHK
-                                  ;; |                                        0117  
-MEMTST  equ     SCNLBL            ;; | For deprecated code
-
 else                              ;;
         ld      hl,BASTXT+99      ;; \ Set RAM Test starting address
+endif
 MEMTST: inc     hl                ;; \ Bump pointer
         ld      c,(hl)            ;; \ Save contents of location
         ld      a,h               ;  \ 
         or      l                 ;; \ Wrapped around to $0000?
         jr      z,MEMCHK          ;; \ Yes, go on to check memory
-endif
         xor     c                 ;; \ Scramble bits into A
         ld      (hl),a            ;; \ and write to location
         ld      b,(hl)            ;; \ Read back into B
