@@ -27,11 +27,13 @@
     jp      _warm_boot      ; $200C Called from main ROM for warm boot
     jp      _keyread        ; $200F Called from COLORS
     rst     HOOKDO          ; $2012
-    byte    31              ;
+    byte    31              ;        
     jp      CHKFUN          ;
     nop
-    jp      _iscntc_hook    ; $2018
-    jp      _main_ext       ; $201B MAINX: Save Line# Flag`
+    jp      _iscntc_hook    ; $2018  
+    nop                     ; $201B
+    nop
+    nop
     jp      _stuffh_ext     ; $201E Check for additional tokens when stuffing
     jp      clear_default   ; $2021 Clear both text screens
     jp      _check_topmem   ; $2024 Verify TOPMEM is in Bank 2
@@ -45,20 +47,21 @@
     jp      _scroll_hook    ; $203C SCROLL extension - scroll color memory if SYSCTRL bit set
     jp      _line_edit      ; $203F Advanced line editor
 
-    rst     HOOKDO          ; $2042
+    rst     HOOKDO          ; $2042 scan_label: Scan line label or line number
     byte    30              ; 
     jp      SCNLIN          
-    
 
-    jp      _inlin_hook     ; $20?? Jump from INLIN for command history recall
-    jp      _inlin_done     ; $20?? Jumped from FININL to save command to history
+    rst     HOOKDO          ; $2047 _main_ext: Save Line# Flag in TEMP3
+    byte    32
+    jp      SCNLIN          
+
 
 
 
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.19h2",0
+    db "v0.19h3",0
 plus_len   equ   $ - plus_text
 
 auto_cmd:
@@ -901,8 +904,9 @@ hook_table:                     ; ## caller   addr  performing function
     dw      execute_function    ; 27 ISFUN    0A5F  Executing a Function
     dw      HOOK28+1            ; 28 DATBK    08F1  Doing a READ from DATA
     dw      oper_extension      ; 29 NOTSTV   099E  Evaluate Operator (S3 BASIC Only)
-    dw      scan_label          ; 30 SCNLBL   0112  GOTO/GOSUB/LIST/RESTORE/RUN label
-    dw      _ctrl_keys          ; 31 XFUNKY   0117  Evaluate extended function keys
+    dw      scan_label          ; 30 SCNLBL   2042  GOTO/GOSUB/LIST/RESTORE/RUN label
+    dw      _ctrl_keys          ; 31 XFUNKY   2012  Evaluate extended function keys
+    dw      _main_ext           ; 32 XMAIN    2047  Save Line# Flag`in TEMP3
 
 ; ------------------------------------------------------------------------------
 ;  Execute Hook Routine

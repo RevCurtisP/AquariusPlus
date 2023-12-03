@@ -127,7 +127,6 @@ XWARM   equ     $200C   ;; | plusBASIC Warm Start`
 XINCHR  equ     $200F   ;; | Alternate keyboard read
 XFUNKY  equ     $2012   ;; | Extended function key check
 XCNTC   equ     $2018   ;; | ISCNTC hook
-XMAIN   equ     $201B   ;; | Line Crunch Hook
 XSTUFF  equ     $201E   ;; | STUFFH hook
 XCLS    equ     $2021   ;; | CLS Extension
 XCLEAR  equ     $2024   ;; | Issue Error if TOPMEM too low
@@ -140,6 +139,7 @@ SOUNDX  equ     $2036   ;; | Adjust SOUNDS delay counter in turbo mode
 TTYMOX  equ     $2039   ;; | TTYMOV extension
 SCROLX  equ     $203C   ;; | SCROLL extension
 SCNLBL  equ     $2042   ;; | Scan line label or line number
+XMAIN   equ     $2047   ;; | Line Crunch Hook
 
 endif                   
 EXTBAS  equ     $2000   ;;Start of Extended Basic
@@ -174,7 +174,7 @@ endif
 ;;RST 1 - Syntax Check
 
 S3VER:  byte    $23,$12,$02       ;;Revision Date 
-        byte    2                 ;;Revision Number?
+        byte    3                 ;;Revision Number?
         nop                       ;;Pad out the RST routine
 ;;RST 1 - Syntax Check
 SYNCHK: ld      a,(hl)
