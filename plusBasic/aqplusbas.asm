@@ -26,14 +26,10 @@
     jp      irq_handler     ; $2009 interrupt haandler
     jp      _warm_boot      ; $200C Called from main ROM for warm boot
     jp      _keyread        ; $200F Called from COLORS
-    rst     HOOKDO          ; $2012
-    byte    31              ;        
-    jp      CHKFUN          ;
-    nop
-    jp      _iscntc_hook    ; $2018  
-    nop                     ; $201B
-    nop
-    nop
+    jp      scan_label      ; $2012 ***deprecated
+    jp      _ctrl_keys      ; $2015 ***deprecated
+    jp      _iscntc_hook    ; $2018 ***deprecated 
+    jp      _main_ext       ; $201B
     jp      _stuffh_ext     ; $201E Check for additional tokens when stuffing
     jp      clear_default   ; $2021 Clear both text screens
     jp      _check_topmem   ; $2024 Verify TOPMEM is in Bank 2
@@ -45,23 +41,25 @@
     jp      _sounds_hook    ; $2036 Adjust SOUNDS for turbo mode
     jp      _ttymove_hook   ; $2039 TTYMOV extension - set screen colors if SYSCTRL bit set
     jp      _scroll_hook    ; $203C SCROLL extension - scroll color memory if SYSCTRL bit set
-    jp      _line_edit      ; $203F Advanced line editor
+;    jp      _line_edit      ; $203F Advanced line editor
+    nop                     ; $203F
 
-    rst     HOOKDO          ; $2042 scan_label: Scan line label or line number
+    rst     HOOKDO          ; $2040 scan_label: Scan line label or line number
     byte    30              ; 
     jp      SCNLIN          
 
-    rst     HOOKDO          ; $2047 _main_ext: Save Line# Flag in TEMP3
+    rst     HOOKDO          ; $2045 _ctrl_keys: Evaluate extended function keys
+    byte    31              ;        
+    jp      CHKFUN          ;
+
+    rst     HOOKDO          ; $204A _main_ext: Save Line# Flag in TEMP3
     byte    32
     jp      SCNLIN          
-
-
-
 
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.19h3",0
+    db "v0.19h4",0
 plus_len   equ   $ - plus_text
 
 auto_cmd:
