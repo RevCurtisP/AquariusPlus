@@ -8,7 +8,12 @@
   - RUN "/aqds/aqds.aqx
   - CD /CPM:RUN "gocpm.aqx
   - PLAY SAMPLE
-
+    - RUN "bigben.baq
+  - Unit tests
+    - RUN "cp.baq
+    - RUN "pp.baq
+    - RUN "sc.baq
+    - RUN "sl.baq
 
 - Not implemented
   - PLAY PT3

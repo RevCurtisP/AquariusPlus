@@ -19,7 +19,7 @@ on_error:
 .onerr: rst     CHRGET            ; GET NEXT THING
         rst     SYNCHR            ; MUST HAVE ...GOTO
         db      GOTOTK  
-        call    SCNLBL            ; Check for a Label
+        call    scan_label        ; Check for a Label
         ld      a,d               ; IS LINE NUMBER ZERO?
         or      e                 ; SEE
         jr      z,reset_trap      ; IF ON ERROR GOTO 0, RESET TRAP
@@ -41,8 +41,6 @@ reset_trap:
         ld      e,a               ; INTO E.
         jp      force_error       ; FORCE THE ERROR TO HAPPEN
 
-.scan_label:
-        
 
 ;----------------------------------------------------------------------------
 ; ERROR Hook Routine for Error Trapping

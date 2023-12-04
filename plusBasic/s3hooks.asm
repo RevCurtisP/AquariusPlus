@@ -5,17 +5,6 @@
 ;=====================================================================================
 
 ;-----------------------------------------------------------------------------
-; Save MAIN Line Number Flag
-;-----------------------------------------------------------------------------
-s3_main_ext:
-    pop     de                    ; Pop Return Address
-    pop     bc                    ; C = Line Number Flag
-    ld      (TEMP3),bc            ; Save it
-    push    bc                    ; Flag back on stack
-    push    de                      ; Return address back on stack
-    jp      SCNLIN                ; Continue to SCNLIN
-
-;-----------------------------------------------------------------------------
 ; Extended line editor function keys
 ; Jumped to from INLNC
 ; On entry: A,C = character typed, B = input buffer character count
@@ -94,7 +83,7 @@ s3_ctrl_keys:
     jr      .inlinc
 
 ;-----------------------------------------------------------------------------
-; Don't tokenize unquoted literal string after DOS command in direct mode
+; Hook 34: Don't tokenize unquoted literal string after DOS command in direct mode
 ;-----------------------------------------------------------------------------
 s3_stuffh_ext:
     cp      DATATK-':'            ; If DATA
@@ -160,32 +149,19 @@ _stuff_chr:
     inc     de                    ; Bump KRUNCH pointer                    
     inc     c                     ; Increment buffer count                 
     ret                                                                   
-                                                                            
-; Skip label at begin of line                                           
-skip_label: 
-    ld      (CURLIN),hl           ; Save the Line #                        
-    ex      de,hl                 ; DE = Line#, HL = Text Pointer          
-    rst     CHRGET                ; Get first character                    
-    cp      '_'                   ; If not underscore                      
-    jr      nz,.gone              ;   Execute rest of line                 
-.loop      
-    rst     CHRGET                ; Get next charcter                      
-    or      a                     ; If end of line                         
-    jr      z,.gone               ;   done                                 
-    cp      ':'                   ; If not a colon                         
-    jr      nz,.loop              ;   Keep going                           
-.gone    
-    dec     hl                    ; Back up text pointer                   
-    jp      GONE                  ; Execute rest of line                   
 
-; Extended string processing during CRUNCH
+;-----------------------------------------------------------------------------
+; Hook 39: Extended string processing during CRUNCH
+;-----------------------------------------------------------------------------
 s3_string_ext:
     jp      z,STRNG               ; Special Handling for Double Quote      
     cp      $27                   ;                                         
     jp      z,STRNG               ; Do the same for Single Quote           
+    cp      '~'                   ; If tilde
+    jr      z,.stuff_suffix       ;   Stuff variable suffix
     cp      $5C                   ; If not backslash
     jp      nz,stuff_label        ;   See if it's a label         
-
+; Stuff escaped string
     call    _stuff_chr            ; Copy backslash 
     ld      a,(hl)                ; Get next character
     cp      '"'                   ; If not quotes`
@@ -206,20 +182,18 @@ s3_string_ext:
     jr      nz,.escape_loop       ;   check next character
     ld      a,(hl)                ; Else get next character
     jr      .escape_char          ;   escape it, and loop
-.done
-    push    hl                    ; Push text pointer
-    call    get_strbuf_addr       ; HL = StrBuf
-    push    hl                    ; Push Dummy Return Address
-    dec     hl                    ; Back up to before string
-    ld      b,0                   ; NUL is the only teminator
-    call    STRLT3            
-    call    FREFAC            
-    ld      bc,FINBCK             
-    push    bc                
-    jp      STRCPY
-
-
-
+;Stuff ~ and variable suffix
+.stuff_suffix
+    call    _stuff_chr            ; Stuff suffix character
+    ld      a,(hl)                ;  
+    cp      '0'                   ; If < '0'
+    jp      c,_strngr             ;   Finish CRUNCH
+    cp      ':'                   ; If '0'...'9'
+    jr      c,.stuff_suffix       ;   Stuff it
+    call    ISLETC                ; If letter
+    jr      nc,.stuff_suffix      ;   Stuff it
+_strngr
+    jp      STRNGR                ; Else finish crunch
 
 ;-----------------------------------------------------------------------------
 ; Get Function Key Buffer Address

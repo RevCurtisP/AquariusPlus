@@ -119,27 +119,27 @@ endif
 ;;              $3900   ;;This is always 0
 BASTXT  equ     $3901   ;;Start of Basic Program
 ifdef aqplus            
+;;plusBASIC hard-coded intercepts
 XPLUS   equ     $2000   ;; | plusBASIC Reset
 XCOLD   equ     $2003   ;; | plusBASIC Cold Start`
 XCART   equ     $2006   ;; | plusBASIC Start Cartridge
 XINTR   equ     $2009   ;; | plusBASIC Interrupt Handler
 XWARM   equ     $200C   ;; | plusBASIC Warm Start`
 XINCHR  equ     $200F   ;; | Alternate keyboard read
-XCNTC   equ     $2018   ;; | ISCNTC hook
-XSTUFF  equ     $201E   ;; | STUFFH hook
-XCLS    equ     $2021   ;; | CLS Extension
-XCLEAR  equ     $2024   ;; | Issue Error if TOPMEM too low
-XPTRGT  equ     $2027   ;; | PTRGET Hook
-SKPLBL  equ     $202D   ;; | Skip label at beginning of line (SKPLBL)
-STFLBL  equ     $202A   ;; | Don't tokenize label at beginning of Line (STFLBL)  
-SKPLOG  equ     $2030   ;; | Skip Label in ON GOTO/GOSUB
-STRNGX  equ     $2033   ;; | Don't capitalize letters between single quotes
-SOUNDX  equ     $2036   ;; | Adjust SOUNDS delay counter in turbo mode
-TTYMOX  equ     $2039   ;; | TTYMOV extension
-SCROLX  equ     $203C   ;; | SCROLL extension
+SOUNDX  equ     $2012   ;; | Adjust SOUNDS delay counter in turbo mode
+TTYMOX  equ     $2015   ;; | TTYMOV extension
+SCROLX  equ     $2018   ;; | SCROLL extension
+;;plusBASIC specific hooks
 SCNLBL  equ     $2040   ;; | Scan line label or line number
 XFUNKY  equ     $2045   ;; | Extended function key check
-XMAIN   equ     $204A   ;; | Line Crunch Hook
+XCNTC   equ     $204A   ;; | ISCNTC hook
+XMAIN   equ     $204F   ;; | Line Crunch Hook
+XSTUFF  equ     $2054   ;; | STUFFH hook
+XCLEAR  equ     $2059   ;; | Issue Error if TOPMEM too low
+XPTRGT  equ     $205E   ;; | PTRGET Hook
+SKPLBL  equ     $2063   ;; | Skip label at beginning of line (SKPLBL)
+SKPLOG  equ     $2068   ;; | Skip Label in ON GOTO/GOSUB
+STRNGX  equ     $206D   ;; | Don't capitalize letters between single quotes
 
 endif                   
 EXTBAS  equ     $2000   ;;Start of Extended Basic
@@ -173,8 +173,8 @@ else
 endif
 ;;RST 1 - Syntax Check
 
-S3VER:  byte    $23,$12,$02       ;;Revision Date 
-        byte    4                 ;;Revision Number?
+S3VER:  byte    $23,$12,$03       ;;Revision Date 
+        byte    $00               ;;Revision Number?
         nop                       ;;Pad out the RST routine
 ;;RST 1 - Syntax Check
 SYNCHK: ld      a,(hl)
@@ -362,7 +362,8 @@ MEMCHK: dec     hl                ;; \ Back up to last good address
         add     hl,de             ;; \ 
         ld      (TOPMEM),hl       ;; \ Set TOPMEM t0 MEMSIZ-50
         call    SCRTCH            ;; \ Perform NEW
-        call    PRNTIT            ;; \ Print copyright message
+; Continue Cold Boot if not booting into plusBASIC
+CLDCON: call    PRNTIT            ;; \ Print copyright message
         ld      sp,OLDSTK         ;; \ Top of of stack used to be here
         call    STKINI            ;; \ Set stack pointer to TOPMEM
         ld      hl,EXTBAS+5       ;; \ End of signature in Extended BASIC
@@ -1242,7 +1243,7 @@ ifdef aqplus
 else
         ld      (CURLIN),hl       ; \ [M80] SETUP CURLIN WITH THE CURRENT LINE #
 endif
-        ex      de,hl             ;;DE=Line#, HL=Text Pointer
+GONCON: ex      de,hl             ;;DE=Line#, HL=Text Pointer
 
 GONE:   rst     CHRGET            ;[M80] GET THE STATEMENT TYPE
         ld      de,NEWSTT         ;[M80] PUSH ON A RETURN ADDRESS OF NEWSTT
@@ -2381,7 +2382,7 @@ ifdef aqplus
 else        
         ld      (TOPMEM),hl       ;[M80] SET UP NEW STACK LOCATION
 endif
-        pop     hl                ;[M80] GET BACK MEMSIZ
+CLRCON: pop     hl                ;[M80] GET BACK MEMSIZ
         ld      (MEMSIZ),hl       ;[M80] SET IT UP, MUST BE OK
         pop     hl                ;[M80] REGAIN THE TEXT POINTER
         jp      CLEARC            ;[M80] GO CLEAR
@@ -3078,12 +3079,12 @@ PTRGT2: call    ISLET             ;[M80] CHECK FOR LETTER
         ld      b,a               ;[M80] ASSUME NO SECOND CHARACTER
         ld      (VALTYP),a        ;[M80] ZERO NAMCNT
 ifdef aqplus
-        jp      XPTRGT            ;;Check for underscore extension
+        jp      XPTRGT            ;;Check for tilde in variable name extension
 else        
         rst     CHRGET            ;[M80] GET CHAR
         jr      c,ISSEC           ;[M80] YES, WAS NUMERIC
 endif
-        call    ISLETC            ;[M80] SET CARRY IF NOT ALPHABETIC
+CHKLET: call    ISLETC            ;[M80] SET CARRY IF NOT ALPHABETIC
         jr      c,NOSEC           ;[M80] ALLOW ALPHABETICS
 ISSEC:  ld      b,a               ;[M80] IT IS A NUMBER--SAVE IN B
 EATEM:  rst     CHRGET            ;[M80] GET CHAR
@@ -4634,7 +4635,7 @@ CHARCG: push    hl                ;
 ISCNTC: 
 ifdef aqplus
 ;;Code change: Extended Control-Character check 
-        jp      XCNTC
+        call    XCNTC
 else
         call    CNTCCN            ;{M80} SEE IF ITS CONTROL-C
 endif
@@ -5266,7 +5267,7 @@ endif
 ;;Move Cursor one character to the right
 TTYMOV: 
 ifdef aqplus
-        call    TTYMOX
+        jp      TTYMOX
 else
         ld      hl,(CURRAM)       ;
 endif

@@ -26,19 +26,3 @@ fnkey_write_buffer:
     inc     de
     jp      page_write_byte
     
-;-----------------------------------------------------------------------------
-; S3 BASIC patch
-; Skip Label in ON GOSUB
-;-----------------------------------------------------------------------------
-skip_on_label:
-    rst     CHRGET            ;;Get first character of LineRef            
-    cp      '_'               ;;If not a label                            
-    jp      nz,SCNLIN         ;;  Scan Line Number                        
-.loop                                                                              
-    rst     CHRGET            ;;Get next character                        
-    ret     z                 ;;Return if end of line                     
-    cp      ','                                                           
-    ret     z                 ;;Return if comma                           
-    cp      ':'                                                           
-    ret     z                 ;;Return if colon                           
-    jr      .loop             ;;Check next character                      

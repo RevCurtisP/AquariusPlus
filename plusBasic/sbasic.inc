@@ -126,8 +126,9 @@ S3VER       equ $0003   ; S3 Version in BCD: YY,MM,DD,Rev
 JUMPIX      equ $0034   ; Jump to address in IX
 NOHOOK      equ $003B   ; Default Hook routine
 RESET:      equ $0089   ; Display start up screen 
+CLDCON      equ $0138   ; Finish S3BASIC cold boot
 HEDING      equ $015F   ; Microsoft copyright message
-INITFF:     equ $0153   ; Initialize I/O Port 255
+INITFF:     equ $0153   ; Initialize I/O Port 255 
 REDDY       equ $036E   ; Text "Ok"
 FNDFOR      equ $039F   ; Find FOR/GOSUB entry on stack
 SNERR:      equ $03C4   ; Syntax error
@@ -169,12 +170,14 @@ CHRGTR      equ $066B   ; CALLable CHRGET
 CHRGT2      equ $066C   ; Get Current Character and Set Flags
 CHRGT3      equ $066D   ; Test character in A and set flags
 GONE4       equ $063C   ; Execute next line
+GONCON      equ $064A   ; Swap DE and HL then execute GONE
 FRCINT:     equ $0682   ; Convert fp number to 16 bit signed integer in DE
 CONRUN      equ $06C3   ; RUN specied line number
 RETURN      equ $06F8   ; Execute RETURN statement
 FCERR:      equ $0697   ; Function call error
 IQERR       equ FCERR   ; Illegal quantity error (future expansion)
 SCNLIN      equ $069C   ; Get line number from text at (HL)
+LINGET      equ $069D   ; Skip over line number
 RUNC2:      equ $06DB
 GOTO        equ $06DC   ; Execute GOTO Statement
 GOTOLN      equ $06DF   ; GOTO line# in DE
@@ -207,6 +210,7 @@ STKINI:     equ $0BE5   ; Initialize stack
 ;FRMINT         $0B7F   ; Use GETINT instead. This routine has an unnecessary PUSH/POP HL
 BGNRST      equ $0C19   ; Finish up RESTORE
 ISLETC:     equ $0CC6   ; Test for a letter
+CLRCON      equ $0D04   ; Continue CLEARS after setting top of stack
 NOTRUB      equ $0DA3   ; Continue Ctrl-key check
 CHKFUN      equ $0DA4   ; Evaluate Ctrl-keys
 INLINC      equ $0D8E   ; Wait for and process direct mode keypress
@@ -234,6 +238,8 @@ PTRGET:     equ $10D1   ; Get variable (out: BC = addr, DE = len)
 EATEM       equ $10EA   ; Continue PTRGET at skip extra alphanumerics loop
 NOSEC       equ $10F2   ; Continue PTRGET at check for '$'
 SKIPDS      equ $10FD   ; Continue PTRGET at skip of '$'
+CHKLET      equ $10E4   ; Continue PTRGET at check for letter
+ISSEC       equ $10E9   ; Continue PTRGET at skip non-letter
 FSUB        equ $125E   ; Subtract: FACC = BCDE - FACC
 FADD        equ $1261   ; Add: FACC = BCDE + FACC
 FONE        equ $135F   ; Floating point constant 1

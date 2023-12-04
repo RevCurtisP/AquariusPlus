@@ -26,40 +26,56 @@
     jp      irq_handler     ; $2009 interrupt haandler
     jp      _warm_boot      ; $200C Called from main ROM for warm boot
     jp      _keyread        ; $200F Called from COLORS
-    jp      scan_label      ; $2012 ***deprecated
-    jp      _ctrl_keys      ; $2015 ***deprecated
-    jp      _iscntc_hook    ; $2018 ***deprecated 
-    jp      _main_ext       ; $201B
-    jp      _stuffh_ext     ; $201E Check for additional tokens when stuffing
-    jp      clear_default   ; $2021 Clear both text screens
-    jp      _check_topmem   ; $2024 Verify TOPMEM is in Bank 2
-    jp      _ptrget_hook    ; $2027 Allow _Alphanumunder sftar var name
-    jp      _stuff_label    ; $202A Don't tokenize label at beginning of Line (STFLBL)
-    jp      _skip_label     ; $202D Skip label at beginning of line (SKPLBL)
-    jp      _skip_on_label  ; $2030 Skip label in ON GOTO
-    jp      _s3_string_ext  ; $2033 Don't capitalize letters between single quotes (STRNGX)
-    jp      _sounds_hook    ; $2036 Adjust SOUNDS for turbo mode
-    jp      _ttymove_hook   ; $2039 TTYMOV extension - set screen colors if SYSCTRL bit set
-    jp      _scroll_hook    ; $203C SCROLL extension - scroll color memory if SYSCTRL bit set
-;    jp      _line_edit      ; $203F Advanced line editor
-    nop                     ; $203F
+    jp      _sounds_hook    ; $2012 SOUNDX Adjust SOUNDS for turbo mode
+    jp      _ttymove_hook   ; $2015 TTYMOX TTYMOV extension - set screen colors if SYSCTRL bit set
+    jp      _scroll_hook    ; $2018 SCROLX  SCROLL extension - scroll color memory if SYSCTRL bit set
 
-    rst     HOOKDO          ; $2040 scan_label: Scan line label or line number
+    dc $2040-$,$76
+    
+    rst     HOOKDO          ; $2040 SCNLBL scan_label: Scan line label or line number
     byte    30              ; 
     jp      SCNLIN          
 
-    rst     HOOKDO          ; $2045 _ctrl_keys: Evaluate extended function keys
+    rst     HOOKDO          ; $2045 XFUNKY _ctrl_keys: Evaluate extended function keys
     byte    31              ;        
     jp      CHKFUN          ;
 
-    rst     HOOKDO          ; $204A _main_ext: Save Line# Flag in TEMP3
+    rst     HOOKDO          ; $204A XCNTC  _iscntc_hook: Intercept Ctrl-C check
     byte    32
+    jp      CNTCCN          
+
+    rst     HOOKDO          ; $204F XMAIN  _main_ext: Save Line# Flag in TEMP3
+    byte    33
     jp      SCNLIN          
+
+    rst     HOOKDO          ; $2054 XSTUFF _stuffh_ext: Check for additional tokens when stuffing
+    byte    34
+    jp      _stuffh_nohook          
+    
+    rst     HOOKDO          ; $2059 XCLEAR _check_topmem: Verify TOPMEM is in Bank 2
+    byte    35    
+    jp      _topmem_nohook    
+
+    rst     HOOKDO          ; $205E XPTRGT ptrget_hook: Allow _Alphanumunder sftar var name
+    byte    36    
+    jp      _ptrget_nohook
+
+    rst     HOOKDO          ; $2063 SKPLBL  skip_label: Skip label at beginning of line (SKPLBL)
+    byte    37    
+    jp      _skplbl_nohook
+
+    rst     HOOKDO          ; $2068 SKPLOG  skip_on_label: Skip label in ON GOTO
+    byte    38
+    jp      LINGET
+
+    rst     HOOKDO          ; $206D STRNGX  _string_ext      Don't capitalize letters between single quotes (STRNGX)
+    byte    39
+    jp      _stringx_nohook
 
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.19h4",0
+    db "v0.19i",0
 plus_len   equ   $ - plus_text
 
 auto_cmd:
@@ -113,6 +129,15 @@ _reset:
 
     ; Back to system ROM init
     jp      JMPINI
+
+    assert !($20FF<$)   ; Overflow into Kernel jump table
+
+;=====================================================================================
+; KERNEL JUMP TABLE GOES HERE
+;=====================================================================================
+    dc $2100-$,$76
+
+    include "kernel.asm"
 
 ;-----------------------------------------------------------------------------
 ; Cold boot entry point
@@ -182,15 +207,6 @@ _timer:
     ld      (BASYSCTL),a
     ret
 
-    assert !($20FF<$)   ; Overflow into Kernel jump table
-
-;=====================================================================================
-; KERNEL JUMP TABLE GOES HERE
-;=====================================================================================
-    dc $2100-$,$76
-
-    include "kernel.asm"
-
 ;-----------------------------------------------------------------------------
 ; Issue OV Error if TOPMEM will put stack in Bank 1
 ; Called from CLEARS
@@ -207,6 +223,10 @@ _check_topmem:
     pop     hl                    ;   HL = StrBottom; Stack = RtnAdr
     ld      (STRSPC),hl           ;   Set bottom of string space
     ret                           ;   and Return
+
+_topmem_nohook:
+    ld      (TOPMEM),hl           ; Set up new top of stack
+    ret                           ; Continue clears
 
 ;-----------------------------------------------------------------------------
 ; Extended line editor function keys
@@ -240,7 +260,8 @@ in_direct:
 ; returns to NEWSTT
 ;-----------------------------------------------------------------------------
 _iscntc_hook:
-
+    inc     sp                    ; Discard CALL XCNTC return address
+    inc     sp
     call    CNTCCN                ; Check for Control-C
     ret     z                     ; Return if no keypress
     cp      'D'-64                ; If Ctrl-D
@@ -250,6 +271,7 @@ _iscntc_hook:
     byte    $3E                   ; LD A,$AF to Enable Turbo Mode
 .turbo_off
     xor     a
+    jp      sys_turbo_mode
 
 ;;; Todo: SET BREAK ON/OFF - BASYSCTL bit 5    
 _check_ctrl_c:    
@@ -258,7 +280,7 @@ _check_ctrl_c:
     jp      z,CNTCCN
     call    INCHRH
     or      a
-    ret
+    ret 
 
 ;-----------------------------------------------------------------------------
 ; Enable/Disable Turbo mode
@@ -551,149 +573,11 @@ _line_edit:
     pop     hl
     ret
 
-;-----------------------------------------------------------------------------
-; Allow underscore after 1 or 2 letter variable name, then skip all
-; letters, numbers, underscores, and tokens for aphabetic keywords
-; On entry, B = second character of variable name, initialized to NUL
-;-----------------------------------------------------------------------------
-_ptrget_hook
-    rst     CHRGET                ; Get character after first letter variable name
-    jr      c,.is_second          ; If not a digit
-    cp      '~'
-    jr      z,.eat_suffix         ; or tilde
-    call    ISLETC                ; or letter
-    jr      c,.nosec              ;   Get out
-.is_second
-    ld      b,a                   ; Make it the second character
-    rst     CHRGET                ; Get following character
-    cp      '~'                   ;
-    jr      z,.eat_suffix         ; If not underscore
-    dec     hl                    ;  Back up
-    jp      EATEM                 ;  and continue with normal skip
-.eat_suffix
-    inc     hl
-    ld      a,(hl)                ; Get next character
-    or      a                     ; If NUL
-    jr      z,.nosec              ;   Get out
-    cp      ' '                   ; If Space
-    jp      z,SKIPDS              ;   Get out
-    cp      '~'                   ; If underscore
-    jr      z,.eat_suffix         ;   Skip it
-    cp      '0'                   ; If < '0'
-    jp      c,NOSEC               ;   Get out
-    cp      ':'                   ; If ':'
-    jr      z,.nosec              ;   Get out
-    jr      c,.eat_suffix         ; If <= '9', skip it
-    cp      'A'                   ; If < 'A'
-    jp      c,NOSEC               ;   Get out
-    cp      'Z'+1                 ; If <= 'Z'
-    jr      c,.eat_suffix         ;   Skip it
-    cp      $80                   ; If not token
-    jp      c,NOSEC               ;   Get out
-    cp      PLUSTK                ; If < '+'
-    jr      c,.eat_suffix         ;   Skip it
-    cp      EXPTK+1               ; If <= '^'
-    jp      c,NOSEC               ;   Get out
-    cp      ORTK+1                ; If AND or OR
-    jr      c,.eat_suffix         ;   Skip it
-    cp      LESSTK+1              ; If < '<'
-    jp      c,NOSEC               ;   Get out
-    jr      .eat_suffix           ; Else skip it
-.nosec
-    scf
-    jp      NOSEC                 ;   jump to NOSEC with carry set
+_ptrget_nohook:
+    rst     CHRGET                ; Get next character
+    jp      c,ISSEC               ; If digit, save it and eat rest of digits
+    jp      CHKLET                ; Else check for letter
 
-
-;-----------------------------------------------------------------------------
-; GOTO and RESUME hack
-; Check for label at beginning of line, then search for it's line
-;-----------------------------------------------------------------------------
-scan_label:
-    dec     hl                    ; Back up in case of space
-    rst     CHRGET                ; Reget current character
-    cp      '_'
-    jr      nz,.not_label         ; If not underscore
-    ex      de,hl                 ; DE = Text Pointer
-    ld      (TEMP8),de            ; Save it
-    ld      hl,(TXTTAB)           ; HL = start of program,
-.line_loop:
-    ld      (TEMP2),hl            ; Save pointer to line
-    ld      c,(hl)                ; BC = link to next line
-    inc     hl
-    ld      b,(hl)
-    inc     hl
-    ld      (TEMP3),bc            ; Save for later
-    ld      c,(hl)                ; BC = line#
-    inc     hl
-    ld      b,(hl)
-    inc     hl
-    ld      (OLDLIN),bc           ; Save it
-    ld      a,(hl)                ; Get first character
-    cp      '_'                   ; If not underscore
-    jr      nz,.next_line         ;   Skip to next lines
-.label_loop:
-    ld      a,(de)                ; Next character from label
-.not_lspace
-    call    .check_colon          ; Treat colon as terminator
-    ld      b,a                   ; Put in B for compare
-.text_loop:
-    ld      a,(hl)                ; Get character from line
-.not_tspace
-    call    .check_colon          ; Treat colon as terminator
-    cp      b                     ; If characters don't match
-    jp      nz,.no_match          ;
-    or      a                     ; If both are terminators
-    jr      z,.found_it           ;   Finish up
-    inc     hl                    ; HL is Text Pointer
-    inc     de                    ; Move it on up
-    jr      .label_loop           ; Check next character
-.no_match
-    ld      de,(TEMP8)            ; Restore pointer to label
-.next_line
-    ld      hl,(TEMP3)            ; Get Link to next line
-    ld      a,h                   ; If link to next line is $0000
-    or      l                     ;   End of program
-    jp      z,ULERR               ;   So Undefined Line error
-    jr      .line_loop            ; Scan the next line
-.found_it
-    pop     af                    ; Get return address
-    cp      $06
-    jr      nz,.not_goto          ; If we came from GOTO
-    ld      bc,(OLDLIN)           ;   Retrieve the line #
-    ld      (CURLIN),bc           ;   and make it the current line
-    ret                           ;   Return to NEWSTT
-.not_goto
-    cp      $05
-    jr      nz,.not_list          ; If we came from LIST
-    ld      bc,(TEMP2)            ;   BC = Pointer to Line
-    jp      LIST3                 ;   Start listing
-.not_list
-    cp      $0C                   ; If we came from RESTORE
-    jp      z,BGNRST              ;   Load DATPTR, HL = Text Pointer, and Return
-    ex      de,hl                 ; HL = New text pointer
-    ld      de,(TEMP2)            ; DE = Pointer to Line
-    jp      reset_trap            ; Finish ON ERROR GOTO
-
-.not_label:
-    jp      SCNLIN                ;   Scan line number and return to GOTO
-
-.check_colon:
-    cp      ' '                   ; If space
-    jr      z,.ret_zero           ;
-    cp      ','                   ; or comma
-    jr      z,.ret_zero           ;
-    cp      ':'                   ; or colon
-    ret     nz
-.ret_zero
-    xor     a                     ;   Treat like terminator
-    ret
-
-ULERR:
-    ld      e,ERRUL
-    jp      force_error
-
-
-;-----------------------------------------------------------------------------
 ; bas_read_to_buff - Read String from ESP to BASIC String Buffer
 ; Input: IX: DOS or ESP routine to call
 ; Output: A: Result
@@ -764,31 +648,36 @@ clear_screen40:
 
 _ttymove_hook:
     ld      hl,(CURRAM)
-    ld      a,(BASYSCTL)
-    rra     
-    ret     nc
-    ld      a,(SCOLOR)            ; Get screen color
+    ld      a,(HOOK+1)
+    cp      $20                   ; If plusBASIC not hooked
+    jp      nz,TTYMOP             
+    ld      a,(BASYSCTL)          ; or color PRINT not enabled
+    rra                           ;   Continue normally
+    jp      nc,TTYMOP             ; Else
+    ld      a,(SCOLOR)            ;   Get screen color
     set     2,h
-    ld      (hl),a                ; Write to color RAM
+    ld      (hl),a                ;   Write to color RAM
     res     2,h
-    ret     
+    jp      TTYMOP                ;   and continue
 
 _scroll_hook:
     push    af
-    ld      a,(BASYSCTL)
-    rra     
-    jr      nc,.nocolor
-    ld      bc,920                ; Move 23 * 40 bytes
-    ld      de,COLOR+40           ; To Row 1 Column 0
-    ld      hl,COLOR+80           ; From Row 2 Column 1
-    ldir                          ;
-    ld      a,(SCOLOR)
-    ld      b,40                  ; Loop 40 Times
-    ld      hl,COLOR+961          ; Starting at Row 23, Column 0
-.loop:      
-    ld      (hl),a                ; Put Space
-    inc     hl                    ; Next Column
-    djnz    .loop                 ; Do it again
+    ld      a,(HOOK+1)
+    cp      $20                   ; If plusBASIC not hooked
+    ld      a,(BASYSCTL)          ; or color PRINT not enabled
+    rra                           ;   Continue normally
+    jr      nc,.nocolor           ; Else
+    ld      bc,920                ;   Move 23 * 40 bytes
+    ld      de,COLOR+40           ;   To Row 1 Column 0
+    ld      hl,COLOR+80           ;   From Row 2 Column 1
+    ldir                          ; 
+    ld      a,(SCOLOR)  
+    ld      b,40                  ;   Loop 40 Times
+    ld      hl,COLOR+961          ;   Starting at Row 23, Column 0
+.loop:        
+    ld      (hl),a                ;   Put Space
+    inc     hl                    ;   Next Column
+    djnz    .loop                 ;   Do it again
 .nocolor
     pop     af
     jp      SCROLL
@@ -902,9 +791,16 @@ hook_table:                     ; ## caller   addr  performing function
     dw      execute_function    ; 27 ISFUN    0A5F  Executing a Function
     dw      HOOK28+1            ; 28 DATBK    08F1  Doing a READ from DATA
     dw      oper_extension      ; 29 NOTSTV   099E  Evaluate Operator (S3 BASIC Only)
-    dw      scan_label          ; 30 SCNLBL   2042  GOTO/GOSUB/LIST/RESTORE/RUN label
-    dw      _ctrl_keys          ; 31 XFUNKY   2012  Evaluate extended function keys
-    dw      _main_ext           ; 32 XMAIN    2047  Save Line# Flag`in TEMP3
+    dw      scan_label          ; 30 SCNLBL   2040  GOTO/GOSUB/LIST/RESTORE/RUN label
+    dw      _ctrl_keys          ; 31 XFUNKY   2045  Evaluate extended function keys
+    dw      _iscntc_hook        ; 32 XCNTC    204A  Intercept check for Ctrl-C
+    dw      main_ext            ; 33 XMAIN    204F  Save Line# Flag`in TEMP3
+    dw      _stuffh_ext         ; 34 XSTUFF   2054  Check for additional tokens when stuffing
+    dw      _check_topmem       ; 35 XCLEAR     Verify TOPMEM is in Bank 2
+    dw      ptrget_hook         ; 36 XPTRGT     Allow _Alphanumunder sftar var name
+    dw      skip_label          ; 37 SKPLBL     Skip label at beginning of line (SKPLBL)
+    dw      skip_on_label       ; 38 SKPLOG     Skip label in ON GOTO
+    dw      _string_ext         ; 39 STRNGX     Don't capitalize letters between single quotes (STRNGX)
 
 ; ------------------------------------------------------------------------------
 ;  Execute Hook Routine
@@ -934,8 +830,7 @@ fast_hook_handler:
 ;-----------------------------------------------------------------------------
 
 _main_ext:
-    call    page_map_aux
-    jp      s3_main_ext
+    halt
 
 _next_statement:
     call    page_restore_plus
@@ -949,6 +844,11 @@ _stuffh_ext:
     call    page_map_aux
     jp      s3_stuffh_ext
 
+_stuffh_nohook:
+    cp      DATATK-':'        ; If not DATA
+    jp      nz,NODATT         ;    Check for REM
+    jp      COLIS             ; Set up for DATA
+
 aux_call:
     call    page_map_auxrom
     call    jump_iy
@@ -959,24 +859,22 @@ aux_rom_call:
     call    jump_ix
     jp      page_restore_plus
 
-; $202A Don't tokenize label at beginning of Line (STFLBL)
-_stuff_label
-    call    page_map_aux
-    jp      stuff_label
+_skplbl_nohook:
+    ld      (CURLIN),hl           ; Set CURLIN to curent line#    
+    jp      GONCON                ; Keep going to GONE
 
-; $202D Skip label at beginning of line (SKPLBL)
-_skip_label
-    call    page_map_aux
-    jp      skip_label
-
-; $2030 Skip label in ON GOTO
-_skip_on_label
-    call    page_restore_plus
-    jp      skip_on_label
-
-_s3_string_ext
+_string_ext:
     call    page_map_aux
     jp      s3_string_ext
+
+_stringx_nohook:
+    jp      z,STRNG               ; If A is '"', process string literal
+    jp      STRNGR                ; Else carry on
+
+aux_line_print:
+    call    page_restore_plus     ; Map in Ext ROM
+    call    LINPRT                ; Print the line number
+    jp      page_map_aux          ; Remap Aux ROM and return
 
 ;-----------------------------------------------------------------------------
 ; Pad ROM

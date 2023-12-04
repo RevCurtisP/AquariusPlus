@@ -3,11 +3,6 @@
 ;=============================================================================
 do_coldboot:
 
-    ld      iy,init_screen_buffers
-    call    aux_call
-    ld      iy,init_screen_vars
-    call    aux_call
-
     ; Fill BASIC RAM with 0
     xor     a                   ; Fill with 0
     ld      hl,$3900            ; From beginning of BASIC RAM
@@ -29,7 +24,16 @@ do_coldboot:
     ld      (TXTTAB), hl        ; Beginning of BASIC program text
     call    SCRTCH              ; ST_NEW2 - NEW without syntax check
 
-    ; Install BASIC HOOK
+    ld      iy,init_screen_buffers
+    call    aux_call
+    ld      iy,init_screen_vars
+    call    aux_call
+
+    ld      d,$10                 ; Row 5 = Shift
+    call    _modkey_check         ; If shift held down
+    jp      nz,CLDCON             ;   Boot into plua  
+
+; Install BASIC HOOK
     ld      hl,fast_hook_handler
     ld      (HOOK), hl
 
@@ -105,7 +109,8 @@ print_copyright:
 ; If autorun exists, push RUN "autoexec to key buffer
 ; ToDo: make esp functions return error code instead of generating BASIC error
 check_autoexec:
-    call    _ctrl_check
+    ld      d,$20                 ; Checking for CTL
+    call    _modkey_check
     ret     nz
     ld      hl,auto_desc
     
@@ -119,10 +124,10 @@ check_autoexec:
     ret
 
 ; See if control is currently pressed
-_ctrl_check:
+_modkey_check:
     ld      bc,$7FFF              ; Scan column 8
     in      a,(c)
     xor     $FF
-    and     $20                   ; Isolate control key
+    and     d                     ; Isolate control key
     ret
 
