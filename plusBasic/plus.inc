@@ -195,7 +195,16 @@ SCRN80SWP   equ $3000   ; Used by screen save, restore and swap
 ;-----------------------------------------------------------------------------
 ; IRQACTIVE Bits
 ;-----------------------------------------------------------------------------
-IRQ_TIMER  equ  $01     ; Bit 0 - Timer active
+IRQ_TIMER   equ $01     ; Bit 0 - Timer active
+IRQ_PT3PLAY equ $02     ; Bit 1 - PT3 Player running
+
+;-----------------------------------------------------------------------------
+; PT3 Player
+;-----------------------------------------------------------------------------
+pt3init     equ $D800   ; StartPlayer
+pt3play     equ $D803   ; PlayQuark  
+pt3stat     equ $D806   ; CHECKLP
+pt3mute     equ $D809   ; MUTE
 
 ;-----------------------------------------------------------------------------
 ; Macros

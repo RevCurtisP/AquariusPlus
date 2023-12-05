@@ -718,6 +718,8 @@ _load_extended:
     rst     CHRGET                ; Skip XTOKEN
     cp      PALETK                ; 
     jr      z,_load_palette
+    cp      PT3TK
+    jr      z,_load_pt3
     rst     SYNCHR
     byte    CHRTK                 ;   Must be CHRSET
     rst     SYNCHR
@@ -726,15 +728,22 @@ _load_extended:
 ; load chrset "future.chr
 _load_chrset:
     call    get_strdesc_arg       ; HL = FileSpec StrDsc; Stack = TxtPtr
-    ld      iy,file_load_chrset      ; Load character set and copy to character RAM
-    call    aux_call
-    jp      m,_dos_error
-    pop     hl
-    ret
+    ld      iy,file_load_chrset   ; Load character set and copy to character RAM
+    jr      _aux_call
 
 _load_palette:
     jp      GSERR
 
+; load pt3 "/music/songs1/dontstop.pt3"
+_load_pt3:
+    rst     CHRGET                ; Skip PT3
+    call    get_strdesc_arg       ; HL = FileSpec StrDsc; Stack = TxtPtr
+    ld      iy,file_load_pt3      ; Load character set and copy to character RAM
+_aux_call
+    call    aux_call
+    jp      m,_dos_error
+    pop     hl
+    ret
 
 ;-----------------------------------------------------------------------------
 ; .SCR format: 2048 byte Screen+Color RAM ($3000-$3FFF)

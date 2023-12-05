@@ -82,7 +82,7 @@
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.19k",0
+    db "v0.19k1",0
 plus_len   equ   $ - plus_text
 
 auto_cmd:
@@ -186,7 +186,11 @@ irq_handler:
     push    de
     push    hl
 
-    call    _timer
+    rra                           ; Carry = IRQ_TIMER
+    call    c,_timer
+    rra                           ; Carry = IRQ_PT3PLAY
+    call    c,_pt3play
+    
     call    BASINTJP
     ld      a,IRQ_VBLANK
     out     (IO_IRQSTAT),a
@@ -208,6 +212,9 @@ _timer:
     ld      a,(BASYSCTL)
     or      $80
     ld      (BASYSCTL),a
+    ret
+
+_pt3play:
     ret
 
 ;-----------------------------------------------------------------------------

@@ -302,9 +302,6 @@ table_lookup:
 ; Clobbers: A,B
 ;----------------------------------------------------------------------------
 timer_write:
-    ld      a,(BASYSCTL)
-    and     $7F
-    ld      (BASYSCTL),a
     ld      b,IRQ_TIMER
     call    enable_vblank_irq
     ld      a,c
