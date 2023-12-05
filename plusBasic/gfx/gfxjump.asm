@@ -26,7 +26,10 @@ gfx_jump_table
     jp      sprite_set_pos        ; $803F
     jp      spritle_set_pos       ; $8042
     jp      spritle_clear         ; $8045
-    jp      spritle_clear_all     ; $8048
-    
+    jp      spritle_clear_all     ; $8048   
+_end_jump_table:    
+
 _return:
     ret
+    
+    

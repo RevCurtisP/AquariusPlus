@@ -30,52 +30,59 @@
     jp      _ttymove_hook   ; $2015 TTYMOX TTYMOV extension - set screen colors if SYSCTRL bit set
     jp      _scroll_hook    ; $2018 SCROLX  SCROLL extension - scroll color memory if SYSCTRL bit set
 
-    dc $2040-$,$76
+    dc $2030-$,$76
     
-    rst     HOOKDO          ; $2040 SCNLBL scan_label: Scan line label or line number
-    byte    30              ; 
-    jp      SCNLIN          
+    rst     HOOKDO                ; $2030 SCNLBL scan_label: Scan line label or line number
+    byte    30                    ; 
+    jp      SCNLIN                
+      
+    rst     HOOKDO                ; $2035 XFUNKY _ctrl_keys: Evaluate extended function keys
+    byte    31                    ;        
+    jp      CHKFUN                ;
 
-    rst     HOOKDO          ; $2045 XFUNKY _ctrl_keys: Evaluate extended function keys
-    byte    31              ;        
-    jp      CHKFUN          ;
-
-    rst     HOOKDO          ; $204A XCNTC  _iscntc_hook: Intercept Ctrl-C check
-    byte    32
-    jp      CNTCCN          
-
-    rst     HOOKDO          ; $204F XMAIN  _main_ext: Save Line# Flag in TEMP3
-    byte    33
-    jp      SCNLIN          
-
-    rst     HOOKDO          ; $2054 XSTUFF _stuffh_ext: Check for additional tokens when stuffing
-    byte    34
-    jp      _stuffh_nohook          
+    rst     HOOKDO                ; $203A XCNTC  _iscntc_hook: Intercept Ctrl-C check
+    byte    32      
+    jp      CNTCCN                
+      
+    rst     HOOKDO                ; $203F XMAIN  _main_ext: Save Line# Flag in TEMP3
+    byte    33      
+    jp      SCNLIN                
+      
+    rst     HOOKDO                ; $2044 XSTUFF _stuffh_ext: Check for additional tokens when stuffing
+    byte    34      
+    cp      DATATK-':'            ; If not DATA
+    jp      nz,NODATT             ;    Check for REM
+    jp      COLIS                 ; Set up for DATA
     
-    rst     HOOKDO          ; $2059 XCLEAR _check_topmem: Verify TOPMEM is in Bank 2
+    rst     HOOKDO                ; $204E XCLEAR _check_topmem: Verify TOPMEM is in Bank 2
     byte    35    
-    jp      _topmem_nohook    
+    ld      (TOPMEM),hl           ; Set up new top of stack
+    ret                           ; Continue clears
 
-    rst     HOOKDO          ; $205E XPTRGT ptrget_hook: Allow _Alphanumunder sftar var name
+    rst     HOOKDO                ; $2054 XPTRGT ptrget_hook: Allow _Alphanumunder sftar var name
     byte    36    
-    jp      _ptrget_nohook
+    rst     CHRGET                ; Get next character
+    jp      c,ISSEC               ; If digit, save it and eat rest of digits
+    jp      CHKLET                ; Else check for letter
 
-    rst     HOOKDO          ; $2063 SKPLBL  skip_label: Skip label at beginning of line (SKPLBL)
+    rst     HOOKDO                ; $205D SKPLBL  skip_label: Skip label at beginning of line (SKPLBL)
     byte    37    
-    jp      _skplbl_nohook
+    ld      (CURLIN),hl           ; Set CURLIN to curent line#    
+    jp      GONCON                ; Keep going to GONE
 
-    rst     HOOKDO          ; $2068 SKPLOG  skip_on_label: Skip label in ON GOTO
+    rst     HOOKDO                ; $2065 SKPLOG  skip_on_label: Skip label in ON GOTO
     byte    38
     jp      LINGET
 
-    rst     HOOKDO          ; $206D STRNGX  _string_ext      Don't capitalize letters between single quotes (STRNGX)
+    rst     HOOKDO                ; $206A STRNGX  _string_ext      Don't capitalize letters between single quotes (STRNGX)
     byte    39
-    jp      _stringx_nohook
+    jp      z,STRNG               ; If A is '"', process string literal
+    jp      STRNGR                ; Else carry on
 
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.19j",0
+    db "v0.19k",0
 plus_len   equ   $ - plus_text
 
 auto_cmd:
@@ -130,15 +137,6 @@ _reset:
     ; Back to system ROM init
     jp      JMPINI
 
-    assert !($20FF<$)   ; Overflow into Kernel jump table
-
-;=====================================================================================
-; KERNEL JUMP TABLE GOES HERE
-;=====================================================================================
-    dc $2100-$,$76
-
-    include "kernel.asm"
-
 ;-----------------------------------------------------------------------------
 ; Cold boot entry point
 ; Executed on RESET if no cartridge detected
@@ -167,6 +165,11 @@ _warm_boot:
     ld      a,128
     out     (IO_PCMDAC),a
     jp      WRMCON                ; Go back to S3 BASIC
+
+; Start Kernel jump table at $2100
+    assert !($20FF<$)   ; Overflow into Kernel jump table
+    dc $2100-$,$76
+    include "kernel.asm"
 
 ;-----------------------------------------------------------------------------
 ; Default Interrupt Handler
@@ -223,10 +226,6 @@ _check_topmem:
     pop     hl                    ;   HL = StrBottom; Stack = RtnAdr
     ld      (STRSPC),hl           ;   Set bottom of string space
     ret                           ;   and Return
-
-_topmem_nohook:
-    ld      (TOPMEM),hl           ; Set up new top of stack
-    ret                           ; Continue clears
 
 ;-----------------------------------------------------------------------------
 ; Extended line editor function keys
@@ -573,11 +572,6 @@ _line_edit:
     pop     hl
     ret
 
-_ptrget_nohook:
-    rst     CHRGET                ; Get next character
-    jp      c,ISSEC               ; If digit, save it and eat rest of digits
-    jp      CHKLET                ; Else check for letter
-
 ; bas_read_to_buff - Read String from ESP to BASIC String Buffer
 ; Input: IX: DOS or ESP routine to call
 ; Output: A: Result
@@ -844,11 +838,6 @@ _stuffh_ext:
     call    page_map_aux
     jp      s3_stuffh_ext
 
-_stuffh_nohook:
-    cp      DATATK-':'        ; If not DATA
-    jp      nz,NODATT         ;    Check for REM
-    jp      COLIS             ; Set up for DATA
-
 aux_call:
     call    page_map_auxrom
     call    jump_iy
@@ -859,17 +848,9 @@ aux_rom_call:
     call    jump_ix
     jp      page_restore_plus
 
-_skplbl_nohook:
-    ld      (CURLIN),hl           ; Set CURLIN to curent line#    
-    jp      GONCON                ; Keep going to GONE
-
 _string_ext:
     call    page_map_aux
     jp      s3_string_ext
-
-_stringx_nohook:
-    jp      z,STRNG               ; If A is '"', process string literal
-    jp      STRNGR                ; Else carry on
 
 aux_line_print:
     call    page_restore_plus     ; Map in Ext ROM

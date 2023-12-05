@@ -1,5 +1,5 @@
 ;=====================================================================================
-; Kernel jump table - Starts at $2000
+; Kernel jump table - Starts at $2100
 ;=====================================================================================
 jump_table:
 ; aqplusbas.asm
@@ -77,7 +77,5 @@ jump_table:
     jp      sbuff_write_byte      ; Write Byte to String Buffer
     jp      sbuff_write_bc        ; Write BC to String Buffer
     jp      sbuff_write_de        ; Write DE to String Buffer
-    
 
-; gfx.asm    
-
+_end_jump_table:

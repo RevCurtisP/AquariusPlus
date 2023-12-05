@@ -130,16 +130,16 @@ SOUNDX  equ     $2012   ;; | Adjust SOUNDS delay counter in turbo mode
 TTYMOX  equ     $2015   ;; | TTYMOV extension
 SCROLX  equ     $2018   ;; | SCROLL extension
 ;;plusBASIC specific hooks
-SCNLBL  equ     $2040   ;; | Scan line label or line number
-XFUNKY  equ     $2045   ;; | Extended function key check
-XCNTC   equ     $204A   ;; | ISCNTC hook
-XMAIN   equ     $204F   ;; | Line Crunch Hook
-XSTUFF  equ     $2054   ;; | STUFFH hook
-XCLEAR  equ     $2059   ;; | Issue Error if TOPMEM too low
-XPTRGT  equ     $205E   ;; | PTRGET Hook
-SKPLBL  equ     $2063   ;; | Skip label at beginning of line (SKPLBL)
-SKPLOG  equ     $2068   ;; | Skip Label in ON GOTO/GOSUB
-STRNGX  equ     $206D   ;; | Don't capitalize letters between single quotes
+SCNLBL  equ     $2030   ;; | Scan line label or line number
+XFUNKY  equ     $2035   ;; | Extended function key check
+XCNTC   equ     $203A   ;; | ISCNTC hook
+XMAIN   equ     $203F   ;; | Line Crunch Hook
+XSTUFF  equ     $2044   ;; | STUFFH hook
+XCLEAR  equ     $204E   ;; | Issue Error if TOPMEM too low
+XPTRGT  equ     $2054   ;; | PTRGET Hook
+SKPLBL  equ     $205D   ;; | Skip label at beginning of line (SKPLBL)
+SKPLOG  equ     $2065   ;; | Skip Label in ON GOTO/GOSUB
+STRNGX  equ     $206A   ;; | Don't capitalize letters between single quotes
 
 endif                   
 EXTBAS  equ     $2000   ;;Start of Extended Basic
@@ -173,7 +173,7 @@ else
 endif
 ;;RST 1 - Syntax Check
 
-S3VER:  byte    $23,$12,$03       ;;Revision Date 
+S3VER:  byte    $23,$12,$04       ;;Revision Date 
         byte    $00               ;;Revision Number?
         nop                       ;;Pad out the RST routine
 ;;RST 1 - Syntax Check

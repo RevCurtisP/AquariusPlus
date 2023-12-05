@@ -1,4 +1,4 @@
-; dos.asm
+aux_jump_table:
     jp      dos_open_file         ; Open file
     jp      dos_open_read         ; Open file for read
     jp      dos_open_write        ; Open file for write
@@ -15,5 +15,5 @@
     jp      file_load_paged       ; Load binary file into paged memory`
     jp      file_load_rom         ; Load ROM file into page 35
     jp      file_load_screen      ; Load screen image
-    
+_end_jump_table:
     
