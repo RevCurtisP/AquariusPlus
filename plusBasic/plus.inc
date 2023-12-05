@@ -81,7 +81,7 @@ ONELIN      equ $382E   ; THE pointer to the LINE TO GOTO WHEN AN ERROR OCCURS
 ; DOS Variables - These can get overwritten between BASIC file operations
 ; They might also be re-used by other modules
 BAS_FDESC   equ $3830   ; ESP file descriptor to close on Error or Ctrl-C
-BINPAGE     equ $3831   ; Binary file load/save page
+;unused         $3831
 BINSTART    equ $3832   ; Binary file load/save address
 BINLEN:     equ $3834   ; Binary file load length (32-bits $3838-$383B)
 FILESIZE    equ $3838   ; File Size (32-bits $3838-$383B)
@@ -178,7 +178,7 @@ BASSAVASC   equ $02     ; BASYSCTL: Default SAVe to ASC
 BASKEYRPT   equ $04     ; BASYSCTL: KEY RePeaI on
 BASBRKOFF   equ $20     ; BASYSCTL: BReak OFF (Disable Ctrl-C)
 BASSCRN80   equ $40     ; BASYSCTL: SCReeN 80 (80) column mode
-BASTMRSTS   equ $80     ; BASYSCTL: TiMeR STatuS
+BASCRNCLR   equ $80     ; BASYSCTL: PRINT updates Color RAM
 
 ;-----------------------------------------------------------------------------
 ; BASIC Text Screen Buffers

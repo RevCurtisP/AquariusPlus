@@ -32,14 +32,14 @@ ST_SETCOLOR:
     call    get_color_args
     ld      (SCOLOR),a
     ld      a,(BASYSCTL)
-    or      a,$01
+    or      a,BASCRNCLR
     jr      .done
 .extended
     rst     CHRGET                ; Skip XTOKEN
     rst     SYNCHR                ; Require OFF
     byte    OFFTK
     ld      a,(BASYSCTL)
-    and     $FE
+    and     low(~BASCRNCLR)
 .done
     ld      (BASYSCTL),a
     ret

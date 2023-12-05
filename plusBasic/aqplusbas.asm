@@ -75,7 +75,7 @@
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.19i",0
+    db "v0.19j",0
 plus_len   equ   $ - plus_text
 
 auto_cmd:
@@ -649,10 +649,10 @@ clear_screen40:
 _ttymove_hook:
     ld      hl,(CURRAM)
     ld      a,(HOOK+1)
-    cp      $20                   ; If plusBASIC not hooked
+    cp      $2F                   ; If plusBASIC not hooked
     jp      nz,TTYMOP             
     ld      a,(BASYSCTL)          ; or color PRINT not enabled
-    rra                           ;   Continue normally
+    rla                           ;   Continue normally
     jp      nc,TTYMOP             ; Else
     ld      a,(SCOLOR)            ;   Get screen color
     set     2,h
@@ -663,9 +663,9 @@ _ttymove_hook:
 _scroll_hook:
     push    af
     ld      a,(HOOK+1)
-    cp      $20                   ; If plusBASIC not hooked
+    cp      $2F                   ; If plusBASIC not hooked
     ld      a,(BASYSCTL)          ; or color PRINT not enabled
-    rra                           ;   Continue normally
+    rla                           ;   Continue normally
     jr      nc,.nocolor           ; Else
     ld      bc,920                ;   Move 23 * 40 bytes
     ld      de,COLOR+40           ;   To Row 1 Column 0
