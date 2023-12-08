@@ -81,7 +81,7 @@ ONELIN      equ $382E   ; THE pointer to the LINE TO GOTO WHEN AN ERROR OCCURS
 ; DOS Variables - These can get overwritten between BASIC file operations
 ; They might also be re-used by other modules
 BAS_FDESC   equ $3830   ; ESP file descriptor to close on Error or Ctrl-C
-;unused         $3831
+PT3COUNT    equ $3831   ; PT3 Player vblank counter
 BINSTART    equ $3832   ; Binary file load/save address
 BINLEN:     equ $3834   ; Binary file load length (32-bits $3838-$383B)
 FILESIZE    equ $3838   ; File Size (32-bits $3838-$383B)
@@ -202,7 +202,7 @@ IRQ_PT3PLAY equ $02     ; Bit 1 - PT3 Player running
 ; PT3 Player
 ;-----------------------------------------------------------------------------
 pt3init     equ $D800   ; StartPlayer
-pt3play     equ $D803   ; PlayQuark  
+pt3tick     equ $D803   ; PlayQuark  
 pt3stat     equ $D806   ; CHECKLP
 pt3mute     equ $D809   ; MUTE
 

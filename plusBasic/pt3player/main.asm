@@ -16,21 +16,16 @@ SongData  = $5000               ; (For now)
       jp      CHECKLP
       jp      MUTE
 
-
 StartPlayer:
-      push    hl
       LD      HL,SongData
       CALL    PT3_PLAY
-      pop     hl
       RET
 
 PlayQuark:
-      push    hl
       LD      HL,SongData
       CALL    PLAY        
       ld      hl,SETUP
       bit     7,(hl)            ; quit if end of song
-      pop     hl
       jr      nz,StartPlayer
       RET
 

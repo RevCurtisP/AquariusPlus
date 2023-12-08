@@ -18,7 +18,7 @@
     include "sbasic.inc"
     include "plus.inc"
 
-;Jump Table: S3BASIC interface
+;Internal Jump Table: S3BASIC interface
     org     $2000
     jp      _reset          ; $2000 Called from main ROM at reset vector
     jp      _coldboot       ; $2003 Called from main ROM for cold boot
@@ -82,7 +82,7 @@
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.19k1",0
+    db "v0.19pt3a",0
 plus_len   equ   $ - plus_text
 
 auto_cmd:
@@ -189,7 +189,7 @@ irq_handler:
     rra                           ; Carry = IRQ_TIMER
     call    c,_timer
     rra                           ; Carry = IRQ_PT3PLAY
-    call    c,_pt3play
+    call    c,_pt3tick
     
     call    BASINTJP
     ld      a,IRQ_VBLANK
@@ -214,7 +214,32 @@ _timer:
     ld      (BASYSCTL),a
     ret
 
-_pt3play:
+pt3reset:
+    ld      iy,pt3init
+    jr      pt3call
+
+_pt3tick
+    ld      hl,PT3COUNT
+    dec     (hl)
+    ret     nz
+    ld      iy,pt3tick
+pt3call:
+    in      a,(IO_BANK1)
+    push    af
+    ld      a,PT3_BUFFR
+    out     (IO_BANK1),a
+    in      a,(IO_BANK3)
+    push    af
+    ld      a,ROM_AUX_PG
+    out     (IO_BANK3),a
+    call    (jump_iy)
+    pop     af
+    out     (IO_BANK3),a
+    pop     af
+    out     (IO_BANK1),a
+pt3setcount:
+    ld      a,6
+    ld      (PT3COUNT),a
     ret
 
 ;-----------------------------------------------------------------------------
@@ -935,11 +960,9 @@ aux_line_print:
     include "s3hooks.asm"       ; S3 BASIC direct mode hooks
     include "screen_aux.asm"    ; Auxiliary
 
-    free_rom_8k = $D7FF - $
+    free_rom_8k = $D800 - $
 
-    dc $D7FF-$,$76
-
-    dc $E000-$,$76              ; PT3 Player Binary goes here
+    dc $D800-$,$76              ; PT3 Player Binary goes here
 
     end
 

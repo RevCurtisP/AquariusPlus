@@ -32,3 +32,9 @@ with open("zout/aquarius.rom", "wb") as f:
 
     # Extended ROM $C000 -
         f.write(plusrom[4096:])
+
+    # PT3 Player binary
+    with open("pt3player/zout/main.cim", "rb") as fpt3:
+        pt3play = bytearray(fpt3.read())
+        f.write(pt3play)
+

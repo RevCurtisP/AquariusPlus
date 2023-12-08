@@ -131,5 +131,5 @@ file_load_screen:
 file_load_pt3:
     ld      a,PT3_BUFFR
     ld      de,$0400
-    ld      bc,$3FFF-$0400
+    ld      bc,$4000-$0400
     jp      file_load_paged

@@ -13,9 +13,9 @@ ST_PLAY:
     jr      nz,.not_extended      ; If extended token
     rst     CHRGET                ;   Skip XTOKEN
     sub     SAMPTK                ;   If SAMPLE
-    jp      ST_PLAY_SAMPLE        ;     Play it
+    jr      z,ST_PLAY_SAMPLE      ;     Play it
     dec     a                     ;   Else if PT3
-    jp      z,GSERR               ;     Not implemented error
+    jr      z,ST_PLAY_PT3         ;     Not implemented error
 .not_extended       
     jp      SNERR                 ; Else Syntax error
     
@@ -50,3 +50,25 @@ ST_PLAY_SAMPLE:
     ret
 .not_page
     jp      SNERR                 ; Else Syntax error
+
+;-----------------------------------------------------------------------------
+; PLAY PT3 Statement
+;-----------------------------------------------------------------------------
+ST_PLAY_PT3
+    jp      GSERR
+
+;-----------------------------------------------------------------------------
+; RESET Statement
+;-----------------------------------------------------------------------------
+ST_RESET:
+    rst     CHRGET                ; Skip RESET
+    rst     SYNCHR
+    byte    XTOKEN
+    rst     SYNCHR
+    byte    PT3TK                 ; Require PT3
+    push    hl
+reset_pt3:
+    call    pt3reset
+    pop     hl
+    ret
+
