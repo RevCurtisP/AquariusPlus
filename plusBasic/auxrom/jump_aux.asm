@@ -16,4 +16,3 @@ aux_jump_table:
     jp      file_load_rom         ; Load ROM file into page 35
     jp      file_load_screen      ; Load screen image
 _end_jump_table:
-    
