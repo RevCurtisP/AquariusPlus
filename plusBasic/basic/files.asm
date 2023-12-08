@@ -731,8 +731,18 @@ _load_chrset:
     ld      iy,file_load_chrset   ; Load character set and copy to character RAM
     jr      _aux_call
 
+; load palette 0,"/t/gray.pal"
 _load_palette:
-    jp      GSERR
+    rst     CHRGET                ; Skip PALETTE
+    call    get_byte4             ; A = PalNum
+    push    af                    ; Stack = Palette#, RtnAdr
+    SYNCHK  ','                   ; Require comma
+    call    get_strdesc_arg       ; HL = FilStd; Stack = TxtPtr, RtnAdr
+    pop     de                    ; DE = TxtPtr
+    pop     af                    ; A = PalNum; Stack = RtnAdr
+    push    de                    ; Stack = TxtPtr, RtnAdr
+    ld      iy,file_load_palette  
+    jr      _aux_call
 
 ; load pt3 "/music/songs1/dontstop.pt3"
 _load_pt3:

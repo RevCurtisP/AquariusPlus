@@ -11,7 +11,7 @@
 ;           
 ; Clobbered: A,BC,DE,HL
 ;-----------------------------------------------------------------------------
-    palette_set:
+palette_set:
     push    af
     jr      c,.shifted
     ld      a,l

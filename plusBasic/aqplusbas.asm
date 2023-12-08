@@ -82,7 +82,7 @@
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.19m",0
+    db "v0.19m1",0
 plus_len   equ   $ - plus_text
 
 auto_cmd:
@@ -905,7 +905,6 @@ aux_line_print:
 
     ; Graphics modules
     include "gfx.asm"           ; Main graphics module
-    include "color.asm"         ; Color palette module
     include "common.asm"        ; Shared graphics subroutines
     include "screen.asm"        ; Text screen graphics subroutines
     include "sprite.asm"        ; Sprite graphics module
@@ -928,6 +927,7 @@ aux_line_print:
     phase   $C000     ;Assemble in ROM Page 1 which will be in Bank 3
 
     include "jump_aux.asm"      ; Auxiliary routines jump tables
+    include "color.asm"         ; Color palette module
     include "dos.asm"           ; DOS routines
     include "editor.asm"        ; Advanced line editor
     include "esp_aux.asm"       ; ESP routines in auxiliary ROM

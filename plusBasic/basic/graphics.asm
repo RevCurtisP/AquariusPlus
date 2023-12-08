@@ -48,6 +48,7 @@ ST_SETCOLOR:
 ; SET PALETTE statement
 ; syntax: SET PALETTE palette# [, index] TO rgblist$
 ;-----------------------------------------------------------------------------
+; SET PALETTE 0 TO $"111122223333444455556666777788889999"
 ST_SETPALETTE:
     rst     CHRGET                ; Skip PALETTE
     call    get_byte4             ; E = Palette#
@@ -70,7 +71,8 @@ ST_SETPALETTE:
     ld      a,e                   ; Get palette#
     cp      4                     ; If greater than 3
     jp      nc,FCERR              ;   Error
-    call    palette_shift_num     ;
+    ld      iy,palette_shift_num  ;
+    call    aux_call
     ld      b,a                   ; B = Shifted palette#
     push    bc                    ; Stack = PltOfs+Entry
     call    FRMEVL                ; Evaluate RGB list
@@ -81,7 +83,8 @@ ST_SETPALETTE:
     ld      a,l                   ; A = Entry#
     ld      l,h                   ; L = PltOfs
     scf                           ; Palette already shifted
-    call    palette_set           ; Set the entry (increments C)
+    ld      iy,palette_set        ; Set the entry (increments C)
+    call    aux_call
     jp      c,OVERR               ; Error if Overflow
     pop     hl                    ; HL = TxtPtr
     ret

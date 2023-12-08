@@ -133,3 +133,48 @@ file_load_pt3:
     ld      de,$0400
     ld      bc,$3FFF-$0400
     jp      file_load_paged
+
+;-----------------------------------------------------------------------------
+; Load PT3 file
+; Input: A: Palette number
+;       HL: String descriptor address
+; Output: A: result code
+; Flags Set: S if I/O error
+;            C if file too large
+; Clobbered: BC, DE, EF
+; Populates: String Buffer
+;-----------------------------------------------------------------------------
+file_load_palette:
+    ld      e,a                   ; E = PalNum
+    push    de                    ; Stack = PalNum, RtnAdr
+    call    file_load_strbuf      ; A = Result, BC = DatLen, HL = StrBuf
+    pop     de                    ; E = PalNum; Stack = RtnAdr 
+    ret     m                     ; Return if I/O Error
+    ld      a,32                  ; If result > 32
+    cp      c 
+    jp      c,discard_ret         ;   Return overflow
+    ex      de,hl                 ; DE = StrBuf, L = PalNum
+    xor     a                     ; A = Entry#
+    jp      palette_set           ; Write out palette and return
+
+;-----------------------------------------------------------------------------
+; Read file into string buffer
+; Input: HL: String descriptor address
+; Output: A: result code
+;        BC: result length
+;        DE: terminator address
+;        HL: string buffer address
+; Flags Set: S if I/O error
+; Clobbered: HL
+;-----------------------------------------------------------------------------
+file_load_strbuf:
+    ex      de,hl                 ; DE = FilStd
+    call    get_strbuf_addr       ; HL = StrBuf, BC = BufMax
+    ex      de,hl                 ; DE = StrBuf, HL = FilStd
+    push    de                    ; Stack = StrBuf
+    call    file_load_binary      ; Load file into string buffer
+    pop     hl                    ; HL = StrBuf
+    ret     m
+    xor     a
+    ld      (de),a
+    ret

@@ -11,12 +11,13 @@ discard_ret:
 ;-----------------------------------------------------------------------------
 ; Get String Buffer Address
 ; Output: HL: String Buffer Address
-; Clobbers: BC
+;         BC: Buffer Length minus 1
 ;-----------------------------------------------------------------------------
 get_strbuf_addr:
     ld      bc,256
     ld      hl,(TOPMEM)
     add     hl,bc                 ; HL = StrBuf
+    dec     bc
     ret
     
 ;-----------------------------------------------------------------------------
