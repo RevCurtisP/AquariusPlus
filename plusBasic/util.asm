@@ -182,6 +182,18 @@ string_copy:
     ret
 
 ;-----------------------------------------------------------------------------
+; Multiply A by 32, discarding carry
+;-----------------------------------------------------------------------------
+mult_a_32:
+    and     $03                   ; Remove extraneous b
+    rla                           ; Shift palette # to bits 5 and 6
+    rla
+    rla
+    rla
+    rla
+    ret
+
+;-----------------------------------------------------------------------------
 ; Shift HL Left
 ;   Input: B = Shift Count
 ;  Output: B = 0

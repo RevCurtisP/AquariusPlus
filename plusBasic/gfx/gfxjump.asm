@@ -4,8 +4,7 @@
 gfx_jump_table
     jp      gfx_startup           
     jp      gfx_init              
-    jp      palette_shift_num      
-    jp      palette_set_entry      
+    jp      palette_reset
     jp      palette_set           
     jp      palette_get           
     jp      tile_set_pixel        

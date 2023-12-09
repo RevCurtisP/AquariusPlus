@@ -82,7 +82,7 @@
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.19m1",0
+    db "v0.19m2",0
 plus_len   equ   $ - plus_text
 
 auto_cmd:
@@ -110,18 +110,22 @@ _reset:
     ; Set up temp stack in text line buffer
     ld      sp, $38A0
 
-    ; Initialize banking registers
+    ; Initialize Banks 1 to 3
     ld      a, 0 | BANK_OVERLAY | BANK_READONLY
     out     (IO_BANK0), a
     ld      a, 33
     out     (IO_BANK1), a
     ld      a, 34
     out     (IO_BANK2), a
+
+    ; Call routines in Aux ROM
+    ld      a,2
+    out     (IO_BANK3), a
+    call    screen_reset          ; Init video mode
+
+    ; Initialize Bank 3
     ld      a, 19                 ; Cartridge Port
     out     (IO_BANK3), a
-
-    ; Init video mode
-    call    reset_screen
 
     ; Initialize character RAM
     call    init_charram
@@ -538,33 +542,6 @@ _keyread:
 _inlin_hook:
 _inlin_done:
     ret
-
-reset_screen:
-    ld      a,VCTRL_TEXT_EN
-    out     (IO_VCTRL),a
-    call    reset_palette
-
-reset_palette:
-    ld      hl, .default_palette
-    ld      c, IO_VPALSEL
-    ld      b, 0
-    ld      d, 32
-.palloop:
-    out     (c), b
-    ld      a, (hl)
-    out     (IO_VPALDATA), a
-    inc     hl
-    inc     b
-    dec     d
-    jr      nz, .palloop
-    ret
-
-
-.default_palette:
-    dw $111, $F11, $1F1, $FF1, $22E, $F1F, $3CC, $FFF
-    dw $CCC, $3BB, $C2C, $419, $FF7, $2D4, $B22, $333
-
-
 
 ;-----------------------------------------------------------------------------
 ; Invoke advanced line editor

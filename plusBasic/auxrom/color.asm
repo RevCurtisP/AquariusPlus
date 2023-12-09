@@ -3,10 +3,35 @@
 ;=============================================================================
 
 ;-----------------------------------------------------------------------------
+; Reset palette to default colors
+; Input: A: Palette#
+; Clobbers: A,BC,D,HL
+;-----------------------------------------------------------------------------
+palette_reset:
+    call    mult_a_32
+    ld      b,a
+    ld      c,IO_VPALSEL
+    ld      d,32
+    ld      hl, .default_palette
+.palloop:
+    out     (c), b
+    ld      a, (hl)
+    out     (IO_VPALDATA), a
+    inc     hl
+    inc     b
+    dec     d
+    jr      nz, .palloop
+    ret
+
+.default_palette:
+    dw $111, $F11, $1F1, $FF1, $22E, $F1F, $3CC, $FFF
+    dw $CCC, $3BB, $C2C, $419, $FF7, $2D4, $B22, $333
+
+;-----------------------------------------------------------------------------
 ; Set palette
-; Input: A: Entry#      
-;       BC: Data Length      
-;       DE: Data Address
+; Input: A: Entry#               VPALSEL   ~PPEEEEE : P = Palette#, E = Entry#
+;       BC: Data Length          VPALDATA  GGGGBBBB : G = Green, B = Blue 
+;       DE: Data Address                   ~~~~RRRR : R = Red
 ;        L: Palette# (shifted if Carry Set)
 ;           
 ; Clobbered: A,BC,DE,HL
@@ -15,7 +40,7 @@ palette_set:
     push    af
     jr      c,.shifted
     ld      a,l
-    call    palette_shift_num ; B = Shifted palette #
+    call    mult_a_32             ; B = Shifted palette #
     ld      l,a                   ; Save It
 .shifted:
     pop     af
@@ -43,8 +68,8 @@ palette_set:
 ;       DE: Data Address
 ; Clobbered: A,BC,DE,HL
 ;-----------------------------------------------------------------------------
-    palette_get:
-    call    palette_shift_num ; A = Shifted palette #
+palette_get:
+    call    mult_a_32             ; A = Shifted palette #
     ld      l,a                   ; Save It
 .loop
     ld      a,b
@@ -58,51 +83,3 @@ palette_set:
     inc     de
     dec     bc
     jr      .loop
-
-;-----------------------------------------------------------------------------
-; Set palette entry                        76543210
-; Input: A: Palette#            VPALSEL   ~PPEEEEE : P = Palette#, E = Entry#
-;        B: Shifted palette#    VPALDATA  GGGGBBBB : G = Green, B = Blue
-;        C: Entry#                        ~~~~RRRR : R = Red
-;       DE: Entry               
-;       Use A if Carry is Clear, B if Carry is Set
-; Output: B: Shifted palette#
-;         C: Next entry#
-;-----------------------------------------------------------------------------
-    palette_set_entry:
-    jr      c,.use_b
-    call    palette_shift_num     ; B = Shifted palette #
-    ld      b,a                   ; Save It
-.use_b:
-    push    a
-    ld      a,c                   ; Get Entry #
-    and     $0F                   ; Mask it
-    rla                           ; Multiply by 2
-    or      b                     ; Combine with palette #
-    out     (IO_VPALSEL),a        ; Select Palette and Entry
-    ex      af,af'
-    ld      a,e
-    out     (IO_VPALDATA),a       ; Write Green and Blue
-    ex      af,af'
-    inc     a
-    out     (IO_VPALSEL),a        ; Select Palette and Entry
-    ld      a,d                   ; 
-    out     (IO_VPALDATA),a       ; Write Red
-    inc     c
-    ex      af,af'
-    pop     a
-    ret
-
-;-----------------------------------------------------------------------------
-; Shift Palette Number for ORing with palette index address
-; Input:  A: Palette#            
-; Output: A: Shifted palette#    
-;-----------------------------------------------------------------------------
-palette_shift_num:
-    and     $03                   ; Remove extraneous b
-    rla                           ; Shift palette # to bits 5 and 6
-    rla
-    rla
-    rla
-    rla
-    ret

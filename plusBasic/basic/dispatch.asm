@@ -45,10 +45,14 @@ execute_function:
     jp      (ix)                ; Go Do It
 
 extended_statement:
-    sub     FILLTK              ; Work upwards from FILL
+    sub     RESETK              ; Work upwards from RESET
+    jp      z,ST_RESET
+    dec     a                   ; $91
+    dec     a                   ; VER
+    dec     a                   ; FILL
     jp      z,ST_FILL
-    dec     a                   ; Skip COMPARE
-    dec     a                   ; 
+    dec     a                   ; COMPARE
+    dec     a                   ; PLAY
     jp      z,ST_PLAY
     jp      SNERR
    
@@ -58,7 +62,7 @@ extended_function:
     sub     VERTK               ; Work forward from VER
     jp      z,FN_VER
     dec     a                   ; FILL
-    dec     a                   ; VER
+    dec     a                   ; COMPARE
     jp      z,FN_COMPARE
     jp      SNERR
 
