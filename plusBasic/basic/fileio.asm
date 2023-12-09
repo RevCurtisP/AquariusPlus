@@ -135,7 +135,7 @@ file_load_pt3:
     jp      file_load_paged
 
 ;-----------------------------------------------------------------------------
-; Load PT3 file
+; Load Pallete
 ; Input: A: Palette number
 ;       HL: String descriptor address
 ; Output: A: result code
@@ -174,6 +174,67 @@ file_load_strbuf:
     push    de                    ; Stack = StrBuf
     call    file_load_binary      ; Load file into string buffer
     pop     hl                    ; HL = StrBuf
+    ret     m
+    xor     a
+    ld      (de),a
+    ret
+    
+;-----------------------------------------------------------------------------
+; Save binary file into main memory
+; Input: BC: maximum length
+;        DE: destination address
+;        HL: string descriptor address
+; Output: A: result code
+;        BC: number of bytes actually read
+;        DE: next destination address 
+; Flags Set: S if I/O error
+; Clobbered: HL
+;-----------------------------------------------------------------------------
+file_save_binary:
+    call    dos_open_write
+    ret     m
+    call    esp_write_bytes
+    push    af
+    call    esp_close_all
+    pop     af
+    or      a
+    ret
+
+;-----------------------------------------------------------------------------
+; Load Pallete
+; Input: A: Palette number
+;       HL: String descriptor address
+; Output: A: result code
+; Flags Set: S if I/O error
+;            C if file too large
+; Clobbered: BC, DE, EF
+; Populates: String Buffer
+;-----------------------------------------------------------------------------
+file_save_palette:
+    push    hl                    ; Stack = FilStd, RtnAdr
+    call    get_strbuf_addr       ; HL = StrBuf
+    ex      de,hl                 ; DE = StrBuf
+    ld      bc,32                 ; Read 16 palette entries
+    call    palette_get           ; Read palette into string buffer
+    pop     hl                    ; HL = FilStd; Stack = RtnAdr
+    ld      a,32                  ; 
+;-----------------------------------------------------------------------------
+; Write string buffer to file
+; Input: A: Number of bytes to write
+;        HL: String descriptor address
+; Output: A: result code
+; Flags Set: S if I/O error
+; Clobbered: HL
+;-----------------------------------------------------------------------------
+file_save_strbuf:
+    ex      de,hl                 ; DE = FilStd
+    call    get_strbuf_addr       ; HL = StrBuf
+    ex      de,hl                 ; DE = StrBuf, HL = FilStd
+    push    de                    ; Stack = StrBuf, RtnAdr
+    ld      b,0
+    ld      c,a
+    call    file_save_binary      ; Save string buffer to file
+    pop     hl                    ; HL = StrBuf; Stack = RtnAdr
     ret     m
     xor     a
     ld      (de),a

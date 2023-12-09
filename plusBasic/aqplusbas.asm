@@ -82,7 +82,7 @@
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.19m2",0
+    db "v0.19n",0
 plus_len   equ   $ - plus_text
 
 auto_cmd:
