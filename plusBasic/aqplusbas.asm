@@ -82,7 +82,7 @@
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.19pt3a",0
+    db "v0.19pt3b",0
 plus_len   equ   $ - plus_text
 
 auto_cmd:
@@ -182,13 +182,13 @@ _warm_boot:
 ;-----------------------------------------------------------------------------
 ; ; ToDo: Save stack position, so interrupt can jump back if needed
 irq_handler:
-    push    af
+    push    af                    ; Stack = AF
     ld      a,(IRQACTIVE)
     or      a
     jp      z,.stop_irqs
-    push    bc
-    push    de
-    push    hl
+    push    bc                    ; Stack = BC, AF
+    push    de                    ; Stack = DE, BC, AF
+    push    hl                    ; Stack = HL, DE, BC, AF
 
     rra                           ; Carry = IRQ_TIMER
     call    c,_timer
@@ -198,7 +198,8 @@ irq_handler:
     call    BASINTJP
     ld      a,IRQ_VBLANK
     out     (IO_IRQSTAT),a
-    pop     hl
+
+    pop     hl                    
     pop     de
     pop     bc
     pop     af
@@ -223,27 +224,28 @@ pt3reset:
     jr      pt3call
 
 _pt3tick
-    ld      hl,PT3COUNT
-    dec     (hl)
-    ret     nz
     ld      iy,pt3tick
 pt3call:
-    in      a,(IO_BANK1)
+    push    ix
+    ex      af,af'
     push    af
+    in      a,(IO_BANK1)
+    push    af                    ; Stack = Bnk1pg, RtnAdr
     ld      a,PT3_BUFFR
     out     (IO_BANK1),a
     in      a,(IO_BANK3)
-    push    af
+    push    af                    ; Stack = Bnk3pg, Bnk1pg, RtnAdr
     ld      a,ROM_AUX_PG
     out     (IO_BANK3),a
     call    (jump_iy)
-    pop     af
+    call    nz,pt3stopped
+    pop     af                    ; A = Bnk3pg; Stack = Bnk1pg, RtnAdr
     out     (IO_BANK3),a
-    pop     af
+    pop     af                    ; A = Bnk1pg; Stack = RtnAdr
     out     (IO_BANK1),a
-pt3setcount:
-    ld      a,6
-    ld      (PT3COUNT),a
+    pop     af
+    ex      af,af'
+    pop     ix
     ret
 
 ;-----------------------------------------------------------------------------
@@ -553,7 +555,19 @@ enable_vblank_irq:
     out     (IO_IRQMASK),a        ; Turn on VBLANK interrupts
     ret
 
-
+;-----------------------------------------------------------------------------
+; Disable a VBLANK Interrupt
+; Input: B: IRQ Routine Bit(s)
+; Clobbers: A
+;-----------------------------------------------------------------------------
+clear_vblank_irq:
+    ld      a,$FF
+    xor     b
+    ld      b,a
+    ld      a,(IRQACTIVE)
+    and     b
+    ld      (IRQACTIVE),a
+    ret     
 
 ;-----------------------------------------------------------------------------
 ; Directly read alternate keyboard port

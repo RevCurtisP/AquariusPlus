@@ -6,7 +6,7 @@
 
 ; Generates a binary file to be included in the plusBASIC ROM
 
-SongData  = $5000               ; (For now)
+SongData  = $4400               ; (For now)
 
  org     0xD800                 ; Last 2k of Auxilliary ROM
 
@@ -19,13 +19,17 @@ SongData  = $5000               ; (For now)
 StartPlayer:
       LD      HL,SongData
       CALL    PT3_PLAY
+      or      a                 ; Return Zero set
       RET
 
+; Interrupt call
+; Sets Non-Zero when song has finished.
 PlayQuark:
       LD      HL,SongData
       CALL    PLAY        
       ld      hl,SETUP
       bit     7,(hl)            ; quit if end of song
+      ret
       jr      nz,StartPlayer
       RET
 

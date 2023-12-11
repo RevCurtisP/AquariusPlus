@@ -422,6 +422,8 @@ ST_RESET:
     byte    XTOKEN
     cp      PALETK
     jp      z,ST_RESET_PALETTE
+    cp      PT3TK
+    jp      z,ST_RESET_PT3
     jp      SNERR
 
 ;-----------------------------------------------------------------------------

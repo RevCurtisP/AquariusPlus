@@ -54,20 +54,21 @@ ST_PLAY_SAMPLE:
 ;-----------------------------------------------------------------------------
 ; PLAY PT3 Statement
 ;-----------------------------------------------------------------------------
+;load pt3 "/music/songs1/dontstop.pt3"
+;play pt3
 ST_PLAY_PT3
-    jp      GSERR
+    rst     CHRGET                ; Skip PT3
+    push    hl
+    call    pt3start
+    pop     hl
+    ret
 
 ;-----------------------------------------------------------------------------
 ; RESET Statement
 ;-----------------------------------------------------------------------------
-ST_RESET:
-    rst     CHRGET                ; Skip RESET
-    rst     SYNCHR
-    byte    XTOKEN
-    rst     SYNCHR
-    byte    PT3TK                 ; Require PT3
+ST_RESET_PT3:
+    rst     CHRGET                ; Skip PT3
     push    hl
-reset_pt3:
     call    pt3reset
     pop     hl
     ret

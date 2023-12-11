@@ -293,6 +293,25 @@ asc_to_bcd_byte:
     ld      e,a                   ; Move digit into bottom nybble                  
     jr      .loop
 
+;----------------------------------------------------------------------------
+; Start background PT3 player
+; Input C,DE = Timer count
+; Clobbers: A,B
+;----------------------------------------------------------------------------
+pt3start:
+    call    pt3reset
+    ld      b,IRQ_PT3PLAY
+    jp      enable_vblank_irq
+
+;----------------------------------------------------------------------------
+; End background PT3 player interrupts
+; Input C,DE = Timer count
+; Clobbers: A,B
+;----------------------------------------------------------------------------
+pt3stopped:
+    ld      b,IRQ_PT3PLAY
+    jp      clear_vblank_irq
+    
 ;-----------------------------------------------------------------------------
 ; Look up byte in table
 ; Input: A: Offset

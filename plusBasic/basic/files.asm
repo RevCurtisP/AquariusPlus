@@ -761,7 +761,8 @@ _load_pt3:
 _aux_call
     call    aux_call
     jp      m,_dos_error
-    jp      reset_pt3
+    pop     hl
+    ret
 
 ;-----------------------------------------------------------------------------
 ; .SCR format: 2048 byte Screen+Color RAM ($3000-$3FFF)
