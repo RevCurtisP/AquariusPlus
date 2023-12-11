@@ -731,8 +731,27 @@ _load_chrset:
     ld      iy,file_load_chrset   ; Load character set and copy to character RAM
     jr      _aux_call
 
+_save_palette:
+; save palette 0,"/t/default.pal"
+    ld      iy,file_save_palette
+    jr      _do_palette
+; load palette 0,"/t/gray.pal"
 _load_palette:
-    jp      GSERR
+    ld      iy,file_load_palette  
+_do_palette:
+    rst     CHRGET                ; Skip PALETTE
+    push    iy                    ; Stack = FilRtn
+    call    get_byte4             ; A = PalNum
+    push    af                    ; Stack = PalNum, FilRtn, RtnAdr
+    SYNCHK  ','                   ; Require comma
+    call    get_strdesc_arg       ; HL = FilStd; Stack = TxtPtr, PalNum, FilRtn, RtnAdr
+    pop     de                    ; DE = TxtPtr
+    pop     af                    ; A = PalNum; Stack = FilRtn, RtnAdr
+    pop     iy                    ; IY = FilRtn; Stack = RtnAdr
+    push    de                    ; Stack = TxtPtr, RtnAdr
+    jr      _aux_call
+
+
 
 ; load pt3 "/music/songs1/dontstop.pt3"
 _load_pt3:
@@ -876,6 +895,8 @@ ST_SAVE:
     ld      a,(hl)
     cp      FNTK
     jp      z,.save_fnkeys
+    cp      XTOKEN
+    jp      z,.save_extended
 
     call    get_strdesc_arg         ; Get FileSpec pointer in HL
     ex      (sp),hl                 ; HL = Text Pointer, Stack = String Descriptor
@@ -888,7 +909,7 @@ ST_SAVE:
     cp      $AA                     ; Token for '*'
     jp      z, .array               ; Array parameter -> save array
     cp      ASCTK
-    jp      z, save_ascii_program
+    jp      z,save_ascii_program
 
     ; Save binary data
 
@@ -921,6 +942,12 @@ ST_SAVE:
     jp      m,_dos_error
     pop     hl
     ret
+
+.save_extended
+    rst     CHRGET                ; Skip XTOKEN
+    cp      PALETK
+    jp      z,_save_palette
+    jp      SNERR
 
 .save_fnkeys
     call    _set_up_fnkeys        ; A = BAS_BUFFR, BC = 512, DE = FKEYDEFS, HL = FilDsc

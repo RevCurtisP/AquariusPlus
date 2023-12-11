@@ -45,9 +45,23 @@ ST_SETCOLOR:
     ret
 
 ;-----------------------------------------------------------------------------
+; RESET PALETTE to default colors
+; syntax: RESET PALETTE palette#
+;-----------------------------------------------------------------------------
+ST_RESET_PALETTE:
+    rst     CHRGET                ; Skip PALETTE
+    call    get_byte4             ; A = palette#
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    ld      iy,palette_reset
+    call    aux_call
+    pop     hl
+    ret
+
+;-----------------------------------------------------------------------------
 ; SET PALETTE statement
 ; syntax: SET PALETTE palette# [, index] TO rgblist$
 ;-----------------------------------------------------------------------------
+; SET PALETTE 0 TO $"111122223333444455556666777788889999"
 ST_SETPALETTE:
     rst     CHRGET                ; Skip PALETTE
     call    get_byte4             ; E = Palette#
@@ -70,7 +84,8 @@ ST_SETPALETTE:
     ld      a,e                   ; Get palette#
     cp      4                     ; If greater than 3
     jp      nc,FCERR              ;   Error
-    call    palette_shift_num     ;
+    ld      iy,mult_a_32          ;
+    call    aux_call
     ld      b,a                   ; B = Shifted palette#
     push    bc                    ; Stack = PltOfs+Entry
     call    FRMEVL                ; Evaluate RGB list
@@ -81,7 +96,8 @@ ST_SETPALETTE:
     ld      a,l                   ; A = Entry#
     ld      l,h                   ; L = PltOfs
     scf                           ; Palette already shifted
-    call    palette_set           ; Set the entry (increments C)
+    ld      iy,palette_set        ; Set the entry (increments C)
+    call    aux_call
     jp      c,OVERR               ; Error if Overflow
     pop     hl                    ; HL = TxtPtr
     ret
@@ -147,10 +163,7 @@ ST_SCREEN:
     byte    XTOKEN                ; Else
     rst     SYNCHR                ;  Require RESET
     byte    RESETK
-    push    hl
-    call    reset_screen
-    pop     hl
-    ret
+    jr      _reset_screen
 
 .do_text_mode:
     cp      4                     ; If > 3
@@ -184,6 +197,15 @@ ST_SCREEN:
     byte    VCTRL_TEXT_EN                   ; 1 = 40 Column Primary
     byte    VCTRL_TEXT_EN+VCTRL_TEXT_PAGE   ; 2 = 40 Column Secondary
     byte    VCTRL_TEXT_EN+VCRTL_80COL_EN    ; 3 = 80 Column
+
+ST_RESET_SCREEN:
+    rst     CHRGET                ; Skip SCREEN
+_reset_screen:
+    push    hl
+    ld      iy,screen_reset
+    call    aux_call
+    pop     hl
+    ret
 
 ;-----------------------------------------------------------------------------
 ; SCREEN RESTORE - Copy Screen Buffer to Text Screen

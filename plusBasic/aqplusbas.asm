@@ -110,18 +110,22 @@ _reset:
     ; Set up temp stack in text line buffer
     ld      sp, $38A0
 
-    ; Initialize banking registers
+    ; Initialize Banks 1 to 3
     ld      a, 0 | BANK_OVERLAY | BANK_READONLY
     out     (IO_BANK0), a
     ld      a, 33
     out     (IO_BANK1), a
     ld      a, 34
     out     (IO_BANK2), a
+
+    ; Call routines in Aux ROM
+    ld      a,2
+    out     (IO_BANK3), a
+    call    screen_reset          ; Init video mode
+
+    ; Initialize Bank 3
     ld      a, 19                 ; Cartridge Port
     out     (IO_BANK3), a
-
-    ; Init video mode
-    call    reset_screen
 
     ; Initialize character RAM
     call    init_charram
@@ -564,33 +568,6 @@ _inlin_hook:
 _inlin_done:
     ret
 
-reset_screen:
-    ld      a,VCTRL_TEXT_EN
-    out     (IO_VCTRL),a
-    call    reset_palette
-
-reset_palette:
-    ld      hl, .default_palette
-    ld      c, IO_VPALSEL
-    ld      b, 0
-    ld      d, 32
-.palloop:
-    out     (c), b
-    ld      a, (hl)
-    out     (IO_VPALDATA), a
-    inc     hl
-    inc     b
-    dec     d
-    jr      nz, .palloop
-    ret
-
-
-.default_palette:
-    dw $111, $F11, $1F1, $FF1, $22E, $F1F, $3CC, $FFF
-    dw $CCC, $3BB, $C2C, $419, $FF7, $2D4, $B22, $333
-
-
-
 ;-----------------------------------------------------------------------------
 ; Invoke advanced line editor
 ; Currently writtec to be executed via BASIC CALL for development
@@ -930,7 +907,6 @@ aux_line_print:
 
     ; Graphics modules
     include "gfx.asm"           ; Main graphics module
-    include "color.asm"         ; Color palette module
     include "common.asm"        ; Shared graphics subroutines
     include "screen.asm"        ; Text screen graphics subroutines
     include "sprite.asm"        ; Sprite graphics module
@@ -953,6 +929,7 @@ aux_line_print:
     phase   $C000     ;Assemble in ROM Page 1 which will be in Bank 3
 
     include "jump_aux.asm"      ; Auxiliary routines jump tables
+    include "color.asm"         ; Color palette module
     include "dos.asm"           ; DOS routines
     include "editor.asm"        ; Advanced line editor
     include "esp_aux.asm"       ; ESP routines in auxiliary ROM

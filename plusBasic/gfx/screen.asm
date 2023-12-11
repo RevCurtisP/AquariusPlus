@@ -215,7 +215,8 @@ screen_pos_addr:
     push    hl
     push    bc
     ld      a,e                   ; A = Row
-    ld      de,(LINLEN)           ; DE = Screen width
+    ld      de,(LINLEN)           
+    ld      d,0                   ; DE = Screen width
     call    mult_a_de             ; HL = Row Address, BC = Column, A = 0
     add     hl,bc                 ; Add column address
     ld      bc,SCREEN             ; Add to Text Screen base address

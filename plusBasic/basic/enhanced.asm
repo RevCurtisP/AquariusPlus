@@ -6,7 +6,6 @@
 ; ASC$(hexstring$)
 ; Convert Hexadecimal String to Binary String
 ;-----------------------------------------------------------------------------
-
 FN_ASC:
     inc     hl                    ; Check character directly after ASC Token
     ld      a,(hl)                ; (don't skip spaces)

@@ -11,12 +11,13 @@ discard_ret:
 ;-----------------------------------------------------------------------------
 ; Get String Buffer Address
 ; Output: HL: String Buffer Address
-; Clobbers: BC
+;         BC: Buffer Length minus 1
 ;-----------------------------------------------------------------------------
 get_strbuf_addr:
     ld      bc,256
     ld      hl,(TOPMEM)
     add     hl,bc                 ; HL = StrBuf
+    dec     bc
     ret
     
 ;-----------------------------------------------------------------------------
@@ -178,6 +179,18 @@ string_copy:
 .done
     pop   de
     pop   hl
+    ret
+
+;-----------------------------------------------------------------------------
+; Multiply A by 32, discarding carry
+;-----------------------------------------------------------------------------
+mult_a_32:
+    and     $03                   ; Remove extraneous b
+    rla                           ; Shift palette # to bits 5 and 6
+    rla
+    rla
+    rla
+    rla
     ret
 
 ;-----------------------------------------------------------------------------

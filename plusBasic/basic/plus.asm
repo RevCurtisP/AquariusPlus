@@ -410,6 +410,20 @@ ST_PAUSE:
 .tryin
     jp      TRYIN                 ; Wait for key and return
     
+
+;-----------------------------------------------------------------------------
+; RESET Statement stub
+;-----------------------------------------------------------------------------
+ST_RESET:
+    rst     CHRGET                ; Skip RESET
+    cp      SCRNTK                
+    jp      z,ST_RESET_SCREEN
+    rst     SYNCHR
+    byte    XTOKEN
+    cp      PALETK
+    jp      z,ST_RESET_PALETTE
+    jp      SNERR
+
 ;-----------------------------------------------------------------------------
 ; USE Statement stub
 ;-----------------------------------------------------------------------------
