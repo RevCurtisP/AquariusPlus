@@ -82,7 +82,7 @@
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.19p",0
+    db "v0.19q",0
 plus_len   equ   $ - plus_text
 
 auto_cmd:
@@ -186,6 +186,8 @@ irq_handler:
     ld      a,(IRQACTIVE)
     or      a
     jp      z,.stop_irqs
+    ex      af,af'
+    push    af
     push    bc                    ; Stack = BC, AF
     push    de                    ; Stack = DE, BC, AF
     push    hl                    ; Stack = HL, DE, BC, AF
@@ -203,6 +205,8 @@ irq_handler:
     pop     de
     pop     bc
     pop     af
+    ex      af,af'
+    pop     af
     ei
     reti
 
@@ -212,23 +216,21 @@ irq_handler:
     reti
 
 _timer:
+    ex      af,af'      
     call    timer_tick
-    ret     nc
-    ld      a,(BASYSCTL)
-    or      $80
-    ld      (BASYSCTL),a
-    ret
+    ex      af,af'
+    ret     
 
 pt3reset:
+    ld      b,IRQ_PT3PLAY
+    call    clear_vblank_irq
     ld      iy,pt3init
-    jr      pt3call
+    call    pt3call
 
 _pt3tick
     ld      iy,pt3tick
 pt3call:
     push    ix
-    ex      af,af'
-    push    af
     in      a,(IO_BANK1)
     push    af                    ; Stack = Bnk1pg, RtnAdr
     ld      a,PT3_BUFFR
@@ -243,8 +245,6 @@ pt3call:
     out     (IO_BANK3),a
     pop     af                    ; A = Bnk1pg; Stack = RtnAdr
     out     (IO_BANK1),a
-    pop     af
-    ex      af,af'
     pop     ix
     ret
 
@@ -546,14 +546,18 @@ descramble_rom:
 ; Clobbers: A
 ;-----------------------------------------------------------------------------
 enable_vblank_irq:
-    ld      a,(IRQACTIVE)
-    or      b
-    ld      (IRQACTIVE),a
+    call    set_vblank_irq
     im1
     ei
     ld      a,IRQ_VBLANK
     out     (IO_IRQMASK),a        ; Turn on VBLANK interrupts
     ret
+
+set_vblank_irq:
+    ld      a,(IRQACTIVE)
+    or      b
+    ld      (IRQACTIVE),a
+    ret     
 
 ;-----------------------------------------------------------------------------
 ; Disable a VBLANK Interrupt
@@ -563,9 +567,9 @@ enable_vblank_irq:
 clear_vblank_irq:
     ld      a,$FF
     xor     b
-    ld      b,a
+    ld      c,a
     ld      a,(IRQACTIVE)
-    and     b
+    and     c
     ld      (IRQACTIVE),a
     ret     
 
