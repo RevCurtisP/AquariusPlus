@@ -82,7 +82,7 @@
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.19r",0
+    db "v0.19s",0
 plus_len   equ   $ - plus_text
 
 auto_cmd:
@@ -620,7 +620,7 @@ jump_iy:
 
 do_cls:
     ld      a,(BASYSCTL)
-    rra     
+    rla     
     jr      nc,clear_default
     ld      a,(SCOLOR)
     jr      clear_home
