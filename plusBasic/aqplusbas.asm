@@ -82,7 +82,7 @@
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.19q",0
+    db "v0.19r",0
 plus_len   equ   $ - plus_text
 
 auto_cmd:
@@ -188,6 +188,7 @@ irq_handler:
     jp      z,.stop_irqs
     ex      af,af'
     push    af
+    ex      af,af'
     push    bc                    ; Stack = BC, AF
     push    de                    ; Stack = DE, BC, AF
     push    hl                    ; Stack = HL, DE, BC, AF
@@ -225,7 +226,7 @@ pt3reset:
     ld      b,IRQ_PT3PLAY
     call    clear_vblank_irq
     ld      iy,pt3init
-    call    pt3call
+    jp      pt3call
 
 _pt3tick
     ld      iy,pt3tick
@@ -549,6 +550,8 @@ enable_vblank_irq:
     call    set_vblank_irq
     im1
     ei
+    ld      a,250
+    out     (IO_VIRQLINE),a
     ld      a,IRQ_VBLANK
     out     (IO_IRQMASK),a        ; Turn on VBLANK interrupts
     ret
