@@ -17,6 +17,7 @@ SongData  = $4400               ; (For now)
       jp      MUTE
 
 StartPlayer:
+      ld      (CountDn),a       ; $FF = 60Hz, 0 = 50Hz
       LD      HL,SongData
       CALL    PT3_PLAY
       or      a                 ; Return Zero set
@@ -25,6 +26,15 @@ StartPlayer:
 ; Interrupt call
 ; Sets Non-Zero when song has finished.
 PlayQuark:
+      ld      a,(CountDn)
+      or      a
+      jp      m,.play
+      jr      nz,.decrement
+      ld      a,6
+.decrement
+      dec     a
+      ld      (CountDn),a
+.play
       LD      HL,SongData
       CALL    PLAY        
       ld      hl,SETUP

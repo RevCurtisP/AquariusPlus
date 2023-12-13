@@ -120,8 +120,8 @@ FN_ERR: rst     CHRGET            ; Skip ERR Token
 ;              RESUME NEXT - Resume exectuion at next statement
 ;----------------------------------------------------------------------------
 ST_RESUME:
+        jp      m,.token          ; Check for token
         push    af                ; Save Flags
-;        jp      z,.moerr          ; Require Line Number or Label
         ld      a,(ONEFLG)        ; GET FLAG
         or	    a			            ; TRAP ROUTINE.
         jr	    z,.reerr			    ; GIVE RESUME WITHOUT ERROR ERROR	
@@ -137,6 +137,12 @@ ST_RESUME:
 
 .reerr: ld      e,ERRRE           ; Load RE Error Code
 .error: jp      force_error       ; Do Error
+
+.token: rst     SYNCHR
+        byte    XTOKEN
+        cp      PT3TK
+        jp      z,ST_RESUME_PT3
+        jp      SNERR
 
 ;----------------------------------------------------------------------------
 ; Clear ERROR system variables

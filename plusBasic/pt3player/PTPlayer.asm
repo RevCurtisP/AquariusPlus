@@ -60,6 +60,7 @@ CHP_size = 29
 ;
  STRUCTURE VARS,VARMEM
       BYTE SETUP        ; bit7 = 1 when loop point reached
+      BYTE CountDn
       WORD CrPsPtr
       BYTE AddToEn
       WORD AdInPtA

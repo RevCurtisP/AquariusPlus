@@ -446,3 +446,14 @@ parse_page_arg:
 .notat
     or      a                     ; Clear Carry Flag
     ret
+
+;-----------------------------------------------------------------------------
+; Enhanced STOP statement stub
+;-----------------------------------------------------------------------------
+ST_STOP:
+    jp      z,STOP
+    rst     SYNCHR
+    byte    XTOKEN
+    cp      PT3TK
+    jp      z,ST_STOP_PT3
+    jp      SNERR

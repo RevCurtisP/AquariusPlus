@@ -209,6 +209,7 @@ CLEARC:     equ $0BCF   ; Clear variable and array space, then initialize stack
 STKINI:     equ $0BE5   ; Initialize stack
 ;FRMINT         $0B7F   ; Use GETINT instead. This routine has an unnecessary PUSH/POP HL
 BGNRST      equ $0C19   ; Finish up RESTORE
+STOP        equ $0C1F   ; STOP statement
 ISLETC:     equ $0CC6   ; Test for a letter
 CLRCON      equ $0D04   ; Continue CLEARS after setting top of stack
 NOTRUB      equ $0DA3   ; Continue Ctrl-key check

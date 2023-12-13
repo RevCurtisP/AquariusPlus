@@ -399,10 +399,18 @@ ST_SETFNKEY:
 ;-----------------------------------------------------------------------------
 ST_PAUSE:
     jp      z,.tryin              ; If no argument, wait for key and return
+    jp      p,.nottoken           ; If followed by token
+    rst     SYNCHR
+    byte    XTOKEN
+    cp      PT3TK                 ;   If token is PT3
+    jp      z,ST_PAUSE_PT3        ;     Do PAUSE PT3
+    jr      .snerr                ;   Else Syntax Error
+.nottoken
     call    FRMEVL                ; Get Operand
     push    hl                    ; Stack = TxtPtr, RtnAdr
     call    GETYPE                ; 
     jp      z,.string             ; If Numeric
+.snerr
     jp      SNERR                 ;   Syntax error
 .string
     call    STRPRT
@@ -422,8 +430,6 @@ ST_RESET:
     byte    XTOKEN
     cp      PALETK
     jp      z,ST_RESET_PALETTE
-    cp      PT3TK
-    jp      z,ST_RESET_PT3
     jp      SNERR
 
 ;-----------------------------------------------------------------------------

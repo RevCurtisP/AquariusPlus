@@ -58,18 +58,42 @@ ST_PLAY_SAMPLE:
 ;play pt3
 ST_PLAY_PT3
     rst     CHRGET                ; Skip PT3
+    
+    
     push    hl
-    call    pt3start
+    call    pt3_start
+    pop     hl
+    ret
+
+;-----------------------------------------------------------------------------
+; PAUSE PT3 Statement
+;-----------------------------------------------------------------------------
+ST_PAUSE_PT3
+    rst     CHRGET                ; Skip PT3
+    push    hl
+    call    pt3_disable
+    ld      iy,pt3mute
+    call    pt3call
+    pop     hl
+    ret
+
+;-----------------------------------------------------------------------------
+; RESUME PT3 Statement
+;-----------------------------------------------------------------------------
+ST_RESUME_PT3
+    rst     CHRGET                ; Skip PT3
+    push    hl
+    call    pt3_enable
     pop     hl
     ret
 
 ;-----------------------------------------------------------------------------
 ; RESET Statement
 ;-----------------------------------------------------------------------------
-ST_RESET_PT3:
+ST_STOP_PT3:
     rst     CHRGET                ; Skip PT3
     push    hl
-    call    pt3reset
+    call    pt3_reset
     pop     hl
     ret
 

@@ -82,7 +82,7 @@
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.19s",0
+    db "v0.19t",0
 plus_len   equ   $ - plus_text
 
 auto_cmd:
@@ -222,12 +222,6 @@ _timer:
     ex      af,af'
     ret     
 
-pt3reset:
-    ld      b,IRQ_PT3PLAY
-    call    clear_vblank_irq
-    ld      iy,pt3init
-    jp      pt3call
-
 _pt3tick
     ld      iy,pt3tick
 pt3call:
@@ -241,7 +235,7 @@ pt3call:
     ld      a,ROM_AUX_PG
     out     (IO_BANK3),a
     call    (jump_iy)
-    call    nz,pt3stopped
+    call    nz,pt3_disable
     pop     af                    ; A = Bnk3pg; Stack = Bnk1pg, RtnAdr
     out     (IO_BANK3),a
     pop     af                    ; A = Bnk1pg; Stack = RtnAdr
