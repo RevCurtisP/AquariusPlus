@@ -314,7 +314,7 @@ pt3_enable:
 ;----------------------------------------------------------------------------
 ; End background PT3 player interrupts
 ; Input C,DE = Timer count
-; Clobbers: A,B
+; Clobbers: A,B,C
 ;----------------------------------------------------------------------------
 pt3_disable:
     ld      b,IRQ_PT3PLAY

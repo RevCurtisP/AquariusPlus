@@ -754,6 +754,7 @@ _do_palette:
 
 
 ; load pt3 "/music/songs1/dontstop.pt3"
+; load pt3 "/music/songs1/dance.pt3"
 _load_pt3:
     rst     CHRGET                ; Skip PT3
     call    get_strdesc_arg       ; HL = FileSpec StrDsc; Stack = TxtPtr

@@ -82,7 +82,7 @@
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.19t",0
+    db "v0.19u",0
 plus_len   equ   $ - plus_text
 
 auto_cmd:
@@ -559,7 +559,7 @@ set_vblank_irq:
 ;-----------------------------------------------------------------------------
 ; Disable a VBLANK Interrupt
 ; Input: B: IRQ Routine Bit(s)
-; Clobbers: A
+; Clobbers: A,C
 ;-----------------------------------------------------------------------------
 clear_vblank_irq:
     ld      a,$FF

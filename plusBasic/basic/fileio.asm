@@ -126,13 +126,17 @@ file_load_screen:
 ; Input: HL: String descriptor address
 ; Output: A: result code
 ; Flags Set: S if I/O error
-; Clobbered: CD, DE, EF
+; Clobbered: BC,DE,HL,IX,IY
 ;-----------------------------------------------------------------------------
 file_load_pt3:
     ld      a,PT3_BUFFR
     ld      de,$0400
     ld      bc,$4000-$0400
-    jp      file_load_paged
+    call    file_load_paged
+    push    af
+    call    pt3_reset
+    pop     af
+    ret
 
 ;-----------------------------------------------------------------------------
 ; Load Pallete

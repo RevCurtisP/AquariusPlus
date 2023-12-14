@@ -263,7 +263,7 @@ ST_SET_TILE:
     push    hl                    ; Stack = Tile#, TxtPtr, RtnAdr
     call    free_addr_len         ; DE = DataAddr, BC = Count
     pop     hl                    ; HL = Tile#; Stack = TxtPtr, RtnAdr
-      call    tile_set
+    call    tile_set
     jp      c,OVERR               ; Error if Overflow
     pop     hl                    ; HL = TxtPtr
     ret
@@ -719,7 +719,8 @@ FN_GETPALETTE:
     ld      bc,32                 ; BC = StrLen
     pop     hl                    ; HL = Palette#; Stack = DummyAdr, TxtPtr
     ld      a,l
-    call    palette_get           ;
+    ld      iy,palette_get           
+    call    aux_call
     ld      a,1
     ld      (VALTYP),a            ; Set Type to String
     call    FRESTR                ; Free Temporary
