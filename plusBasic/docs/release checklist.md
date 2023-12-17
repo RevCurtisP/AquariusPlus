@@ -14,8 +14,6 @@
     - RUN "pp.baq
     - RUN "sc.baq
     - RUN "sl.baq
-
-- Not implemented
   - PLAY PT3
-  
-  
+    - LOAD PT3 "/music/songs1/dontstop.pt3"
+    - PLAY PT3
