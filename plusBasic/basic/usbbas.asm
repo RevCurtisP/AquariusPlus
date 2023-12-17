@@ -296,6 +296,9 @@ ST_OUT:
 ; PSG statement
 ; syntax: PSG register, value [, ... ]
 ;-----------------------------------------------------------------------------
+;;ToDo:
+;; DEF PSGLIST P$ = register,value;register,value...
+;; PSG P$
 ST_PSG:
     cp      $00
     jp      z, MOERR         ; MO error if no args

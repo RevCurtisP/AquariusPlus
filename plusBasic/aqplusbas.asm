@@ -82,7 +82,7 @@
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.20",0
+    db "v0.20a",0
 plus_len   equ   $ - plus_text
 
 auto_cmd:
@@ -106,6 +106,8 @@ _reset:
     xor     a
     out     (IO_IRQMASK),a
     out     (IO_SYSCTRL),a
+    inc     a
+    out     (IO_VCTRL),a
 
     ; Set up temp stack in text line buffer
     ld      sp, $38A0
@@ -459,12 +461,12 @@ copy_char_ram:
 ;-----------------------------------------------------------------------------
 ; Cartridge start entry point - A hold scramble value
 ;-----------------------------------------------------------------------------
-;;; ToDo: When starting cart from power up, clear BASIC RAM
-
 _start_cart:
+    push    af                    ; Stack = SCRMBL, RtnAdr
+    pop     af
     cp      $00
     jp      nz, .descramble
-    jp      XINIT
+    jp      _exec_cart
 
 .descramble:
     ; Map destination RAM in bank2
@@ -519,6 +521,7 @@ descramble_rom:
     ld      a, 35 | BANK_READONLY
     out     (IO_BANK3), a
 
+_exec_cart:
     ; Turn off Interrupts, Reset Screen, and Remove Hook
     di
     xor     a
@@ -532,8 +535,14 @@ descramble_rom:
     ; Reinit stack pointer
     ld      sp, $38A0
 
+    ; Clear BASIC RAM
+    xor     a                     ; Fill with 0
+    ld      hl,$3900              ; From beginning of BASIC RAM
+    ld      bc,$C000-$3900        ; to end of BASIC RAM
+    call    sys_fill_mem          ; A = SCRMBL; Stack = RtnAdr
+
     ; Start ROM
-    jp      $E010
+    jp      XINIT
 
 ;-----------------------------------------------------------------------------
 ; Enable VBLANK Interrupts
