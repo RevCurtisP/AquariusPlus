@@ -82,7 +82,7 @@
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.20a",0
+    db "v0.20b",0
 plus_len   equ   $ - plus_text
 
 auto_cmd:
@@ -435,8 +435,9 @@ custom_chrset:
 ;-----------------------------------------------------------------------------
 init_charram:
     ld      hl,CHAR_ROM_AQ        ; Copy AQUASCII in to Custom Char ROM buffer
-    ld      a,ROM_SYS_PG
+    ld      bc,2048
     ld      de,CHRSETBUF
+    ld      a,ROM_SYS_PG
     ex      af,af'
     ld      a,BAS_BUFFR
     call    page_fast_copy
@@ -462,8 +463,6 @@ copy_char_ram:
 ; Cartridge start entry point - A hold scramble value
 ;-----------------------------------------------------------------------------
 _start_cart:
-    push    af                    ; Stack = SCRMBL, RtnAdr
-    pop     af
     cp      $00
     jp      nz, .descramble
     jp      _exec_cart
