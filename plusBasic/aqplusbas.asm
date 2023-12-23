@@ -82,7 +82,7 @@
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.20b",0
+    db "v0.20c",0
 plus_len   equ   $ - plus_text
 
 auto_cmd:
@@ -120,17 +120,13 @@ _reset:
     ld      a, 34
     out     (IO_BANK2), a
 
+    ; Initialize character RAM
+    call    init_charram
+
     ; Call routines in Aux ROM
     ld      a,2
     out     (IO_BANK3), a
     call    screen_reset          ; Init video mode
-
-    ; Initialize Bank 3
-    ld      a, 19                 ; Cartridge Port
-    out     (IO_BANK3), a
-
-    ; Initialize character RAM
-    call    init_charram
 
     ; Initialize ESP
     ld      a, ESPCMD_RESET
@@ -139,6 +135,10 @@ _reset:
     ; Turn on Keyboard Buffer
     ld      a,KB_ENABLE | KB_ASCII
     call    key_set_keymode
+
+    ; Initialize Bank 3
+    ld      a, 19                 ; Cartridge Port
+    out     (IO_BANK3), a
 
     ; Back to system ROM init
     jp      JMPINI
@@ -463,11 +463,6 @@ copy_char_ram:
 ; Cartridge start entry point - A hold scramble value
 ;-----------------------------------------------------------------------------
 _start_cart:
-    cp      $00
-    jp      nz, .descramble
-    jp      _exec_cart
-
-.descramble:
     ; Map destination RAM in bank2
     ld      a, 35
     out     (IO_BANK2), a
@@ -496,6 +491,9 @@ descramble_rom:
     xor     (hl)
     ld      b, a
 
+    cp      $00
+    jr      z,.exec_cart
+
     ; Descramble ROM
     ld      hl, $C000
     ld      de, $4000
@@ -510,6 +508,7 @@ descramble_rom:
     or      e
     jr      nz, .loop2
 
+.exec_cart:
     ; Reinit banks
     ld      a, 33
     out     (IO_BANK1), a
@@ -520,7 +519,6 @@ descramble_rom:
     ld      a, 35 | BANK_READONLY
     out     (IO_BANK3), a
 
-_exec_cart:
     ; Turn off Interrupts, Reset Screen, and Remove Hook
     di
     xor     a
@@ -906,7 +904,6 @@ aux_line_print:
 
     phase   $C000     ;Assemble in ROM Page 1 which will be in Bank 3
 
-    include "gfxjump.asm"
     include "tables.asm"        ; Lookup tables aligned to 256 byte boundaries
     include "dispatch.asm"      ; Statement/Function dispatch tables and routiness
     include "error.asm"         ; Error lookup table, messages and handling routines

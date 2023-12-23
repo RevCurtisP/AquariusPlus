@@ -111,6 +111,7 @@ CDTK      equ     $E0
 INTK      equ     $E1
 MODTK     equ     $E7
 ERRTK     equ     $E9
+STRNTK    equ     $EA
 BITTK     equ     $EB
 LINETK    equ     $D0
 SAVETK    equ     $DC

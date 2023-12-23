@@ -65,62 +65,13 @@ esp_get_version:
     call    esp_cmd
 
 ;-----------------------------------------------------------------------------
-; Read null-terminated string
-;  Input: HL: String buffer address
-; Output: BC: String length
-; Clobbered: A
-;-----------------------------------------------------------------------------
-esp_read_string:
-    push    hl
-.loop
-    ld      bc,0
-    call    esp_get_byte
-    ld      (hl),a
-    or      a
-    jr      z,pop_hl_ret
-    inc     hl
-    inc     bc
-    jr      .loop
-pop_hl_ret:
-    pop     hl
-    ret
-
-;-----------------------------------------------------------------------------
 ; Close all files and directories
-; Input: A: File Descriptor
 ; Output: A: Result 
 ;-----------------------------------------------------------------------------
 esp_close_all:
     ld      a, ESPCMD_CLOSEALL
     call    esp_cmd
     jp      esp_get_result 
-
-;-----------------------------------------------------------------------------
-; esp_read_to_buff - Read bytes from ESP to string buffer
-; Input: HL: Address of String Buffer
-; Output: E: String Length, 
-;        DE: Address of Terminator
-;        HL: Buffer Address
-; Clobbers: B
-;-----------------------------------------------------------------------------
-esp_read_to_buff:
-    push    af                    ; Save A
-    ld      b,255                 ; Maximum Length, Length Counter
-    ld      d,h
-    ld      e,l
-.loop
-    call    esp_get_byte          ; Get character
-    ld      (de),a                ; Store in Buffer
-    or      a
-    jr      z,.done               ; Return if end of String
-    inc     de
-    djnz    .loop     
-.done
-    ex      de,hl                 ; HL = Terminator Address, DE = Buffer Address
-    sbc     hl,de                 ; HL = Length
-    ex      de,hl                 ; DE = Length, HL = Buffer Address
-    pop     af                    ; Restore Result
-    ret
 
 ;-----------------------------------------------------------------------------
 ; Read a byte from ESP to main memory
@@ -145,7 +96,6 @@ esp_read_byte:
     ld      b,a                   ; Return it in B
     xor     a                     ; Return No Error
     ret
-
 
 ;-----------------------------------------------------------------------------
 ; Read bytes from ESP to main memory
@@ -367,47 +317,6 @@ esp_write_bytes:
     ret
 
 ;-----------------------------------------------------------------------------
-; Write byte repeatedly
-; Input:  E: byte to write
-;         BC: number of times to write write it
-; Output: BC: number of bytes actually written
-; Clobbered registers: A, HL
-;-----------------------------------------------------------------------------
-esp_write_repbyte:
-    ld      a, ESPCMD_WRITE
-    call    esp_cmd
-
-    ; Send file descriptor
-    xor     a
-    call    esp_send_byte
-
-    ; Send write size
-    call    esp_send_bc
-
-    ; Send bytes
-    
-.loop:
-    ; Done sending? (BC=0)
-    ld      a, b
-    or      a, c
-    jr      z, .done
-
-    ld      a, e
-    call    esp_send_byte
-    dec     bc
-    jr      .loop
-
-.done:
-    ; Get result
-    call    esp_get_result 
-    ret     m
-
-    ; Get number of bytes actual written
-    call    esp_get_bc
-
-    ret
-
-;-----------------------------------------------------------------------------
 ; Send bytes from main memory to ESP32
 ; Input:  DE: start address
 ;         BC: number of bytes to write
@@ -536,10 +445,19 @@ esp_get_mouse:
 
 esp_set_keymode:
     call    page_map_auxrom
-    jp    espx_set_keymode
+    jp      espx_set_keymode
     
 esp_read_line:
     call    page_map_auxrom
     call    espx_read_line
+    jp      page_restore_bank3
+
+esp_read_to_buff:
+    call    page_map_auxrom
+    jp      espx_set_keymode
+
+esp_write_repbyte:
+    call    page_map_auxrom
+    call    espx_write_repbyte
     jp      page_restore_bank3
 

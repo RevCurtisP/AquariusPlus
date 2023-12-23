@@ -2,10 +2,6 @@
 ; espx.asm - ESP32 routines in Aux ROM
 ;=====================================================================================
 
-espx_get_result:
-    call    esp_get_result        ; Get result and return
-    jp      page_restore_bank3
-
 ;-----------------------------------------------------------------------------
 ; esp_get_datetime - Read date and time into string buffer
 ; Input: HL = Buffer Address
@@ -42,7 +38,6 @@ espx_get_mouse:
     xor     a                     ; Return success
 .return
     jp      page_restore_bank3
-
 
 ;-----------------------------------------------------------------------------
 ; Read CR, LF, CR/LF, or null terminated string
@@ -113,10 +108,53 @@ espx_read_buff:
 ;-----------------------------------------------------------------------------
 espx_set_keymode:
     push    a
-    ld      a,ESPCMD_KEYMODE     ; Issue DATETIME command
+    ld      a,ESPCMD_KEYMODE     ; Issue KEYMODE command
     call    esp_cmd
     pop     a
     call    esp_send_byte        ; Keyboard buffer mode 
     call    esp_get_byte         ; Get result
     or      a
     jp      page_restore_bank3
+
+
+;-----------------------------------------------------------------------------
+; Write byte repeatedly
+; Input:  E: byte to write
+;         BC: number of times to write write it
+; Output: BC: number of bytes actually written
+; Clobbered registers: A, HL
+;-----------------------------------------------------------------------------
+espx_write_repbyte:
+    ld      a, ESPCMD_WRITE
+    call    esp_cmd
+
+    ; Send file descriptor
+    xor     a
+    call    esp_send_byte
+
+    ; Send write size
+    call    esp_send_bc
+
+    ; Send bytes
+    
+.loop:
+    ; Done sending? (BC=0)
+    ld      a, b
+    or      a, c
+    jr      z, .done
+
+    ld      a, e
+    call    esp_send_byte
+    dec     bc
+    jr      .loop
+
+.done:
+    ; Get result
+    call    esp_get_result 
+    ret     m
+
+    ; Get number of bytes actual written
+    call    esp_get_bc
+
+    ret
+

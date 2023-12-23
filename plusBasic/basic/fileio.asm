@@ -19,7 +19,7 @@ file_load_binary:
     call    esp_read_bytes
     ret     m
     push    af
-    call    esp_close_all
+    call    dos_close
     pop     af
     or      a
     ret
@@ -63,7 +63,7 @@ file_load_paged:
     call    esp_read_paged        ;
     push    af                    ; Stack = Result, RtnAdr
     ld      a,l
-    call    dos_close_file
+    call    dos_close
     pop     af                    ; AF = Result; Stack = RtnAdr
     ret
 
@@ -205,7 +205,33 @@ file_save_binary:
     ret
 
 ;-----------------------------------------------------------------------------
-; Load Pallete
+; Save binary data from paged memory to file
+; Input: A: Page
+;       BC: length
+;       DE: destination address
+;       HL: string descriptor address
+; Output: A: result code
+;        BC: number of bytes actually read
+;        DE: next destination address 
+; Flags Set: S if I/O error
+; Clobbered: HL
+;-----------------------------------------------------------------------------
+file_save_paged:
+    push    af                    
+    call    dos_open_write
+    jp      m,discard_ret
+    pop     af
+    call    esp_write_paged
+    push    af
+    call    esp_close_all
+    pop     af
+    ret
+
+file_save_screen:
+    ret
+
+;-----------------------------------------------------------------------------
+; Save Pallete
 ; Input: A: Palette number
 ;       HL: String descriptor address
 ; Output: A: result code

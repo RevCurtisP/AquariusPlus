@@ -19,14 +19,16 @@ dos_change_dir:
 ; Output: A: result
 ;-----------------------------------------------------------------------------
 dos_close_all:
-
+    ld      a, ESPCMD_CLOSEALL
+    call    esp_cmd
+    jp      esp_get_result 
 
 ;------------------------------;-----------------------------------------------------------------------------
 ; Close file pointed to by descriptor
 ; Input: A: file descriptor
 ; Output: A: result
 ;-----------------------------------------------------------------------------
-dos_close_file:
+dos_close:
     push    af
     ld      a, ESPCMD_CLOSE
     call    esp_cmd
@@ -35,17 +37,17 @@ dos_close_file:
     jp      esp_get_result 
 
 ;-----------------------------------------------
-; dos_delete_file - Delete file/directory
+; dos_delete - Delete file/directory
 ; Input: BC: String Length
 ;        DE: String Address
 ; Output:  A: Result
 ; Clobbered: BC, DE
 ;-----------------------------------------------------------------------------
-dos_delete_file:
+dos_delete:
     ld      a, ESPCMD_DELETE      ; Set ESP Command
     jp      esp_cmd_string        ; Issue ESP command
 
-;--------------;-----------------------------------------------------------------------------
+;------------------------------------------------------------------------------------------
 ; dos_create_dir - Delete file/directory
 ; Input: BC: String Length
 ;        DE: String Address
@@ -112,13 +114,22 @@ dos_open_dir:
     jp      esp_cmd_string        ; Get FileSpec and Do Command
 
 ;-----------------------------------------------------------------------------
+; Open file for append to string descriptor
+; Input: HL: string descriptor
+; Output: A: file descriptor
+;-----------------------------------------------------------------------------
+dos_open_append:
+    ld      a, FO_WRONLY | FO_CREATE | FO_TRUNC
+    jr      dos_open
+
+;-----------------------------------------------------------------------------
 ; Open file for write to string descriptor
 ; Input: HL: string descriptor
 ; Output: A: file descriptor
 ;-----------------------------------------------------------------------------
 dos_open_write:
     ld      a, FO_WRONLY | FO_CREATE | FO_TRUNC
-    jr      dos_open_file
+    jr      dos_open
 
 ;-----------------------------------------------------------------------------
 ; Open file for read_only to string descriptor
@@ -134,7 +145,7 @@ dos_open_read:
 ;       HL: string descriptor
 ; Output: A: file descriptor
 ;-----------------------------------------------------------------------------
-dos_open_file:
+dos_open:
     push    af                    ; 
     ld      a,ESPCMD_OPEN
     call    esp_cmd
@@ -143,17 +154,14 @@ dos_open_file:
     call    esp_send_strdesc
     jp      esp_get_result 
 
-
-
-
 ;-----------------------------------------------------------------------------
-; dos_rename_dir - Delete file/directory
+; dos_rename - Rename file/directory
 ; Input: DE: New name string descriptor
 ;        HL: Old name string descriptor
 ; Output:  A: Result
 ; Clobbered: AF' BC, DE
 ;-----------------------------------------------------------------------------
-dos_rename_file:
+dos_rename:
     push    de                    ; Stack = NewDsc, RtnAdr
     ld      a, ESPCMD_RENAME      ; Set ESP Command
     call    esp_cmd               ; Issue ESP command 
@@ -166,7 +174,7 @@ dos_rename_file:
 ; dos_rewind_file
 ; Move to beginning of file
 ;-----------------------------------------------------------------------------
-dos_rewind_file:
+dos_rewind:
     push    bc
     push    de                    
     ld      bc,0                  ; Seeking position 0
@@ -174,51 +182,6 @@ dos_rewind_file:
     call    dos_seek
     pop     de
     pop     bc
-    ret
-
-;-----------------------------------------------------------------------------
-; Save binary data from main memory to file
-; Input: HL: Filename atring descriptor address
-; Uses: BINSTART: Save address
-;       BINLEN: Data ength
-; Clobbered registers: A, DE
-;-----------------------------------------------------------------------------
-dos_save_binary:
-    ; Create file
-    call    dos_open_write
-    ret     m
-
-    ; Write binary data
-    ld      de, (BINSTART)
-    ld      bc, (BINLEN)
-    call    esp_write_bytes
-
-    ; Close file
-    push    af
-    call    esp_close_all
-    pop     af
-    and     $01                   ; Clear zero and carry flags
-    ret
-
-;-----------------------------------------------------------------------------
-; Save binary data from paged memory to file
-; Input: A: Page
-;        HL: Filename atring descriptor address
-; Uses: BINSTART: Save address
-;       BINLEN: Data ength
-; Clobbered registers: A, DE
-;-----------------------------------------------------------------------------
-dos_save_paged:
-    push    af                    
-    call    dos_open_write
-    jp      m,discard_ret
-    pop     af
-    ld      de, (BINSTART)
-    ld      bc, (BINLEN)
-    call    esp_write_paged
-    push    af
-    call    esp_close_all
-    pop     af
     ret
 
 ;-----------------------------------------------------------------------------

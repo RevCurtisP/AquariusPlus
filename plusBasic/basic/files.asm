@@ -65,7 +65,7 @@ FN_CD:
 ;-----------------------------------------------------------------------------
 ST_DEL:
     call    get_string_direct
-    ld      iy,dos_delete_file
+    ld      iy,dos_delete
     call    aux_call
     jr      _check_error
 
@@ -101,7 +101,7 @@ ST_RENAME:
     push    de                    ; Stack = newdesc, TxtPtr
     call    FRETM2                ; HL = olddesc
     pop     de                    ; DE = newdesc, Stack = TxtPtr
-    ld      iy,dos_rename_file    ; Do the rename
+    ld      iy,dos_rename         ; Do the rename
     call    aux_call
     jr      _check_error          ; Restore textptr and check for error
 
@@ -403,6 +403,9 @@ ST_LOAD:
     ld      a,(hl)
     cp      SCRNTK
     jp      z,_load_screen
+
+    cp      STRNTK
+    jp      z,_load_string
 
     cp      FNTK
     jp      z,_load_fnkeys
@@ -753,6 +756,16 @@ _do_palette:
 
 
 
+; load pt3 "/music/songs1/dance.pt3"
+_load_string:
+    jp      GSERR
+
+    rst     CHRGET                ; Skip STRING
+    call    PTRGET                ; Parse string variable name
+    call    GETYPE                ; If not string
+    jp      nz,TMERR              ;   Type mismatch error
+
+
 ; load pt3 "/music/songs1/dontstop.pt3"
 ; load pt3 "/music/songs1/dance.pt3"
 _load_pt3:
@@ -938,8 +951,10 @@ ST_SAVE:
     ex      (sp),hl                 ; HL = String Descriptor, Stack = Text Pointer
 
     ; Do the save
+    ld      bc,(BINLEN)
+    ld      de,(BINSTART)
     jr      c,.save_paged
-    ld      iy,dos_save_binary
+    ld      iy,file_save_binary
     call    aux_call
     jp      m,_dos_error
     pop     hl
@@ -956,7 +971,7 @@ ST_SAVE:
 
 .save_paged
     call    check_paged_address   ; Verify pages addres is between 0 and 16383
-    ld      iy,dos_save_paged
+    ld      iy,file_save_paged
     call    aux_call
     jp      m,_dos_error
     jp      z,IQERR

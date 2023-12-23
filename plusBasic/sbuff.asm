@@ -2,6 +2,8 @@
 ; Extended BASIC Buffer Routines
 ;=============================================================================
 
+;;To do: Change to use main memory string buffer
+
 ;-----------------------------------------------------------------------------
 ; Get Length of String in String Buffer
 ; Output: A,BC: String length, Flag set accordingly

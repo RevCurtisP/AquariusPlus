@@ -1,6 +1,8 @@
 ;-----------------------------------------------------------------------------
 ; Graphic Routines Jump Table
 ;-----------------------------------------------------------------------------
+;;ToDo: Move graphics routines into aux rom and jump table into jump_aux
+
 gfx_jump_table
     jp      gfx_startup           
     jp      gfx_init              

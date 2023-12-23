@@ -45,7 +45,7 @@ close_bas_fdesc:
     ld      a,(BAS_FDESC)         ; Get File Descriptor in Use
     or      a                     ; If Valid Descriptor
     ret     m
-    call    dos_close_file        ;   Close the File
+    call    dos_close             ;   Close the File
 init_bas_fdesc:
     ld      a,128
     ld      (BAS_FDESC),a         ;   Set to No File

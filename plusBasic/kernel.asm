@@ -68,14 +68,4 @@ jump_table:
     jp      page_next_bank1       ; Map next Page into Bank 1
     jp      page_next_bank3       ; Map next Page into Bank 3 
 
-; sbuff.asm
-    jp      sbuff_create_string   ; Create BASIC string from buffer
-    jp      sbuff_get_len         ; Get Length of String in String Buffer
-    jp      sbuff_read_byte       ; Read Byte from String Buffer
-    jp      sbuff_read_word       ; Read Word from String Buffer
-    jp      sbuff_init            ; Initialize String Buffer
-    jp      sbuff_write_byte      ; Write Byte to String Buffer
-    jp      sbuff_write_bc        ; Write BC to String Buffer
-    jp      sbuff_write_de        ; Write DE to String Buffer
-
 _end_jump_table:
