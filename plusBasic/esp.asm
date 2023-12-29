@@ -63,6 +63,7 @@ esp_get_result:
 esp_get_version:
     ld      a, ESPCMD_VERSION
     call    esp_cmd
+    jp      esp_read_buff
 
 ;-----------------------------------------------------------------------------
 ; Close all files and directories
@@ -452,9 +453,10 @@ esp_read_line:
     call    espx_read_line
     jp      page_restore_bank3
 
-esp_read_to_buff:
+esp_read_buff:
     call    page_map_auxrom
-    jp      espx_set_keymode
+    call    espx_read_buff
+    jp      page_restore_bank3
 
 esp_write_repbyte:
     call    page_map_auxrom

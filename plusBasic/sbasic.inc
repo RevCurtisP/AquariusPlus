@@ -226,6 +226,8 @@ STRLT2      equ $0E63   ; Do STRLTI with delimiters in B and C
 PUTNEW      equ $0E7E   ; Set Pointer to Temporary String
 STROUT:     equ $0E9D   ; Print null-terminated string in HL
 STRPRT      equ $0EA0   ; Print string with descriptor in FACLO
+MOVSTA      equ $0FBC   ; Copy A bytes from [BC] to [DE]
+MOVSTR      equ $0FBD   ; Copy L bytes from [BC] to [DE]
 FRESTR      equ $0FC6   ; Free tempory string, return string descriptor address in HL
 FREFAC      equ $0FC9   ; Free tempory string with descriptor in FAC
 FRETM2      equ $0FCC   ; Free up temporary in FACLO

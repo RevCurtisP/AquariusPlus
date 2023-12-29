@@ -37,7 +37,7 @@ TBLCMDS:
     db $80 + 'H',"EX$"            ; $E3
     db $80 + 'R',"ENAME"          ; $E4
     db $80 + 'D',"ATE"            ; $E5   Replaces MX-BASIC keyword DTM$
-    db $80 + ' '                  ; $E6             
+    db $80 + 'D',"EC"             ; $E6             
     db $80 + 'M',"OD"             ; $E7             
     db $80 + 'D',"EEK"            ; $E8   
     db $80 + 'E',"RR"             ; $E9             
@@ -79,7 +79,7 @@ EXTCMDS:
     db $80 + 'A',"RGS"            ; $8A             
     db $80 + 'S',"AMPLE"          ; $8B             
     db $80 + 'P',"T3"             ; $8C             
-    db $80 + ' '                  ; $8D             
+    db $80 + 'P',"IXEL"           ; $8D             
     db $80 + ' '                  ; $8E unused (REM)             
     db $80 + ' '                  ; $8F             
     ; Primary Tokens grouped together, so extended dispatch can use DEC A
@@ -138,6 +138,7 @@ TEXTK     equ     $89
 ARGSTK    equ     $8A
 SAMPTK    equ     $8B
 PT3TK     equ     $8C
+PIXTK     equ     $8D
 RESETK    equ     $90
 VERTK     equ     $92
 FILLTK    equ     $93

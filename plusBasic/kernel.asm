@@ -28,7 +28,7 @@ jump_table:
     jp      esp_get_bc            ; Get word into BC
     jp      esp_get_de            ; Get word into DE
     jp      esp_get_long          ; Get long into BC,DE
-    jp      esp_read_to_buff      ; Read bytes to string buffer
+    jp      esp_read_buff         ; Read bytes to string buffer
     jp      esp_read_bytes        ; Read bytes to main memory
     jp      esp_read_paged        ; Read bytes to paged memory
     jp      esp_send_byte         ; Send byte in A

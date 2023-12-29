@@ -31,6 +31,22 @@ FN_DATE:
     jp      TIMSTR                ; Create and return temporary string
 
 ;-----------------------------------------------------------------------------
+; Convert hexadecimal string to integer
+; DEC(hexstring$)
+;-----------------------------------------------------------------------------
+; ?DEC("FFFF")
+FN_DEC:
+    rst     CHRGET            ; Skip DEC
+    call    PARCHK
+    call    push_hl_labbck
+    call    free_addr_len   ; Free string and get text 
+    dec     de              ; Back up Text Pointer
+    xor     a               ; Set A to 0
+    inc     c               ; Bump Length for DEC C
+    ex      de,hl
+    jp      eval_hex_int    ; Convert the Text
+    
+;-----------------------------------------------------------------------------
 ; GET functions stub
 ;-----------------------------------------------------------------------------
 FN_GET:
@@ -478,6 +494,7 @@ FN_VER:
     ex      (sp),hl               ; HL = StrFlg, Stack = TxtPtr, RetAdr
     push    hl                    ; Stack = StrFlg, TxtPtr, RetAdr
     ld      hl,FBUFFR
+    ld      bc,14
     call    jump_ix               ; Get version string
 .return_ver
     pop     af                    ; F = StrFlg, 

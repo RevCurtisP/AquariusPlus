@@ -146,6 +146,7 @@ tokens = {
     0xE3: "HEX$",
     0xE4: "RENAME",
     0xE5: "DATE", 
+    0xE6: "DEC",
     0xE7: "MOD",
     0xE8: "DEEK",
     0xE9: "ERR",
@@ -181,11 +182,13 @@ xtokens = {
     0x8A: "ARGS",               
     0x8B: "SAMPLE",               
     0x8C: "PT3",
+    0x8D: "PIXEL",
     0x90: "RESET",
     0x92: "VER",
     0x93: "FILL",
     0x94: "COMPARE",
-    0x95: "PLAY"
+    0x95: "PLAY",
+    0x96: "APPEND"
 }
 
 with open(args.input, "rb") as f:

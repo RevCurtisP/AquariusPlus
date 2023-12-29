@@ -241,7 +241,7 @@ sys_mem_compare:
 ;-----------------------------------------------------------------------------
 ; Convert null-terminated Version string to BCD integer
 ; Input: HL: Version String Address - ['V']major.minor[letter]
-; Output: C,D,E = Major,Minor,Letter
+; Output: C,D,E = Major,Minor,Letter (SYSROM and plusBASIC)
 ;         HL = Address after Version string
 ; Clobbered: A, B
 ;-----------------------------------------------------------------------------
@@ -252,13 +252,13 @@ sys_num_ver:
     jr      nz,.notv
     inc     hl
 .notv
-    call    asc_to_bcd_byte       ; Get Major number
+    call    asc_to_bcd            ; Get Major number
     ld      c,e                   ;   and put in C
     ld      de,0                  ; Init minor to 0
     cp      '.'                   ; If no dot
     ret     nz                    ;   Return
     inc     hl                    ; Skip .
-    call    asc_to_bcd_byte       ; Get Minor number
+    call    asc_to_bcd            ; Get Minor number
     ld      d,e                   ;   and put in D
     ld      e,0                   ; Init letter to none
     call    uppercase_char        ; Capitalize 
@@ -268,6 +268,8 @@ sys_num_ver:
     ret     nc                    
     ld      e,a                   ; Else put in E
     ret
+; Convert YY-MM-DDrRR      CCCCCCCC DDDDDDDD EEEEEEEE   
+;                           YYYYYYYM MMMDDDD DRRRRRRR
     
 ;-----------------------------------------------------------------------------
 ; Convert ASCII to BCD
@@ -277,7 +279,7 @@ sys_num_ver:
 ;        HL: Address after last digit 
 ; Clobbers: A, B
 ;----------------------------------------------------------------------------
-asc_to_bcd_byte:
+asc_to_bcd:
     ld      de,0                  ; Init Result
     dec     hl                    ; Back up for chrget
 .loop
@@ -292,6 +294,38 @@ asc_to_bcd_byte:
     or      e
     ld      e,a                   ; Move digit into bottom nybble                  
     jr      .loop
+
+
+;-----------------------------------------------------------------------------
+; Convert BCD to Binary
+;  Input: DE: BCD integer
+; Output: A: Character after last digit
+;        DE: Binary result Result
+; Clobbers: A
+;----------------------------------------------------------------------------
+bcd_to_bin:
+    push    hl
+    ld      hl,0                  ; Init binary result
+    ld      a,d                   ; A = First digit
+
+
+
+;-----------------------------------------------------------------------------
+; HL = HL * 10
+mult_hl_10:
+    push    bc
+    ld      b,h                   ; BC = HL
+    ld      c,l
+    sla     l                     ; HL*4
+    rl      d
+    sla     l
+    rl      d                     
+    add     hl,bc                 ; HL*4+1
+    sla     l
+    rl      d                     ; HL*(4+1)*2
+    pop     bc
+    ret
+
 
 
 pt3_reset:

@@ -2594,7 +2594,7 @@ CSLOOP: ld      a,e               ;[M80] BOTH STRINGS ENDED
 ;;CONVERT NUMBER TO STRING
 STR:    call    CHKNUM            ;[M80] IS A NUMERIC
         call    FOUT              ;[M80] DO ITS OUTPUT
-        call    STRLIT            ;[M80] SCAN IT AND TURN IT INTO A STRING
+TIMSTR: call    STRLIT            ;[M80] SCAN IT AND TURN IT INTO A STRING
         call    FREFAC            ;[M80] FREE UP THE TEMP
         ld      bc,FINBCK         ;
         push    bc                ;[M80] SET UP ANSWER IN NEW TEMP
@@ -2864,7 +2864,7 @@ MOVINS: pop     hl                ;[M80] GET RETURN ADDR
         ld      c,(hl)            ;[M80] [B,C]=POINTER AT STRING DATA
         inc     hl                ;
         ld      b,(hl)            ;
-        ld      l,a               ;[M80] [L]=STRING LENGTH
+MOVSTA: ld      l,a               ;[M80] [L]=STRING LENGTH
 MOVSTR: inc     l                 ;;Copying [L] Bytes from [BC] to [DE]
 MOVLP:  dec     l                 ;[M80] SET CC'S
         ret     z                 ;[M80] 0, NO BYTE TO MOVE

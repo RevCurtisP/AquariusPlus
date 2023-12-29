@@ -82,7 +82,7 @@
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.20c",0
+    db "v0.20d",0
 plus_len   equ   $ - plus_text
 
 auto_cmd:
@@ -927,7 +927,6 @@ aux_line_print:
 
     ; Graphics modules
     include "gfx.asm"           ; Main graphics module
-    include "common.asm"        ; Shared graphics subroutines
     include "screen.asm"        ; Text screen graphics subroutines
     include "sprite.asm"        ; Sprite graphics module
     include "tile.asm"          ; Tile graphics module
