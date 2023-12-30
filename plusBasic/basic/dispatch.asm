@@ -59,7 +59,9 @@ extended_statement:
 extended_function:
     inc     hl                  ; Skip extended prefix
     ld      a,(hl)              ; Get Extended token
-    sub     VERTK               ; $92 VER
+    sub     KEYTK               ; $86 KEY
+    jp      z,FN_KEY
+    sub     VERTK-KEYTK         ; $92 VER
     jp      z,FN_VER
     dec     a                   ; $93 FILL
     dec     a                   ; $94 COMPARE

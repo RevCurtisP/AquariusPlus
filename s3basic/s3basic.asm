@@ -1793,7 +1793,7 @@ HOOK29: byte    29                ;;                                          09
         sub     PLUSTK            ;[M80] SUBTRACT OFFSET FOR FIRST ARITHMETIC
         ld      e,a               ;[M80] MUST MULTIPLY BY 3
         jr      nz,NTPLUS         ;[M80] NOT ADDITION OP
-        ld      a,(VALTYP)        ;[M80] SEE IF LEFT PART IS STRING
+        ld      a,(VALTYP)        ;
         dec     a                 ;[M80] SEE IF LEFT PART IS STRING
         ld      a,e               ;[M80] REFETCH OP-VALUE
         jp      z,CAT             ;[M80] MUST BE CAT
@@ -5384,7 +5384,7 @@ ifdef addkeyrows
 ;;;
 ;;;
 ;;;The Decode routine requires 4 key tables: normal, Shift,
-;;;Control, and Alt. The Meta key produces and ASCC character.
+;;;Control, and Alt. The Meta key produces an ASCII character.
 ;;;Each Key Table is 64 bytes long and they must be consecutive
 ;;;Each line of a Key Table is 8 bytes long instead of 6 bytes.
 ;;;
