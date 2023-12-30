@@ -5,14 +5,14 @@
 
 ;-----------------------------------------------------------------------------
 ; USE CHRSET - Change Character Set
-; Syntax: 
+; Syntax:
 ;-----------------------------------------------------------------------------
 ST_USECHR:
     rst     CHRGET                ; Skip CHR
     rst     SYNCHR                ; Require SET
     byte    SETTK
     call    GETBYT                ; Evaluate Argument
-    cp      3                    
+    cp      3
     jp      nc,FCERR
     push    hl                    ; Stack = TxtPtr, RtnAdr
     call    select_chrset         ;
@@ -111,12 +111,12 @@ ST_SETPALETTE:
 ST_SCREEN:
     or      a                     ; If token
     jp      m,.is_token           ;   Process it
-    
+
     push    hl
     ld      a,BUFSCRN40           ; Save current text screen to buffer
     ld      hl,SCRN40BUF
-    ld      ix,screen_save           
-    call    aux_rom_call          
+    ld      ix,screen_save
+    call    aux_rom_call
     pop     hl
 
     in      a,(IO_VCTRL)
@@ -131,23 +131,23 @@ ST_SCREEN:
     call    get_byte_optional     ; Do Sprites
     ld      b,VCTRL_SPR_EN
     call    nc,.update_bit
-    
+
     call    get_byte_optional     ; Do Priority
     ld      b,VCTRL_TEXT_PRIO
     call    nc,.update_bit
-    
+
     call    get_byte_optional     ; Do Border Remap
     ld      b,VCTRL_REMAP_BC
     call    nc,.update_bit
-    
+
     ld      a,c
     out     (IO_VCTRL),a          ; Write back out
 
     push    hl
     ld      a,BUFSCRN40           ; Restore current text screen from buffer
     ld      hl,SCRN40BUF
-    ld      ix,screen_restore        ; 
-    call    aux_rom_call          
+    ld      ix,screen_restore        ;
+    call    aux_rom_call
     pop     hl
 
     jp      set_linlen            ; Set TTYWID to screen columns and return
@@ -174,7 +174,7 @@ ST_SCREEN:
     ld      a,$3E                 ; A = Text Mode mask
     jr      .do_bit               ; Mask, combine, and return
 .do_gfx_mode
-    cp      4                     
+    cp      4
     jp      nc,FCERR              ; Error if > 3
     add     a,a                   ; Shift 1 bit left
     ld      b,a                   ; B = Gfx Mode
@@ -187,7 +187,7 @@ ST_SCREEN:
 .not_zero
     xor     $FF                   ; A = Bit Mask
 .do_bit
-    and     c                     ; A = Masked VCTRL     
+    and     c                     ; A = Masked VCTRL
     or      b                     ; A = New VCTRL
     ld      c,a                   ; C = New VCTRL
     ret
@@ -216,7 +216,7 @@ ST_SCREEN_RESTORE:
     ld      a,SWPSCRN40
     ld      hl,SCRN40SWP
     ld      ix,screen_restore
-    call    aux_rom_call          
+    call    aux_rom_call
     pop     hl                    ; HL = TxtPtr; HL = RtnAdr
     ret
 
@@ -228,8 +228,8 @@ ST_SCREEN_SAVE:
     push    hl                    ; Stack = TxtPtr, RtnAdr
     ld      a,SWPSCRN40
     ld      hl,SCRN40SWP
-    ld      ix,screen_save           
-    call    aux_rom_call          
+    ld      ix,screen_save
+    call    aux_rom_call
     pop     hl                    ; HL = TxtPtr; HL = RtnAdr
     ret
 
@@ -240,8 +240,8 @@ ST_SCREEN_SWAP:
     rst     CHRGET                ; Skip SWAP
     push    hl                    ; Stack = TxtPtr, RtnAdr
     ld      hl,SCRN40SWP
-    ld      ix,screen_swap           
-    call    aux_rom_call          ; Do the Copy  
+    ld      ix,screen_swap
+    call    aux_rom_call          ; Do the Copy
     pop     hl                    ; HL = TxtPtr; HL = RtnAdr
     ret
 
@@ -273,17 +273,21 @@ ST_SET_TILE:
 ; FILL SCREEN (col,row)-(col,row) character, fgcolor, bgcolor
 ;-----------------------------------------------------------------------------
 ;FILL SCREEN (5,10) - (25,15) "X",7,0
+;FILL SCREEN (5,10) - (25,15),"X",7,0
 ;FILL SCREEN (20,8) - (38,20) $86,5,0
 ;FILL SCREEN COLOR 1,7
 ST_FILL_SCREEN:
     rst     CHRGET                ; Skip SCREEN
     cp      '('
     jr      nz,.fill_screen_ext
-    call    scan_rect             ; B = BgnCol, C = EndCol, D = BgnRow, E= EndRow  
+    call    scan_rect             ; B = BgnCol, C = EndCol, D = BgnRow, E= EndRow
     push    de                    ; Stack = Rows, RtnAdr
     push    bc                    ; Stack = Cols, Rows, RtnAdr
+    ld      a,(hl)                ; Reget current character
+    cp      ','                   ; If comma
+    call    z,CHRGTR              ;   Eat it
     call    FRMEVL                ; Evaluate Character
-    call    GETYPE                
+    call    GETYPE
     jr      z,.string             ; If numeric
     call    CONINT                ;   Convert to byte
     jr      .gotit                ; Else
@@ -291,11 +295,11 @@ ST_FILL_SCREEN:
     push    hl                    ; Stack = TxtPtr, Cols, Rows, RtnAdr
     call    free_addr_len         ; BC = StrLen, DE = StrAdr
     pop     hl                    ; HL = TxtPtr; Stack = Cols, Rows, RtnAdr
-    xor     a 
-    or      c                     
+    xor     a
+    or      c
     jp      z,FCERR               ; Error if LEN = 0
     ld      a,(de)                ;   Get first character
-.gotit    
+.gotit
     push    af                    ; Stack = Char, Cols, Rows, RtnAdr
     SYNCHK  ','                   ; Require comma
     call    get_screen_colors
@@ -316,7 +320,7 @@ ST_FILL_SCREEN:
     byte    XTOKEN
     rst     SYNCHR
     byte    CHRTK
-    call    GETBYT              
+    call    GETBYT
     ld      b,a
     push    hl
     call    screen_fill_chr
@@ -334,8 +338,8 @@ ST_FILL_SCREEN:
     call    CHRGT2
     ret     z
     jr      .fill_screen_ext
-    
-    
+
+
 
 ;-----------------------------------------------------------------------------
 ; FILL TILEMAP TILE tile# ATTR attrs PALETTE palette#
@@ -349,7 +353,7 @@ ST_FILL_TILE:
     byte    MAPTK
     cp      '('
     jr      nz,.fill_tile_all
-    call    scan_rect             ; B = BgnCol, C = EndCol, D = BgnRow, E= EndRow  
+    call    scan_rect             ; B = BgnCol, C = EndCol, D = BgnRow, E= EndRow
     jr      .get_props
 .fill_tile_all
     ld      bc,63                 ; BgnRow = 0, EndRow = 31
@@ -376,7 +380,7 @@ ST_GET_SCREEN:
     rst     CHRGET                ; Skip SCREEN
     call    _screen_suffix        ; Check for CHR and ATTR
     push    bc                    ; Stack = Mode, RtnAdr
-    call    scan_rect             ; B = BgnCol, C = EndCol, D = BgnRow, E = EndRow  
+    call    scan_rect             ; B = BgnCol, C = EndCol, D = BgnRow, E = EndRow
     SYNCHK  ','                   ; Require comma
     rst     SYNCHR
     byte    MULTK                 ; Require * - for now
@@ -405,7 +409,7 @@ ST_GET_TILEMAP:
     rst     CHRGET                ; Skip SCREEN
     rst     SYNCHR                ; Require MAP
     byte    MAPTK
-    call    scan_rect             ; B = BgnCol, C = EndCol, D = BgnRow, E = EndRow  
+    call    scan_rect             ; B = BgnCol, C = EndCol, D = BgnRow, E = EndRow
     SYNCHK  ','                   ; Require comma
     rst     SYNCHR
     byte    MULTK                 ; Require * - for now
@@ -424,7 +428,7 @@ ST_GET_TILEMAP:
 ; Syntax: PUT SCREEN (x1,y1),*arrayvar
 ;----------------------------------------------------------------------------
 ;PUT SCREEN (4,4),*A
-ST_PUT_SCREEN: 
+ST_PUT_SCREEN:
     rst     CHRGET                ; Skip SCREEN
     call    _screen_suffix        ; Check for CHR and ATTR
     push    bc                    ; Stack = Mode, RtnAdr
@@ -446,7 +450,7 @@ ST_PUT_SCREEN:
     ret
 
 _screen_suffix:
-    ld      b,3                   
+    ld      b,3
     cp      XTOKEN                ; If Not Extended Token
     ret     nz                    ;   Return 3 (SCREEN+COLOR)
     rst     CHRGET                ; Else Eat Token
@@ -458,7 +462,7 @@ synchk_color:
     rst     SYNCHR                ; Else
     byte    ATTRTK                ;   Require ATTRS
     ret
-    
+
 ;-----------------------------------------------------------------------------
 ; PUT TILEMAP (col,row),*arrayvar
 ;-----------------------------------------------------------------------------
@@ -504,7 +508,7 @@ ST_SET_TILEMAP:
     jr      z,_tilemap_offset     ;   Do SET TILEMAP OFFSET
     jp      SNERR
 
-;ToDo: get TileMap (X,Y) working 
+;ToDo: get TileMap (X,Y) working
 ;Note: TILE is not an extended token, the rest are
 _get_tile_props:
     rst     SYNCHR                ; Require TILE
@@ -719,7 +723,7 @@ FN_GETPALETTE:
     ld      bc,32                 ; BC = StrLen
     pop     hl                    ; HL = Palette#; Stack = DummyAdr, TxtPtr
     ld      a,l
-    ld      iy,palette_get           
+    ld      iy,palette_get
     call    aux_call
     ld      a,1
     ld      (VALTYP),a            ; Set Type to String
@@ -955,7 +959,7 @@ FN_RGB:
     ex      de,hl                 ; HL = String Text Address
     pop     de                    ; DE = RGB; Stack = TxtPtr, RtnAdr
     ld      (hl),e                ; Store LSB
-    inc     hl                    
+    inc     hl
     ld      (hl),d                ; Store MSB
     jp      PUTNEW                ; Set Pointer to StringDesc and return
 

@@ -388,26 +388,26 @@ ST_SET:
     cp      COLTK                 ; $F5
     jp      z,ST_SETCOLOR
     cp      FNTK                  ; $A2
-    jr      z,ST_SETFNKEY
+    jr      z,ST_SET_FNKEY
     cp      SAVETK                ; $DC
     jp      z,ST_SET_SAVE
     rst     SYNCHR                ; Must be extended Token
     byte    XTOKEN                ; $FE
-    cp      SPRITK
+    cp      SPRITK                ; $84
     jp      z,ST_SET_SPRITE
-    cp      PALETK
+    cp      PALETK                ; $81
     jp      z,ST_SETPALETTE
-    cp      FASTK      
-    jr      z,ST_SETFAST
-    cp      KEYTK      
-    jr      z,ST_SETKEY
+    cp      FASTK                 ; $88
+    jr      z,ST_SET_FAST
+    cp      KEYTK                 ; $86
+    jr      z,ST_SET_KEY
     jp      SNERR
 
 ;-----------------------------------------------------------------------------
 ; Set keybuffer mode
 ; Syntax: SET KEY mode
 ;-----------------------------------------------------------------------------
-ST_SETKEY:
+ST_SET_KEY:
     rst     CHRGET                ; Skip KEY
     call    GETBYT                ; Get key mode
     push    hl
@@ -420,7 +420,7 @@ ST_SETKEY:
 ; Set Fast Mode
 ; Syntax: SET FAST ON/OFF
 ;-----------------------------------------------------------------------------
-ST_SETFAST:
+ST_SET_FAST:
     call    get_on_off            ; A = $FF if ON, $00 if OFF
     jp      sys_turbo_mode
 
@@ -429,7 +429,7 @@ ST_SETFAST:
 ; Syntax: SET FNKEY TO string$
 ;-----------------------------------------------------------------------------
 ; SET FNKEY 3 TO "CD"+CHR$(13)
-ST_SETFNKEY:
+ST_SET_FNKEY:
     rst     CHRGET                ; Skip FN
     rst     SYNCHR
     byte    XTOKEN                ; Require KEY
