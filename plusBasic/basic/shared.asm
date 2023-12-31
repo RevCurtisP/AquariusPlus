@@ -325,6 +325,27 @@ get_byte200:
     ret
 
 ;-----------------------------------------------------------------------------
+; Parse Character as byte or string
+; Output: A = Character ASCII value
+; Clobbers: BC,DE
+;-----------------------------------------------------------------------------
+get_char:
+    call    FRMEVL                ; Evaluate Character
+    call    GETYPE
+    jr      z,.string             ; If numeric
+    call    CONINT                ;   Convert to byte
+    ret                           ; Else
+.string
+    push    hl                    ; Stack = TxtPtr, Cols, Rows, RtnAdr
+    call    free_addr_len         ; BC = StrLen, DE = StrAdr
+    pop     hl                    ; HL = TxtPtr; Stack = Cols, Rows, RtnAdr
+    xor     a
+    or      c
+    jp      z,FCERR               ; Error if LEN = 0
+    ld      a,(de)                ;   Get first character
+    ret
+
+;-----------------------------------------------------------------------------
 ; Parse 9 bit Integer
 ; Output: DE = Integer
 ; Clobbers: A,BC

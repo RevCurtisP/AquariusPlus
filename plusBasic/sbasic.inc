@@ -126,6 +126,8 @@ S3VER       equ $0003   ; S3 Version in BCD: YY,MM,DD,Rev
 JUMPIX      equ $0034   ; Jump to address in IX
 NOHOOK      equ $003B   ; Default Hook routine
 RESET:      equ $0089   ; Display start up screen 
+RESETC:     equ $008C   ; RESET alternate entry point
+COLDST      equ $00FD   ; Do cold start
 CLDCON      equ $0138   ; Finish S3BASIC cold boot
 HEDING      equ $015F   ; Microsoft copyright message
 INITFF:     equ $0153   ; Initialize I/O Port 255 

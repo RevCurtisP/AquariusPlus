@@ -269,77 +269,55 @@ ST_SET_TILE:
     ret
 
 ;-----------------------------------------------------------------------------
-; FILL SCREEN (col,row)-(col,row) character$, fgcolor, bgcolor
-; FILL SCREEN (col,row)-(col,row) character, fgcolor, bgcolor
+; FILL SCREEN [(col,row)-(col,row)] [CHR chr|chr$] [COLOR fgcolor, bgcolor]
 ;-----------------------------------------------------------------------------
-;FILL SCREEN (5,10) - (25,15) "X",7,0
-;FILL SCREEN (5,10) - (25,15),"X",7,0
-;FILL SCREEN (20,8) - (38,20) $86,5,0
-;FILL SCREEN COLOR 1,7
 ST_FILL_SCREEN:
+    ld      iy,screen_size
+    call    aux_call              ; Default to entire screen
     rst     CHRGET                ; Skip SCREEN
-    cp      '('
-    jr      nz,.fill_screen_ext
-    call    scan_rect             ; B = BgnCol, C = EndCol, D = BgnRow, E= EndRow
+    cp      '('                   ; If open paren
+    call    z,scan_rect           ;   B = BgnCol, C = EndCol, D = BgnRow, E= EndRow
+.params
     push    de                    ; Stack = Rows, RtnAdr
     push    bc                    ; Stack = Cols, Rows, RtnAdr
-    ld      a,(hl)                ; Reget current character
-    cp      ','                   ; If comma
-    call    z,CHRGTR              ;   Eat it
-    call    FRMEVL                ; Evaluate Character
-    call    GETYPE
-    jr      z,.string             ; If numeric
-    call    CONINT                ;   Convert to byte
-    jr      .gotit                ; Else
-.string
-    push    hl                    ; Stack = TxtPtr, Cols, Rows, RtnAdr
-    call    free_addr_len         ; BC = StrLen, DE = StrAdr
-    pop     hl                    ; HL = TxtPtr; Stack = Cols, Rows, RtnAdr
-    xor     a
-    or      c
-    jp      z,FCERR               ; Error if LEN = 0
-    ld      a,(de)                ;   Get first character
-.gotit
-    push    af                    ; Stack = Char, Cols, Rows, RtnAdr
-    SYNCHK  ','                   ; Require comma
-    call    get_screen_colors
-    pop     de                    ; D = Char; Stack = Cols, Rows, RtnAdr
-    ld      e,a                   ; DE = ChrClr
-    pop     bc                    ; BC = Cols; Stack = Rows, RtnAdr
-    ex      (sp),hl               ; HL = Rows; Stack = TxtPtr, RtnAdr
-    ex      de,hl                 ; DE = Rows, HL = ChrClr
-    call    screen_fill           ; In: B=BgnCol, C=EndCol, D=BgnRow, E=EndRow, HL: ChrClr
-    jp      c,FCERR
-    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
-    ret
-
-.fill_screen_ext:
-    cp      COLTK
-    jr      z,.fill_screen_color
+    ld      a,(hl)                ; Reget next character
+    cp      XTOKEN                ;
+    jr      nz,.notx
+    inc     hl
     rst     SYNCHR
-    byte    XTOKEN
-    rst     SYNCHR
-    byte    CHRTK
-    call    GETBYT
-    ld      b,a
-    push    hl
-    call    screen_fill_chr
-    jr      .fill_screen_next
-.fill_screen_color
-    rst     CHRGET                ; Skip COL`
-    rst     SYNCHR                ; Require OR
+    byte    CHRTK                 ; If CHR
+    call    get_char              ;   Parse fill character
+    pop     bc                    ;   BC = Cols; Stack = Rows, RtnAdr
+    pop     de                    ;   DE = Rows; Stack = RtnAdr
+    push    de                    ;   Stack = Rows, RtnAdr
+    push    bc                    ;   Stack = Cols, Rows, RtnAdr
+    push    hl                    ;   Stack = TxtPtr, Cols, Rows, RtnAdr
+    ld      h,0                   ;   H = Fill Text
+    ld      l,a                   ;   L = Fill Byte
+    ld      iy,screen_fill
+    call    aux_call              ;   Do the fill
+    call    aux_call              ;   Do the fill
+    pop     hl                    ;   HL = TxtPtr; Stack = Cols, Rows, RtnAdr
+    call    CHRGT2                ;   Reget next character
+    jr      nz,.notx              ;   If terminator
+    pop     bc                    ;      Stack = Rows, RtnAdr
+    pop     de                    ;      Stack = RtnAdr
+    ret                           ;      Return
+.notx
+    rst     SYNCHR                ; Else
+    byte    COLTK
+    rst     SYNCHR                ;   Require color
     byte    ORTK
-    call    get_screen_colors
-    ld      c,a
-    push    hl
-    call    screen_fill_color
-.fill_screen_next:
-    pop     hl
-    call    CHRGT2
-    ret     z
-    jr      .fill_screen_ext
-
-
+    call    get_screen_colors     ;   A = Colors
+    pop     bc                    ;   BC = Cols; Stack = Rows, RtnAdr
+    pop     de                    ;   DE = Rows; Stack = RtnAdr
+    push    hl                    ;   Stack = TxtPtr, Cols, Rows, RtnAdr
+    ld      h,-1                  ;   H = Fill Text
+    ld      l,a                   ;   L = Fill Byte
+    ld      iy,screen_fill
+    call    aux_call              ;   Do the fill
+    pop     hl                    ;   HL = TxtPtr; Stack = Cols, Rows, RtnAdr
+    ret
 
 ;-----------------------------------------------------------------------------
 ; FILL TILEMAP TILE tile# ATTR attrs PALETTE palette#
@@ -393,7 +371,8 @@ ST_GET_SCREEN:
     pop     bc                    ; B = BgnCol, C = EndCol; Stack = Rows, RtnAdr
     ex      (sp),hl               ; HL = Rows; Stack = TxtPtr, RtnAdr
     ex      de,hl                 ; D = BgnRow, E = EndRow, HL = AryAdr
-    call    screen_get            ; In: B=BgnCol, C=EndCol, D=BgnRow, E=EndRow, HL: AryAdr
+    ld      iy,screen_get
+    call    aux_call              ; In: B=BgnCol, C=EndCol, D=BgnRow, E=EndRow, HL: AryAdr
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     ret
 
@@ -445,7 +424,8 @@ ST_PUT_SCREEN:
     pop     bc                    ; C = Col; Stack = Row, RtnAdr
     ex      (sp),hl               ; HL = Row; Stack = TxtPtr, RtnAdr
     ex      de,hl                 ; E = Row, HL = AryAdr
-    call    screen_put            ; In: C=Col, E=End, HL: AryAdr
+    ld      iy,screen_put
+    call    aux_call              ; In: C=Col, E=End, HL: AryAdr
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     ret
 
@@ -458,7 +438,6 @@ _screen_suffix:
     cp      CHRTK                 ; If CHR
     jp      z,CHRGTR              ;   Eat it and return 1 (SCREEN)
     ld      b,2
-synchk_color:
     rst     SYNCHR                ; Else
     byte    ATTRTK                ;   Require ATTRS
     ret

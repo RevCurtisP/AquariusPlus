@@ -129,6 +129,7 @@ XINCHR  equ     $200F   ;; | Alternate keyboard read
 SOUNDX  equ     $2012   ;; | Adjust SOUNDS delay counter in turbo mode
 TTYMOX  equ     $2015   ;; | TTYMOV extension
 SCROLX  equ     $2018   ;; | SCROLL extension
+RESETX  equ     $201B   ;; | Skip start screen, cold boot if ':' pressed
 ;;plusBASIC specific hooks
 SCNLBL  equ     $2030   ;; | Scan line label or line number
 XFUNKY  equ     $2035   ;; | Extended function key check
@@ -173,7 +174,7 @@ else
 endif
 ;;RST 1 - Syntax Check
 
-S3VER:  byte    $23,$12,$04       ;;Revision Date 
+S3VER:  byte    $23,$12,$30       ;;Revision Date 
         byte    $00               ;;Revision Number?
         nop                       ;;Pad out the RST routine
 ;;RST 1 - Syntax Check
@@ -264,8 +265,13 @@ else
 endif
 CRTSIG: byte    "+7$$3,",0        ;;$A000 Cartridge Signature
 ;;Display Startup Screen
-RESET:  ld      de,SCREEN+417     ;;Display "BASIC"
-        ld      hl,BASICT         ;;at line 10, column 17
+RESET:
+ifdef aqplus
+        jp      RESETX
+else
+        ld      de,SCREEN+417     ;;Display "BASIC"
+endif
+RESETC: ld      hl,BASICT         ;;at line 10, column 17
         ld      bc,STARTT-BASICT  ;
         ldir                      ;
         ld      de,SCREEN+528     ;;Display Start Message

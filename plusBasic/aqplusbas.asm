@@ -28,7 +28,8 @@
     jp      _keyread        ; $200F Called from COLORS
     jp      _sounds_hook    ; $2012 SOUNDX Adjust SOUNDS for turbo mode
     jp      _ttymove_hook   ; $2015 TTYMOX TTYMOV extension - set screen colors if SYSCTRL bit set
-    jp      _scroll_hook    ; $2018 SCROLX  SCROLL extension - scroll color memory if SYSCTRL bit set
+    jp      _scroll_hook    ; $2018 SCROLX SCROLL extension - scroll color memory if SYSCTRL bit set
+    jp      _start_screen   ; $201B RESETX Start-up screen extension
 
     dc $2030-$,$76
     
@@ -82,7 +83,7 @@
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.20f",0
+    db "v0.20g",0
 plus_len   equ   $ - plus_text
 
 auto_cmd:
@@ -99,7 +100,7 @@ auto_desc
 ;
 ; CAUTION: stack isn't available at this point, so don't use any instruction
 ;          that uses the stack.
-;-----------------------------------------------------------------------------
+;-----------------------------------------------------------------------------5
 _reset:
     ; Disable interrupts and turbo mode
     di
@@ -261,6 +262,18 @@ _check_topmem:
     pop     hl                    ;   HL = StrBottom; Stack = RtnAdr
     ld      (STRSPC),hl           ;   Set bottom of string space
     ret                           ;   and Return
+
+;-----------------------------------------------------------------------------
+; Skip start screen and cold boot if : was pressed
+; Called from RESET
+;-----------------------------------------------------------------------------
+_start_screen:
+    call    key_read_ascii        ; See if key pressed
+    cp      13                    ; If colon 
+    jp      z,COLDST              ;   Straight to cold start
+    ld      de,SCREEN+417         ; DE = Screen location for "BASIC"
+    jp      RESETC
+
 
 ;-----------------------------------------------------------------------------
 ; Extended line editor function keys
@@ -820,11 +833,11 @@ hook_table:                     ; ## caller   addr  performing function
     dw      _iscntc_hook        ; 32 XCNTC    204A  Intercept check for Ctrl-C
     dw      main_ext            ; 33 XMAIN    204F  Save Line# Flag`in TEMP3
     dw      _stuffh_ext         ; 34 XSTUFF   2054  Check for additional tokens when stuffing
-    dw      _check_topmem       ; 35 XCLEAR     Verify TOPMEM is in Bank 2
-    dw      ptrget_hook         ; 36 XPTRGT     Allow _Alphanumunder sftar var name
-    dw      skip_label          ; 37 SKPLBL     Skip label at beginning of line (SKPLBL)
-    dw      skip_on_label       ; 38 SKPLOG     Skip label in ON GOTO
-    dw      _string_ext         ; 39 STRNGX     Don't capitalize letters between single quotes (STRNGX)
+    dw      _check_topmem       ; 35 XCLEAR   204E  Verify TOPMEM is in Bank 2
+    dw      ptrget_hook         ; 36 XPTRGT   2054  Allow _Alphanumunder sftar var name Check for pressed 
+    dw      skip_label          ; 37 SKPLBL   205D  Skip label at beginning of line (SKPLBL) Check for pressed 
+    dw      skip_on_label       ; 38 SKPLOG   2065  Skip label in ON GOTO Check for pressed 
+    dw      _string_ext         ; 39 STRNGX   206A  Don't capitalize letters between single quotes (STRNGX) Check for pressed 
 
 ; ------------------------------------------------------------------------------
 ;  Execute Hook Routine
@@ -926,12 +939,11 @@ aux_line_print:
     include "usbbas.asm"        ; Statements and functions from USB BASIC
 
     ; Graphics modules
-    include "gfx.asm"           ; Main graphics module
     include "screen.asm"        ; Text screen graphics subroutines
     include "sprite.asm"        ; Sprite graphics module
     include "tile.asm"          ; Tile graphics module
     include "sound.asm"         ; Sound and Music
-
+    include "common.asm"        ; Common graphics routine
 
     assert !($FFFF<$)   ; ROM full!
 
@@ -953,8 +965,10 @@ aux_line_print:
     include "editor.asm"        ; Advanced line editor
     include "esp_aux.asm"       ; ESP routines in auxiliary ROM
     include "fileio.asm"        ; Disk and File I/O machine assembly routines
+    include "gfx.asm"           ; Main graphics module
     include "s3hooks.asm"       ; S3 BASIC direct mode hooks
-    include "screen_aux.asm"    ; Auxiliary
+    include "screen_gfx.asm"    ; Screen graphics routines
+    include "screen_swap.asm"   ; Screen buffering routines
 
     free_rom_8k = $D800 - $
 
