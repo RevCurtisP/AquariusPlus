@@ -21,6 +21,10 @@ ifdef aqplus
 noreskeys   equ   1               ;; |
 endif
 
+ifdef pckeys
+noreskeys   equ   1               ;; |
+endif
+
 ;BASIC Constants
 LPTSIZ  equ     132     ;{M80} WIDTH OF PRINTER
 SCREEN  equ     $3000   ;;Screen Character Matrix
@@ -174,7 +178,7 @@ else
 endif
 ;;RST 1 - Syntax Check
 
-S3VER:  byte    $23,$12,$30       ;;Revision Date 
+S3VER:  byte    $24,$01,$01       ;;Revision Date 
         byte    $00               ;;Revision Number?
         nop                       ;;Pad out the RST routine
 ;;RST 1 - Syntax Check
@@ -5545,10 +5549,55 @@ KEYRET: exx                       ;;Restore Registers
         ret
 ;;Key Lookup Tables - 46 bytes each
 ifdef altkeytab
-        include "keytabs.asm"           ;; |
-else
+        include "keytabs.asm"          
+else  ; altkeytab
+ifdef pckeys
+;; c  |  NUL left up down rt FS  RS   [   ]  GS  ESC 
+;; s  !   @   #   $   %   ^   &   *   (   )   _   +
+;;    1   2   3   4   5   6   7   8   9   0   -   =  
+;;
+;; c  DC1 ETB ENQ DC2 DC4 EM  NAK TAB SI  DLE DEL
+;; s   Q   W   E   R   T   Y   U   I   O   P   \
+;;     q   w   e   r   t   y   u   i   o   p  <-- RETURN
+;;
+;; c   SOH DC3 EOT ACK BEL BS  LF  VT  FF   ~   `
+;; s    A   S   D   F   G   H   J   K   L   :   "
+;;      a   s   d   f   g   h   j   k   l   ;   '
+;;
+;;       SUB CAN ETX SYN STX CO  CR   {   }  US
+;; c      Z   X   C   V   B   N   M   <   >   ?
+;; s SPC  z   x   c   v   b   n   m   ,   .   /
+;;         
 ;;Unmodified Key Lookup Table
-KEYTAB: byte    '=',$08,':',$0D,';','.' ; \ Backspace and Return
+KEYTAB: byte    '=',$08,$27,$0D,';','.' ; | Backspace, Return
+        byte    '-','/','0','p','l',',' ; | Apostrophe
+        byte    '9','o','k','m','n','j' ; |
+        byte    '8','i','7','u','h','b' ; |
+        byte    '6','y','g','v','c','f' ; |
+        byte    '5','t','4','r','d','x' ; |
+        byte    '3','e','s','z',' ','a' ; |
+        byte    '2','w','1','q'         ; |
+;;Shifted Key Lookup Table
+SHFTAB: byte    '+',$5C,$22,$0D,':','>' ; | Backslash, Quote, Return
+        byte    '_','?',')','P','L','<' ; | 
+        byte    '(','O','K','M','N','J' ; | 
+        byte    '*','I','&','U','H','B' ; | Apostrophe
+        byte    '^','Y','G','V','C','F' ; | 
+        byte    '%','T','$','R','D','X' ; | 
+        byte    '#','E','S','Z',' ','A' ; | 
+        byte    '@','W','!','Q'         ; | 
+;;Control Key Lookup Table
+CTLTAB: byte    $1B,$7F,'`',$0D,'~','}' ; | ESC DEL GS      NUL    
+        byte    $1D,$1F,']',$10,$0C,'{' ; | GS  US      DLE FF     
+        byte    '[',$0F,$0B,$0D,$0E,$0A ; |     SI  VT  CR  SO  LF   
+        byte    $1E,$09,$1C,$15,$08,$02 ; | RS  TAB FS NAK BS  SOH  
+        byte    $8E,$19,$07,$16,$03,$06 ; | rt  EM  BEL SYN ETX ACK  
+        byte    $9F,$14,$8F,$12,$04,$18 ; | dn  DC4 up  DC2 EOT CAN  
+        byte    $9E,$05,$13,$1A,' ',$01 ; | lft ENC DC3 SUB     SOH  
+        byte    $80,$17,'|',$11         ; | NUL ETB     DC1
+else  ;pckeys
+;;Unmodified Key Lookup Table
+KEYTAB: byte    '=',$08,':',$0D,';','.' ; \ Backspace, Return
         byte    '-','/','0','p','l',',' ; \
         byte    '9','o','k','m','n','j' ; \
         byte    '8','i','7','u','h','b' ; \
@@ -5586,6 +5635,7 @@ else
         byte    $8A,$85,$13,$9A,$C6,$9B ; \ \ IF DIM ^S CLOAD CHR$ CSAVE
         byte    $97,$8E,$89,$11         ; \ \ LIST REM RUN ^Q
 endif   ;noreskeys
+endif   ;pckeys
 endif   ;altkeytab
 ;;Check for Ctrl-C, called from NEWSTT
 INCNTC: push    hl                ;;Save text pointer
