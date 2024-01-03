@@ -83,7 +83,11 @@
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.20h1",0
+    db "v0.20h2"
+ifdef coredump
+    db "_coredump"
+endif
+    db 0
 plus_len   equ   $ - plus_text
 
 auto_cmd:
@@ -113,10 +117,12 @@ _reset:
     ; Set up temp stack in text line buffer
     ld      sp, $38A0
 
+ifdef coredump
     ; Core dump check
     ld      a,ROM_EXT_PG
     out     (IO_BANK3),a
     jp      core_dump
+endif
 
 init_banks:
 
@@ -168,6 +174,14 @@ _coldboot:
     call    spritle_clear_all     ; Clear all sprite properties
     jp      do_coldboot
 
+; ROM Signature
+    assert !($20F6<$)   ; Overflow into Kernel jump table
+    dc $20F7-$,$76
+    byte    "Aquarius+"
+
+; Start Kernel jump table at $2100
+    include "kernel.asm"
+
 ;-----------------------------------------------------------------------------
 ; Intercept WRMCON call
 ;-----------------------------------------------------------------------------
@@ -179,14 +193,6 @@ _warm_boot:
     ld      a,128
     out     (IO_PCMDAC),a
     jp      WRMCON                ; Go back to S3 BASIC
-
-; ROM Signature
-    assert !($20F6<$)   ; Overflow into Kernel jump table
-    dc $20F7-$,$76
-    byte    "Aquarius+"
-
-; Start Kernel jump table at $2100
-    include "kernel.asm"
 
 ;-----------------------------------------------------------------------------
 ; Default Interrupt Handler
@@ -539,11 +545,12 @@ descramble_rom:
     ld      a, 34
     out     (IO_BANK2), a
 
-    ld      bc,$7FFF              ; Scan column 8
-    in      a,(c)
-    xor     $FF
-    and     $08
-    jr      nz,.bypass
+ifdef coredump
+    ld      a,ROM_EXT_PG
+    out     (IO_BANK3),a
+    jp      RESET
+endif
+
 
     ; Bank3 -> readonly
     ld      a, 35 | BANK_READONLY
@@ -570,11 +577,6 @@ descramble_rom:
 
     ; Start ROM
     jp      XINIT
-
-.bypass
-    ld      a,ROM_EXT_PG
-    out     (IO_BANK3),a
-    jp      RESET
 
 ;-----------------------------------------------------------------------------
 ; Enable VBLANK Interrupts

@@ -969,6 +969,8 @@ ST_SAVE:
 .save_fnkeys
     call    _set_up_fnkeys        ; A = BAS_BUFFR, BC = 512, DE = FKEYDEFS, HL = FilDsc
 
+; SAVE "t/paged.bin",@63,0,16383
+; SAVE "t/paged.bin",@63,0,16384
 .save_paged
     call    check_paged_address   ; Verify pages addres is between 0 and 16383
     ld      iy,file_save_paged
