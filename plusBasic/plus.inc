@@ -12,6 +12,8 @@ BANK1_BASE:     equ $4000
 BANK2_BASE:     equ $8000
 BANK3_BASE:     equ $C000
 
+PAGE_SIZE       equ $4000
+
 BANK_READONLY:  equ $80     ; Bank readonly
 BANK_OVERLAY:   equ $40     ; RAM overlay
 
@@ -19,6 +21,8 @@ BANK_OVERLAY:   equ $40     ; RAM overlay
 ROM_SYS_PG      equ 0       ; Main System ROM, mapped into Bank 0 with overlay from $3000-$3FFF
 ROM_EXT_PG      equ 1       ; plusBASIC extended ROM, mapped into Bank 3 
 ROM_AUX_PG      equ 2       ; plusBASIC auxillary ROM, mapped into Bank 3 as needed
+
+ROM_CART        equ 19
 
 VIDEO_RAM       equ 20
 CHAR_RAM        equ 21
@@ -34,6 +38,8 @@ PT3_BUFFR       equ 38      ; PT3 Player Buffer
 SCR_BUFFR       equ 39      ; Screen Buffers
     
 USER_RAM        equ 40      ; Start of User RAM
+
+RAM_END_PG      equ 63      ; Last page of RAM
 
 ROM_EXT_BANK    equ 3       ; Bank Extended ROM is mapped into
 ROM_AUX_BANK    equ 3       ; Bank Auxillary ROM is mapped into

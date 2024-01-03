@@ -83,7 +83,7 @@
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.20h",0
+    db "v0.20h1",0
 plus_len   equ   $ - plus_text
 
 auto_cmd:
@@ -112,6 +112,13 @@ _reset:
 
     ; Set up temp stack in text line buffer
     ld      sp, $38A0
+
+    ; Core dump check
+    ld      a,ROM_EXT_PG
+    out     (IO_BANK3),a
+    jp      core_dump
+
+init_banks:
 
     ; Initialize Banks 1 to 3
     ld      a, 0 | BANK_OVERLAY | BANK_READONLY
@@ -479,6 +486,7 @@ copy_char_ram:
 ; Cartridge start entry point - A hold scramble value
 ;-----------------------------------------------------------------------------
 _start_cart:
+
     ; Map destination RAM in bank2
     ld      a, 35
     out     (IO_BANK2), a
@@ -531,6 +539,12 @@ descramble_rom:
     ld      a, 34
     out     (IO_BANK2), a
 
+    ld      bc,$7FFF              ; Scan column 8
+    in      a,(c)
+    xor     $FF
+    and     $08
+    jr      nz,.bypass
+
     ; Bank3 -> readonly
     ld      a, 35 | BANK_READONLY
     out     (IO_BANK3), a
@@ -556,6 +570,11 @@ descramble_rom:
 
     ; Start ROM
     jp      XINIT
+
+.bypass
+    ld      a,ROM_EXT_PG
+    out     (IO_BANK3),a
+    jp      RESET
 
 ;-----------------------------------------------------------------------------
 ; Enable VBLANK Interrupts

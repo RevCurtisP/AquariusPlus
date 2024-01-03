@@ -5,6 +5,7 @@
   - LOAD/RUN ASCII BASIC programs
   - RUN "esp:settings
   - RUN ROM images  
+  -   RUN "minidiag.rom"
   - RUN "/aqds/aqds.aqx
   - CD /CPM:RUN "gocpm.aqx
   - PLAY SAMPLE

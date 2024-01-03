@@ -131,3 +131,32 @@ _modkey_check:
     and     d                     ; Isolate control key
     ret
 
+; If Alt key pressed during reset, copy cartridge and BASIC RAM to end of paged memory
+; SrcPg: 19 20 21 32 33 34 35
+; DstPg: 57 58 59 60 61 62 63
+core_dump:
+    ld      bc,$7FFF              ; Scan column 8
+    in      a,(c)
+    xor     $FF
+    and     $40
+    ;jp      z,init_banks
+    ld      a,RAM_END_PG
+    ex      af,af'                ; A' = DstPg
+    ld      a,RAM_BAS_3           ; A = SrcPg
+.loop
+    out     (IO_BANK1),a
+    ex      af,af'                ; A = DstPg, A' = SrcPg
+    out     (IO_BANK2),a
+    ld      hl,BANK1_BASE
+    ld      de,BANK2_BASE
+    ld      bc,PAGE_SIZE
+    ldir
+    dec     a                     ; Next Dest Page
+    ex      af,af'                ; A = SrcPg, A' = DstPg
+    dec     a                     ; Next Source Page
+    cp      ROM_CART-1            ; If done with Cartridge
+    jp      z,init_banks          ;   Continue reset
+    cp      RAM_BAS_0-1           
+    jr      nz,.loop
+    ld      a,CHAR_RAM
+    jr      .loop
