@@ -27,7 +27,7 @@ ST_DEF:
     inc     hl
     ld      a,(hl)                  ; Get Extended Token
     cp      SPRITK
-    jp      z,ST_DEFSPRITE          ; DEF TILELIST
+    jp      z,ST_DEF_SPRITE         ; DEF SPRITE
     cp      ATTRTK
     jp      z,ST_DEFATTR            ; DEF ATTRLIST
     cp      PALETK

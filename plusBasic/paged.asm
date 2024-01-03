@@ -431,6 +431,21 @@ page_map_aux:
     jr      _map_page_bank3
 
 ;-----------------------------------------------------------------------------
+; Map Page into Bank 1
+; Input: A = Page
+; Returns with original page on stack
+; Clobbers AF',IX
+;-----------------------------------------------------------------------------
+page_map_bank1:
+    pop     ix                    ; IX = RtnAdr
+    ex      af,af'                ; A' = NewPg
+    in      a,(IO_BANK1)          ; A = CurPg
+    push    af                    ; Stack = CurPg
+    ex      af,af'                ; A = NewPg
+    out     (IO_BANK1),a          ; Map into Bank 3
+    jp      (ix)
+
+;-----------------------------------------------------------------------------
 ; Map Page into Bank 3
 ; Input: A = Page
 ; Returns with original page on stack
@@ -460,13 +475,25 @@ page_map_auxrom:
     jp      (ix)
 
 ;-----------------------------------------------------------------------------
+; Restore Bank 1 to Previous Page and Return to Caller
+; Clobbers AF'
+;-----------------------------------------------------------------------------
+page_restore_bank1:
+    ex      af,af'
+    pop     af                    ; A = OldPg
+_map_1_ex:
+    out     (IO_BANK1),a
+    ex      af,af'
+    ret
+
+;-----------------------------------------------------------------------------
 ; Restore Bank 3 to Previous Page and Return to Caller
 ; Clobbers AF'
 ;-----------------------------------------------------------------------------
 page_restore_bank3:
     ex      af,af'
     pop     af                    ; A = OldPg
-_map_page:
+_map_3_ex:
     out     (IO_BANK3),a
     ex      af,af'
     ret

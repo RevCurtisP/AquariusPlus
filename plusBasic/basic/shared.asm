@@ -422,7 +422,7 @@ check_on_off:
 
 ;-----------------------------------------------------------------------------
 ; Parse String Variable Name
-; Syntax: VAR$ =
+; Syntax: VAR$
 ; Output: DE = Pointer to variable
 ; Clobbers: A,BC
 ;-----------------------------------------------------------------------------

@@ -83,7 +83,7 @@
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.20g",0
+    db "v0.20h",0
 plus_len   equ   $ - plus_text
 
 auto_cmd:
@@ -173,9 +173,12 @@ _warm_boot:
     out     (IO_PCMDAC),a
     jp      WRMCON                ; Go back to S3 BASIC
 
+; ROM Signature
+    assert !($20F6<$)   ; Overflow into Kernel jump table
+    dc $20F7-$,$76
+    byte    "Aquarius+"
+
 ; Start Kernel jump table at $2100
-    assert !($20FF<$)   ; Overflow into Kernel jump table
-    dc $2100-$,$76
     include "kernel.asm"
 
 ;-----------------------------------------------------------------------------

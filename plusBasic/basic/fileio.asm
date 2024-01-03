@@ -73,7 +73,7 @@ file_load_paged:
 ;        HL: string descriptor address
 ;-----------------------------------------------------------------------------
 file_load_rom:
-    ld      a,35
+    ld      a,RAM_BAS_3
     ld      de, $C000
     ld      bc, $4000
     call    file_load_paged
@@ -82,15 +82,18 @@ file_load_rom:
     ; Check length
     ld      a, b
     cp      $20         ; 8KB ROM?
-    jr      nz,.done
-    
-    ld      hl, $0000
-    ld      de, $2000
-    ld      bc, $2000
-    call    page_fast_copy
-.done
+    jr      z,.copy
     xor     a
     ret
+.copy    
+    ld      a,RAM_BAS_3
+    call    page_map_bank1
+    ld      hl, BANK1_BASE
+    ld      de, BANK1_BASE+$2000
+    ld      bc, $2000
+    ldir
+    xor     a
+    jp      page_restore_bank1
 
 ;-----------------------------------------------------------------------------
 ; Load screen image

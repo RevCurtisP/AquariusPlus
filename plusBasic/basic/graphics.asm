@@ -373,6 +373,8 @@ ST_GET_SCREEN:
     ex      de,hl                 ; D = BgnRow, E = EndRow, HL = AryAdr
     ld      iy,screen_get
     call    aux_call              ; In: B=BgnCol, C=EndCol, D=BgnRow, E=EndRow, HL: AryAdr
+    jp      c,FCERR
+    jp      z,FCERR
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     ret
 
@@ -712,7 +714,7 @@ FN_GETPALETTE:
 ;-----------------------------------------------------------------------------
 ; DEF SPRITE sprite$ = spritle#, x-offset, y-offset; spritle#, x-offset, y-offset
 ;-----------------------------------------------------------------------------
-ST_DEFSPRITE:
+ST_DEF_SPRITE:
     rst     CHRGET                ; Skip SPRITE
     call    _defnolist            ; Stack = VarPtr, RtnAdr
     xor     a                     ; A = SptlCnt (0)
