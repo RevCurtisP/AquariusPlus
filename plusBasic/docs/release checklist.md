@@ -3,6 +3,8 @@
 - Implemented
   - LOAD/RUN tokenized BASIC programs
   - LOAD/RUN ASCII BASIC programs
+  - SAVE "x1":SAVE "x2":SAVE "x3": DEL x1: DEL x2 x3:DIR x*
+  - 
   - RUN "esp:settings
   - RUN ROM images  
   -   RUN "minidiag.rom"

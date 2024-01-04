@@ -67,7 +67,13 @@ ST_DEL:
     call    get_string_direct
     ld      iy,dos_delete
     call    aux_call
-    jr      _check_error
+    jp      m,_dos_error
+    call    in_direct             
+    pop     hl                    ; HL = TxtPtr
+    ret     c                     ; Return if not in direct mode
+    call    CHRGT2                ; Reget current character
+    ret     z                     ; Return if terminator
+    jr      ST_DEL
 
 ;-----------------------------------------------------------------------------
 ; MKDIR - Create directory
