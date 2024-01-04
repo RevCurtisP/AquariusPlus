@@ -635,33 +635,34 @@ init_basic_program:
     jp      basic_link_lines      ; Link lines and return
 
 ;-----------------------------------------------------------------------------
-; Load CAQ array file in File into BINSTART (BINLEN length)
+; Load BC bytes of CAQ array file to address DE
 ; Input: HL: String descriptor address
 ; Clobbered registers: A, DE
 ;-----------------------------------------------------------------------------
 load_caq_array:
     ex      (sp),hl               ; HL = String Descriptor, Stack = Text Pointer
+    push    bc                    ; Stack = AryLen, TxtPtr, RtnAdr
+    push    de                    ; stack = AryAdr, AryLen, TxtPtr, RtnAdr
 
-    ; Open file
     call    _open_read
     
     ; Check CAQ header
-    call    check_sync_bytes    ; Sync bytes
-    ld      bc, 6               ; Check that filename is '######'
+    call    check_sync_bytes      ; Sync bytes
+    ld      bc, 6                 ; Check that filename is '######'
     ld      de, FILNAM
     call    esp_read_bytes
     ld      b, 6
     ld      de,FILNAM
-.backup:
+.filnam:
     ld      a, (de)
     cp      '#'
     jp      nz, BDFERR
     inc     de
-    djnz    .backup
+    djnz    .filnam
 
     ; Load data into array
-    ld      de, (BINSTART)
-    ld      bc, (BINLEN)
+    pop     de                    ; DE = AryAdr; Stack = AryLen, TxtPtr, RtnAdr
+    pop     bc                    ; BC = AryLen; Stack = TxtPtr, RtnAdr
     call    esp_read_bytes
 
     ; Close file
@@ -694,11 +695,12 @@ get_array_argument:
     add     hl, bc
     add     hl, bc
     inc     hl                  ; HL = array data
-    ld      (BINSTART), hl
     dec     de
     dec     de                  ; Subtract array header to get data length
     dec     de
-    ld      (BINLEN), de
+    ld      b,d
+    ld      c,e                 ; BE = length
+    ex      de,hl               ; DE = address
     pop     hl                  ; Pop text pointer
     ret
 
@@ -726,8 +728,6 @@ _set_up_fnkeys:
     ld      a,BAS_BUFFR
     ld      de,FKEYDEFS
     ld      bc,512
-    ld      (BINSTART),de
-    ld      (BINLEN),de
     ret
 
 ;;;ToDo: Add LOAD PALETTE
@@ -928,7 +928,7 @@ ST_SAVE:
     jp      z,.save_extended
 
     call    get_strdesc_arg         ; Get FileSpec pointer in HL
-    ex      (sp),hl                 ; HL = Text Pointer, Stack = String Descriptor
+    ex      (sp),hl                 ; HL = TxtPtr, Stack = StrDsc, RtnAdr
 
     ; Check for second parameter
     call    CHRGT2
@@ -943,23 +943,21 @@ ST_SAVE:
     ; Save binary data
 
     call    get_page_arg            ; Check for page specifier
-    push    af                      ; Stack = Page, String Descriptor
+    push    af                      ; Stack = Page, StrDsc, RtnAdr
     jr      nc,.bin_params          
 
     ld      a,(hl)                  ; If @page only
     or      a
     jr      nz,.page_params
-    ld      de,0
-    ld      (BINSTART),de
-    ld      de,$4000
-    ld      (BINLEN),de
+    ld      de,0                    ; DE = BinAdr
+    ld      bc,$4000                ; BC = BinLen
     jr      .save_bin
 .page_params
     SYNCHK  ','
 .bin_params
     call    FRMNUM                  ; Get number
     call    FRCINT                  ; Convert to 16 bit integer
-    ld      (BINSTART), de
+    push    de                      ; Stack = BinAdr, Page, StrDsc, RtnAdr
 
     ; Expect comma
     call    CHRGT2
@@ -969,17 +967,17 @@ ST_SAVE:
 
     ; Get second parameter: length
     call    FRMNUM                  ; Get number
-    call    FRCINT                  ; Convert to 16 bit integer
-    ld      (BINLEN), de
+    call    FRCINT                  ; Convert to 16 bit integer; Stack = Page, StrDsc, RtnAdr
+    ld      b,d
+    ld      c,e                     ; BC = BinLen
+    pop     de                      ; DE = BinAdr; Stack
 
 .save_bin
      ; Get back page filespec
-    pop     af                      ; AF = Page, Stack = String Descriptor
-    ex      (sp),hl                 ; HL = String Descriptor, Stack = Text Pointer
+    pop     af                      ; AF = Page, Stack = StrDsc, RtnAdr
+    ex      (sp),hl                 ; HL = StrDsc, Stack = TxtPtr
 
     ; Do the save
-    ld      bc,(BINLEN)
-    ld      de,(BINSTART)
     jr      c,.save_paged
     ld      iy,file_save_binary
     call    aux_call
@@ -1112,21 +1110,26 @@ save_basic_program:
 ;-----------------------------------------------------------------------------
 ; Save array
 ;-----------------------------------------------------------------------------
+; DIM A(99)
+; SAVE "/t/array.caq",*A
+
 save_caq_array:
-    ex      (sp),hl               ; HL = String Descriptor, Stack = Text Pointer
+    ex      (sp),hl               ; HL = StrDsc, Stack = TxtPtr, RtnAdr
+    push    bc                    ; Stack = AryLen, TxtPtr, RtnAdr
+    push    de                    ; stack = AryAdr, AryLen, TxtPtr, RtnAdr
     call    _open_write           ; Create file
 
     ; Write CAQ header
-    ld      de, sync_bytes      ; Sync bytes
+    ld      de, sync_bytes        ; Sync bytes
     ld      bc, 13
     call    esp_write_bytes
-    ld      de, .array_filename ; Filename
     ld      bc, 6
+    ld      de, .array_filename   ; Filename
     call    esp_write_bytes
 
     ; Write array data
-    ld      de, (BINSTART)
-    ld      bc, (BINLEN)
+    pop     de                    ; DE = AryAdr; Stack = AryLen, TxtPtr, RtnAdr
+    pop     bc                    ; BC = AryLen; Stack = TxtPtr, RtnAdr
     call    esp_write_bytes
 
     ; Write trailer
@@ -1137,7 +1140,7 @@ save_caq_array:
     ; Close file
     call    esp_close_all
 
-    pop     hl
+    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     ret
 
 .array_filename: db "######"
