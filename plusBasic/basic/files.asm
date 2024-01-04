@@ -427,18 +427,31 @@ ST_LOAD:
     cp      MULTK                   ; Token for '*'
     jp      z, .array               ; Array parameter -> load as array
 
+
 ; Load raw binary to address
 ; LOAD "tron.bin",$4200
 ; LOAD "tron.bim",$4200
-    call    parse_page_arg          ; Check for page specifier
+    call    get_page_arg            ; Check for page specifier
     push    af                      ; Stack = Page, String Descriptor
+    jr      nc,.bin_params          
+
+    ld      a,(hl)                  ; If @page only
+    or      a
+    jr      nz,.page_params
+    ld      de,0
+    ld      bc,$4000
+    jr      .load_bin
+.page_params
+    SYNCHK  ','
+.bin_params
     call    FRMNUM                  ; Get number
     call    FRCINT                  ; Convert to 16 bit integer
+    ld      bc,$FFFF                ; Load up to 64k   
+.load_bin
     ; Get back page filespec
     pop     af                      ; AF = Page, Stack = String Descriptor
     ex      (sp),hl                 ; HL = String Descriptor, Stack = Text Pointer
     jr      c,.load_paged
-    ld      bc,$FFFF                ; Load up to 64k   
     ld      iy,file_load_binary
     call    aux_call
     jp      m,_dos_error
@@ -447,7 +460,8 @@ ST_LOAD:
     ret
     
 ; Load raw binary into paged memory
-; LOAD "tron.bin",@40,$1234
+; LOAD "/roms/logo.rom",@40,$1234
+; LOAD "/roms/bio.rom",@63
 .load_paged
     ld      bc,$FFFF                ; Load up to 64k
     call    check_paged_address     ; Verify pages addres is between 0 and 16383
@@ -928,7 +942,6 @@ ST_SAVE:
 
     ; Save binary data
 
-    ; Get first parameter: address
     call    get_page_arg            ; Check for page specifier
     push    af                      ; Stack = Page, String Descriptor
     jr      nc,.bin_params          
