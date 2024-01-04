@@ -305,6 +305,7 @@ FORTK       equ $81     ; FOR
 DATATK      equ $83     ; DATA
 INPUTK      equ $84     ; INPUT
 GOTOTK      equ $88     ; GOTO
+RUNTK       equ $89     ; RUN
 RESTK       equ $8B     ; RESTORE    
 GOSUTK      equ $8C     ; GOSUB
 RETTK       equ $8D     ; RETURN

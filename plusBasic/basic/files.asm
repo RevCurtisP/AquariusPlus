@@ -823,28 +823,12 @@ run_cmd:
     pop     af
 
     jr      z,run_c               ; If no argument then RUN from 1st line
-
-    cp      '_'                ; If it's a label
-    jr      z,con_run             ;   Do RUN line#
+    jr      c,con_run             ; If digit
+    cp      '_'                   ; or label
+    jr      z,con_run             ;   RUN line#
     
-    push    hl
-    call    FRMEVL             ; Get argument type
-    ld      a, (VALTYP)
-    dec     a                  ; 0 = string
-    jr      nz,.not_file
-    call    FRESTR
-    pop     hl
-    jr      run_file
-
-.not_file:
-    pop     hl
-
-    ; RUN with line number
-    call    CLEARC             ; Init BASIC run environment
-    ld      bc, NEWSTT
-run_c2:
-    call    clear_all_errvars
-    jp      RUNC2              ; GOTO line number
+    call    get_string_direct     ; Get filename
+    jr      run_file              ; Load and run file
 
 con_run:
     call    clear_all_errvars
@@ -862,7 +846,6 @@ run_file:
     ; Close any open files
     call    esp_close_all
 
-    call    get_strdesc_arg       ; Get FileSpec
     push    hl                    ; Save String Descriptor
 
 ;For (16k) cartridge binaries
@@ -870,7 +853,6 @@ run_file:
 ;2A, 9C, B0, 6C, 64, A8, 70
 
     ; Check for .ROM extension
-    call    string_addr_len       ; Get String Length in BC, Address in DE
     ld      a, c                  ; A = String Length
     cp      a, 5                  ; If less thsn 5
     jr      c, .load_basic        ; Too short to have ROM extension

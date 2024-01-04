@@ -88,11 +88,13 @@ s3_ctrl_keys:
 s3_stuffh_ext:
     cp      DATATK-':'            ; If DATA
     jp      z,COLIS               ;   Continue STUFFH
-    ex      af,af'
+    ex      af,af'                ; 
     ld      a,(TEMP3)             ; Get Line# Flag
     and     $01                   ; If carry set
     jr      nz,.exaf_nodatt       ;   Continue  STUFFH
     ex      af,af'
+    cp      RUNTK-':'                 
+    jr      z,.space_loop
     cp      DIRTK-':'             ; If Not DIRTK through CDTK
 
     jp      c,NODATT              ;
@@ -116,7 +118,7 @@ s3_stuffh_ext:
     jp      z,KLOOP               ;   Stuff it and continue
     cp      ':'                   ; If colon
     jp      z,KLOOP               ;   Stuff it and continue
-    call    _stuff_chr                ; Else Stiff it
+    call    _stuff_chr                ; Else Stuff it
     jr      .string_loop          ;   and check next character
 .exaf_nodatt:
     ex      af,af'
