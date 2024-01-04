@@ -369,20 +369,20 @@ esp_write_paged:
 
     ; Send bytes
 
+    dec     de                    ; Backup for overflow check
+
 .loop:
     ; Done sending? (BC=0)
     ld      a, b
     or      a, c
     jr      z, .done
-    ld      a, (de)
-    call    esp_send_byte
     inc     de
     ld      a,d
     or      a,e
-    jr      nz,.not_end
-    call    page_next_de_address
+    call    z,page_next_de_address
     jr      c,.error              ; Return if overflow
-.not_end
+    ld      a, (de)
+    call    esp_send_byte
     dec     bc
     jr      .loop
 .done

@@ -929,8 +929,21 @@ ST_SAVE:
     ; Save binary data
 
     ; Get first parameter: address
-    call    parse_page_arg          ; Check for page specifier
+    call    get_page_arg            ; Check for page specifier
     push    af                      ; Stack = Page, String Descriptor
+    jr      nc,.bin_params          
+
+    ld      a,(hl)                  ; If @page only
+    or      a
+    jr      nz,.page_params
+    ld      de,0
+    ld      (BINSTART),de
+    ld      de,$4000
+    ld      (BINLEN),de
+    jr      .save_bin
+.page_params
+    SYNCHK  ','
+.bin_params
     call    FRMNUM                  ; Get number
     call    FRCINT                  ; Convert to 16 bit integer
     ld      (BINSTART), de
@@ -946,6 +959,7 @@ ST_SAVE:
     call    FRCINT                  ; Convert to 16 bit integer
     ld      (BINLEN), de
 
+.save_bin
      ; Get back page filespec
     pop     af                      ; AF = Page, Stack = String Descriptor
     ex      (sp),hl                 ; HL = String Descriptor, Stack = Text Pointer
@@ -969,8 +983,8 @@ ST_SAVE:
 .save_fnkeys
     call    _set_up_fnkeys        ; A = BAS_BUFFR, BC = 512, DE = FKEYDEFS, HL = FilDsc
 
-; SAVE "t/paged.bin",@63,0,16383
 ; SAVE "t/paged.bin",@63,0,16384
+; SAVE "t/paged.bin",@63
 .save_paged
     call    check_paged_address   ; Verify pages addres is between 0 and 16383
     ld      iy,file_save_paged
@@ -1259,7 +1273,7 @@ get_string_direct:
     cp      '"'                   ; 
     jr      z,get_string_arg      ; If not a quote
     dec     hl                    ;   Back up text pointer for STRLT2
-    ld      b,' '                 ;   Delimters are space
+    ld      b,' '                 ;   Delimiters are space
     ld      d,':'                 ;   and colon
     call    STRLT2                ;   Build temp string from literal
     jr      _proc_string_arg      ;   and process it
