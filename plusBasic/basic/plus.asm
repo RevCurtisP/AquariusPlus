@@ -333,6 +333,23 @@ LSERR:
 
 
 ;-----------------------------------------------------------------------------
+; TRIM functions stub
+;-----------------------------------------------------------------------------
+FN_TRIM:
+    rst     CHRGET            ; Skip TRIM
+    cp      XTOKEN            ; If XTOKEN
+    jr      z,_trimext        ;   Parse extended token
+    cp      DIRTK             ; If DIR
+    jp      z,FN_TRIMDIR      ;   Do TRIMDIR
+    jp      GSERR
+
+_trimext:
+    rst     CHRGET            ; Skip XTOKEN
+    cp      EXTTK             ; If EXT
+    jp      z,FN_TRIMEXT      ;   Do TRIMEXT$
+    jp      SNERR
+
+;-----------------------------------------------------------------------------
 ; FILL Statement stub
 ; FILL [@page], startaddr, oount, byte
 ; FILL! [@page], startaddr, count, word

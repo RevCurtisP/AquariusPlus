@@ -27,6 +27,7 @@ palette_reset:
     dw $111, $F11, $1F1, $FF1, $22E, $F1F, $3CC, $FFF
     dw $CCC, $3BB, $C2C, $419, $FF7, $2D4, $B22, $333
 
+
 ;-----------------------------------------------------------------------------
 ; Set palette
 ; Input: A: Entry#               VPALSEL   ~PPEEEEE : P = Palette#, E = Entry#

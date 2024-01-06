@@ -48,13 +48,17 @@ CHAR_ROM_AQ     equ $3000   ; Standard Aquarius Character ROM Address in System 
 CHAR_ROM_L1     equ $3800   ; Latin-1 Aquarius Character ROM Address in System ROM
 
 ;-----------------------------------------------------------------------------
-; Video RAM Offsets
+; Video RAM Offsets 
 ; Page 20
 ;-----------------------------------------------------------------------------
+BMP_BASE        equ $0000
 BMP_COLORRAM    equ $2000
+BMP_PAL_OFS     equ 8000    ; Offset of palette data in file
+BMP_FILELEN     equ 9192    ; Length of 320x200 bitmap file
 TILE_DATA       equ $0000
 TILE_MAP_BASE   equ $0000
 TILE_MAP_LEN    equ 64*32*2
+
 
 ;-----------------------------------------------------------------------------
 ; plusBASIC System variables
@@ -176,6 +180,7 @@ FKEYBASE    equ BASBUF_BASE + FKEYDEFS
 ;         $0500-$2FFF   ; Unused
 CHRSETBUF   equ $3800   ; Page Offset: Custom Character Set Buffer
 CHRSETLEN   equ 2048    ; Size of character set ROM
+
 
 BASOUTBUF   equ $01     ; BASYSCTL: redirect OUTput to BUFfer
 BASSAVASC   equ $02     ; BASYSCTL: Default SAVe to ASC

@@ -81,7 +81,7 @@ EXTCMDS:
     db $80 + 'P',"T3"             ; $8C             
     db $80 + 'P',"IXEL"           ; $8D             
     db $80 + ' '                  ; $8E unused (REM)             
-    db $80 + ' '                  ; $8F             
+    db $80 + 'N',"AME"            ; $8F             
     ; Primary Tokens grouped together, so extended dispatch can use DEC A
     db $80 + 'R',"ESET"           ; $90             
     db $80 + 'E',"XT"             ; $91             
@@ -90,9 +90,10 @@ EXTCMDS:
     db $80 + 'C',"OMPARE"         ; $94
     db $80 + 'P',"LAY"            ; $95
     db $80 + 'A',"PPEND"          ; $96
+    db $80 + 'T',"RIM"            ; $97
     db $80
 
-EXTOKEN = $97     ; Last Token + 1
+EXTOKEN = $98     ; Last Token + 1
 
 ;-----------------------------------------------------------------------------
 ; plusBASIC tokens
@@ -139,6 +140,7 @@ ARGSTK    equ     $8A
 SAMPTK    equ     $8B
 PT3TK     equ     $8C
 PIXTK     equ     $8D
+NAMETK    equ     $8F
 RESETK    equ     $90
 EXTTK     equ     $91
 VERTK     equ     $92
@@ -146,6 +148,7 @@ FILLTK    equ     $93
 COMPTK    equ     $94
 PLAYTK    equ     $95
 APNDTK    equ     $96
+TRIMTK    equ     $97
 
 ;-----------------------------------------------------------------------------
 ; Convert keyword to token - hook 10

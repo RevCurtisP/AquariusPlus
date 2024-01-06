@@ -210,12 +210,15 @@ xtokens = {
     0x8B: "SAMPLE",               
     0x8C: "PT3",
     0x8D: "PIXEL",
+    0x8F: "NAME",
     0x90: "RESET",
+    0x91: "EXT",
     0x92: "VER",
     0x93: "FILL",
     0x94: "COMPARE",
     0x95: "PLAY",
-    0x96: "APPEND"
+    0x96: "APPEND",
+    0x97: "TRIM"
 }
 
 def error(idx, message):

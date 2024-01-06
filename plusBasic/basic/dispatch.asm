@@ -66,6 +66,10 @@ extended_function:
     dec     a                   ; $93 FILL
     dec     a                   ; $94 COMPARE
     jp      z,FN_COMPARE
+    dec     a                   ; $95 PLAY
+    dec     a                   ; $96 APPEND
+    dec     a                   ; $97 TRIM
+    jp      z,FN_TRIM
     jp      SNERR
 
 ; ------------------------------------------------------------------------------

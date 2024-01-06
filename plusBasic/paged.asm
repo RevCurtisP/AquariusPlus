@@ -430,6 +430,15 @@ page_map_aux:
     ld      a,ROM_AUX_PG
     jr      _map_page_bank3
 
+
+;-----------------------------------------------------------------------------
+; Map Video RAM into Bank 1
+; Input: A = Page
+; Returns with original page on stack
+; Clobbers AF',IX
+;-----------------------------------------------------------------------------
+page_map_vidram:
+    ld      a,VIDEO_RAM
 ;-----------------------------------------------------------------------------
 ; Map Page into Bank 1
 ; Input: A = Page
@@ -476,6 +485,7 @@ page_map_auxrom:
 
 ;-----------------------------------------------------------------------------
 ; Restore Bank 1 to Previous Page and Return to Caller
+; JP to this, do not CALL
 ; Clobbers AF'
 ;-----------------------------------------------------------------------------
 page_restore_bank1:

@@ -68,7 +68,7 @@ ST_DEL:
     ld      iy,dos_delete
     call    aux_call
     jp      m,_dos_error
-    call    in_direct             
+    call    in_direct
     pop     hl                    ; HL = TxtPtr
     ret     c                     ; Return if not in direct mode
     call    CHRGT2                ; Reget current character
@@ -90,17 +90,17 @@ ST_MKDIR:
 ; Syntax: RENAME oldfile$ TO newfile$
 ;-----------------------------------------------------------------------------
 ST_RENAME:
-    call    FRMEVL                ; Parse oldname                                                     
+    call    FRMEVL                ; Parse oldname
     call    CHKSTR                ; Gotta be a string
     call    SYNCHR                ; Require TO token
-    byte    TOTK                    
+    byte    TOTK
     push    hl                    ; Stack = textptr
     ld      hl,(FACLO)            ; HL = olddesc
     ex      (sp),hl               ; HL = textptr, HL = olddesc
     call    FRMEVL                ; Parse newname
     push    hl                    ; Stack = textptr, olddesc
     call    FRESTR                ; HL = newdesc
-    ex      de,hl                 ; DE = newdesc. 
+    ex      de,hl                 ; DE = newdesc
     pop     bc                    ; BC = textptr, Stack = olddesc
     pop     hl                    ; HL = olddesc
     push    bc                    ; Stack = textptr
@@ -113,31 +113,73 @@ ST_RENAME:
 
 ;-----------------------------------------------------------------------------
 ; FILE Functions stub
-;
 ;-----------------------------------------------------------------------------
 FN_FILE:
     rst     CHRGET                ; Skip FILE
-    rst     SYNCHR                
+    cp      DIRTK                 ; If DIR
+    jr      z,FN_FILEDIR          ;   Do FILEDIR$
+    rst     SYNCHR
     byte    XTOKEN                ; Must be extended Token
     cp      EXTTK                 ; If EXT
     jr      z,FN_FILEEXT          ;   Do FILEEXT$
     jp      SNERR
 
+;-----------------------------------------------------------------------------
+; FILEEXT$(filespec$)
+;-----------------------------------------------------------------------------
 ; ? FILEEXT$("file.ext")
 ; ? FILEEXT$("no_ext")
 ; ? FILEEXT$("a/b/file.tmp")
 FN_FILEEXT:
-    rst     CHRGET                ; Skip FILE
+    ld      iy,file_get_ext
+    jr      _file_trim
+
+;-----------------------------------------------------------------------------
+; FILEDIR$(filespec$)
+;-----------------------------------------------------------------------------
+; ? FILEDIR$("file.ext")
+; ? FILEDIR$("/no_ext")
+; ? FILEDIR$("/a/b/file.tmp")
+; ? FILEDIR$("a/")
+; ? FILEDIR$("/a/b/")
+FN_FILEDIR:
+    ld      iy,file_get_dir
+    jr      _file_trim
+
+;-----------------------------------------------------------------------------
+; TRIMDIR$(filespec$)
+;-----------------------------------------------------------------------------
+; ? TRIMDIR$("file.ext")
+; ? TRIMDIR$("a/no_ext")
+; ? TRIMDIR$("/a/b/file.tmp")
+; ? TRIMDIR$("a/")
+; ? TRIMDIR$("/a/b/")
+FN_TRIMDIR:
+    ld      iy,file_trim_dir
+    jr      _file_trim
+
+;-----------------------------------------------------------------------------
+; TRIMEXT$(filespec$)
+;-----------------------------------------------------------------------------
+; ? TRIMEXT$("file.ext")
+; ? TRIMEXT$("no_ext")
+; ? TRIMEXT$("a/b/file.tmp")
+FN_TRIMEXT:
+    ld      iy,file_trim_ext
+_file_trim:
+    push    iy                    ; Stack = TrmRtn, RtnAdr
+    rst     CHRGET                ; Skip EXT/DIR
     SYNCHK  '$'                   ; Require string
     call    PARCHK                ; Parse agument
+    pop     iy                    ; IY = TrmRtn; Stack = RtnAdr
     push    hl                    ; Stack = TxtPtr, RtnAdr
     call    free_addr_len         ; DE = StrAdr, BC = StrLen
-    ld      iy,file_get_ext
     call    aux_call              ; DE = ExtAdr, A = ExtLen
     jr      nz,.ret_str
     ld      de,REDDY-1
 .ret_str
     jp      STRNEW                ; Create temporary and return it
+
 
 ;-----------------------------------------------------------------------------
 ; DIR - Directory listing
@@ -260,12 +302,12 @@ ST_DIR:
     call    esp_get_long
 
     ; Megabytes range?
-    ld      a,d           
-    or      a                     
+    ld      a,d
+    or      a
     jr      nz,.mb
     ld      a,e
     cp      $9C                   ; If >=10,240,000 show Megabytes
-    jr      c,.notmb              
+    jr      c,.notmb
     ld      a,b
     cp      $40
     jr      nc, .mb
@@ -393,7 +435,7 @@ srlh_rrl_out2:
     rr      l
 
 print_hl_4digits:
-    ld      e,'0'                
+    ld      e,'0'
     ld	    bc,-10000
     call	  .num1
     ld	    bc,-1000
@@ -404,9 +446,9 @@ print_hl_4digits:
     call	  .num1
     ld      e,0
     ld	    c,-1
-.num1:	
+.num1:
     ld	    a,-1
-.num2:	
+.num2:
     inc	    a
     add	    hl,bc
     jr	    c,.num2
@@ -419,7 +461,7 @@ print_hl_4digits:
 .num3
     dec     e
     rst     OUTCHR
-    ret 
+    ret
 
 ;-----------------------------------------------------------------------------
 ; LOAD "filename"                 Load BASIC program
@@ -467,7 +509,7 @@ ST_LOAD:
 ; LOAD "tron.bim",$4200
     call    get_page_arg            ; Check for page specifier
     push    af                      ; Stack = Page, String Descriptor
-    jr      nc,.bin_params          
+    jr      nc,.bin_params
 
     ld      a,(hl)                  ; If @page only
     or      a
@@ -480,7 +522,7 @@ ST_LOAD:
 .bin_params
     call    FRMNUM                  ; Get number
     call    FRCINT                  ; Convert to 16 bit integer
-    ld      bc,$FFFF                ; Load up to 64k   
+    ld      bc,$FFFF                ; Load up to 64k
 .load_bin
     ; Get back page filespec
     pop     af                      ; AF = Page, Stack = String Descriptor
@@ -492,7 +534,7 @@ ST_LOAD:
     call    esp_close_all
     pop     hl                      ; Get Back Text Pointer
     ret
-    
+
 ; Load raw binary into paged memory
 ; LOAD "/roms/logo.rom",@40,$1234
 ; LOAD "/roms/bio.rom",@63
@@ -526,7 +568,7 @@ _load_ascii:
     ld      hl,(TXTTAB)
     inc     hl
     inc     hl
-    ld      (VARTAB),hl           ; Start new program 
+    ld      (VARTAB),hl           ; Start new program
     ld      bc,0                  ; Init Previous Line to 0
     push    bc                    ; Stack = PrvLin, TxtPtr, RtnAdr
 
@@ -551,7 +593,7 @@ _load_ascii:
     call    basic_append_line     ; Add line to BASIC program
     jr      .lineloop
 .badline
-    ld      a,ERRUS               ; 
+    ld      a,ERRUS               ;
 .done
     pop     bc                    ; Discard PrvLin; Stack = TxtPtr, RtnAdr
     push    af                    ; Stack = Status, TxtPtr, RtnAdr
@@ -574,7 +616,7 @@ load_basic_program:
     call    _open_read
 
     call    esp_read_byte       ; B = First byte of file
-    jp      m,_dos_error        ; Check for error   
+    jp      m,_dos_error        ; Check for error
     call    esp_close_all       ; Close and re-open file
     call    _open_read
 
@@ -679,7 +721,7 @@ load_caq_array:
     push    de                    ; stack = AryAdr, AryLen, TxtPtr, RtnAdr
 
     call    _open_read
-    
+
     ; Check CAQ header
     call    check_sync_bytes      ; Sync bytes
     ld      bc, 6                 ; Check that filename is '######'
@@ -749,7 +791,7 @@ _load_fnkeys:
 _set_up_fnkeys:
     rst     CHRGET                ; Skip FN
     rst     SYNCHR
-    byte    XTOKEN      
+    byte    XTOKEN
     rst     SYNCHR                ; Require KEY
     byte    KEYTK
     SYNCHK  'S'                   ; Require S
@@ -767,7 +809,7 @@ _set_up_fnkeys:
 ;;;ToDo: Add LOAD PALETTE
 _load_extended:
     rst     CHRGET                ; Skip XTOKEN
-    cp      PALETK                ; 
+    cp      PALETK                ;
     jr      z,_load_palette
     cp      PT3TK
     jr      z,_load_pt3
@@ -788,7 +830,7 @@ _save_palette:
     jr      _do_palette
 ; load palette 0,"/t/gray.pal"
 _load_palette:
-    ld      iy,file_load_palette  
+    ld      iy,file_load_palette
 _do_palette:
     rst     CHRGET                ; Skip PALETTE
     push    iy                    ; Stack = FilRtn
@@ -826,6 +868,7 @@ _aux_call
     pop     hl
     ret
 
+
 ;-----------------------------------------------------------------------------
 ; .SCR format: 2048 byte Screen+Color RAM ($3000-$3FFF)
 ; .SCP format
@@ -833,6 +876,7 @@ _aux_call
 ;  80 column: 2048 byte Screen + 2048 byte Color + 32 byte palette + 1 byte border flag
 ;-----------------------------------------------------------------------------
 _load_screen:
+
     rst     CHRGET                ; Skip SCREEN
     call    get_strdesc_arg       ; HL = FileSpec StrDsc; Stack = TxtPtr
     ld      iy,file_load_screen      ; Load character set and copy to character RAM
@@ -854,7 +898,7 @@ run_cmd:
     jr      c,con_run             ; If digit
     cp      '_'                   ; or label
     jr      z,con_run             ;   RUN line#
-    
+
     call    get_string_direct     ; HL = StrDsc, DE = TxtAdr, BC = StrLen
     jr      run_file              ; Load and run file
 
@@ -875,6 +919,9 @@ run_file:
     call    esp_close_all
 
     push    hl                    ; Save String Descriptor
+
+    ;call    _lookup_file          ; HL = StrDsc, DE = TxtAdr, BC = StrLen
+
 
 ;For (16k) cartridge binaries
 ;the bytes at 0x2003...05...07...09...0B...0D...0F are consistent.
@@ -928,6 +975,9 @@ run_file:
 .cartsig
     byte    $2A, $9C, $B0, $6C, $64, $A8, $70
 
+_lookup_file:
+
+
 ;-----------------------------------------------------------------------------
 ; SAVE
 ;
@@ -963,7 +1013,7 @@ ST_SAVE:
 
     call    get_page_arg            ; Check for page specifier
     push    af                      ; Stack = Page, StrDsc, RtnAdr
-    jr      nc,.bin_params          
+    jr      nc,.bin_params
 
     ld      a,(hl)                  ; If @page only
     or      a
@@ -1043,10 +1093,10 @@ _save_ascii:
     call    get_strbuf_addr       ; HL = StrBuf
     ld      (BUFADR),hl           ;
     ld      hl,(TXTTAB)           ; HL = LinPtr
-.loop    
+.loop
     ld      c,(hl)
     inc     hl
-    ld      b,(hl)                
+    ld      b,(hl)
     inc     hl
     ld      a,b
     or      c
@@ -1057,23 +1107,23 @@ _save_ascii:
     ld      e,(hl)
     inc     hl
     ld      d,(hl)                ;   DE = LinNum
-    inc     hl  
+    inc     hl
     push    hl                    ;   Stack = LinPtr, LinLnk, TxtPtr, RtnAdr
     ex      de,hl                 ;   HL = LinNum
     call    LINPRT                ;   Print line# to buffer
-    ld      a,' ' 
+    ld      a,' '
     rst     OUTCHR                ;   Print space to buffer
     ld      de,(BUFPTR)           ;   DE = BufPtr (byte after space)
     pop     hl                    ;   HL = LinPtr; Stack = LinLnk, TxtPtr, RtnAdr
     call    unpack_line           ;   Unpack code into buffer
-    ld      hl,(BUFPTR)             
-    ld      (hl),$0D  
-    inc     hl  
-    ld      (hl),$0A  
-    inc     hl  
+    ld      hl,(BUFPTR)
+    ld      (hl),$0D
+    inc     hl
+    ld      (hl),$0A
+    inc     hl
     ld      de,(BUFADR)           ;   DE = BufAdr
     sbc     hl,de                 ;   HL = LinLen
-    ld      b,h 
+    ld      b,h
     ld      c,l                   ;   BC = LinLen
     call    esp_write_bytes       ;   Write line to file
     pop     hl                    ;   HL = LinLnk; Stack = TxtPtr, RtnAdr
@@ -1083,7 +1133,7 @@ _save_ascii:
     pop     hl
     ret
 
-    
+
 ;-----------------------------------------------------------------------------
 ; Save basic program
 ;-----------------------------------------------------------------------------
@@ -1113,12 +1163,12 @@ save_basic_program:
     ld      c,l
     call    esp_write_bytes
 
-    
+
     ; Write trailer
     ld      bc,15
     ld      e,0
     call    esp_write_repbyte
-    
+
     ; Close file
     call    esp_close_all
 
@@ -1239,7 +1289,7 @@ FN_OPEN:
     SYNCHK  ')'                   ; `)`
     pop     af                    ; A = IN/OUT, StrDsc, RtnAdr
     ex      (sp),hl               ; HL = StrDsc; Stack = TxtPtr, RtnAdr
-    ld      bc,LABBCK              
+    ld      bc,LABBCK
     push    bc                    ; Stack = LABBCK, TxtPtr, RtnAdr
     cp      INPUTK                ; If INPUT
     jr      nz,.notread
@@ -1250,7 +1300,7 @@ FN_OPEN:
 .done
     jp      m,_dos_error
     jp      SNGFLT
-    
+
 _open_write:
     ld      iy,dos_open_write
     call    aux_call
@@ -1282,11 +1332,11 @@ ST_LINE_INPUT:
     call    PTRGET            ; Get pointer to variable
     call    GETYPE            ; If not string
     jp      nz,TMERR          ;   Type mismatch error
-    pop     af                ; A = FilDsc; Stack = TxtPtr  
+    pop     af                ; A = FilDsc; Stack = TxtPtr
     push    hl                ; Stack = TxtPtr, RtnAdr
     push    de                ; Stack = VarPtr, TxtPtr, RtnAdr
     ld      bc,256            ; Maximum bytes
-    ld      hl,(TOPMEM)       
+    ld      hl,(TOPMEM)
     add     hl,bc             ; Work buffer
     call    esp_read_line
     jp      m,_dos_error
@@ -1297,7 +1347,7 @@ ST_LINE_INPUT:
     call    MOVE              ; Copy descriptor to variable
     pop     hl                ; HL = TxtPtr; Stack = RtnAdr
     ret
-    
+
 ;-----------------------------------------------------------------------------
 ; Parse literal string only in Direct Mode
 ; Parse string expression only during RUN
@@ -1306,7 +1356,7 @@ get_string_direct:
     call    in_direct             ; If not direct mode
     jr      c,get_string_arg      ;   Parse string expression
     ld      a,(hl)                ; A = First character of argument
-    cp      '"'                   ; 
+    cp      '"'                   ;
     jr      z,get_string_arg      ; If not a quote
     dec     hl                    ;   Back up text pointer for STRLT2
     ld      b,' '                 ;   Delimiters are space

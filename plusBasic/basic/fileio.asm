@@ -2,39 +2,127 @@
 ; File I/O Machine Language Routines
 ;====================================================================
 
+
+
+
 ;-----------------------------------------------------------------------------
-; Return pointer to file extension
+; Return file extension
 ; Input: BC: filespec length
 ;        DE: filespec address
 ; Output: A,BC: extension length
 ;         DE: extension address
-; Clobbered: BC,DE
+; Clobbered: HL
 ;-----------------------------------------------------------------------------
 file_get_ext:
-      ld      l,'.'               ; Delimiter
-      ex      de,hl               ; HL = SpcAdr; E = Delim
-      add     hl,bc               ; HL = SpcEnd + 1
-      ld      b,c                 ; B = Counter
-      ld      c,0                 ; C = ExtLen
+    ld      l,'.'                 ; Delimiter
+_chop_filespec
+    ex      de,hl                 ; HL = SpcAdr; E = Delim
+    add     hl,bc                 ; HL = SpcEnd + 1
+    ld      b,c                   ; B = Counter
+    ld      c,0                   ; C = ExtLen
 .loop
-      dec     hl                  ; Move left
-      ld      a,(hl)              ; Get character
-      cp      e             
-      jr      z,.found            ; If not Delim
-      inc     c                   ;   Bump length
-      djnz    .loop               ;   Count down
-      ex      de,hl               ;   Restore hl
-      ld      c,b                 ;   BC = 0
-      jr      .return             ; Else
+    dec     hl                    ; Move left
+    ld      a,(hl)                ; Get character
+    cp      e
+    jr      z,.found              ; If not Delim
+    inc     c                     ;   Bump length
+    djnz    .loop                 ;   Count down
+    ex      de,hl                 ;   Restore hl
+    ld      c,b                   ;   BC = 0
+    jr      .return               ; Else
 .found
-      ex      de,hl               ; DE = DotAdr
-      inc     de                  ; DE = ExtAdr
-      ld      b,0                 ; BC = ExtLen
+    ex      de,hl                 ; DE = DotAdr
+    inc     de                    ; DE = ExtAdr
+    ld      b,0                   ; BC = ExtLen
 .return
-      ld      a,c
-      or      a
-      ret
+    ld      a,c
+    or      a
+    ret
 
+
+;-----------------------------------------------------------------------------
+; Return filespec without directory
+; Input: BC: filespec length
+;        DE: filespec address
+; Output: A,BC: filename length
+;         DE: filename address
+; Clobbered: HL
+;-----------------------------------------------------------------------------
+file_trim_dir:
+    push    de                    ; Stack = StrAdr, RtnAdr
+    push    bc                    ; Stack = StrLen, StrAdr, RtnAdr
+    push    de                    ; Stack = StrAdr, StrLen, StrAdr, RtnAdr
+    ld      l,'/'                 ; Delimiter
+    call    _chop_filespec        ; DE = NamAdr, A,BC = NamLen
+    pop     hl                    ; HL = StrAdr; Stack = StrLen, StrAdr, RtnAdr
+    rst     COMPAR                ;
+    jr      z,.no_dir             ; If NamAdr <> StrAdr
+    ld      a,c
+    or      a
+    jr      pop2hl_ret 
+
+.no_dir
+    pop     bc                    ; BC = StrLen; ; Stack = StrAdr, RtnAdr
+    pop     de                    ; HL = StrAdr; ; Stack = RtnAdr
+    ld      a,c                   ; A = StrLen
+    or      a
+    ret
+    
+;-----------------------------------------------------------------------------
+; Return directory portion of filespec
+; Input: BC: filespec length
+;        DE: filespec address
+; Output: A,BC: directory length
+;         DE: directory address
+; Clobbered: HL
+;-----------------------------------------------------------------------------
+file_get_dir:
+    push    de                    ; Stack = StrAdr, RtnAdr
+    push    bc                    ; Stack = StrLen, StrAdr, RtnAdr
+    push    de                    ; Stack = StrAdr, StrLen, StrAdr, RtnAdr
+    ld      l,'/'                 ; Delimiter
+    call    _chop_filespec        ; DE = NamAdr, A,BC = NamLen
+    pop     hl                    ; HL = StrAdr; Stack = StrLen, StrAdr, RtnAdr
+    rst     COMPAR                ;
+    jr      z,.no_dir             ; If NamAdr <> StrAdr
+    pop     hl                    ; HL = OldLen; Stack = StrAdr, RtnAdr
+    dec     bc
+    jr      _no_ext
+.no_dir
+    xor     a                     ; Else
+    ld      b,a                   ;   A,BC = 0
+    ld      c,a
+pop2hl_ret:
+    pop     hl                    ; Stack = StrAdr, RtnAdr
+    pop     hl                    ; Stack = RtnAdr
+    ret
+
+;-----------------------------------------------------------------------------
+; Return filespec without extension
+; Input: BC: filespec length
+;        DE: filespec address
+; Output: A: extension length
+;         BC: trimmed length
+;         DE: filespec address
+; Set Flags: NZ if file had extension, Z if it did not
+; Clobbered: HL
+;-----------------------------------------------------------------------------
+file_trim_ext:
+    ld      l,'.'                 ; Delimiter
+    push    de                    ; Stack = StrAdr, RtnAdr
+    push    bc                    ; Stack = StrLen, StrAdr, RtnAdr
+    call    _chop_filespec        ; DE = ExtAdr, A,BC = ExtLen
+    pop     hl                    ; HL = OldLen; Stack = StrAdr, RtnAdr
+    jr      z,_no_ext             ; If extension found
+    inc     bc                    ;   BC = ExtLen + 1
+_no_ext:
+    sbc     hl,bc                 ; HL = ChpLen
+    ld      b,h
+    ld      c,l                   ; BC = ChpLen
+    ld      a,c                   ; A = ChpLen
+    or      a                     ; Set flags
+    pop     de                    ; DE = StrAdr; Stack = RtnAdr
+    ret
 
 ;-----------------------------------------------------------------------------
 ; Load binary file into main memory
@@ -43,7 +131,7 @@ file_get_ext:
 ;        HL: string descriptor address
 ; Output: A: result code
 ;        BC: number of bytes actually read
-;        DE: next destination address 
+;        DE: next destination address
 ; Flags Set: S if I/O error
 ; Clobbered: HL
 ;-----------------------------------------------------------------------------
@@ -72,7 +160,7 @@ file_load_chrset:
     ret     z                     ; Illegal page
     ret     c                     ; Page overflow
     ret     m                     ; I/O error
-    jp      custom_chrset    
+    jp      custom_chrset
 
 ;-----------------------------------------------------------------------------
 ; Load binary file into paged memory`
@@ -82,7 +170,7 @@ file_load_chrset:
 ;        HL: string descriptor address
 ; Output: A: result code
 ;        BC: number of bytes actually read
-;        DE: next destination address 
+;        DE: next destination address
 ;         H: destination page
 ; Flags Set: Z if llegal page
 ;            C if page overflow
@@ -119,7 +207,7 @@ file_load_rom:
     jr      z,.copy
     xor     a
     ret
-.copy    
+.copy
     ld      a,RAM_BAS_3
     call    page_map_bank1
     ld      hl, BANK1_BASE
@@ -150,8 +238,8 @@ file_load_screen:
     ld      de,$3000
     call    esp_read_paged
 
-    
-    
+
+
     push    af
     call    esp_close_all
     pop     af
@@ -189,14 +277,14 @@ file_load_palette:
     ld      e,a                   ; E = PalNum
     push    de                    ; Stack = PalNum, RtnAdr
     call    file_load_strbuf      ; A = Result, BC = DatLen, HL = StrBuf
-    pop     de                    ; E = PalNum; Stack = RtnAdr 
+    pop     de                    ; E = PalNum; Stack = RtnAdr
     ret     m                     ; Return if I/O Error
     ld      a,32                  ; If result > 32
-    cp      c 
+    cp      c
     jp      c,discard_ret         ;   Return overflow
     ex      de,hl                 ; DE = StrBuf, L = PalNum
-    xor     a                     ; A = Entry#
-    jp      palette_set           ; Write out palette and return
+    xor     a
+    call    palette_set           ; Write out palette and return
 
 ;-----------------------------------------------------------------------------
 ; Read file into string buffer
@@ -219,7 +307,7 @@ file_load_strbuf:
     xor     a
     ld      (de),a
     ret
-    
+
 ;-----------------------------------------------------------------------------
 ; Save binary file into main memory
 ; Input: BC: maximum length
@@ -227,7 +315,7 @@ file_load_strbuf:
 ;        HL: string descriptor address
 ; Output: A: result code
 ;        BC: number of bytes actually read
-;        DE: next destination address 
+;        DE: next destination address
 ; Flags Set: S if I/O error
 ; Clobbered: HL
 ;-----------------------------------------------------------------------------
@@ -249,12 +337,12 @@ file_save_binary:
 ;       HL: string descriptor address
 ; Output: A: result code
 ;        BC: number of bytes actually read
-;        DE: next destination address 
+;        DE: next destination address
 ; Flags Set: S if I/O error
 ; Clobbered: HL
 ;-----------------------------------------------------------------------------
 file_save_paged:
-    push    af                    
+    push    af
     call    dos_open_write
     jp      m,discard_ret
     pop     af
@@ -284,7 +372,7 @@ file_save_palette:
     ld      bc,32                 ; Read 16 palette entries
     call    palette_get           ; Read palette into string buffer
     pop     hl                    ; HL = FilStd; Stack = RtnAdr
-    ld      a,32                  ; 
+    ld      a,32                  ;
 ;-----------------------------------------------------------------------------
 ; Write string buffer to file
 ; Input: A: Number of bytes to write
