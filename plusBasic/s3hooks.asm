@@ -96,7 +96,6 @@ s3_stuffh_ext:
     cp      RUNTK-':'                 
     jr      z,.space_loop
     cp      DIRTK-':'             ; If Not DIRTK through CDTK
-
     jp      c,NODATT              ;
     cp      CDTK-':'+1            ;
     jp      nc,NODATT             ;  Continue STUFFH

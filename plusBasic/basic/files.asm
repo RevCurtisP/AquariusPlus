@@ -112,6 +112,34 @@ ST_RENAME:
     jr      _check_error          ; Restore textptr and check for error
 
 ;-----------------------------------------------------------------------------
+; FILE Functions stub
+;
+;-----------------------------------------------------------------------------
+FN_FILE:
+    rst     CHRGET                ; Skip FILE
+    rst     SYNCHR                
+    byte    XTOKEN                ; Must be extended Token
+    cp      EXTTK                 ; If EXT
+    jr      z,FN_FILEEXT          ;   Do FILEEXT$
+    jp      SNERR
+
+; ? FILEEXT$("file.ext")
+; ? FILEEXT$("no_ext")
+; ? FILEEXT$("a/b/file.tmp")
+FN_FILEEXT:
+    rst     CHRGET                ; Skip FILE
+    SYNCHK  '$'                   ; Require string
+    call    PARCHK                ; Parse agument
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    call    free_addr_len         ; DE = StrAdr, BC = StrLen
+    ld      iy,file_get_ext
+    call    aux_call              ; DE = ExtAdr, A = ExtLen
+    jr      nz,.ret_str
+    ld      de,REDDY-1
+.ret_str
+    jp      STRNEW                ; Create temporary and return it
+
+;-----------------------------------------------------------------------------
 ; DIR - Directory listing
 ;
 ; No argument -> List current directory
@@ -827,7 +855,7 @@ run_cmd:
     cp      '_'                   ; or label
     jr      z,con_run             ;   RUN line#
     
-    call    get_string_direct     ; Get filename
+    call    get_string_direct     ; HL = StrDsc, DE = TxtAdr, BC = StrLen
     jr      run_file              ; Load and run file
 
 con_run:
@@ -854,7 +882,7 @@ run_file:
 
     ; Check for .ROM extension
     ld      a, c                  ; A = String Length
-    cp      a, 5                  ; If less thsn 5
+    cp      a, 5                  ; If less than 5
     jr      c, .load_basic        ; Too short to have ROM extension
     sub     a, 4                  ; Position of last four characters of String
     ld      c, a
@@ -896,6 +924,9 @@ run_file:
 
 .coreext db ".CORE",0
 .romext: db ".ROM",0
+
+.cartsig
+    byte    $2A, $9C, $B0, $6C, $64, $A8, $70
 
 ;-----------------------------------------------------------------------------
 ; SAVE
@@ -984,8 +1015,9 @@ ST_SAVE:
 
 ; SAVE "t/paged.bin",@63,0,16384
 ; SAVE "t/paged.bin",@63
+; SAVE "t/paged.bin",@19
 .save_paged
-    call    check_paged_address   ; Verify pages addres is between 0 and 16383
+    call    check_paged_address   ; Verify pages address is between 0 and 16383
     ld      iy,file_save_paged
     call    aux_call
     jp      m,_dos_error

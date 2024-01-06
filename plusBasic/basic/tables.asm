@@ -220,7 +220,7 @@ FNJUMPS:
     dw      FN_TILE               ;$F0 TILE
     dw      FN_RGB                ;$F1 RGB
     dw      SNERR                 ;$F2 MAP
-    dw      SNERR                 ;$F3 FILE
+    dw      FN_FILE               ;$F3 FILE
     dw      SNERR                 ;$F4 RESUME
     dw      SNERR                 ;$F5 COL
     dw      SNERR                 ;$F6 SCREEN 

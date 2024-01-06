@@ -2660,7 +2660,7 @@ STRFIN: cp      '"'               ;[M80] IF QUOTE TERMINATES THE STRING
         inc     hl                ;
         ex      de,hl             ;[M80] GET POINTER TO TEMP
         ld      a,c               ;[M80] GET CHARACTER COUNT IN A
-        call    STRAD2            ;[M80] SAVE STR INFO
+STRNEW: call    STRAD2            ;[M80] SAVE STR INFO
 ;;Set Pointer to Temporary String Descriptor
 PUTNEW: ld      de,DSCTMP         ;[M80] [D,E] POINT AT RESULT DESCRIPTOR
         ld      hl,(TEMPPT)       ;[M80] [H,L]=POINTER TO FIRST FREE TEMP

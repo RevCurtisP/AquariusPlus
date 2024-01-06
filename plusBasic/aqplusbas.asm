@@ -23,7 +23,7 @@
     jp      _reset          ; $2000 Called from main ROM at reset vector
     jp      _coldboot       ; $2003 Called from main ROM for cold boot
     jp      _start_cart     ; $2006
-    jp      irq_handler     ; $2009 interrupt haandler
+    jp      irq_handler     ; $2009 interrupt handler
     jp      _warm_boot      ; $200C Called from main ROM for warm boot
     jp      _keyread        ; $200F Called from COLORS
     jp      _sounds_hook    ; $2012 SOUNDX Adjust SOUNDS for turbo mode
@@ -83,7 +83,7 @@
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.20h7"
+    db "v0.20h8"
 ifdef coredump
     db "_coredump"
 endif

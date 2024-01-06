@@ -84,13 +84,13 @@ EXTCMDS:
     db $80 + ' '                  ; $8F             
     ; Primary Tokens grouped together, so extended dispatch can use DEC A
     db $80 + 'R',"ESET"           ; $90             
-    db $80 + ' '                  ; $91             
+    db $80 + 'E',"XT"             ; $91             
     db $80 + 'V',"ER"             ; $92             
     db $80 + 'F',"ILL"            ; $93
     db $80 + 'C',"OMPARE"         ; $94
     db $80 + 'P',"LAY"            ; $95
     db $80 + 'A',"PPEND"          ; $96
-    db $80             ; End of table marker
+    db $80
 
 EXTOKEN = $97     ; Last Token + 1
 
@@ -140,6 +140,7 @@ SAMPTK    equ     $8B
 PT3TK     equ     $8C
 PIXTK     equ     $8D
 RESETK    equ     $90
+EXTTK     equ     $91
 VERTK     equ     $92
 FILLTK    equ     $93
 COMPTK    equ     $94

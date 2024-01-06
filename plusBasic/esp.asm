@@ -107,11 +107,15 @@ esp_read_byte:
 ;     DE,HL: next address (start address if no bytes read)
 ;-----------------------------------------------------------------------------
 esp_read_bytes:
+    xor     a
+
+esp_readc_bytes:
+    push    af
     ld      a, ESPCMD_READ
     call    esp_cmd
 
     ; Send file descriptor
-    xor     a
+    pop     af
     call    esp_send_byte
 
     ; Send read size
@@ -162,7 +166,7 @@ esp_read_bytes:
 esp_read_paged:
     ld      l,a                   ; L = FilDsc
     ld      a,h                   ; A = Page
-    call    page_check_read       ; If illegal page
+    call    page_check_write      ; If illegal page
     ret     z                     ;   Return error
     call    page_map_bank3        ; Map page into bank 3
     call    page_coerce_de_addr
@@ -352,7 +356,7 @@ esp_send_bytes:
 ; Clobbered registers: A,AF',DE,IX
 ;-----------------------------------------------------------------------------
 esp_write_paged:
-    call    page_check_write      ; If illegal page       
+    call    page_check_read       ; If illegal page       
     ret     z                     ;   Return error
     call    page_map_bank3        ; Map page into bank 3
     call    page_coerce_de_addr

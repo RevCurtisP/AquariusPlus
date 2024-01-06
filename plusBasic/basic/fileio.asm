@@ -3,6 +3,40 @@
 ;====================================================================
 
 ;-----------------------------------------------------------------------------
+; Return pointer to file extension
+; Input: BC: filespec length
+;        DE: filespec address
+; Output: A,BC: extension length
+;         DE: extension address
+; Clobbered: BC,DE
+;-----------------------------------------------------------------------------
+file_get_ext:
+      ld      l,'.'               ; Delimiter
+      ex      de,hl               ; HL = SpcAdr; E = Delim
+      add     hl,bc               ; HL = SpcEnd + 1
+      ld      b,c                 ; B = Counter
+      ld      c,0                 ; C = ExtLen
+.loop
+      dec     hl                  ; Move left
+      ld      a,(hl)              ; Get character
+      cp      e             
+      jr      z,.found            ; If not Delim
+      inc     c                   ;   Bump length
+      djnz    .loop               ;   Count down
+      ex      de,hl               ;   Restore hl
+      ld      c,b                 ;   BC = 0
+      jr      .return             ; Else
+.found
+      ex      de,hl               ; DE = DotAdr
+      inc     de                  ; DE = ExtAdr
+      ld      b,0                 ; BC = ExtLen
+.return
+      ld      a,c
+      or      a
+      ret
+
+
+;-----------------------------------------------------------------------------
 ; Load binary file into main memory
 ; Input: BC: maximum length
 ;        DE: destination address
