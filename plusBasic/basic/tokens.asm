@@ -91,9 +91,18 @@ EXTCMDS:
     db $80 + 'P',"LAY"            ; $95
     db $80 + 'A',"PPEND"          ; $96
     db $80 + 'T',"RIM"            ; $97
-    db $80
+    db $80 + 'S',"STASH"          ; $98
+    db $80 + ' '                  ; $99             
+    db $80 + ' '                  ; $9A             
+    db $80 + ' '                  ; $9B             
+    db $80 + ' '                  ; $9C             
+    db $80 + ' '                  ; $9D             
+    db $80 + ' '                  ; $9E             
+    db $80 + ' '                  ; $9F
+    db $80 + 'V',"ARS"            ; $A0
+    db $80 
 
-EXTOKEN = $98     ; Last Token + 1
+EXTOKEN = $99     ; Last Token + 1
 
 ;-----------------------------------------------------------------------------
 ; plusBASIC tokens

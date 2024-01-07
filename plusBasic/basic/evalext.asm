@@ -116,12 +116,16 @@ get_hex:
     ld      a,(hl)          ; Get Hex Digit 
     inc     hl              ; Bump Pointer
 cvt_hex:
+    cp      '.'             
+    jr      nz,.not_dot     ; If dot
+    add     '0'-'.'         ;   Convert to 0
+.not_dot
     cp      ':'             ; Test for Digit 
     jr      nc,.not_digit   ; If A <= '9'
     sub     '0'             ;   Convert Digit to Binary
     jr      c,.fcerr        ;   If it was less than '0', Error
     ret                     ;   Else Return 
-.not_digit:
+.not_digit
     and     $5F             ; Convert to Upper Case
     sub     'A'-10          ; Make 'A' = 10
     jr      c,.fcerr        ; Error if it was less than 'A'
