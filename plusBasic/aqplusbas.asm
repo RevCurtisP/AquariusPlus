@@ -83,7 +83,7 @@
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.20j"
+    db "v0.20j1"
 ifdef coredump
     db "_coredump"
 endif

@@ -1,5 +1,9 @@
 # plusBASIC Release History
 
+ - v0.20j1
+   - Fixed ATTR and PALETTE causing syntax error after FILL TILEMAP tile#
+ - v0.20j 
+   - '.' treated as '0' in hex literal strings and ASC$ functiion.
  - v0.20i
    - Added BASIC functions `FILEEXT$()`, `FILEDIR$()`, `TRIMDIR$()`, `TRIMEXT$()`
    - Added kernel routines `file_get_ext`, `file_trim_dir`, `file_get_dir`, `file_trim_ext`

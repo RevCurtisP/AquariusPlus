@@ -502,6 +502,8 @@ _get_attr_palette:
     call    CHRGT2                ; Reget character
     jp      z,pop_de_ret          ; Return if terminator
     push    bc                    ; Stack = Props, Tile #, RtnAdr
+    rst     SYNCHR
+    byte    XTOKEN                ; Must be extended token
     cp      ATTRTK                ; If ATTR
     jr      nz,.notattrs
     call    GTBYTC                ;   Get attributes
