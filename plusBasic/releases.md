@@ -1,7 +1,9 @@
 # plusBASIC Release History
 
+ - v0.20j2 
+   - Allow both `,` and `;` as delimiters in `DEF INTLIST`
  - v0.20j1
-   - Fixed ATTR and PALETTE causing syntax error after FILL TILEMAP tile#
+   - Fixed `ATTR attrs` and `PALETTE palette#` causing syntax error after `FILL TILEMAP tile#`
  - v0.20j 
    - '.' treated as '0' in hex literal strings and ASC$ functiion.
  - v0.20i
@@ -18,7 +20,7 @@
  - v0.20f 
    - Added optional comma between end-coordinate and fill character in `FILL SCREEN`
  - v0.20e 
-   - Added KEY() function
+   - Added `KEY()` function
  - v0.20d
-   - Added DEC() function, fixed esp_get_version/VER(0)/VER$(0)
- 
+   - Added `DEC()` function, fixed `esp_get_version`/`VER(0)`/`VER$(0)`
+

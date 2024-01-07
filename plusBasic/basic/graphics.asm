@@ -609,8 +609,13 @@ ST_DEFINT:
     call    sbuff_write_de        ; Write it to string buffer
     call    CHRGT2                ; Reget next character
     jr      z,_finish_def         ; If not end of statement
-    SYNCHK  ','                   ;   Require comma
-    jr      .loop                 ;   and get next tile#
+    cp      ';'                   ;   
+    jr      nz,.not_sc            ;   If semicolon
+    rst     CHRGET                ;     Skip it
+    jr      .loop                 ;     and get next integer
+.not_sc
+    SYNCHK  ','                   ;   Else require comma
+    jr      .loop                 ;     and get next integer
 
 ;-----------------------------------------------------------------------------
 ; DEF RGBLIST R$ = r,g,b; r,g,b; ...
