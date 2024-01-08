@@ -296,7 +296,6 @@ ST_FILL_SCREEN:
     ld      l,a                   ;   L = Fill Byte
     ld      iy,screen_fill
     call    aux_call              ;   Do the fill
-    call    aux_call              ;   Do the fill
     pop     hl                    ;   HL = TxtPtr; Stack = Cols, Rows, RtnAdr
     call    CHRGT2                ;   Reget next character
     jr      nz,.notx              ;   If terminator
@@ -476,21 +475,43 @@ ST_PUT_TILEMAP:
 ;-----------------------------------------------------------------------------
 ; SET TILEMAP
 ; SET TILEMAP (x,y) TO TILE tile# ATTR attrs PALETTE palette#
-; SET TILEMAP (x,y) TO integer
 ; SET TILEMAP OFFSET x,y
 ;-----------------------------------------------------------------------------
 ST_SET_TILEMAP:
     rst     CHRGET                ; Skip MAP
-    rst     SYNCHR                ;
-    byte    XTOKEN                ; Only Extended Tokeb
-
-
-    cp      OFFTK                 ; If OFF
+    cp      XTOKEN
+    jr      nz,.set_xy            ; If XTOKEN
+    rst     CHRGET                ;   Skip it
+    cp      OFFTK                 ;   If OFF
     jr      z,_tilemap_offset     ;   Do SET TILEMAP OFFSET
     jp      SNERR
+.set_xy                           ; Else
+    call    SCAND                 ;   C = Column, E = Row
+    push    de                    ;   Stack = Row, RtnAdr
+    push    bc                    ;   Stack = Column, Row, RtnAdr
+    rst     SYNCHR
+    byte    TOTK                  ;   Require TO
+    cp      TILETK
+    jr      nz,.set_int           ;   If TILE 
+    call    _get_tile_props       ;     BC = Props, DE = Tile#
+    call    tile_combine_props    ;     DE = TilPrp
+    jr      .set_tile             ;   Else
+.set_int
+    call    get_int512            ;     DE = TilDef
+.set_tile
+    pop     bc                    ;   C = Column; Stack = Row, RtnAdr
+    ex      (sp),hl               ;   L = Row; Stack = TxtPtr, RtnAdr
+    ex      de,hl                 ;   E = Row, HL = TilDef
+;    ld      iy,tilemap_set_tile   
+;    call    aux_call              ;   Write tile to tilemap
+    call    tilemap_set_tile
+    jp      c,FCERR               ;   Error if invalid coordinates
+    pop     hl                    ;   HL = TxtPtr; Stack = RtnAdr
+    ret
 
-;ToDo: get TileMap (X,Y) working
-;Note: TILE is not an extended token, the rest are
+; Parse TILE tile# [ATTR attrs] [PALETTE palette#]
+; Output: BC = Props, DE = Tile#
+; Note: TILE is not an extended token, the rest are
 _get_tile_props:
     rst     SYNCHR                ; Require TILE
     byte    TILETK

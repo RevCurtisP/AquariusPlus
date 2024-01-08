@@ -284,7 +284,7 @@ file_load_palette:
     jp      c,discard_ret         ;   Return overflow
     ex      de,hl                 ; DE = StrBuf, L = PalNum
     xor     a
-    call    palette_set           ; Write out palette and return
+    jp      palette_set           ; Write out palette and return
 
 ;-----------------------------------------------------------------------------
 ; Read file into string buffer
