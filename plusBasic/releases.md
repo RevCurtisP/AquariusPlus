@@ -1,5 +1,7 @@
 # plusBASIC Release History
 
+ - v0.20k
+   - Implemented `SET TILEMAP (x,y)` and `tilemap_set_tile`
  - v0.20j2 
    - Allow both `,` and `;` as delimiters in `DEF INTLIST`
  - v0.20j1
