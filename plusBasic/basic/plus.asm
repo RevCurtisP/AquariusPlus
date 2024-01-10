@@ -51,6 +51,8 @@ FN_DEC:
 ;-----------------------------------------------------------------------------
 FN_GET:
     rst     CHRGET                ; Skip GET Token
+    cp      TILETK
+    jp      z,FN_GETTILE
     rst     SYNCHR
     byte    XTOKEN                ; Check Extended Tokens
     cp      KEYTK

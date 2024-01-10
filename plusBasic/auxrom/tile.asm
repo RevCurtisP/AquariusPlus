@@ -12,7 +12,7 @@
 tile_set:
     call      _get_set_init       ; HL = TileAddr
     ex        de,hl               ; DE = TileAddr, HL = Dat
-    jp        page_write_bytes    ; Write data to tile
+    jp        page__write_bytes   ; Write data to tile
     
 ;-----------------------------------------------------------------------------
 ; Get tile data
@@ -23,7 +23,7 @@ tile_set:
 ;-----------------------------------------------------------------------------
 tile_get:
     call      _get_set_init       ; HL = TileAddr
-    jp        page_read_bytes     ; Read data and return
+    jp        page__read_bytes    ; Read data and return
 
 _get_set_init:
     push      bc                  
@@ -107,7 +107,7 @@ tilemap_set_tile:
     ld      b,h
     ld      c,l                   ; BC = TilPrp
     ld      a,VIDEO_RAM
-    jp      page_write_word       ; Write to Video RAM and return
+    jp      page__write_word      ; Write to Video RAM and return
 
 ;-----------------------------------------------------------------------------
 ; Get tile from tilemap
@@ -120,7 +120,7 @@ tilemap_get_tile:
     call    tilemap_cell_addr     ; DE = Cell Addres
     ret     c                     ; Return if Error
     ld      a,VIDEO_RAM           ; Reading Video RAM
-    jp      page_read_word        ; Read word and return
+    jp      page__read_word       ; Read word and return
     
 ;-----------------------------------------------------------------------------
 ; Calculate tilemap cell address
@@ -193,7 +193,7 @@ tilemap_get:
     push    bc                    ; Stack = ColCnt, RowCnt, RtnAdr
     push    de                    ; Stack = RowAdr, ColCnt, RowCnt, RtnAdr 
     ld      a,VIDEO_RAM
-    call    page_read_bytes       ; In:  A = Page, BC: BytCnt, DE: DstAdr, HL: SrcAdr
+    call    page__read_bytes      ; In:  A = Page, BC: BytCnt, DE: DstAdr, HL: SrcAdr
     pop     de                    ; DE = RowlAdr; Stack = ColCnt, RowCnt, RtnAdr
     ex      de,hl                 ; HL = RowlAdr, DE = TilPrp
     ld      bc,128                ; Row Width in Words
@@ -231,7 +231,7 @@ tile_convert_rect:
     call    _tilemap_bounds       ; Check EndCol and EndRow
     ret     c
     ld      ix,tilemap_cell_addr
-    call    gfx_convert_rect      ; A = RowCnt, C = ColCnt, DE = RowAdr
+    call    aux_convert_rect      ; A = RowCnt, C = ColCnt, DE = RowAdr
     ret     
 
 

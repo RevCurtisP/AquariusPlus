@@ -247,7 +247,6 @@ ST_SCREEN_SWAP:
 
 ;-----------------------------------------------------------------------------
 ; SET TILE Statement
-; SET TILE tile# TO color_index, ...
 ; SET TILE tile# TO tiledata$
 ;-----------------------------------------------------------------------------
 ST_SET_TILE:
@@ -263,7 +262,8 @@ ST_SET_TILE:
     push    hl                    ; Stack = Tile#, TxtPtr, RtnAdr
     call    free_addr_len         ; DE = DataAddr, BC = Count
     pop     hl                    ; HL = Tile#; Stack = TxtPtr, RtnAdr
-    call    tile_set
+    ld      iy,tile_set
+    call    aux_call
     jp      c,OVERR               ; Error if Overflow
     pop     hl                    ; HL = TxtPtr
     ret
@@ -339,11 +339,13 @@ ST_FILL_TILE:
     push    de                    ; Stack = Rows, RtnAdr
     push    bc                    ; Stack = Cols, Rows, RtnAdr
     call    _get_tile_props       ; BC = Props, DE = Tile #
-    call    tile_combine_props    ; DE = TilPrp
+    ld      iy,tile_combine_props
+    call    aux_call              ; DE = TilPrp
     pop     bc                    ; BC = Cols; Stack = Rows, RtnAdr
     ex      (sp),hl               ; HL = Rows; Stack = TxtPtr, RtnAdr
     ex      de,hl                 ; DE = Rows, HL = TilPrp
-    call    tilemap_fill          ; In: B=BgnCol, C=EndCol, D=BgnRow, E=EndRow, HL: TilPrp
+    ld      iy,tilemap_fill
+    call    aux_call              ; In: B=BgnCol, C=EndCol, D=BgnRow, E=EndRow, HL: TilPrp
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     ret
 
@@ -475,6 +477,7 @@ ST_PUT_TILEMAP:
 ;-----------------------------------------------------------------------------
 ; SET TILEMAP
 ; SET TILEMAP (x,y) TO TILE tile# ATTR attrs PALETTE palette#
+; SET TILEMAP (x,y) TO integer
 ; SET TILEMAP OFFSET x,y
 ;-----------------------------------------------------------------------------
 ST_SET_TILEMAP:
@@ -494,7 +497,8 @@ ST_SET_TILEMAP:
     cp      TILETK
     jr      nz,.set_int           ;   If TILE 
     call    _get_tile_props       ;     BC = Props, DE = Tile#
-    call    tile_combine_props    ;     DE = TilPrp
+    ld      iy,tile_combine_props
+    call    aux_call              ; DE = TilPrp
     jr      .set_tile             ;   Else
 .set_int
     call    get_int512            ;     DE = TilDef
@@ -502,8 +506,8 @@ ST_SET_TILEMAP:
     pop     bc                    ;   C = Column; Stack = Row, RtnAdr
     ex      (sp),hl               ;   L = Row; Stack = TxtPtr, RtnAdr
     ex      de,hl                 ;   E = Row, HL = TilDef
-;    ld      iy,tilemap_set_tile   
-;    call    aux_call              ;   Write tile to tilemap
+    ld      iy,tilemap_set_tile   
+    call    aux_call              ;   Write tile to tilemap
     call    tilemap_set_tile
     jp      c,FCERR               ;   Error if invalid coordinates
     pop     hl                    ;   HL = TxtPtr; Stack = RtnAdr
@@ -548,7 +552,8 @@ _tilemap_offset:
     SYNCHK  ','                   ; Require comma
     call    GETBYT                ; E = Y-position
     pop     bc                    ; BC = X-position, Stack = RtnAdr
-    jp      tilemap_set_offset    ; Set Offset and return
+    ld      iy,tilemap_set_offset ; Set Offset and return
+    jp      aux_call
 
 ;-----------------------------------------------------------------------------
 ; TILEMAPX, TILEMAPY
@@ -560,7 +565,8 @@ FN_TILE:
     cp      '('                   ; If (
     jr      z,FN_TILEMAP          ; Go do TILEMAP(x,y)
     push    AF                    ; Stack = 'X'/'Y', RtnAdr
-    call    tilemap_get_offset    ; BC = X-Offset, DE = Y-Offset
+    ld      iy,tilemap_get_offset    
+    call    aux_call              ; BC = X-Offset, DE = Y-Offset
     pop     AF                    ; A = 'X'/'Y', Stack = RtnAdr
     cp      'Y'                   ; If not TILEMAPY
     jr      z,push_labbck_floatde
@@ -578,7 +584,8 @@ push_labbck_floatde:
 FN_TILEMAP
     call    SCAND                 ; Parse column and row
     call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
-    call    tilemap_get_tile      ; BC = tile# + properties
+    ld      iy,tilemap_get_tile
+    call    aux_call              ; BC = tile# + properties
     jp      c,FCERR               ; Carry set = bad args
     jp      FLOAT_BC              ; Return BC
 
@@ -706,7 +713,7 @@ FN_GETTILE:
     call    STRINI                ; Create TmpStr; HL = StrDsc, DE = StrAdr
     ld      bc,32                 ; BC = StrLen
     pop     hl                    ; HL = Tile#; Stack = DummyAdr, TxtPtr, RtnAdr
-    call    tile_get
+    ld      iy,tile_get
     ld      a,1
     ld      (VALTYP),a            ; Set Type to String
     call    FRESTR                ; Free Temporary

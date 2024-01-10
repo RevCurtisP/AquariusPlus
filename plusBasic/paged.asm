@@ -255,7 +255,6 @@ page_fill_byte:
     ld      (de),a
     call    page_inc_de_addr
     jp      c,page_restore_plus   
-
     jr      .loop
 
 ;-----------------------------------------------------------------------------
@@ -270,22 +269,28 @@ page_fill_byte:
 ;-----------------------------------------------------------------------------
 ;ToDo: finish rewrite page_fill_word
 page_fill_word:
-    call    page_set4write_coerce ; DE = Coerced Start Address
+    call    page__set_for_write
     ret     z                     ; If invalid page, return error
+    call    page_coerce_de_addr ; DE = Coerced Start Address
 .loop
     ld      a,b
     or      c
-    jp      z,_success
+    jr      z,.success
     dec     bc
     ld      a,l
     ld      (de),a
     call    page_inc_de_addr
-    jp      c,page_restore_plus
+    jr      c,.done
     ld      a,h
     ld      (de),a
     call    page_inc_de_addr
-    jp      c,page_restore_plus
-    jr      .loop
+.done
+    jr      nc,.loop
+    jp      page_restore_bank3
+.success:
+    xor     a                     ; Clear Carry Flag
+    inc     a                     ; Clear Zero Flag
+    jp      page_restore_bank3    ; Restore BANK3 page and return
 
 ;-----------------------------------------------------------------------------
 ; Swap pages into Banks 1 and 3
@@ -337,10 +342,10 @@ page_restore_two:
 ;-----------------------------------------------------------------------------
 page_read_byte:
     call    page_set4read_coerce
-    jr      z,page_restore_plus  ; Return if illegal page
+    jp      z,page_restore_plus  ; Return if illegal page
     ld      a,(de)
     ld      c,a
-    jr      page_restore_plus
+    jp      page_restore_plus
 
 ;-----------------------------------------------------------------------------
 ; Write Byte to Page
@@ -354,10 +359,30 @@ page_read_byte:
 ;-----------------------------------------------------------------------------
 page_write_byte:
     call    page_set4write_coerce
-    jr      z,page_restore_plus  ; Return if illegal page
+    jp      z,page_restore_plus  ; Return if illegal page
     ld      a,c
     ld      (de),a
-    jr      page_restore_plus
+    jp      page_restore_plus
+
+page__read_word:
+    call    page__set_for_read
+    ret     z
+    call    page_coerce_de_addr
+    ld      a,(de)
+    ld      c,a
+    inc     de
+    ld      a,d
+    or      e 
+    jr      nz,.not_end
+    call    page_next_de_address
+    jr      c,.done               ; Return if overflow
+.not_end
+    ld      a,(de)
+    ld      b,a
+    dec     de                    ; DE = Original address
+.done
+    jp      page_restore_bank3
+
 
 ;-----------------------------------------------------------------------------
 ; Read Word from Page - wraps to next page if address is 16383
@@ -370,7 +395,7 @@ page_write_byte:
 ;-----------------------------------------------------------------------------
 page_read_word:
     call    page_set4read_coerce
-    jr      z,page_restore_plus  ; Return if illegal page
+    jp      z,page_restore_plus  ; Return if illegal page
     ld      a,(de)
     ld      c,a
     inc     de
@@ -383,13 +408,33 @@ page_read_word:
     ld      a,(de)
     ld      b,a
     dec     de                    ; DE = Original address
-    jr      page_restore_plus
+    jp      page_restore_plus
+
+page__write_word:
+    call    page__set_for_write
+    ret     z
+    call    page_coerce_de_addr
+    ld      a,c
+    ld      (de),a
+    inc     de
+    ld      a,d
+    or      e 
+    jr      nz,.not_end
+    call    page_next_de_address
+    jr      c,.done               ; Return if overflow
+.not_end
+    ld      a,b
+    ld      (de),a
+    dec     de                    ; Restore DE and fall into page_restore
+.done
+    jp      page_restore_bank3
+
 
 ;-----------------------------------------------------------------------------
 ; Write Word to Page - wraps to next page if address is 16383
 ; Input: A: Page
 ;       BC: Word to write
-;       DE: Address 0-16383 (Higher addresses mapped to input range) 
+;`       DE: Address 0-16383 (Higher addresses mapped to input range) 
 ; Output: BC: Word written
 ;         DE: Address coerced to $C000-$FFFF
 ;       Zero: Cleared if succesful, Set if invalid page
@@ -517,6 +562,28 @@ page_map_basbuf:
     jr      _map_page_bank3
 
 
+page__write_bytes:
+    call    page__set_for_write
+    ret     z
+    call    page_coerce_de_addr
+    dec     de
+.loop
+    ld      a,b 
+    or      c
+    jr      z,.success
+    call    page_inc_de_addr
+    jr      c,.done
+    ld      a,(hl)
+    ld      (de),a
+    inc     hl
+    dec     bc
+    jr      .loop
+.success:
+    xor     a                     ; Clear Carry Flag
+    inc     a                     ; Clear Zero Flag
+.done
+    jp      page_restore_bank3    ; Restore BANK3 page and return
+
 
 ;-----------------------------------------------------------------------------
 ; Write Bytes to Page - wraps to next page if address is 16383
@@ -531,14 +598,14 @@ page_map_basbuf:
 ;-----------------------------------------------------------------------------
 page_write_bytes:
     call    page_set4write_coerce
-    jr      z,page_restore_plus  ; Return if illegal page
+    jp      z,page_restore_plus  ; Return if illegal page
     dec     de
 .loop
     ld      a,b 
     or      c
     jr      z,_success
     call    page_inc_de_addr
-    jr      c,page_restore_plus
+    jp      c,page_restore_plus
     ld      a,(hl)
     ld      (de),a
     inc     hl
@@ -547,7 +614,31 @@ page_write_bytes:
 _success:
     xor     a                     ; Clear Carry Flag
     inc     a                     ; Clear Zero Flag
-    jr      page_restore_plus     ; Restore BANK3 page and return
+    jp      page_restore_plus     ; Restore BANK3 page and return
+
+page__read_bytes:
+    ex      de,hl                 ; DE = Source Addr, HL = Dest Addr
+    call    page__set_for_read
+    ret     z
+    call    page_coerce_de_addr
+    dec     de
+.loop
+    ld      a,b 
+    or      c
+    jr      z,.success
+    call    page_inc_de_addr
+    jr      c,.done
+    ld      a,(de)
+    ld      (hl),a
+    inc     hl
+    dec     bc
+    jr      .loop
+.success
+    xor     a                     ; Clear Carry Flag
+    inc     a                     ; Clear Zero Flag
+.done
+    jp      page_restore_bank3    ; Restore BANK3 page and return
+
 
 ;-----------------------------------------------------------------------------
 ; Read Bytes from Page - wraps to next page if address is 16383
@@ -562,14 +653,14 @@ _success:
 page_read_bytes:
     ex      de,hl                 ; DE = Source Addr, HL = Dest Addr
     call    page_set4write_coerce
-    jr      z,page_restore_plus   ; Return if illegal page
+    jp      z,page_restore_plus   ; Return if illegal page
     dec     de
 .loop
     ld      a,b 
     or      c
     jr      z,.done
     call    page_inc_de_addr
-    jr      c,page_restore_plus
+    jp      c,page_restore_plus
     ld      a,(de)
     ld      (hl),a
     inc     hl
@@ -578,7 +669,7 @@ page_read_bytes:
 .done
     xor     a                     ; Clear Carry Flag
     inc     a                     ; Clear Zero Flag
-    jr      page_restore_plus     ; Restore BANK3 page and return
+    jp      page_restore_plus     ; Restore BANK3 page and return
 
 ;-----------------------------------------------------------------------------
 ; Map Page into Bank 3 and coerce address to bank 3
@@ -601,6 +692,8 @@ page_set4read_coerce:
 page_set4write_coerce:
     call    page_set_for_write
     jr      page_coerce_de_addr
+
+
 
 ;-----------------------------------------------------------------------------
 ; Increment Bank 3 Write Address in DE
@@ -673,6 +766,23 @@ page_coerce_hl_addr:
     ld      h,a                   ; Put back
     ex      af,af'                ; Restore page and flags
     ret
+
+page__set_for_write:
+    call    page_check_write
+    ret     z
+    jr      __set_page
+page__set_for_read:
+    call    page_check_read
+    ret     z
+__set_page
+    pop     ix
+    ex      af,af'
+    in      a,(IO_BANK3)
+    push    af
+    ex      af,af'
+    out     (IO_BANK3),a          ; Map page into bank 3
+    jp      (ix)
+
 
 ;-----------------------------------------------------------------------------
 ; Map Page into Bank 3 

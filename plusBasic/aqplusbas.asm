@@ -83,7 +83,7 @@
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.20k"
+    db "v0.20l"
 ifdef coredump
     db "_coredump"
 endif
@@ -965,7 +965,6 @@ aux_line_print:
     ; Graphics modules
     include "screen.asm"        ; Text screen graphics subroutines
     include "sprite.asm"        ; Sprite graphics module
-    include "tile.asm"          ; Tile graphics module
     include "sound.asm"         ; Sound and Music
     include "common.asm"        ; Common graphics routine
 
@@ -993,6 +992,7 @@ aux_line_print:
     include "s3hooks.asm"       ; S3 BASIC direct mode hooks
     include "screen_gfx.asm"    ; Screen graphics routines
     include "screen_swap.asm"   ; Screen buffering routines
+    include "tile.asm"          ; Tile graphics module
 
     free_rom_8k = $D800 - $
 
