@@ -1,6 +1,6 @@
 # plusBASIC Release History
  - v0.20m
-   - Added 'FILL [@page,] start, count, |byte|WORD int|'  sys_fill_word, VARS and WORD tokens
+   - Added `FILL [@page,] start, count, |byte|WORD int|`,  `sys_fill_word`, tokens `VARS` and `WORD`
  - v0.20k
    - Implemented `SET TILEMAP (x,y)` and `tilemap_set_tile`
  - v0.20j2 
