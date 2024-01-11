@@ -152,7 +152,7 @@ get_color_args:
     ret
 
 ;-----------------------------------------------------------------------------
-; Require comma, then parse integer
+; Require comma
 ;-----------------------------------------------------------------------------
 get_comma:
     ld      a,(hl)
@@ -167,6 +167,10 @@ get_comma_int:
     ld      a,(hl)
     cp      ','
     jp      nz,MOERR
+;-----------------------------------------------------------------------------
+; Skip next character then get integer
+;-----------------------------------------------------------------------------
+skip_get_int:
     rst     CHRGET
     jp      GETINT
 
@@ -206,12 +210,12 @@ get_comma_page_addr:
 get_page_addr:
     call    get_page_arg          ; Get (optional) Page
     push    af                    ; Stack = Page+Flag
-    jr      nc,.no_page           ; If Page specified
+    jr      nc,_no_page           ; If Page specified
     SYNCHK  ','                   ;   Require Comma
     call    get_int16k            ;   DE = Address
     pop     af                    ; AF = Page+Flag
     ret
-.no_page:
+_no_page:
     call    GETINT                ; DE = Address
     pop     af                    ; AF = Page+Flag
     ret
@@ -380,6 +384,18 @@ get_int16k:
     cp      64                    ; If not 0-4095
     ret     c
     jp      FCERR
+    
+    
+;-----------------------------------------------------------------------------
+; Parse Integer and reget next character
+; Output: A = Next character
+;        DE = Integer
+; Flags set as CHRGET
+; Clobbered: BC
+;-----------------------------------------------------------------------------
+get_int_reget:
+    call    GETINT
+    jp      CHRGT2
 
 ;-----------------------------------------------------------------------------
 ; Parse Foreground and Background Colors

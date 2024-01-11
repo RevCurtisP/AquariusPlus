@@ -54,7 +54,7 @@ jump_table:
     jp      page_write_bytes      ; Write Bytes to Page
     jp      page_set4read_coerce  ; Map Page into Bank 3 and coerce address to bank 3
     jp      page_set4write_coerce ; Map Page into valid Bank 3 and coerce address to bank 3
-    jp      page_restore_plus     ; Restore Bank 3 to Page 1
+    jp      page_set_plus         ; Restore Bank 3 to Page 1
     jp      page_next_hl_address  ; Map next Page into Bank 1 and coerce address
     jp      page_next_de_address  ; Map next Page into Bank 3 and coerce address
     jp      page_coerce_hl_addr   ; Coerce address in to bank 1

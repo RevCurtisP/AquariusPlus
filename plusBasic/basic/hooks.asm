@@ -35,7 +35,7 @@ linker_hook:
 ; Hook 12 - SCRTCH (Execute NEW statement)
 ;-----------------------------------------------------------------------------
 new_hook:
-	  call    page_restore_plus
+	  call    page_set_plus
 	  call    clear_all_errvars
 	  ld      c,0
 	  call    spritle_toggle_all    ; Disable all sprite

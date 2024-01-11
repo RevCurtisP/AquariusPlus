@@ -1,5 +1,6 @@
 # plusBASIC Release History
-
+ - v0.20m
+   - Added 'FILL [@page,] start, count, |byte|WORD int|'  sys_fill_word, VARS and WORD tokens
  - v0.20k
    - Implemented `SET TILEMAP (x,y)` and `tilemap_set_tile`
  - v0.20j2 
@@ -7,7 +8,7 @@
  - v0.20j1
    - Fixed `ATTR attrs` and `PALETTE palette#` causing syntax error after `FILL TILEMAP tile#`
  - v0.20j 
-   - '.' treated as '0' in hex literal strings and ASC$ functiion.
+   - `.` treated as `0` in hex literal strings and `ASC$` function
  - v0.20i
    - Added BASIC functions `FILEEXT$()`, `FILEDIR$()`, `TRIMDIR$()`, `TRIMEXT$()`
    - Added kernel routines `file_get_ext`, `file_trim_dir`, `file_get_dir`, `file_trim_ext`
@@ -23,6 +24,6 @@
    - Added optional comma between end-coordinate and fill character in `FILL SCREEN`
  - v0.20e 
    - Added `KEY()` function
- - v0.20d
+ - v0.20dt,
    - Added `DEC()` function, fixed `esp_get_version`/`VER(0)`/`VER$(0)`
 

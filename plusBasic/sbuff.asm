@@ -99,24 +99,6 @@ _read_byte
     ret
     
 ;-----------------------------------------------------------------------------
-; Read Word from String Buffer
-; Input: DE: Address 0-16383
-; Output: BC: Byte read
-;         DE: Address coerced to $C000-$FFFF
-;      Carry: Cleared if succesful, Set if overflow
-; Clobbers: A
-;-----------------------------------------------------------------------------
-sbuff_read_word:
-    ld      a,e
-    inc     a
-    jr      z,.overflow
-    ld      a,BAS_BUFFR
-    jp      page_read_word
-.overflow
-    scf
-    ret
-    
-;-----------------------------------------------------------------------------
 ; Write Byte to String Buffer
 ; Input: A: Byte to Write
 ; Clobbers: A

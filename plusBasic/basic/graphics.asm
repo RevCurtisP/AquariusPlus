@@ -704,20 +704,8 @@ FN_GETTILE:
     SYNCHK  '$'
     SYNCHK  '('
     call    get_int512            ; DE = Tile#
-    SYNCHK  ')'
-    push    hl                    ; Stack = TxtPtr, RtnAdr
-    push    hl                    ; Stack = DummyAdr, TxtPtr, RtnAdr
-    push    de                    ; Stack = Tile#, DummyAdr, TxtPtr, RtnAdr
-    ld      a,32                  ; Reading 32 bytes
-
-    call    STRINI                ; Create TmpStr; HL = StrDsc, DE = StrAdr
-    ld      bc,32                 ; BC = StrLen
-    pop     hl                    ; HL = Tile#; Stack = DummyAdr, TxtPtr, RtnAdr
     ld      iy,tile_get
-    ld      a,1
-    ld      (VALTYP),a            ; Set Type to String
-    call    FRESTR                ; Free Temporary
-    jp      FINBCK                ; Return String
+    jr      _get_aux
 
 ;-----------------------------------------------------------------------------
 ; GETPALETTE Function
@@ -728,18 +716,18 @@ FN_GETPALETTE:
     rst     CHRGET                ; Skip PALETTE token
     SYNCHK  '$'
     SYNCHK  '('
+    ld      iy,palette_get
     call    GETBYT                ; E = Palette#
+_get_aux
     SYNCHK  ')'
     push    hl                    ; Stack = TxtPtr
     push    hl                    ; Stack = DummyAdr, TxtPtr
     push    de                    ; Stack = Palette#, DummyAdr, TxtPtr
     ld      a,32                  ; Reading 32 bytes
-
     call    STRINI                ; Create TmpStr; HL = StrDsc, DE = StrAdr
     ld      bc,32                 ; BC = StrLen
     pop     hl                    ; HL = Palette#; Stack = DummyAdr, TxtPtr
     ld      a,l
-    ld      iy,palette_get
     call    aux_call
     ld      a,1
     ld      (VALTYP),a            ; Set Type to String

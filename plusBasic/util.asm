@@ -9,6 +9,15 @@ discard_ret:
     ret
 
 ;-----------------------------------------------------------------------------
+; Get Line Buffer Address
+; Output: HL: String Buffer Address
+;         BC: Buffer Length minus 1
+;-----------------------------------------------------------------------------
+get_linbuf_addr:
+    ld      hl,(TOPMEM)
+    ret
+
+;-----------------------------------------------------------------------------
 ; Get String Buffer Address
 ; Output: HL: String Buffer Address
 ;         BC: Buffer Length minus 1
@@ -25,7 +34,7 @@ get_strbuf_addr:
 ;-----------------------------------------------------------------------------
 tokenize:
     call    KLOOP
-    jp      page_restore_plus
+    jp      page_set_plus
 
 ;-----------------------------------------------------------------------------
 ; Convert byte to two digit number

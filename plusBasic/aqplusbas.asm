@@ -83,7 +83,7 @@
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.20l"
+    db "v0.20m"
 ifdef coredump
     db "_coredump"
 endif
@@ -170,7 +170,7 @@ _coldboot:
     ld      bc,CHRSETBUF-1
     call    sys_fill_zero
 
-    call    page_restore_plus
+    call    page_set_plus
     call    spritle_clear_all     ; Clear all sprite properties
     jp      do_coldboot
 
@@ -302,7 +302,7 @@ _ctrl_keys:
     cp      $7F                     
     jp      c,GOODCH              ;    Stuff in Input Buffer
 .is_ctrl    
-    call    page_map_aux
+    call    page_set_aux
     jp      s3_ctrl_keys
 
 ;-----------------------------------------------------------------------------
@@ -444,6 +444,24 @@ sys_fill_mem:
     ldir                          ; Overlap will propogate start byte
     ret
 
+;-----------------------------------------------------------------------------
+; Fill memory with integer
+; Input:BC: Byte Count
+;       DE: Fill value
+;       HL: Start Address
+; Clobbers: A, BC, DE, HL
+;-----------------------------------------------------------------------------
+sys_fill_word:
+    ld      a,b
+    or      c                     ; If BC = 0
+    ret     z                     ;   Return
+    ld      (hl),e                ; Write LSB
+    inc     hl                    ; Bump Address
+    ld      (hl),d                ; Write MSB
+    inc     hl                    ; Bump Address
+    dec     bc                    ; Count down
+    jr      sys_fill_word         ; Do it again
+    
 ;-----------------------------------------------------------------------------
 ; Copy selected character set into Character RAM
 ; Input: A: Character set (0: Standard, 1: Latin-1, 2: Custom)
@@ -632,9 +650,8 @@ _inlin_done:
 ;-----------------------------------------------------------------------------
 _line_edit:
     push    hl
-    ld      hl,(TOPMEM)       ; BufAdr = Top of string space
+    call    get_linbuf_addr   ; HL = Line Buffer addresx
     ld      c,0               ; C = ChrCnt
-    call    page_map_aux
     call    edit              ; Edit the line
     pop     hl
     ret
@@ -894,15 +911,15 @@ _main_ext:
     halt
 
 _next_statement:
-    call    page_restore_plus
+    call    page_set_plus
     jp      exec_next_statement   ; Go do the Statement
 
 _run_cmd:
-    call    page_restore_plus
+    call    page_set_plus
     jp      run_cmd
 
 _stuffh_ext:
-    call    page_map_aux
+    call    page_set_aux
     jp      s3_stuffh_ext
 
 aux_call:
@@ -911,18 +928,18 @@ aux_call:
     jp      page_restore_bank3
 
 aux_rom_call:
-    call    page_map_aux
+    call    page_set_aux
     call    jump_ix
-    jp      page_restore_plus
+    jp      page_set_plus
 
 _string_ext:
-    call    page_map_aux
+    call    page_set_aux
     jp      s3_string_ext
 
 aux_line_print:
-    call    page_restore_plus     ; Map in Ext ROM
+    call    page_set_plus         ; Map in Ext ROM
     call    LINPRT                ; Print the line number
-    jp      page_map_aux          ; Remap Aux ROM and return
+    jp      page_set_aux          ; Remap Aux ROM and return
 
 ;-----------------------------------------------------------------------------
 ; Pad ROM
@@ -949,6 +966,7 @@ aux_line_print:
     include "baslines.asm"      ; (De)tokenize, add, insert, delete program lines
     include "coldboot.asm"      ; Cold boot code
     include "draw.asm"          ; Bitmap drawing statements and functions
+    include "editor.asm"        ; Advanced line editor
     include "enhanced.asm"      ; Enhanced stardard BASIC statements and functions
     include "evalext.asm"       ; EVAL extension - hook 9
     include "extended.asm"      ; Statements and functions from Aquarius Extended BASIC
@@ -985,7 +1003,6 @@ aux_line_print:
     include "jump_aux.asm"      ; Auxiliary routines jump tables
     include "color.asm"         ; Color palette module
     include "dos.asm"           ; DOS routines
-    include "editor.asm"        ; Advanced line editor
     include "esp_aux.asm"       ; ESP routines in auxiliary ROM
     include "fileio.asm"        ; Disk and File I/O machine assembly routines
     include "gfx.asm"           ; Main graphics module

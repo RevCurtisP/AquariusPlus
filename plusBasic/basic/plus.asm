@@ -354,16 +354,58 @@ _trimext:
 ;-----------------------------------------------------------------------------
 ; FILL Statement stub
 ; FILL [@page], startaddr, oount, byte
-; FILL! [@page], startaddr, count, word
+; FILL [@page], startaddr, count, WORD word
+; ToDo:
+; FILL @page, byte
+; FILL @page, WORD word
 ;-----------------------------------------------------------------------------
- ST_FILL:
+ST_FILL:
     rst     CHRGET                ; Skip FILL
     cp      SCRNTK
     jp      z,ST_FILL_SCREEN
     cp      TILETK
     jp      z,ST_FILL_TILE
-    jp      SNERR
-
+    ;Fill memory
+    call    get_page_addr         ; Check for Page Arg
+    push    de                    ; Stack = BgnAdr, RtnAdr
+    push    af                    ; Stack = PgFlag, BgnAdr, RtnAdr
+    call    get_comma_int         ; DE = Count
+    push    de                    ; Stack = Count, PgFlag, BgnAdr, RtnAdr
+    call    get_comma             ; MOERR if no comma
+    cp      WORDTK                ; Check for WORD 
+    push    af                    ; Stack = WrdFlg, Count, PgFlag, BgnAdr, RtnAdr
+    call    z,CHRGTR              ; Skip WORD
+    call    GETINT                ; DE = FilVal
+    pop     af                    ; A = WrdFlg; Stack = Count, PgFlag, BgnAdr, RtnAdr
+    jr      z,.isword             ; If not FILL...WORD
+    push    af                    ;   Stack = WrdFlg, Count, PgFlag, BgnAdr, RtnAdr
+    ld      a,d
+    or      a                     ;   If FilVal > 255
+    jp      nz,FCERR              ;     Blow Up
+    pop     af                    ;   A = WrdFlg; Stack = Count, PgFlag, BgnAdr, RtnAdr
+.isword
+    ex      af,af'                ; AF' = WrdFlg
+    pop     bc                    ; BC = Count; Stack = PgFlag, BgnAdr, RtnAdr
+    pop     af                    ; AF = PgFlag; Stack = BgnAdr, RtnAdr
+    ex      (sp),hl               ; HL = BgnAdr; Stack = TxtPtr, RtnAdr
+    push    hl                    ; Stack = BgnAdr, TxtPtr, RtnAdr
+    ld      hl,POPHRT             ; After fill, POP HL and RET
+    ex      (sp),hl               ; Stack = POPHRT, TxtPtr, RtnAdr
+    jr      c,.fill_page          ; If not paged
+    ex      af,af'                ;   AF = WrdFlg
+    jp      z,sys_fill_word       ;   If WORD, fill memory with int
+    ld      a,e                   ;   Else
+    jp      sys_fill_mem          ;     Fill memory with byte
+.fill_page
+    ex      de,hl                 ; DE = BgnAdr, HL = FilVal
+    ex      af,af'                ; AF = WrdFlg
+    ld      ix,page_fill_word     ; If WORD
+    jr      z,.go_fill            ;   Call page_fill_word
+    ld      ix,page_fill_byte     ; Else call page_fill_byte
+.go_fill
+    ex      af,af'                ; AF = Page
+    jp      (ix)                  ; Do page fill, pop HL, and return
+    
 ;----------------------------------------------------------------------------
 ; GET Statement stub
 ;----------------------------------------------------------------------------

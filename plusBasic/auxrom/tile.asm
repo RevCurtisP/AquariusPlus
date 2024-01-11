@@ -12,18 +12,18 @@
 tile_set:
     call      _get_set_init       ; HL = TileAddr
     ex        de,hl               ; DE = TileAddr, HL = Dat
-    jp        page__write_bytes   ; Write data to tile
+    jp        page_write_bytes   ; Write data to tile
     
 ;-----------------------------------------------------------------------------
 ; Get tile data
 ; Input: HL: Tile #
-;        BC: Data length
-;        DE: Data address
+;        BC: Read length
+;        DE: Buffer address
 ; Clobbered: A,BC,DE,HL
 ;-----------------------------------------------------------------------------
 tile_get:
     call      _get_set_init       ; HL = TileAddr
-    jp        page__read_bytes    ; Read data and return
+    jp        page_read_bytes     ; Read data and return
 
 _get_set_init:
     push      bc                  
@@ -120,7 +120,7 @@ tilemap_get_tile:
     call    tilemap_cell_addr     ; DE = Cell Addres
     ret     c                     ; Return if Error
     ld      a,VIDEO_RAM           ; Reading Video RAM
-    jp      page__read_word       ; Read word and return
+    jp      page_read_word        ; Read word and return
     
 ;-----------------------------------------------------------------------------
 ; Calculate tilemap cell address
@@ -193,7 +193,7 @@ tilemap_get:
     push    bc                    ; Stack = ColCnt, RowCnt, RtnAdr
     push    de                    ; Stack = RowAdr, ColCnt, RowCnt, RtnAdr 
     ld      a,VIDEO_RAM
-    call    page__read_bytes      ; In:  A = Page, BC: BytCnt, DE: DstAdr, HL: SrcAdr
+    call    page_read_bytes       ; In:  A = Page, BC: BytCnt, DE: DstAdr, HL: SrcAdr
     pop     de                    ; DE = RowlAdr; Stack = ColCnt, RowCnt, RtnAdr
     ex      de,hl                 ; HL = RowlAdr, DE = TilPrp
     ld      bc,128                ; Row Width in Words

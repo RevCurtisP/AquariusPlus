@@ -12,9 +12,14 @@
 ;        DE: $FF if match, else 0
 ;-----------------------------------------------------------------------------
 page_mem_compare:
+    ex      af,af'
+    ld      a,$BF
+    cp      d                   ; If MemAdr > $BFFF                   
+    ret     c                   ;   Return error
+    ex      af,af'
     ex      de,hl               ; DE = PgAdr, HL = MemAdr
-    call    page_set4read_coerce
-    jp      z,_cmp_error
+    call    page__set4read_coerce
+    ret     z
     dec     de
 .loop
     ld      a,b
@@ -35,8 +40,9 @@ _cmp_done:
     dec     a                     ; Clear Zero and Carry
     ld      a,e
 _cmp_error:
-    call    page_restore_plus
+    jp      page_restore_bank3
     ret
+
       
 ;-----------------------------------------------------------------------------
 ; Compare paged memory to paged memory
@@ -233,6 +239,16 @@ page_copy_bytes:
     ret
 
 ;-----------------------------------------------------------------------------
+; Fill Entire Page with Byte
+; Input: A: Page
+;        L: Byte
+; Output: Zero: Cleared if fill succesful, Set if invalid page
+; Clobbers: A, BC, DE
+;-----------------------------------------------------------------------------
+page_fill_all_byte:
+    ld      de,0
+    ld      bc,$4000
+;-----------------------------------------------------------------------------
 ; Fill Paged Memory with Byte
 ; Input: A: Page
 ;       BC: Byte Count
@@ -242,9 +258,8 @@ page_copy_bytes:
 ;         Carry: Cleared if succesful, Set if overflow
 ; Clobbers: A, BC, DE
 ;-----------------------------------------------------------------------------
-;ToDo: finish rewrite page_fill_word
 page_fill_byte:
-    call    page_set4write_coerce ; DE = Coerced Start Address
+    call    page__set4write_coerce ; DE = Coerced Start Address
     ret     z                     ; If invalid page, return error
 .loop
     ld      a,b
@@ -254,9 +269,19 @@ page_fill_byte:
     ld      a,l
     ld      (de),a
     call    page_inc_de_addr
-    jp      c,page_restore_plus   
+    jp      c,page_restore_bank3
     jr      .loop
 
+;-----------------------------------------------------------------------------
+; Fill Entire Page with Word
+; Input: A: Page
+;        L: Byte
+; Output: Zero: Cleared if fill succesful, Set if invalid page
+; Clobbers: A, BC, DE
+;-----------------------------------------------------------------------------
+page_fill_all_word:
+    ld      de,0
+    ld      bc,$2000
 ;-----------------------------------------------------------------------------
 ; Fill Paged Memory with Word
 ; Input: A: Page
@@ -267,15 +292,13 @@ page_fill_byte:
 ;         Carry: Cleared if succesful, Set if overflow
 ; Clobbers: A, BC, DE
 ;-----------------------------------------------------------------------------
-;ToDo: finish rewrite page_fill_word
 page_fill_word:
-    call    page__set_for_write
+    call    page__set4write_coerce
     ret     z                     ; If invalid page, return error
-    call    page_coerce_de_addr ; DE = Coerced Start Address
 .loop
     ld      a,b
     or      c
-    jr      z,.success
+    jr      z,_success
     dec     bc
     ld      a,l
     ld      (de),a
@@ -287,7 +310,7 @@ page_fill_word:
 .done
     jr      nc,.loop
     jp      page_restore_bank3
-.success:
+_success:
     xor     a                     ; Clear Carry Flag
     inc     a                     ; Clear Zero Flag
     jp      page_restore_bank3    ; Restore BANK3 page and return
@@ -341,11 +364,11 @@ page_restore_two:
 ;      Zero: Cleared if succesful, set if invalid page
 ;-----------------------------------------------------------------------------
 page_read_byte:
-    call    page_set4read_coerce
-    jp      z,page_restore_plus  ; Return if illegal page
+    call    page__set4read_coerce
+    ret     z                     ; Return if illegal page
     ld      a,(de)
     ld      c,a
-    jp      page_restore_plus
+    jp      page_restore_bank3
 
 ;-----------------------------------------------------------------------------
 ; Write Byte to Page
@@ -358,16 +381,26 @@ page_read_byte:
 ;      Zero: Cleared if succesful, set if invalid page
 ;-----------------------------------------------------------------------------
 page_write_byte:
-    call    page_set4write_coerce
-    jp      z,page_restore_plus  ; Return if illegal page
+    call    page__set4write_coerce
+    ret     z                     ; Return if illegal page
     ld      a,c
     ld      (de),a
-    jp      page_restore_plus
+    jp      page_restore_bank3
 
-page__read_word:
-    call    page__set_for_read
+
+
+;-----------------------------------------------------------------------------
+; Read Word from Page - wraps to next page if address is 16383
+; Input: A: Page
+;       DE: Address 0-16383 (Higher addresses mapped to input range) 
+; Output: BC: Word read
+;         DE: Address coerced to $C000-$FFFF
+;       Zero: Cleared if succesful, Set if invalid page
+;      Carry: Cleared if succesful, Set if overflow
+;-----------------------------------------------------------------------------
+page_read_word:
+    call    page__set4read_coerce
     ret     z
-    call    page_coerce_de_addr
     ld      a,(de)
     ld      c,a
     inc     de
@@ -382,33 +415,6 @@ page__read_word:
     dec     de                    ; DE = Original address
 .done
     jp      page_restore_bank3
-
-
-;-----------------------------------------------------------------------------
-; Read Word from Page - wraps to next page if address is 16383
-; Input: A: Page
-;       DE: Address 0-16383 (Higher addresses mapped to input range) 
-; Output: BC: Word read
-;         DE: Address coerced to $C000-$FFFF
-;       Zero: Cleared if succesful, Set if invalid page
-;      Carry: Cleared if succesful, Set if overflow
-;-----------------------------------------------------------------------------
-page_read_word:
-    call    page_set4read_coerce
-    jp      z,page_restore_plus  ; Return if illegal page
-    ld      a,(de)
-    ld      c,a
-    inc     de
-    ld      a,d
-    or      e 
-    jr      nz,.not_end
-    call    page_next_de_address
-    jp      c,page_restore_plus    ; Return if overflow
-.not_end
-    ld      a,(de)
-    ld      b,a
-    dec     de                    ; DE = Original address
-    jp      page_restore_plus
 
 page__write_word:
     call    page__set_for_write
@@ -442,8 +448,8 @@ page__write_word:
 ; Clobbered: A
 ;-----------------------------------------------------------------------------
 page_write_word:
-    call    page_set4write_coerce
-    jr      z,page_restore_plus  ; Return if illegal page
+    call    page__set4write_coerce
+    ret     z                     ; Return if illegal page
     ld      a,c
     ld      (de),a
     inc     de
@@ -451,15 +457,25 @@ page_write_word:
     or      e 
     jr      nz,.not_end
     call    page_next_de_address
-    jp      c,page_restore_plus   ; Return if overflow
+    jr      c,.done               ; Return if overflow
 .not_end
     ld      a,b
     ld      (de),a
     dec     de                    ; Restore DE and fall into page_restore
+.done    
+    jp      page_restore_bank3
+
 ;-----------------------------------------------------------------------------
-; Restore Bank 3 to Page 1
+; Map Bank 3 to Aux ROM
 ;-----------------------------------------------------------------------------
-page_restore_plus:
+page_set_aux:
+    push    af
+    ld      a,ROM_AUX_PG
+    jr      _map_page_bank3
+;-----------------------------------------------------------------------------
+; Map Bank 3 to Ext ROM
+;-----------------------------------------------------------------------------
+page_set_plus:
     push    af
     ld      a,ROM_EXT_PG
 _map_page_bank3:
@@ -467,13 +483,6 @@ _map_page_bank3:
     pop     af
     ret
 
-;-----------------------------------------------------------------------------
-; Map Bank 3 to Page 2
-;-----------------------------------------------------------------------------
-page_map_aux:
-    push    af
-    ld      a,ROM_AUX_PG
-    jr      _map_page_bank3
 
 
 ;-----------------------------------------------------------------------------
@@ -562,10 +571,20 @@ page_map_basbuf:
     jr      _map_page_bank3
 
 
-page__write_bytes:
-    call    page__set_for_write
+;-----------------------------------------------------------------------------
+; Write Bytes to Page - wraps to next page if address is 16383
+; Input: A: Page
+;       BC: Byte Count
+;       DE: Destination address 0-16383 
+;       HL: Source Address
+; Output: DE: Updated destination address (coerced)
+; Flags Set: Z if llegal page
+;            C if page overflow
+; Clobbers: A, AF', BC, HL
+;-----------------------------------------------------------------------------
+page_write_bytes:
+    call    page__set4write_coerce
     ret     z
-    call    page_coerce_de_addr
     dec     de
 .loop
     ld      a,b 
@@ -586,37 +605,16 @@ page__write_bytes:
 
 
 ;-----------------------------------------------------------------------------
-; Write Bytes to Page - wraps to next page if address is 16383
+; Read Bytes from Page - wraps to next page if address is 16383
 ; Input: A: Page
 ;       BC: Byte Count
-;       DE: Destination address 0-16383 
-;       HL: Source Address
-; Output: DE: Updated destination address (coerced)
-; Flags Set: Z if llegal page
-;            C if page overflow
-; Clobbers: A, AF', BC, HL
+;       DE: Destination Address
+;       HL: Source Address  0-16383 
+; Output: Zero: Cleared if succesful, Set if invalid page
+;         Carry: Cleared if succesful, Set if overflow
+; Clobbers: A, BC, DE, HL
 ;-----------------------------------------------------------------------------
-page_write_bytes:
-    call    page_set4write_coerce
-    jp      z,page_restore_plus  ; Return if illegal page
-    dec     de
-.loop
-    ld      a,b 
-    or      c
-    jr      z,_success
-    call    page_inc_de_addr
-    jp      c,page_restore_plus
-    ld      a,(hl)
-    ld      (de),a
-    inc     hl
-    dec     bc
-    jr      .loop
-_success:
-    xor     a                     ; Clear Carry Flag
-    inc     a                     ; Clear Zero Flag
-    jp      page_restore_plus     ; Restore BANK3 page and return
-
-page__read_bytes:
+page_read_bytes:
     ex      de,hl                 ; DE = Source Addr, HL = Dest Addr
     call    page__set_for_read
     ret     z
@@ -638,38 +636,6 @@ page__read_bytes:
     inc     a                     ; Clear Zero Flag
 .done
     jp      page_restore_bank3    ; Restore BANK3 page and return
-
-
-;-----------------------------------------------------------------------------
-; Read Bytes from Page - wraps to next page if address is 16383
-; Input: A: Page
-;       BC: Byte Count
-;       DE: Destination Address
-;       HL: Source Address  0-16383 
-; Output: Zero: Cleared if succesful, Set if invalid page
-;         Carry: Cleared if succesful, Set if overflow
-; Clobbers: A, BC, DE, HL
-;-----------------------------------------------------------------------------
-page_read_bytes:
-    ex      de,hl                 ; DE = Source Addr, HL = Dest Addr
-    call    page_set4write_coerce
-    jp      z,page_restore_plus   ; Return if illegal page
-    dec     de
-.loop
-    ld      a,b 
-    or      c
-    jr      z,.done
-    call    page_inc_de_addr
-    jp      c,page_restore_plus
-    ld      a,(de)
-    ld      (hl),a
-    inc     hl
-    dec     bc
-    jr      .loop
-.done
-    xor     a                     ; Clear Carry Flag
-    inc     a                     ; Clear Zero Flag
-    jp      page_restore_plus     ; Restore BANK3 page and return
 
 ;-----------------------------------------------------------------------------
 ; Map Page into Bank 3 and coerce address to bank 3
@@ -767,6 +733,11 @@ page_coerce_hl_addr:
     ex      af,af'                ; Restore page and flags
     ret
 
+page__set4read_coerce
+    call    page_coerce_de_addr
+    jr      page__set_for_read
+page__set4write_coerce
+    call    page_coerce_de_addr
 page__set_for_write:
     call    page_check_write
     ret     z

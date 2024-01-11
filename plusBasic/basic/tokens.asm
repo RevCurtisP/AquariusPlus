@@ -100,8 +100,8 @@ EXTCMDS:
     db $80 + ' '                  ; $9E             
     db $80 + ' '                  ; $9F
     db $80 + 'V',"ARS"            ; $A0
+    db $80 + 'W',"ORD"            ; $A1
     db $80 
-
 EXTOKEN = $99     ; Last Token + 1
 
 ;-----------------------------------------------------------------------------
@@ -158,6 +158,8 @@ COMPTK    equ     $94
 PLAYTK    equ     $95
 APNDTK    equ     $96
 TRIMTK    equ     $97
+VARSTK    equ     $A0
+WORDTK    equ     $A1
 
 ;-----------------------------------------------------------------------------
 ; Convert keyword to token - hook 10
