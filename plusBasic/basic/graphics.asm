@@ -383,11 +383,9 @@ ST_GET_SCREEN:
 ; GET TILEMAP (col,row)-(col,row),*arrayvar
 ; binary = column-count, row-count, cells
 ;-----------------------------------------------------------------------------
-;DIM A(40)
+;DIM A(40):FILL TILEMAP TILE 511
 ;GET TILEMAP (2,2) - (10,10),*A
 ST_GET_TILEMAP:
-    jp      GSERR
-
     rst     CHRGET                ; Skip SCREEN
     rst     SYNCHR                ; Require MAP
     byte    MAPTK
@@ -401,7 +399,9 @@ ST_GET_TILEMAP:
     pop     bc                    ; B = BgnCol, C = EndCol; Stack = Rows, RtnAdr
     ex      (sp),hl               ; HL = Rows; Stack = TxtPtr, RtnAdr
     ex      de,hl                 ; D = BgnRow, E = EndRow, HL = AryAdr
-    call    tilemap_get            ; In: B=BgnCol, C=EndCol, D=BgnRow, E=EndRow, HL: AryAdr
+    ld      iy,tilemap_get
+    call    aux_call              ; In: B=BgnCol, C=EndCol, D=BgnRow, E=EndRow, HL: AryAdr
+    jp      c,FCERR
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     ret
 
@@ -448,10 +448,9 @@ _screen_suffix:
 ;-----------------------------------------------------------------------------
 ; PUT TILEMAP (col,row),*arrayvar
 ;-----------------------------------------------------------------------------
-;PUT TILEMAP (5,5),*A
+;DIM A(40):FILL TILEMAP TILE 511
+;GET TILEMAP (2,2) - (10,10),*A
 ST_PUT_TILEMAP:
-    jp      GSERR
-
     rst     CHRGET                ; Skip SCREEN
     rst     SYNCHR                ; Require MAP
     byte    MAPTK

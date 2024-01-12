@@ -410,12 +410,12 @@ ST_FILL:
 ; GET Statement stub
 ;----------------------------------------------------------------------------
 ST_GET:
-    cp      SCRNTK
+    cp      SCRNTK                 
     jp      z,ST_GET_SCREEN
+    cp      TILETK                
+    jp      z,ST_GET_TILEMAP      
     rst     SYNCHR
     byte    XTOKEN
-    cp      TILETK                ; If GET TILEMAP
-    jp      z,ST_GET_TILEMAP      ;   Go do it
     cp      ARGSTK
     jp      z,ST_GETARGS
     jp      SNERR

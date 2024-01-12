@@ -60,8 +60,6 @@ screen_put_get:
     ld      b,c                   ; B = Column Countdown
 .columns
     ex      af,af'                ; A = Mode
-;    or      a
-;    call    z,.tile
     bit     0,a                   ; If 1 or 3
     call    nz,.screen            ;   Get Screen byte
     bit     1,a                   ; If 2 or 3
@@ -114,9 +112,6 @@ screen_put_get:
     ex      af,af'                ; A' = Mode
     ret
 
-.tile
-    ret
-
 _get:
     ld      a,(de)                ; Copy from screen
     ld      (hl),a                ; to buffer
@@ -127,13 +122,6 @@ _put:
     ld      a,(hl)                ; Copy from buffer
     ld      (de),a                ; to screen
     inc     hl
-    ret
-
-
-_get_tile:
-    ret
-
-_put_tile:
     ret
 
 ;-----------------------------------------------------------------------------

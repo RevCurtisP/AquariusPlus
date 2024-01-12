@@ -10,9 +10,9 @@
 ; Clobbered: A,BC,DE,HL
 ;-----------------------------------------------------------------------------
 tile_set:
-    call      _get_set_init       ; HL = TileAddr
+    call      tile_addr_page      ; HL = TileAddr
     ex        de,hl               ; DE = TileAddr, HL = Dat
-    jp        page_write_bytes   ; Write data to tile
+    jp        page_write_bytes    ; Write data to tile
     
 ;-----------------------------------------------------------------------------
 ; Get tile data
@@ -22,14 +22,14 @@ tile_set:
 ; Clobbered: A,BC,DE,HL
 ;-----------------------------------------------------------------------------
 tile_get:
-    call      _get_set_init       ; HL = TileAddr
+    call      tile_addr_page      ; HL = TileAddr
     jp        page_read_bytes     ; Read data and return
 
-_get_set_init:
+tile_addr_page:
     push      bc                  
     ld        b,5
     call      shift_hl_left       ; Calculate Tile Address
-    ld        bc,TILE_DATA        ; 
+    ld        bc,TILE_DATA         
     add       hl,bc
     pop       bc
     ld        a,VIDEO_RAM
@@ -182,29 +182,9 @@ tilemap_fill:
 ; Clobbered: A, BC, DE
 ;-----------------------------------------------------------------------------
 tilemap_get:
-    call    tile_convert_rect     ; A = RowCnt, C = ColCnt, DE = RowAdr
-    ret     c
-    ld      (hl),c                ; Buffer[0] = Columns
-    inc     hl
-    ld      (hl),a                ; Buffer[1] = Rows
-    inc     hl
-.loop
-    push    af                    ; Stack = RowCnt, RtnAdr
-    push    bc                    ; Stack = ColCnt, RowCnt, RtnAdr
-    push    de                    ; Stack = RowAdr, ColCnt, RowCnt, RtnAdr 
-    ld      a,VIDEO_RAM
-    call    page_read_bytes       ; In:  A = Page, BC: BytCnt, DE: DstAdr, HL: SrcAdr
-    pop     de                    ; DE = RowlAdr; Stack = ColCnt, RowCnt, RtnAdr
-    ex      de,hl                 ; HL = RowlAdr, DE = TilPrp
-    ld      bc,128                ; Row Width in Words
-    add     hl,bc                 ; Add to RowAdr
-    ex      de,hl                 ; DE = RowAdr, HL = TilPrp
-    pop     bc                    ; BC = ColCnt; Stack = RowCnt, RtnAdr
-    pop     af                    ; A = RowCnt; Stack = RtnAdr
-    dec     a                     ; If all rows done
-    ret     z                     ;   Return
-    jr      .loop                 ; Else do next row
-
+    ld      iy,page_read_bytes_ex
+    jr      _tilemap_put_get
+    
 ;-----------------------------------------------------------------------------
 ; Write TileMap Section from Buffer
 ; Input: B: Start Column
@@ -215,6 +195,31 @@ tilemap_get:
 ; Clobbered: A, BC, DE
 ;-----------------------------------------------------------------------------
 tilemap_put:
+    ld      iy,page_write_bytes
+_tilemap_put_get:
+    call    tile_convert_rect     ; A = RowCnt, C = ColCnt, DE = RowAdr
+    ret     c
+    ld      (hl),c                ; Buffer[0] = Columns
+    inc     hl
+    ld      (hl),a                ; Buffer[1] = Rows
+    inc     hl
+    sla     c                     ; C = BytCnt = ColCnt*2
+.loop
+    push    af                    ; Stack = RowCnt, RtnAdr
+    push    bc                    ; Stack = ColCnt, RowCnt, RtnAdr
+    push    de                    ; Stack = RowAdr, ColCnt, RowCnt, RtnAdr 
+    ld      a,VIDEO_RAM
+    call    jump_iy               ; In:  A = Page, BC: BytCnt, DE: SrcAdr, HL: DstAdr
+    pop     de                    ; DE = RowlAdr; Stack = ColCnt, RowCnt, RtnAdr
+    ex      de,hl                 ; HL = RowlAdr, DE = TilPrp
+    ld      bc,128                ; Row Width in Words
+    add     hl,bc                 ; Add to RowAdr
+    ex      de,hl                 ; DE = RowAdr, HL = TilPrp
+    pop     bc                    ; BC = ColCnt; Stack = RowCnt, RtnAdr
+    pop     af                    ; A = RowCnt; Stack = RtnAdr
+    dec     a                     ; If all rows done
+    ret     z                     ;   Return
+    jr      .loop                 ; Else do next row
 
 
 ;-----------------------------------------------------------------------------

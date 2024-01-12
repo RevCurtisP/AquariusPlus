@@ -616,6 +616,7 @@ page_write_bytes:
 ;-----------------------------------------------------------------------------
 page_read_bytes:
     ex      de,hl                 ; DE = Source Addr, HL = Dest Addr
+page_read_bytes_ex:
     call    page__set_for_read
     ret     z
     call    page_coerce_de_addr
