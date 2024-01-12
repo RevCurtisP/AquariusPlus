@@ -24,7 +24,7 @@ screen_get:
     ld      (hl),a                ; Buffer[1] = Rows
     inc     hl
     ld      iy,_get
-    jr      _screen_put_get
+    jr      screen_put_get
 
 ;-----------------------------------------------------------------------------
 ; Write Text Screen Section from Buffer
@@ -47,7 +47,7 @@ screen_put:
     ld      a,(hl)                ; A = RowCnt
     inc     hl
     ld      iy,_put
-_screen_put_get:
+screen_put_get:
     push    af                    ; Stack = RowCnt, RtnAdr
     in      a,(IO_VCTRL)
     and     VCRTL_80COL_EN
@@ -60,6 +60,8 @@ _screen_put_get:
     ld      b,c                   ; B = Column Countdown
 .columns
     ex      af,af'                ; A = Mode
+;    or      a
+;    call    z,.tile
     bit     0,a                   ; If 1 or 3
     call    nz,.screen            ;   Get Screen byte
     bit     1,a                   ; If 2 or 3
@@ -70,7 +72,7 @@ _screen_put_get:
     pop     de                    ; DE = RowAdr; Stack = RowAdr, RtnAdr
     pop     af                    ; A = RowCnt; Stack = RtnAdr
     dec     a                     ; If no more rows
-    ret     z                     ;   Return
+    jr      z,.done               ;   Finish up
     push    af                    ; Stack = RowCnt, RtnAdr
     ld      a,(LINLEN)
     add     e
@@ -79,6 +81,9 @@ _screen_put_get:
     adc     d
     ld      d,a                   ; DE = Next RowAdr
     jr      .rows
+.done
+    inc     a                     ; Clear Zero flag
+    ret
 
 .screen
     ex      af,af'                ; A' = Mode
@@ -109,6 +114,9 @@ _screen_put_get:
     ex      af,af'                ; A' = Mode
     ret
 
+.tile
+    ret
+
 _get:
     ld      a,(de)                ; Copy from screen
     ld      (hl),a                ; to buffer
@@ -119,6 +127,13 @@ _put:
     ld      a,(hl)                ; Copy from buffer
     ld      (de),a                ; to screen
     inc     hl
+    ret
+
+
+_get_tile:
+    ret
+
+_put_tile:
     ret
 
 ;-----------------------------------------------------------------------------

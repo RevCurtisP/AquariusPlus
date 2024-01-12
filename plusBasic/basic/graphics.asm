@@ -412,7 +412,7 @@ ST_GET_TILEMAP:
 ;PUT SCREEN (4,4),*A
 ST_PUT_SCREEN:
     rst     CHRGET                ; Skip SCREEN
-    call    _screen_suffix        ; Check for CHR and ATTR
+    call    _screen_suffix        ; B: 1 = CHR, 2 = ATTR, 3 = Neither
     push    bc                    ; Stack = Mode, RtnAdr
     call    SCAND                 ; C = Col, E = Row
     SYNCHK  ','                   ; Require comma
