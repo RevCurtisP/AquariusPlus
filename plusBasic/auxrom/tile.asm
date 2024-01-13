@@ -182,6 +182,12 @@ tilemap_fill:
 ; Clobbered: A, BC, DE
 ;-----------------------------------------------------------------------------
 tilemap_get:
+    call    tile_convert_rect     ; A = RowCnt, C = ColCnt, DE = RowAdr
+    ret     c
+    ld      (hl),c                ; Buffer[0] = Columns
+    inc     hl
+    ld      (hl),a                ; Buffer[1] = Rows
+    inc     hl
     ld      iy,page_read_bytes_ex
     jr      _tilemap_put_get
     
@@ -195,14 +201,14 @@ tilemap_get:
 ; Clobbered: A, BC, DE
 ;-----------------------------------------------------------------------------
 tilemap_put:
+    call    tilemap_cell_addr     ; DE = RowAdr
+    ret     c
+    ld      c,(hl)                ; ColCnt = Buffer[0]
+    inc     hl
+    ld      a,(hl)                ; RowCnt = Buffer[1] 
+    inc     hl
     ld      iy,page_write_bytes
 _tilemap_put_get:
-    call    tile_convert_rect     ; A = RowCnt, C = ColCnt, DE = RowAdr
-    ret     c
-    ld      (hl),c                ; Buffer[0] = Columns
-    inc     hl
-    ld      (hl),a                ; Buffer[1] = Rows
-    inc     hl
     sla     c                     ; C = BytCnt = ColCnt*2
 .loop
     push    af                    ; Stack = RowCnt, RtnAdr
@@ -212,7 +218,7 @@ _tilemap_put_get:
     call    jump_iy               ; In:  A = Page, BC: BytCnt, DE: SrcAdr, HL: DstAdr
     pop     de                    ; DE = RowlAdr; Stack = ColCnt, RowCnt, RtnAdr
     ex      de,hl                 ; HL = RowlAdr, DE = TilPrp
-    ld      bc,128                ; Row Width in Words
+    ld      bc,128                ; Row Width in Bytes
     add     hl,bc                 ; Add to RowAdr
     ex      de,hl                 ; DE = RowAdr, HL = TilPrp
     pop     bc                    ; BC = ColCnt; Stack = RowCnt, RtnAdr

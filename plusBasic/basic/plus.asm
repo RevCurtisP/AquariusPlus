@@ -434,8 +434,6 @@ ST_LINE:
 ST_PUT:
     cp      SCRNTK
     jp      z,ST_PUT_SCREEN
-    rst     SYNCHR
-    byte    XTOKEN
     cp      TILETK                ; If GET TILEMAP
     jp      z,ST_PUT_TILEMAP      ;   Go do it
     jp      SNERR

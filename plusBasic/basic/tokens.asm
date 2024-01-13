@@ -91,7 +91,7 @@ EXTCMDS:
     db $80 + 'P',"LAY"            ; $95
     db $80 + 'A',"PPEND"          ; $96
     db $80 + 'T',"RIM"            ; $97
-    db $80 + 'S',"STASH"          ; $98
+    db $80 + 'S',"TASH"           ; $98
     db $80 + ' '                  ; $99             
     db $80 + ' '                  ; $9A             
     db $80 + ' '                  ; $9B             

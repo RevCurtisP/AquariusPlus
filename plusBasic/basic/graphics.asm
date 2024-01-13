@@ -386,7 +386,7 @@ ST_GET_SCREEN:
 ;DIM A(40):FILL TILEMAP TILE 511
 ;GET TILEMAP (2,2) - (10,10),*A
 ST_GET_TILEMAP:
-    rst     CHRGET                ; Skip SCREEN
+    rst     CHRGET                ; Skip TILE
     rst     SYNCHR                ; Require MAP
     byte    MAPTK
     call    scan_rect             ; B = BgnCol, C = EndCol, D = BgnRow, E = EndRow
@@ -448,10 +448,12 @@ _screen_suffix:
 ;-----------------------------------------------------------------------------
 ; PUT TILEMAP (col,row),*arrayvar
 ;-----------------------------------------------------------------------------
-;DIM A(40):FILL TILEMAP TILE 511
+;DIM A(40)
 ;GET TILEMAP (2,2) - (10,10),*A
+;FILL TILEMAP TILE 511
+;PUT TILEMAP (2,2),*A
 ST_PUT_TILEMAP:
-    rst     CHRGET                ; Skip SCREEN
+    rst     CHRGET                ; Skip TILE
     rst     SYNCHR                ; Require MAP
     byte    MAPTK
     call    SCAND                 ; C = Col, E = Row
@@ -464,7 +466,9 @@ ST_PUT_TILEMAP:
     pop     bc                    ; C = Col; Stack = Row, RtnAdr
     ex      (sp),hl               ; HL = Row; Stack = TxtPtr, RtnAdr
     ex      de,hl                 ; E = Row, HL = AryAdr
-    call    tilemap_put           ; In: C=Col, E=End, HL: AryAdr
+    ld      iy,tilemap_put           
+    call    aux_call              ; In: C=Col, E=End, HL: AryAdr
+    jp      c,FCERR
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     ret
 
