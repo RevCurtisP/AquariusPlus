@@ -242,7 +242,7 @@ tile_convert_rect:
     call    _tilemap_bounds       ; Check EndCol and EndRow
     ret     c
     ld      ix,tilemap_cell_addr
-    call    aux_convert_rect      ; A = RowCnt, C = ColCnt, DE = RowAdr
+    call    gfx_convert_rect      ; A = RowCnt, C = ColCnt, DE = RowAdr
     ret     
 
 

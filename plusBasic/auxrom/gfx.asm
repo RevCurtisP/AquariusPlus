@@ -40,7 +40,7 @@ SWPSCRN80 equ $14   ; TTYPOS
 ;        BC: Column Count
 ;        DE: Start Address
 ;-----------------------------------------------------------------------------
-aux_convert_rect:
+gfx_convert_rect:
     ld      a,c                   ; A = EndCol
     sub     b                     ; A = EndCol - BgnCol
     ret     c                     ; If EndCol < BgnCol Return error

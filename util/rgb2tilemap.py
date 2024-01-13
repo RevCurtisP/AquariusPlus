@@ -38,7 +38,7 @@ tm_pal = 0x1000
 pal_index = 0
 pal_dict = {} 
 
-tile_index = 192
+tile_index = 128
 tile_dict = {}
 
 tile_map = []
@@ -96,7 +96,7 @@ with open(rgb_name, "rb") as rgb_file:
       tile_count[tile_index] = 0
       tile_cell[tile_index] = cell_no
       tile_index += 1
-    tile_count[tile_index-1] += 1
+    tile_count[tm_cell & 0x1FF] += 1
     if debug: print("cell#:",cell_no)
     if debug: print("tm_cell:", hex(tm_cell | tm_pal))
     tile_map.append((tm_cell | tm_pal))  

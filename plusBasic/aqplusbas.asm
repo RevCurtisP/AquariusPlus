@@ -83,7 +83,7 @@
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.20m3"
+    db "v0.20m4"
 ifdef coredump
     db "_coredump"
 endif
@@ -984,7 +984,6 @@ aux_line_print:
     include "screen.asm"        ; Text screen graphics subroutines
     include "sprite.asm"        ; Sprite graphics module
     include "sound.asm"         ; Sound and Music
-    include "common.asm"        ; Common graphics routine
 
     assert !($FFFF<$)   ; ROM full!
 

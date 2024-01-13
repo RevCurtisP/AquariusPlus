@@ -228,7 +228,7 @@ screen_convert_rect:
     call    screen_bounds         ; Check EndCol and EndRow
     ret     c
     ld      ix,screen_pos_addr
-    call    aux_convert_rect      ; A = RowCnt, C = ColCnt, DE = RowAdr
+    call    gfx_convert_rect      ; A = RowCnt, C = ColCnt, DE = RowAdr
     ret
 
 ;-----------------------------------------------------------------------------

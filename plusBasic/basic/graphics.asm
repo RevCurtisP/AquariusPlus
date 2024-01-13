@@ -390,20 +390,8 @@ ST_GET_TILEMAP:
     rst     SYNCHR                ; Require MAP
     byte    MAPTK
     call    scan_rect             ; B = BgnCol, C = EndCol, D = BgnRow, E = EndRow
-    SYNCHK  ','                   ; Require comma
-    rst     SYNCHR
-    byte    MULTK                 ; Require * - for now
-    push    de                    ; Stack = Rows, RtnAdr
-    push    bc                    ; Stack = Cols, Rows, RtnAdr
-    call    get_array             ; DE = Array Data Address
-    pop     bc                    ; B = BgnCol, C = EndCol; Stack = Rows, RtnAdr
-    ex      (sp),hl               ; HL = Rows; Stack = TxtPtr, RtnAdr
-    ex      de,hl                 ; D = BgnRow, E = EndRow, HL = AryAdr
     ld      iy,tilemap_get
-    call    aux_call              ; In: B=BgnCol, C=EndCol, D=BgnRow, E=EndRow, HL: AryAdr
-    jp      c,FCERR
-    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
-    ret
+    jp      _get_put_tilemap
 
 ;----------------------------------------------------------------------------
 ; PUT SCREEN Statement
@@ -450,13 +438,15 @@ _screen_suffix:
 ;-----------------------------------------------------------------------------
 ;DIM A(40)
 ;GET TILEMAP (2,2) - (10,10),*A
-;FILL TILEMAP TILE 511
+;FILL TILEMAP TILE 128 PALETTE 2
 ;PUT TILEMAP (2,2),*A
 ST_PUT_TILEMAP:
     rst     CHRGET                ; Skip TILE
     rst     SYNCHR                ; Require MAP
     byte    MAPTK
     call    SCAND                 ; C = Col, E = Row
+    ld      iy,tilemap_put
+_get_put_tilemap:
     SYNCHK  ','                   ; Require comma
     rst     SYNCHR
     byte    MULTK                 ; Require * - for now
@@ -466,8 +456,7 @@ ST_PUT_TILEMAP:
     pop     bc                    ; C = Col; Stack = Row, RtnAdr
     ex      (sp),hl               ; HL = Row; Stack = TxtPtr, RtnAdr
     ex      de,hl                 ; E = Row, HL = AryAdr
-    ld      iy,tilemap_put           
-    call    aux_call              ; In: C=Col, E=End, HL: AryAdr
+    call    aux_call
     jp      c,FCERR
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     ret
@@ -511,7 +500,6 @@ ST_SET_TILEMAP:
     ex      de,hl                 ;   E = Row, HL = TilDef
     ld      iy,tilemap_set_tile   
     call    aux_call              ;   Write tile to tilemap
-    call    tilemap_set_tile
     jp      c,FCERR               ;   Error if invalid coordinates
     pop     hl                    ;   HL = TxtPtr; Stack = RtnAdr
     ret
