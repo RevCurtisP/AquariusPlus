@@ -899,7 +899,8 @@ run_cmd:
     cp      '_'                   ; or label
     jr      z,con_run             ;   RUN line#
 
-    call    get_string_direct     ; HL = StrDsc, DE = TxtAdr, BC = StrLen
+    ld      (SUBFLG),a            ; Stash FileSpec start character
+    call    get_string_direct     ; HL = StrDsc, DE = TxtAdr, BC = StrLen; Stack = TxtPtr
     jr      run_file              ; Load and run file
 
 con_run:
@@ -918,10 +919,14 @@ run_file:
     ; Close any open files
     call    esp_close_all
 
+    ld      a,(SUBFLG)            ; Restore FileSpec start character
+    cp      '"'
+    jr      z,.quoted             ; If not quoted
+    call    in_direct             ; and in direct mode
+    call    nc,_lookup_file       ;   Find matching file if no extensions
+.quoted
     push    hl                    ; Save String Descriptor
-
-    ;call    _lookup_file          ; HL = StrDsc, DE = TxtAdr, BC = StrLen
-
+    call    string_addr_len       ; DE = StrAdr, BC = StrLen
 
 ;For (16k) cartridge binaries
 ;the bytes at 0x2003...05...07...09...0B...0D...0F are consistent.
@@ -976,6 +981,60 @@ run_file:
     byte    $2A, $9C, $B0, $6C, $64, $A8, $70
 
 _lookup_file:
+    push    hl                    ; Stack = StrDsc, RtnAdr
+    ld      iy,file_get_ext       
+    call    aux_call              ; A = ExtLen
+    pop     hl                    ; HL = StrDsc; Stack = RtnAdr
+    ret     nz                    ; Return if extension specified
+; Add wildcard
+    call    string_addr_len       ; DE = StrAdr, BC = StrLen
+    push    bc                    ; Stack = StrLen, RtnAdr
+    push    bc                    ; Stack = StrLen, StrLen, RtnAdr
+    call    get_strbuf_addr       ; HL = StrBuf
+    pop     bc                    ; BC = StrLen; Stack = StrLen, RtnAdr
+    push    hl                    ; Stack = StrBuf, StrLen, RtnAdr
+    ex      de,hl                 ; DE = StrBuf, HL = StrAdr
+    ldir                          ; DE = StrEnd
+    pop     hl                    ; HL = StrBuf; Stack = StrLen, RtnAdr
+    pop     bc                    ; BC = StrLen; Stack = RtnAdr
+    ld      a,'.'                 
+    call    .add_char
+    ld      a,'*'                 ; Add .* to filename
+    call    .add_char
+    ex      de,hl                 ; DE = StrBuf
+    ld      iy,dos_open_dir       
+    call    aux_call
+    jp      m,_dos_error
+    call    get_strbuf_addr       ; HL = BufAdr
+.read_loop:
+    push    af                    ; Stack = FilDsc, RtnAdr
+    ld      iy,dos_read_dir       
+    call    aux_call              ; A = Result, B = NamLen, C = EntLen, DE = NamAdr, HL = BufAdr
+    jp      c,LSERR               ; Error if overflow
+    jp      m,.error
+
+.ret_filename
+    pop     af                    ; A = FilDsc
+    ld      iy,dos_close_all
+    call    aux_call              ; Close file
+    ld      a,b                   ; A = NamLen, DE = NamAdr
+    jp      STRAD2                ; Build string descriptor and return
+    
+.error
+    cp      ERR_EOF               ; If not EOF
+    jp      nz,_dos_error         ;   Error out
+    pop     af                    ; A = FilDsc
+    ld      iy,dos_close
+    call    aux_call              ; Close file
+    pop     hl                    ; HL = FilDsc; Stack = RtnAdr
+    ret
+
+.add_char:
+    inc     c                     ; Bump StrLen for *
+    jp      z,LSERR               ; Error if > 255
+    ld      (de),a                ; Append * to filename
+    inc     de                    ; Bump BUFPTR
+    ret
 
 
 ;-----------------------------------------------------------------------------

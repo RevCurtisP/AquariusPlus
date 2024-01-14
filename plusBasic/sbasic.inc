@@ -222,6 +222,8 @@ GOODCH      equ $0DE9   ; INLINC - Put key in input buffer
 TIMSTR      equ $0E2F   ; Create tempory string from null-terminated string
 STRCPY      equ $0E39   ; Create copy of string
 STRINI      equ $0E50   ; Reserve space for new string and create descriptor
+STRAD2      equ $0E53   ; Build string descriptor in DSCTMP
+STRADI      equ $0E56   ; Build string descriptor at HL
 STRLIT      equ $0E5F   ; Build descriptor for string litersl
 STRLTI      equ $0E60   ; Do STRLIT, without decrementing HL
 STRLT3      equ $0E62   ; Do STRLTI with delimiter in B 

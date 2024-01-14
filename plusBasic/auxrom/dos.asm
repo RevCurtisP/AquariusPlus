@@ -155,6 +155,63 @@ dos_open:
     jp      esp_get_result 
 
 ;-----------------------------------------------------------------------------
+; dos_read_dir - Read Directory entry
+; Input: A: File descriptor
+;       HL: Buffer address
+; Output: A: Result
+;         B: Filename length
+;         C: Entry length
+;        DE: Filename address
+;        HL: Buffer address
+; Flags: Carry set if buffer overflow
+; Bytes Contents
+;  0-1  Date
+;  2-3  Time
+;   4   Attribute
+;  5-8  File Size
+;   9+  Null-terminated filename
+;-----------------------------------------------------------------------------
+dos_read_dir:
+    push    af                    ; Stack = FilDsc, RtnAdr
+    ld      a,ESPCMD_READDIR
+    call    esp_cmd               ; Send READDIR command
+    pop     af                    ; A = FilDsc; Stack = RtnAdr
+    call    esp_send_byte         ; Send FilDsc
+    call    esp_get_byte          ; A = Status
+    or      a                     ; Set flags
+    ret     m                     ; Return if error
+
+    push    hl                    ; Stack = BufAdr, RtnAdr
+    push    hl                    ; Stack = BufAdr, BufAdr, RtnAdr
+    ld      bc,$0900              ; B = Counter, C = ResLen
+.bloop
+    call    esp_get_byte          ; Read byte
+    ld      (hl),a                ; Write to buffer
+    inc     hl                    ; Bump BufPtr
+    inc     c                     ; Bump ResLen
+    djnz    .bloop                ; Countdown and loop
+.sloop
+    call    esp_get_byte          ; Read character
+    ld      (hl),a                ; Write to buffer
+    or      a
+    jr      z,.done               ; If not NUL
+    inc     hl                    ;   Bump BufPtr
+    inc     c                     ;   Bump ResLen
+    jr      nz,.sloop             ;   Loop if < 256
+    scf                           ; Else set carry
+.done
+    ld      a,c
+    sub     9
+    ld      b,a                   ; B = NamLen
+    pop     hl                    ; HL = BufAdr, Stack = BufAdr, RtnAdr
+    ld      de,9
+    add     hl,de
+    ex      de,hl                 ; DE = NamAdr
+    pop     hl                    ; HL = BufAdr; Stack = RtnAdr
+    xor     a                     ; Return success
+    ret
+
+;-----------------------------------------------------------------------------
 ; dos_rename - Rename file/directory
 ; Input: DE: New name string descriptor
 ;        HL: Old name string descriptor
