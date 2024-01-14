@@ -919,11 +919,11 @@ run_file:
     ; Close any open files
     call    esp_close_all
 
-    ld      a,(SUBFLG)            ; Restore FileSpec start character
-    cp      '"'
-    jr      z,.quoted             ; If not quoted
-    call    in_direct             ; and in direct mode
-    call    nc,_lookup_file       ;   Find matching file if no extensions
+;    ld      a,(SUBFLG)            ; Restore FileSpec start character
+;    cp      '"'
+;    jr      z,.quoted             ; If not quoted
+;    call    in_direct             ; and in direct mode
+;    call    nc,_lookup_file       ;   Find matching file if no extensions
 .quoted
     push    hl                    ; Save String Descriptor
     call    string_addr_len       ; DE = StrAdr, BC = StrLen
