@@ -1,26 +1,15 @@
 # plusBASIC Release History
- - v0.20m5d - DEF SPRITE  uses STRBUF instead of SBUFF
- - v0.20m5b - DEF ATTR, DEF INTLIST, DEF RGBLIST, DEF TILELIST use STRBUFF instead of SBUFF
- - v0.20m5c - Added LIST$(NEXT) syntax
- - v0.20m5b - DEF PALETTELIST uses STRBUFF instead of SBUFF
- - v0.20m5a - DEF INTLIST uses STRBUFF instead of SBUFF
- - v0.20m4 
-   - Condensed GET_TILEMAP and PUT_TILEMAP code
- - v0.20m3 
-   - Finished tilemap_get, GET TILEMAP
- - v0.20m2 
-   - Finished GET TILEMAP
- - v0.20m1 
-   - Fixed spurious FC error in GET SCREEN
+ - v0.20n 
+    - Added syntax `LIST$(NEXT)`, replaced all usage of `SBUFF` in paged memory with `STRBUF` in main memory
  - v0.20m
    - Added `FILL [@page,] start, count, |byte|WORD int|`,  `sys_fill_word`, tokens `VARS` and `WORD`
+   - Fixed spurious `FC error` in `GET SCREEN`
+   - Finished `GET TILEMAP`, `PUT_TILEMAP`, `tilemap_get`, and `tilemap_put`
  - v0.20k
    - Implemented `SET TILEMAP (x,y)` and `tilemap_set_tile`
- - v0.20j2 
-   - Allow both `,` and `;` as delimiters in `DEF INTLIST`
- - v0.20j1
-   - Fixed `ATTR attrs` and `PALETTE palette#` causing syntax error after `FILL TILEMAP tile#`
  - v0.20j 
+   - Allow both `,` and `;` as delimiters in `DEF INTLIST`
+   - Fixed `ATTR attrs` and `PALETTE palette#` causing syntax error after `FILL TILEMAP tile#`
    - `.` treated as `0` in hex literal strings and `ASC$` function
  - v0.20i
    - Added BASIC functions `FILEEXT$()`, `FILEDIR$()`, `TRIMDIR$()`, `TRIMEXT$()`

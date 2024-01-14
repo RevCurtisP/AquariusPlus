@@ -1,4 +1,4 @@
-@REM Build Aquarius S3 ROM
+@REM Build plusBASIC ROM
 @ECHO OFF
 SET _opts=
 if "%1" NEQ "" SET _opts=-D%1
