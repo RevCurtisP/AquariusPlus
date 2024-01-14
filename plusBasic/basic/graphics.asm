@@ -589,13 +589,13 @@ FN_TILEMAP
 ;   Bit 2 = Vertical Flip
 ;   Bit 1 = Horizontal Flip
 ;-----------------------------------------------------------------------------
-ST_DEFATTR:
+ST_DEF_ATTR:
     rst     CHRGET                ; Skip COL
-    call    _setupdef
+    call    _setupdef             ; DatLen, BufAdr, VarPtr
 .loop
-    call    GETBYT                ; Get Attribute
+    call    GETBYT                ; E = Attribute
     and     $7E                   ; Strip Index MSB
-    call    sbuff_write_byte      ; Write it to string buffer
+    call    _write_byte_strbuf    ; Write it to string buffer
     call    CHRGT2                ; Reget next character
     jr      z,_finish_def         ; If not end of statement
     SYNCHK  ','                   ;   Require comma
@@ -605,56 +605,62 @@ ST_DEFATTR:
 ; DEF PALETTELIST P$ = palette#, palette#, ...
 ; palette# is an integer between 0 and 3
 ;-----------------------------------------------------------------------------
-ST_DEFPALETTE:
+;DEF PALETTELIST P$ = 0,1,2,3
+ST_DEF_PALETTE:
     rst     CHRGET                ; Skip PALETTE
-    call    _setupdef
+    call    _setupdef            ; Stack = DatLen, BufPtr, VarPtr, RtnAdr
 .loop
     call    get_byte4             ; Get palette#
-    call    sbuff_write_byte      ; Write it to string buffer
+    call    _write_byte_strbuf    ; Write to buffer
     call    CHRGT2                ; Reget next character
-    jr      z,_finish_def         ; If not end of statement
+    jr      z,_finish_def        ; If not end of statement
     SYNCHK  ','                   ;   Require comma
     jr      .loop                 ;   and get next color
+
 
 ;-----------------------------------------------------------------------------
 ; DEF INTLIST I$ = int, int, ...
 ; int is a integer between 0 and 65535
 ;-----------------------------------------------------------------------------
-ST_DEFINT:
+; DEF INTLIST I$ = 1234,$ABBA;0,$FFFF
+ST_DEF_INT:
     rst     CHRGET                ; Skip INT
-    call    _setupdef             ; Stack = VarPtr, RtnAdr
+    call    _setupdef            ; Stack = DatLen, BufPtr, VarPtr, RtnAdr
 .loop
-    call    GETINT                ; Get Integer
-    call    sbuff_write_de        ; Write it to string buffer
+    call    GETINT                ; DE = Integer
+    call    _write_word_strbuf    ; Write DE to strbuf
     call    CHRGT2                ; Reget next character
-    jr      z,_finish_def         ; If not end of statement
+    jr      z,_finish_def        ; Finish up if end of statement
     cp      ';'                   ;   
-    jr      nz,.not_sc            ;   If semicolon
-    rst     CHRGET                ;     Skip it
-    jr      .loop                 ;     and get next integer
+    jr      nz,.not_sc            ; If semicolon
+    rst     CHRGET                ;   Skip it
+    jr      .loop                 ;   and get next integer
 .not_sc
-    SYNCHK  ','                   ;   Else require comma
-    jr      .loop                 ;     and get next integer
+    SYNCHK  ','                   ; Else require comma
+    jr      .loop                 ;   and get next integer
 
 ;-----------------------------------------------------------------------------
 ; DEF RGBLIST R$ = r,g,b; r,g,b; ...
 ; int is a integer between 0 and 65535
 ;-----------------------------------------------------------------------------
-ST_DEFRGB:
+ST_DEF_RGB:
     rst     CHRGET                ; Skip INT
     call    _setupdef             ; Stack = VarPtr, RtnAdr
 .loop
     call    _get_rgb              ; DE = RGB value
-    call    sbuff_write_de        ; Write RGB to String Buffer
+    call    _write_word_strbuf    ; Write RGB to String Buffer
     call    CHRGT2                ; Reget next character
     jr      z,_finish_def         ; If not end of statement
     SYNCHK  ';'                   ;   Require semicolon
     jr      .loop                 ;   and get next RGB
 
+; On entry HL = TxtPtr; Stack = DatLen, BufPtr, VarPtr, RtnAdr
 _finish_def:
-    ex      (sp),hl               ; HL = VarPtr; Stack = TxtPtr
-    push    hl                    ; Stack = VarPtr, TxtPtr
-    call    sbuff_create_string   ; Copy Buffer to Temporary. Return HL = StrDsc
+    pop     af                    ; A = DatLen; Stack = BufPtr, VarPtr, RtnAdr
+    pop     de                    ; Stack = VarPtr, RtnAdr
+    ex      (sp),hl               ; HL = VarPtr; Stack = TxtPtr, RtnAdr
+    push    hl                    ; Stack = VarPtr, TxtPtr, RtnAdr
+    call    strbuf_temp_str       ; Copy Buffer to Temporary. Return HL = StrDsc
     push    hl                    ; Stack = StrDsc, VarPtr, TxtPtr
     jp      INBUFC                ; Copy Temporary to Variable and return
 
@@ -662,13 +668,54 @@ _setupdef:
     rst     SYNCHR
     byte    LISTTK                ; Require LIST
 _defnolist:
-    call    get_stringvar         ; Get string variable address
-    pop     bc                    ; BC = ThisRet; Stack = RtnAdr
-    push    de                    ; Stack = VarPtr, RtnAdr
-    push    bc                    ; Stack = ThisRet, VarPtr, RtnAdr
+    call    get_stringvar         ; DE = VarAdr
+    pop     bc                    ; BC = RtnAdr
+    push    de                    ; VarAdr
+    push    hl                    ; Stack = TxtPtr, VarAdr
+    push    bc                    ; Stack = RtnAdr, TxtPtr, VarAdr
+    call    get_strbuf_addr       ; HL = BufAdr
+    pop     bc                    ; BC = RtnAdr; Stack = TxtPtr, VarAdr
+    ex      (sp),hl               ; HL = TxtPtr; Stack = BufAdr, TxtPtr, VarAdr
+    xor     a                     ; DatLen = 0
+    push    af                    ; Stack = DatLen, BufAdr, VarPtr
+    push    bc                    ; Stack = RtnAdr, DatLen, BufAdr, VarPtr
     rst     SYNCHR
     byte    EQUATK                ; Require '='
-    jp      sbuff_init            ; Init string buffer and return
+    ret
+
+
+; These routines must not change BC or HL
+_write_bc_strbuf:
+    ld      d,b                   ; DE = BC                 
+    ld      e,c
+_write_word_strbuf:
+    byte    $3E                   ; LD A,$AF
+_write_byte_strbuf:
+    xor     a                     ; A = 0 
+    or      a                     ; Z = Byte, NZ = Word
+    ex      af,af'                ; AF' = IntFlg
+    pop     ix                    ; IX = RtnAdr
+    pop     af                    ; AF = DatLen; Stack = BufPtr, VarPtr
+    ex      (sp),hl               ; HL = BufPtr; Stack = TxtPtr, VarPtr
+    inc     a                     ; Bump length
+    jr      z,.lserr              ; Error if >255
+    ld      (hl),e                ; Write LSB
+    inc     hl                    ; Bump BufPtr
+    ex      af,af'                ; AF = IntFlg, AF' = DatLen
+    jr      z,.done               ; If writing word
+    ex      af,af'                ;   AF = DatLen, AF' = IntFlg
+    inc     a                     ;   Bump DatLen
+.lserr:
+    jp      z,LSERR               ;   Error if >255
+    ex      af,af'                ;   AF = IntFlg, AF' = DatLen
+    ld      (hl),e                ;   Write LSB
+    inc     hl                    ;   Bump BufPtr
+.done 
+    ex      (sp),hl               ;   HL = TxtPtr; Stack = BufPtr, VarPtr
+    ex      af,af'                ;   A = DatLen  
+    push    af                    ; Stack = DatLen, BufPtr, VarPtr
+    jp      (ix)                  ; Return
+
 
 ;-----------------------------------------------------------------------------
 ; DEF TILELIST T$ = tile#, tile#, ...
@@ -679,9 +726,9 @@ ST_DEF_TILELIST:
     call    _setupdef
 .loop
     call    get_int512            ; Get tile#
-    call    sbuff_write_de        ; Write it to string buffer
+    call    _write_word_strbuf    ; Write it to string buffer
     call    CHRGT2                ; Reget next character
-    jr      z,_finish_def         ; If not end of statement
+    jr      z,_finish_def        ; If not end of statement
     SYNCHK  ','                   ;   Require comma
     jr      .loop                 ;   and get next tile#
 
@@ -730,50 +777,62 @@ _get_aux
 ;-----------------------------------------------------------------------------
 ST_DEF_SPRITE:
     rst     CHRGET                ; Skip SPRITE
-    call    _defnolist            ; Stack = VarPtr, RtnAdr
+    call    _defnolist           ; Stack = DatLen, BufPtr, VarPtr
     xor     a                     ; A = SptlCnt (0)
-    push    af                    ; Stack = SptlCnt, VarPtr, RtnAdr
-    call    sbuff_write_byte      ; Write it
+    push    af                    ; Stack = SptlCnt, Datlen, BufPtr, VarPtr, RtnAdr
+    call    _write_byte_strbuf    ; Write E to string buffer
     ld      b,a                   ; B = MaxYoffset (0)
     ld      c,a                   ; C = MaxXoffset (0)
-    call    sbuff_write_bc        ; Write Them
+    call    _write_bc_strbuf      ; Write BC to string buffer
 .loop
-    call    _get_byte             ; Get Spritle#
+    call    _get_byte             ; A,E = Spritle#
     cp      64
     jp      nc,FCERR
-    call    sbuff_write_byte      ; Write Spritle#
+    pop     bc                    ; BC = SptlCnt; Stack = Datlen, BufPtr, VarPtr, RtnAdr
+    call    _write_byte_strbuf    ; Write E to string buffer
+    push    bc                    ; Stack = SptlCnt, Datlen, BufPtr, VarPtr, RtnAdr
     SYNCHK  ','
-    call    _get_byte             ; Get Xoffset
+    call    _get_byte             ; A,E = Xoffset
     cp      c
     jr      c,.skipx              ; If Xoffset > MaxXoffset
     ld      c,a                   ;   MaxXoffset = Xoffset
 .skipx
-    call    sbuff_write_byte      ; Write Xoffset
+    pop     bc                    ; BC = SptlCnt; Stack = Datlen, BufPtr, VarPtr, RtnAdr
+    call    _write_byte_strbuf    ; Write E to string buffer
+    push    bc                    ; Stack = SptlCnt, Datlen, BufPtr, VarPtr, RtnAdr
     SYNCHK  ','
-    call    _get_byte             ; Get Yoffset
+    call    _get_byte             ; A,E Yoffset
     cp      b
     jr      c,.skipy              ; If Xoffset > MaxXoffset
     ld      b,a                   ;   MaxXoffset = Xoffset
 .skipy
-    call    sbuff_write_byte      ; Write Xoffset
-    pop     af                    ; A = SptlCnt; Stack = VarPtr, RtnAdr
+    pop     bc                    ; BC = SptlCnt; Stack = Datlen, BufPtr, VarPtr, RtnAdr
+    call    _write_byte_strbuf    ; Write E to string buffer
+    push    bc                    ; Stack = SptlCnt, Datlen, BufPtr, VarPtr, RtnAdr
+    pop     af                    ; A = SptlCnt; Stack = Datlen, BufPtr, VarPtr, RtnAdr
     inc     a                     ; SptlCnt += 1
-    push    af                    ; Stack = SptlCnt, VarPtr, RtnAdr
+    push    af                    ; Stack = SptlCnt, Datlen, BufPtr, VarPtr, RtnAdr
     call    CHRGT2
     jr      z,.done
     SYNCHK  ';'
     jr      .loop
 .done
-    ld      de,0                  ; DE = BuffOffset (0)
-    pop     af                    ; A = SptlCnt; Stack = VarPtr, RtnAdr
-    call    sbuff_write_byte_ofs  ; Write it
+    pop     af                    ; A = SptlCnt; Stack = Datlen, BufPtr, VarPtr, RtnAdr
+    push    hl                    ; Stack = TxtPtr, Datlen, BufPtr, VarPtr, RtnAdr
+    push    bc                    ; Stack = MaxOfs, TxtPtr, Datlen, BufPtr, VarPtr, RtnAdr
+    call    get_strbuf_addr       ; HL = BufAdr
+    pop     bc                    ; BC = MaxOfs; Stack = TxtPtr, Datlen, BufPtr, VarPtr, RtnAdr
+    ld      (hl),a                ; Write SptlCnt to string buffer
+    inc     hl
     ld      a,c                   ;
     add     a,8                   ; A = MaxXoffset + Spritle Width
-    call    sbuff_write_byte_ofs  ; Write it
+    ld      (hl),a                ; Write to string buffer
+    inc     hl
     ld      a,b                   ;
     add     a,8                   ; A = MaxYoffset + Spritle Width
-    call    sbuff_write_byte_ofs  ; Write it
-    jp      _finish_def           ; A = SptlCnt; Stack = VarPtr, RtnAdr
+    ld      (hl),a                ; Write to string buffer
+    pop     hl                    ; HL = TxtPtr; Stack = Datlen, BufPtr, VarPtr, RtnAdr
+    jp      _finish_def          ; 
 
 _get_byte:
     push    bc                ; Stack = MaxOffsets

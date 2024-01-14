@@ -1,4 +1,17 @@
 # plusBASIC Release History
+ - v0.20m5d - DEF SPRITE  uses STRBUF instead of SBUFF
+ - v0.20m5b - DEF ATTR, DEF INTLIST, DEF RGBLIST, DEF TILELIST use STRBUFF instead of SBUFF
+ - v0.20m5c - Added LIST$(NEXT) syntax
+ - v0.20m5b - DEF PALETTELIST uses STRBUFF instead of SBUFF
+ - v0.20m5a - DEF INTLIST uses STRBUFF instead of SBUFF
+ - v0.20m4 
+   - Condensed GET_TILEMAP and PUT_TILEMAP code
+ - v0.20m3 
+   - Finished tilemap_get, GET TILEMAP
+ - v0.20m2 
+   - Finished GET TILEMAP
+ - v0.20m1 
+   - Fixed spurious FC error in GET SCREEN
  - v0.20m
    - Added `FILL [@page,] start, count, |byte|WORD int|`,  `sys_fill_word`, tokens `VARS` and `WORD`
  - v0.20k

@@ -59,3 +59,26 @@ gfx_convert_rect:
     ld      b,0                   ; BC = ColCnt
     pop     af                    ; A = RowCnt; Stack = RtnAdr
     ret
+
+;-----------------------------------------------------------------------------
+; Calculate total number of cells in a rectangle
+; Input: B: Start Column
+;        C: End Column  
+;        D: Start Row
+;        E: End Row
+; Output: HL: Total number of cells
+;     Flags: Carry set if more than 255 cells 
+;-----------------------------------------------------------------------------
+gfx_rect_size:
+    push    de                    ; Stack = RowSE, RtnAdr
+    ld      a,e
+    sub     d
+    inc     a
+    ld      e,a
+    ld      d,0                   ; E = EndRow - BgnRow + 1
+    ld      a,c
+    sub     b
+    inc     a                     ; A = EndCol - BgnCol + 1
+    call    mult_a_de             ; HL = Rows * Cols
+    pop     de                    ; DE = RowSE; Stack = RtnAdr
+    ret

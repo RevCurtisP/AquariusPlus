@@ -487,3 +487,27 @@ scan_rect:
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     ret
 
+;-----------------------------------------------------------------------------
+; Create temporary string from string buffer
+;  Input: A = Buffer data length
+; Output: BC = StrLen
+;         DE = StrAdr
+;         HL = StrDsc
+; Clobbers: A
+;-----------------------------------------------------------------------------
+strbuf_temp_str:
+    or      a                     ; If length = 0 
+    jp      z,pop_ret_nullstr     ;   Return null string           
+    call    STRINI                ; Create temporary string
+    ld      c,a                   ; HL = StrDsc, DE = StrAdr
+    ld      b,0                   ; BC = StrLen
+    push    hl                    ; Stack = StrDsc, RtnAdr
+    push    de                    ; Stack = StrAdr, StrDsc, RtnAdr
+    push    bc                    ; Stack = StrLen, StrAdr, StrDsc, RtnAdr
+copy_strbuf:
+    call    get_strbuf_addr       ; HL = StrBuf
+    ldir                          ; Copy BC bytes from StrBuf to StrAdr
+    pop     bc                    ; BC = StrLen; Stack = StrAdr, StrDsc
+    pop     de                    ; DE = StrAdr; Stack = StrDsc
+    pop     hl                    ; HL = StrDsc
+    ret

@@ -17,11 +17,11 @@ ST_CLS:
 ;-----------------------------------------------------------------------------
 ST_DEF:
     cp      INTTK         
-    jp      z,ST_DEFINT             ; DEF INTLIST
+    jp      z,ST_DEF_INT            ; DEF INTLIST
     cp      TILETK
     jp      z,ST_DEF_TILELIST       ; DEF TILELIST
     cp      RGBTK                   
-    jp      z,ST_DEFRGB             ; DEF RGBLIST
+    jp      z,ST_DEF_RGB            ; DEF RGBLIST
     cp      XTOKEN          
     jp      nz,SNERR                ; Extended Token Prefix
     inc     hl
@@ -29,7 +29,7 @@ ST_DEF:
     cp      SPRITK
     jp      z,ST_DEF_SPRITE         ; DEF SPRITE
     cp      ATTRTK
-    jp      z,ST_DEFATTR            ; DEF ATTRLIST
+    jp      z,ST_DEF_ATTR           ; DEF ATTRLIST
     cp      PALETK
-    jp      z,ST_DEFPALETTE         ; DEF PALETTELIST
+    jp      z,ST_DEF_PALETTE        ; DEF PALETTELIST
     jp      SNERR

@@ -314,67 +314,85 @@ oper_xor:
     xor     d                     
     jp      (hl)                  ;[M80] RETURN THE INTEGER [A,L]
 
-
+;? "%%" % (1)
 oper_stringsub:
+    push    hl                  ; Stack = TxtPtr, RtnAdr
+    call    get_strbuf_addr     ; HL = BufAdr
+    ex      (sp),hl             ; HL = TxtPtr; Stack = BufPtr, RtnAdr
     call    GETYPE              ; If expression is not a string
     jp      nz,SNERR            ;   Syntax error
     rst     CHRGET              ; Skip %
     SYNCHK  '('                 ; Require (
-    call    sbuff_init          ; Initialize string buffer
-    push    hl                  ; Stack = TxtPtr
-    call    FRESTR
-    call    string_addr_len     ; HL = StrLen, DE = StrAdr, BC = StrLen
+    ex      (sp),hl             ; HL = BufPtr; Stack = TxtPtr, RtnAdr
+    xor     a                   ; DatLen = 0
+    push    af                  ; Stack = DatLen, TxtPtr, RtnAdr
+    push    hl                  ; Stack = BufPtr, DatLen, TxtPtr, RtnAdr
+    call    free_addr_len       ; DE = StrAdr, BC = StrLen
     ld      b,1                 ; B = ReqComma, C = StrLen
-            
+    pop     hl                  ; HL = BufPtr; Stack = DatLen, TxtPtr, RtnAdr
 .loop:      
     inc     c                   ; Bump to Test at beginning of loop
-    dec     c                   ; End of String
-    jr      z,.done
-    ld      a,(de)              ; A = StrChar
-    inc     de                  ; Bump StrPtr
-    cp      '%'                 
-    jr      nz,.copychar        ; If substitution character        
-    ex      af,af'
-    dec     c                   ;   If character follows
-    jr      z,.copychar            
-    ld      a,(de)              ;     A = NextChar
-    cp      '%'                 ;     If substitution character
-    jr      z,.substitute       ;       Go substitute it
-    ex      af,af'              
-.copychar:                      ;
-    call    sbuff_write_byte    ; Copy StrChar to Buffer
+    dec     c                   ; If not end of string
+    jr      z,.done         
+    ld      a,(de)              ;   A = StrChar
+    inc     de                  ;   Bump StrPtr
+    cp      '%'                     
+    jr      nz,.copychar        ;   If substitution character        
+    ex      af,af'                  
+    dec     c                   ;     If character follows
+    jr      z,.copychar              
+    ld      a,(de)              ;       A = NextChar
+    cp      '%'                 ;       If substitution character
+    jr      z,.substitute       ;         Go substitute it
+    ex      af,af'                  
+.copychar:                      ;   
+    ld      (hl),a              ;   Write A to StrBuf
+    inc     hl                  ;   Bump StrPtr
+    pop     af                  ;   A = DatLen; Stack = BufPtr, RtnAdr
+    inc     a                   ;   Bump DatLen
+    jp      z,LSERR             ;   Error if > 255
+    push    af                  ;   Stack = DatLen, TxtPtr, RtnAdr
     dec     c
-    jr      .loop
-    
+    jr      .loop               ;   Check next character
 .done:
-    pop     hl                  ; HL = TxtPtr 
-    SYNCHK  ')'                 ; Require )
-    push    hl                  ; Stack = TxtPtr
-    call    sbuff_create_string ; Make temporary string from buffer
-    call    FRESTR
-    jp      PUTNEW              ; and Return it
+    pop     af                    ; A = DatLen; Stack = TxtPtr, RtnAdr
+    call    strbuf_temp_str       ; HL = StrDsc
+    ex      (sp),hl               ; HL = TxtPtr; Stack = StrDsc, RtnAdr
+    SYNCHK  ')'                   ; Require )
+    ex      (sp),hl               ; HL = StrDsc; Stack = TxtPtr, RtnAdr
+    call    FRETMP                ; Free the temporary
+    jp      PUTNEW                ; and Return it
 
 .substitute:
+    pop     af                  ; A = DatLen; Stack = TxtPtr, RtnAdr
+    ex      (sp),hl             ; HL = TxtPtr; Stack = BufPtr, RtnAdr
+    push    af                  ; Stack = DatLen, BufPtr, RtnAdr
     inc     de                  ; Skip second substitution character
     dec     c
     dec     b                   ; Update ReqComma
-    pop     hl                  ; HL = TxtPtr
-    push    de                  ; Stack = StrPtr
-    push    bc                  ; Stack = ReqComma+Counter, StrPtr
     jr      z,.nocomma          ; If not first arg
     SYNCHK  ','                 ;   Require comma
 .nocomma:   
+    push    de                  ; Stack = StrPtr, DatLen, BufPtr, RtnAdr
+    push    bc                  ; Stack = ReqCnt, StrPtr, DatLen, BufPtr, RtnAdr
     call    FRMEVL              ; Evaluate argument
-    push    hl                  ; Stack = TxtPtr, ReqComma+Counter, StrPtr
+    pop     bc                  ; BC = ReqCnt, Stack = StrPtr, DatLen, BufPtr, RtnAdr
+    pop     de                  ; DE = StrPtr; Stack = DatLen, BufPtr, RtnAdr
+    pop     af                  ; A = DatLen; Stack = BufPtr, RtnAdr
+    ex      (sp),hl             ; HL = BufPtr; Stack = TxtPtr, RtnAdr
+    push    bc                  ; Stack = ReqCnt, TxtPtr, RtnAdr
+    push    de                  ; Stack = StrPtr, ReqCnt, TxtPtr, RtnAdr
+    push    af                  ; Stack = DatLen, StrPtr, ReqCnt, TxtPtr, RtnAdr
+    push    hl                  ; Stack = BufPtr, DatLen, StrPtr, ReqCnt, TxtPtr, RtnAdr
     call    GETYPE
     jr      z,.notnum           ; If numeric
     call    FOUT                ;   Convert to text
     call    STRLIT              ;   Create Temp String
 .notnum                         ; 
     call    FRETMS
-    call    free_addr_len       ; DE = ArgStr Addr, BC = ArgStr Length
+    call    free_addr_len       ; DE = ArgAdr, BC = ArgLen
 .spaces
-    ld      a,b
+    ld      a,b                 ; Remove leading space from arg string
     or      c
     jr      z,.notspace
     ld      a,(de)
@@ -384,34 +402,64 @@ oper_stringsub:
     dec     bc
     jr      .spaces
 .notspace
-    call    sbuff_write_bytes   ; Write it to StrBuff
-    pop     hl                  ; HL = TxtPtr; Stack = ReqComma+Counter, StrPtr
-    pop     bc                  ; B = ReqComma, C = Counter; Stack = StrPtr
-    pop     de                  ; DE = StrPtr
-    push    hl                  ; HL = TextPtr
-    jp      c,OVERR             ; Error if Overflow
+    pop     hl                  ; HL = BufPtr; Stack = DatLen, StrPtr, ReqCnt, TxtPtr, RtnAdr
+    pop     af                  ; A = DatLen; Stack = StrPtr, ReqCnt, TxtPtr, RtnAdr
+    ld      b,c                 ; B = ArgLen
+    ld      c,a                 ; C = DatLen
+.copy
+    ld      a,(de)              ; Copy from arg to buffer
+    ld      (hl),a
+    inc     hl                  ; Bump BufPtr
+    inc     de                  ; Bump ArgPtr
+    inc     c                   ; Bump DatLen
+    jp      z,LSERR             ; Error if > 255
+    djnz    .copy               ; Do next arg character
+; Return with BC = ReqCnt, DE = StrPtr, HL = BufPtr; Stack = DatLen, TxtPtr, RtnAdr    
+    ld      a,c                 ; A = DatLen
+    pop     de                  ; DE = StrPtr; Stack = ReqCnt, TxtPtr, RtnAdr
+    pop     bc                  ; BC = ReqCnt; Stack = TxtPtr, RtnAdr
+    push    af                  ; Stack = DatLen, TxtPtr, RtnAdr
     jr      .loop               ; Do next StrChr
     
+    
 ;-----------------------------------------------------------------------------
-; LIST$(line#) - Detozenize Line
+; LIST$(line#) - Detozenize Line line#
+; LIST(NEXT) - Detozenize following Line
 ;-----------------------------------------------------------------------------
 eval_list:
     rst     CHRGET                ; Skip LIST
     SYNCHK  '$'                   ; Require $
     SYNCHK  '('                   ; Requite (
-    call    GETINT                ; DE = LinNum
-    SYNCHK  ')'                   ; Require )
-    push    hl                    ; Stack = TxtPtr, RtnAdr
-    call    FNDLIN                ; BC = LinLnk
-    jp      nc,USERR              ; No Carry = Line not found
-    push    bc                    ; Stack = LinLnk, TxtPtr, RtnAdr
+    cp      NEXTK
+    jr      nz,.not_next          ; If NEXT 
+    rst     CHRGET                ;   Skip NEXT
+    push    hl                    ;   Stack = TxtPtr, RtnAdr
+    call    REM                   ;   HL = End of BASIC line
+    inc     hl                    ;   HL = LinLnk of next line
+    ex      (sp),hl               ;   HL = TxtPtr; Stack = LinLnk, RtnAdr
+    SYNCHK  ')'                   ;   Require )
+    ex      (sp),hl               ;   HL = LinLnk; Stack = TxtPtr, RtnAdr
+    push    hl                    ;   Stack = LinLnk, TxtPtr, RtnAdr
+    ld      a,(hl)
+    inc     hl
+    or      (hl)                  ;   If end of program
+    jp      z,USERR               ;     Undefined line error
+    jr      .list_line            ; Else
+.not_next
+    call    GETINT                ;   DE = LinNum
+    SYNCHK  ')'                   ;   Require )
+    push    hl                    ;   Stack = TxtPtr, RtnAdr
+    call    FNDLIN                ;   BC = LinLnk
+    jp      nc,USERR              ;   No Carry = Line not found
+    push    bc                    ;   Stack = LinLnk, TxtPtr, RtnAdr
+.list_line
     call    get_strbuf_addr       ; HL = StrBuf
     ex      de,hl                 ; DE = StrBuf
     pop     hl                    ; HL = LinLnk; Stack = TxtPtr, RtnAdr
     inc     hl
     inc     hl                    ; Skip Line Link
     inc     hl
-    inc     hl                    ; Skip Line Label
+    inc     hl                    ; Skip Line Number
     call    unpack_line           ; Unpack the line
 return_strbuf:
     call    get_strbuf_addr       ; HL = StrBuf

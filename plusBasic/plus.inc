@@ -171,8 +171,6 @@ IRQ_VLINE       equ $02     ; Video LINE interrupt
 ;-----------------------------------------------------------------------------
 BASBUF_BASE equ $C000   ; Base Address of BASIC Buffers
 GFX_SYSVARS equ $C000   ; Graphics module System Variables (defined in gfx/gfx.asm)
-STRBUFFLEN  equ $00FF   ; Page Offset: Length of String in Buffer
-STRBUFF     equ $0100   ; Page Offset: String Buffer  - up to 255 chars plus null terminator 
                         ; Must be on 256 byte boundary
 ;         $0200-$03FF   ; Unused
 FKEYDEFS    equ $0200   ; Function Key Definitions (32 bytes each)

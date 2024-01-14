@@ -181,9 +181,10 @@ IQERR       equ FCERR   ; Illegal quantity error (future expansion)
 SCNLIN      equ $069C   ; Get line number from text at (HL)
 LINGET      equ $069D   ; Skip over line number
 RUNC2:      equ $06DB
-GOTO        equ $06DC   ; Execute GOTO Statement
+GOTO        equ $06DC   ; Execute GOTO statement
 GOTOLN      equ $06DF   ; GOTO line# in DE
 USERR       equ $06F3   ; Undefined line error
+REM         equ $071E   ; Execute REM statement
 LETDO       equ $0736   ; Execute LET, bypassing PTRGET and SYNCHK '='
 INBUFC      equ $0768   ; Copy temporary string to string variable
 NTOERR      equ $0782   ; Execute ON ... GOTO
@@ -303,6 +304,7 @@ XINIT:      equ $E010   ; Cartridge entry point
 
 ; Standard BASIC Tokens
 FORTK       equ $81     ; FOR
+NEXTK       equ $82     ; NEXT
 DATATK      equ $83     ; DATA
 INPUTK      equ $84     ; INPUT
 GOTOTK      equ $88     ; GOTO

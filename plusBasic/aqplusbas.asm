@@ -83,7 +83,7 @@
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.20m4"
+    db "v0.20n"
 ifdef coredump
     db "_coredump"
 endif
@@ -783,11 +783,6 @@ _scroll_hook:
 ; Alternate keyboard port routines
 ;-----------------------------------------------------------------------------
     include "keyread.asm"
-
-;-----------------------------------------------------------------------------
-; Extended string buffer routines
-;-----------------------------------------------------------------------------
-    include "sbuff.asm"
 
 ;-----------------------------------------------------------------------------
 ; Utility routines
