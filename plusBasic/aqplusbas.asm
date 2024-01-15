@@ -80,10 +80,13 @@
     jp      z,STRNG               ; If A is '"', process string literal
     jp      STRNGR                ; Else carry on
 
+just_ret:
+    ret
+
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.20p"
+    db "v0.20q"
 ifdef coredump
     db "_coredump"
 endif
@@ -165,7 +168,7 @@ _coldboot:
 
 ; Fill BASIC Buffers Page with zeroes from 0 to $2FFF
 ; leaving custom character set buffer untouched
-    call    page_map_basbuf
+    call    page_set_basbuf
     ld      hl,$C000
     ld      bc,CHRSETBUF-1
     call    sys_fill_zero
@@ -387,7 +390,7 @@ _sounds_hook:
 sys_ver_plusbasic:
     ex      de,hl                 ; DE = BufAdr
     ld      hl,plus_version       ; HL = VerAdr
-    call    string_copy           ; Copy VerStr to StrBuf
+    call    str_copy              ; Copy VerStr to StrBuf
     ex      de,hl                 ; HL = BufAdr
     ret
 
@@ -919,6 +922,11 @@ _stuffh_ext:
 
 aux_call:
     call    page_map_auxrom
+    call    jump_iy
+    jp      page_restore_bank3
+
+ext_call:
+    call    page_map_extrom
     call    jump_iy
     jp      page_restore_bank3
 

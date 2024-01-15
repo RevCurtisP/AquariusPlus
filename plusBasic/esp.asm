@@ -290,6 +290,10 @@ esp_send_string:
     xor     a 
     jp      esp_send_byte         ; Send String Terminator
 
+;; ToDo: Implement this
+esp_write_byte:
+    ret
+
 ;-----------------------------------------------------------------------------
 ; Write bytes from main memory
 ; Input:  DE: source address

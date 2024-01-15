@@ -339,7 +339,7 @@ page_swap_two:
     jp      (ix)                  ; Return
 
 ;-----------------------------------------------------------------------------
-; Restore original pages and stack and enable interrupts
+; Restore original pages
 ; Clobbers: AF',IX
 ;-----------------------------------------------------------------------------
 page_restore_two:
@@ -465,6 +465,7 @@ page_write_word:
 .done    
     jp      page_restore_bank3
 
+
 ;-----------------------------------------------------------------------------
 ; Map Bank 3 to Aux ROM
 ;-----------------------------------------------------------------------------
@@ -538,6 +539,20 @@ page_map_auxrom:
     jp      (ix)
 
 ;-----------------------------------------------------------------------------
+; Map Bank 3 to Page 2
+; Clobbers AF',IX
+;-----------------------------------------------------------------------------
+page_map_extrom:
+    pop     ix                    ; IX = RtnAdr
+    ex      af,af'
+    in      a,(IO_BANK3)          ; A = CurPg
+    push    af                    ; Stack = CurPg
+    ld      a,ROM_EXT_PG
+    out     (IO_BANK3),a
+    ex      af,af'
+    jp      (ix)
+
+;-----------------------------------------------------------------------------
 ; Restore Bank 1 to Previous Page and Return to Caller
 ; JP to this, do not CALL
 ; Clobbers AF'
@@ -565,11 +580,10 @@ _map_3_ex:
 ;-----------------------------------------------------------------------------
 ; Map Bank 3 to Page 36
 ;-----------------------------------------------------------------------------
-page_map_basbuf:
+page_set_basbuf:
     push    af
     ld      a,BAS_BUFFR
     jr      _map_page_bank3
-
 
 ;-----------------------------------------------------------------------------
 ; Write Bytes to Page - wraps to next page if address is 16383
@@ -659,8 +673,6 @@ page_set4read_coerce:
 page_set4write_coerce:
     call    page_set_for_write
     jr      page_coerce_de_addr
-
-
 
 ;-----------------------------------------------------------------------------
 ; Increment Bank 3 Write Address in DE

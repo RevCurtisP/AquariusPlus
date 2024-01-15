@@ -172,7 +172,7 @@ string_cmp_upper:
 ; Output: BC: Length of copied string
 ; Clobbered: A
 ;-----------------------------------------------------------------------------
-string_copy:
+str_copy:
     push  hl
     push  de
     ld    bc,0
@@ -189,6 +189,27 @@ string_copy:
     pop   de
     pop   hl
     ret
+
+;-----------------------------------------------------------------------------
+; Get length of null terminated string
+;  Input: DE: String address
+; Output: A, BC: String length
+;  Flags: Carry Set if longer than 255 characters
+;----------------------------------------------------------------------------
+str_length:
+    push  de                      ; Stack = StrAdr, RtnAdr
+    ld    bc,0
+.loop
+    ld    a,(de)
+    or    a
+    jr    z,.done
+    inc   c                       ; Bump counter
+    jr    nz,.loop
+    scf
+.done
+    pop   de                      ; DE = StrAdr; Stack = RtnAdr
+    ld    a,c                     ; A = Length
+    ret                           
 
 ;-----------------------------------------------------------------------------
 ; Multiply A by 32, discarding carry

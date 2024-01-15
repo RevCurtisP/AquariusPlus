@@ -708,7 +708,7 @@ _write_byte_strbuf:
 .lserr:
     jp      z,LSERR               ;   Error if >255
     ex      af,af'                ;   AF = IntFlg, AF' = DatLen
-    ld      (hl),e                ;   Write LSB
+    ld      (hl),d                ;   Write LSB
     inc     hl                    ;   Bump BufPtr
 .done 
     ex      (sp),hl               ;   HL = TxtPtr; Stack = BufPtr, VarPtr
@@ -769,7 +769,7 @@ _get_aux
     call    aux_call
     ld      a,1
     ld      (VALTYP),a            ; Set Type to String
-    call    FRESTR                ; Free Temporary
+    ;call    FRETMP                ; Free Temporary
     jp      FINBCK                ; Return String
 
 ;-----------------------------------------------------------------------------
