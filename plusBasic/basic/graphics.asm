@@ -644,8 +644,8 @@ ST_DEF_INT:
 ; int is a integer between 0 and 65535
 ;-----------------------------------------------------------------------------
 ST_DEF_RGB:
-    rst     CHRGET                ; Skip INT
-    call    _setupdef             ; Stack = VarPtr, RtnAdr
+    rst     CHRGET                ; Skip RGB
+    call    _setupdef             ; Stack = DatLen, BufPtr, VarPtr
 .loop
     call    _get_rgb              ; DE = RGB value
     call    _write_word_strbuf    ; Write RGB to String Buffer
@@ -685,6 +685,7 @@ _defnolist:
 
 
 ; These routines must not change BC or HL
+; On entry, Stack = RtnAdr, DatLen, BufPtr, VarPtr
 _write_bc_strbuf:
     ld      d,b                   ; DE = BC                 
     ld      e,c
@@ -694,7 +695,7 @@ _write_byte_strbuf:
     xor     a                     ; A = 0 
     or      a                     ; Z = Byte, NZ = Word
     ex      af,af'                ; AF' = IntFlg
-    pop     ix                    ; IX = RtnAdr
+    pop     ix                    ; IX = RtnAdr; Stack = DatLen, BufPtr, VarPtr
     pop     af                    ; AF = DatLen; Stack = BufPtr, VarPtr
     ex      (sp),hl               ; HL = BufPtr; Stack = TxtPtr, VarPtr
     inc     a                     ; Bump length
@@ -774,54 +775,50 @@ _get_aux
 
 ;-----------------------------------------------------------------------------
 ; DEF SPRITE sprite$ = spritle#, x-offset, y-offset; spritle#, x-offset, y-offset
+; String Format:
+; SprCount,TotWidth,TotHeigth,(SprNum,Xoffset,Yoffset)...
 ;-----------------------------------------------------------------------------
 ST_DEF_SPRITE:
     rst     CHRGET                ; Skip SPRITE
-    call    _defnolist           ; Stack = DatLen, BufPtr, VarPtr
+    call    _defnolist            ; Stack = DatLen, BufPtr, VarPtr
     xor     a                     ; A = SptlCnt (0)
-    push    af                    ; Stack = SptlCnt, Datlen, BufPtr, VarPtr, RtnAdr
-    call    _write_byte_strbuf    ; Write E to string buffer
     ld      b,a                   ; B = MaxYoffset (0)
     ld      c,a                   ; C = MaxXoffset (0)
+    ld      (XTEMP1),a            ; XTEMP1 = SptlCnt
+    call    _write_byte_strbuf    ; Write E to string buffer
     call    _write_bc_strbuf      ; Write BC to string buffer
 .loop
     call    _get_byte             ; A,E = Spritle#
     cp      64
     jp      nc,FCERR
-    pop     bc                    ; BC = SptlCnt; Stack = Datlen, BufPtr, VarPtr, RtnAdr
     call    _write_byte_strbuf    ; Write E to string buffer
-    push    bc                    ; Stack = SptlCnt, Datlen, BufPtr, VarPtr, RtnAdr
     SYNCHK  ','
     call    _get_byte             ; A,E = Xoffset
     cp      c
     jr      c,.skipx              ; If Xoffset > MaxXoffset
     ld      c,a                   ;   MaxXoffset = Xoffset
 .skipx
-    pop     bc                    ; BC = SptlCnt; Stack = Datlen, BufPtr, VarPtr, RtnAdr
     call    _write_byte_strbuf    ; Write E to string buffer
-    push    bc                    ; Stack = SptlCnt, Datlen, BufPtr, VarPtr, RtnAdr
     SYNCHK  ','
     call    _get_byte             ; A,E Yoffset
     cp      b
     jr      c,.skipy              ; If Xoffset > MaxXoffset
     ld      b,a                   ;   MaxXoffset = Xoffset
 .skipy
-    pop     bc                    ; BC = SptlCnt; Stack = Datlen, BufPtr, VarPtr, RtnAdr
     call    _write_byte_strbuf    ; Write E to string buffer
-    push    bc                    ; Stack = SptlCnt, Datlen, BufPtr, VarPtr, RtnAdr
-    pop     af                    ; A = SptlCnt; Stack = Datlen, BufPtr, VarPtr, RtnAdr
+    ld      a,(XTEMP1)
     inc     a                     ; SptlCnt += 1
-    push    af                    ; Stack = SptlCnt, Datlen, BufPtr, VarPtr, RtnAdr
+    ld      (XTEMP1),a            ; XTEMP1 = SptlCnt
     call    CHRGT2
     jr      z,.done
     SYNCHK  ';'
     jr      .loop
 .done
-    pop     af                    ; A = SptlCnt; Stack = Datlen, BufPtr, VarPtr, RtnAdr
     push    hl                    ; Stack = TxtPtr, Datlen, BufPtr, VarPtr, RtnAdr
     push    bc                    ; Stack = MaxOfs, TxtPtr, Datlen, BufPtr, VarPtr, RtnAdr
     call    get_strbuf_addr       ; HL = BufAdr
     pop     bc                    ; BC = MaxOfs; Stack = TxtPtr, Datlen, BufPtr, VarPtr, RtnAdr
+    ld      a,(XTEMP1)
     ld      (hl),a                ; Write SptlCnt to string buffer
     inc     hl
     ld      a,c                   ;
@@ -829,15 +826,15 @@ ST_DEF_SPRITE:
     ld      (hl),a                ; Write to string buffer
     inc     hl
     ld      a,b                   ;
-    add     a,8                   ; A = MaxYoffset + Spritle Width
+    add     a,8                   ; A = MaxYoffset + Spritle Height   
     ld      (hl),a                ; Write to string buffer
     pop     hl                    ; HL = TxtPtr; Stack = Datlen, BufPtr, VarPtr, RtnAdr
     jp      _finish_def          ; 
 
 _get_byte:
-    push    bc                ; Stack = MaxOffsets
-    call    GETBYT            ; Get spritle#
-    pop     bc                ; BC = MaxOffsets
+    push    bc                    ; Stack = MaxOfs
+    call    GETBYT                ; Get spritle#
+    pop     bc                    ; BC = MaxOfs
     ret
 
 ;-----------------------------------------------------------------------------

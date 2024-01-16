@@ -7,8 +7,8 @@ _jump_table:
     jp      ext_call              ; Call routine in extended ROM
     jp      str_copy              ; Copy null-terminated string
     jp      str_length            ; Get null-terminated string length
-    jp      just_ret
-    jp      just_ret
+    jp      print_c_string        ; Print null-terminated string
+    jp      print_string_immd     ; Print inline null terminated string
     jp      just_ret
     jp      just_ret
     jp      just_ret

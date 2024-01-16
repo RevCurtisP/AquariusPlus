@@ -90,8 +90,10 @@ ONEFLG      equ $382D   ; ONEFLG=1 IF WERE ARE EXECUTING AN ERROR TRAP ROUTINE
 ONELIN      equ $382E   ; THE pointer to the LINE TO GOTO WHEN AN ERROR OCCURS
 ; DOS Variables - These can get overwritten between BASIC file operations
 ; They might also be re-used by other modules
-BAS_FDESC   equ $3830   ; ESP file descriptor to close on Error or Ctrl-C
-;         $3831-$3837   ; unused (7 bytes)
+EXT_FLAGS   equ $3830   ; Extended BASIC flags
+BAS_FDESC   equ $3831   ; ESP file descriptor to close on Error or Ctrl-C
+XTEMP1      equ $3832   ; Used by DEF SPRITE
+;         $3833-$3837   ; unused (7 bytes)
 FILESIZE    equ $3838   ; File Size (32-bits $3838-$383B)
 FILEATTR    equ $383C   ; File Attribute
 FILEDATE    equ $383D   ; File Datestamp ($383D-$383E)
@@ -186,6 +188,8 @@ BASKEYRPT   equ $04     ; BASYSCTL: KEY RePeaI on
 BASBRKOFF   equ $20     ; BASYSCTL: BReak OFF (Disable Ctrl-C)
 BASSCRN80   equ $40     ; BASYSCTL: SCReeN 80 (80) column mode
 BASCRNCLR   equ $80     ; BASYSCTL: PRINT updates Color RAM
+
+TRON_FLAG   equ $80     ; EXT_FLAGS: Trace on/off
 
 ;-----------------------------------------------------------------------------
 ; BASIC Text Screen Buffers

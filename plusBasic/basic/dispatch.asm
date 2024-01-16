@@ -54,6 +54,10 @@ extended_statement:
     dec     a                   ; $94 COMPARE
     dec     a                   ; $95 PLAY
     jp      z,ST_PLAY
+    sub     a,3                 ; $98 STASH
+    jp      z,GSERR
+    dec     a                   ; $99 TRO
+    jp      z,ST_TRO
     jp      SNERR
    
 extended_function:

@@ -91,7 +91,7 @@ STREND:     equ $38DA   ; [M80] END OF STORAGE IN USE. INCREASED WHENEVER A NEW 
                         ; [M80] OR SIMPLE VARIABLE IS ENCOUNTERED SET TO [VARTAB] BY CLEARC.
 DATPTR:     equ $38DC   ; [M80] POINTER TO DATA. INITIALIZED TO POINT AT THE ZERO IN FRONT OF [TXTTAB]
                         ; [M80] BY "DATPTR" WHICH IS CALLED BY CLEARC. UPDATED BY EXECUTION OF A "READ"
-VARNAM:     equ $38DE
+VARNAM:     equ $38DE   ; Variable Name
 VARPNT:     equ $38E0
 ;        $38E2:-$38E3   ; Unused
 FACLO:      equ $38E4   ; [M80] LOW ORDER OF MANTISSA
@@ -256,11 +256,13 @@ FMULT       equ $13CB   ; Multiply: FACC = BCDE * FACC
 POPHRT      equ $141A   ; Pop HL and return
 FDIV        equ $142F   ; Divide: FACC = BCDE / FACC
 FLOATR      equ $14FB   ; Float signed number in B,A,D,E
+MOVFM       equ $1520   ; MOVE NUMBER FROM MEMORY [(HL)] TO FAC
 MOVFR       equ $1523   ; Move B,C,D,E to FACC
 MOVE        equ $153D   ; Copy 4 bytes from (DE) to (HL)
 MOVE1       equ $153F   ; Copy B bytes from (DE) to (HL)
 QINT        equ $1586   ; Convert FAC to integer in C,D,E
 INT         equ $15B1   ; FACC = INT(FACC)
+POPART      equ $15C8   ; Pop AF and return
 FIN         equ $15E5   ; Parse floating point number
 FIN0        equ $15EE   ; Parse floating point number wihout leading + or -
 LINPRT      equ $1675   ; Print Two Byte Number in HL as Decimal - Alters all Registers

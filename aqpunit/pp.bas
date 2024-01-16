@@ -1,7 +1,10 @@
 
 100 REM POKE and PEEK Unit Tests
 110 QU=0:REM 0=Screen,1=Printer
-130 GOSUB _init
+120 SET FAST ON
+130 SCREEN 3:GOSUB _init
+133 SET FNKEY 3 TO \"RUN /au/pp.baq\r"
+134 SET FNKEY 4 TO \"goto _dump\r"
 
 200 GOSUB _title:ARGS "POKE & PEEK"
 210 FOR I=1 TO 3:A=$3000+I:GOSUB _poke:ARGS A,I:NEXT

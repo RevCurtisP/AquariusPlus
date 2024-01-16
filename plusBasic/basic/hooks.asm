@@ -45,10 +45,12 @@ close_bas_fdesc:
     ld      a,(BAS_FDESC)         ; Get File Descriptor in Use
     or      a                     ; If Valid Descriptor
     ret     m
-    call    dos_close             ;   Close the File
+    ld      iy,dos_close           
+    call    aux_call              ; Close the File
 init_bas_fdesc:
     ld      a,128
     ld      (BAS_FDESC),a         ;   Set to No File
+    ret
 
 ;-----------------------------------------------------------------------------
 ; Hook 13 - OUTDO 
@@ -235,6 +237,17 @@ ptrget_hook:
 ;-----------------------------------------------------------------------------
 skip_label: 
     ld      (CURLIN),hl           ; Save the Line #                        
+    ld      a,(EXT_FLAGS)
+    rla     
+    jr      nc,.not_trace
+    push    de                    ; Save text pointer
+    ld      a,'['
+    call    OUTDO
+    call    LINPRT
+    ld      a,']'
+    call    OUTDO
+    pop     de
+.not_trace
     ex      de,hl                 ; DE = Line#, HL = Text Pointer          
     rst     CHRGET                ; Get first character                    
     cp      '_'                   ; If not underscore                      

@@ -3991,7 +3991,7 @@ INT:    ld      hl,FAC            ;[M80] GET EXPONENT
         ld      a,c               ;[M80] NEGATE NUMBER IF IT IS NEGATIVE
         rla                       ;[M80] PUT SIGN IN CARRY
         call    FADFLT            ;[M80] REFLOAT NUMBER
-        pop     af                ;[M80] GET LO BACK
+POPART: pop     af                ;[M80] GET LO BACK
         ret                       ;[M80] ALL DONE
 ;[M80] INTEGER ARITHMETIC ROUTINES
 ;[M80] INTEGER MULTIPLY FOR MULTIPLY DIMENSIONED ARRAYS

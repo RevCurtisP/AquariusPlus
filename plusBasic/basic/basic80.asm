@@ -216,3 +216,22 @@ SPLP:   ld      (hl),a            ;SAVE CHAR
 GETYPE: ld      a,(VALTYP)        ;REPLACEMENT FOR "GETYPE" RST
         dec     a               
         ret
+;----------------------------------------------------------------------------
+; TRON/TROFF
+;----------------------------------------------------------------------------
+ST_TRO:
+        rst     CHRGET            ; Skip TRO
+        cp      'N'
+        jr      nz,.troff         ; If TRON
+        rst     CHRGET            ;   Skip N
+        ld      a,(EXT_FLAGS)
+        or      TRON_FLAG         ;   Turn flag on
+        ld      (EXT_FLAGS),a
+        ret
+.troff
+        SYNCHK  'F'               
+        SYNCHK  'F'               ; Require FF
+        ld      a,(EXT_FLAGS)
+        and     $FF-TRON_FLAG     ;   Turn flag on
+        ld      (EXT_FLAGS),a
+        ret

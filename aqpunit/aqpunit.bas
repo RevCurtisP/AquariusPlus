@@ -1,11 +1,20 @@
-890 _finish
-892 rem SCREEN RESET
-894 _passed: GOSUB _output:ARGS "Passed:"+STR$(QR(1))
-896 _failed: GOSUB _output:ARGS "Failed:"+STR$(QR(0))
-898 END
+
+
+
+880 _finish
+882 rem SCREEN RESET
+884 _passed: GOSUB _output:ARGS "Passed:"+STR$(QR(1))
+886 _failed: GOSUB _output:ARGS "Failed:"+STR$(QR(0))
+888 END
+
+890 _dump
+892 LOAD "/au/dump.bin",$B000
+894 CALL $B000
+896 END
 
 900 _init:IF QU=0 THEN CLS
-902 GOSUB _output:ARGS "Running Tests":QR$(0)="Fail: ":QR$(1)="Pass: ":RETURN
+902 DIM QR(1),QR$(1)
+904 GOSUB _output:ARGS "Running Tests":QR$(0)="Fail: ":QR$(1)="Pass: ":RETURN
 
 910 _title:GETARGS QT$:GOSUB _output:ARGS "":GOSUB _output:ARGS "Testing "+QT$:RETURN
 
@@ -35,3 +44,4 @@
 992 rem QS=IN($E0):OUT $E0,1
 994 PRINT:PRINT "...Press a key...":QL=0:QK=GETKEY:PRINT
 996 RETURN:OUT $E0,QS:
+

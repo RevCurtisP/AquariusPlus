@@ -148,7 +148,7 @@ STJUMPS:
     dw      SNERR                 ;$FF
 
 ;----------------------------------------------------------------------------
-; Combined Statement Jump Table 
+; Combined Function Jump Table 
 ; Total Length: 106 Bytes
 ; Immediate follows STJUMPS, aligning it to a 256 byte boundary
 ;----------------------------------------------------------------------------
@@ -235,6 +235,22 @@ FNJUMPS:
     dw      SNERR                 ;$FF
 
 ;===========================================================================
+; Extended BASIC Utility calls
+; Aligned to next 256 byte boundary
+;===========================================================================
+
+    dc $C1A0-$,$76
+
+_jump_table
+    jp      get_linbuf_addr       ; Get Line Buffer Address
+    jp      get_strbuf_addr       ; Get String Buffer Address
+    jp      FLOAT_BC              ; Convert BC to unsigned float in FACC
+    jp      FLOAT_DE              ; Convert DE to unsigned float in FACC
+    jp      FLOAT_CDE             ; Convert CDE to unsigned float in FACC
+
+_end_jump_table
+
+;===========================================================================
 ; Escaped String Escape Sequence lookup tables
 ; Filling in unused space before next table
 ;===========================================================================
@@ -265,7 +281,7 @@ esc_sequences:
 
 ;Put the lookup table at 256 byte boundary
 if $ & $FF
-    dc ($FF00&$)+256-$,$FF
+    dc ($FF00&$)+256-$,$76
 endif
 
 ;----------------------------------------------------------------------------

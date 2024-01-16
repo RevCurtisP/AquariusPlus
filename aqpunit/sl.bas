@@ -1,6 +1,9 @@
 100 REM Test Save and Load
 110 QU=0:REM 0=Screen,1=Printer
-130 GOSUB _init
+120 SET FAST ON
+130 SCREEN 3:GOSUB _init
+133 SET FNKEY 3 TO \"RUN /au/sl.baq\r"
+134 SET FNKEY 4 TO \"goto _dump\r"
 
 190 REM Tests
 

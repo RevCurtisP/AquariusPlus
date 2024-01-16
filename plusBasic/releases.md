@@ -1,4 +1,9 @@
 # plusBASIC Release History
+
+ - v0.20r
+    - Added TRON and TROFF statements and Extended BASIC jump table. Debugged graphics DEF statements.
+ - v0.20q 
+    - Finalized esp, paged, dos, and file_io jump table entries
  - v0.20n 
     - Added syntax `LIST$(NEXT)`, replaced all usage of `SBUFF` in paged memory with `STRBUF` in main memory
  - v0.20m

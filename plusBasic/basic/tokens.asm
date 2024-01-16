@@ -92,8 +92,8 @@ EXTCMDS:
     db $80 + 'A',"PPEND"          ; $96
     db $80 + 'T',"RIM"            ; $97
     db $80 + 'S',"TASH"           ; $98
-    db $80 + ' '                  ; $99             
-    db $80 + ' '                  ; $9A             
+    db $80 + 'T',"RO"             ; $99             
+    db $80 + 'B',"REAK"           ; $9A             
     db $80 + ' '                  ; $9B             
     db $80 + ' '                  ; $9C             
     db $80 + ' '                  ; $9D             
@@ -101,8 +101,9 @@ EXTCMDS:
     db $80 + ' '                  ; $9F
     db $80 + 'V',"ARS"            ; $A0
     db $80 + 'W',"ORD"            ; $A1
-    db $80 
-EXTOKEN = $99     ; Last Token + 1
+    db $80                        ; End of table marker
+
+EXTOKEN = $A2                     ; Last Token + 1
 
 ;-----------------------------------------------------------------------------
 ; plusBASIC tokens
@@ -158,6 +159,7 @@ COMPTK    equ     $94
 PLAYTK    equ     $95
 APNDTK    equ     $96
 TRIMTK    equ     $97
+BRKTK     equ     $9A
 VARSTK    equ     $A0
 WORDTK    equ     $A1
 

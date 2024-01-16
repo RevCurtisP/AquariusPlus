@@ -499,13 +499,15 @@ strbuf_temp_str:
     or      a                     ; If length = 0 
     jp      z,pop_ret_nullstr     ;   Return null string           
     call    STRINI                ; Create temporary string
-    ld      c,a                   ; HL = StrDsc, DE = StrAdr
+    ld      c,a                   ;   A = StrLen, HL = StrDsc, DE = StrAdr
     ld      b,0                   ; BC = StrLen
     push    hl                    ; Stack = StrDsc, RtnAdr
     push    de                    ; Stack = StrAdr, StrDsc, RtnAdr
     push    bc                    ; Stack = StrLen, StrAdr, StrDsc, RtnAdr
+    push    bc                    ; Stack = StrLen, StrLen, StrAdr, StrDsc, RtnAdr
 copy_strbuf:
     call    get_strbuf_addr       ; HL = StrBuf
+    pop     bc                    ; BC = StrLen; Stack = StrLen, StrAdr, StrDsc, RtnAdr
     ldir                          ; Copy BC bytes from StrBuf to StrAdr
     pop     bc                    ; BC = StrLen; Stack = StrAdr, StrDsc
     pop     de                    ; DE = StrAdr; Stack = StrDsc

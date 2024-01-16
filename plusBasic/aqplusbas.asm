@@ -86,7 +86,7 @@ just_ret:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.20q"
+    db "v0.20r"
 ifdef coredump
     db "_coredump"
 endif
@@ -943,6 +943,7 @@ aux_line_print:
     call    page_set_plus         ; Map in Ext ROM
     call    LINPRT                ; Print the line number
     jp      page_set_aux          ; Remap Aux ROM and return
+
 
 ;-----------------------------------------------------------------------------
 ; Pad ROM
