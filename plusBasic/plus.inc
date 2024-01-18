@@ -92,8 +92,9 @@ ONELIN      equ $382E   ; THE pointer to the LINE TO GOTO WHEN AN ERROR OCCURS
 ; They might also be re-used by other modules
 EXT_FLAGS   equ $3830   ; Extended BASIC flags
 BAS_FDESC   equ $3831   ; ESP file descriptor to close on Error or Ctrl-C
-XTEMP1      equ $3832   ; Used by DEF SPRITE
-;         $3833-$3837   ; unused (7 bytes)
+XTEMP0      equ $3832   ; Used by DEF SPRITE
+XTEMP1      equ $3833   ; Used by DEF SPRITE
+;         $3834-$3837   ; unused (7 bytes)
 FILESIZE    equ $3838   ; File Size (32-bits $3838-$383B)
 FILEATTR    equ $383C   ; File Attribute
 FILEDATE    equ $383D   ; File Datestamp ($383D-$383E)

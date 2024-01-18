@@ -1,7 +1,7 @@
 # plusBASIC Release History
 
  - v0.20s
-   - Added GET/PUT TILEMAP ... ^var$. Debugged FILL [@page,]address,WORD int. Fixed ASC$() bug.
+   - Added `GET/PUT TILEMAP ... ^var$`, debugged FILL `[@page,]address,WORD int`, fixed `ASC$()` bug.
  - v0.20r
     - Added TRON and TROFF statements and Extended BASIC jump table. Debugged graphics DEF statements.
  - v0.20q 

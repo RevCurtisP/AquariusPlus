@@ -9,8 +9,8 @@ _jump_table:
     jp      str_length            ; Get null-terminated string length
     jp      print_c_string        ; Print null-terminated string
     jp      print_string_immd     ; Print inline null terminated string
-    jp      just_ret
-    jp      just_ret
+    jp      str_stringdesc        ; Build descriptor for null terminated string
+    jp      str_tempdesc          ; Build descriptor for null terminated string in DSCTMP
     jp      just_ret
     jp      just_ret
     jp      just_ret

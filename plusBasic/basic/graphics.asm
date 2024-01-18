@@ -841,12 +841,14 @@ ST_DEF_SPRITE:
     xor     a                     ; A = SptlCnt (0)
     ld      b,a                   ; B = MaxYoffset (0)
     ld      c,a                   ; C = MaxXoffset (0)
-    ld      (XTEMP1),a            ; XTEMP1 = SptlCnt
+    ld      (XTEMP0),a            ; XTEMP0 = SptlCnt
     call    _write_byte_strbuf    ; Write E to string buffer
     call    _write_bc_strbuf      ; Write BC to string buffer
+    ld      a,(hl)
+    cp      '['                   ; If [ after =
+    jr      z,_def_sprite_rect    ;   Do rectangular definition
 .loop
     call    _get_byte             ; A,E = Spritle#
-    cp      64
     jp      nc,FCERR
     call    _write_byte_strbuf    ; Write E to string buffer
     SYNCHK  ','
@@ -863,19 +865,17 @@ ST_DEF_SPRITE:
     ld      b,a                   ;   MaxXoffset = Xoffset
 .skipy
     call    _write_byte_strbuf    ; Write E to string buffer
-    ld      a,(XTEMP1)
-    inc     a                     ; SptlCnt += 1
-    ld      (XTEMP1),a            ; XTEMP1 = SptlCnt
+    call    inc_xtemp0            ; Increment SptlCnt
     call    CHRGT2
-    jr      z,.done
+    jr      z,_sprite_done
     SYNCHK  ';'
     jr      .loop
-.done
+_sprite_done
     push    hl                    ; Stack = TxtPtr, Datlen, BufPtr, VarPtr, RtnAdr
     push    bc                    ; Stack = MaxOfs, TxtPtr, Datlen, BufPtr, VarPtr, RtnAdr
     call    get_strbuf_addr       ; HL = BufAdr
     pop     bc                    ; BC = MaxOfs; Stack = TxtPtr, Datlen, BufPtr, VarPtr, RtnAdr
-    ld      a,(XTEMP1)
+    ld      a,(XTEMP0)
     ld      (hl),a                ; Write SptlCnt to string buffer
     inc     hl
     ld      a,c                   ;
@@ -890,19 +890,63 @@ ST_DEF_SPRITE:
 
 _get_byte:
     push    bc                    ; Stack = MaxOfs
-    call    GETBYT                ; Get spritle#
+    call    get_byte64            ; Get spritle#
     pop     bc                    ; BC = MaxOfs
     ret
 
+; DEF SPRITE S$ = [0,1,2,3],[5,6,4,7],[3,2,1,0]
+; Here B and C are the current Y and X offset
+_def_sprite_rect:
+    xor     a 
+    ld      (XTEMP1),a            ; MaxXoffset = 0
+.gloop
+    rst     CHRGET                ; Skip [ or ,
+.loop
+    call    _get_byte             ; A,E = sprite#
+    cp      64
+    jp      nc,FCERR
+    call    _write_byte_strbuf    ; Write E to string buffer
+    ld      a,c
+    add     8                     ; Add 8 to Xoffset
+    jp      c,FCERR               ; Error if > 255
+    ld      c,a
+    ld      a,(XTEMP1)            ; A = MaxXoffset
+    cp      c                     
+    jr      nc,.skipx             ; If Xoffset > MaxXoffset
+    ld      a,c
+    ld      (XTEMP1),a            ;   MaxXoffset = Xoffset
+.skipx
+    call    _write_bc_strbuf      ; Write X,Y to string buffer
+    call    inc_xtemp0            ; Increment SptlCnt
+    ld      a,(hl)
+    cp      ','                   ; If comma
+    jr      z,.gloop              ;   Get next sprite in row
+    SYNCHK  ']'                   ; Else require close brace
+    jr      z,.done               ; If not end of statement
+    SYNCHK  ','                   ;   Require comma
+    SYNCHK  '['                   ;   And open brace
+    ld      a,b
+    add     8                     ;   Add 8 to Yoffset
+    jp      c,FCERR               ;   Error if > 255
+    ld      b,a
+    ld      c,0                   ;   Reset Xoffset to 0
+    jr      .loop                 ;     and get next sprite
+.done
+    ld      a,(XTEMP1)            
+    ld      c,a                   ; C = MaxXoffset
+    jr      _sprite_done
+
+    
 ;-----------------------------------------------------------------------------
 ; SET SPRITE sprite$ [ON|OFF] [POS x,y] [TILE tilelist$] [PALETTE palettelist$] [ATTR attrlist$]
+; SET SPRITE sprite$ TILECLIP tileclip$
 ; SET SPRITE sprite$ TO proplist$
 ; SET SPRITE * OFF|CLEAR
 ; Attributes: Priority (64), Double-Height (8), Vertical Flip (4), Horizontal Flip (2)
 ; ToDo: SET SPRITE spritle# ...
 ;-----------------------------------------------------------------------------
 ST_SET_SPRITE:
-    rst     CHRGET                ; Skip SPRITE
+    rst     CHRGET                ; Skip SPRITES
     cp      MULTK                 ; If *
     jp      z,.all                ;   Set all Sprites
     call    get_stringvar         ; DE = SprPtr
@@ -946,7 +990,9 @@ ST_SET_SPRITE:
     jr      .string_arg
 
 .tiles
-    rst     CHRGET                ; Skip ATTR
+    rst     CHRGET                ; Skip TILE
+    cp      XTOKEN                ; If followed by extended token
+    jr      z,.tilex              ;   Go handle it
     ld      ix,sprite_set_tiles   ; IX = jump address
     jr      .string_arg
 
@@ -1005,16 +1051,32 @@ ST_SET_SPRITE:
     rst     CHRGET                ; Skip CLEAR
     jp      spritle_clear_all
 
-.props                            ; HL = TxtPtr; Stack = SprAdr, RtnAdr
+; On entry: HL = TxtPtr; Stack = SprAdr, RtnAdr
+.tilex   
+    rst     CHRGET                ; Skip XTOKEN
+    rst     SYNCHR
+    byte    CLIPTK                ; Require CLIP
+    dec     hl                    ; Back up for CHRGET
+    byte    $F6                   ; OR A,$AF over XOR A
+.props                            
+    xor     a                     ; ClpFlg = False
+    push    af                    ; Stack = ClpFlg, SprAdr, RtnAdr
     rst     CHRGET                ; Skip TO
-    call    get_string_arg        ; BC = StrLen, DE = StrAdr, HL = StrDsc; Stack = TxtPtr, SprAdr, RtnAdr
-    pop     hl                    ; BC = StrLen, DE = StrAdr, HL = TxtPtr; Stack = SprAdr, RtnAdr
-    ex      (sp),hl               ; BC = StrLen, DE = StrAdr, HL = SprAdr; Stack = TxtPtr, RtnAdr
-    call    sprite_set_props      ; Set properties
+    call    get_string_arg        ; BC = StrLen, DE = StrAdr, HL = StrDsc; Stack = TxtPtr, ClpFlg,SprAdr, RtnAdr
+    pop     hl                    ; HL = TxtPtr; Stack = ClpFlg, SprAdr, RtnAdr
+    pop     af                    ; AF = ClpFlg; Stack = SprAdr, RtnAdr
+    jr      z,.notclip            ; If TILECLIP
+    inc     de
+    inc     de                    ;   Skip clip dimensions
+    dec     bc
+    dec     bc                    ;   Adjust string length
+.notclip    
+    ex      (sp),hl               ; HL = SprAdr; Stack = TxtPtr, RtnAdr
+    call    sprite_set_props   
     jp      nz,FCERR
-    pop     hl
+    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     ret
-
+  
 ;-----------------------------------------------------------------------------
 ; GETSPRITE Attributes
 ; GETSPRITE$(SpriteDef$)

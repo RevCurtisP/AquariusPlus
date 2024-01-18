@@ -86,7 +86,7 @@ just_ret:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.20s"
+    db "v0.20u"
 ifdef coredump
     db "_coredump"
 endif
@@ -143,7 +143,7 @@ init_banks:
     ; Call routines in Aux ROM
     ld      a,2
     out     (IO_BANK3), a
-    call    screen_reset          ; Init video mode
+hl    call    screen_reset          ; Init video mode
 
     ; Initialize ESP
     ld      a, ESPCMD_RESET

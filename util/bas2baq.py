@@ -223,7 +223,8 @@ xtokens = {
     0x99: "TRO",                       
     0x9A: "BREAK",                     
     0xA0: "VARS",          
-    0xA1: "WORD"           
+    0xA1: "WORD",           
+    0xA2: "CLIP"           
 }
 
 def error(idx, message):

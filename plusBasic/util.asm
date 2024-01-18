@@ -203,6 +203,7 @@ str_length:
     ld    a,(de)
     or    a
     jr    z,.done
+    inc   de
     inc   c                       ; Bump counter
     jr    nz,.loop
     scf
@@ -211,6 +212,26 @@ str_length:
     ld    a,c                     ; A = Length
     ret                           
 
+;-----------------------------------------------------------------------------
+; Creare string descriptor in DSCTMP for null terminated string
+;  Input: DE: String address
+; Output: A, BC: String length
+;         HL: DSCTMP address
+;  Flags: Carry Set if longer than 255 characters
+;----------------------------------------------------------------------------
+str_tempdesc:
+    ld      hl,DSCTMP
+;-----------------------------------------------------------------------------
+; Creare string descriptor for null terminated string
+;  Input: DE: String address
+;         HL: String descriptor address
+; Output: A, BC: String length
+;  Flags: Carry Set if longer than 255 characters
+;----------------------------------------------------------------------------
+str_stringdesc:
+    call    str_length            ; A = StrLen
+    jp      STRADI                ; Set string descriptor
+    
 ;-----------------------------------------------------------------------------
 ; Multiply A by 32, discarding carry
 ;-----------------------------------------------------------------------------

@@ -318,6 +318,17 @@ get_byte16:
     ret
 
 ;-----------------------------------------------------------------------------
+; Parse Byte 0 - 15
+; Output: A,E = Nybble
+; Clobbers: A,BC
+;-----------------------------------------------------------------------------
+get_byte64:
+    call    GETBYT                ; get foreground color in e
+    cp      63                    ; if > 15
+    jp      nc,FCERR              ;   FC Error
+    ret
+
+;-----------------------------------------------------------------------------
 ; Parse Byte 0 - 199
 ; Output: A,E = Byte
 ; Clobbers: A,BC
@@ -447,6 +458,16 @@ get_stringvar:
     call    GETYPE            ; If not a string
     jp      nz,TMERR          ;   Type Mismatch error
     jp      CHRGT2            ; Reget Character and Return
+
+; ------------------------------------------------------------------------------
+; Increment XTEMP0
+; Clobbered: A
+; ------------------------------------------------------------------------------
+inc_xtemp0:
+    ld      a,(XTEMP0)
+    inc     a                     ; SptlCnt += 1
+    ld      (XTEMP0),a            ; XTEMP0 = SptlCnt
+    ret
 
 ; ------------------------------------------------------------------------------
 ; Increment text pointer, push it then LABBCK
