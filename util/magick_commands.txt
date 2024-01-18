@@ -1,0 +1,8 @@
+ImageMagick commands to cut image into tiles
+
+Cut image into tiles
+  magick convert image.png -crop 8x8 -depth 8 -append tiled.rgb
+  
+    magick convert gauntlet1.png -crop 8x8 -depth 8 -append tiled.rbg
+
+    
