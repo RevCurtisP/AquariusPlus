@@ -218,7 +218,12 @@ xtokens = {
     0x94: "COMPARE",
     0x95: "PLAY",
     0x96: "APPEND",
-    0x97: "TRIM"
+    0x97: "TRIM",
+    0x98: "STASH",         
+    0x99: "TRO",                       
+    0x9A: "BREAK",                     
+    0xA0: "VARS",          
+    0xA1: "WORD"           
 }
 
 def error(idx, message):

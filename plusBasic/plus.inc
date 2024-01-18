@@ -174,13 +174,12 @@ IRQ_VLINE       equ $02     ; Video LINE interrupt
 BASBUF_BASE equ $C000   ; Base Address of BASIC Buffers
 GFX_SYSVARS equ $C000   ; Graphics module System Variables (defined in gfx/gfx.asm)
                         ; Must be on 256 byte boundary
-;         $0200-$03FF   ; Unused
 FKEYDEFS    equ $0200   ; Function Key Definitions (32 bytes each)
 FKEYBASE    equ BASBUF_BASE + FKEYDEFS
-;         $0500-$2FFF   ; Unused
+;         $0500-$7FF   ; Unused
+RUNARGS     equ $0800   ; RUN arguments (First is program name)
 CHRSETBUF   equ $3800   ; Page Offset: Custom Character Set Buffer
 CHRSETLEN   equ 2048    ; Size of character set ROM
-
 
 BASOUTBUF   equ $01     ; BASYSCTL: redirect OUTput to BUFfer
 BASSAVASC   equ $02     ; BASYSCTL: Default SAVe to ASC

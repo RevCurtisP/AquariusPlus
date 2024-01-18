@@ -373,8 +373,13 @@ ST_FILL:
     call    get_comma_int         ; DE = Count
     push    de                    ; Stack = Count, PgFlag, BgnAdr, RtnAdr
     call    get_comma             ; MOERR if no comma
-    cp      WORDTK                ; Check for WORD 
+    cp      XTOKEN
     push    af                    ; Stack = WrdFlg, Count, PgFlag, BgnAdr, RtnAdr
+    jr      nz,.not_xt            ; If extended token
+    rst     CHRGET
+    rst     SYNCHR
+    byte    WORDTK                 ; Require WORD 
+.not_xt
     call    z,CHRGTR              ; Skip WORD
     call    GETINT                ; DE = FilVal
     pop     af                    ; A = WrdFlg; Stack = Count, PgFlag, BgnAdr, RtnAdr

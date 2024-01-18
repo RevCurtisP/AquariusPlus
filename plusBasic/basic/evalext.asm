@@ -83,9 +83,9 @@ _eval_hex:
 
 hex_to_asc:
     ld      hl,(FACLO)      ; Get String Descriptor Address
-    call    string_addr_len          ; Get Arg Length in C, Address in DE
+    call    string_addr_len ; Get Arg Length in C, Address in DE
     ld      a,c             ; A = String Length
-    sra     a               ; Divide Length by 2
+    srl     a               ; Divide Length by 2
     jp      c,FCERR         ;   Error if Length was Odd
     jr      z,null_string   ;   If 0, Return Null String
     push    af              ; Save New String Length

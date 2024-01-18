@@ -385,15 +385,56 @@ ST_GET_SCREEN:
 ;-----------------------------------------------------------------------------
 ;DIM A(40):FILL TILEMAP TILE 511
 ;GET TILEMAP (2,2) - (10,10),*A
+;GET TILEMAP (1,1)-(2,2),^A$
 ST_GET_TILEMAP:
     rst     CHRGET                ; Skip TILE
     rst     SYNCHR                ; Require MAP
     byte    MAPTK
     call    scan_rect             ; B = BgnCol, C = EndCol, D = BgnRow, E = EndRow
     ld      iy,tilemap_get
-    jp      _get_put_tilemap
+    SYNCHK  ','                   ; Require comma
+    push    de                    ; Stack = Rows, RtnAdr
+    push    bc                    ; Stack = Cols, Rows, RtnAdr
+    cp      MULTK                 ; If *
+    jp      z,_get_put_array      ;   Get into array
+_get_to_string:
+    call    _parse_get_string     ; A = StrLen, DE = VarPtr
+    push    hl                    ; Stack = TxtPtr, Cols, Rows, RtnAdr
+    push    de                    ; Stack = VarPtr, TxtPtr, Cols, Rows, RtnAdr
+    call    STRINI                ; DE = StrAdr, HL = StrDsc
+    ex      de,hl                 ; DE = StrDsc, HL = StrAdr
+    ex      (sp),hl               ; HL = VarPtr; Stack = StrAdr, TxtPtr, Cols, Rows, RtnAdr
+    push    hl                    ; Stack = VarPtr, StrAdr, TxtPtr, Cols, Rows, RtnAdr
+    call    FRETMS                ; Free temp but not string space
+    pop     hl                    ; HL = VarPtr; Stack = StrAdr, TxtPtr, Cols, Rows, RtnAdr
+    call    MOVE                  ; Copy StrDsc to VarPtr
+    pop     de                    ; DE = StrAdr; Stack = TxtPtr, Cols, Rows, RtnAdr
+    pop     hl                    ; HL = TxtPtr; Stack = Cols, Rows, RtnAdr
+    jp      _get_put
 
-;----------------------------------------------------------------------------
+_parse_get_string:
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    push    iy
+    ld      iy,gfx_rect_size
+    call    aux_call              ; HL = Rectangle size
+    pop     iy
+    inc     hl
+    add     hl,hl                 ; HL = HL * 2 + 2
+    ld      a,h
+    or      a                     ; If > 255
+    jp      nz,LSERR              ;   String too long error
+    ld      a,l                   ; A = StrLen
+    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
+    push    af                    ; Stack = StrLen, RtnAdr
+    rst     SYNCHR
+    byte    EXPTK                 ; Require ^
+    call    PTRGET                ; Return DE = VarPtr
+    pop     af                    ; A = StrLen; Stack = RtnAdr
+    ret
+
+
+
+;------------------------------------------------------------------------
 ; PUT SCREEN Statement
 ; Syntax: PUT SCREEN (x1,y1),*arrayvar
 ;----------------------------------------------------------------------------
@@ -440,19 +481,34 @@ _screen_suffix:
 ;GET TILEMAP (2,2) - (10,10),*A
 ;FILL TILEMAP TILE 128 PALETTE 2
 ;PUT TILEMAP (2,2),*A
+;GET TILEMAP (1,1)-(2,2),^A$
+;PUT TILEMAP (2,2),^A$
 ST_PUT_TILEMAP:
     rst     CHRGET                ; Skip TILE
     rst     SYNCHR                ; Require MAP
     byte    MAPTK
     call    SCAND                 ; C = Col, E = Row
     ld      iy,tilemap_put
-_get_put_tilemap:
     SYNCHK  ','                   ; Require comma
-    rst     SYNCHR
-    byte    MULTK                 ; Require * - for now
     push    de                    ; Stack = Row, RtnAdr
     push    bc                    ; Stack = Col, Row, RtnAdr
+    cp      MULTK                 ; If *
+    jr      z,_get_put_array      ;   Get into array
+_put_from_string:
+    rst     SYNCHR
+    byte    EXPTK                 ; Require ^
+    call    PTRGET                ; Return DE = VarPtr
+    push    hl                    ; Stack = TxtPtr, Cols, Rows, RtnAdr
+    ex      de,hl                 ; HL = VarPtr
+    call    string_addr_len       ; DE = StrAdr
+    pop     hl                    ; HL = TxtPtr; Stack = Cols, Rows, RtnAdr
+    jr      _get_put              ; Put it
+
+_get_put_array:
+    rst     SYNCHR
+    byte    MULTK                 ; Require * - for now
     call    get_array             ; DE = Array Data Address
+_get_put:
     pop     bc                    ; C = Col; Stack = Row, RtnAdr
     ex      (sp),hl               ; HL = Row; Stack = TxtPtr, RtnAdr
     ex      de,hl                 ; E = Row, HL = AryAdr
@@ -460,6 +516,7 @@ _get_put_tilemap:
     jp      c,FCERR
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     ret
+
 
 ;-----------------------------------------------------------------------------
 ; Copy section of virtual tilemap into actual tilemap
@@ -487,7 +544,7 @@ ST_SET_TILEMAP:
     rst     SYNCHR
     byte    TOTK                  ;   Require TO
     cp      TILETK
-    jr      nz,.set_int           ;   If TILE 
+    jr      nz,.set_int           ;   If TILE
     call    _get_tile_props       ;     BC = Props, DE = Tile#
     ld      iy,tile_combine_props
     call    aux_call              ; DE = TilPrp
@@ -498,7 +555,7 @@ ST_SET_TILEMAP:
     pop     bc                    ;   C = Column; Stack = Row, RtnAdr
     ex      (sp),hl               ;   L = Row; Stack = TxtPtr, RtnAdr
     ex      de,hl                 ;   E = Row, HL = TilDef
-    ld      iy,tilemap_set_tile   
+    ld      iy,tilemap_set_tile
     call    aux_call              ;   Write tile to tilemap
     jp      c,FCERR               ;   Error if invalid coordinates
     pop     hl                    ;   HL = TxtPtr; Stack = RtnAdr
@@ -556,7 +613,7 @@ FN_TILE:
     cp      '('                   ; If (
     jr      z,FN_TILEMAP          ; Go do TILEMAP(x,y)
     push    AF                    ; Stack = 'X'/'Y', RtnAdr
-    ld      iy,tilemap_get_offset    
+    ld      iy,tilemap_get_offset
     call    aux_call              ; BC = X-Offset, DE = Y-Offset
     pop     AF                    ; A = 'X'/'Y', Stack = RtnAdr
     cp      'Y'                   ; If not TILEMAPY
@@ -631,7 +688,7 @@ ST_DEF_INT:
     call    _write_word_strbuf    ; Write DE to strbuf
     call    CHRGT2                ; Reget next character
     jr      z,_finish_def        ; Finish up if end of statement
-    cp      ';'                   ;   
+    cp      ';'                   ;
     jr      nz,.not_sc            ; If semicolon
     rst     CHRGET                ;   Skip it
     jr      .loop                 ;   and get next integer
@@ -687,12 +744,12 @@ _defnolist:
 ; These routines must not change BC or HL
 ; On entry, Stack = RtnAdr, DatLen, BufPtr, VarPtr
 _write_bc_strbuf:
-    ld      d,b                   ; DE = BC                 
+    ld      d,b                   ; DE = BC
     ld      e,c
 _write_word_strbuf:
     byte    $3E                   ; LD A,$AF
 _write_byte_strbuf:
-    xor     a                     ; A = 0 
+    xor     a                     ; A = 0
     or      a                     ; Z = Byte, NZ = Word
     ex      af,af'                ; AF' = IntFlg
     pop     ix                    ; IX = RtnAdr; Stack = DatLen, BufPtr, VarPtr
@@ -711,9 +768,9 @@ _write_byte_strbuf:
     ex      af,af'                ;   AF = IntFlg, AF' = DatLen
     ld      (hl),d                ;   Write LSB
     inc     hl                    ;   Bump BufPtr
-.done 
+.done
     ex      (sp),hl               ;   HL = TxtPtr; Stack = BufPtr, VarPtr
-    ex      af,af'                ;   A = DatLen  
+    ex      af,af'                ;   A = DatLen
     push    af                    ; Stack = DatLen, BufPtr, VarPtr
     jp      (ix)                  ; Return
 
@@ -826,10 +883,10 @@ ST_DEF_SPRITE:
     ld      (hl),a                ; Write to string buffer
     inc     hl
     ld      a,b                   ;
-    add     a,8                   ; A = MaxYoffset + Spritle Height   
+    add     a,8                   ; A = MaxYoffset + Spritle Height
     ld      (hl),a                ; Write to string buffer
     pop     hl                    ; HL = TxtPtr; Stack = Datlen, BufPtr, VarPtr, RtnAdr
-    jp      _finish_def          ; 
+    jp      _finish_def          ;
 
 _get_byte:
     push    bc                    ; Stack = MaxOfs
