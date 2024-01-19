@@ -1,0 +1,62 @@
+100 REM Build and save playing card tile clips
+105 SET FNKEY 3 TO \"run bcards.bas\r"
+110 CLEAR 4096
+120 LOAD PALETTE 1,"cards.pal"
+122 LOAD "cards.map",@20,0
+124 LOAD "cards.til",@20,4096
+130 SCREEN 0,1
+
+190 REM Map suits from order in image to suit heirarchy CDHS
+191 M(0)=2:REM Hearts
+192 M(1)=1:REM Diamonds
+193 M(2)=3:REM Spades
+194 M(4)=0:REM Clubs
+
+
+200 REM Build Tileclips
+205 DIM C$(3,14): REM [0=Hearts, 1=Diamonds, 2=Spades, 3=Clubs], [1=Ace .. 13=King]
+210 REM Number Cards
+212 FOR S=0 TO 3:FOR R=0 TO 9:X=R*5:Y=S*6+1
+214 GET TILEMAP (X,Y)-(X+4,Y+5),^C$(M(S),R+1)
+216 NEXT:NEXT
+220 REM Face Cards
+222 X=0:Y=25:FOR S=0 TO 3:FOR R=11 TO 13
+224 GET TILEMAP (X,Y)-(X+4,Y+5),^C$(M(S),R)
+226 X=X+5:NEXT:NEXT
+230 REM Card Backs C$(0,0) & C$(0,1) and Jokers C$(0,2) & C$(0,3)
+232 X=50:Y=7:FOR S=0 TO 3
+234 GET TILEMAP (X,Y)-(X+4,Y+5),^C$(S,0)
+236 X=X+5:IF S=1 THEN X=50:Y=Y+12
+238 NEXT
+240 REM Blanks
+242 DIM B$(1):X=50:Y=1
+244 GET TILEMAP (50,1)-(54,Y+5),^C$(0,14)
+246 GET TILEMAP (55,1)-(59,Y+5),^C$(1,14)
+250 REM Cursor Hand 
+252 GET TILEMAP (60,1)-(62,3),^C$(2,14)
+254 GET TILEMAP (60,4)-(62,6),^C$(3,14)
+
+
+280 REM Save Tileclips
+282 P=40:A=0:FOR S=0 TO 3:FOR R=0 TO 14:L=LEN(C$(S,R))
+284 POKE @P,A,L:A=A+1:POKE @P,A,C$(S,R):A=A+L:NEXT:NEXT
+288 SAVE "cards.clp",@P,0,A
+
+300 REM Display Cards
+310 FILL TILEMAP TILE 128 PALETTE 1
+312 Y=0:FOR S=0 TO 3:X=0:FOR R=0 TO 14
+314 PUT TILEMAP (X,Y),^C$(S,R):X=X+2
+316 NEXT:Y=Y+6:NEXT
+318 PAUSE
+
+320 FILL TILEMAP TILE 128 PALETTE 1
+322 X=0:FOR S=0 TO 7:Y=0:FOR R=13 TO 0 STEP -1
+324 PUT TILEMAP (X,Y),^C$(S AND 3,R):Y=Y+1
+326 NEXT:X=X+5:NEXT
+
+330 REM Blank cards Cursor Icons
+331 PUT TILEMAP (0,19),^C$(0,14)
+332 PUT TILEMAP (5,19),^C$(1,14)
+333 PUT TILEMAP (11,20),^C$(2,14)
+334 PUT TILEMAP (14,20),^C$(3,14)
+338 PAUSE
