@@ -2,6 +2,7 @@
 1010 SET FNKEY 3 TO \"run freecell.bas\r"
 1020 CLEAR 4096:REM Reserve string space for the tileclips
 1030 E=RND(-VAL(TIME$)):REM Set Random seed
+1040 SET SPRITE * CLEAR:REM Disable all sprites
 
 1110 REM Card array indexes
 1111 REM Suits: 0=Clubs, 1=Hearts, 2=Diamonds,3=Clubs
@@ -15,6 +16,7 @@
 1122 DIM C$(3,14):REM The tile clips (suit,rank)
 1124 DIM D(52):REM The deck before it is distributed
 1126 DIM G(7,14): REM Playing grid (column,row).
+1128 DIM B(7):REM Bottom card cell in each row
 
 1130 REM Sprites
 1132 DEF SPRITE SC$=[11,12,13,14,15],[16,17,18,19,10],[21,22,23,24,25],[26,27,28,29,30],[31,32,33,34,35],[36,37,38,39,40]
@@ -75,6 +77,7 @@
 2310 GC=0:GR=1:REM Grid column and ror
 2315 X=0:Y=6:REM Start below first blank card
 2320 FOR D=1 TO 52:REM Loop through the shuffled deck
+2325 B(GC)=GR:REM Set bottom row of column
 2330 C=D(D):REM Get card value
 2335 G(GC,GR)=C:REM Put it in the grid
 2340 S=C/16:REM Get suit from high nybble
@@ -89,6 +92,8 @@
 2400 REM Show the hand sprite
 2410 SET SPRITE SH$ ON
 
+2500 FOR C=0 TO 7:G(C,0)=C+1:NEXT:REM test top row
+
 3000 REM Let the game begin
 
 3100 _main:
@@ -99,15 +104,43 @@
 3140 SET SPRITE SH$ POS X-12,Y-12:REM Center hand over mouse position
 3150 NEXT B:REM Continue looping until button is pressed
 
+3200 REM Try to pick up a card
+3210 TX=INT(X/8):TY=INT(Y/8):REM Calculate tilemap position
+3220 GC=INT(TX/5):GX=TX MOD 5:REM Grid column and tile position in column
+3230 IF GX<1 OR GX>3 THEN GOTO _nograb:REM Don't grab if too close to edge
+3240 IF TY<6 THEN GOTO _toprow:REM Handle top row separately
 
-3200 REM Pick up the card
-3210 SET SPRITE SH$ TILECLIP C$(3,14):REM Display grabbing hand
-3215 SET SPRITE SH$ ON:REM Renable sprite
+3300 REM Cursor is below top row of grid
+3310 GR=TY-7:IF GR>B(GC) AND GR<B(GC)+2 THEN GR=B(GC)
+3320 IF GR<0 THEN GOTO _nograb:REM Calculate 
+3330 IF GR>14 THEN GOTO _nograb:REM Can't grab if below last row
+3340 C=G(GC,GR):REM Get card value
+3350 IF C=0 THEN GOTO _nograb:REM Can't pick up if no card in cell
+3360 IF GR=14 THEN GOTO _pickup:REM Can always pick up from bottom row
+3370 IF G(GC,GR+1)=0 THEN GOTO _pickup:REM Okay to pick up if no card on top
 
-3300 REM Drag the card around
-3310 FOR B=1 TO 0 STEP -1:REM Faking WHILE B<>0
-3320 X=MOUSEX:Y=MOUSEY:B=MOUSEB:REM Read the mouse
-3330 SET SPRITE SH$ POS X-12,Y-12:REM Center hand over mouse position
-3380 NEXT B: REM Loop until button is released
+3400 _nograb:REM Here if we couldn't grab a card
+3410 FOR B=1 TO 0 STEP -1:REM Faking WHILE B<>0
+3420 X=MOUSEX:Y=MOUSEY:B=MOUSEB:REM Read the mouse
+3430 SET SPRITE SH$ POS X-12,Y-12:REM Center hand over mouse position
+3480 NEXT B: REM Loop until button is released4
+3490 GOTO _main
 
-3900 GOTO _main
+3500 _toprow:REM Cursor is in top row of grid
+3520 GR=0:GY=TY:REM Grid row and tile posit50ion in row
+3530 IF GY<1 OR GY>4 THEN GOTO _nograb:REM Don't grab if too close to edge
+3535 IF GC>3 THEN GOTO _nograb:REM Can't pick up from from foundations
+3540 C=G(GC,GR):REM Get card value
+3550 IF C=0 THEN GOTO _nograb:REM Can't pick up if no card in cell
+
+4200 _pickup:REM Pick up the card
+4210 SET SPRITE SH$ TILECLIP C$(3,14):REM Display grabbing hand
+4215 SET SPRITE SH$ ON:REM Renable sprite
+
+4300 REM Drag the card around
+4310 FOR B=1 TO 0 STEP -1:REM Faking WHILE B<>0
+4320 X=MOUSEX:Y=MOUSEY:B=MOUSEB:REM Read the mouse
+4330 SET SPRITE SH$ POS X-12,Y-12:REM Center hand over mouse position
+4380 NEXT B: REM Loop until button is released4
+
+4900 GOTO _main
