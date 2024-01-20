@@ -20,7 +20,7 @@
 
 1130 REM Sprites
 1132 DEF SPRITE SC$=[11,12,13,14,15],[16,17,18,19,10],[21,22,23,24,25],[26,27,28,29,30],[31,32,33,34,35],[36,37,38,39,40]
-1134 DEF SPRITE SH$=[1,2,3],[4,5,6],[7,8,9]:REM Hand sprite
+1134 DEF SPRITE SH$=[41,42,43],[44,45,46],[47,48,49]:REM Hand sprite
 
 1200 REM Load palette and tile definitions
 1210 LOAD PALETTE 1,"cards.pal"
@@ -80,7 +80,7 @@
 2325 B(GC)=GR:REM Set bottom row of column
 2330 C=D(D):REM Get card value
 2335 G(GC,GR)=C:REM Put it in the grid
-2340 S=C/16:REM Get suit from high nybble
+2340 S=INT(C/16):REM Get suit from high nybble
 2345 R=C AND 15:REM Get rank from low nybble
 2350 PUT TILEMAP (X,Y),^C$(S,R):REM Draw the card
 2360 GC=GC+1:REM Move to next grid column
@@ -91,8 +91,6 @@
 
 2400 REM Show the hand sprite
 2410 SET SPRITE SH$ ON
-
-2500 FOR C=0 TO 7:G(C,0)=C+1:NEXT:REM test top row
 
 3000 REM Let the game begin
 
@@ -127,20 +125,35 @@
 3490 GOTO _main
 
 3500 _toprow:REM Cursor is in top row of grid
-3520 GR=0:GY=TY:REM Grid row and tile posit50ion in row
+3520 GR=0:GY=TY:REM Grid row and tile position in row
 3530 IF GY<1 OR GY>4 THEN GOTO _nograb:REM Don't grab if too close to edge
 3535 IF GC>3 THEN GOTO _nograb:REM Can't pick up from from foundations
 3540 C=G(GC,GR):REM Get card value
 3550 IF C=0 THEN GOTO _nograb:REM Can't pick up if no card in cell
 
-4200 _pickup:REM Pick up the card
-4210 SET SPRITE SH$ TILECLIP C$(3,14):REM Display grabbing hand
-4215 SET SPRITE SH$ ON:REM Renable sprite
+4000 _pickup:REM Pick up the card
+4010 SET SPRITE SH$ TILECLIP C$(3,14):REM Display grabbing hand
+4015 SET SPRITE SH$ ON:REM Renable sprite
+4020 C=G(GC,GR):S=INT(C/16):R=C AND 15:REM Card value, suit and rank
+4025 SET SPRITE SC$ TILECLIP C$(S,R):REM Set card sprite to selected card
+4030 SET SPRITE SC$ POS X-20,Y-24:REM Center card over mouse position
+4035 SET SPRITE SC$ ON:REM Renable sprite
+4040 CX=GC*5:CY=GR+5:REM Card tile column and row
+4050 IF GR=0 THEN CY=0:PUT TILEMAP (CX,CY),^C$(1,14):GOTO _drag
+4060 CY=GR+5:IF GR=1 THEN CY=6:FILL TILEMAP (CX,CY)-(CX+4,CY+5) TILE 128 PALETTE 1:GOTO _drag
+4065 DR=GR-1:DC=G(GC,DR):DS=DC/16:DR=DC AND 15:REM Get card underneath
+4070 PUT TILEMAP (CX,CY-1),^C$(DS,DR):REM Redraw card underneath
+4080 FILL TILEMAP (CX,CY+5)-(CX+4,CY+5) TILE 128 PALETTE 1
 
-4300 REM Drag the card around
+4300 _drag:REM Drag the card around
 4310 FOR B=1 TO 0 STEP -1:REM Faking WHILE B<>0
 4320 X=MOUSEX:Y=MOUSEY:B=MOUSEB:REM Read the mouse
 4330 SET SPRITE SH$ POS X-12,Y-12:REM Center hand over mouse position
+4340 SET SPRITE SC$ POS X-20,Y-24:REM Center card over mouse position
 4380 NEXT B: REM Loop until button is released4
 
+4400 REM Put the card back
+4410 PUT TILEMAP (CX,CY),^C$(S,R)
+
+4800 SET SPRITE SC$ OFF
 4900 GOTO _main
