@@ -74,8 +74,8 @@ dos_get_cwd:
 
 ;-----------------------------------------------------------------------------
 ; dos_get_file_stat - Return File Status
-; Input: BC: String Length
-;        DE: String Address
+; Input: DE: Buffer address
+;        HL: String descriptor
 ; Output:  A: Result
 ; Clobbered: BC, DE
 ;-----------------------------------------------------------------------------
@@ -86,21 +86,13 @@ dos_get_cwd:
 dos_filestat:
     ld      a, ESPCMD_STAT        ; Set ESP Command
     call    esp_cmd               ; Issue ESP command 
-    jp      m,.done               ; Return if Error
-    call    esp_send_string       ; Send filename  
-    call    esp_get_de
-    ld      (FILEDATE),de
-    call    esp_get_de
-    ld      (FILETIME),de
+    ret     m                     ; Return if Error
+    ld      bc,9
+.loop
     call    esp_get_byte
-    ld      (FILEATTR),de
-    call    esp_get_long
-    ld      (FILESIZE),bc
-    ld      (FILESIZE+2),de
-    call    esp_get_result 
-.done
-    jp      page_restore_bank3
-
+    ld      (de),a
+    djnz    .loop
+    jp      esp_get_result 
 
 ;-----------------------------------------------------------------------------
 ; dos_open_dir - Open Directory for Read

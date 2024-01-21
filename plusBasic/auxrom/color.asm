@@ -26,6 +26,22 @@ palette_reset:
 .default_palette:
     dw $111, $F11, $1F1, $FF1, $22E, $F1F, $3CC, $FFF
     dw $CCC, $3BB, $C2C, $419, $FF7, $2D4, $B22, $333
+;    dw $111                       ;  0 BLACK    
+;    dw $F11                       ;  1 RED      
+;    dw $1F1                       ;  2 GREEN    
+;    dw $FF1                       ;  3 YELLOW   
+;    dw $22E                       ;  4 BLUE     
+;    dw $F1F                       ;  5 MAGENTA  
+;    dw $3CC                       ;  6 CYAN     
+;    dw $FFF                       ;  7 WHITE    
+;    dw $CCC                       ;  8 GREY     
+;    dw $3BB                       ;  9 DKCYAN   
+;    dw $C2C                       ; 10 DKMAGENTA
+;    dw $419                       ; 11 DKBLUE   
+;    dw $FF7                       ; 12 LTYELLOW
+;    dw $2D4                       ; 13 DKGREEN
+;    dw $B22                       ; 14 DKRED
+;    dw $333                       ; 15 DKGREY
 
 
 ;-----------------------------------------------------------------------------

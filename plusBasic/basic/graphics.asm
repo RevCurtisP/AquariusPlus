@@ -59,10 +59,10 @@ ST_RESET_PALETTE:
 
 ;-----------------------------------------------------------------------------
 ; SET PALETTE statement
-; syntax: SET PALETTE palette# [, index] TO rgblist$
+; syntax: SET PALETTE palette# [INDEX index] TO rgblist$
 ;-----------------------------------------------------------------------------
 ; SET PALETTE 0 TO $"111122223333444455556666777788889999"
-ST_SETPALETTE:
+ST_SET_PALETTE:
     rst     CHRGET                ; Skip PALETTE
     call    get_byte4             ; E = Palette#
     ld      c,0                   ; Default Entry# to 0
@@ -98,7 +98,6 @@ ST_SETPALETTE:
     scf                           ; Palette already shifted
     ld      iy,palette_set        ; Set the entry (increments C)
     call    aux_call
-    jp      c,OVERR               ; Error if Overflow
     pop     hl                    ; HL = TxtPtr
     ret
 
@@ -906,6 +905,7 @@ _def_sprite_rect:
     cp      64
     jp      nc,FCERR
     call    _write_byte_strbuf    ; Write E to string buffer
+    call    _write_bc_strbuf      ; Write X,Y to string buffer
     ld      a,c
     add     8                     ; Add 8 to Xoffset
     jp      c,FCERR               ; Error if > 255
@@ -916,7 +916,6 @@ _def_sprite_rect:
     ld      a,c
     ld      (XTEMP1),a            ;   MaxXoffset = Xoffset
 .skipx
-    call    _write_bc_strbuf      ; Write X,Y to string buffer
     call    inc_xtemp0            ; Increment SptlCnt
     ld      a,(hl)
     cp      ','                   ; If comma

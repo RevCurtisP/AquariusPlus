@@ -1,6 +1,4 @@
 
-
-
 880 _finish
 882 rem SCREEN RESET
 884 _passed: GOSUB _output:ARGS "Passed:"+STR$(QR(1))
@@ -16,7 +14,14 @@
 902 DIM QR(1),QR$(1)
 904 GOSUB _output:ARGS "Running Tests":QR$(0)="Fail: ":QR$(1)="Pass: ":RETURN
 
-910 _title:GETARGS QT$:GOSUB _output:ARGS "":GOSUB _output:ARGS "Testing "+QT$:RETURN
+910 _ptitle:GETARGS QT$:IF QL THEN GOSUB _pause
+911 GOTO _xtitle
+912 _stitle:GETARGS QT$
+913 _xtitle:GOSUB _qtitle
+914 _outskip:QU$="":GOTO _outret
+
+916 _title:GETARGS QT$
+917 _qtitle:GOSUB _output:ARGS "":GOSUB _output:ARGS "Testing "+QT$:RETURN
 
 920 _assert:GETARGS QA$:GOSUB _quotes:ARGS QA$ RETURN QA$
 922 ON ERROR GOTO 926:QV=-EVAL(QA$):ON ERROR GOTO 0
@@ -36,7 +41,7 @@
 976 QX$=QX$+QC$:NEXT:RETURN QX$
 
 980 _output: GETARGS QU$:IF QU GOTO _lprint
-982 IF QL>20 THEN GOSUB _pause
+982 _outret: IF QL>20 THEN GOSUB _pause
 984 PRINT QU$:QL=QL+1:RETURN
 986 _lprint:LPRINT QU$:RETURN
 

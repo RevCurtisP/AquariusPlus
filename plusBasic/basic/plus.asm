@@ -461,7 +461,7 @@ ST_SET:
     cp      SPRITK                ; $84
     jp      z,ST_SET_SPRITE
     cp      PALETK                ; $81
-    jp      z,ST_SETPALETTE
+    jp      z,ST_SET_PALETTE
     cp      FASTK                 ; $88
     jr      z,ST_SET_FAST
     cp      KEYTK                 ; $86
