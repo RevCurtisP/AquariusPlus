@@ -70,12 +70,6 @@ BORDERCLR   equ $37FF   ; Border color alternate memory location
 
 ; plusBASIC temporary files
 ; FILNAM ($3851-$3856) - CLOAD/CSAVE File Name
-XTEMP0      equ $3851   ; Used by DEF SPRITE
-XTEMP1      equ $3852   ; Used by DEF SPRITE
-XTEMP2      equ $3853   ; 
-XTEMP3      equ $3856   ; 
-XTEMP4      equ $3855   ; 
-XTEMP5      equ $3854   ; 
 ; FILNAF ($3857-$385C) - File Name on Tape
 BUFADR      equ $3857   ; unpack buffer address
 BUFPTR      equ $3859   ; Pointer into unpacking buffer
@@ -98,7 +92,9 @@ ONELIN      equ $382E   ; THE pointer to the LINE TO GOTO WHEN AN ERROR OCCURS
 ; They might also be re-used by other modules
 EXT_FLAGS   equ $3830   ; Extended BASIC flags
 BAS_FDESC   equ $3831   ; ESP file descriptor to close on Error or Ctrl-C
-;         $3832-$3837   ; unused (7 bytes)
+XTEMP0      equ $3832   ; Used by DEF SPRITE
+XTEMP1      equ $3833   ; Used by DEF SPRITE
+;         $3834-$3837   ; unused (7 bytes)
 FILESIZE    equ $3838   ; File Size (32-bits $3838-$383B)
 FILEATTR    equ $383C   ; File Attribute
 FILEDATE    equ $383D   ; File Datestamp ($383D-$383E)

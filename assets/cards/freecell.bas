@@ -93,108 +93,109 @@
 2400 REM Show the hand sprite
 2410 SET SPRITE SH$ ON
 
-3000 _main: REM Let the game begin
+3000 REM Let the game begin
 
-4100 REM Wait for player to pick up card
-4110 SET SPRITE SH$ TILECLIP C$(2,14):REM Display open hand
-4115 SET SPRITE SH$ ON:REM SET SPRITE ...TILECLIP turns the sprite off
-4120 FOR B=0 TO 1:REM Faking WHILE B=0
-4130 X=MOUSEX:Y=MOUSEY:B=MOUSEB:REM Read the mouse
-4140 SET SPRITE SH$ POS X-12,Y-12:REM Center hand over mouse position
-4150 NEXT B:REM Continue looping until button is pressed
+3100 _main:
+3110 SET SPRITE SH$ TILECLIP C$(2,14):REM Display open hand
+3115 SET SPRITE SH$ ON:REM SET SPRITE ...TILECLIP turns the sprite off
+3120 FOR B=0 TO 1:REM Faking WHILE B=0
+3130 X=MOUSEX:Y=MOUSEY:B=MOUSEB:REM Read the mouse
+3140 SET SPRITE SH$ POS X-12,Y-12:REM Center hand over mouse position
+3150 NEXT B:REM Continue looping until button is pressed
 
-4200 REM Try to pick up a card
+3200 REM Try to pick up a card
+3210 TX=INT(X/8):TY=INT(Y/8):REM Calculate tilemap position
+3220 GC=INT(TX/5):GX=TX MOD 5:REM Grid column and tile position in column
+3230 IF GX<1 OR GX>3 THEN GOTO _nograb:REM Don't grab if too close to edge
+3240 IF TY<6 THEN GOTO _toprow:REM Handle top row separately
+
+3300 REM Cursor is below top row of grid
+3310 GR=TY-7:IF GR>B(GC) AND GR<B(GC)+2 THEN GR=B(GC)
+3320 IF GR<0 THEN GOTO _nograb:REM Calculate 
+3330 IF GR>BG THEN GOTO _nograb:REM Can't grab if below last row
+3340 C=G(GC,GR):REM Get card value
+3350 IF C=0 THEN GOTO _nograb:REM Can't pick up if no card in cell
+3360 IF GR=BG THEN GOTO _pickup:REM Can always pick up from bottom row
+3370 IF G(GC,GR+1)=0 THEN GOTO _pickup:REM Okay to pick up if no card on top
+
+3400 _nograb:REM Here if we couldn't grab a card
+3410 FOR B=1 TO 0 STEP -1:REM Faking WHILE B<>0
+3420 X=MOUSEX:Y=MOUSEY:B=MOUSEB:REM Read the mouse
+3430 SET SPRITE SH$ POS X-12,Y-12:REM Center hand over mouse position
+3480 NEXT B: REM Loop until button is released4
+3490 GOTO _main
+
+3500 _toprow:REM Cursor is in top row of grid
+3520 GR=0:GY=TY:REM Grid row and tile position in row
+3530 IF GY<1 OR GY>4 THEN GOTO _nograb:REM Don't grab if too close to edge
+3535 IF GC>3 THEN GOTO _nograb:REM Can't pick up from from foundations
+3540 C=G(GC,GR):REM Get card value
+3550 IF C=0 THEN GOTO _nograb:REM Can't pick up if no card in cell
+
+4000 _pickup:REM Pick up the card
+4010 SET SPRITE SH$ TILECLIP C$(3,14):REM Display grabbing hand
+4015 SET SPRITE SH$ ON:REM Renable sprite
+4020 C=G(GC,GR):S=INT(C/16):R=C AND 15:Q=Q(S):REM Card value, suit, rank, color
+4030 CX=GC*5:CY=0:IF GR THEN CY=GR+5:REM Card tile column and row
+4035 SET SPRITE SC$ TILECLIP C$(S,R):REM Set card sprite to selected card
+4040 SET SPRITE SC$ POS CX*8,CY*8:REM Place card sprite over card tiles
+4045 SET SPRITE SC$ ON:REM Renable sprite
+4050 IF GR=0 THEN CY=0:PUT TILEMAP (CX,CY),^C$(1,14):GOTO _drag
+4060 CY=GR+5:IF GR=1 THEN CY=6:FILL TILEMAP (CX,CY)-(CX+4,CY+5) TILE 128 PALETTE 1:GOTO _drag
+4065 DR=GR-1:DC=G(GC,DR):DS=DC/16:DR=DC AND 15:REM Get card underneath
+4070 PUT TILEMAP (CX,CY-1),^C$(DS,DR):REM Redraw card underneath
+4080 FILL TILEMAP (CX,CY+5)-(CX+4,CY+5) TILE 128 PALETTE 1
+
+4100 _drag:REM Drag the card around
+4110 FOR B=1 TO 0 STEP -1:REM Faking WHILE B<>0
+4120 X=MOUSEX:Y=MOUSEY:B=MOUSEB:REM Read the mouse
+4130 SET SPRITE SH$ POS X-12,Y-12:REM Center hand over mouse position
+4140 SET SPRITE SC$ POS X-20,Y-24:REM Center card over mouse position
+4180 NEXT B: REM Loop until button is released4
+
+4200 REM Drop the card
 4210 TX=INT(X/8):TY=INT(Y/8):REM Calculate tilemap position
-4220 GC=INT(TX/5):GX=TX MOD 5:REM Grid column and tile position in column
-4230 IF GX<1 OR GX>3 THEN GOTO _nograb:REM Don't grab if too close to edge
-4240 IF TY<6 THEN GOTO _toprow:REM Handle top row separately
+4220 PC=INT(TX/5):PX=TX MOD 5:REM Grid column and tile position in column
+4225 NX=PC*5:REM Left tile column of grid position
+4230 IF PX<1 OR PX>3 THEN GOTO _putback:REM Put back if too close to edge
+4240 IF TY>5 THEN GOTO _piledrop:REM Card is not on top row
 
-4300 REM Cursor is below top row of grid
-4310 GR=TY-7:IF GR>B(GC) AND GR<B(GC)+2 THEN GR=B(GC)
-4320 IF GR<0 THEN GOTO _nograb:REM Calculate 
-4330 IF GR>BG THEN GOTO _nograb:REM Can't grab if below last row
-4340 C=G(GC,GR):REM Get card value
-4350 IF C=0 THEN GOTO _nograb:REM Can't pick up if no card in cell
-4360 IF GR=BG THEN GOTO _pickup:REM Can always pick up from bottom row
-4370 IF G(GC,GR+1)=0 THEN GOTO _pickup:REM Okay to pick up if no card on top
 
-4400 _nograb:REM Here if we couldn't grab a card
-4410 FOR B=1 TO 0 STEP -1:REM Faking WHILE B<>0
-4420 X=MOUSEX:Y=MOUSEY:B=MOUSEB:REM Read the mouse
-4430 SET SPRITE SH$ POS X-12,Y-12:REM Center hand over mouse position
-4480 NEXT B: REM Loop until button is released4
-4490 GOTO _main
+4300 REM Try to drop on top row
+4305 PB=0:REM Do not update bottom of column
+4310 PR=0:NY=0:PY=TY:REM Grid row and tile position in row
+4315 IF PY>4 THEN GOTO _putback:REM Don't grab if too close to edge
+4320 N=G(PC,PR):REM Get card in new spot
+4325 NS=INT(NC/16):NR=NC AND 15:REM Suit and Rank in spot
+4330 IF PC>3 THEN GOTO _foundation:REM Foundation has different rules
+4340 IF N<>0 THEN GOTO _putback:REM Can't pick up if no card in cell
+4345 GOTO _dropcard
 
-4500 _toprow:REM Cursor is in top row of grid
-4520 GR=0:GY=TY:REM Grid row and tile position in row
-4530 IF GY<1 OR GY>4 THEN GOTO _nograb:REM Don't grab if too close to edge
-4535 IF GC>3 THEN GOTO _nograb:REM Can't pick up from from foundations
-4540 C=G(GC,GR):REM Get card value
-4550 IF C=0 THEN GOTO _nograb:REM Can't pick up if no card in cell
+4400 _foundation:REM Try to put on foundation
+4410 FC=G(PC,PR):FS=INT(FC/16):FR=FC AND 15:REM Card, Suit, Rank in foundation
+4420 IF R<>FR+1 THEN GOTO _putback:REM Can only drop next highest card
+4430 IF FC=0 THEN GOTO _dropcard:REM Okay to drop if no card in foundation
+4435 IF FS=S THEN GOTO _dropcard:REM or card is same suit
+4440 GOTO _putback:REM Otherwise put it back
 
-5000 _pickup:REM Pick up the card
-5010 SET SPRITE SH$ TILECLIP C$(3,14):REM Display grabbing hand
-5015 SET SPRITE SH$ ON:REM Renable sprite
-5020 C=G(GC,GR):S=INT(C/16):R=C AND 15:Q=Q(S):REM Card value, suit, rank, color
-5030 CX=GC*5:CY=0:IF GR THEN CY=GR+5:REM Card tile column and row
-5035 SET SPRITE SC$ TILECLIP C$(S,R):REM Set card sprite to selected card
-5040 SET SPRITE SC$ POS CX*8,CY*8:REM Place card sprite over card tiles
-5045 SET SPRITE SC$ ON:REM Renable sprite
-5050 IF GR=0 THEN CY=0:PUT TILEMAP (CX,CY),^C$(1,14):GOTO _drag
-5060 CY=GR+5:IF GR=1 THEN CY=6:FILL TILEMAP (CX,CY)-(CX+4,CY+5) TILE 128 PALETTE 1:GOTO _drag
-5065 DR=GR-1:DC=G(GC,DR):DS=DC/16:DR=DC AND 15:REM Get card underneath
-5070 PUT TILEMAP (CX,CY-1),^C$(DS,DR):REM Redraw card underneath
-5080 FILL TILEMAP (CX,CY+5)-(CX+4,CY+5) TILE 128 PALETTE 1
+4500 _piledrop
+4505 PB=1:REM Do Update bottom of column
+4510 PR=B(PC)+1:NY=PR+5:REM Row below bottom of stack, grid column of position
+4515 IF PR=1 THEN GOTO _dropcard:REM No cards in stack, okay to drop
+4520 IF PR>BG THEN GOTO _putback:REM No more space on stack
+4530 N=G(PC,PR-1):REM Get card at bottom of stack
+4535 NS=INT(N/16):NR=N AND 15:NQ=Q(NS):REM Suit, Rank, and Color of card
+4540 IF NQ=Q THEN GOTO _putback:REM Can't drop if same color
+4545 IF R<>NR-1 THEN GOTO _putback:REM Can't drop if not one less
 
-5100 _drag:REM Drag the card around
-5110 FOR B=1 TO 0 STEP -1:REM Faking WHILE B<>0
-5120 X=MOUSEX:Y=MOUSEY:B=MOUSEB:REM Read the mouse
-5130 SET SPRITE SH$ POS X-12,Y-12:REM Center hand over mouse position
-5140 SET SPRITE SC$ POS X-20,Y-24:REM Center card over mouse position
-5180 NEXT B: REM Loop until button is released4
+4800 _dropcard:
+4810 G(GC,GR)=0:REM Remove card from old grid position
+4815 IF GR THEN B(GC)=B(GC)-1:REM If taken from column, update bottom of column
+4820 G(PC,PR)=C:REM Put in new position
+4825 IF PB THEN B(PC)=PR
+4830 CX=NX:CY=NY
 
-5200 REM Drop the card
-5210 TX=INT(X/8):TY=INT(Y/8):REM Calculate tilemap position
-5220 PC=INT(TX/5):PX=TX MOD 5:REM Grid column and tile position in column
-5225 NX=PC*5:REM Left tile column of grid position
-5230 IF PX<1 OR PX>3 THEN GOTO _putback:REM Put back if too close to edge
-5240 IF TY>5 THEN GOTO _piledrop:REM Card is not on top row
-
-5300 REM Try to drop on top row
-5305 PB=0:REM Do not update bottom of column
-5310 PR=0:NY=0:PY=TY:REM Grid row and tile position in row
-5315 IF PY>4 THEN GOTO _putback:REM Don't grab if too close to edge
-5320 N=G(PC,PR):REM Get card in new spot
-5325 NS=INT(NC/16):NR=NC AND 15:REM Suit and Rank in spot
-5330 IF PC>3 THEN GOTO _foundation:REM Foundation has different rules
-5340 IF N<>0 THEN GOTO _putback:REM Can't pick up if no card in cell
-5345 GOTO _dropcard
-
-5400 _foundation:REM Try to put on foundation
-5410 FC=G(PC,PR):FS=INT(FC/16):FR=FC AND 15:REM Card, Suit, Rank in foundation
-5420 IF R<>FR+1 THEN GOTO _putback:REM Can only drop next highest card
-5430 IF FC=0 THEN GOTO _dropcard:REM Okay to drop if no card in foundation
-5435 IF FS=S THEN GOTO _dropcard:REM or card is same suit
-5440 GOTO _putback:REM Otherwise put it back
-
-5500 _piledrop
-5505 PB=1:REM Do Update bottom of column
-5510 PR=B(PC)+1:NY=PR+5:REM Row below bottom of stack, grid column of position
-5515 IF PR=1 THEN GOTO _dropcard:REM No cards in stack, okay to drop
-5520 IF PR>BG THEN GOTO _putback:REM No more space on stack
-5530 N=G(PC,PR-1):REM Get card at bottom of stack
-5535 NS=INT(N/16):NR=N AND 15:NQ=Q(NS):REM Suit, Rank, and Color of card
-5540 IF NQ=Q THEN GOTO _putback:REM Can't drop if same color
-5545 IF R<>NR-1 THEN GOTO _putback:REM Can't drop if not one less
-
-5800 _dropcard:
-5810 G(GC,GR)=0:REM Remove card from old grid position
-5815 IF GR THEN B(GC)=B(GC)-1:REM If taken from column, update bottom of column
-5820 G(PC,PR)=C:REM Put in new position
-5825 IF PB THEN B(PC)=PR
-5830 CX=NX:CY=NY
-
-5900 _putback:REM Put the card back
-5910 PUT TILEMAP (CX,CY),^C$(S,R)
-5920 SET SPRITE SC$ OFF
-5990 GOTO _main
+4900 _putback:REM Put the card back
+4910 PUT TILEMAP (CX,CY),^C$(S,R)
+4920 SET SPRITE SC$ OFF
+4990 GOTO _main
