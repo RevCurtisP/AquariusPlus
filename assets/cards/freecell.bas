@@ -15,7 +15,7 @@
 1120 REM Card value format: High nybble=Suit, Low nybble=Rank
 1122 DIM C$(3,14):REM The tile clips (suit,rank)
 1124 DIM D(52):REM The deck before it is distributed
-1126 DIM G(7,14): REM Playing grid (column,row).
+1126 BG=16:DIM G(7,BG): REM Playing grid (column,row).
 1128 DIM B(7):REM Bottom card cell in each column
 1130 DIM Q(3):Q(1)=1:Q(2)=1:REM Suit Color: 0=Black, 1=Red
 
@@ -112,10 +112,10 @@
 3300 REM Cursor is below top row of grid
 3310 GR=TY-7:IF GR>B(GC) AND GR<B(GC)+2 THEN GR=B(GC)
 3320 IF GR<0 THEN GOTO _nograb:REM Calculate 
-3330 IF GR>14 THEN GOTO _nograb:REM Can't grab if below last row
+3330 IF GR>BG THEN GOTO _nograb:REM Can't grab if below last row
 3340 C=G(GC,GR):REM Get card value
 3350 IF C=0 THEN GOTO _nograb:REM Can't pick up if no card in cell
-3360 IF GR=14 THEN GOTO _pickup:REM Can always pick up from bottom row
+3360 IF GR=BG THEN GOTO _pickup:REM Can always pick up from bottom row
 3370 IF G(GC,GR+1)=0 THEN GOTO _pickup:REM Okay to pick up if no card on top
 
 3400 _nograb:REM Here if we couldn't grab a card
@@ -166,7 +166,7 @@
 4310 PR=0:NY=0:PY=TY:REM Grid row and tile position in row
 4315 IF PY>4 THEN GOTO _putback:REM Don't grab if too close to edge
 4320 N=G(PC,PR):REM Get card in new spot
-4325 NS=INT(C/16):NR=C AND 15:REM Suit and Rank in spot
+4325 NS=INT(NC/16):NR=NC AND 15:REM Suit and Rank in spot
 4330 IF PC>3 THEN GOTO _foundation:REM Foundation has different rules
 4340 IF N<>0 THEN GOTO _putback:REM Can't pick up if no card in cell
 4345 GOTO _dropcard
@@ -178,17 +178,21 @@
 4435 IF FS=S THEN GOTO _dropcard:REM or card is same suit
 4440 GOTO _putback:REM Otherwise put it back
 
-4500 _piledrop:GOTO _putback
+4500 _piledrop
 4505 PB=1:REM Do Update bottom of column
-4510 PR=B(PC):NY=PR+6:REM Bottom row of stack, grid column of position
-4515 IF PR=0 THEN GOTO _dropcard:REM No cards in stack, okay to drop
-
+4510 PR=B(PC)+1:NY=PR+5:REM Row below bottom of stack, grid column of position
+4515 IF PR=1 THEN GOTO _dropcard:REM No cards in stack, okay to drop
+4520 IF PR>BG THEN GOTO _putback:REM No more space on stack
+4530 N=G(PC,PR-1):REM Get card at bottom of stack
+4535 NS=INT(N/16):NR=N AND 15:NQ=Q(NS):REM Suit, Rank, and Color of card
+4540 IF NQ=Q THEN GOTO _putback:REM Can't drop if same color
+4545 IF R<>NR-1 THEN GOTO _putback:REM Can't drop if not one less
 
 4800 _dropcard:
 4810 G(GC,GR)=0:REM Remove card from old grid position
 4815 IF GR THEN B(GC)=B(GC)-1:REM If taken from column, update bottom of column
 4820 G(PC,PR)=C:REM Put in new position
-4825 IF PB THEN B(GC)=PR+1
+4825 IF PB THEN B(PC)=PR
 4830 CX=NX:CY=NY
 
 4900 _putback:REM Put the card back
