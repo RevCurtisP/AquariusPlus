@@ -5,7 +5,7 @@
 1040 SET SPRITE * CLEAR:REM Disable all sprites
 
 1110 REM Card array indexes
-1111 REM Suits: 0=Clubs, 1=Hearts, 2=Diamonds,3=Clubs
+1111 REM Suits: 0=Clubs, 1=Hearts, 2=Diamonds, 3=Spades
 1112 REM Ranks: 1=Ace ... 13=King
 1113 REM Backs: (0,0)=Red, (1,0)=Blue
 1114 REM Jokers: (2,0)=Red, (3,0)=Black
@@ -16,11 +16,12 @@
 1122 DIM C$(3,14):REM The tile clips (suit,rank)
 1124 DIM D(52):REM The deck before it is distributed
 1126 DIM G(7,14): REM Playing grid (column,row).
-1128 DIM B(7):REM Bottom card cell in each row
+1128 DIM B(7):REM Bottom card cell in each column
+1130 DIM Q(3):Q(1)=1:Q(2)=1:REM Suit Color: 0=Black, 1=Red
 
-1130 REM Sprites
-1132 DEF SPRITE SC$=[11,12,13,14,15],[16,17,18,19,10],[21,22,23,24,25],[26,27,28,29,30],[31,32,33,34,35],[36,37,38,39,40]
-1134 DEF SPRITE SH$=[41,42,43],[44,45,46],[47,48,49]:REM Hand sprite
+1140 REM Sprites
+1142 DEF SPRITE SC$=[11,12,13,14,15],[16,17,18,19,10],[21,22,23,24,25],[26,27,28,29,30],[31,32,33,34,35],[36,37,38,39,40]
+1144 DEF SPRITE SH$=[41,42,43],[44,45,46],[47,48,49]:REM Hand sprite
 
 1200 REM Load palette and tile definitions
 1210 LOAD PALETTE 1,"cards.pal"
@@ -134,26 +135,63 @@
 4000 _pickup:REM Pick up the card
 4010 SET SPRITE SH$ TILECLIP C$(3,14):REM Display grabbing hand
 4015 SET SPRITE SH$ ON:REM Renable sprite
-4020 C=G(GC,GR):S=INT(C/16):R=C AND 15:REM Card value, suit and rank
-4025 SET SPRITE SC$ TILECLIP C$(S,R):REM Set card sprite to selected card
-4030 SET SPRITE SC$ POS X-20,Y-24:REM Center card over mouse position
-4035 SET SPRITE SC$ ON:REM Renable sprite
-4040 CX=GC*5:CY=GR+5:REM Card tile column and row
+4020 C=G(GC,GR):S=INT(C/16):R=C AND 15:Q=Q(S):REM Card value, suit, rank, color
+4030 CX=GC*5:CY=0:IF GR THEN CY=GR+5:REM Card tile column and row
+4035 SET SPRITE SC$ TILECLIP C$(S,R):REM Set card sprite to selected card
+4040 SET SPRITE SC$ POS CX*8,CY*8:REM Place card sprite over card tiles
+4045 SET SPRITE SC$ ON:REM Renable sprite
 4050 IF GR=0 THEN CY=0:PUT TILEMAP (CX,CY),^C$(1,14):GOTO _drag
 4060 CY=GR+5:IF GR=1 THEN CY=6:FILL TILEMAP (CX,CY)-(CX+4,CY+5) TILE 128 PALETTE 1:GOTO _drag
 4065 DR=GR-1:DC=G(GC,DR):DS=DC/16:DR=DC AND 15:REM Get card underneath
 4070 PUT TILEMAP (CX,CY-1),^C$(DS,DR):REM Redraw card underneath
 4080 FILL TILEMAP (CX,CY+5)-(CX+4,CY+5) TILE 128 PALETTE 1
 
-4300 _drag:REM Drag the card around
-4310 FOR B=1 TO 0 STEP -1:REM Faking WHILE B<>0
-4320 X=MOUSEX:Y=MOUSEY:B=MOUSEB:REM Read the mouse
-4330 SET SPRITE SH$ POS X-12,Y-12:REM Center hand over mouse position
-4340 SET SPRITE SC$ POS X-20,Y-24:REM Center card over mouse position
-4380 NEXT B: REM Loop until button is released4
+4100 _drag:REM Drag the card around
+4110 FOR B=1 TO 0 STEP -1:REM Faking WHILE B<>0
+4120 X=MOUSEX:Y=MOUSEY:B=MOUSEB:REM Read the mouse
+4130 SET SPRITE SH$ POS X-12,Y-12:REM Center hand over mouse position
+4140 SET SPRITE SC$ POS X-20,Y-24:REM Center card over mouse position
+4180 NEXT B: REM Loop until button is released4
 
-4400 REM Put the card back
-4410 PUT TILEMAP (CX,CY),^C$(S,R)
+4200 REM Drop the card
+4210 TX=INT(X/8):TY=INT(Y/8):REM Calculate tilemap position
+4220 PC=INT(TX/5):PX=TX MOD 5:REM Grid column and tile position in column
+4225 NX=PC*5:REM Left tile column of grid position
+4230 IF PX<1 OR PX>3 THEN GOTO _putback:REM Put back if too close to edge
+4240 IF TY>5 THEN GOTO _piledrop:REM Card is not on top row
 
-4800 SET SPRITE SC$ OFF
-4900 GOTO _main
+
+4300 REM Try to drop on top row
+4305 PB=0:REM Do not update bottom of column
+4310 PR=0:NY=0:PY=TY:REM Grid row and tile position in row
+4315 IF PY>4 THEN GOTO _putback:REM Don't grab if too close to edge
+4320 N=G(PC,PR):REM Get card in new spot
+4325 NS=INT(C/16):NR=C AND 15:REM Suit and Rank in spot
+4330 IF PC>3 THEN GOTO _foundation:REM Foundation has different rules
+4340 IF N<>0 THEN GOTO _putback:REM Can't pick up if no card in cell
+4345 GOTO _dropcard
+
+4400 _foundation:REM Try to put on foundation
+4410 FC=G(PC,PR):FS=INT(FC/16):FR=FC AND 15:REM Card, Suit, Rank in foundation
+4420 IF R<>FR+1 THEN GOTO _putback:REM Can only drop next highest card
+4430 IF FC=0 THEN GOTO _dropcard:REM Okay to drop if no card in foundation
+4435 IF FS=S THEN GOTO _dropcard:REM or card is same suit
+4440 GOTO _putback:REM Otherwise put it back
+
+4500 _piledrop:GOTO _putback
+4505 PB=1:REM Do Update bottom of column
+4510 PR=B(PC):NY=PR+6:REM Bottom row of stack, grid column of position
+4515 IF PR=0 THEN GOTO _dropcard:REM No cards in stack, okay to drop
+
+
+4800 _dropcard:
+4810 G(GC,GR)=0:REM Remove card from old grid position
+4815 IF GR THEN B(GC)=B(GC)-1:REM If taken from column, update bottom of column
+4820 G(PC,PR)=C:REM Put in new position
+4825 IF PB THEN B(GC)=PR+1
+4830 CX=NX:CY=NY
+
+4900 _putback:REM Put the card back
+4910 PUT TILEMAP (CX,CY),^C$(S,R)
+4920 SET SPRITE SC$ OFF
+4990 GOTO _main
