@@ -37,7 +37,8 @@ tokenize_string:
 ; Clobbers: A, IX
 ;-----------------------------------------------------------------------------
 tokenize_line:
-    ld      BC,-1                 ; Default line number to 65535
+    ld      bc,-1                 ; Default line number to 65535
+    ld      (TEMP3),bc            ; Set line number flag for s3_stuffh_ext
     dec     hl                    ; Back up for CHRGET
     rst     CHRGET                ; Get first non-space character
     ret     nc                    ; If not a digit, return no line number

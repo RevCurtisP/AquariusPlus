@@ -104,7 +104,11 @@
 3000 _main:REM Let the game begin
 
 3100 _autobuild:
-
+3110 FL=13:REM Lowest rank on foundation
+3112 FOR PC=4 TO 7:FR=C(PC,0)AND15:IF FR<FL THEN FL=FR
+3114 NEXT
+3116 IF FL=13 THEN REM Game Over
+3120 FOR GC=0 TO 7:C=G(GC,G[B]):S=INT(C/16):R=C AND 15 
 
 4100 _hand:REM Move the hand cursor and check for button click
 4110 SET SPRITE SH$ TILECLIP C$(2,14):REM Display open hand

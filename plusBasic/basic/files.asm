@@ -892,6 +892,7 @@ run_cmd:
     push    af
     ld      a,KB_ENABLE | KB_ASCII
     call    key_set_keymode       ; Turn off key repeat
+    call    clear_all_errvars
     pop     af
 
     jr      z,run_c               ; If no argument then RUN from 1st line
@@ -904,11 +905,9 @@ run_cmd:
     jr      run_file              ; Load and run file
 
 con_run:
-    call    clear_all_errvars
     jp      CONRUN
 
 run_c:
-    call    clear_all_errvars
     jp      RUNC              ; GOTO line number
 
 
@@ -925,7 +924,6 @@ run_file:
 ;    call    in_direct             ; and in direct mode
 ;    call    nc,_lookup_file       ;   Find matching file if no extensions
 .quoted
-    push    hl                    ; Save String Descriptor
     call    string_addr_len       ; DE = StrAdr, BC = StrLen
 
 ;For (16k) cartridge binaries
@@ -938,6 +936,7 @@ run_file:
     jr      c, .load_basic        ; Too short to have ROM extension
     sub     a, 4                  ; Position of last four characters of String
     ld      c, a
+    push    hl                    ; Save String Descriptor
     ex      de,hl                 ; HL = String Address
     add     hl,bc                 ; Point tho last four characters
     ex      de,hl                 ; DE = String Address
@@ -957,7 +956,6 @@ run_file:
     jr      z,.load_core
 
 .load_basic:
-    call    clear_all_errvars     ; Clear ON ERROR sytem variables
     pop     bc                    ; Discard Text Pointer
     ld      bc,run_c
     push    bc                    ; Return to RUNC
