@@ -1,5 +1,10 @@
 # plusBASIC Release History
-
+ - v0.20w 
+   - Fixed tokenization bug when RUNing BASIC progam files in ASCII format
+ - v0.20v 
+   - Fixed DEF SPRITE [...] x-offset bug
+ - v0.20u 
+   - Added SET SPRITE var$ TILECLIP and debugged str_length
  - v0.20s
    - Added `GET/PUT TILEMAP ... ^var$`, debugged FILL `[@page,]address,WORD int`, fixed `ASC$()` bug.
  - v0.20r
