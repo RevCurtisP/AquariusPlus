@@ -23,6 +23,11 @@ ROM_EXT_PG      equ 61      ; plusBASIC extended ROM, mapped into Bank 3
 ROM_AUX_PG      equ 62      ; plusBASIC auxillary ROM, mapped into Bank 3 as needed
 ROM_CRT_PG      equ 63      ; If a cartrige is present, it is copied here unencrypted, then executed
 
+ROM_SYS_OV      equ 60 | BANK_READONLY | BANK_OVERLAY
+ROM_EXT_RO      equ 61 | BANK_READONLY 
+ROM_AUX_RO      equ 62 | BANK_READONLY 
+ROM_CRT_RO      equ 63 | BANK_READONLY 
+
 ROM_CART        equ 19
 
 VIDEO_RAM       equ 20

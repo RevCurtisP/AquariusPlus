@@ -471,14 +471,14 @@ page_write_word:
 ;-----------------------------------------------------------------------------
 page_set_aux:
     push    af
-    ld      a,ROM_AUX_PG
+    ld      a,ROM_AUX_RO
     jr      _map_page_bank3
 ;-----------------------------------------------------------------------------
 ; Map Bank 3 to Ext ROM
 ;-----------------------------------------------------------------------------
 page_set_plus:
     push    af
-    ld      a,ROM_EXT_PG
+    ld      a,ROM_EXT_RO
 _map_page_bank3:
     out     (IO_BANK3),a
     pop     af
@@ -533,7 +533,7 @@ page_map_auxrom:
     ex      af,af'
     in      a,(IO_BANK3)          ; A = CurPg
     push    af                    ; Stack = CurPg
-    ld      a,ROM_AUX_PG
+    ld      a,ROM_AUX_RO
     out     (IO_BANK3),a
     ex      af,af'
     jp      (ix)
@@ -547,7 +547,7 @@ page_map_extrom:
     ex      af,af'
     in      a,(IO_BANK3)          ; A = CurPg
     push    af                    ; Stack = CurPg
-    ld      a,ROM_EXT_PG
+    ld      a,ROM_EXT_RO
     out     (IO_BANK3),a
     ex      af,af'
     jp      (ix)

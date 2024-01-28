@@ -86,7 +86,7 @@ just_ret:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.20w3"
+    db "v0.20w4"
 ifdef coredump
     db "_coredump"
 endif
@@ -122,7 +122,7 @@ _reset:
 
 ifdef coredump
     ; Core dump check
-    ld      a,ROM_EXT_PG
+    ld      a,ROM_EXT_RO
     out     (IO_BANK3),a
     jp      core_dump
 endif
@@ -141,7 +141,7 @@ init_banks:
     call    init_charram
 
     ; Call routines in Aux ROM
-    ld      a,ROM_AUX_PG
+    ld      a,ROM_AUX_RO
     out     (IO_BANK3), a
     call    screen_reset          ; Init video mode
 
@@ -189,7 +189,7 @@ _coldboot:
 ; Intercept WRMCON call
 ;-----------------------------------------------------------------------------
 _warm_boot:
-    ld      a, ROM_EXT_PG         ; Page 1 ROM
+    ld      a, ROM_EXT_RO         ; Page 1 ROM
     out     (IO_BANK3), a         ; into Bank 3
     call    esp_close_all
     call    init_bas_fdesc
@@ -254,7 +254,7 @@ pt3call:
     out     (IO_BANK1),a
     in      a,(IO_BANK3)
     push    af                    ; Stack = Bnk3pg, Bnk1pg, RtnAdr
-    ld      a,ROM_AUX_PG
+    ld      a,ROM_AUX_RO
     out     (IO_BANK3),a
     call    (jump_iy)
     call    nz,pt3_disable
@@ -567,7 +567,7 @@ descramble_rom:
     out     (IO_BANK2), a
 
 ifdef coredump
-    ld      a,ROM_EXT_PG
+    ld      a,ROM_EXT_RO
     out     (IO_BANK3),a
     jp      RESET
 endif
@@ -885,7 +885,7 @@ hook_table:                     ; ## caller   addr  performing function
 fast_hook_handler:
     ex      af,af'              ; save AF
     exx                         ; save BC,DE,HL
-    ld      a,ROM_EXT_PG        ; Ensure Extended ROM is paged in
+    ld      a,ROM_EXT_RO        ; Ensure Extended ROM is paged in
     out     (IO_BANK3),a
     pop     hl                  ; get hook return address
     ld      a,(hl)              ; A = byte (RST $30 parameter)
