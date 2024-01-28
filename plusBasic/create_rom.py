@@ -14,7 +14,7 @@ import argparse
 # 4000 - 7FFF  C000 - FFFF    plusBASIC 16k
 # 8000 - A000  8000 - A000    plusBASIC 8k (swapped in)
 
-with open("zout/aquarius.rom", "wb") as f:
+with open("zout/sysrom.bin", "wb") as f:
     # Aquarius S3 BASIC ROM with Aquarius+ options
     with open("..\s3basic\s3basic-aqplus.cim", "rb") as fbasic:
         s3rom = bytearray(fbasic.read())
