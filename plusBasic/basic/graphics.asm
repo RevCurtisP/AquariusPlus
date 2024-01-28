@@ -906,6 +906,7 @@ _def_sprite_rect:
     cp      64
     jp      nc,FCERR
     call    _write_byte_strbuf    ; Write E to string buffer
+    call    _write_bc_strbuf      ; Write X,Y to string buffer
     ld      a,c
     add     8                     ; Add 8 to Xoffset
     jp      c,FCERR               ; Error if > 255
@@ -916,7 +917,6 @@ _def_sprite_rect:
     ld      a,c
     ld      (XTEMP1),a            ;   MaxXoffset = Xoffset
 .skipx
-    call    _write_bc_strbuf      ; Write X,Y to string buffer
     call    inc_xtemp0            ; Increment SptlCnt
     ld      a,(hl)
     cp      ','                   ; If comma
