@@ -18,26 +18,30 @@ BANK_READONLY:  equ $80     ; Bank readonly
 BANK_OVERLAY:   equ $40     ; RAM overlay
 
 ; RAM Page Usage
-ROM_SYS_PG      equ 0       ; Main System ROM, mapped into Bank 0 with overlay from $3000-$3FFF
-ROM_EXT_PG      equ 1       ; plusBASIC extended ROM, mapped into Bank 3 
-ROM_AUX_PG      equ 2       ; plusBASIC auxillary ROM, mapped into Bank 3 as needed
+ROM_SYS_PG      equ 60      ; Main System ROM, mapped into Bank 0 with overlay from $3000-$3FFF
+ROM_EXT_PG      equ 61      ; plusBASIC extended ROM, mapped into Bank 3 
+ROM_AUX_PG      equ 62      ; plusBASIC auxillary ROM, mapped into Bank 3 as needed
+ROM_CRT_PG      equ 63      ; If a cartrige is present, it is copied here unencrypted, then executed
 
 ROM_CART        equ 19
 
 VIDEO_RAM       equ 20
 CHAR_RAM        equ 21
     
-RAM_BAS_0       equ 32      ; RAM for Soft ROM mapped into Bank 0
-RAM_BAS_1       equ 33      ; RAM for BASIC mapped into Bank 1
-RAM_BAS_2       equ 34      ; RAM for BASIC mapped into Bank 2
-RAM_BAS_3       equ 35      ; RAM for BASIC mapped into Bank 3
-                            ; If a cartrige is present, it is copied here unencrypted, then executed
-BAS_BUFFR       equ 36      ; plusBASIC extended system variables and buffers, mapped in bank 3 as needed
-VID_BUFFR       equ 37      ; Video RAM Shadow Buffer
-PT3_BUFFR       equ 38      ; PT3 Player Buffer
-SCR_BUFFR       equ 39      ; Screen Buffers
+RAM_BAS_0       equ 56      ; RAM for Soft ROM mapped into Bank 0
+RAM_BAS_1       equ 57      ; RAM for BASIC mapped into Bank 1
+RAM_BAS_2       equ 58      ; RAM for BASIC mapped into Bank 2
+RAM_BAS_3       equ 59      ; RAM for BASIC mapped into Bank 3
+
+
+BOOT_BUFR       equ 51      ; Boot ROM work area
+SCR_BUFFR       equ 52      ; Screen Buffers
+VID_BUFFR       equ 53      ; Video RAM Shadow Buffer
+BAS_BUFFR       equ 54      ; plusBASIC extended system variables and buffers, mapped in bank 3 as needed
+PT3_BUFFR       equ 55      ; PT3 Player Buffer
     
-USER_RAM        equ 40      ; Start of User RAM
+USER_RAM        equ 20      ; First page of User RAM
+USER_END        equ 50      ; Last page of User RAM
 
 RAM_END_PG      equ 63      ; Last page of RAM
 

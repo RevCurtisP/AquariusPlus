@@ -86,7 +86,7 @@ just_ret:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.20w1"
+    db "v0.20w3"
 ifdef coredump
     db "_coredump"
 endif
@@ -130,20 +130,20 @@ endif
 init_banks:
 
     ; Initialize Banks 1 to 3
-    ld      a, 0 | BANK_OVERLAY | BANK_READONLY
+    ld      a,ROM_SYS_PG | BANK_OVERLAY | BANK_READONLY
     out     (IO_BANK0), a
-    ld      a, 33
+    ld      a,RAM_BAS_1
     out     (IO_BANK1), a
-    ld      a, 34
+    ld      a,RAM_BAS_2
     out     (IO_BANK2), a
 
     ; Initialize character RAM
     call    init_charram
 
     ; Call routines in Aux ROM
-    ld      a,2
+    ld      a,ROM_AUX_PG
     out     (IO_BANK3), a
-hl    call    screen_reset          ; Init video mode
+    call    screen_reset          ; Init video mode
 
     ; Initialize ESP
     ld      a, ESPCMD_RESET
@@ -154,7 +154,7 @@ hl    call    screen_reset          ; Init video mode
     call    key_set_keymode
 
     ; Initialize Bank 3
-    ld      a, 19                 ; Cartridge Port
+    ld      a, ROM_CART                 ; Cartridge Port
     out     (IO_BANK3), a
 
     ; Back to system ROM init
@@ -515,7 +515,7 @@ copy_char_ram:
 _start_cart:
 
     ; Map destination RAM in bank2
-    ld      a, 35
+    ld      a, RAM_BAS_3
     out     (IO_BANK2), a
 
     ; Copy ROM cartridge to RAM
@@ -526,7 +526,7 @@ _start_cart:
 
 descramble_rom:
     ; Map RAM in bank3
-    ld      a, 35
+    ld      a, RAM_BAS_3
     out     (IO_BANK3), a
 
     ; Determine scramble value
@@ -561,9 +561,9 @@ descramble_rom:
 
 .exec_cart:
     ; Reinit banks
-    ld      a, 33
+    ld      a, RAM_BAS_1
     out     (IO_BANK1), a
-    ld      a, 34
+    ld      a, RAM_BAS_2
     out     (IO_BANK2), a
 
 ifdef coredump
@@ -574,7 +574,7 @@ endif
 
 
     ; Bank3 -> readonly
-    ld      a, 35 | BANK_READONLY
+    ld      a, RAM_BAS_3 | BANK_READONLY
     out     (IO_BANK3), a
 
     ; Turn off Interrupts, Reset Screen, and Remove Hook
