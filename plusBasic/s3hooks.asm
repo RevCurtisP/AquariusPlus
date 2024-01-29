@@ -49,7 +49,7 @@ s3_ctrl_keys:
     call    key_set_keymode       ;   Now set new keybuffer mode
     jr      .inlinc               ;   Wait for next key
 .notrepeat:
-    cp      'Q'-'K'               ; If not ^N through ^P
+    cp      'P'-'K'               ; If not ^N through ^P
     jr      c,.charset
 .notrub
     pop     bc                    ;   Restore character count

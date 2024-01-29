@@ -156,12 +156,8 @@ file_load_chrset:
     ld      a,BAS_BUFFR
     ld      bc,CHRSETLEN
     ld      de,CHRSETBUF
-    call    file_load_paged
-    ret     z                     ; Illegal page
-    ret     c                     ; Page overflow
-    ret     m                     ; I/O error
-    jp      custom_chrset
-
+    jp      file_load_paged
+    
 ;-----------------------------------------------------------------------------
 ; Load binary file into paged memory`
 ; Input: A: Page

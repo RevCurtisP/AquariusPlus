@@ -28,6 +28,7 @@ _check_error
     jp      m,_dos_error
     pop     hl                    ; Restore Text Pointer
     ret     z
+dos_error:
 _dos_error:
     cpl                           ; Convert -1 to 0, -1 to 2, etc
     add     a,a                   ; Multiply by 2 to get offset
@@ -814,13 +815,17 @@ _load_extended:
     cp      PT3TK
     jr      z,_load_pt3
     rst     SYNCHR
-    byte    CHRTK                 ;   Must be CHRSET
+    byte    CHRTK                 ; Must be CHRSET
     rst     SYNCHR
     byte    SETTK
 ; load chrset "demos/charmaps/charmaps/bold.chr
 ; load chrset "future.chr
 _load_chrset:
     call    get_strdesc_arg       ; HL = FileSpec StrDsc; Stack = TxtPtr
+; Pops HL before returning
+    byte    $3E                   ; LD A, over PUSH HL
+load_chrset:
+    push    hl
     ld      iy,file_load_chrset   ; Load character set and copy to character RAM
     jr      _aux_call
 

@@ -86,7 +86,7 @@ just_ret:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.21"
+    db "v0.21a"
 ifdef coredump
     db "_coredump"
 endif
@@ -472,12 +472,9 @@ sys_fill_word:
 select_chrset:
     or      a                     ; If A = 0
     jr      z,_reset_charram      ;   Copy standard character set
-    dec     a                     ; If A = 1
-    ld      hl,CHAR_ROM_L1        ;   Copy Latin-1 character set
-    jr      z,_copy_charram       ; Else
 custom_chrset:
-    ld      hl,CHRSETBUF          ;   Copy Custom Character Set
-    ld      a,BAS_BUFFR
+    ld      hl,CHRSETBUF          ; Else
+    ld      a,BAS_BUFFR           ;   Copy Custom Character Set
     jr      copy_char_ram         ;
 
 ;-----------------------------------------------------------------------------

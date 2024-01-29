@@ -5,18 +5,29 @@
 
 ;-----------------------------------------------------------------------------
 ; USE CHRSET - Change Character Set
-; Syntax:
+; Syntax: USE CHRSET [0|1|filename$]
 ;-----------------------------------------------------------------------------
+; USE CHRSET "latin1d.chr
 ST_USECHR:
     rst     CHRGET                ; Skip CHR
     rst     SYNCHR                ; Require SET
     byte    SETTK
-    call    GETBYT                ; Evaluate Argument
-    cp      3
+    call    FRMEVL                ; Evaluate operand
+    call    GETYPE
+    jr      nz,.switch
+    push    hl
+    call    FRESTR                ; Free TEMP, get StrDsc in HL
+    call    load_chrset           ; Load the character set
+    inc     a                     ; A = 1
+    jr      .select
+.switch
+    call    CONINT                ; A = Operand
+    cp      2
     jp      nc,FCERR
     push    hl                    ; Stack = TxtPtr, RtnAdr
+.select
     call    select_chrset         ;
-    pop     hl                    ; HL - TxtPtr; Stack = RtnAdr
+    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     ret
 
 ;-----------------------------------------------------------------------------
