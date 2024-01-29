@@ -86,7 +86,7 @@ just_ret:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.21a"
+    db "v0.21b"
 ifdef coredump
     db "_coredump"
 endif
@@ -137,9 +137,6 @@ init_banks:
     ld      a,RAM_BAS_2
     out     (IO_BANK2), a
 
-    ; Initialize character RAM
-    call    init_charram
-
     ; Call routines in Aux ROM
     ld      a,ROM_AUX_RO
     out     (IO_BANK3), a
@@ -170,9 +167,10 @@ _coldboot:
 ; leaving custom character set buffer untouched
     call    page_set_basbuf
     ld      hl,$C000
-    ld      bc,CHRSETBUF-1
+    ld      bc,DEFCHRSET-1
     call    sys_fill_zero
 
+    call    init_chrsets
     call    page_set_plus
     call    spritle_clear_all     ; Clear all sprite properties
     jp      do_coldboot
@@ -464,34 +462,46 @@ sys_fill_word:
     inc     hl                    ; Bump Address
     dec     bc                    ; Count down
     jr      sys_fill_word         ; Do it again
-    
+
+
+default_chrset:
+   xor      a
 ;-----------------------------------------------------------------------------
 ; Copy selected character set into Character RAM
-; Input: A: Character set (0: Standard, 1: Latin-1, 2: Custom)
+; Input: A: Character set (0: Default, 1: Custom)
 ;-----------------------------------------------------------------------------
 select_chrset:
-    or      a                     ; If A = 0
-    jr      z,_reset_charram      ;   Copy standard character set
-custom_chrset:
-    ld      hl,CHRSETBUF          ; Else
-    ld      a,BAS_BUFFR           ;   Copy Custom Character Set
-    jr      copy_char_ram         ;
+    ld      hl,DEFCHRSET          ; If A = 0
+    or      a                     ;   Copy standard character set
+    jr      z,.copy               ; Else
+.alt
+    ld      hl,ALTCHRSET          ;   Copy Custom Character Set
+.copy
+    ld      a,BAS_BUFFR           
+    jr      copy_char_ram         
 
 ;-----------------------------------------------------------------------------
-; Character RAM initialization
+; Character ROM buffers initialization
 ;-----------------------------------------------------------------------------
-init_charram:
-    ld      hl,CHAR_ROM_AQ        ; Copy AQUASCII in to Custom Char ROM buffer
-    ld      bc,2048
-    ld      de,CHRSETBUF
-    ld      a,ROM_SYS_PG
-    ex      af,af'
-    ld      a,BAS_BUFFR
-    call    page_fast_copy
-_reset_charram
-    ld      hl,CHAR_ROM_AQ        ; and fall into _copy_charram
-_copy_charram:
-    ld      a,ROM_SYS_PG          ; Set source page and address
+init_chrsets:
+; Copy standard character set into buffer
+    ld      hl,.defdesc
+    ld      iy,file_load_defchrs
+    call    aux_call
+    ld      hl,.altdesc
+    ld      iy,file_load_altchrs
+    jp      aux_call
+
+.defset:
+    byte    "esp:default.chr"
+.defdesc:
+    word    $-.defset,.defset
+.altset:
+    byte    "esp:latin1b.chr"
+.altdesc:
+    word    $-.altset,.altset
+
+
 
 ;-----------------------------------------------------------------------------
 ; Copy Character ROM into Character RAM

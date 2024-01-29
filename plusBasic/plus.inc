@@ -179,16 +179,15 @@ IRQ_VLINE       equ $02     ; Video LINE interrupt
 
 ;-----------------------------------------------------------------------------
 ; BASIC Extended System Constants, Variables and Buffers
-; Page 36 (BAS_BUFFR), swapped into Bank 3
+; Page 54 (BAS_BUFFR), swapped into Bank 3
 ;-----------------------------------------------------------------------------
 BASBUF_BASE equ $C000   ; Base Address of BASIC Buffers
-GFX_SYSVARS equ $C000   ; Graphics module System Variables (defined in gfx/gfx.asm)
-                        ; Must be on 256 byte boundary
 FKEYDEFS    equ $0200   ; Function Key Definitions (32 bytes each)
 FKEYBASE    equ BASBUF_BASE + FKEYDEFS
 ;         $0500-$7FF   ; Unused
 RUNARGS     equ $0800   ; RUN arguments (First is program name)
-CHRSETBUF   equ $3800   ; Page Offset: Custom Character Set Buffer
+DEFCHRSET   equ $3400
+ALTCHRSET   equ $3800   ; Page Offset: Custom Character Set Buffer
 CHRSETLEN   equ 2048    ; Size of character set ROM
 
 BASOUTBUF   equ $01     ; BASYSCTL: redirect OUTput to BUFfer
@@ -202,7 +201,7 @@ TRON_FLAG   equ $80     ; EXT_FLAGS: Trace on/off
 
 ;-----------------------------------------------------------------------------
 ; BASIC Text Screen Buffers
-; Offsets into Page 39 (SCR_BUFFR)
+; Offsets into Page 52 (SCR_BUFFR)
 ;-----------------------------------------------------------------------------
 SCRN40BUF   equ $0000   ; Primary 40 column buffer for screen switching
 SCRN41BUF   equ $0800   ; Secondary 40 column buffer for screen switching

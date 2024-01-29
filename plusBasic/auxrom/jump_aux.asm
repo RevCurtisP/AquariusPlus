@@ -27,7 +27,7 @@ _jump_table:
     jp      file_trim_dir         ; Trim path from filespec
     jp      file_trim_ext         ; Trim extension from filespec
     jp      file_load_binary      ; Load binary file into main memory
-    jp      file_load_chrset      ; Load file into character RAM buffer
+    jp      file_load_altchrs     ; Load file into alternate chrset buffer
     jp      file_load_paged       ; Load binary file into paged memory
     jp      file_load_palette     ; Load and set palette 
     jp      file_load_pt3         ; Load PT3 file into PT3 buffer
@@ -39,9 +39,9 @@ _jump_table:
     jp      file_save_palette     ; Get and save palette
     jp      file_save_screen      ; ** not implemented ** 
     jp      file_save_strbuf      ; Save BASIC string buffer to file
-    jp      just_ret
-    jp      just_ret
-    jp      just_ret
+    jp      file_load_defchrs     ; Load file into default chrset buffer
+    jp      just_ret              ; file_load_tilemap
+    jp      just_ret              ; file_save_tilemap
     jp      just_ret
     jp      just_ret
     jp      just_ret

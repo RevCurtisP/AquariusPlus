@@ -826,7 +826,7 @@ _load_chrset:
     byte    $3E                   ; LD A, over PUSH HL
 load_chrset:
     push    hl
-    ld      iy,file_load_chrset   ; Load character set and copy to character RAM
+    ld      iy,file_load_altchrs  ; Load into alternate character set buffer
     jr      _aux_call
 
 _save_palette:

@@ -152,10 +152,14 @@ file_load_binary:
 ; Output: A: Result
 ; Clobbered registers: BC,DE,HL
 ;-----------------------------------------------------------------------------
-file_load_chrset:
+file_load_defchrs:
+    ld      de,DEFCHRSET
+    jr      _load_chrset
+file_load_altchrs:
+    ld      de,ALTCHRSET
+_load_chrset
     ld      a,BAS_BUFFR
     ld      bc,CHRSETLEN
-    ld      de,CHRSETBUF
     jp      file_load_paged
     
 ;-----------------------------------------------------------------------------
