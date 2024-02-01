@@ -189,7 +189,6 @@ file_load_paged:
     pop     af                    ; AF = Result; Stack = RtnAdr
     ret
 
-
 ;-----------------------------------------------------------------------------
 ; Load ROM file into page 35
 ;        HL: string descriptor address
@@ -253,10 +252,11 @@ file_load_screen:
 ; Flags Set: S if I/O error
 ; Clobbered: BC,DE,HL,IX,IY
 ;-----------------------------------------------------------------------------
+; LOAD PT3 "/music/songs1/drops.pt3"
 file_load_pt3:
     ld      a,PT3_BUFFR
-    ld      de,$0400
-    ld      bc,$4000-$0400
+    ld      de,pt3song
+    ld      bc,$4000-pt3song
     call    file_load_paged
     push    af
     call    pt3_reset

@@ -192,7 +192,7 @@ CHRSETLEN   equ 2048    ; Size of character set ROM
 
 BASOUTBUF   equ $01     ; BASYSCTL: redirect OUTput to BUFfer
 BASSAVASC   equ $02     ; BASYSCTL: Default SAVe to ASC
-BASKEYRPT   equ $04     ; BASYSCTL: KEY RePeaI on
+BASKEYRPT   equ $04     ;      BASYSCTL: KEY RePeaI on
 BASBRKOFF   equ $20     ; BASYSCTL: BReak OFF (Disable Ctrl-C)
 BASSCRN80   equ $40     ; BASYSCTL: SCReeN 80 (80) column mode
 BASCRNCLR   equ $80     ; BASYSCTL: PRINT updates Color RAM
@@ -220,10 +220,12 @@ IRQ_PT3PLAY equ $02     ; Bit 1 - PT3 Player running
 ;-----------------------------------------------------------------------------
 ; PT3 Player
 ;-----------------------------------------------------------------------------
-pt3init     equ $D800   ; StartPlayer
-pt3tick     equ $D803   ; PlayQuark  
-pt3stat     equ $D806   ; CHECKLP
-pt3mute     equ $D809   ; MUTE
+PT3_BASE    equ $C000
+pt3init     equ PT3_BASE+$00    ; StartPlayer
+pt3tick     equ PT3_BASE+$03    ; PlayQuark  
+pt3stat     equ PT3_BASE+$06    ; CHECKLP
+pt3mute     equ PT3_BASE+$09    ; MUTE
+pt3song     equ $0A00           ; PT3 file load address
 
 ;-----------------------------------------------------------------------------
 ; Macros

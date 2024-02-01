@@ -11,7 +11,7 @@ _jump_table:
     jp      print_string_immd     ; Print inline null terminated string
     jp      str_stringdesc        ; Build descriptor for null terminated string
     jp      str_tempdesc          ; Build descriptor for null terminated string in DSCTMP
-    jp      just_ret
+    jp      sys_fill_mem          ; Fill main memory with byte
     jp      just_ret
     jp      just_ret
     jp      just_ret

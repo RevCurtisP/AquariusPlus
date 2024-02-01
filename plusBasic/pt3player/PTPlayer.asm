@@ -3,7 +3,7 @@
 ;----------------------------------------------------
 
 ; address of variables in RAM
-VARMEM = $4000  ; This is where the variables used should go 
+VARMEM = VarsAddr  ; This is where the variables used should go 
 
 ; AY registers
 ; STRUCT AYREGS
