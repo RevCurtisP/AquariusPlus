@@ -80,6 +80,7 @@ L3       = PrSlide    ; opcode + RET
 M2       = PrSlide
       BYTE PrNote
       BYTE PtVersion
+      BYTE PtRepeat
 ;end of variables and self-modifying code
 ;start of cleared data area
     STRUCT ChanA,CHP_size

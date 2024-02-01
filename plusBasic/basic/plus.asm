@@ -89,6 +89,17 @@ FN_GETKEY:
     jp      BUFCIN                ; Else Return String
 
 ;-----------------------------------------------------------------------------
+; LOOP statements stub
+;-----------------------------------------------------------------------------
+ST_LOOP:
+    rst     CHRGET                ; Skip LOOP token
+    rst     SYNCHR
+    byte    XTOKEN
+    cp      PT3TK                 ;   If token is PT3
+    jp      z,ST_LOOP_PT3         ;     Do PAUSE PT3
+    jp      SNERR
+
+;-----------------------------------------------------------------------------
 ; MOUSEB - Returns mouse buttons
 ; MOUSEX - Returns mouse x-position
 ; MOUSEY - Returns mouse y-position

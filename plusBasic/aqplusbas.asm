@@ -86,7 +86,7 @@ just_ret:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.21c"
+    db "v0.21e"
 ifdef coredump
     db "_coredump"
 endif
@@ -256,13 +256,20 @@ pt3call:
     ld      a,PT3_BUFFR
     out     (IO_BANK3),a
     call    (jump_iy)
-    call    nz,pt3_disable
+    call    nz,.pt3done
     pop     af                    ; A = Bnk3pg; Stack = Bnk1pg, RtnAdr
     out     (IO_BANK3),a
     pop     af                    ; A = Bnk1pg; Stack = RtnAdr
     out     (IO_BANK1),a
     pop     ix
     ret
+
+.pt3done
+    call    pt3_reset
+    ld      a,(EXT_FLAGS)
+    and     PT3_LOOPS
+    ret     z
+    jp      pt3_start
 
 ;-----------------------------------------------------------------------------
 ; Issue OV Error if TOPMEM will put stack in Bank 1

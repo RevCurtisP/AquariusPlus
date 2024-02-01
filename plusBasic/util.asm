@@ -377,8 +377,6 @@ mult_hl_10:
     pop     bc
     ret
 
-
-
 pt3_reset:
     call    pt3_disable
 pt3_init:
@@ -399,12 +397,12 @@ pt3_enable:
 ;----------------------------------------------------------------------------
 ; End background PT3 player interrupts
 ; Input C,DE = Timer count
-; Clobbers: A,B,C
+; Clobbers: A,BC
 ;----------------------------------------------------------------------------
 pt3_disable:
     ld      b,IRQ_PT3PLAY
-    jp      clear_vblank_irq
-    
+    jp     clear_vblank_irq
+      
 ;-----------------------------------------------------------------------------
 ; Look up byte in table
 ; Input: A: Offset

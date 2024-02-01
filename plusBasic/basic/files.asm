@@ -865,6 +865,7 @@ _load_string:
 ; load pt3 "/music/songs1/dance.pt3"
 _load_pt3:
     rst     CHRGET                ; Skip PT3
+load_pt3:
     call    get_strdesc_arg       ; HL = FileSpec StrDsc; Stack = TxtPtr
     ld      iy,file_load_pt3      ; Load character set and copy to character RAM
 _aux_call

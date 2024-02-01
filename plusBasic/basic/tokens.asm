@@ -94,7 +94,7 @@ EXTCMDS:
     db $80 + 'S',"TASH"           ; $98
     db $80 + 'T',"RO"             ; $99             
     db $80 + 'B',"REAK"           ; $9A             
-    db $80 + ' '                  ; $9B             
+    db $80 + 'L',"OOP"            ; $9B             
     db $80 + ' '                  ; $9C             
     db $80 + ' '                  ; $9D             
     db $80 + ' '                  ; $9E             
@@ -161,6 +161,7 @@ PLAYTK    equ     $95
 APNDTK    equ     $96
 TRIMTK    equ     $97
 BRKTK     equ     $9A
+LOOPTK    equ     $9B
 VARSTK    equ     $A0
 WORDTK    equ     $A1
 CLIPTK    equ     $A2

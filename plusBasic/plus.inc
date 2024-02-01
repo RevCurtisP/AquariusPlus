@@ -197,6 +197,7 @@ BASBRKOFF   equ $20     ; BASYSCTL: BReak OFF (Disable Ctrl-C)
 BASSCRN80   equ $40     ; BASYSCTL: SCReeN 80 (80) column mode
 BASCRNCLR   equ $80     ; BASYSCTL: PRINT updates Color RAM
 
+PT3_LOOPS   equ $02     ; EXT_FLAGS: PT3 songs repeat
 TRON_FLAG   equ $80     ; EXT_FLAGS: Trace on/off
 
 ;-----------------------------------------------------------------------------
