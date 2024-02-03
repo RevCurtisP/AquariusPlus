@@ -86,7 +86,7 @@ just_ret:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.21e"
+    db "v0.21f"
 ifdef coredump
     db "_coredump"
 endif
@@ -171,7 +171,7 @@ _coldboot:
     call    sys_fill_zero
 
     call    init_chrsets
-    call    load_pt3play
+    call    load_ptplay
     call    page_set_plus
     call    spritle_clear_all     ; Clear all sprite properties
     jp      do_coldboot
@@ -512,7 +512,7 @@ init_chrsets:
 ;-----------------------------------------------------------------------------
 ; Load PT3 player
 ;-----------------------------------------------------------------------------
-load_pt3play:
+load_ptplay:
     ld      a,PT3_BUFFR           ; Page
     ld      l,0
     call    page_fill_all_byte    ; Zero out buffer
@@ -520,14 +520,14 @@ load_pt3play:
     ld      a,PT3_BUFFR           ; Page
     ld      bc,$4000              ; Load up to 16k
     ld      de,PT3_BASE           ; Start address
-    ld      hl,.pt3desc
+    ld      hl,.ptdesc
     ld      iy,file_load_paged
     jp      aux_call
 
-.pt3play:
-    byte    "/ptplay.bin"
-.pt3desc:
-    word    $-.pt3play,.pt3play
+.ptplay:
+    byte    "esp:ptplay.bin"
+.ptdesc:
+    word    $-.ptplay,.ptplay
 
 ;-----------------------------------------------------------------------------
 ; Copy Character ROM into Character RAM

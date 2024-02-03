@@ -38,7 +38,7 @@ RAM_BAS_1       equ 57      ; RAM for BASIC mapped into Bank 1
 RAM_BAS_2       equ 58      ; RAM for BASIC mapped into Bank 2
 RAM_BAS_3       equ 59      ; RAM for BASIC mapped into Bank 3
 
-
+CART_BUFFER     equ 50      ; Cart image loaded fron SD Card
 BOOT_BUFR       equ 51      ; Boot ROM work area
 SCR_BUFFR       equ 52      ; Screen Buffers
 VID_BUFFR       equ 53      ; Video RAM Shadow Buffer

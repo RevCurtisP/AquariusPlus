@@ -971,7 +971,7 @@ run_file:
     ld      iy,file_load_rom
     call    aux_call
     jp      m,_dos_error
-    jp      descramble_rom
+    ;jp      descramble_rom
 
 .load_core:
     call    string_addr_len
