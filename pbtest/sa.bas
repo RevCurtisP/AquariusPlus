@@ -9,4 +9,7 @@
 126 A$(6)="occaecat cupidatat non proident, sunt in culpa qui officia "
 127 A$(7)=""
 128 A$(8)="deserunt mollit anim id est laborum."
-130 SAVE "sa.caq",*A$
+130 PRINT "Saving":SAVE "sa.caq",*A$
+
+150 PRINT "Loading":LOAD "sa.caq",*B$
+160 FOR I=0 TO 9:PRINT B$(I):NEXT

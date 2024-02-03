@@ -738,6 +738,7 @@ load_caq_array:
     ex      (sp),hl               ; HL = String Descriptor, Stack = Text Pointer
     push    bc                    ; Stack = AryLen, TxtPtr, RtnAdr
     push    de                    ; stack = AryAdr, AryLen, TxtPtr, RtnAdr
+    push    af                    ; Stack = AryTyp, AryAdr, AryLen, TxtPtr, RtnAdr
 
     call    _open_read
 
@@ -756,13 +757,47 @@ load_caq_array:
     djnz    .filnam
 
     ; Load data into array
+    pop     af                    ; AF = AryTyp; Stack = AryAdr, AryLen, TxtPtr, RtnAdr
+    jr      z,.strings
     pop     de                    ; DE = AryAdr; Stack = AryLen, TxtPtr, RtnAdr
     pop     bc                    ; BC = AryLen; Stack = TxtPtr, RtnAdr
     call    esp_read_bytes
-
-    ; Close file
+    jr      .done
+.strings
+    call    esp_read_byte         ; B = StrLen
+    jp      m,_dos_error          
+    ld      a,b
+    push    af                    ; Stack = StrLen, AryPtr, AryLen, TxtPtr, RtnAdr
+    call    GETSPA                ; DE = StrAdr
+    call    FRETMS                ; Free temporary but not string space
+    pop     af                    ; A = StrLen; Stack = AryPtr, AryLen, TxtPtr, RtnAdr
+    ld      c,a
+    ld      b,0                   ; BC = StrLen
+    push    de                    ; Stack = StrAdr, AryPtr, AryLen, TxtPtr, RtnAdr
+    call    esp_read_bytes        ; BC = StrLen
+    pop     de                    ; DE = StrAdr; Stack = AryPtr, AryLen, TxtPtr, RtnAdr
+    pop     hl                    ; HL = AryPtr; Stack = AryLen, TxtPtr, RtnAdr
+    ld      (hl),c
+    inc     hl
+    ld      (hl),b                ; Write StrLen to array entry
+    inc     hl
+    ld      (hl),e
+    inc     hl
+    ld      (hl),d                ; Write StrAdr to array entry
+    inc     hl
+    pop     bc                    ; BC = AryLen; Stack = TxtPtr, RtnAdr
+    dec     bc
+    dec     bc
+    dec     bc
+    dec     bc                    ; 
+    ld      a,b
+    or      c
+    jr      z,.done
+    push    bc                    ; Stack = AryLen, TxtPtr, RtnAdr
+    push    hl                    ; Stack = AryPtr, AryLen, TxtPtr, RtnAdr
+    jr      .strings
+.done
     call    esp_close_all
-
     pop     hl
     ret
 
