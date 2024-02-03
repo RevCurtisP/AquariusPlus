@@ -502,7 +502,9 @@ ST_LOAD:
     jr      nz, .basic              ; No parameter -> load as basic program
     rst     CHRGET
     cp      MULTK                   ; Token for '*'
-    jp      z, .array               ; Array parameter -> load as array
+    jr      z,.array                ; Array parameter -> load as array
+    cp      EXPTK
+    jr      .string
 
 
 ; Load raw binary to address
@@ -557,6 +559,20 @@ ST_LOAD:
 .basic:
     ex      (sp),hl               ; HL = String Descriptor, Stack = Text Pointer
     jp      load_basic_program
+
+; LOAD "t/stringtest.str",^L$
+.string
+    rst     CHRGET                ; Skip ^
+    call    get_stringvar         ; DE = VarPtr
+    ex      (sp),hl               ; HL = NamDsc; Stack = TxtPtr, RtnAdr
+    push    de                    ; Stack = VarPtr, TxtPtr, RtnAdr
+    ld      iy,file_load_strbuf   ; Load file into StrBuf
+    call    aux_call              ; A = Result, BC = StrLen, HL = BufAdr
+    jp      m,_dos_error
+    ld      a,c
+    call    strbuf_temp_str       ; BC = StrLen, DE = StrAdr, HL = StrDsc
+    push    hl                    ; Stack = StrDsc, VarPtr, TxtPtr
+    jp      INBUFC                ; Copy Temporary to Variable and return
 
 ;-----------------------------------------------------------------------------
 ; Load BASIC Program in ASCII format
@@ -1067,8 +1083,10 @@ ST_SAVE:
     cp      ','
     jp      nz, save_basic_program
     rst     CHRGET
+    cp      EXPTK
+    jp      z,.string               ; Load to string
     cp      $AA                     ; Token for '*'
-    jp      z, .array               ; Array parameter -> save array
+    jr      z,.array                ; Array parameter -> save array
     cp      ASCTK
     jp      z,save_ascii_program
 
@@ -1111,6 +1129,7 @@ ST_SAVE:
 
     ; Do the save
     jr      c,.save_paged
+.do_bin
     ld      iy,file_save_binary
     call    aux_call
     jp      m,_dos_error
@@ -1143,6 +1162,18 @@ ST_SAVE:
 .array:
     call    get_array_argument
     jp      save_caq_array
+
+; S$="Test string"
+; SAVE "t/stringtest.str",^S$
+.string
+    rst     CHRGET                ; Skip ^
+    call    get_stringvar         ; DE = VarAdr
+    ex      (sp),hl               ; HL = NamDsc; Stack = TxtPtr, RtnAdr
+    push    hl                    ; Stack = NamDsc, TxtPtr, RtnAdr
+    ex      de,hl                 ; HL = VarAdr
+    call    string_addr_len       ; BC = StrLen, DE = StrAdr
+    pop     hl                    ; HL = NamDsc; Stack = TxtPtr, RtnAdr
+    jr      .do_bin               ; Save it
 
 ;-----------------------------------------------------------------------------
 ; Save basic program in ASCII format
