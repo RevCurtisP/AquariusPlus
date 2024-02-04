@@ -504,7 +504,7 @@ ST_LOAD:
     cp      MULTK                   ; Token for '*'
     jr      z,.array                ; Array parameter -> load as array
     cp      EXPTK
-    jr      .string
+    jr      z,.string
 
 
 ; Load raw binary to address

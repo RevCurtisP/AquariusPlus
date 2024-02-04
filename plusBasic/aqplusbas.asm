@@ -86,7 +86,7 @@ just_ret:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.21sls6"
+    db "v0.21sls7"
 ifdef coredump
     db "_coredump"
 endif
