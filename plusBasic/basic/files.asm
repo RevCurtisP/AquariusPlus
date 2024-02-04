@@ -738,7 +738,7 @@ load_caq_array:
     ex      (sp),hl               ; HL = String Descriptor, Stack = Text Pointer
     push    bc                    ; Stack = AryLen, TxtPtr, RtnAdr
     push    de                    ; stack = AryAdr, AryLen, TxtPtr, RtnAdr
-    push    af                    ; Stack = AryTyp, AryAdr, AryLen, TxtPtr, RtnAdr
+    jr      z,load_string_array
 
     call    _open_read
 
@@ -757,13 +757,16 @@ load_caq_array:
     djnz    .filnam
 
     ; Load data into array
-    pop     af                    ; AF = AryTyp; Stack = AryAdr, AryLen, TxtPtr, RtnAdr
-    jr      z,.strings
     pop     de                    ; DE = AryAdr; Stack = AryLen, TxtPtr, RtnAdr
     pop     bc                    ; BC = AryLen; Stack = TxtPtr, RtnAdr
     call    esp_read_bytes
-    jr      .done
-.strings
+    call    esp_close_all
+    pop     hl
+    ret
+
+load_string_array:
+    call    _open_read
+.loop
     call    esp_read_byte         ; B = StrLen
     jp      m,_dos_error          
     ld      a,b
@@ -792,14 +795,10 @@ load_caq_array:
     dec     bc                    ; 
     ld      a,b
     or      c
-    jr      z,.done
+    jp      z,_close_pop_ret
     push    bc                    ; Stack = AryLen, TxtPtr, RtnAdr
     push    hl                    ; Stack = AryPtr, AryLen, TxtPtr, RtnAdr
-    jr      .strings
-.done
-    call    esp_close_all
-    pop     hl
-    ret
+    jr      .loop
 
 ;-----------------------------------------------------------------------------
 ; Get array argument
@@ -1290,13 +1289,11 @@ save_basic_program:
 ;-----------------------------------------------------------------------------
 ; DIM A(99)
 ; SAVE "/t/array.caq",*A
-; DIM A$(9)
-; SAVE "/t/sa.caq",*A$
 save_caq_array:
     ex      (sp),hl               ; HL = StrDsc, Stack = TxtPtr, RtnAdr
     push    bc                    ; Stack = AryLen, TxtPtr, RtnAdr
     push    de                    ; Stack = AryAdr, AryLen, TxtPtr, RtnAdr
-    push    af                    ; Stack = AryTyp, AryAdr, AryLen, TxtPtr, RtnAdr
+    jr      z,save_string_array
     call    _open_write           ; Create file
 
     ; Write CAQ header
@@ -1304,17 +1301,32 @@ save_caq_array:
     ld      bc, 13
     call    esp_write_bytes
     ld      bc, 6
-    ld      de, .array_filename   ; Filename
+    ld      de, _array_filename   ; Filename
     call    esp_write_bytes
 
     ; Write array data
-    pop     af                    ; AF = AryTyp; Stack = AryAdr, AryLen, TxtPtr, RtnAdr
-    jr      z,.strings
     pop     de                    ; DE = AryAdr; Stack = AryLen, TxtPtr, RtnAdr
     pop     bc                    ; BC = AryLen; Stack = TxtPtr, RtnAdr
     call    esp_write_bytes
-    jr      .trailer
-.strings
+    ; Write trailer
+    ld      bc,15
+    ld      e,0
+    call    esp_write_repbyte
+
+_close_pop_ret:
+    call    esp_close_all
+    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
+    ret
+
+_array_filename: db "######"
+
+;-----------------------------------------------------------------------------
+; Save string array
+;-----------------------------------------------------------------------------
+; DIM A$(9)
+; SAVE "/t/sa.sta",*A$
+save_string_array:
+    call    _open_write           ; Create file
     pop     hl                    ; HL = AryPtr; Stack = AryLen, TxtPtr, RtnAdr
 .strloop
     call    string_addr_len       ; DE = StrAdr, BC = StrLen
@@ -1331,23 +1343,10 @@ save_caq_array:
     djnz    .nextloop
     ld      a,d
     or      e
-    jr      z,.trailer
+    jr      z,_close_pop_ret
     push    de                    ; Stack = AryLen, TxtPtr, RtnAdr
     jr      .strloop
-    
-.trailer
-    ; Write trailer
-    ld      bc,15
-    ld      e,0
-    call    esp_write_repbyte
 
-    ; Close file
-    call    esp_close_all
-
-    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
-    ret
-
-.array_filename: db "######"
 
 
 
