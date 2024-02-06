@@ -7,6 +7,10 @@
 ; Bloxel PRESET and PRESET with the EX AF,AF' factored out 
 ;-----------------------------------------------------------------------------
 ST_PSET:
+; Note: These two lines broke PSET and PRESET - no idea why
+;       this will need to be resolved when implementing PSETB snd PRESETB
+;    cp      'B'
+;    jr      z,ST_PSETB
     call    SCAND                 ; Parse (X,Y)
     call    scale_xy              ; Convert X,Y
     ld      a,1   
@@ -15,6 +19,8 @@ ST_PSET:
     jp      RSETCC    
     
 ST_PRESET:    
+;    cp      'B'
+;    jr      z,ST_PRESETB
     call    SCAND                 ; Parse (X,Y)
     call    scale_xy              ; Convert X,Y
     ld      a,0   
@@ -74,3 +80,17 @@ scale_xy:
     or      $A0                   ; and return it with
     xor     (hl)                  ; bits 5 and 7 cleared
     ret                           ;
+
+ST_PSETB:
+    or      a,$FF                 
+    push    af                    ; Stack = Mode, RtnAdr
+    rst     CHRGET
+    call    SCAND                 ; BC = X, DE = Y
+    
+    
+ST_PRESETB:
+    xor     a
+    push    af                    ; Stack = Mode, RtnAdr
+    rst     CHRGET
+    call    SCAND                 ; BC = X, DE = Y
+    

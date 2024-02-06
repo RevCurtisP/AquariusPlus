@@ -810,7 +810,7 @@ page_check_write:
     cp      32                    ; If below main RAM
     jr      c,set_zero_flag       ;   error out
 page_check_read:
-    cp      64                    ; If above main RAM
+    cp      60                    ; If above main RAM
     jr      nc,set_zero_flag      ;   error out
 _page_ok
     cp      $FF                   ; Clear zero flag

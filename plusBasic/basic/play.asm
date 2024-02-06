@@ -33,8 +33,10 @@ ST_PLAY_SAMPLE:
     cp      '@'
     jr      nz,.not_page          ; If followed by @
     call    req_page_arg          ;   A = Page
-    cp      40                    ;   If reserved page
+    cp      32                    ;  If not RAM page
     jp      c,FCERR               ;     Illegal quantity error
+    cp      50                    ;   If reserved page
+    jp      nc,FCERR              ;     Illegal quantity error
     push    af                    ;     Stack = Page, RtnAdr
     ld      de,0                  ;   Default Address to 0
     call    CHRGT2                ;   Reget character
