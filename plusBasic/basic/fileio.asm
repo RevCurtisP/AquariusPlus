@@ -230,6 +230,8 @@ file_load_screen:
     ld      bc,2048
     ld      de,SCREEN
     call    esp_read_bytes
+    ret
+;ToDo: For extended SCP formats, load into buffer first
     ret     m
 ; Read second 2k into scratch RAM
     ld      a,RAM_BAS_3
