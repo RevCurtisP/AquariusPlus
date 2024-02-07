@@ -1,0 +1,104 @@
+# plusBASIC Quick Reference Guide
+
+## Statement and functions
+ - **ASC(_string_)** - Returns the ASCII value of the first character of _string_.
+ - **ASC$(_hex_string_)** - Converts _hex_string_ to an ASCII string.
+ - **CALL _address_ {ARGS _hl_,_de_,_bc_,_a_}** - Executes machine language routine at address, optionally passing arguments into the associated registers.
+ - **CLS {_fgcolor_,_bgcolor_}** - Clears the text screen.
+ - **COMPARE (*_array_,*_array_)** - Compares the binary contents of two numeric arrays.
+ - **COMPARE ({@_page_,}_address_,{@_page_,}_address_,_length_)** - Compares two blocks of memory.
+ - **COPY** - Copies text screen to serial printer.
+ - **COPY {@_page_,}_address_,_length_ TO {@_page_,}_address_ {FAST}** - Copies bytes from one section of memory to another.
+ - **DATE$** - Returns the current date.
+ - **DATETIME$** - Returns the current date and time.
+ - **DEEK({@_page_,}_address_)** - Reads integer from memory.
+ - **DEF ATTRLIST _strvar_=_attr_,...** - Creates a string list of sprite and/or tile attributes.
+ - **DEF INTLIST _strvar_=_integer_,...** - Creates a string list of integers.
+ - **DEF PALETTELIST _strvar_=_palette_,...** - Creates a string list of palette numbers.
+ - **DEF RGBLIST _strvar_=_r_,_g_,_b_;...** - Creates a string list of RGB values.
+ - **DEF TILELIST _strvar_=_tileno_,...** - Creates a string list of palatte indexes.
+ - **DOKE {@_page_,}_address_,_integer_** - Writes integer to memory.
+ - **FILL {@_page_},_address_,_oount_,_byte_** - Fills block of memory with byte.
+ - **FILL {@_page_},_address_,_oount_,WORD _integer_** - Fills block of memory with integer.
+ - **FILL SCREEN {(_x_,y_)-(_x_,_y_)} {CHR _character_} {COLOR fgcolor, bgcolor}** - Fill screen with character and/or colors.
+ - **FILL TILEMAP {(_x_,y_)-(_x_,_y_)} TILE _tileno_ {ATTR _attrs_} {PALETTE _palette_}** - Fill tilemap with specified tile, attributes and palette.
+ - **GET ARGS _var_,...** - Reads arguments from argument list after `GOSUB`.
+ - **GET SCREEN (_x_,y_)-(_x_,_y_) {CHR|ATTR} \*_array_|^_strvar_** - Copies text screen clip to array or string variable.
+ - **GET TILEMAP (_x_,y_)-(_x_,_y_) \*_array_|^_strvar_** - Copies tilemap clip to array or string variable.
+ - **GETKEY** - Wait for key an return ASCII code.
+ - **GETKEY$**  - Wait for key and return as string.
+ - **GETPALETTE$(_palette_)** - Returns palette contents.
+ - **GETSPRITE$(_spritedef_)** - Returns attributes of each spritle in the spritedef.
+ - **GETTILE$(_tileno_)** - Returns tile pixels.
+ - **HEX$(_number_)** - Converts byte or integer into hexadecimal string.
+ - **HEX$(_string_)** - Converts ASCII string into hexadecimal string.
+ - **IN(_port_) ** - Reads a Z80 I/O port.
+ - **INKEY** - Returns ASCII code of most recently pressed key.
+ - **INKEY$** - Returns most recently pressed key as string.
+ - **JOY(_stick)** - Reads one or both game controllers.
+ - **LOAD _filespec_** - Loads BASIC program into memory.
+ - **LOAD _filespec_,{@_page_,}_address_** - Load binary file into memory.
+ - **LOAD _filespec_,\*_array_** - Loads file data into numeric or string array.
+ - **LOAD BITMAP** - _not implemented_
+ - **LOAD CHRSET _filespec_** - Loads character set into alternate character buffer.
+ - **LOAD FNKEYS _filespec_** - Loads function key definitions from file.
+ - **LOAD PALETTE _p_,_filespec_** - Loads file data ino palette.
+ - **LOAD PT3 _filespec_** - Loads PT3 track into PT player buffer.
+ - **LOAD SCREEN _filespec_** - Loads file data screen.
+ - **LOAD STRING** - _not implemented_
+ - **LOAD TILEMAP** - _not implemented_
+ - **LOCATE _x_,_y_** - Moves text cursor to specified position.
+ - **LOOP PT3 {_filespec_}** - Plays specified or previously loaded PT3 track repeatedly.
+ - **ON _expression_ GOSUB _lineref_,...** - `GOSUB` one of several line numbers based on _expression_.
+ - **ON _expression_ GOTO _lineref_,...** - `GOTO` one of several line numbers based on _expression_.
+ - **ON ERROR GOTO _lineref_** - Enable or disable error trapping.
+ - **OUT _port_,_byte_** - Writes to a Z80 port.
+ - **PAUSE PT3** - Pauses currently playing PT3 track.
+ - **PEEK({@_page_,}_address_)** - Reads byte from memory.
+ - **PEEK$({@_page_,}_address_,_length_)** - Reads string from memory.
+ - **PEEKCOLOR(_address_)** - Reads byte from color RAM.
+ - **PEEKCOLOR$(_address_,_length_)** - Reads string from color RAM.
+ - **PEEKSCREEN(_address_)** - Reads byte from screen RAM.
+ - **PEEKSCREEN$(_address_,_length_)** - Reads string from screen RAM.
+ - **POKE {@_page_,}_address_,_byte_** - Writes byte to memory.
+ - **POKE {@_page_,}_address_,_string_** - Writes string to memory.
+ - **POKE COLOR _address_,_byte_** - Writes byte to color RAM.
+ - **POKE COLOR _address_,_string_** - Writes string to color RAM.
+ - **POKE SCREEN _address_,_byte_** - Writes byte to screen RAM.
+ - **POKE SCREEN _address_,_string_** - Writes string to screen RAM.
+ - **PLAY PT3 {_filespec_}** - Plays specified or previously loaded PT3 track.
+ - **PLAY SAMPLE @_page_,_address_** - Playes digital sample from previously loaded file.
+ - **PUT SCREEN (_x_,y_) {CHR|ATTR} \*_array_|^_strvar_** - Copies clip from array or string variable to text screen.
+ - **PUT TILEMAP (_x_,y_) \*_array_|^_strvar_** - Copies clip from array or string variable to tilemap.
+ - **RESUME PT3** - Resumes playing paused PT3 track.
+ - **RGB$(_r_,_g_,_b_)** - Returns string representing a single palette entry
+ - **SAVE _filespec_ {ASC}** - Saves BASIC program to CAQ or ASCII file.
+ - **SAVE _filespec_,{@_page_,}_address_,_length_** - Saves memory to binary file.
+ - **SAVE _filespec_,\*_array_** - Saves numeric or string array data to file.
+ - **SAVE FNKEYS _filespec_** - Saves function key definitions to file.
+ - **SAVE PALETTE _p_,_filespec_** - Saves palette contents to file.
+ - **SAVE SCREEN** - _Not implemented_
+ - **SCREEN {_text_},{_graphics_},{_sprites_},{_priority_},{_remap_}** - Sets screen mode.
+ - **SET COLOR _fgcolor_,_bgcolor_** - Enables color printing mode
+ - **SET COLOR OFF** - Disables color printing mode
+ - **SET FAST ON|OFF** - Enables or disables turbo mode.
+ - **SET FNKEY _key_ TO _string_** - Sets auto-typed text when function key is pressed.
+ - **SET PALETTE _palette_{,_index_} TO _rgblist_** - Set palette entries.
+ - **SET SAVE ASC ON|OFF** - Enables or disables forcing saving of BASIC programs in ASCII format.
+ - **SET SPRITE _spritedef_ {ON|OFF} {POS _x_,_y_} {TILE _tilelist_} {PALETTE _palettelist_} {ATTR _attrlist_}** - Sets sprite properties.
+ - **SET SPRITE _spritedef_ TILECLIP \*_array_|^_strvar_** - Sets sprite to tile indexes and properties in tilemap clip.
+ - **SET SPRITE _spritedef_ TO _proplist_** - Sets sprite properties from combined properties list.
+ - **SET SPRITE \* OFF|CLEAR** - Disables or clears all sprites.
+ - **SET TILE _tileno_ TO _tiledata_** - Writes tile definition video RAM.
+ - **SET TILEMAP (_x_,_y_) TO TILE _tileno_ {ATTR _attrs_} {PALETTE _palette_}** - Sets tilemap cell to tile index, attributes, and palette.
+ - **SET TILEMAP (_x_,_y_) TO _integer_** - Sets tilemap cell to integer represeting combined tile index, attributes, and palette.
+ - **SET TILEMAP OFFSET _x_,_y_** - Scrolls tilemap to specified position.
+ - **STOP** - Interrupts program execution.
+ - **STOP PT3** - Stops currently playing PT3 track.
+ - **TIME$** - Returns the current time.
+ - **TIMER** - Returns timer count.
+ - **TIMER = _expression_** - Sets/starts jiffy timer.
+ - **USE CHRSET _0_|_1_|_filespec_** - Copies specified character set to character RAM.
+ - **VER(_expression_)** - Return System or plusBASIC version as integer.
+ - **VER$(_expression_)** - Return System or plusBASIC version as printable string.
+ 
