@@ -57,7 +57,7 @@
  - **EDIT {_lineref_}** - _Not implemented_
  - **END** - Terminates program execution.
  - **EVAL(_string_)** - Evaluates expression in string.
- - **EXP(_float_) - Returns argument to the power of mathematical constant _e_.
+ - **EXP(_float_)** - Returns argument to the power of mathematical constant _e_.
  - **FILEDIR$(_filespec_)** - Extracts path from filespec. 
  - **FILEEXT$(_filespec_)** - Extracts extension from filespec.
  - **FILL {@_page_},_address_,_oount_,_byte_** - Fills block of memory with byte.
@@ -65,7 +65,7 @@
  - **FILL SCREEN {(_x_,y_)-(_x_,_y_)} {CHR _character_} {COLOR fgcolor, bgcolor}** - Fill screen with character and/or colors.
  - **FILL TILEMAP {(_x_,y_)-(_x_,_y_)} TILE _tileno_ {ATTR _attrs_} {PALETTE _palette_}** - Fill tilemap with specified tile, attributes and palette.
  - **FOR _var_=_expression_ TO _expression_ {STEP _expression_]** - Initiates a _FOR_ loop.
- _ **FRE(_float_|_string_)** - Returns amount of unused variable and array or string space (after forcing garage collection).
+ - **FRE(_float_|_string_)** - Returns amount of unused variable and array or string space (after forcing garage collection).
  - **GET ARGS _var_{,...}** - Reads arguments from argument list after `GOSUB`.
  - **GET SCREEN (_x_,y_)-(_x_,_y_) {CHR|ATTR} \*_array_|^_strvar_** - Copies text screen clip to array or string variable.
  - **GET TILEMAP (_x_,y_)-(_x_,_y_) \*_array_|^_strvar_** - Copies tilemap clip to array or string variable.
@@ -200,7 +200,7 @@
  - **STR$(_float_)** - Converts floating point number to ASCII string.
  - **STRING$(_length_{,_byte_|_string_})** - Creates string of repeated character.
  - **SWAP BITMAP|TILEMAP|PALETTE _palette_{,...}** - _Not implemented_
- - **SWAP VARS _var_,_var_ - _Not implemented_
+ - **SWAP VARS _var_,_var_** - _Not implemented_
  - **TAN(_float_)** - Returns tangent of argument.
  - **TILEMAP(_x_,_y_)** - Returns tile index and properties in tile cell.
  - **TILEMAPX** - Returns X-offset of tilemap.
@@ -216,7 +216,7 @@
  - **TRON** - Enables line tracing.
  - **TROFF** - Disables line tracing.
  - **USE CHRSET _0_|_1_|_filespec_** - Copies specified character set to character RAM.
- - **USR(_expression_) - Calls user-defined machine language routine passing argument and returning result.
+ - **USR(_expression_)** - Calls user-defined machine language routine passing argument and returning result.
  - **VAL(_float_)** - Converts ASCII string to floating point number.
  - **VER(_expression_)** - Return System or plusBASIC version as integer.
  - **VER$(_expression_)** - Return System or plusBASIC version as printable string.
