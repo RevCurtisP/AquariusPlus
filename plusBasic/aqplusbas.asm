@@ -825,8 +825,6 @@ _read_key:
     jp      key_read_ascii    ; Read key from keyboard and return
 
 
-free_rom_2k = hook_table - $
-
 ; ------------------------------------------------------------------------------
 ;  Hook Jump Table
 ; ------------------------------------------------------------------------------
@@ -956,6 +954,8 @@ aux_line_print:
 ;-----------------------------------------------------------------------------
     assert !($3000<>$)   ; Incorrect ROM! length
 
+free_rom_sys = $4000 - $
+
 ;-----------------------------------------------------------------------------
 ; plusBASIC Statements, Functions, and Operators
 ;-----------------------------------------------------------------------------
@@ -991,7 +991,7 @@ aux_line_print:
 
     assert !($FFFF<$)   ; ROM full!
 
-    free_rom_16k = $10000 - $
+    free_rom_ext = $10000 - $
 
     dc $10000-$,$76
 
@@ -1014,7 +1014,7 @@ aux_line_print:
     include "screen_swap.asm"   ; Screen buffering routines
     include "tile.asm"          ; Tile graphics module
 
-    free_rom_8k = $D800 - $
+    free_rom_aux = $10000 - $
 
     dc $D800-$,$76              ; PT3 Player Binary goes here
 
