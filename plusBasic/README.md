@@ -79,7 +79,7 @@
  - **HEX$(_number_)** - Converts byte or integer into hexadecimal string.
  - **HEX$(_string_)** - Converts ASCII string into hexadecimal string.
  - **IF _expression_ GOTO _linefref_|THEN _lineno_|_statement_** - Branch to line or execute statements if expression evaluates to true.
- - **IN(_port_) ** - Reads a Z80 I/O port.
+ - **IN(_port_)** - Reads a Z80 I/O port.
  - **INT(_expression_)** - Returns expression rounded down to nearest integer.
  - **INKEY** - Returns ASCII code of most recently pressed key.
  - **INKEY$** - Returns most recently pressed key as string.
