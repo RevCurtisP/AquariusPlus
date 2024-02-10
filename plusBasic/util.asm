@@ -3,6 +3,9 @@
 ;-----------------------------------------------------------------------------
 ; Discard top entry on stack and return
 ;-----------------------------------------------------------------------------
+discard2ret:
+    inc     sp
+    inc     sp
 discard_ret:
     inc     sp
     inc     sp
@@ -131,7 +134,7 @@ free_addr_len:
 ;-----------------------------------------------------------------------------
 ; Get string address and length from string descriptor
 ;  Input: HL: String descriptor of string
-; Output: BC: String length
+; Output: BC: String length (flags set accordingly)
 ;         DE: String text address
 ;-----------------------------------------------------------------------------
 string_addr_len:
@@ -144,7 +147,9 @@ string_addr_len:
     inc hl                        ;;
     ld      d,(hl)                ;; Get Text Address LSB
     pop     hl                    ;;
-    ret                           ;;
+    ld      a,b
+    or      c                     ;; Set flags for length
+    ret                           
 
 ;-----------------------------------------------------------------------------
 ; Compare uppercased string to another string

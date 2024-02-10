@@ -17,6 +17,17 @@
 232 GOSUB _peek_err:ARGS 65536,5
 234 GOSUB _assert_err:ARGS "PEEK(`string`)",13
 
+240 GOSUB _pause
+
+250 GOSUB _title:ARGS "POKE & PEEK string"
+252 GOSUB _output:ARGS LIST$(NEXT)
+253 POKE $3026,'!':POKE $3020,"String"
+254 GOSUB _assert:ARGS "PEEK$($3020)=`String`"
+255 GOSUB _assert:ARGS "PEEK($3026)='!'"
+256 GOSUB _output:ARGS LIST$(NEXT)
+257 POKE $3026,""
+258 GOSUB _assert:ARGS "PEEK($3026)='!'"
+
 280 GOTO 300
 282 _poke:GETARGS PA,PB:GOSUB _output:ARGS "POKE %%,%%" % (PA,PB):POKE PA,PB:RETURN
 284 _peek:GETARGS PA,PB:GOSUB _assert:ARGS "PEEK(%%)=%%" % (PA,PB):RETURN
@@ -32,6 +43,8 @@
 330 GOSUB _peekw_err:ARGS -65536,5
 332 GOSUB _peekw_err:ARGS 65536,5
 334 GOSUB _assert_err:ARGS "DEEK(`string`)",13
+
+370 GOSUB _pause
 
 380 GOTO 400
 382 _pokew:GETARGS PA,PB:GOSUB _output:ARGS "DOKE %%,%%" % (PA,PB):DOKE PA,PB:RETURN
@@ -52,10 +65,10 @@
 
 430 GOSUB _pokewp_err:ARGS 20,16383,11,6:REM Overflow end of RAM page
 432 GOSUB _pokewp_err:ARGS 21,16383,22,6
-434 GOSUB _pokewp_err:ARGS 63,16383,33,6
+434 GOSUB _pokewp_err:ARGS 63,16383,33,5
 440 GOSUB _peekwp_err:ARGS 20,16383,6
 442 GOSUB _peekwp_err:ARGS 21,16383,6
-444 GOSUB _peekwp_err:ARGS 63,16383,6
+444 GOSUB _peekwp_err:ARGS 63,16383,5
 
 450 GOSUB _pokep_err:ARGS 0,16384,6,5:REM Illegal Address in Page
 452 GOSUB _pokewp_err:ARGS 0,16384,44,5

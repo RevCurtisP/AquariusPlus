@@ -59,7 +59,7 @@ file_trim_dir:
     jr      z,.no_dir             ; If NamAdr <> StrAdr
     ld      a,c
     or      a
-    jr      pop2hl_ret 
+    jr      pop2hlr_aux 
 
 .no_dir
     pop     bc                    ; BC = StrLen; ; Stack = StrAdr, RtnAdr
@@ -92,7 +92,7 @@ file_get_dir:
     xor     a                     ; Else
     ld      b,a                   ;   A,BC = 0
     ld      c,a
-pop2hl_ret:
+pop2hlr_aux:
     pop     hl                    ; Stack = StrAdr, RtnAdr
     pop     hl                    ; Stack = RtnAdr
     ret
