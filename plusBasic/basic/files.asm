@@ -502,7 +502,9 @@ ST_LOAD:
     jr      nz, .basic              ; No parameter -> load as basic program
     rst     CHRGET
     cp      MULTK                   ; Token for '*'
-    jp      z, .array               ; Array parameter -> load as array
+    jr      z,.array                ; Array parameter -> load as array
+    cp      EXPTK
+    jr      z,.string
 
 
 ; Load raw binary to address
@@ -552,11 +554,27 @@ ST_LOAD:
 
 .array:
     call    get_array_argument
+    call    GETYPE
     jp      load_caq_array
+    
 
 .basic:
     ex      (sp),hl               ; HL = String Descriptor, Stack = Text Pointer
     jp      load_basic_program
+
+; LOAD "t/stringtest.str",^L$
+.string
+    rst     CHRGET                ; Skip ^
+    call    get_stringvar         ; DE = VarPtr
+    ex      (sp),hl               ; HL = NamDsc; Stack = TxtPtr, RtnAdr
+    push    de                    ; Stack = VarPtr, TxtPtr, RtnAdr
+    ld      iy,file_load_strbuf   ; Load file into StrBuf
+    call    aux_call              ; A = Result, BC = StrLen, HL = BufAdr
+    jp      m,_dos_error
+    ld      a,c
+    call    strbuf_temp_str       ; BC = StrLen, DE = StrAdr, HL = StrDsc
+    push    hl                    ; Stack = StrDsc, VarPtr, TxtPtr
+    jp      INBUFC                ; Copy Temporary to Variable and return
 
 ;-----------------------------------------------------------------------------
 ; Load BASIC Program in ASCII format
@@ -720,6 +738,7 @@ load_caq_array:
     ex      (sp),hl               ; HL = String Descriptor, Stack = Text Pointer
     push    bc                    ; Stack = AryLen, TxtPtr, RtnAdr
     push    de                    ; stack = AryAdr, AryLen, TxtPtr, RtnAdr
+    jr      z,load_string_array
 
     call    _open_read
 
@@ -741,12 +760,45 @@ load_caq_array:
     pop     de                    ; DE = AryAdr; Stack = AryLen, TxtPtr, RtnAdr
     pop     bc                    ; BC = AryLen; Stack = TxtPtr, RtnAdr
     call    esp_read_bytes
-
-    ; Close file
     call    esp_close_all
-
     pop     hl
     ret
+
+load_string_array:
+    call    _open_read
+.loop
+    call    esp_read_byte         ; B = StrLen
+    jp      m,_dos_error          
+    ld      a,b
+    push    af                    ; Stack = StrLen, AryPtr, AryLen, TxtPtr, RtnAdr
+    call    GETSPA                ; DE = StrAdr
+    call    FRETMS                ; Free temporary but not string space
+    pop     af                    ; A = StrLen; Stack = AryPtr, AryLen, TxtPtr, RtnAdr
+    ld      c,a
+    ld      b,0                   ; BC = StrLen
+    push    de                    ; Stack = StrAdr, AryPtr, AryLen, TxtPtr, RtnAdr
+    call    esp_read_bytes        ; BC = StrLen
+    pop     de                    ; DE = StrAdr; Stack = AryPtr, AryLen, TxtPtr, RtnAdr
+    pop     hl                    ; HL = AryPtr; Stack = AryLen, TxtPtr, RtnAdr
+    ld      (hl),c
+    inc     hl
+    ld      (hl),b                ; Write StrLen to array entry
+    inc     hl
+    ld      (hl),e
+    inc     hl
+    ld      (hl),d                ; Write StrAdr to array entry
+    inc     hl
+    pop     bc                    ; BC = AryLen; Stack = TxtPtr, RtnAdr
+    dec     bc
+    dec     bc
+    dec     bc
+    dec     bc                    ; 
+    ld      a,b
+    or      c
+    jp      z,_close_pop_ret
+    push    bc                    ; Stack = AryLen, TxtPtr, RtnAdr
+    push    hl                    ; Stack = AryPtr, AryLen, TxtPtr, RtnAdr
+    jr      .loop
 
 ;-----------------------------------------------------------------------------
 ; Get array argument
@@ -754,32 +806,8 @@ load_caq_array:
 get_array_argument:
     ; Skip '*' token
     inc     hl
+    jp      get_array
 
-    ; Get pointer to array variable
-    ld      a, 1
-    ld      (SUBFLG), a         ; Set array flag
-    call    PTRGET              ; Get array (out: BC = pointer to number of dimensions, DE = next array entry)
-    ld      (SUBFLG), a         ; Clear array flag
-    jp      nz,UDERR            ; FC Error if array not found
-    call    CHKNUM              ; TM error if not numeric
-
-    ; Get start address and length of array
-    push    hl                  ; Push BASIC text pointer
-    ld      h, b
-    ld      l, c                ; HL = address
-    ld      c, (hl)
-    ld      b, 0                ; BC = index
-    add     hl, bc
-    add     hl, bc
-    inc     hl                  ; HL = array data
-    dec     de
-    dec     de                  ; Subtract array header to get data length
-    dec     de
-    ld      b,d
-    ld      c,e                 ; BE = length
-    ex      de,hl               ; DE = address
-    pop     hl                  ; Pop text pointer
-    ret
 
 _load_fnkeys:
     call    _set_up_fnkeys
@@ -1067,8 +1095,10 @@ ST_SAVE:
     cp      ','
     jp      nz, save_basic_program
     rst     CHRGET
+    cp      EXPTK
+    jp      z,.string               ; Load to string
     cp      $AA                     ; Token for '*'
-    jp      z, .array               ; Array parameter -> save array
+    jr      z,.array                ; Array parameter -> save array
     cp      ASCTK
     jp      z,save_ascii_program
 
@@ -1111,6 +1141,7 @@ ST_SAVE:
 
     ; Do the save
     jr      c,.save_paged
+.do_bin
     ld      iy,file_save_binary
     call    aux_call
     jp      m,_dos_error
@@ -1142,7 +1173,20 @@ ST_SAVE:
     ; Save array
 .array:
     call    get_array_argument
+    call    GETYPE
     jp      save_caq_array
+
+; S$="Test string"
+; SAVE "t/stringtest.str",^S$
+.string
+    rst     CHRGET                ; Skip ^
+    call    get_stringvar         ; DE = VarAdr
+    ex      (sp),hl               ; HL = NamDsc; Stack = TxtPtr, RtnAdr
+    push    hl                    ; Stack = NamDsc, TxtPtr, RtnAdr
+    ex      de,hl                 ; HL = VarAdr
+    call    string_addr_len       ; BC = StrLen, DE = StrAdr
+    pop     hl                    ; HL = NamDsc; Stack = TxtPtr, RtnAdr
+    jr      .do_bin               ; Save it
 
 ;-----------------------------------------------------------------------------
 ; Save basic program in ASCII format
@@ -1245,11 +1289,11 @@ save_basic_program:
 ;-----------------------------------------------------------------------------
 ; DIM A(99)
 ; SAVE "/t/array.caq",*A
-
 save_caq_array:
     ex      (sp),hl               ; HL = StrDsc, Stack = TxtPtr, RtnAdr
     push    bc                    ; Stack = AryLen, TxtPtr, RtnAdr
-    push    de                    ; stack = AryAdr, AryLen, TxtPtr, RtnAdr
+    push    de                    ; Stack = AryAdr, AryLen, TxtPtr, RtnAdr
+    jr      z,save_string_array
     call    _open_write           ; Create file
 
     ; Write CAQ header
@@ -1257,26 +1301,54 @@ save_caq_array:
     ld      bc, 13
     call    esp_write_bytes
     ld      bc, 6
-    ld      de, .array_filename   ; Filename
+    ld      de, _array_filename   ; Filename
     call    esp_write_bytes
 
     ; Write array data
     pop     de                    ; DE = AryAdr; Stack = AryLen, TxtPtr, RtnAdr
     pop     bc                    ; BC = AryLen; Stack = TxtPtr, RtnAdr
     call    esp_write_bytes
-
     ; Write trailer
     ld      bc,15
     ld      e,0
     call    esp_write_repbyte
 
-    ; Close file
+_close_pop_ret:
     call    esp_close_all
-
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     ret
 
-.array_filename: db "######"
+_array_filename: db "######"
+
+;-----------------------------------------------------------------------------
+; Save string array
+;-----------------------------------------------------------------------------
+; DIM A$(9)
+; SAVE "/t/sa.sta",*A$
+save_string_array:
+    call    _open_write           ; Create file
+    pop     hl                    ; HL = AryPtr; Stack = AryLen, TxtPtr, RtnAdr
+.strloop
+    call    string_addr_len       ; DE = StrAdr, BC = StrLen
+    push    hl                    ; Stack = AryPtr, AryLen, TxtPtr, RtnAdr
+    ld      a,c             
+    call    esp_write_byte        ; Write string length
+    call    esp_write_bytes       ; Write string data
+    pop     hl                    ; HL = AryPtr; Stack = AryLen, TxtPtr, RtnAdr
+    pop     de                    ; DE = AryLen; Stack = TxtPtr, RtnAdr
+    ld      b,4                   
+.nextloop
+    inc     hl
+    dec     de
+    djnz    .nextloop
+    ld      a,d
+    or      e
+    jr      z,_close_pop_ret
+    push    de                    ; Stack = AryLen, TxtPtr, RtnAdr
+    jr      .strloop
+
+
+
 
 ;-----------------------------------------------------------------------------
 ; Check for sync sequence (12x$FF, 1x$00)

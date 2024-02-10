@@ -1,1 +1,1 @@
-curl -T zout\sysrom.bin http://aqplus/
+curl -T zout/sysrom.bin http://aqplus
