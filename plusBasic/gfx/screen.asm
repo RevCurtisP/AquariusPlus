@@ -63,6 +63,7 @@ screen_write_string:
 _screen_string:
     push    de                    ; Stack = AdrOfs, RdWrt, RtnAdr
     call    string_addr_len       ; BC = StrLen, DE = StrAdr
+    jp      z,discard2ret         ; If null string, clear stack and return
     pop     hl                    ; HL = AdrOfs; Stack = RdWrt, RtnAdr
     push    de                    ; Stack = StrAdr, RdWrt, RtnAdr
     push    hl                    ; Stack = AdrOfs, StrAdr, RdWrt, RtnAdr
@@ -153,10 +154,11 @@ color_read_string:
 color_write_string:
     or      $FF                   ; NZ = Write
 _color_string:
-    push    af                    
+    push    af                    ; Stack = RdWrt, RtnAdr
     pop     ix                    ; IX = RdWrt
-    push    de                    ; Stack = AdrOfs, RdWrt, RtnAdr
+    push    de                    ; Stack = AdrOfs, RtnAdr
     call    string_addr_len       ; BC = StrLen, DE = StrAdr
+    jp      z,discard_ret         ; If null string, clear stack and return
     pop     hl                    ; HL = AdrOfs; Stack = RdWrt, RtnAdr
     push    de                    ; Stack = StrAdr, RdWrt, RtnAdr
     push    hl                    ; Stack = AdrOfs, StrAdr, RdWrt, RtnAdr

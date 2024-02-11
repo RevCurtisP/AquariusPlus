@@ -33,8 +33,10 @@ ST_PLAY_SAMPLE:
     cp      '@'
     jr      nz,.not_page          ; If followed by @
     call    req_page_arg          ;   A = Page
-    cp      40                    ;   If reserved page
+    cp      32                    ;  If not RAM page
     jp      c,FCERR               ;     Illegal quantity error
+    cp      50                    ;   If reserved page
+    jp      nc,FCERR              ;     Illegal quantity error
     push    af                    ;     Stack = Page, RtnAdr
     ld      de,0                  ;   Default Address to 0
     call    CHRGT2                ;   Reget character
@@ -54,12 +56,27 @@ ST_PLAY_SAMPLE:
 ;-----------------------------------------------------------------------------
 ; PLAY PT3 Statement
 ;-----------------------------------------------------------------------------
-;load pt3 "/music/songs1/dontstop.pt3"
-;play pt3
+; LOOP pt3 "/music/songs1/dontstop.pt3"
+; LOOP PT3
+ST_LOOP_PT3:
+    rst     CHRGET                ; Skip PT3
+    ld      a,(EXT_FLAGS)
+    or      PT3_LOOPS             ; Set repeat flag
+    jr      _play_pt3
+;-----------------------------------------------------------------------------
+; PLAY PT3 Statement
+;-----------------------------------------------------------------------------
+; play pt3 "/music/songs1/dontstop.pt3"
+; play pt3
 ST_PLAY_PT3
     rst     CHRGET                ; Skip PT3
-    
-    
+    ld      a,(EXT_FLAGS)
+    and     $FF-PT3_LOOPS         ; Clear repeat flag
+_play_pt3:
+    ld      (EXT_FLAGS),a
+    call    CHRGT2
+    call    nz,load_pt3
+.play
     push    hl
     call    pt3_start
     pop     hl

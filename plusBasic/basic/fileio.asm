@@ -59,7 +59,7 @@ file_trim_dir:
     jr      z,.no_dir             ; If NamAdr <> StrAdr
     ld      a,c
     or      a
-    jr      pop2hl_ret 
+    jr      pop2hlr_aux 
 
 .no_dir
     pop     bc                    ; BC = StrLen; ; Stack = StrAdr, RtnAdr
@@ -92,7 +92,7 @@ file_get_dir:
     xor     a                     ; Else
     ld      b,a                   ;   A,BC = 0
     ld      c,a
-pop2hl_ret:
+pop2hlr_aux:
     pop     hl                    ; Stack = StrAdr, RtnAdr
     pop     hl                    ; Stack = RtnAdr
     ret
@@ -152,16 +152,16 @@ file_load_binary:
 ; Output: A: Result
 ; Clobbered registers: BC,DE,HL
 ;-----------------------------------------------------------------------------
-file_load_chrset:
+file_load_defchrs:
+    ld      de,DEFCHRSET
+    jr      _load_chrset
+file_load_altchrs:
+    ld      de,ALTCHRSET
+_load_chrset
     ld      a,BAS_BUFFR
     ld      bc,CHRSETLEN
-    ld      de,CHRSETBUF
-    call    file_load_paged
-    ret     z                     ; Illegal page
-    ret     c                     ; Page overflow
-    ret     m                     ; I/O error
-    jp      custom_chrset
-
+    jp      file_load_paged
+    
 ;-----------------------------------------------------------------------------
 ; Load binary file into paged memory`
 ; Input: A: Page
@@ -188,7 +188,6 @@ file_load_paged:
     call    dos_close
     pop     af                    ; AF = Result; Stack = RtnAdr
     ret
-
 
 ;-----------------------------------------------------------------------------
 ; Load ROM file into page 35
@@ -231,6 +230,8 @@ file_load_screen:
     ld      bc,2048
     ld      de,SCREEN
     call    esp_read_bytes
+    ret
+;ToDo: For extended SCP formats, load into buffer first
     ret     m
 ; Read second 2k into scratch RAM
     ld      a,RAM_BAS_3
@@ -253,10 +254,11 @@ file_load_screen:
 ; Flags Set: S if I/O error
 ; Clobbered: BC,DE,HL,IX,IY
 ;-----------------------------------------------------------------------------
+; LOAD PT3 "/music/songs1/drops.pt3"
 file_load_pt3:
     ld      a,PT3_BUFFR
-    ld      de,$0400
-    ld      bc,$4000-$0400
+    ld      de,pt3song
+    ld      bc,$4000-pt3song
     call    file_load_paged
     push    af
     call    pt3_reset

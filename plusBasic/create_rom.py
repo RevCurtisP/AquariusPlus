@@ -14,27 +14,34 @@ import argparse
 # 4000 - 7FFF  C000 - FFFF    plusBASIC 16k
 # 8000 - A000  8000 - A000    plusBASIC 8k (swapped in)
 
-with open("zout/aquarius.rom", "wb") as f:
-    # Aquarius S3 BASIC ROM with Aquarius+ options
-    with open("..\s3basic\s3basic-aqplus.cim", "rb") as fbasic:
-        s3rom = bytearray(fbasic.read())
-        f.write(s3rom)
+def export(bin_name,include_chrset):
 
-    # Extended ROM $2000 - $2FFF
-    with open("zout/aqplusbas.cim", "rb") as fplus:
-        plusrom = bytearray(fplus.read())
-        f.write(plusrom[:4096])
-
-    # Aquarius Character ROM
-    with open("../charROMs/aqpluschar.rom", "rb") as fchar:
-        charrom = bytearray(fchar.read())
-        f.write(charrom)
-
-    # Extended ROM $C000 -
+    with open(bin_name, "wb") as f:
+        # Aquarius S3 BASIC ROM with Aquarius+ options
+        with open("..\s3basic\s3basic-aqplus.cim", "rb") as fbasic:
+            s3rom = bytearray(fbasic.read())
+            f.write(s3rom)
+    
+        # Extended ROM $2000 - $2FFF
+        with open("zout/aqplusbas.cim", "rb") as fplus:
+            plusrom = bytearray(fplus.read())
+            f.write(plusrom[:4096])
+    
+        if include_chrset:
+            # Aquarius Character ROM
+            with open("../charROMs/aqpluschar.rom", "rb") as fchar:
+                charrom = bytearray(fchar.read())
+                f.write(charrom)
+    
+        # Extended and auxiliary ROM $C000 -
         f.write(plusrom[4096:])
+    
+        # PT3 Player binary
+        with open("pt3player/zout/main.cim", "rb") as fpt3:
+            pt3play = bytearray(fpt3.read())
+            f.write(pt3play)
 
-    # PT3 Player binary
-    with open("pt3player/zout/main.cim", "rb") as fpt3:
-        pt3play = bytearray(fpt3.read())
-        f.write(pt3play)
+        f.write(b'\x76' * 8192)
 
+export("zout/sysrom.bin",True)
+export("zout/sysrom_nochr.bin",False)

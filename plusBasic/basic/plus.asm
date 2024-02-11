@@ -89,6 +89,17 @@ FN_GETKEY:
     jp      BUFCIN                ; Else Return String
 
 ;-----------------------------------------------------------------------------
+; LOOP statements stub
+;-----------------------------------------------------------------------------
+ST_LOOP:
+    rst     CHRGET                ; Skip LOOP token
+    rst     SYNCHR
+    byte    XTOKEN
+    cp      PT3TK                 ;   If token is PT3
+    jp      z,ST_LOOP_PT3         ;     Do PAUSE PT3
+    jp      SNERR
+
+;-----------------------------------------------------------------------------
 ; MOUSEB - Returns mouse buttons
 ; MOUSEX - Returns mouse x-position
 ; MOUSEY - Returns mouse y-position
@@ -102,8 +113,11 @@ FN_MOUSE:
     ld      bc,LABBCK
     push    bc                    ; Stack = LABBCK, TxtPtr, RtnAdr
     push    hl                    ; Stack = SfxChr, LABBCK, TxtPtr, RtnAdr
-    call    esp_get_mouse         ; BC = xpos, D = buttons, E = ypos
+    call    esp_get_mouse         ; BC = xpos, D = buttons, E = ypos, L = wheel
     jr      nz,.not_found
+    ld      a,(MOUSEWDLT)
+    add     l                     ; Accumulate mouse wheel delta
+    ld      (MOUSEWDLT),a
     pop     af                    ; AF = SfxChr; Stack = LABBCK, TxtPtr, RtnAdr
     cp      'X'
     jr      z,.xpos
@@ -112,7 +126,7 @@ FN_MOUSE:
     cp      'B'
     jr      z,.buttons
     cp      'W'
-    jr      .wheel
+    jr      z,.wheel
 .snerr:
     jp      SNERR
 .buttons
@@ -128,7 +142,11 @@ FN_MOUSE:
 .xpos:
     jp      FLOAT_BC
 .wheel
-    ld      a,l
+    ld      a,(MOUSEWDLT)
+    ex      af,af'
+    xor     a
+    ld      (MOUSEWDLT),a
+    ex      af,af'
 .signed_byte
     jp      float_signed_byte
 

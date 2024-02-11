@@ -1,1 +1,1 @@
-curl --data-binary @zout\aquarius.rom http://aqplus/sysrom
+curl -T zout/sysrom.bin http://aqplus

@@ -4,11 +4,13 @@
 ; Main File: main.asm
 ;----------------------------------------------------
 
-; Generates a binary file to be included in the plusBASIC ROM
+; Generates a binary file to be loaded into a RAM page
 
-SongData  = $4400               ; (For now)
+BaseAddr  = $C000
+VarsAddr  = BaseAddr+$700
+SongData  = BaseAddr+$A00
 
- org     0xD800                 ; Last 2k of Auxilliary ROM
+ org     BaseAddr               ; PT3 page switched into Bank 3
 
 ;Jump table
       jp      StartPlayer       ; Initialize Player
@@ -43,10 +45,7 @@ PlayQuark:
       jr      nz,StartPlayer
       RET
 
-
-
-
 include  "macros.i"   ; structure macros
 include   PTPlayer.asm
  
-      dc $E000-$,$76
+      dc $VarsAddr-$,$76

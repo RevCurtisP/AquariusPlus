@@ -86,7 +86,7 @@ just_ret:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.20x"
+    db "v0.21m"
 ifdef coredump
     db "_coredump"
 endif
@@ -122,7 +122,7 @@ _reset:
 
 ifdef coredump
     ; Core dump check
-    ld      a,ROM_EXT_PG
+    ld      a,ROM_EXT_RO
     out     (IO_BANK3),a
     jp      core_dump
 endif
@@ -130,20 +130,17 @@ endif
 init_banks:
 
     ; Initialize Banks 1 to 3
-    ld      a, 0 | BANK_OVERLAY | BANK_READONLY
+    ld      a,ROM_SYS_PG | BANK_OVERLAY | BANK_READONLY
     out     (IO_BANK0), a
-    ld      a, 33
+    ld      a,RAM_BAS_1
     out     (IO_BANK1), a
-    ld      a, 34
+    ld      a,RAM_BAS_2
     out     (IO_BANK2), a
 
-    ; Initialize character RAM
-    call    init_charram
-
     ; Call routines in Aux ROM
-    ld      a,2
+    ld      a,ROM_AUX_RO
     out     (IO_BANK3), a
-hl    call    screen_reset          ; Init video mode
+    call    screen_reset          ; Init video mode
 
     ; Initialize ESP
     ld      a, ESPCMD_RESET
@@ -154,7 +151,7 @@ hl    call    screen_reset          ; Init video mode
     call    key_set_keymode
 
     ; Initialize Bank 3
-    ld      a, 19                 ; Cartridge Port
+    ld      a, ROM_CART                 ; Cartridge Port
     out     (IO_BANK3), a
 
     ; Back to system ROM init
@@ -170,9 +167,11 @@ _coldboot:
 ; leaving custom character set buffer untouched
     call    page_set_basbuf
     ld      hl,$C000
-    ld      bc,CHRSETBUF-1
+    ld      bc,DEFCHRSET-1
     call    sys_fill_zero
 
+    call    init_chrsets
+    call    load_ptplay
     call    page_set_plus
     call    spritle_clear_all     ; Clear all sprite properties
     jp      do_coldboot
@@ -189,7 +188,7 @@ _coldboot:
 ; Intercept WRMCON call
 ;-----------------------------------------------------------------------------
 _warm_boot:
-    ld      a, ROM_EXT_PG         ; Page 1 ROM
+    ld      a, ROM_EXT_RO         ; Page 1 ROM
     out     (IO_BANK3), a         ; into Bank 3
     call    esp_close_all
     call    init_bas_fdesc
@@ -254,16 +253,23 @@ pt3call:
     out     (IO_BANK1),a
     in      a,(IO_BANK3)
     push    af                    ; Stack = Bnk3pg, Bnk1pg, RtnAdr
-    ld      a,ROM_AUX_PG
+    ld      a,PT3_BUFFR
     out     (IO_BANK3),a
     call    (jump_iy)
-    call    nz,pt3_disable
+    call    nz,.pt3done
     pop     af                    ; A = Bnk3pg; Stack = Bnk1pg, RtnAdr
     out     (IO_BANK3),a
     pop     af                    ; A = Bnk1pg; Stack = RtnAdr
     out     (IO_BANK1),a
     pop     ix
     ret
+
+.pt3done
+    call    pt3_reset
+    ld      a,(EXT_FLAGS)
+    and     PT3_LOOPS
+    ret     z
+    jp      pt3_start
 
 ;-----------------------------------------------------------------------------
 ; Issue OV Error if TOPMEM will put stack in Bank 1
@@ -464,37 +470,64 @@ sys_fill_word:
     inc     hl                    ; Bump Address
     dec     bc                    ; Count down
     jr      sys_fill_word         ; Do it again
-    
+
+
+default_chrset:
+   xor      a
 ;-----------------------------------------------------------------------------
 ; Copy selected character set into Character RAM
-; Input: A: Character set (0: Standard, 1: Latin-1, 2: Custom)
+; Input: A: Character set (0: Default, 1: Custom)
 ;-----------------------------------------------------------------------------
 select_chrset:
-    or      a                     ; If A = 0
-    jr      z,_reset_charram      ;   Copy standard character set
-    dec     a                     ; If A = 1
-    ld      hl,CHAR_ROM_L1        ;   Copy Latin-1 character set
-    jr      z,_copy_charram       ; Else
-custom_chrset:
-    ld      hl,CHRSETBUF          ;   Copy Custom Character Set
-    ld      a,BAS_BUFFR
-    jr      copy_char_ram         ;
+    ld      hl,DEFCHRSET          ; If A = 0
+    or      a                     ;   Copy standard character set
+    jr      z,.copy               ; Else
+.alt
+    ld      hl,ALTCHRSET          ;   Copy Custom Character Set
+.copy
+    ld      a,BAS_BUFFR           
+    jr      copy_char_ram         
 
 ;-----------------------------------------------------------------------------
-; Character RAM initialization
+; Character ROM buffers initialization
 ;-----------------------------------------------------------------------------
-init_charram:
-    ld      hl,CHAR_ROM_AQ        ; Copy AQUASCII in to Custom Char ROM buffer
-    ld      bc,2048
-    ld      de,CHRSETBUF
-    ld      a,ROM_SYS_PG
-    ex      af,af'
-    ld      a,BAS_BUFFR
-    call    page_fast_copy
-_reset_charram
-    ld      hl,CHAR_ROM_AQ        ; and fall into _copy_charram
-_copy_charram:
-    ld      a,ROM_SYS_PG          ; Set source page and address
+init_chrsets:
+; Copy standard character set into buffer
+    ld      hl,.defdesc
+    ld      iy,file_load_defchrs
+    call    aux_call
+    ld      hl,.altdesc
+    ld      iy,file_load_altchrs
+    jp      aux_call
+
+.defset:
+    byte    "esp:default.chr"
+.defdesc:
+    word    $-.defset,.defset
+.altset:
+    byte    "esp:latin1b.chr"
+.altdesc:
+    word    $-.altset,.altset
+
+;-----------------------------------------------------------------------------
+; Load PT3 player
+;-----------------------------------------------------------------------------
+load_ptplay:
+    ld      a,PT3_BUFFR           ; Page
+    ld      l,0
+    call    page_fill_all_byte    ; Zero out buffer
+
+    ld      a,PT3_BUFFR           ; Page
+    ld      bc,$4000              ; Load up to 16k
+    ld      de,PT3_BASE           ; Start address
+    ld      hl,.ptdesc
+    ld      iy,file_load_paged
+    jp      aux_call
+
+.ptplay:
+    byte    "esp:ptplay.bin"
+.ptdesc:
+    word    $-.ptplay,.ptplay
 
 ;-----------------------------------------------------------------------------
 ; Copy Character ROM into Character RAM
@@ -515,7 +548,7 @@ copy_char_ram:
 _start_cart:
 
     ; Map destination RAM in bank2
-    ld      a, 35
+    ld      a, RAM_BAS_3
     out     (IO_BANK2), a
 
     ; Copy ROM cartridge to RAM
@@ -526,7 +559,7 @@ _start_cart:
 
 descramble_rom:
     ; Map RAM in bank3
-    ld      a, 35
+    ld      a, RAM_BAS_3
     out     (IO_BANK3), a
 
     ; Determine scramble value
@@ -561,20 +594,20 @@ descramble_rom:
 
 .exec_cart:
     ; Reinit banks
-    ld      a, 33
+    ld      a, RAM_BAS_1
     out     (IO_BANK1), a
-    ld      a, 34
+    ld      a, RAM_BAS_2
     out     (IO_BANK2), a
 
 ifdef coredump
-    ld      a,ROM_EXT_PG
+    ld      a,ROM_EXT_RO
     out     (IO_BANK3),a
     jp      RESET
 endif
 
 
     ; Bank3 -> readonly
-    ld      a, 35 | BANK_READONLY
+    ld      a, RAM_BAS_3 | BANK_READONLY
     out     (IO_BANK3), a
 
     ; Turn off Interrupts, Reset Screen, and Remove Hook
@@ -883,7 +916,7 @@ hook_table:                     ; ## caller   addr  performing function
 fast_hook_handler:
     ex      af,af'              ; save AF
     exx                         ; save BC,DE,HL
-    ld      a,ROM_EXT_PG        ; Ensure Extended ROM is paged in
+    ld      a,ROM_EXT_RO        ; Ensure Extended ROM is paged in
     out     (IO_BANK3),a
     pop     hl                  ; get hook return address
     ld      a,(hl)              ; A = byte (RST $30 parameter)

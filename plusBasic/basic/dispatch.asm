@@ -58,6 +58,9 @@ extended_statement:
     jp      z,GSERR
     dec     a                   ; $99 TRO
     jp      z,ST_TRO
+    dec     a                   ; $9A BREAK
+    dec     a                   ; $9B LOOP
+    jp      z,ST_LOOP
     jp      SNERR
    
 extended_function:

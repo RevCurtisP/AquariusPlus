@@ -3,6 +3,9 @@
 ;-----------------------------------------------------------------------------
 ; Discard top entry on stack and return
 ;-----------------------------------------------------------------------------
+discard2ret:
+    inc     sp
+    inc     sp
 discard_ret:
     inc     sp
     inc     sp
@@ -131,7 +134,7 @@ free_addr_len:
 ;-----------------------------------------------------------------------------
 ; Get string address and length from string descriptor
 ;  Input: HL: String descriptor of string
-; Output: BC: String length
+; Output: BC: String length (flags set accordingly)
 ;         DE: String text address
 ;-----------------------------------------------------------------------------
 string_addr_len:
@@ -144,7 +147,9 @@ string_addr_len:
     inc hl                        ;;
     ld      d,(hl)                ;; Get Text Address LSB
     pop     hl                    ;;
-    ret                           ;;
+    ld      a,b
+    or      c                     ;; Set flags for length
+    ret                           
 
 ;-----------------------------------------------------------------------------
 ; Compare uppercased string to another string
@@ -377,8 +382,6 @@ mult_hl_10:
     pop     bc
     ret
 
-
-
 pt3_reset:
     call    pt3_disable
 pt3_init:
@@ -399,12 +402,12 @@ pt3_enable:
 ;----------------------------------------------------------------------------
 ; End background PT3 player interrupts
 ; Input C,DE = Timer count
-; Clobbers: A,B,C
+; Clobbers: A,BC
 ;----------------------------------------------------------------------------
 pt3_disable:
     ld      b,IRQ_PT3PLAY
-    jp      clear_vblank_irq
-    
+    jp     clear_vblank_irq
+      
 ;-----------------------------------------------------------------------------
 ; Look up byte in table
 ; Input: A: Offset

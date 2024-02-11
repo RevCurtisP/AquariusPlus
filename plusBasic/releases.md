@@ -1,4 +1,18 @@
 # plusBASIC Release History
+ - v0.21h 
+   - Modified legal write pages, PLAY SAMPLE allowed pages 
+ - v0.21g 
+   - Reactivated JP descramble_rom in files.asm
+ - v0.21f 
+   - Loads ptplay.bin from ESP: instead of SD card
+ - v0.21e 
+   - Added LOOP PT3 [filename]
+ - v0.21b 
+   - Load default and Latin-1 character sets from ESP filesystem
+ - v0.21a 
+   - Added USE CHRSET filename$, changed Ctrl-O to switch to custom chrset, removed Ctrl-P option
+ - v0.21  
+   - SYSROM loaded in pages 60 through 62 as SoftROM
  - v0.20w 
    - Fixed tokenization bug when RUNing BASIC progam files in ASCII format
  - v0.20v 

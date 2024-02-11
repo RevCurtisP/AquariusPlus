@@ -167,11 +167,15 @@ ST_POKE:
     ex      af,af'
     call    FRESTR                ; HL = StrDsc
     call    string_addr_len       ; BC = StrLen, DE = StrAdr, HL = StrDsc
+    jr      z,.nullstring
     ex      de,hl                 ; HL = StrAdr
     pop     de                    ; DE = DstAdr; Stack = TxtPtr, RtnAdr
     ex      af,af'
     jr      c,.write_paged_bytes  ; If page specified, write to it
     ldir                          ; Else copy bytes
+    byte    $26                   ; LD H over first pop
+.nullstring
+    pop     hl                    ; Stack = DstAdr, RtnAdr
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     ret
 

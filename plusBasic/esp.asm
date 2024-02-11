@@ -290,8 +290,29 @@ esp_send_string:
     xor     a 
     jp      esp_send_byte         ; Send String Terminator
 
-;; ToDo: Implement this
+;-----------------------------------------------------------------------------
+; Read a byte from ESP to main memory
+;  Input: C: Byte to write
+; Output: A: Result
+;         C: 1 if succesful, else 0
+;-----------------------------------------------------------------------------
 esp_write_byte:
+    ld      a, ESPCMD_WRITE
+    call    esp_cmd               ; Issue read command
+    xor     a
+    call    esp_send_byte         ; Send file descriptor
+    ld      a,c
+    push    bc                    
+    push    af
+    ld      bc,1
+    call    esp_send_bc           ; Number of bytes to write
+    pop     af
+    call    esp_send_byte         ; Send byte
+    call    esp_get_result 
+    jp      m,.error
+    call    esp_get_bc            ; Get number of bytes written
+.error
+    pop     bc
     ret
 
 ;-----------------------------------------------------------------------------

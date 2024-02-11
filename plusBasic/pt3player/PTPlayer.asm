@@ -3,7 +3,7 @@
 ;----------------------------------------------------
 
 ; address of variables in RAM
-VARMEM = $4000  ; This is where the variables used should go 
+VARMEM = VarsAddr  ; This is where the variables used should go 
 
 ; AY registers
 ; STRUCT AYREGS
@@ -80,6 +80,7 @@ L3       = PrSlide    ; opcode + RET
 M2       = PrSlide
       BYTE PrNote
       BYTE PtVersion
+      BYTE PtRepeat
 ;end of variables and self-modifying code
 ;start of cleared data area
     STRUCT ChanA,CHP_size

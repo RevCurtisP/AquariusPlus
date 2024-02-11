@@ -33,7 +33,7 @@ espx_get_mouse:
     jp      m,.return              
     call    esp_get_long          ; BC = X, D = Y, E = Buttons
     xor     a
-;   call    esp_get_byte          ; A = Wheel Delta
+    call    esp_get_byte          ; A = Wheel Delta
     ld      l,a                   ; L = Wheel Delta
     xor     a                     ; Return success
 .return

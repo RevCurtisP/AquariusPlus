@@ -18,26 +18,35 @@ BANK_READONLY:  equ $80     ; Bank readonly
 BANK_OVERLAY:   equ $40     ; RAM overlay
 
 ; RAM Page Usage
-ROM_SYS_PG      equ 0       ; Main System ROM, mapped into Bank 0 with overlay from $3000-$3FFF
-ROM_EXT_PG      equ 1       ; plusBASIC extended ROM, mapped into Bank 3 
-ROM_AUX_PG      equ 2       ; plusBASIC auxillary ROM, mapped into Bank 3 as needed
+ROM_SYS_PG      equ 60      ; Main System ROM, mapped into Bank 0 with overlay from $3000-$3FFF
+ROM_EXT_PG      equ 61      ; plusBASIC extended ROM, mapped into Bank 3 
+ROM_AUX_PG      equ 62      ; plusBASIC auxillary ROM, mapped into Bank 3 as needed
+ROM_CRT_PG      equ 63      ; If a cartrige is present, it is copied here unencrypted, then executed
+
+ROM_SYS_OV      equ 60 | BANK_READONLY | BANK_OVERLAY
+ROM_EXT_RO      equ 61 | BANK_READONLY 
+ROM_AUX_RO      equ 62 | BANK_READONLY 
+ROM_CRT_RO      equ 63 | BANK_READONLY 
 
 ROM_CART        equ 19
 
 VIDEO_RAM       equ 20
 CHAR_RAM        equ 21
     
-RAM_BAS_0       equ 32      ; RAM for Soft ROM mapped into Bank 0
-RAM_BAS_1       equ 33      ; RAM for BASIC mapped into Bank 1
-RAM_BAS_2       equ 34      ; RAM for BASIC mapped into Bank 2
-RAM_BAS_3       equ 35      ; RAM for BASIC mapped into Bank 3
-                            ; If a cartrige is present, it is copied here unencrypted, then executed
-BAS_BUFFR       equ 36      ; plusBASIC extended system variables and buffers, mapped in bank 3 as needed
-VID_BUFFR       equ 37      ; Video RAM Shadow Buffer
-PT3_BUFFR       equ 38      ; PT3 Player Buffer
-SCR_BUFFR       equ 39      ; Screen Buffers
+RAM_BAS_0       equ 56      ; RAM for Soft ROM mapped into Bank 0
+RAM_BAS_1       equ 57      ; RAM for BASIC mapped into Bank 1
+RAM_BAS_2       equ 58      ; RAM for BASIC mapped into Bank 2
+RAM_BAS_3       equ 59      ; RAM for BASIC mapped into Bank 3
+
+CART_BUFFER     equ 50      ; Cart image loaded fron SD Card
+BOOT_BUFR       equ 51      ; Boot ROM work area
+SCR_BUFFR       equ 52      ; Screen Buffers
+VID_BUFFR       equ 53      ; Video RAM Shadow Buffer
+BAS_BUFFR       equ 54      ; plusBASIC extended system variables and buffers, mapped in bank 3 as needed
+PT3_BUFFR       equ 55      ; PT3 Player Buffer
     
-USER_RAM        equ 40      ; Start of User RAM
+USER_RAM        equ 20      ; First page of User RAM
+USER_END        equ 50      ; Last page of User RAM
 
 RAM_END_PG      equ 63      ; Last page of RAM
 
@@ -91,10 +100,11 @@ ONELIN      equ $382E   ; THE pointer to the LINE TO GOTO WHEN AN ERROR OCCURS
 ; DOS Variables - These can get overwritten between BASIC file operations
 ; They might also be re-used by other modules
 EXT_FLAGS   equ $3830   ; Extended BASIC flags
-BAS_FDESC   equ $3831   ; ESP file descriptor to close on Error or Ctrl-C
+MOUSEWDLT   equ $3831   ; Accumulated change in mouse delta
 XTEMP0      equ $3832   ; Used by DEF SPRITE
 XTEMP1      equ $3833   ; Used by DEF SPRITE
-;         $3834-$3837   ; unused (7 bytes)
+;         $3834-$3835   ; unused (2 bytes)
+BAS_FDESC   equ $3837   ; ESP file descriptor to close on Error or Ctrl-C
 FILESIZE    equ $3838   ; File Size (32-bits $3838-$383B)
 FILEATTR    equ $383C   ; File Attribute
 FILEDATE    equ $383D   ; File Datestamp ($383D-$383E)
@@ -170,30 +180,30 @@ IRQ_VLINE       equ $02     ; Video LINE interrupt
 
 ;-----------------------------------------------------------------------------
 ; BASIC Extended System Constants, Variables and Buffers
-; Page 36 (BAS_BUFFR), swapped into Bank 3
+; Page 54 (BAS_BUFFR), swapped into Bank 3
 ;-----------------------------------------------------------------------------
 BASBUF_BASE equ $C000   ; Base Address of BASIC Buffers
-GFX_SYSVARS equ $C000   ; Graphics module System Variables (defined in gfx/gfx.asm)
-                        ; Must be on 256 byte boundary
 FKEYDEFS    equ $0200   ; Function Key Definitions (32 bytes each)
 FKEYBASE    equ BASBUF_BASE + FKEYDEFS
 ;         $0500-$7FF   ; Unused
 RUNARGS     equ $0800   ; RUN arguments (First is program name)
-CHRSETBUF   equ $3800   ; Page Offset: Custom Character Set Buffer
+DEFCHRSET   equ $3400
+ALTCHRSET   equ $3800   ; Page Offset: Custom Character Set Buffer
 CHRSETLEN   equ 2048    ; Size of character set ROM
 
 BASOUTBUF   equ $01     ; BASYSCTL: redirect OUTput to BUFfer
 BASSAVASC   equ $02     ; BASYSCTL: Default SAVe to ASC
-BASKEYRPT   equ $04     ; BASYSCTL: KEY RePeaI on
+BASKEYRPT   equ $04     ;      BASYSCTL: KEY RePeaI on
 BASBRKOFF   equ $20     ; BASYSCTL: BReak OFF (Disable Ctrl-C)
 BASSCRN80   equ $40     ; BASYSCTL: SCReeN 80 (80) column mode
 BASCRNCLR   equ $80     ; BASYSCTL: PRINT updates Color RAM
 
+PT3_LOOPS   equ $02     ; EXT_FLAGS: PT3 songs repeat
 TRON_FLAG   equ $80     ; EXT_FLAGS: Trace on/off
 
 ;-----------------------------------------------------------------------------
 ; BASIC Text Screen Buffers
-; Offsets into Page 39 (SCR_BUFFR)
+; Offsets into Page 52 (SCR_BUFFR)
 ;-----------------------------------------------------------------------------
 SCRN40BUF   equ $0000   ; Primary 40 column buffer for screen switching
 SCRN41BUF   equ $0800   ; Secondary 40 column buffer for screen switching
@@ -212,10 +222,12 @@ IRQ_PT3PLAY equ $02     ; Bit 1 - PT3 Player running
 ;-----------------------------------------------------------------------------
 ; PT3 Player
 ;-----------------------------------------------------------------------------
-pt3init     equ $D800   ; StartPlayer
-pt3tick     equ $D803   ; PlayQuark  
-pt3stat     equ $D806   ; CHECKLP
-pt3mute     equ $D809   ; MUTE
+PT3_BASE    equ $C000
+pt3init     equ PT3_BASE+$00    ; StartPlayer
+pt3tick     equ PT3_BASE+$03    ; PlayQuark  
+pt3stat     equ PT3_BASE+$06    ; CHECKLP
+pt3mute     equ PT3_BASE+$09    ; MUTE
+pt3song     equ $0A00           ; PT3 file load address
 
 ;-----------------------------------------------------------------------------
 ; Macros

@@ -230,6 +230,7 @@ STRLT3      equ $0E62   ; Do STRLTI with delimiter in B
 STRLT2      equ $0E63   ; Do STRLTI with delimiters in B and C
 STRNEW      equ $0E7B   ; Build temporary descriptor for string
 PUTNEW      equ $0E7E   ; Set Pointer to Temporary String
+GETSPA:     equ $0EB3   ; Allocate string space
 STROUT:     equ $0E9D   ; Print null-terminated string in HL
 STRPRT      equ $0EA0   ; Print string with descriptor in FACLO
 MOVSTA      equ $0FBC   ; Copy A bytes from [BC] to [DE]
