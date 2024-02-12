@@ -38,7 +38,7 @@ RAM_BAS_1       equ 57      ; RAM for BASIC mapped into Bank 1
 RAM_BAS_2       equ 58      ; RAM for BASIC mapped into Bank 2
 RAM_BAS_3       equ 59      ; RAM for BASIC mapped into Bank 3
 
-CART_BUFFER     equ 50      ; Cart image loaded fron SD Card
+TMP_BUFFR       equ 50      ; Transient data buffer
 BOOT_BUFR       equ 51      ; Boot ROM work area
 SCR_BUFFR       equ 52      ; Screen Buffers
 VID_BUFFR       equ 53      ; Video RAM Shadow Buffer
@@ -46,7 +46,7 @@ BAS_BUFFR       equ 54      ; plusBASIC extended system variables and buffers, m
 PT3_BUFFR       equ 55      ; PT3 Player Buffer
     
 USER_RAM        equ 20      ; First page of User RAM
-USER_END        equ 50      ; Last page of User RAM
+USER_END        equ 49      ; Last page of User RAM
 
 RAM_END_PG      equ 63      ; Last page of RAM
 

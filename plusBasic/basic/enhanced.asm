@@ -454,6 +454,15 @@ parse_page_arg:
 ;-----------------------------------------------------------------------------
 ; Enhanced STOP statement stub
 ;-----------------------------------------------------------------------------
+ST_RESTORE:
+    cp      SCRNTK                
+    jp      z,ST_RESTORE_SCREEN
+    call    CHRGT3                ; Set digit and terminator flags
+    jp      RESTOR
+
+;-----------------------------------------------------------------------------
+; Enhanced STOP statement stub
+;-----------------------------------------------------------------------------
 ST_STOP:
     jp      z,STOP
     rst     SYNCHR

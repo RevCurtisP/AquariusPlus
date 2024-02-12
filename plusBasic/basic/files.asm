@@ -835,7 +835,6 @@ _set_up_fnkeys:
     ld      bc,512
     ret
 
-;;;ToDo: Add LOAD PALETTE
 _load_extended:
     rst     CHRGET                ; Skip XTOKEN
     cp      PALETK                ;
