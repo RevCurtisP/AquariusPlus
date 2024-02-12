@@ -86,7 +86,7 @@ just_ret:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.21m"
+    db "v0.21n"
 ifdef coredump
     db "_coredump"
 endif
@@ -1049,7 +1049,7 @@ free_rom_sys = $4000 - $
 
     free_rom_aux = $10000 - $
 
-    dc $D800-$,$76              ; PT3 Player Binary goes here
+    dc $10000-$,$76              
 
     end
 

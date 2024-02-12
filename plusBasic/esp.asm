@@ -419,12 +419,11 @@ esp_write_paged:
     jp      m,page_restore_bank3
    
     call    esp_get_bc            ; Get number of bytes actual written
-    ld      h,a
+    ld      a,0
     or      $01                   ; Clear zero and carry flags
-    ld      a,h
 .error
     jp      page_restore_bank3    ; Restore originl page and return
-    
+
 
 ;-----------------------------------------------------------------------------
 ; Write 16-bit word in BC to ESP32

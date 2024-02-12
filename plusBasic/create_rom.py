@@ -36,12 +36,4 @@ def export(bin_name,include_chrset):
         # Extended and auxiliary ROM $C000 -
         f.write(plusrom[4096:])
     
-        # PT3 Player binary
-        with open("pt3player/zout/main.cim", "rb") as fpt3:
-            pt3play = bytearray(fpt3.read())
-            f.write(pt3play)
-
-        f.write(b'\x76' * 8192)
-
 export("zout/sysrom.bin",True)
-export("zout/sysrom_nochr.bin",False)

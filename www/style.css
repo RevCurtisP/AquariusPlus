@@ -1,0 +1,14 @@
+body {
+  background-color: black;
+}
+
+#logo {
+  width: 100%;
+}
+
+.center {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+}
