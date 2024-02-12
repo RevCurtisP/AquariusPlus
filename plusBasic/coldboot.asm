@@ -107,7 +107,6 @@ print_copyright:
     jp      CRDO
 
 ; If autorun exists, push RUN "autoexec to key buffer
-; ToDo: make esp functions return error code instead of generating BASIC error
 check_autoexec:
     ld      d,$20                 ; Checking for CTL
     call    _modkey_check

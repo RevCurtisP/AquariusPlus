@@ -211,6 +211,7 @@ RUNC:       equ $0BCB   ; Do the RUN
 CLEARC:     equ $0BCF   ; Clear variable and array space, then initialize stack
 STKINI:     equ $0BE5   ; Initialize stack
 ;FRMINT         $0B7F   ; Use GETINT instead. This routine has an unnecessary PUSH/POP HL
+RESTOR      equ $0C05   ; RESTORE statement
 BGNRST      equ $0C19   ; Finish up RESTORE
 STOP        equ $0C1F   ; STOP statement
 ISLETC:     equ $0CC6   ; Test for a letter

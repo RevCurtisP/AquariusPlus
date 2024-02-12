@@ -121,7 +121,6 @@ ST_SETPALETTE:
 ;-----------------------------------------------------------------------------
 ST_SCREEN:
     or      a                     ; If token
-    jp      m,.is_token           ;   Process it
 
     push    hl
     ld      a,BUFSCRN40           ; Save current text screen to buffer
@@ -162,19 +161,6 @@ ST_SCREEN:
     pop     hl
 
     jp      set_linlen            ; Set TTYWID to screen columns and return
-
-.is_token
-    cp      SAVETK                ; If SAVE
-    jr      z,ST_SCREEN_SAVE      ;   Do SCREEN SAVE
-    cp      RESTK                 ; If RESTORE
-    jr      z,ST_SCREEN_RESTORE   ;   Do SCREEN RESTORE
-    cp      SWAPTK                ; If RESTORE
-    jr      z,ST_SCREEN_SWAP      ;   Do SCREEN SWAP
-    rst     SYNCHR
-    byte    XTOKEN                ; Else
-    rst     SYNCHR                ;  Require RESET
-    byte    RESETK
-    jr      _reset_screen
 
 .do_text_mode:
     cp      4                     ; If > 3
@@ -219,10 +205,10 @@ _reset_screen:
     ret
 
 ;-----------------------------------------------------------------------------
-; SCREEN RESTORE - Copy Screen Buffer to Text Screen
+; RESTORE SCREEN - Copy Screen Buffer to Text Screen
 ;-----------------------------------------------------------------------------
-ST_SCREEN_RESTORE:
-    rst     CHRGET                ; Skip RESTORE
+ST_RESTORE_SCREEN:
+    rst     CHRGET                ; Skip SCREEN
     push    hl                    ; Stack = TxtPtr, RtnAdr
     ld      a,SWPSCRN40
     ld      hl,SCRN40SWP
@@ -232,10 +218,10 @@ ST_SCREEN_RESTORE:
     ret
 
 ;-----------------------------------------------------------------------------
-; SCREEN SAVE - Copy Text Screen to Screen Buffer
+; STASH SCREEN - Copy Text Screen to Screen Buffer
 ;-----------------------------------------------------------------------------
-ST_SCREEN_SAVE:
-    rst     CHRGET                ; Skip SAVE
+ST_STASH_SCREEN:
+    rst     CHRGET                ; Skip SCREEN
     push    hl                    ; Stack = TxtPtr, RtnAdr
     ld      a,SWPSCRN40
     ld      hl,SCRN40SWP
@@ -245,10 +231,10 @@ ST_SCREEN_SAVE:
     ret
 
 ;-----------------------------------------------------------------------------
-; SCREEN SWAP - Swap Text Screen with Screen Buffer
+; SWAP SCREEN - Swap Text Screen with Screen Buffer
 ;-----------------------------------------------------------------------------
-ST_SCREEN_SWAP:
-    rst     CHRGET                ; Skip SWAP
+ST_SWAP_SCREEN:
+    rst     CHRGET                ; Skip SCREEN
     push    hl                    ; Stack = TxtPtr, RtnAdr
     ld      hl,SCRN40SWP
     ld      ix,screen_swap

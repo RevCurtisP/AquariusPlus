@@ -1,4 +1,12 @@
 # plusBASIC Release History
+ - v0.20p - Replaced SCREEN SAVE, SCREEN RESTORE, and SCREEN SWAP with STASH SCREEN, RESTORE SCREEN, and SWAP SCREEN.
+ - v0.21o - Removed character ROM data from sysrom binary, makerom script now does a simple copy with concatenate
+ - v0.21n 
+   - Fixed 'Unknown error' bug in SAVE paged binary over 32k in length
+ - v0.21m 
+   - Added MOUSEW 
+ - v0.21j - 
+   - Added SAVE/LOAD string arrays
  - v0.21h 
    - Modified legal write pages, PLAY SAMPLE allowed pages 
  - v0.21g 

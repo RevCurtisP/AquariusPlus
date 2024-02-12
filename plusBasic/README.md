@@ -1,19 +1,20 @@
 # plusBASIC Quick Reference Guide
 
 ## Operators
- - **_expression_ + _expression_** - 
- - **_expression_ - _expression_** - 
- - **_expression_ \ _expression_*** - 
- - **_expression_ / _expression_** - 
- - **_expression_ ^ _expression_** - 
+ - **- _expression_** - Negate expression
+ - **_expression_ + _expression_** - Add second expression to first expression
+ - **_expression_ - _expression_** - Subtract second expression from first expression
+ - **_expression_ \* _expression_** - Multiply first expression by second expression
+ - **_expression_ / _expression_** - Divide  first expression by second expression
+ - **_expression_ ^ _expression_** - Raise first expression to power second expression
  - **_expression_ > _expression_** - 
  - **_expression_ = _expression_** - 
  - **_expression_ < _expression_** - 
  - **_expression_ >= _expression_** - 
  - **_expression_ <= _expression_** - 
+ - **NOT _integer_** - 
  - **_expression_ MOD _expression_** - 
  - **_integer_ AND _integer_** - 
- - **NOT _integer_** - 
  - **_integer_ OR _integer_** - 
  - **_integer_ XOR _integer_** - 
  - **_string_ %% (_expression_{,...})** - Performs string substitution.
@@ -110,7 +111,7 @@
  - **MID$(_string_,_start_{,_len_})** - Returns first up to _len_ or all remaining characters starting at character _start_ of string.
  - **MKDIR _dirname_** - Create directory.
  - **MOUSEB** - Returns mouse button state
- - **MOUSEW** - _Not implemented_
+ - **MOUSEW** - Returns mouse wheel delta
  - **MOUSEX** - Returns mouse x-position
  - **MOUSEY** - Returns mouse y-position
  - **NEXT {_var_,...}** - Terminates one or more _FOR_ loops.
@@ -156,8 +157,9 @@
  - **RESET SCREEN** - Resets current text screen to default settings.
  - **RESTORE {_lineref_}** - Resets READ/DATA pointer to beginning of program or specified line.
  - **RESTORE BITMAP|TILEMAP|PALETTE _palette_{,...}** - _Not implemented_
+ - **RESTORE SCREEN** - Copies respective screen buffer to current text screen..
  - **RETURN {_expression_{,...}}** - Resumes program execution after GOSUB, optionally returning results.
- - **RGB(_r_,_g_,_b_)** - Not implemented_
+ - **RGB(_r_,_g_,_b_)** - _Not implemented_
  - **RGB$(_r_,_g_,_b_)** - Returns string representing a single palette entry
  - **RIGHT$(_string_,_len_)** - Returns the last up to _byte_ characters of string.
  _ **RND(_integer_)** - Returns new or previous psuedo-random number or seeds the random number generator.
@@ -166,16 +168,12 @@
  - **SAVE _filespec_ {ASC}** - Saves BASIC program to CAQ or ASCII file.
  - **SAVE _filespec_,{@_page_,}_address_,_length_** - Saves memory to binary file.
  - **SAVE _filespec_,\*_array_** - Saves numeric or string array data to file.
- - **SAVE BITMAP** - _not implemented_
+ - **SAVE BITMAP** - _Not implemented_
  - **SAVE FNKEYS _filespec_** - Saves function key definitions to file.
  - **SAVE PALETTE _p_,_filespec_** - Saves palette contents to file.
  - **SAVE SCREEN** - _Not implemented_
- - **SAVE TILEMAP** - _not implemented_
+ - **SAVE TILEMAP** - _Not implemented_
  - **SCREEN {_text_},{_graphics_},{_sprites_},{_priority_},{_remap_}** - Sets screen mode.
- - **SCREEN RESET** _Deprecated. Use_ `RESET SCREEN`
- - **SCREEN RESTORE** _Will be replaced with_ `RESTORE SCREEN` - Copies respective screen buffer to current text screen..
- - **SCREEN SAVE** _Will be replaced with `STASH SCREEN`_ - Copies current text screen to respective screen buffer.
- - **SCREEN SWAP** _Will be replaced with `SWAP SCREEN`_ - Swaps current text screen with respective screen buffer.
  - **SET COLOR _fgcolor_,_bgcolor_** - Enables color printing mode
  - **SET COLOR OFF** - Disables color printing mode
  - **SET FAST ON|OFF** - Enables or disables turbo mode.
@@ -195,11 +193,13 @@
  - **SOUND (_duration_,_frequency_)** - Generates a tone through the television speaker.
  - **SQR(_float)** - Returns square root of argument.
  - **STASH BITMAP|TILEMAP|PALETTE _palette_{,...}** - _Not implemented_
+ - **STASH SCREEN** - Copies current text screen to respective screen buffer.
  - **STOP** - Interrupts program execution.
  - **STOP PT3** - Stops currently playing PT3 track.
  - **STR$(_float_)** - Converts floating point number to ASCII string.
  - **STRING$(_length_{,_byte_|_string_})** - Creates string of repeated character.
  - **SWAP BITMAP|TILEMAP|PALETTE _palette_{,...}** - _Not implemented_
+ - **SWAP SCREEN** - Swaps current text screen with respective screen buffer.
  - **SWAP VARS _var_,_var_** - _Not implemented_
  - **TAN(_float_)** - Returns tangent of argument.
  - **TILEMAP(_x_,_y_)** - Returns tile index and properties in tile cell.

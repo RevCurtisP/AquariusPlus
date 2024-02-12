@@ -55,7 +55,7 @@ extended_statement:
     dec     a                   ; $95 PLAY
     jp      z,ST_PLAY
     sub     a,3                 ; $98 STASH
-    jp      z,GSERR
+    jp      z,ST_STASH
     dec     a                   ; $99 TRO
     jp      z,ST_TRO
     dec     a                   ; $9A BREAK
