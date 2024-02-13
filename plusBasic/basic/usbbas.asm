@@ -142,8 +142,8 @@ _null_string:
 ;-----------------------------------------------------------------------------
 FN_IN:
     rst     CHRGET                ; Skip IN and Eat Spaces
-    cp      XTOKEN                ; If followed by KEY
-    jr      z,.extended           ; It's INKEY
+    cp      XTOKEN                ; If followed by extended token
+    jr      z,.extended           ;   Handle it
     call    PARCHK
     push    hl
     ld      bc,LABBCK
@@ -159,8 +159,10 @@ FN_IN:
 
 .extended
     rst     CHRGET                ; Skip XTOKEN
-    cp      KEYTK                 ; If followed by KEY
-    jp      z,FN_INKEY            ; It's INKEY
+    cp      KEYTK                 ; If KEY
+    jp      z,FN_INKEY            ;   Do INKEY
+    cp      STRTK                 ; Else if STR
+    jp      z,FN_INSTR            ;   Do INSTR
     jp      SNERR
 
 ;-----------------------------------------------------------------------------

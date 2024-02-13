@@ -110,7 +110,129 @@ FN_ERR: rst     CHRGET            ; Skip ERR Token
         ld      de,(ERRLIN)       ; Get Error Line Number
         jp      FLOAT_DE          ; Float it and Return
 
-        
+;----------------------------------------------------------------------------
+; INSTR
+;----------------------------------------------------------------------------
+;; ? INSTR(2,"ABCABCABC","ABC")
+FN_INSTR:  
+    rst     CHRGET                ; EAT FIRST CHAR
+    call    FRMPRN                ; EVALUATE FIRST ARG
+    call    GETYPE                ; SET ZERO IF ARG A STRING.                    
+    ld      a,1                   ; IF SO, ASSUME, SEARCH STARTS AT FIRST CHAR   
+    push    af                    ; Stack = Offset, RtnAdr
+    jp      z,.was_string         ; If first arg is not string
+    pop     af                    ;   Stack = RtnAdr                      
+    call    CONINT                ;   FORCE ARG1 (I%) TO BE INTEGER                
+    or      a                     ;   DONT ALLOW ZERO OFFSET                                                   
+    jp      z,FCERR               ;   KILL HIM.                                                                
+    push    af                    ;   Stack = Offset, RtnAdr
+    SYNCHK  ','                   ;   EAT THE COMMA                                -                            
+    call    FRMEVL                ;   Evaluate needle                                                    
+    call    CHKSTR                ;   BLOW UP IF NOT STRING                                                   
+.was_string: 
+    SYNCHK  ','                   ; EAT COMMA AFTER ARG                                                     
+    push    hl                    ; Stack = TxtPtr, Offset, RtnAdr                                                   
+    ld      hl,(FACLO)            ; HL = HayDsc
+    ex      (sp),hl               ; HL = TxtPtr; Stack = HayDsc, Offset, RtnAdr
+    call    FRMEVL                ; Evaluate Needle
+    SYNCHK  ')'                   ; EAT RIGHT PAREN                                                         
+    push    hl                    ; Stack = TxtPtr, HayDsc, Offset, RtnAdr
+    call    FRESTR                ; HL = NdlDsc
+    ex      de,hl                 ; DE = NdlDsc
+    pop     bc                    ; BC = TxtPtr; Stack = HayDsc, Offset, RtnAdr
+    pop     hl                    ; HL = HayDsc; Stack = Offset, RtnAdr
+    pop     af                    ; A = Offset; Stack = RtnAdr
+    push    bc                    ; Stack = TxtPtr, RtnAdr
+    ld      bc,POPHRT             ; 
+    push    bc                    ; Stack = POPHRT, TxtPtr, RtnAdr
+    ld      bc,SNGFLT             ; 
+    push    bc                    ; Stack =  SNGFLT, POPHRT. TxtPtr, RtnAdr
+    push    af                    ; Stack = Offset, SNGFLT, POPHRT. TxtPtr, RtnAdr
+    push    de                    ; Stack = NdlDsc, Offset, SNGFLT, POPHRT. TxtPtr, RtnAdr
+    call    FRETM2                ; HL = HayDsk
+    pop     de                    ; DE = NdlDsc; Stack = Offset, SNGFLT, POPHRT. TxtPtr, RtnAdr
+    pop     af                    ; A = Offset; Stack = SNGFLT, POPHRT. TxtPtr, RtnAdr
+
+;----------------------------------------------------------------------------
+; Search for string in string
+;  Input: A = Offset (base 1)
+;        DE = Needle descriptor
+;        HL = Haystack descriptor
+; Output: A = Position of needle in haystack (0 = not found)
+; Clobbered: BC, DE, HL
+;----------------------------------------------------------------------------
+ext_instr:
+    ld      b,a                   ; B = OffCnt
+    dec     a                     ; Back up Offset
+    ld      c,a                   ; C = Offset
+    cp      (hl)                  ; If Ofs > HayLen
+    ld      a,0                   ;   Return 0
+    ret     nc                                                              
+    ld      a,(de)                ; A = NdlLen
+    or      a                     ; Set flags
+    ld      a,b                   ; A = Offset
+    ret     z                     ; Return 0 if NdlLen = 0
+    ld      a,(hl)                ; A = HayLen
+    inc     hl                 
+    inc     hl                    ; Bump to text addrss
+    ld      b,(hl)             
+    inc     hl                                                              
+    ld      h,(hl)            
+    ld      l,b                   ; HL = HayAdr
+    ld      b,0                   ; BC = Offset
+    add     hl,bc                 ; HL = HayPtr
+    sub     c                     ; Adjust Haylen
+    ld      b,a                   ; B = HayLen
+    push    bc                    ; Stack = Offset, OffCnt, RtnAdr
+    push    de                    ; Stack = NdlDsc, Offset, OffCnt, RtnAdr
+    ex      (sp),hl               ; HL = NdlDsc; Stack = HayPtr, Offset, OffCnt, RtnAdr
+    ld      c,(hl)                ; C = NdlLen
+    inc     hl                    
+    inc     hl                
+    ld      e,(hl)            
+    inc     hl                    ; DE = NdlAdr
+    ld      d,(hl)            
+    pop     hl                    ; HL = HayAdr; Stack = OfsOfc, RtnAdr
+.cnt_loop
+    push    hl                    ; Stack = HayAdr, OfsOfc, RtnAdr
+    push    de                    ; Stack = NdlAdr, HayAdr, OfsOfc, RtnAdr
+    push    bc                    ; Stack = HayLen, NdlLen, HayAdr, Offset, OffCnt, RtnAdr
+.ofs_loop
+    ld      a,(de)                ; A = NdlChr
+    cp      (hl)                  ;  If NdlChr <> HayChr
+    jp      nz,.notfound          ;    Return 0
+    inc     de                    ; Bump NdlPtr
+    dec     c                     ; Decrement NdlLen
+    jp      z,.found              ; If not end of NdlStr
+    inc     hl                    ;   Bump HayPtr
+    dec     b                     ;   Decrement HayCnt
+    jp      nz,.ofs_loop          ;   If HayCnt <> 0, check next character
+.pop3ret0 
+    pop     de                    ; Stack = NdlLen, HeyAdr, OfsOfc, RtnAdr
+    pop     de                    ; Stack = HeyAdr, OfsOfc, RtnAdr
+    pop     bc                    ; Stack = OfsOfc, RtnAdr
+.pop1ret0 
+    pop     de                    ; Stack = RtnAdr
+    xor     a                     ; Return 0 with flags set
+    ret                           ;
+.found 
+    pop     hl                    ; Stack = NdlLen, HayAdr, Offset, OffCnt, RtnAdr
+    pop     de                    ; Stack = HayAdr, OfsOfc, RtnAdr
+    pop     de                    ; Stack = OfsOfc, RtnAdr
+    pop     bc                    ; B = Offset
+    ld      a,b                   ; 
+    sub     h                     ; 
+    add     c                     ;
+    inc     a                     ; Return offset of Needle in Haystack
+    ret                           
+.notfound                         
+    pop     bc                    ; B = HayLen; Stack = NdlLen, HayAdr, OfsOfc, RtnAdr
+    pop     de                    ; DE = NdlAdr; Stack = HayAdr, OfsOfc, RtnAdr
+    pop     hl                    ; HL = HayAdr; Stack =  OfsOfc, RtnAdr
+    inc     hl                    ; Bump HayAdr
+    dec     b                     ; Decrement HayLen
+    jp      nz,.cnt_loop          ; If not at end of NdlTxt, check next character
+    jr      .pop1ret0             ; Else discard OfsOfc and return 0
 
 ;----------------------------------------------------------------------------
 ; Resume after error 
@@ -183,7 +305,6 @@ FN_STR:
     ex      de,hl                 ; HL = VarAdr
     call    string_addr_len       ; DE = StrAdr, BC = StrLen
     jp      FLOAT_DE              ; Float StrAdr and return
-
 
 ;----------------------------------------------------------------------------
 ;;; ---

@@ -191,6 +191,7 @@ NTOERR      equ $0782   ; Execute ON ... GOTO
 FRMNUM:     equ $0972   ; Evaluate numeric expression
 CHKNUM:     equ $0975   ; Error if evaluated expression not a number
 CHKSTR:     equ $0976   ; Error if evaluated expression not string
+FRMPRN      equ $0983   ; Evaluate formula after eating open paren
 FRMEVL:     equ $0985   ; Evaluate formula
 FRMCHK      equ $0986   ; Skip current character, then evaluate formula
 EVALOP      equ $09C3   ; Operator evaluator in FRMEVL

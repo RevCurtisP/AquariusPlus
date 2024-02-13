@@ -88,6 +88,7 @@
  - **INKEY** - Return ASCII code of most recently pressed key.
  - **INKEY$** - Return most recently pressed key as string.
  - **INPUT {_stringliteral_;}_var_{,...}** - Prompt for keyboard input and assigns entries to variables.
+ - **INSTR({_offset_,}_haystack_,_needle)** - Search for string _needle_ in string _haystack_.
  - **JOY(_stick)** - Read one or both game controllers.
  - **KEY(_keycode_)** - Check if key is currently pressed.
  - **LEFT$(_string_,_len_)** - Return the first up to _len_ characters of string.

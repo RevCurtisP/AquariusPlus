@@ -86,7 +86,7 @@ just_ret:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.21q"
+    db "v0.21r"
 ifdef coredump
     db "_coredump"
 endif
@@ -931,6 +931,13 @@ fast_hook_handler:
     exx                         ; Restore BC,DE,HL
     ex      af,af'              ; Restore AF
     jp      (ix)
+
+;-----------------------------------------------------------------------------
+; Extend ROM assembly callable routines
+;-----------------------------------------------------------------------------
+str_instr:
+    ld      iy,ext_instr
+    jr      ext_call    
 
 ;-----------------------------------------------------------------------------
 ; S3 BASIC extensions routines in Auxiliary ROM Page
