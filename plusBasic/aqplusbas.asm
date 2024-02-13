@@ -86,7 +86,7 @@ just_ret:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.21r"
+    db "v0.21s"
 ifdef coredump
     db "_coredump"
 endif
@@ -884,7 +884,7 @@ hook_table:                     ; ## caller   addr  performing function
     dw      outdo_hook          ; 13 OUTDO    198A  Execute OUTCHR
     dw      HOOK14+1            ; 14 ATN      1985  ATN() function
     dw      HOOK15+1            ; 15 DEF      0B3B  DEF statement
-    dw      HOOK16+1            ; 16 FNDOER   0B40  FNxx() call
+    dw      FN_FN               ; 16 FNDOER   0B40  FNxx() call
     dw      HOOK17+1            ; 17 LPTOUT   1AE8  Print Character to Printer
     dw      _read_key           ; 18 INCHRH   1E7E  Read Character from Keyboard
     dw      ttychr_hook         ; 19 TTYCHR   1D72  Print Character to Screen

@@ -1,0 +1,83 @@
+<!DOCTYPE html []>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="author" content="MarkdownViewer++" />
+    <title>releases.md</title>
+    <style type="text/css">
+            
+/* Avoid page breaks inside the most common attributes, especially for exports (i.e. PDF) */
+td, h1, h2, h3, h4, h5, p, ul, ol, li {
+    page-break-inside: avoid; 
+}
+
+        </style>
+  </head>
+  <body>
+    <h1 id="plusbasic-release-history">plusBASIC Release History</h1>
+    <ul>
+      <li>v0.21s
+<ul><li>Implemented DEF FNx and FNx</li></ul></li>
+      <li>v0.21r
+<ul><li>Added function INSTR, kernel routine str_instr</li></ul></li>
+      <li>v0.21q
+<ul><li>Added VARPTR() and STRPTR()</li></ul></li>
+      <li>v0.20p
+<ul><li>Replaced SCREEN SAVE, SCREEN RESTORE, and SCREEN SWAP with STASH SCREEN, RESTORE SCREEN, and SWAP SCREEN.</li></ul></li>
+      <li>v0.21o
+<ul><li>Removed character ROM data from sysrom binary, makerom script now does a simple copy with concatenate</li></ul></li>
+      <li>v0.21n
+<ul><li>Fixed 'Unknown error' bug in SAVE paged binary over 32k in length</li></ul></li>
+      <li>v0.21m
+<ul><li>Added MOUSEW</li></ul></li>
+      <li>v0.21j -
+<ul><li>Added SAVE/LOAD string arrays</li></ul></li>
+      <li>v0.21h
+<ul><li>Modified legal write pages, PLAY SAMPLE allowed pages</li></ul></li>
+      <li>v0.21g
+<ul><li>Reactivated JP descramble_rom in files.asm</li></ul></li>
+      <li>v0.21f
+<ul><li>Loads ptplay.bin from ESP: instead of SD card</li></ul></li>
+      <li>v0.21e
+<ul><li>Added LOOP PT3 [filename]</li></ul></li>
+      <li>v0.21b
+<ul><li>Load default and Latin-1 character sets from ESP filesystem</li></ul></li>
+      <li>v0.21a
+<ul><li>Added USE CHRSET filename$, changed Ctrl-O to switch to custom chrset, removed Ctrl-P option</li></ul></li>
+      <li>v0.21
+<ul><li>SYSROM loaded in pages 60 through 62 as SoftROM</li></ul></li>
+      <li>v0.20w
+<ul><li>Fixed tokenization bug when RUNing BASIC progam files in ASCII format</li></ul></li>
+      <li>v0.20v
+<ul><li>Fixed DEF SPRITE [...] x-offset bug</li></ul></li>
+      <li>v0.20u
+<ul><li>Added SET SPRITE var$ TILECLIP and debugged str_length</li></ul></li>
+      <li>v0.20s
+<ul><li>Added <code>GET/PUT TILEMAP ... ^var$</code>, debugged FILL <code>[@page,]address,WORD int</code>, fixed <code>ASC$()</code> bug.</li></ul></li>
+      <li>v0.20r
+<ul><li>Added TRON and TROFF statements and Extended BASIC jump table. Debugged graphics DEF statements.</li></ul></li>
+      <li>v0.20q
+<ul><li>Finalized esp, paged, dos, and file_io jump table entries</li></ul></li>
+      <li>v0.20n
+<ul><li>Added syntax <code>LIST$(NEXT)</code>, replaced all usage of <code>SBUFF</code> in paged memory with <code>STRBUF</code> in main memory</li></ul></li>
+      <li>v0.20m
+<ul><li>Added <code>FILL [@page,] start, count, |byte|WORD int|</code>,  <code>sys_fill_word</code>, tokens <code>VARS</code> and <code>WORD</code></li><li>Fixed spurious <code>FC error</code> in <code>GET SCREEN</code></li><li>Finished <code>GET TILEMAP</code>, <code>PUT_TILEMAP</code>, <code>tilemap_get</code>, and <code>tilemap_put</code></li></ul></li>
+      <li>v0.20k
+<ul><li>Implemented <code>SET TILEMAP (x,y)</code> and <code>tilemap_set_tile</code></li></ul></li>
+      <li>v0.20j
+<ul><li>Allow both <code>,</code> and <code>;</code> as delimiters in <code>DEF INTLIST</code></li><li>Fixed <code>ATTR attrs</code> and <code>PALETTE palette#</code> causing syntax error after <code>FILL TILEMAP tile#</code></li><li><code>.</code> treated as <code>0</code> in hex literal strings and <code>ASC$</code> function</li></ul></li>
+      <li>v0.20i
+<ul><li>Added BASIC functions <code>FILEEXT$()</code>, <code>FILEDIR$()</code>, <code>TRIMDIR$()</code>, <code>TRIMEXT$()</code></li><li>Added kernel routines <code>file_get_ext</code>, <code>file_trim_dir</code>, <code>file_get_dir</code>, <code>file_trim_ext</code></li><li>Allow unquoted filename operand for <code>RUN</code> in direct mode</li><li>Added direct mode syntax <code>DEL file file file...</code></li><li>Added syntax <code>LOAD filename$,@page</code> and <code>SAVE filename$,@page</code></li><li>Added cartridge diagnostic mode assembly option</li></ul></li>
+      <li>v0.20h
+<ul><li>Fixed 8k carts not working</li></ul></li>
+      <li>v0.20g
+<ul><li><code>FILL SCREEN</code>, <code>GET SCREEN</code>, <code>PUT SCREEN</code> now work in both 40 column and 80 column mode</li></ul></li>
+      <li>v0.20f
+<ul><li>Added optional comma between end-coordinate and fill character in <code>FILL SCREEN</code></li></ul></li>
+      <li>v0.20e
+<ul><li>Added <code>KEY()</code> function</li></ul></li>
+      <li>v0.20dt,
+<ul><li>Added <code>DEC()</code> function, fixed <code>esp_get_version</code>/<code>VER(0)</code>/<code>VER$(0)</code></li></ul></li>
+    </ul>
+  </body>
+</html>

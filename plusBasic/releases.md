@@ -1,4 +1,8 @@
 # plusBASIC Release History
+ - v0.21s 
+   - Implemented DEF FNx and FNx
+ - v0.21r 
+   - Added function INSTR, kernel routine str_instr
  - v0.21q
    - Added VARPTR() and STRPTR()
  - v0.20p 

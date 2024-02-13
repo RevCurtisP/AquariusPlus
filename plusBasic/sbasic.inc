@@ -93,7 +93,7 @@ DATPTR:     equ $38DC   ; [M80] POINTER TO DATA. INITIALIZED TO POINT AT THE ZER
                         ; [M80] BY "DATPTR" WHICH IS CALLED BY CLEARC. UPDATED BY EXECUTION OF A "READ"
 VARNAM:     equ $38DE   ; Variable Name
 VARPNT:     equ $38E0
-;        $38E2:-$38E3   ; Unused
+FNPARM      equ $38E2   ; Defined Function Parameter
 FACLO:      equ $38E4   ; [M80] LOW ORDER OF MANTISSA
 FACMO:      equ $38E5   ; [M80] MIDDLE ORDER OF MANTISSA
 FACHO:      equ $38E6   ; [M80] HIGH ORDER OF MANTISSA
@@ -184,6 +184,7 @@ RUNC2:      equ $06DB
 GOTO        equ $06DC   ; Execute GOTO statement
 GOTOLN      equ $06DF   ; GOTO line# in DE
 USERR       equ $06F3   ; Undefined line error
+DATA        equ $071C   ; Execute DATA statement
 REM         equ $071E   ; Execute REM statement
 LETDO       equ $0736   ; Execute LET, bypassing PTRGET and SYNCHK '='
 INBUFC      equ $0768   ; Copy temporary string to string variable
@@ -226,6 +227,7 @@ STRCPY      equ $0E39   ; Create copy of string
 STRINI      equ $0E50   ; Reserve space for new string and create descriptor
 STRAD2      equ $0E53   ; Build string descriptor in DSCTMP
 STRADI      equ $0E56   ; Build string descriptor at HL
+STRADX      equ $0E59   ; Entry point into STRADI
 STRLIT      equ $0E5F   ; Build descriptor for string litersl
 STRLTI      equ $0E60   ; Do STRLIT, without decrementing HL
 STRLT3      equ $0E62   ; Do STRLTI with delimiter in B 
@@ -247,6 +249,7 @@ ASC2        equ $1006   ; Return DE = Pointer to String Text, A=First Character
 CHR         equ $1013   ; CHR$ Function
 FINBCK      equ $101D   ; Return a String
 PTRGET:     equ $10D1   ; Get variable (out: BC = addr, DE = len)
+PTRGT2      equ $10D6   ; Get variable - called with first character of name in C
 EATEM       equ $10EA   ; Continue PTRGET at skip extra alphanumerics loop
 NOSEC       equ $10F2   ; Continue PTRGET at check for '$'
 SKIPDS      equ $10FD   ; Continue PTRGET at skip of '$'
@@ -261,6 +264,7 @@ FDIV        equ $142F   ; Divide: FACC = BCDE / FACC
 FLOATR      equ $14FB   ; Float signed number in B,A,D,E
 MOVFM       equ $1520   ; MOVE NUMBER FROM MEMORY [(HL)] TO FAC
 MOVFR       equ $1523   ; Move B,C,D,E to FACC
+MOVMF       equ $153A   ; MOVE NUMBER FROM FAC TO MEMORY [(HL)]
 MOVE        equ $153D   ; Copy 4 bytes from (DE) to (HL)
 MOVE1       equ $153F   ; Copy B bytes from (DE) to (HL)
 QINT        equ $1586   ; Convert FAC to integer in C,D,E

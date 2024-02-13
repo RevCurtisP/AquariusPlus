@@ -49,7 +49,7 @@
  - **DEC(_hexstring_)** - Convert hexadecimal string to integer.
  - **DEEK({@_page_,}_address_)** - Read integer from memory.
  - **DEF ATTRLIST _strvar_=_attr_,...** - Create a string list of sprite and/or tile attributes.
- - **DEF FN _var_(_var_) = _expression_** - _Not implemented_
+ - **DEF FN _var_(_var_) = _expression_** - Define user-defined function.
  - **DEF INTLIST _strvar_=_integer_,...** - Create a string list of integers.
  - **DEF PALETTELIST _strvar_=_palette_,...** - Create a string list of palette numbers.
  - **DEF RGBLIST _strvar_=_r_,_g_,_b_;...** - Create a string list of RGB values.
@@ -93,7 +93,7 @@
  - **KEY(_keycode_)** - Check if key is currently pressed.
  - **LEFT$(_string_,_len_)** - Return the first up to _len_ characters of string.
  - **LEN(_string_)** - Return length of string.
- - **{LET} _var_=_expression_** - Define and assigns value to variable.
+ - **\{LET} _var_=_expression_** - Define and assigns value to variable.
  - **LIST {_lineref_}** - Display program lines starting at beginning of program or specified line.
  - **LLIST {_lineref_}** - Outputs program lines to printer starting at beginning of program or specified line.
  - **LOAD _filespec_** - Load BASIC program into memory.
