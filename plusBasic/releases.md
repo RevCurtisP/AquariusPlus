@@ -1,4 +1,6 @@
 # plusBASIC Release History
+ - v0.21q
+   - Added VARPTR() and STRPTR()
  - v0.20p 
    - Replaced SCREEN SAVE, SCREEN RESTORE, and SCREEN SWAP with STASH SCREEN, RESTORE SCREEN, and SWAP SCREEN.
  - v0.21o 
