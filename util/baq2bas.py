@@ -195,9 +195,12 @@ xtokens = {
     0x98: "STASH",         
     0x99: "TRO",                       
     0x9A: "BREAK",                     
-    0xA0: "VARS",          
+    0x9B: "LOOP",                     
+    0x9C: "STR",          
+    0x9D: "VAR",          
     0xA1: "WORD",           
-    0xA2: "CLIP"           
+    0xA2: "CLIP",           
+    0xA3: "PTR"           
 }
 
 with open(args.input, "rb") as f:

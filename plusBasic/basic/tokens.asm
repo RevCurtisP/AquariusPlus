@@ -95,16 +95,17 @@ EXTCMDS:
     db $80 + 'T',"RO"             ; $99             
     db $80 + 'B',"REAK"           ; $9A             
     db $80 + 'L',"OOP"            ; $9B             
-    db $80 + ' '                  ; $9C             
-    db $80 + ' '                  ; $9D             
-    db $80 + ' '                  ; $9E             
+    db $80 + 'S',"TR"             ; $9C             
+    db $80 + 'V',"AR"             ; $9D             
+    db $80 + ' '                  ; $9E
     db $80 + ' '                  ; $9F
-    db $80 + 'V',"ARS"            ; $A0
+    db $80 + ' '                  ; $A0
     db $80 + 'W',"ORD"            ; $A1
     db $80 + 'C',"LIP"            ; $A2
+    db $80 + 'P',"TR"             ; $A3
     db $80                        ; End of table marker
 
-EXTOKEN = $A3                     ; Last Token + 1
+EXTOKEN = $A4                     ; Last Token + 1
 
 ;-----------------------------------------------------------------------------
 ; plusBASIC tokens
@@ -162,9 +163,11 @@ APNDTK    equ     $96
 TRIMTK    equ     $97
 BRKTK     equ     $9A
 LOOPTK    equ     $9B
-VARSTK    equ     $A0
+STRTK     equ     $9C
+VARTK     equ     $9D
 WORDTK    equ     $A1
 CLIPTK    equ     $A2
+PTRTK     equ     $A3
 
 ;-----------------------------------------------------------------------------
 ; Convert keyword to token - hook 10
@@ -292,38 +295,6 @@ token_to_keyword:
 ; $F3 FILE        FILE
 ; $F4 RESUME      RESUME
 ; $F5 COL         COL [OR]
-; $F6 SCREEN
-; $F7 SET
-; $F8 WRITE 
-; $F9 USE
-; $FA OPEN
-; $FB CLOSE
-; $FC 
-; $FD 
+
 ; $FE extended token prefix
 ; $FF (pseudovar prefix)
-
-; Extended tokens
-; $80 ATTR
-; $81 PALETTE                    
-; $82 OFF
-; $83 unusable (DATA)
-; $84 SPRITE
-; $85 CHR                      
-; $86 KEY
-; $87 DEX
-; $88 FAST
-; $89 TEXT
-; $8A ARGS
-; $8B SAMPLE
-; $8C PT3
-; $8D
-; $8E unusable (REM)
-; $8F
-; $90 RESET
-; $91 
-; $92 VER
-; $93 FILL
-; $94 COMPARE
-; $95 PLAY
-; $96 APPEND

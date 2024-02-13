@@ -162,6 +162,30 @@ clear_errvars:
         ret
 
 ;----------------------------------------------------------------------------
+; STRPTR
+;----------------------------------------------------------------------------
+FN_STR:
+    rst     CHRGET                ; Skip STR
+    rst     SYNCHR
+    byte    XTOKEN
+    rst       SYNCHR                ; Require PTR(
+    byte    PTRTK 
+    SYNCHK  '('
+    xor     a
+    ld      (SUBFLG),a            ; Evaluate Array Indexes
+    call    PTRGET                ; DE = VarAdr
+    jp      nz,FCERR              ; FC Error if Not There
+    SYNCHK  ')'                   ; Require ')'
+    call    CHKSTR                ; Make sure variable is a string
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    ld      hl,LABBCK             ; HL = Return address for FLOAT_xx
+    push    hl                    ; Stack = FltRtn, TxtPtr, RtnAdr
+    ex      de,hl                 ; HL = VarAdr
+    call    string_addr_len       ; DE = StrAdr, BC = StrLen
+    jp      FLOAT_DE              ; Float StrAdr and return
+
+
+;----------------------------------------------------------------------------
 ;;; ---
 ;;; STRING$ - Create string of repeating characters.
 ;;; STRING$ (*length*)
@@ -216,6 +240,7 @@ SPLP:   ld      (hl),a            ;SAVE CHAR
 GETYPE: ld      a,(VALTYP)        ;REPLACEMENT FOR "GETYPE" RST
         dec     a               
         ret
+
 ;----------------------------------------------------------------------------
 ; TRON/TROFF
 ;----------------------------------------------------------------------------
@@ -235,3 +260,36 @@ ST_TRO:
         and     $FF-TRON_FLAG     ;   Turn flag on
         ld      (EXT_FLAGS),a
         ret
+
+;----------------------------------------------------------------------------
+; VARPTR
+;----------------------------------------------------------------------------
+FN_VAR:
+    rst     CHRGET                ; Skip VAR
+    rst     SYNCHR
+    byte    XTOKEN
+    rst     SYNCHR                ; Require PTR(
+    byte    PTRTK 
+    SYNCHK  '('
+    cp      MULTK                 ; Check Next Character
+    push    af                    ; Stack = VarPfx, RtnAdr
+    jr      nz,.not_multk         ; If '*'
+    rst     CHRGET                ;   Skip It
+    ld      a,1                   ;   Evaluate Array Name
+    jr      .get_ptr              ;  
+.not_multk:
+    xor     a
+.get_ptr
+    ld      (SUBFLG),a            ; Evaluate Array Indexes
+    call    PTRGET                ; Get Pointer
+    jp      nz,FCERR              ; FC Error if Not There
+    SYNCHK  ')'                   ; Require ')'
+    ld      (SUBFLG),a            ; Reset Sub Flag
+    pop     af                    ; A = VarPfx; Stack = RtnAdr
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    ld      hl,LABBCK             ; HL = Return address for FLOAT_xx
+    push    hl                    ; Stack = FltRtn, TxtPtr, RtnAdr
+    jp      nz,FLOAT_DE           ; If not *, eturn variable address
+    dec     bc                    ; Else  
+    dec     bc                    ;   Back up to beginning of array definition
+    jp      FLOAT_BC              ;   and Float It

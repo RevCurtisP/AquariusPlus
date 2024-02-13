@@ -61,7 +61,7 @@ extended_statement:
     dec     a                   ; $9A BREAK
     dec     a                   ; $9B LOOP
     jp      z,ST_LOOP
-    jp      SNERR
+    jp      SNERR 
    
 extended_function:
     inc     hl                  ; Skip extended prefix
@@ -77,6 +77,10 @@ extended_function:
     dec     a                   ; $96 APPEND
     dec     a                   ; $97 TRIM
     jp      z,FN_TRIM
+    sub     a,5                 ; $9C STR
+    jp      z,FN_STR
+    dec     a                   ; $9D VAR
+    jp      z,FN_VAR
     jp      SNERR
 
 ; ------------------------------------------------------------------------------
