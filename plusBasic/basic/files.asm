@@ -468,7 +468,9 @@ print_hl_4digits:
 ; LOAD "filename"                 Load BASIC program
 ; LOAD "filename",address         Load file as raw binary to address
 ; LOAD "filename",@page,address   Load file as raw binary to address in page
-; LOAD "filename",*a              Load data into numeric array a
+; LOAD "filename",*var            Load data into numeric array var
+; LOAD "filename",*var$           Load binary data into string array var$
+; LOAD "filename",*var$,ASC       Load ASCII data into string array var$
 ; LOAD CHRSET "filename"          Load character set into character RAM buffer
 ; LOAD PALETTE p,"filename"       Load one or all palettes
 ; LOAD SCREEN "filename"          Load screen with optional embedded palette
@@ -494,7 +496,7 @@ ST_LOAD:
 
     call    get_strdesc_arg        ; Get FileSpec pointer in HL
 
-    ex      (sp),hl                 ; HL = Text Pointer, Stack = String Descriptor
+    ex      (sp),hl                 ; HL = TxtPtr, Stack = StrDsc, RtnAdr
 
     ; Check for second parameter
     call    CHRGT2
@@ -553,10 +555,10 @@ ST_LOAD:
     ret
 
 .array:
-    call    get_array_argument
+    call    get_array_argument    ;  A = NxtChr, DE = AryPtr, BC = AryLen
+    jp      nz,load_asc_array
     call    GETYPE
     jp      load_caq_array
-    
 
 .basic:
     ex      (sp),hl               ; HL = String Descriptor, Stack = Text Pointer
@@ -737,7 +739,7 @@ init_basic_program:
 load_caq_array:
     ex      (sp),hl               ; HL = String Descriptor, Stack = Text Pointer
     push    bc                    ; Stack = AryLen, TxtPtr, RtnAdr
-    push    de                    ; stack = AryAdr, AryLen, TxtPtr, RtnAdr
+    push    de                    ; Stack = AryAdr, AryLen, TxtPtr, RtnAdr
     jr      z,load_string_array
 
     call    _open_read
@@ -799,6 +801,63 @@ load_string_array:
     push    bc                    ; Stack = AryLen, TxtPtr, RtnAdr
     push    hl                    ; Stack = AryPtr, AryLen, TxtPtr, RtnAdr
     jr      .loop
+
+; DIM A$(5)
+; LOAD "lipsum.txt",*A$,ASC
+load_asc_array:
+    SYNCHK  ','
+    rst     SYNCHR                ; Require ,ASC
+    byte    ASCTK         
+    ex      (sp),hl               ; HL = StrDsc, Stack = TxtPtr, RtnAdr
+    call    _open_read
+    push    af                    ; Stack = FilDsc, TxtPtr, RtnAdr
+    push    bc                    ; Stack = AryLen, FilDsc, TxtPtr, RtnAdr
+    push    de                    ; Stack = AryPtr, AryLen, FilDsc, TxtPtr, RtnAdr
+.loop
+    call    get_strbuf_addr       ; HL = StrBuf, BC = BufLen
+    call    esp_read_line         ; Read line from file, BC = StrLen
+    jp      m,.error
+    push    hl                    ; Stack = BufAdr, AryPtr, AryLen, FilDsc, TxtPtr, RtnAdr
+    push    bc                    ; Stack = LinLen, BufAdr, AryPtr, AryLen, FilDsc, TxtPtr, RtnAdr
+    ld      a,c                   ; A = LinLen
+    call    GETSPA                ; DE = StrAdr
+    call    FRETMS                ; Free temporary but not string space
+    pop     bc                    ; BC = LinLen; Stack = BufAdr, AryPtr, AryLen, FilDsc, TxtPtr, RtnAdr
+    pop     hl                    ; HL = BufAdr; Stack = AryPtr, AryLen, FilDsc, TxtPtr, RtnAdr
+    push    de                    ; Stack = StrAdr, AryPtr, AryLen, FilDsc, TxtPtr, RtnAdr
+    push    bc                    ; Stack = LinLen, StrAdr, AryPtr, AryLen, FilDsc, TxtPtr, RtnAdr
+    ldir                          ; Copy StrBuf to TmpStr
+    pop     bc                    ; BC = LinLen; Stack = StrAdr, AryPtr, AryLen, FilDsc, TxtPtr, RtnAdr
+    pop     de                    ; DE = StrAdr; Stack = AryPtr, AryLen, FilDsc, TxtPtr, RtnAdr
+    pop     hl                    ; HL = AryPtr; Stack = AryLen, FilDsc, TxtPtr, RtnAdr
+    ld      (hl),c
+    inc     hl
+    ld      (hl),b                ; Write StrLen to array entry
+    inc     hl
+    ld      (hl),e
+    inc     hl
+    ld      (hl),d                ; Write StrAdr to array entry
+    inc     hl
+    pop     bc                    ; BC = AryLen; Stack = FilDsc, TxtPtr, RtnAdr
+    dec     bc
+    dec     bc
+    dec     bc
+    dec     bc                    
+    ld      a,b
+    or      c
+    jp      z,_close_pop_ret
+    pop     af                    ; A = FilDsc, Stack = TxtPtr, RtnAdr
+    push    af                    ; Stack = FilDsc, TxtPtr, RtnAdr
+    push    bc                    ; Stack = AryLen, FilDsc, TxtPtr, RtnAdr
+    push    hl                    ; Stack = AryPtr, AryLen, FilDsc, TxtPtr, RtnAdr
+    jr      .loop
+.error
+    cp      ERR_EOF               ; If not EOF
+    jp      nz,_dos_error         ;   Error out
+    pop     hl                    ; Stack = AryLen, FilDsc, TxtPtr, RtnAdr
+    pop     hl                    ; Stack = FilDsc, TxtPtr, RtnAdr
+    pop     hl                    ; Stack = TxtPtr, RtnAdr
+    jp      _close_pop_ret      ; Close file, pop TxtPtr, and return
 
 ;-----------------------------------------------------------------------------
 ; Get array argument
@@ -1072,6 +1131,7 @@ _lookup_file:
 ; SAVE
 ;
 ; SAVE "filename"                 Save BASIC program
+; SAVE "filename",ASC             Save BASIC program as ASCII text
 ; SAVE "filename",addr,len        Save binary data
 ; SAVE "filename",@page,addr,len  Save paged binary data
 ; SAVE "filename",*a              Save numeric array a

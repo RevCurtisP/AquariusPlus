@@ -82,9 +82,9 @@ skip_star_array:
     
 ;-----------------------------------------------------------------------------
 ; Parse Array Variable without subscript
-; Output: DE = First Byte of Data
-;         BC = Length of Data
-; Clobber: A
+; Output: A = Character after variable name, with CHRGET flags set
+;        DE = First Byte of Data
+;        BC = Length of Data
 ;-----------------------------------------------------------------------------
 get_array: 
     ld      a,1                   ; SEARCH ARRAYS ONLY
@@ -111,7 +111,7 @@ get_array:
     ld      b,h
     ld      c,l                   ; BE = Data Length
     pop     hl                    ; HL = TxtPtr
-    ret
+    jp      CHRGT2                ; Reread next character and set flags
 
 ;Undimensioned Array Error
 UDERR:

@@ -98,7 +98,8 @@
  - **LLIST {_lineref_}** - Outputs program lines to printer starting at beginning of program or specified line.
  - **LOAD _filespec_** - Load BASIC program into memory.
  - **LOAD _filespec_,{@_page_,}_address_** - Load binary file into memory.
- - **LOAD _filespec_,\*_array_** - Load file data into numeric or string array.
+ - **LOAD _filespec_,\*_array_** - Load binary file data into numeric or string array.
+ - **LOAD _filespec_,\*_array_**,ASC - Load ASCII into string array.
  - **LOAD BITMAP** - _Not implemented_
  - **LOAD CHRSET _filespec_** - Load character set into alternate character buffer.
  - **LOAD FNKEYS _filespec_** - Load function key definitions from file.
