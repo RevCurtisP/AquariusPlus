@@ -817,9 +817,12 @@ load_asc_array:
     call    get_strbuf_addr       ; HL = StrBuf, BC = BufLen
     call    esp_read_line         ; Read line from file, BC = StrLen
     jp      m,.error
+    ld      de,0                  ; StrAdr = 0 for empty lines
+    ld      a,c                   ; A = LinLen
+    or      a
+    jr      z,.empty
     push    hl                    ; Stack = BufAdr, AryPtr, AryLen, FilDsc, TxtPtr, RtnAdr
     push    bc                    ; Stack = LinLen, BufAdr, AryPtr, AryLen, FilDsc, TxtPtr, RtnAdr
-    ld      a,c                   ; A = LinLen
     call    GETSPA                ; DE = StrAdr
     call    FRETMS                ; Free temporary but not string space
     pop     bc                    ; BC = LinLen; Stack = BufAdr, AryPtr, AryLen, FilDsc, TxtPtr, RtnAdr
@@ -829,6 +832,7 @@ load_asc_array:
     ldir                          ; Copy StrBuf to TmpStr
     pop     bc                    ; BC = LinLen; Stack = StrAdr, AryPtr, AryLen, FilDsc, TxtPtr, RtnAdr
     pop     de                    ; DE = StrAdr; Stack = AryPtr, AryLen, FilDsc, TxtPtr, RtnAdr
+.empty
     pop     hl                    ; HL = AryPtr; Stack = AryLen, FilDsc, TxtPtr, RtnAdr
     ld      (hl),c
     inc     hl
@@ -845,7 +849,7 @@ load_asc_array:
     dec     bc                    
     ld      a,b
     or      c
-    jp      z,_close_pop_ret
+    jr      z,.done
     pop     af                    ; A = FilDsc, Stack = TxtPtr, RtnAdr
     push    af                    ; Stack = FilDsc, TxtPtr, RtnAdr
     push    bc                    ; Stack = AryLen, FilDsc, TxtPtr, RtnAdr
@@ -856,8 +860,9 @@ load_asc_array:
     jp      nz,_dos_error         ;   Error out
     pop     hl                    ; Stack = AryLen, FilDsc, TxtPtr, RtnAdr
     pop     hl                    ; Stack = FilDsc, TxtPtr, RtnAdr
+.done
     pop     hl                    ; Stack = TxtPtr, RtnAdr
-    jp      _close_pop_ret      ; Close file, pop TxtPtr, and return
+    jp      _close_pop_ret        ; Close file, pop TxtPtr, and return
 
 ;-----------------------------------------------------------------------------
 ; Get array argument

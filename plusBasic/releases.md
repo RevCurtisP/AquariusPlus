@@ -1,47 +1,49 @@
 # plusBASIC Release History
- - v0.21s 
+ - v0.21u
+   - Added LOAD filename$,\*array$,ASC
+ - v0.21s
    - Implemented DEF FNx and FNx
- - v0.21r 
+ - v0.21r
    - Added function INSTR, kernel routine str_instr
  - v0.21q
    - Added VARPTR() and STRPTR()
- - v0.20p 
+ - v0.20p
    - Replaced SCREEN SAVE, SCREEN RESTORE, and SCREEN SWAP with STASH SCREEN, RESTORE SCREEN, and SWAP SCREEN.
- - v0.21o 
+ - v0.21o
    - Removed character ROM data from sysrom binary, makerom script now does a simple copy with concatenate
- - v0.21n 
+ - v0.21n
    - Fixed 'Unknown error' bug in SAVE paged binary over 32k in length
- - v0.21m 
-   - Added MOUSEW 
- - v0.21j - 
+ - v0.21m
+   - Added MOUSEW
+ - v0.21j -
    - Added SAVE/LOAD string arrays
- - v0.21h 
-   - Modified legal write pages, PLAY SAMPLE allowed pages 
- - v0.21g 
+ - v0.21h
+   - Modified legal write pages, PLAY SAMPLE allowed pages
+ - v0.21g
    - Reactivated JP descramble_rom in files.asm
- - v0.21f 
+ - v0.21f
    - Loads ptplay.bin from ESP: instead of SD card
- - v0.21e 
+ - v0.21e
    - Added LOOP PT3 [filename]
- - v0.21b 
+ - v0.21b
    - Load default and Latin-1 character sets from ESP filesystem
- - v0.21a 
+ - v0.21a
    - Added USE CHRSET filename$, changed Ctrl-O to switch to custom chrset, removed Ctrl-P option
- - v0.21  
+ - v0.21
    - SYSROM loaded in pages 60 through 62 as SoftROM
- - v0.20w 
+ - v0.20w
    - Fixed tokenization bug when RUNing BASIC progam files in ASCII format
- - v0.20v 
+ - v0.20v
    - Fixed DEF SPRITE [...] x-offset bug
- - v0.20u 
+ - v0.20u
    - Added SET SPRITE var$ TILECLIP and debugged str_length
  - v0.20s
    - Added `GET/PUT TILEMAP ... ^var$`, debugged FILL `[@page,]address,WORD int`, fixed `ASC$()` bug.
  - v0.20r
     - Added TRON and TROFF statements and Extended BASIC jump table. Debugged graphics DEF statements.
- - v0.20q 
+ - v0.20q
     - Finalized esp, paged, dos, and file_io jump table entries
- - v0.20n 
+ - v0.20n
     - Added syntax `LIST$(NEXT)`, replaced all usage of `SBUFF` in paged memory with `STRBUF` in main memory
  - v0.20m
    - Added `FILL [@page,] start, count, |byte|WORD int|`,  `sys_fill_word`, tokens `VARS` and `WORD`
@@ -49,7 +51,7 @@
    - Finished `GET TILEMAP`, `PUT_TILEMAP`, `tilemap_get`, and `tilemap_put`
  - v0.20k
    - Implemented `SET TILEMAP (x,y)` and `tilemap_set_tile`
- - v0.20j 
+ - v0.20j
    - Allow both `,` and `;` as delimiters in `DEF INTLIST`
    - Fixed `ATTR attrs` and `PALETTE palette#` causing syntax error after `FILL TILEMAP tile#`
    - `.` treated as `0` in hex literal strings and `ASC$` function
@@ -62,12 +64,11 @@
    - Added cartridge diagnostic mode assembly option
  - v0.20h
    - Fixed 8k carts not working
- - v0.20g 
+ - v0.20g
    - `FILL SCREEN`, `GET SCREEN`, `PUT SCREEN` now work in both 40 column and 80 column mode
- - v0.20f 
+ - v0.20f
    - Added optional comma between end-coordinate and fill character in `FILL SCREEN`
- - v0.20e 
+ - v0.20e
    - Added `KEY()` function
  - v0.20dt,
    - Added `DEC()` function, fixed `esp_get_version`/`VER(0)`/`VER$(0)`
-
