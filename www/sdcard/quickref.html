@@ -225,11 +225,15 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
       <li>
         <strong>LOAD <em>filespec</em>,{@<em>page</em>,}<em>address</em></strong> - Load binary file into memory.</li>
       <li>
-        <strong>LOAD <em>filespec</em>,*<em>array</em></strong> - Load file data into numeric or string array.</li>
+        <strong>LOAD <em>filespec</em>,*<em>array</em></strong> - Load binary file data into numeric or string array.</li>
+      <li>
+        <strong>LOAD <em>filespec</em>,*<em>array</em></strong>,ASC - Load ASCII into string array.</li>
       <li>
         <strong>LOAD BITMAP</strong> - <em>Not implemented</em></li>
       <li>
         <strong>LOAD CHRSET <em>filespec</em></strong> - Load character set into alternate character buffer.</li>
+      <li>
+        <strong>LOAD DIR <em>filespec</em>,*<em>array</em></strong> - Load disk directory into string array.</li>
       <li>
         <strong>LOAD FNKEYS <em>filespec</em></strong> - Load function key definitions from file.</li>
       <li>
@@ -346,6 +350,8 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>RESUME <em>lineref</em></strong> - Clear error condition and continues program execution at specified line</li>
       <li>
         <strong>RESUME PT3</strong> - Resume playing paused PT3 track.</li>
+      <li>
+        <strong>RESET *<em>array</em></strong> - Set all array elements to 0 or empty string and collect garbage if string array.</li>
       <li>
         <strong>RESET PALETTE <em>palette</em></strong> - Reset palette to default RGB values.</li>
       <li>
