@@ -102,6 +102,7 @@
  - **LOAD _filespec_,\*_array_**,ASC - Load ASCII into string array.
  - **LOAD BITMAP** - _Not implemented_
  - **LOAD CHRSET _filespec_** - Load character set into alternate character buffer.
+ - **LOAD DIR _filespec_,\*_array_** - Load disk directory into string array.
  - **LOAD FNKEYS _filespec_** - Load function key definitions from file.
  - **LOAD PALETTE _p_,_filespec_** - Load file data ino palette.
  - **LOAD PT3 _filespec_** - Load PT3 track into PT player buffer.
@@ -160,6 +161,7 @@
  - **RENAME _filespec_ TO _filespec_** - Rename file or directory
  - **RESUME _lineref_** - Clear error condition and continues program execution at specified line
  - **RESUME PT3** - Resume playing paused PT3 track.
+ - **RESET \*_array_** - Set all array elements to 0 or empty string and collect garbage if string array.
  - **RESET PALETTE _palette_** - Reset palette to default RGB values.
  - **RESET SCREEN** - Reset current text screen to default settings.
  - **RESTORE {_lineref_}** - Reset READ/DATA pointer to beginning of program or specified line.

@@ -534,3 +534,14 @@ copy_strbuf:
     pop     de                    ; DE = StrAdr; Stack = StrDsc
     pop     hl                    ; HL = StrDsc
     ret
+
+write_bcde2hl:
+    ld      (hl),c
+    inc     hl
+    ld      (hl),b                ; Write StrLen to array entry
+    inc     hl
+    ld      (hl),e
+    inc     hl
+    ld      (hl),d                ; Write StrAdr to array entry
+    inc     hl
+    ret

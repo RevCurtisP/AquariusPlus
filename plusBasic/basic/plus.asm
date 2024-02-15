@@ -585,6 +585,8 @@ ST_PAUSE:
 ;-----------------------------------------------------------------------------
 ST_RESET:
     rst     CHRGET                ; Skip RESET
+    cp      MULTK
+    jr      z,_reset_array
     cp      SCRNTK                
     jp      z,ST_RESET_SCREEN
     rst     SYNCHR
@@ -593,6 +595,23 @@ ST_RESET:
     jp      z,ST_RESET_PALETTE
     jp      SNERR
 
+;-----------------------------------------------------------------------------
+; Set all array elements to 0 or empty string
+; RESET *array
+;-----------------------------------------------------------------------------
+_reset_array
+    call    get_array_argument    ; DE = AryAdr, BC = AryLen
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    call    GETYPE                ; A = 0 and Z set if string
+    push    af                    ; Stack = TypFlg, TxtPtr, RtnAdr
+    ex      de,hl                 ; HL = AryAdr
+    call    sys_fill_zero         ; Fill array data with zeros
+    pop     af                    ; A = TypFlg
+    ld      bc,POPHRT
+    push    bc                    ; Return to POPHRT
+    ret     nz                    ; If numeric, pop TxtPtr and return
+    jp      GARBA2                ; Else collect garbage, pop TxtPtr and return
+    
 ;-----------------------------------------------------------------------------
 ; USE Statement stub
 ;-----------------------------------------------------------------------------

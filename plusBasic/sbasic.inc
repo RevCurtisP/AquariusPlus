@@ -237,6 +237,7 @@ PUTNEW      equ $0E7E   ; Set Pointer to Temporary String
 GETSPA:     equ $0EB3   ; Allocate string space
 STROUT:     equ $0E9D   ; Print null-terminated string in HL
 STRPRT      equ $0EA0   ; Print string with descriptor in FACLO
+GARBA2      equ $0EDB   ; Perform garbage collection
 MOVSTA      equ $0FBC   ; Copy A bytes from [BC] to [DE]
 MOVSTR      equ $0FBD   ; Copy L bytes from [BC] to [DE]
 FRESTR      equ $0FC6   ; Free tempory string, return string descriptor address in HL

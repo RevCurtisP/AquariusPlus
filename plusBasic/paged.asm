@@ -803,17 +803,20 @@ page_check_read_write:
 ; Zero Flag: Clear if valid page, Set if not
 ;-----------------------------------------------------------------------------
 page_check_write:
-    cp      20                    ; If in video RAM
+    cp      VIDEO_RAM             ; If in video RAM
     jr      z,_page_ok            ;   do it
-    cp      21                    ; If in character RAM
+    cp      CHAR_RAM              ; If in character RAM
     jr      z,_page_ok            ;   do it
-    cp      32                    ; If below main RAM
+    cp      USER_RAM              ; If below main RAM
     jr      c,set_zero_flag       ;   error out
+    cp      ROM_SYS_PG            ; If SoftROM
+    jr      nc,set_zero_flag      ;   error out
 page_check_read:
-    cp      60                    ; If above main RAM
+    cp      RAM_END_PG+1          ; If above user RAM
     jr      nc,set_zero_flag      ;   error out
 _page_ok
     cp      $FF                   ; Clear zero flag
+_ret
     ccf                           ; Clear carry flag
     ret
 
@@ -851,8 +854,10 @@ page_check_next4write:
     jr      z,set_carry_flag      ;   error out
     cp      CHAR_RAM              ; If in character RAM
     jr      z,set_carry_flag      ;   error out
+    cp      ROM_SYS_PG-1          ; If rolling into soft ROM
+    jr      z,set_carry_flag      ;   error out
 page_check_next4read:
-    cp      63                    ; If in last RAM page
+    cp      RAM_END_PG            ; If in last RAM page
     jr      z,set_carry_flag      ;   error out
     cp      0                     ; Clear carry and zero flags
     ret

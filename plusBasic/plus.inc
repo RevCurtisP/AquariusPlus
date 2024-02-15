@@ -45,7 +45,7 @@ VID_BUFFR       equ 53      ; Video RAM Shadow Buffer
 BAS_BUFFR       equ 54      ; plusBASIC extended system variables and buffers, mapped in bank 3 as needed
 PT3_BUFFR       equ 55      ; PT3 Player Buffer
     
-USER_RAM        equ 20      ; First page of User RAM
+USER_RAM        equ 32      ; First page of User RAM
 USER_END        equ 49      ; Last page of User RAM
 
 RAM_END_PG      equ 63      ; Last page of RAM

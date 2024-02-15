@@ -83,12 +83,12 @@
 502 GOSUB _copytp_err:ARGS $8000,256,19,0,5
 504 GOSUB _copytp_err:ARGS $8000,256,22,0,5
 506 GOSUB _copytp_err:ARGS $8000,256,31,0,5
-508 GOSUB _copytp_err:ARGS $8000,256,64,0,5
+508 GOSUB _copytp_err:ARGS $8000,256,60,0,5
 
 518 GOSUB _title:ARGS "Rollover Overflow Errors"
 520 GOSUB _copytp_err:ARGS $8000,256,20,$3FFE,6
 522 GOSUB _copytp_err:ARGS $8000,256,21,$3FFE,6
-524 GOSUB _copytp_err:ARGS $8000,256,63,$3FFE,6
+524 GOSUB _copytp_err:ARGS $8000,256,59,$3FFE,6
 
 590 GOTO 598
 592 _copytp_err:GETARGS PS,PL,PQ,PD,QE:QL=QL+1:QA$="COPY "+STR$(PS)+","+STR$(PL)+" TO @"+STR$(PQ)+","+STR$(PD):ON ERROR GOTO _yes_err:COPY PS,PL TO @PQ,PD:GOTO _no_err

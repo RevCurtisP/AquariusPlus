@@ -489,6 +489,9 @@ ST_LOAD:
     cp      FNTK
     jp      z,_load_fnkeys
 
+    cp      DIRTK
+    jp      z,load_dir_array
+
     cp      XTOKEN
     jp      z,_load_extended
 
@@ -554,13 +557,13 @@ ST_LOAD:
     pop     hl
     ret
 
-.array:
+.array
     call    get_array_argument    ;  A = NxtChr, DE = AryPtr, BC = AryLen
     jp      nz,load_asc_array
     call    GETYPE
     jp      load_caq_array
 
-.basic:
+.basic
     ex      (sp),hl               ; HL = String Descriptor, Stack = Text Pointer
     jp      load_basic_program
 
@@ -782,14 +785,7 @@ load_string_array:
     call    esp_read_bytes        ; BC = StrLen
     pop     de                    ; DE = StrAdr; Stack = AryPtr, AryLen, TxtPtr, RtnAdr
     pop     hl                    ; HL = AryPtr; Stack = AryLen, TxtPtr, RtnAdr
-    ld      (hl),c
-    inc     hl
-    ld      (hl),b                ; Write StrLen to array entry
-    inc     hl
-    ld      (hl),e
-    inc     hl
-    ld      (hl),d                ; Write StrAdr to array entry
-    inc     hl
+    call    write_bcde2hl         ; Write string descriptor
     pop     bc                    ; BC = AryLen; Stack = TxtPtr, RtnAdr
     dec     bc
     dec     bc
@@ -802,6 +798,30 @@ load_string_array:
     push    hl                    ; Stack = AryPtr, AryLen, TxtPtr, RtnAdr
     jr      .loop
 
+; DIM A$(99)
+; LOAD DIR "*",*A$
+load_dir_array:
+    rst     CHRGET                ; Skip DIR
+    call    get_strdesc_arg       ; Get FileSpec pointer in HL
+    ex      (sp),hl               ; HL = TxtPtr, Stack = StrDsc, RtnAdr
+    SYNCHK  ','                   ; Require ,
+    call    get_array_argument    ; A = NxtChr, DE = AryPtr, BC = AryLen
+    call    CHKSTR                ; Type mismatch error if not string array
+    ex      (sp),hl               ; HL = StrDsc, Stack = TxtPtr, RtnAdr
+    push    bc                    ; Stack = AryLen, TxtPtr, RtnAdr
+    push    de                    ; Stack = AryPtr, AryLen, TxtPtr, RtnAdr
+    call    string_addr_len
+    call    _open_dir             ; Open directory
+    pop     de                    ; DE = AryPtr; Stack = AryLen, TxtPtr, RtnAdr
+    pop     bc                    ; BC = AryLen; Stack = TxtPtr, RtnAdr
+    ld      iy,_read_dir
+    jr      _asc_array
+_read_dir:
+    ld      iy,dos_read_dir
+    call    aux_call
+    ld      iy,_read_dir
+    ret
+
 ; DIM A$(5)
 ; LOAD "lipsum.txt",*A$,ASC
 load_asc_array:
@@ -810,58 +830,83 @@ load_asc_array:
     byte    ASCTK         
     ex      (sp),hl               ; HL = StrDsc, Stack = TxtPtr, RtnAdr
     call    _open_read
-    push    af                    ; Stack = FilDsc, TxtPtr, RtnAdr
-    push    bc                    ; Stack = AryLen, FilDsc, TxtPtr, RtnAdr
-    push    de                    ; Stack = AryPtr, AryLen, FilDsc, TxtPtr, RtnAdr
-.loop
+    ld      iy,esp_read_line
+; Read lines into array starting at second entry
+; First entry contains number of lines read
+_asc_array:
+    push    de                    ; Stack = AryAdr, TxtPtr, RtnAdr
+    inc     de
+    inc     de
+    inc     de
+    inc     de                    ; AryPtr = Second element of array
+    srl     b
+    rr      c
+    srl     b
+    rr      c                     ; ArySiz = AryLen / 4
+    push    bc                    ; Stack = ArySiz, AryAdr, TxtPtr, RtnAdr
+    push    af                    ; Stack = FilDsc, ArySiz, AryAdr, TxtPtr, RtnAdr
+    push    bc                    ; Stack = AryCnt, FilDsc, ArySiz, AryAdr, TxtPtr, RtnAdr
+    push    de                    ; Stack = AryPtr, AryCnt, FilDsc, ArySiz, AryAdr, TxtPtr, RtnAdr
+.loop:
     call    get_strbuf_addr       ; HL = StrBuf, BC = BufLen
-    call    esp_read_line         ; Read line from file, BC = StrLen
+    call    jump_iy               ; Read line from file, BC = StrLen
     jp      m,.error
     ld      de,0                  ; StrAdr = 0 for empty lines
+    ld      b,0                   ; Clear length MSB
     ld      a,c                   ; A = LinLen
     or      a
     jr      z,.empty
-    push    hl                    ; Stack = BufAdr, AryPtr, AryLen, FilDsc, TxtPtr, RtnAdr
-    push    bc                    ; Stack = LinLen, BufAdr, AryPtr, AryLen, FilDsc, TxtPtr, RtnAdr
+    push    hl                    ; Stack = BufAdr, AryPtr, AryCnt, FilDsc, ArySiz, AryAdr, TxtPtr, RtnAdr
+    push    bc                    ; Stack = LinLen, BufAdr, AryPtr, AryCnt, FilDsc, ArySiz, AryAdr, TxtPtr, RtnAdr
     call    GETSPA                ; DE = StrAdr
     call    FRETMS                ; Free temporary but not string space
-    pop     bc                    ; BC = LinLen; Stack = BufAdr, AryPtr, AryLen, FilDsc, TxtPtr, RtnAdr
-    pop     hl                    ; HL = BufAdr; Stack = AryPtr, AryLen, FilDsc, TxtPtr, RtnAdr
-    push    de                    ; Stack = StrAdr, AryPtr, AryLen, FilDsc, TxtPtr, RtnAdr
-    push    bc                    ; Stack = LinLen, StrAdr, AryPtr, AryLen, FilDsc, TxtPtr, RtnAdr
+    pop     bc                    ; BC = LinLen; Stack = BufAdr, AryPtr, AryCnt, FilDsc, ArySiz, AryAdr, TxtPtr, RtnAdr
+    pop     hl                    ; HL = BufAdr; Stack = AryPtr, AryCnt, FilDsc, ArySiz, AryAdr, TxtPtr, RtnAdr
+    push    de                    ; Stack = StrAdr, AryPtr, AryCnt, FilDsc, ArySiz, AryAdr, TxtPtr, RtnAdr
+    push    bc                    ; Stack = LinLen, StrAdr, AryPtr, AryCnt, FilDsc, ArySiz, AryAdr, TxtPtr, RtnAdr
     ldir                          ; Copy StrBuf to TmpStr
-    pop     bc                    ; BC = LinLen; Stack = StrAdr, AryPtr, AryLen, FilDsc, TxtPtr, RtnAdr
-    pop     de                    ; DE = StrAdr; Stack = AryPtr, AryLen, FilDsc, TxtPtr, RtnAdr
+    pop     bc                    ; BC = LinLen; Stack = StrAdr, AryPtr, AryCnt, FilDsc, ArySiz, AryAdr, TxtPtr, RtnAdr
+    pop     de                    ; DE = StrAdr; Stack = AryPtr, AryCnt, FilDsc, ArySiz, AryAdr, TxtPtr, RtnAdr
 .empty
-    pop     hl                    ; HL = AryPtr; Stack = AryLen, FilDsc, TxtPtr, RtnAdr
-    ld      (hl),c
-    inc     hl
-    ld      (hl),b                ; Write StrLen to array entry
-    inc     hl
-    ld      (hl),e
-    inc     hl
-    ld      (hl),d                ; Write StrAdr to array entry
-    inc     hl
-    pop     bc                    ; BC = AryLen; Stack = FilDsc, TxtPtr, RtnAdr
-    dec     bc
-    dec     bc
-    dec     bc
-    dec     bc                    
+    pop     hl                    ; HL = AryPtr; Stack = AryCnt, FilDsc, ArySiz, AryAdr, TxtPtr, RtnAdr
+    call    write_bcde2hl         ; Write string descriptor
+    pop     bc                    ; BC = AryCnt; Stack = FilDsc, ArySiz, AryAdr, TxtPtr, RtnAdr
+    dec     bc                    ; Decrement AryCnt
     ld      a,b
     or      c
     jr      z,.done
-    pop     af                    ; A = FilDsc, Stack = TxtPtr, RtnAdr
-    push    af                    ; Stack = FilDsc, TxtPtr, RtnAdr
-    push    bc                    ; Stack = AryLen, FilDsc, TxtPtr, RtnAdr
-    push    hl                    ; Stack = AryPtr, AryLen, FilDsc, TxtPtr, RtnAdr
+    pop     af                    ; A = FilDsc, Stack = ArySiz, AryAdr, TxtPtr, RtnAdr
+    push    af                    ; Stack = FilDsc, ArySiz, AryAdr, TxtPtr, RtnAdr
+    push    bc                    ; Stack = AryCnt, FilDsc, ArySiz, AryAdr, TxtPtr, RtnAdr
+    push    hl                    ; Stack = AryPtr, AryCnt, FilDsc, ArySiz, AryAdr, TxtPtr, RtnAdr
     jr      .loop
 .error
     cp      ERR_EOF               ; If not EOF
     jp      nz,_dos_error         ;   Error out
-    pop     hl                    ; Stack = AryLen, FilDsc, TxtPtr, RtnAdr
-    pop     hl                    ; Stack = FilDsc, TxtPtr, RtnAdr
+    pop     hl                    ; Stack = AryCnt, FilDsc, ArySiz, AryAdr, TxtPtr, RtnAdr
+    pop     bc                    ; BC = AryCnt; Stack = FilDsc, ArySiz, AryAdr, TxtPtr, RtnAdr
 .done
-    pop     hl                    ; Stack = TxtPtr, RtnAdr
+    pop     af                    ; AF = FilDsc; Stack = ArySiz, AryAdr, TxtPtr, RtnAdr
+    pop     hl                    ; HL = ArySiz; Stack = AryAdr, TxtPtr, RtnAdr
+    sbc     hl,bc                 ; HL = LinCnt (ArySiz - AryCnt)
+    ex      de,hl                 ; DE = LinCnt
+    call    FLOAT_DE              ; Float LinCnt
+    call    FOUT                  ; Convert to string
+    ld      de,FBUFFR+1           ; DE = FltAdr
+    call    str_length            ; A, BC = FltLen
+    push    bc                    ; Stack = FltLen, AryAdr, TxtPtr, RtnAdr
+    push    de                    ; Stack = FltAdr, FltLen, AryAdr, TxtPtr, RtnAdr
+    push    bc                    ; Stack = FltLen, FltAdr, FltLen, AryAdr, TxtPtr, RtnAdr
+    call    GETSPA                ; Allocate string space
+    call    FRETMS                ; DE = StrAdr
+    pop     bc                    ; BC = FltLen; Stack = FltAdr, FltLen, AryAdr, TxtPtr, RtnAdr
+    pop     hl                    ; HL = FltAdr; Stack = FltLen, AryAdr, TxtPtr, RtnAdr
+    push    de                    ; Stack = StrAdr, FltLen, AryAdr, TxtPtr, RtnAdr
+    ldir                          ; Copy from FBUFFR to string space
+    pop     de                    ; DE = StrAdr; Stack = FltLen, AryAdr, TxtPtr, RtnAdr
+    pop     bc                    ; BC = FltLen; Stack = AryAdr, TxtPtr, RtnAdr
+    pop     hl                    ; HL = AryAdr; Stack = TxtPtr, RtnAdr
+    call    write_bcde2hl         ; Write string descriptor
     jp      _close_pop_ret        ; Close file, pop TxtPtr, and return
 
 ;-----------------------------------------------------------------------------
@@ -1500,12 +1545,15 @@ FN_OPEN:
     jp      m,_dos_error
     jp      SNGFLT
 
+_open_dir:
+    ld      iy,dos_open_dir
+    jr      _open_aux_call
 _open_write:
     ld      iy,dos_open_write
-    call    aux_call
-    jr      _open_error
+    jr      _open_aux_call
 _open_read:
     ld      iy,dos_open_read
+_open_aux_call:
     call    aux_call
 _open_error:
     jp      m,_dos_error

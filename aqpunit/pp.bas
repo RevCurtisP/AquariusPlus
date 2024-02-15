@@ -68,7 +68,7 @@
 434 GOSUB _pokewp_err:ARGS 63,16383,33,5
 440 GOSUB _peekwp_err:ARGS 20,16383,6
 442 GOSUB _peekwp_err:ARGS 21,16383,6
-444 GOSUB _peekwp_err:ARGS 63,16383,5
+444 GOSUB _peekwp_err:ARGS 63,16383,6
 
 450 GOSUB _pokep_err:ARGS 0,16384,6,5:REM Illegal Address in Page
 452 GOSUB _pokewp_err:ARGS 0,16384,44,5

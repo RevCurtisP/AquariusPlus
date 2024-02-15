@@ -1,4 +1,8 @@
 # plusBASIC Release History
+ - v0.21v
+   - Added LOAD DIR filename$,\*array$
+   - LOAD array$ ASC and LOAD DIR start at array index 1, put number of lines in index 0
+   - Updated read/write page checking to match new memory structure
  - v0.21u
    - Added LOAD filename$,\*array$,ASC
  - v0.21s
@@ -70,5 +74,5 @@
    - Added optional comma between end-coordinate and fill character in `FILL SCREEN`
  - v0.20e
    - Added `KEY()` function
- - v0.20dt,
+ - v0.20d
    - Added `DEC()` function, fixed `esp_get_version`/`VER(0)`/`VER$(0)`

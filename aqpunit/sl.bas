@@ -53,7 +53,7 @@
 328 GOSUB _outquoted:ARGS LIST$(NEXT)
 330 RENAME "sps.bpg" TO "spg.bpg"
 332 GOSUB _outquoted:ARGS LIST$(NEXT)
-334 LOAD "spg.bpg",@63
+334 LOAD "spg.bpg",@50
 336 GOSUB _assert:ARGS "COMPARE(@42,@63)"
 338 DEL "spg.bpg"
 
