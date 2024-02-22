@@ -33,12 +33,13 @@ ROM_CART        equ 19
 VIDEO_RAM       equ 20
 CHAR_RAM        equ 21
     
-RAM_BAS_0       equ 56      ; RAM for Soft ROM mapped into Bank 0
+RAM_BAS_0       equ 56      ; RAM for Bank 0 (character ROM cache)
 RAM_BAS_1       equ 57      ; RAM for BASIC mapped into Bank 1
 RAM_BAS_2       equ 58      ; RAM for BASIC mapped into Bank 2
-RAM_BAS_3       equ 59      ; RAM for BASIC mapped into Bank 3
+RAM_BAS_3       equ 59      ; RAM for Bank 0 (unused by BASIC)
 
-TMP_BUFFR       equ 50      ; Transient data buffer
+;;;ToDo: use RAM_BAS_3 as TMP_BUFFER
+TMP_BUFFR       equ 50      ; Transient data buffer 
 BOOT_BUFR       equ 51      ; Boot ROM work area
 SCR_BUFFR       equ 52      ; Screen Buffers
 VID_BUFFR       equ 53      ; Video RAM Shadow Buffer
@@ -171,6 +172,10 @@ VCTRL_REMAP_BC  equ $20     ; xx1xxxxx  Remap Text Border Characters
 VCRTL_80COL_EN  equ $40     ; x1xxxxxx  Enable 80-column mode
 VCTRL_TEXT_PAGE equ $80     ; 1xxxxxxx  Select Text Page
 
+VCTRL_TEXT_BITS equ VCTRL_TEXT_EN + VCRTL_80COL_EN + VCTRL_TEXT_PAGE
+VCTRL_TEXT_MASK equ $FF - VCTRL_TEXT_BITS
+VCTRL_TEXT_DIS  equ $FF - VCTRL_TEXT_EN
+
 SYSCTRL_XRG_DIS equ $01     ; xxxxxxx1  Disable registers $E0-$F5, $F8-$F9
 SYSCTRL_PSG_DIS equ $02     ; xxxxxx1x  Disable PSGs
 SYSCTRL_TURBO   equ $04     ; xxxxx1xx  Turbo mode (7.16MHz)
@@ -179,10 +184,18 @@ IRQ_VBLANK      equ $01     ; VBLANK interrupt
 IRQ_VLINE       equ $02     ; Video LINE interrupt
 
 ;-----------------------------------------------------------------------------
+; BASIC Extended character ROM buffers
+; Page 56 (RAM_BAS_0) 
+; See screen_swap.asm
+;-----------------------------------------------------------------------------
+
+;-----------------------------------------------------------------------------
 ; BASIC Extended System Constants, Variables and Buffers
 ; Page 54 (BAS_BUFFR), swapped into Bank 3
 ;-----------------------------------------------------------------------------
+; Page 54 (BAS_BUFFR), swapped into Bank 3
 BASBUF_BASE equ $C000   ; Base Address of BASIC Buffers
+SCRNVBASE   equ $0000   ; Graphics Module SysVar Base (see gfx.asm)
 FKEYDEFS    equ $0200   ; Function Key Definitions (32 bytes each)
 FKEYBASE    equ BASBUF_BASE + FKEYDEFS
 ;         $0500-$7FF   ; Unused
@@ -190,28 +203,21 @@ RUNARGS     equ $0800   ; RUN arguments (First is program name)
 DEFCHRSET   equ $3400
 ALTCHRSET   equ $3800   ; Page Offset: Custom Character Set Buffer
 CHRSETLEN   equ 2048    ; Size of character set ROM
-
+; RNDTAB system variables
 BASOUTBUF   equ $01     ; BASYSCTL: redirect OUTput to BUFfer
 BASSAVASC   equ $02     ; BASYSCTL: Default SAVe to ASC
-BASKEYRPT   equ $04     ;      BASYSCTL: KEY RePeaI on
+BASKEYRPT   equ $04     ; BASYSCTL: KEY RePeaI on
+BASCHRSET   equ $08     ; BASYSCTL: Character set in use (0 or 1)
 BASBRKOFF   equ $20     ; BASYSCTL: BReak OFF (Disable Ctrl-C)
-BASSCRN80   equ $40     ; BASYSCTL: SCReeN 80 (80) column mode
 BASCRNCLR   equ $80     ; BASYSCTL: PRINT updates Color RAM
+; Screen Control Bitmask
+BASCRNCTL   equ BASCHRSET + BASCRNCLR
+BASCRNMSK   equ $FF - BASCRNCTL
 
 PT3_LOOPS   equ $02     ; EXT_FLAGS: PT3 songs repeat
 TRON_FLAG   equ $80     ; EXT_FLAGS: Trace on/off
 
-;-----------------------------------------------------------------------------
-; BASIC Text Screen Buffers
-; Offsets into Page 52 (SCR_BUFFR)
-;-----------------------------------------------------------------------------
-SCRN40BUF   equ $0000   ; Primary 40 column buffer for screen switching
-SCRN41BUF   equ $0800   ; Secondary 40 column buffer for screen switching
-SCRN80BUF   equ $1000   ; 80 column buffer for screen switching
-
-SCRN40SWP   equ $2000   ; Used by screen save, restore and swap
-SCRN41SWP   equ $2800   ; Used by screen save, restore and swap
-SCRN80SWP   equ $3000   ; Used by screen save, restore and swap
+DFLTATTRS   equ $06     ; Default screen colors - Black on Cyan
 
 ;-----------------------------------------------------------------------------
 ; IRQACTIVE Bits

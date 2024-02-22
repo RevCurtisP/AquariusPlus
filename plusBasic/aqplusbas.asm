@@ -17,6 +17,7 @@
 
     include "sbasic.inc"
     include "plus.inc"
+    include "screen.inc"
 
 ;Internal Jump Table: S3BASIC interface
     org     $2000
@@ -86,7 +87,7 @@ just_ret:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.21v"
+    db "v0.21w"
 ifdef coredump
     db "_coredump"
 endif
@@ -175,6 +176,27 @@ _coldboot:
     call    page_set_plus
     call    spritle_clear_all     ; Clear all sprite properties
     jp      do_coldboot
+
+;-----------------------------------------------------------------------------
+; Input: BC: Byte Count
+;     DE,HL: Start addresses
+; Clobbers: AF,AF,BC,DE,HL
+;-----------------------------------------------------------------------------
+sys_swap_mem:
+    ld      a,b
+    or      c
+    ret     z
+    ld      a,(de)
+    ex      af,af'
+    ld      a,(hl)
+    ld      (de),a
+    ex      af,af'
+    ld      (hl),a
+    inc     hl
+    inc     de
+    dec     bc
+    jp      sys_swap_mem
+  
 
 ; ROM Signature
     assert !($20F6<$)   ; Overflow into Kernel jump table
@@ -477,6 +499,7 @@ default_chrset:
 ;-----------------------------------------------------------------------------
 ; Copy selected character set into Character RAM
 ; Input: A: Character set (0: Default, 1: Custom)
+; Clobbered: AF',BC,DE,HL,IX
 ;-----------------------------------------------------------------------------
 select_chrset:
     ld      hl,DEFCHRSET          ; If A = 0
@@ -686,7 +709,7 @@ _inlin_done:
 ;-----------------------------------------------------------------------------
 _line_edit:
     push    hl
-    call    get_linbuf_addr   ; HL = Line Buffer addresx
+    call    get_linbuf_addr   ; HL = Line Buffer address
     ld      c,0               ; C = ChrCnt
     call    edit              ; Edit the line
     pop     hl

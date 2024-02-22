@@ -1,10 +1,10 @@
 ;-----------------------------------------------------------------------------
 ; Initialize screen buffers
 ; Called from _coldboot
+; Clobbers: AF,BC,DE,HL
 ;-----------------------------------------------------------------------------
 init_screen_buffers:
-    ld      a,SCR_BUFFR           ; Swap Screen Buffers into Page 1
-    out     (IO_BANK1),a          ; Stack is hidden
+    call    _map_screen_buff
 
     ld      a,' '
     ld      hl,BANK1_BASE+SCRN40BUF
@@ -26,7 +26,7 @@ init_screen_buffers:
     ld      bc,2048
     call    sys_fill_mem
 
-    ld      a,6 
+    ld      a,6
     ld      hl,BANK1_BASE+SCRN40BUF+1024
     ld      bc,1024
     call    sys_fill_mem
@@ -46,49 +46,69 @@ init_screen_buffers:
     ld      bc,2048
     call    sys_fill_mem
 
-    ld      a,RAM_BAS_1
-    out     (IO_BANK1),a
-    ret
+    jp      page_restore_bank1
 
 ;-----------------------------------------------------------------------------
-; initialization screen variable buffers
-; Exits with Extended ROM in Bank 3
-; Output: B: (TTYPOS)
-;         C: (CURCHR)
-;        DE: (CURRAM)
-;        HL: Address after end of last Save Buffer
+; Initialize screen variable buffers
+; Called from _coldboot
+; Copies current screen control sysvars into buffers
+; Output: HL: Address after end of last buffer
+; Clobbers: A,B,DE
 ;-----------------------------------------------------------------------------
 init_screen_vars:
-    ld      bc,' '                  
-    ld      de,SCREEN+41
-    ld      hl,BUFSCRN40
-    call    write_screen_vars     ; 40 column primary
-    call    write_screen_vars     ; 40 column secondary
-    ld      de,SCREEN+81
-    call    write_screen_vars     ; 80 column
-    ld      de,SCREEN+41
-    call    write_screen_vars     ; 40 column primary
-    call    write_screen_vars     ; 40 column secondary
-    ld      de,SCREEN+81
-    jp      write_screen_vars     ; 80 column
+    call    _map_screen_vars
+    ld      hl,BANK1_BASE         ; Start at BUFSCRN40
+    call    .init_buffs
+    ld      l,SWPSCRN40
+    call    .init_buffs
+    call    .init_palettes
+    jp      page_restore_bank1
+.init_buffs
+    ld      de,SCREEN + 41        ; CURRAM
+    call    .init_buff            ; xxxSCRN40
+    call    .init_buff            ; xxxSCRN41
+    ld      e,81                  
+; DE = CURRAM, HL = Buffer Address
+.init_buff:
+    xor     a                     ; TTYPOS = 0
+    ld      (hl),a                
+    inc     hl
 
-_screen_vars_offset
-    in      a,(IO_VCTRL)
-    ld      l,BUFSCRN80
-    bit     6,a
-    ret     nz
-    ld      l,BUFSCRN41
-    bit     7,a
-    ret     nz
-    ld      l,BUFSCRN40
+    ld      a,' '                 ; CURCHR = ' '
+    ld      (hl),a                
+    inc     hl
+
+    ld      (hl),e                ; CURRAM = DE
+    inc     hl
+    ld      (hl),d
+    inc     hl
+
+    xor     a                     ; BASYSCTL = 0
+    ld      (hl),a                
+    inc     hl
+
+    ld      (hl),a                ; IO_VCTRL = 0
+    inc     hl
+
+    ld      a,DFLTATTRS           ; SCOLOR - Defaults
+    ld      (hl),a                ; IO_VCTRL = 0
+    inc     hl
+    
+    inc     hl                    ; Unused
     ret
 
-get_screen_vars:
-    ld      a,(TTYPOS)
-    ld      b,a
-    ld      a,(CURCHR)
-    ld      c,a
-    ld      de,(CURRAM)
+; Loop 5 times then fall into .init_palette to do the 6th
+.init_palettes
+    ld    de,BANK1_BASE+BUFPALT40
+    ld    a,5
+.loop    
+    call  .init_palette
+    dec   a
+    jr    nz,.loop
+.init_palette
+    ld    hl,default_palette
+    ld    bc,32
+    ldir
     ret
 
 ;-----------------------------------------------------------------------------
@@ -102,246 +122,411 @@ screen_reset:
     jp      palette_reset
 
 ;-----------------------------------------------------------------------------
-; Switch Text Screen
-; Input: A: Screen # - 1,2 = 40 column, 3 = 80 column
+; Expand Convert IO_VCTRL to screen status
+; Output: A,L: Bit 7-6: Text Mode 5: Border; 4: Priority; 3: Sprites; 2-1: Graphics 
+;           H: (IO_VCTRL)
 ;-----------------------------------------------------------------------------
-screen_switch:
-    push    af
-    ld      a,BUFSCRN40           ; Save current text screen to buffer
-    ld      hl,SCRN40BUF
-    call    screen_save           
-    pop     af
-
-    ld      b,40                  ; Default screen width to 40
-    cp      3                     
-    jr      c,.not80              ; If 80 column mode
-    rl      b                     ;   Make it 80
-.not80
-    ld      hl,LINLEN
-    ld      (hl),b                ; Write out screen width
-    ld      de,.text_mode_table
-    call    table_lookup          ; Look up Text Mode bits
-    ld      b,a                   ; B = Mode Bits
+screen_status:
+    ld      bc,0
+    ld      de,0
     in      a,(IO_VCTRL)
-    and     $3E                   ; Text Mode mask
-    or      b                     ; A = New VCTRL
-    out     (IO_VCTRL),a
-
-    ld      a,BUFSCRN40           ; Restore current text screen from buffer
-    ld      hl,SCRN40BUF
-    call    screen_restore       
-
+    ld      h,a                   ; H = (IO_VCTRL)
+    ld      l,0
+    bit     0,h                   ; Test VCTRL_TEXT_EN
+    jr      z,.skip               ; If text enabled
+    ld      l,192
+    bit     6,h                   ;   Test VCRTL_80COL_EN
+    jr      nz,.skip              ;   If not in 80 column mode
+    ld      l,128
+    bit     7,h                   ;     Test VCTRL_TEXT_PAGE
+    jr      nz,.skip              ;     If in screen page 1
+    ld      l,64
+.skip    
+    ld      a,h                   ; A = IO_VCTRL
+    and     VCTRL_TEXT_MASK       ; Strip text screen bits
+    or      l                     ; Or in text mode
+    ld      l,a                   ; L = Screen status
     ret
 
-.text_mode_table:
-    byte    VCTRL_TEXT_OFF                  ; 0 = Text Off
-    byte    VCTRL_TEXT_EN                   ; 1 = 40 Column Primary
-    byte    VCTRL_TEXT_EN+VCTRL_TEXT_PAGE   ; 2 = 40 Column Secondary
-    byte    VCTRL_TEXT_EN+VCRTL_80COL_EN    ; 3 = 80 Column
-
-
-
-;-----------------------------------------------------------------------------
-; Save screen vars for current screen
-; Clobbers: AF, BC, DE, HL
-;-----------------------------------------------------------------------------
-swap_screen_vars:
-    ld      a,SWPSCRN40
-    call    get_screen_vars
-    push    de                    ; Stack = CURRAM, RtnAdr
-    push    bc                    ; Stack = TTYPOS, CURCHR, CURRAM, RtnAdr
-    ld      a,SWPSCRN40
-    call    restore_screen_vars   ; 
-    pop     bc                    ; B = TTYPOS, C = CURCHR; Stack = CURRAM, RtnAdr
-    pop     de                    ; DE = CURRAM; Stack = RtnAdr
-    ld      a,SWPSCRN40
-    push    af
-    jr      _save_screen_vars
-
-;-----------------------------------------------------------------------------
-; Save screen vars for current screen
-; Input: A: BUFSCRN40 or SWPSCRN40
-; Clobbers: AF, BC, DE, HL
-;-----------------------------------------------------------------------------
-restore_screen_vars:
-    push    af
-    call    _screen_vars_offset
-    pop     af
-    add     a,l
-    ld      l,a
-    call    read_screen_vars
-    ld      a,b
-    ld      (TTYPOS),a
-    ld      a,c
-    ld      (CURCHR),a
-    ld      (CURRAM),de
-    ret
-
-;-----------------------------------------------------------------------------
-; Save screen vars for current screen
-; Input: A: BUFSCRN40 or SWPSCRN40
-; Clobbers: AF, BC, DE, HL
-;-----------------------------------------------------------------------------
-save_screen_vars:
-    push    af
-    call    get_screen_vars
-_save_screen_vars
-    call    _screen_vars_offset
-    pop     af
-    add     a,l
-    ld      l,a
-
-;-----------------------------------------------------------------------------
-; Write to screen variable buffers
-; Input: B: TTYPOS
-;        C: CURCHR
-;       DE: CURRAM
-;       HL: Save Buffer offset
-;-----------------------------------------------------------------------------
-; Output: HL: Address after end of Save Buffer
-; Clobbers: AF
-write_screen_vars:
-    ld      a,BAS_BUFFR
-    out     (IO_BANK1),a
-    ld      h,$40                 ; HL = Bank 3 Address
-    ld      (hl),b                ; SAVTTYPOS
-    inc     hl
-    ld      (hl),c                ; SAVCURCHR
-    inc     hl
-    ld      (hl),e                ; SAVCURRAM
-    inc     hl
-    ld      (hl),d                
-    inc     hl
-    ld      a,RAM_BAS_1
-    out     (IO_BANK1),a
-    ret
-
-;-----------------------------------------------------------------------------
-; Read from screen variable buffers
-; Exits with Extended ROM in Bank 3
-; Input: HL: Save Buffer offset
-; Output: B: TTYPOS
-;         C: CURCHR
-;        DE: CURRAM
-;        HL: Address after end of Save Buffer
-;-----------------------------------------------------------------------------
-read_screen_vars:
-    push    af
-    ld      a,BAS_BUFFR
-    out     (IO_BANK1),a
-    ld      h,$40                 ; HL = Bank 3 Address
-    ld      b,(hl)                ; SAVTTYPOS
-    inc     hl
-    ld      c,(hl)                ; SAVCURCHR
-    inc     hl
-    ld      e,(hl)                ; SAVCURRAM
-    inc     hl
-    ld      d,(hl)                
-    inc     hl
-    ld      a,RAM_BAS_1
-    out     (IO_BANK1),a
-    pop     af
+screen_swap_vars:
+    push    de                    ; Stack = SwapBufAdr
+    push    hl                    ; Stack = VarBufBase, SwapBufAdr, RtnAdr
+    ex      de,hl                 ; HL = SwapBufAdr
+    call    screen_stash_vars     ; Stash to SwapVarBuf
+    pop     de                    ; DE = VarBufBase; Stack = SwapBufAdr, RtnAdr
+    call    screen_swap_palette
+    ex      de,hl                 ; HL = VarBufBase
+    call    _svar_buff_addr       ; HL = VarBufAdr, A = CurBASCHRSET
+    push    hl                    ; Stack = VarBufAdr, SwapBufAdr, RtnAdr
+    push    af                    ; Stack = CurBASCHRSET, VarBufAdr, SwapBufAdr, RtnAdr
+    call    screen_restore_vars   ; A = OrgBASCHRSET
+    pop     bc                    ; B = CurBASCHGSER; Stack = VarBufAdr, SwapBufAdr, RtnAdr 
+    cp      b                     ; If OrgBASCHRSET <> CurBASCHGSER
+    call    nz,_select_chrset     ;   Switch to buffered character set
+    pop     de                    ; DE = VarBufAdr; Stack = SwapBufAdr, RtnAdr
+    pop     hl                    ; HL = SwapBufAdr; Stack = RtnAdr
+    push    de                    ; Stack = VarBufAdr, RtnAdr
+    ld      bc,SVBUFLEN
+    ldir                          ; SwapVarBuf to VarBuf
+    pop     de                    ; DE = VarBufAdr
     ret
 
 ;-----------------------------------------------------------------------------
 ; Copy Screen Buffer to Text Screen
-; Input: A: BUFSCRN40 or SWPSCRN40
+; Called from ST_RESTORE_SCREEN, *ST_SCREEN
+; Input: L: BUFSCRN40 or SWPSCRN40
 ; Clobbered: A,BC,DE,HL
 ;-----------------------------------------------------------------------------
 screen_restore:
+    call    _map_screen_vars      ; Stack = SavePg, RtnAdr
+    call    _restore_vars         ; DE = BufAdr, BC = BufLen
+    push    af                    ; Stack = 80Cols, SavePg, RtnAdr
+    ex      de,hl
+    ldir
+    pop     af                    ; AF = 80cols; Stack = SavePg, RtnAdr
+    jp      z,page_restore_bank1  ; If 80-columns
+    ld      de,SCREEN
+    ld      bc,2048
+    jr      _copy_color
+
+_restore_vars:
+    call    _svar_buff_addr       ; HL = BufAdr, A = CurBASCHRSET
     push    hl                    ; Stack = ScrBuf, RtnAdr
-    call    restore_screen_vars
-    pop     hl                    ; HL = ScrBuf, RtnAdr
-    ld      ix,.page_fast_read
-    jr      _screen
-    
-.page_fast_read
-    ex      de,hl                 ; Swap for read
-    jp      page_fast_read_bytes  
+    push    af                    ; Stack = CurBASCHRSET, SavePg, RtnAdr
+    call    screen_restore_vars   ; A = OrgBASCHRSET
+    pop     bc                    ; B = CurBASCHGSER
+    cp      b                     ; If OrgBASCHRSET <> CurBASCHGSER
+    call    nz,_select_chrset     ;   Switch to buffered character set
+    pop     de                    ; DE = ScrBuf
+    call    screen_restore_palette
+    jp     _scrn_buff_addr        ; DE = BufAdr, BC = BufLen
 
 ;-----------------------------------------------------------------------------
 ; Copy Text Screen to Screen Buffer
-; Input: A: Cursor buffer offset: BUFSCRN40 or SWPSCRN40
-;       HL: Screen buffer offset: SCRN40BUF or SCRN40SWP 
+; Called from ST_STASH_SCREEN, *ST_SCREEN
+; Input: L: Cursor buffer offset: BUFSCRN40 or SWPSCRN40
 ; Clobbered: A,BC,DE,HL
 ;-----------------------------------------------------------------------------
-screen_save:
-    push    hl                    ; Stack = ScrBuf, RtnAdr
-    call    save_screen_vars
-    pop     hl                    ; HL = ScrBuf, RtnAdr
-    ld      ix,page_fast_write_bytes
-    jr      _screen
+screen_stash:
+    call    _map_screen_vars      ; Stack = SavePg, RtnAdr
+    call    _svar_buff_addr       ; HL = BufAdr
+    push    hl                    ; Stack = VarBufAdr, SavePg, RtnAdr
+    call    screen_stash_vars     ; 
+    pop     de                    ; E = VarBufOfs; Stack = SavePg, RtnAdr
+    call    screen_stash_palette  ; DE preserved
+    call    _scrn_buff_addr       ; DE = BufAdr, BC = ScrLen, AF = 80cols
+    push    af                    ; Stack = 80Cols, SavePg, RtnAdr
+    ldir
+    pop     af                    ; AF = 80cols; Stack = SavePg, RtnAdr
+    jp      z,page_restore_bank1  ; If 80-columns
+    ld      hl,SCREEN
+    ld      bc,2048
+_copy_color:
+    in      a,(IO_VCTRL)
+    or      VCTRL_TEXT_PAGE
+    out     (IO_VCTRL),a          ;   Select Color Page
+    ldir                          ;   Do the copy 
+_seltext_resret:
+    and     $FF-VCTRL_TEXT_PAGE    
+    out     (IO_VCTRL),a          ;   Select Text Page
+    jp      page_restore_bank1    ;   Restore page and return
 
 ;-----------------------------------------------------------------------------
-; Swap Text Screen with Screen Buffer
-; Input: A: Cursor buffer offset: BUFSCRN40 or SWPSCRN40
-;       HL: Screen buffer offset: SCRN40BUF or SCRN40SWP 
+; Swap screen variables
+; Called from ST_STASH_SCREEN, *ST_SCREEN
+; Input: L: Cursor buffer offset: BUFSCRN40 or SWPSCRN40
 ; Clobbered: A,BC,DE,HL
 ;-----------------------------------------------------------------------------
 screen_swap:
-    push    hl                    ; Stack = ScrBuf, RtnAdr
-    call    swap_screen_vars
-    pop     hl                    ; HL = ScrBuf, RtnAdr
-    ld      ix,page_mem_swap_bytes   
-
-_screen:
-    in      a,(IO_VCTRL)
-    bit     6,a                   
-    jr      nz,_screen80         ; If 40 column screen
-    bit     7,a                   ;   If primary page
-    ld      de,SCRN40BUF          ;     Write to primary buffer
-    jr      z,_screen40          ;   Else 
-    ld      de,SCRN41BUF          ;     Write to auxiliary buffer
-    jr      _screen40            ; Else
-_screen80
-    push    hl                    ;   Stack = BufOfs, RtnAdr
-    push    af                    ;   Stack = VCTRL, BufOfs, RtnAdr
-    set     7,a                   ;   Write from Color RAM
-    out     (IO_VCTRL),a          
-    ld      de,SCRN80BUF+2048     ;   to second half of 80-column buffer
-    call    _screen40             ;   
-    pop     af                    ;   A = VCTRL, Stack = BufOfs, RtnAdr
-    pop     hl                    ;   HL = BufOfs, Stack = RtnAdr
-    res     7,a                   ;   Write from Screen RAM
-    out     (IO_VCTRL),a          
-    ld      de,SCRN80BUF          ;   to firat` half of 80-column buffer
-_screen40
-    add     hl,de                 
-    ex      de,hl
-    ld      a,SCR_BUFFR
+    call    _map_screen_vars      ; Stack = SavePg, RtnAdr
+    ld      de,BANK1_BASE+SWPSVARS
+    call    screen_swap_vars      ; DE = VarBufAdr
+    call    _scrn_buff_addr       ; DE = ScrBufAdr, BC = BufLen
+    push    af                    ; Stack = 80Cols, SavePg, RtnAdr
+    call    sys_swap_mem          ; Swap screen with buffer
+    pop     af                    ; AF = 80cols; Stack = SavePg, RtnAdr
+    jp      z,page_restore_bank1  ; If 80-columns
+    ld      hl,SCREEN
     ld      bc,2048
-    ld      hl,SCREEN             ; Copying from Text and Color RAM
-    jp      (ix)                  ; Do it
+    in      a,(IO_VCTRL)
+    or      VCTRL_TEXT_PAGE
+    out     (IO_VCTRL),a          ;   Select Color Page
+    call    sys_swap_mem          ;   Swap color with buffer
+    in      a,(IO_VCTRL)
+    jr      _seltext_resret
 
 ;-----------------------------------------------------------------------------
-; Get the screen buffer address offset
-; Output: DE: Screen Buffer Offset
-; Sets Flags: S if 80 column screen, C if secondary 40 column screen
+; Switch Text Screen
+; Input: A: Screen # - 1,2 = 40 column, 3 = 80 column
+; Output: A: (IO_VCTRL)
+; Clobbers: AF',BC,DE,HL
 ;-----------------------------------------------------------------------------
-screen_get_buff_ofs:
-    in      a,(IO_VCTRL)
-    rla                           ; Shift TEXT_PAGE into carry, 80COL_EN into bit 7
-    ld      de,SCRN80BUF
-    ret     m
-    ld      de,SCRN41BUF          ;     Write to auxiliary buffer
-    ret     c
-    ld      de,SCRN40BUF          ;     Write to primary buffer
-    ret
+screen_switch:
+    ld      de,.text_mode_table
+    call    table_lookup
+    ld      b,a                   ; B = VCTRL bits
+    in      a,(IO_VCTRL)          ; A = Current VCTRL
+    and     VCTRL_TEXT_BITS       ; Isolate text screen bits
+    cp      b                     ; If text modes are the same
+    ret     z                     ;   Never mind
+    push    bc                    ; Stack = VCTRLbits, RtnAdr
+    ld      hl,BUFSCRN40           
+    push    hl                    ; Stack = BufOfs, NewVCTRL
+    call    screen_stash          ; Stash current screen to switch buffer
+    pop     hl                    ; HL = BufOfs; Stack = NewVCTRL, RtnAdr
+    pop     bc                    ; B = VCTRLbits; Stack = RtnAdr
+    in      a,(IO_VCTRL)          ; A = Current VCTRL
+    and     VCTRL_TEXT_MASK       ; Clear screen control bits
+    or      b
+    out     (IO_VCTRL),a          ; Switch to new text mode
+    call    screen_restore        ; Restore new screen and return
+    jp      set_linlen
+    
+.text_mode_table:
+    byte    VCTRL_TEXT_OFF                  ; 0 = Text Off
+    byte    VCTRL_TEXT_EN                   ; 1 = 40 Column Primary
+    byte    VCTRL_TEXT_EN+VCTRL_TEXT_PAGE   ; 2 = 40 Column Secondary
+    byte    VCTRL_TEXT_EN+VCRTL_80COL_EN    ; 3+ = 80 Column
+
 
 ;-----------------------------------------------------------------------------
-; Update VCTRL Register
-; Input: C: Bit Pattern
-;        B: Bit Mask 
-; Returns: B: New VCTRL value
+; Copy screen variables into buffer
+; Input: HL = Buffer Address
+; Output: A = BASCRNCTL
+;      HL: Address of next Buffer
+; Clobbers: DE
 ;-----------------------------------------------------------------------------
-screen_set_vctrl:
-    push    a
-    in      a,(IO_VCTRL)
-    and     b
-    or      c
+screen_restore_vars:
+    ld      a,(hl)                ; Offset $0
+    inc     hl
+    ld      (TTYPOS),a
+
+    ld      a,(hl)                ; Offset $1
+    inc     hl
+    ld      (CURCHR),a
+
+    ld      e,(hl)                ; Offset $2
+    inc     hl
+    ld      d,(hl)
+    inc     hl
+    ld      (CURRAM),de
+
+    ld      d,(hl)                ; Offset $4
+    inc     hl
+    ld      a,(BASYSCTL)          ; 
+    and     $FF-BASCRNCTL         ; Clear screen control bits
+    or      d                     ; And in saved bits
+    ld      (BASYSCTL),a
+    push    af                    ; Stack = BASCRNCTL, RtnAdr
+
+    ld      d,(hl)                ; Offset $4
+    inc     hl
+    in      a,(IO_VCTRL)          ; 
+    and     $FF-VCTRL_REMAP_BC    
+    or      d                     
     out     (IO_VCTRL),a
-    ld      b,a
-    pop     a
+
+    ld      a,(hl)                ; Offset $6
+    inc     hl
+    ld      (SCOLOR),a
+
+    inc     hl                    ; Next buffer
+
+    pop     af                    ; A = BASCRNCTL Stack = RtnAdr
+    and     BASCHRSET             ; A = BASCHRSET
+    ret
+
+;-----------------------------------------------------------------------------
+; Copy screen variables into buffer
+; Input: HL = Buffer Address
+; Clobbers: A, DE, HL
+;-----------------------------------------------------------------------------
+screen_stash_vars:
+    ld      a,(TTYPOS)
+    ld      (hl),a                ; Offset $0
+    inc     hl
+    ld      a,(CURCHR)
+    ld      (hl),a                ; Offset $1
+    inc     hl
+    ld      de,(CURRAM)
+    ld      (hl),e                ; Offset $2
+    inc     hl
+    ld      (hl),d
+    inc     hl
+    ld      a,(BASYSCTL)
+    and     BASCRNCTL
+    ld      (hl),a                ; Offset $4
+    inc     hl
+    in      a,(IO_VCTRL)
+    and     VCTRL_REMAP_BC
+    ld      (hl),a                ; Offset $5
+    inc     hl
+    ld      a,(SCOLOR)
+    ld      (hl),a                ; Offset $6
+    inc     hl                    ; Offset $7
+    inc     hl                    ; Next buffer
+    ret
+
+; Input: E = VarBufOfs
+; Output: DE = ScrBufAdr, BC = ScrLen, AF = 80column
+_scrn_buff_addr:
+    call    _bank_screen_buff
+    ld      hl,SCREEN
+    ld      a,high(BANK1_BASE)      
+    add     e
+    ld      d,a
+    ld      e,l
+    ld      bc,2048
+    and     $10                   ; A = $10 if 80-columns
+    ret
+
+;-----------------------------------------------------------------------------
+; Get screen buffer address
+;  Input: L: BUFSCRN40 or SWPSCRN40
+; Output: A: BASCHRSET
+;         DE: Buffer offset
+;         HL: Buffer Address
+;  Flags: Zero set if default chrset 
+;-----------------------------------------------------------------------------
+_svar_buff_addr:
+    ld      h,high(BANK1_BASE)
+    call    _svar_buff_ofs
+    add     hl,de
+    ld      a,(BASYSCTL)          
+    and     BASCHRSET             
+    ret
+
+;-----------------------------------------------------------------------------
+; Get screen buffer offset
+; Force Text Page if 80-column mode
+; Output: DE: Screen variable buffer offset
+;-----------------------------------------------------------------------------
+_svar_buff_ofs:
+    ld      d,0
+    in      a,(IO_VCTRL)
+    rla                           ; Carry = TEXT_PAGE
+    rla                           ; Carry = 80COL_EN
+    jr      nc,.not80             ; If 80 column mode
+    ld      e,BUFSCRN80           ;   E = 80-column offset
+    rra                           ;   Carry = TEXT_PAGE
+    ret     nc                    ;   If color page
+    ccf                           ;     Carry = 0 (Screen Page)
+    rra                           ;     A = New IO_VCTRL
+    out     (IO_VCTRL),a
+    ret                           ; Else   
+.not80
+    rra                           ; Carry = TEXT_PAGE
+    ld      e,BUFSCRN41          
+    ret     c
+    ld      e,BUFSCRN40          
+    ret
+
+;-----------------------------------------------------------------------------
+; Copy buffer into palette
+; Input: DE = Variable Buffer Address
+; Clobbers: A, HL
+;-----------------------------------------------------------------------------
+screen_restore_palette:
+    call    _palt_buff_addr       ; HL = BufAdr
+.loop
+    ld      a,c
+    out     (IO_VPALSEL),a        ; Select palette index
+    inc     c
+    ld      a,(hl)
+    out     (IO_VPALDATA),a
+    inc     hl
+    djnz    .loop
+    ret
+
+;-----------------------------------------------------------------------------
+; Copy current palette into buffer
+; Input: DE = Variable Buffer Address
+; Clobbers: A, HL
+;-----------------------------------------------------------------------------
+screen_stash_palette:
+    call    _palt_buff_addr       ; HL = BufAdr
+.loop
+    ld      a,c
+    out     (IO_VPALSEL),a        ; Select palette index
+    inc     c
+    in      a,(IO_VPALDATA)
+    ld      (hl),a
+    inc     hl
+    djnz    .loop
+    ret
+
+;-----------------------------------------------------------------------------
+; Copy current palette into buffer
+; Input: DE = Variable Buffer Address
+; Clobbers: A, HL
+;-----------------------------------------------------------------------------
+screen_swap_palette:
+    call    _palt_buff_addr       ; HL = BufAdr
+.loop
+    ld      a,c
+    out     (IO_VPALSEL),a        ; Select palette index
+    inc     c
+    in      a,(IO_VPALDATA)
+    ex      af,af'
+    ld      a,(hl)
+    out     (IO_VPALDATA),a
+    ex      af,af'
+    ld      (hl),a
+    inc     hl
+    djnz    .loop
     ret
 
 
+; Input: DE = Variable buffer address
+; Output: HL = Palette buffer address, B = 32, C = 0
+_palt_buff_addr:
+    ld      h,0
+    ld      a,e
+    cp      $20
+    jr      c,.skip
+    sub     8
+.skip    
+    add     a,a
+    add     a,a
+    add     a,BUFPALT40
+    ld      l,a                   ; HL = VarBufOfs
+    ld      h,d                   ; HL = PalBufAdr
+    ld      bc,32*256
+    ret
+
+; 40-col #1: E=$00
+; 40-col #2: E=$08
+; 80-col:    E=$10
+
+; Map SCR_BUFFR into Bank 1, Text/Color page into screen memory
+; Clobbered: A
+_bank_screen_buff:
+    ld      a,SCR_BUFFR
+    out     (IO_BANK1),a
+    ret
+
+_bank_color_page:
+    in      a,(IO_VCTRL)
+    and     $FF-VCTRL_TEXT_PAGE
+    or      VCTRL_TEXT_PAGE
+    out     (IO_VCTRL),a
+    ret
+
+; Clobbered: A, BC
+_map_screen_buff:
+    ld      a,SCR_BUFFR           
+    byte    $01                   ; LD BC over LD A
+_map_screen_vars:
+    ld      a,BAS_BUFFR
+    jp      page_map_bank1
+
+; Select character set
+; Input: A = BASYSCTL
+; Clobbered: AF',BC,DE,HL,IX
+_select_chrset:
+    and     BASCHRSET     
+    rra
+    rra
+    rra                           ; Move 
+    jp      select_chrset
+  

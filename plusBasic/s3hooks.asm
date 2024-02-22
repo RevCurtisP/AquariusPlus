@@ -72,7 +72,7 @@ s3_ctrl_keys:
     ld      (RESPTR),de           ;   Set pointer to buffer
     jr      .inlinc               ;   and return
 .switch_screen
-    ld      a,b                   ; Set screen number
+    ld      a,b                   ; A = Screen#
     push    de
     push    hl
     call    screen_switch

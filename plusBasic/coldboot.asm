@@ -24,6 +24,10 @@ do_coldboot:
     ld      (TXTTAB), hl        ; Beginning of BASIC program text
     call    SCRTCH              ; ST_NEW2 - NEW without syntax check
 
+    ; Default direct mode to keyrepeat on
+    ld      a,KB_REPEAT
+    ld      (BASYSCTL),a
+
     ld      iy,init_screen_buffers
     call    aux_call
     ld      iy,init_screen_vars
@@ -61,9 +65,6 @@ do_coldboot:
     ld      a,$FF                 ; Set TIMER to stopped
     ld      (TIMERCNT+2),a
 
-    ; Default direct mode to keyrepeat on
-    ld      a,KB_REPEAT
-    ld      (BASYSCTL),a
 
     call    print_copyright
     call    check_autoexec        ; Check for autoexec file

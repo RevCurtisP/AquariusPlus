@@ -9,6 +9,8 @@
 ;-----------------------------------------------------------------------------
 ; USE CHRSET "latin1d.chr
 ST_USECHR:
+.andmask = 255-BASCHRSET
+.ormask = BASCHRSET * 256
     rst     CHRGET                ; Skip CHR
     rst     SYNCHR                ; Require SET
     byte    SETTK
@@ -26,8 +28,54 @@ ST_USECHR:
     jp      nc,FCERR
     push    hl                    ; Stack = TxtPtr, RtnAdr
 .select
+    or      a                     ; Set Flags
+    push    af                    ; Stack = ChrSet, TxtPtr, RtnAdr
+    ld      a,(BASYSCTL)
+    jr      nz,.default
+    and     $FF-BASCHRSET
+    byte    $01                   ; LD BC over OR
+.default    
+    or      BASCHRSET
+    ld      (BASYSCTL),a
+    pop     af                    ; A = ChrSet; Stack = TxtPtr, RtnAdr
     call    select_chrset         ;
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
+    ret
+
+;-----------------------------------------------------------------------------
+; GETATTR(X,Y) - Change Character Set
+;-----------------------------------------------------------------------------
+FN_GETATTR
+    rst     CHRGET                ; Skip ATTR
+    jp      GSERR                 ; Not implemented error
+
+;-----------------------------------------------------------------------------
+; GETCHR(X,Y) - Change Character Set
+;-----------------------------------------------------------------------------
+FN_GETCHR:
+    rst     CHRGET                ; Skip CHR
+    cp      SETTK                 ; If GETCHRSET
+    jr      z,FN_GETCHRSET        ;   Go do it
+    jp      GSERR                 ; Not implemented error
+
+;-----------------------------------------------------------------------------
+; GETCHRSET - Change Character Set
+;-----------------------------------------------------------------------------
+; USE CHRSET "/demos/charmaps/charmaps/bold.chr"
+; PRINT GETCHRSET
+FN_GETCHRSET:
+    rst     CHRGET                ; Skip SET
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    ld      hl,LABBCK           
+    push    hl                    ; Stack = LABBCK, TxtPtr, RtnAdr
+    call    ext_get_chrset
+    jp      SNGFLT                ; Float an return result
+; Return current character set in A
+ext_get_chrset:
+    ld      a,(BASYSCTL)          
+    and     BASCHRSET             ; A = 0 if default character Set
+    ret     z
+    ld      a,1                   ;   A = 1
     ret
 
 ;-----------------------------------------------------------------------------
@@ -115,25 +163,32 @@ ST_SETPALETTE:
 
 
 ;-----------------------------------------------------------------------------
-; Proposed new syntax
-; SCREEN SAVE|RESTORE|SWAP|RESET
+; SCREEN function
+; Returns: Bit   76    5      4        3       21     0   
+;               Text Remap Priority Sprites Graphics  -
+;-----------------------------------------------------------------------------
+FN_SCREEN:
+    rst     CHRGET                ; 
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    ld      bc,LABBCK
+    push    bc                    ; Stack = LABBCK, TxtPtr, RtnAdr
+    ld      iy,screen_status
+    call    aux_call              ; A = Screen status    
+    jp      SNGFLT                ; Float it and return
+
+;-----------------------------------------------------------------------------
 ; SCREEN [text],[graphics],[sprites],[priority],[remap]
 ;-----------------------------------------------------------------------------
 ST_SCREEN:
-    or      a                     ; If token
-
-    push    hl
-    ld      a,BUFSCRN40           ; Save current text screen to buffer
-    ld      hl,SCRN40BUF
-    ld      ix,screen_save
-    call    aux_rom_call
-    pop     hl
-
+    call    get_byte_optional     ; A = [text]
+    jr      c,.no_text            ; If specified
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    ld      iy,screen_switch      
+    call    aux_call              ; Switch to new text screen
+    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
+.no_text
     in      a,(IO_VCTRL)
     ld      c,a                   ; C = Current VCTRL
-
-    call    get_byte_optional     ; Do Text
-    call    nc,.do_text_mode
 
     call    get_byte_optional     ; Do Graphics
     call    nc,.do_gfx_mode
@@ -153,23 +208,8 @@ ST_SCREEN:
     ld      a,c
     out     (IO_VCTRL),a          ; Write back out
 
-    push    hl
-    ld      a,BUFSCRN40           ; Restore current text screen from buffer
-    ld      hl,SCRN40BUF
-    ld      ix,screen_restore        ;
-    call    aux_rom_call
-    pop     hl
+    ret
 
-    jp      set_linlen            ; Set TTYWID to screen columns and return
-
-.do_text_mode:
-    cp      4                     ; If > 3
-    jp      nc,FCERR              ;   Illegal Quantity error
-    ld      de,.text_mode_table
-    call    table_lookup          ; Look up Text Mode bits
-    ld      b,a                   ; B = Mode Bits
-    ld      a,$3E                 ; A = Text Mode mask
-    jr      .do_bit               ; Mask, combine, and return
 .do_gfx_mode
     cp      4
     jp      nc,FCERR              ; Error if > 3
@@ -189,12 +229,6 @@ ST_SCREEN:
     ld      c,a                   ; C = New VCTRL
     ret
 
-.text_mode_table:
-    byte    VCTRL_TEXT_OFF                  ; 0 = Text Off
-    byte    VCTRL_TEXT_EN                   ; 1 = 40 Column Primary
-    byte    VCTRL_TEXT_EN+VCTRL_TEXT_PAGE   ; 2 = 40 Column Secondary
-    byte    VCTRL_TEXT_EN+VCRTL_80COL_EN    ; 3 = 80 Column
-
 ST_RESET_SCREEN:
     rst     CHRGET                ; Skip SCREEN
 _reset_screen:
@@ -208,37 +242,26 @@ _reset_screen:
 ; RESTORE SCREEN - Copy Screen Buffer to Text Screen
 ;-----------------------------------------------------------------------------
 ST_RESTORE_SCREEN:
-    rst     CHRGET                ; Skip SCREEN
-    push    hl                    ; Stack = TxtPtr, RtnAdr
-    ld      a,SWPSCRN40
-    ld      hl,SCRN40SWP
-    ld      ix,screen_restore
-    call    aux_rom_call
-    pop     hl                    ; HL = TxtPtr; HL = RtnAdr
-    ret
+    ld      iy,screen_restore
+    jr      _swapcall_pophrt
 
 ;-----------------------------------------------------------------------------
 ; STASH SCREEN - Copy Text Screen to Screen Buffer
 ;-----------------------------------------------------------------------------
 ST_STASH_SCREEN:
-    rst     CHRGET                ; Skip SCREEN
-    push    hl                    ; Stack = TxtPtr, RtnAdr
-    ld      a,SWPSCRN40
-    ld      hl,SCRN40SWP
-    ld      ix,screen_save
-    call    aux_rom_call
-    pop     hl                    ; HL = TxtPtr; HL = RtnAdr
-    ret
+    ld      iy,screen_stash
+    jr      _swapcall_pophrt
 
 ;-----------------------------------------------------------------------------
 ; SWAP SCREEN - Swap Text Screen with Screen Buffer
 ;-----------------------------------------------------------------------------
 ST_SWAP_SCREEN:
+    ld      iy,screen_swap
+_swapcall_pophrt:
     rst     CHRGET                ; Skip SCREEN
     push    hl                    ; Stack = TxtPtr, RtnAdr
-    ld      hl,SCRN40SWP
-    ld      ix,screen_swap
-    call    aux_rom_call          ; Do the Copy
+    ld      hl,SWPSCRN40          ; Stash to Swap Buffers
+    call    aux_call              
     pop     hl                    ; HL = TxtPtr; HL = RtnAdr
     ret
 
@@ -279,10 +302,10 @@ ST_FILL_SCREEN:
     push    bc                    ; Stack = Cols, Rows, RtnAdr
     ld      a,(hl)                ; Reget next character
     cp      XTOKEN                ;
-    jr      nz,.notx
-    inc     hl
+    jr      nz,.notx              ; If extended token
+    inc     hl                    ;   Skip XTOKEN
     rst     SYNCHR
-    byte    CHRTK                 ; If CHR
+    byte    CHRTK                 ;   Require CHR
     call    get_char              ;   Parse fill character
     pop     bc                    ;   BC = Cols; Stack = Rows, RtnAdr
     pop     de                    ;   DE = Rows; Stack = RtnAdr
@@ -1149,4 +1172,3 @@ _get_rgb:
     pop     de                    ; D = Red; Stack = RtnAdr
     ld      e,a                   ; E = Green + Blue
     ret
-

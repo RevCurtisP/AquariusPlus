@@ -223,7 +223,7 @@ FNJUMPS:
     dw      FN_FILE               ;$F3 FILE
     dw      SNERR                 ;$F4 RESUME
     dw      SNERR                 ;$F5 COL
-    dw      SNERR                 ;$F6 SCREEN 
+    dw      FN_SCREEN             ;$F6 SCREEN 
     dw      SNERR                 ;$F7 SET
     dw      SNERR                 ;$F8 WRITE
     dw      SNERR                 ;$F9 USE

@@ -55,12 +55,16 @@ FN_GET:
     jp      z,FN_GETTILE
     rst     SYNCHR
     byte    XTOKEN                ; Check Extended Tokens
-    cp      KEYTK
-    jr      z,FN_GETKEY
     cp      SPRITK
     jp      z,FN_GETSPRITE
     cp      PALETK                
     jp      z,FN_GETPALETTE
+    cp      CHRTK
+    jp      z,FN_GETCHR
+    cp      ATTRTK
+    jp      z,FN_GETATTR
+    cp      KEYTK
+    jr      z,FN_GETKEY
     jp      SNERR
 
 ;-----------------------------------------------------------------------------

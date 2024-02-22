@@ -161,7 +161,7 @@ _lf:
 scroll80:
     push    af
     ld      a,(BASYSCTL)
-    rra     
+    rla     
     jr      nc,.nocolor
     in      a,(IO_VCTRL)
     set     7,a                   ; Select COLOR RAM
@@ -192,7 +192,7 @@ scroll80:
 
 _ttyclr:
     ld      a,(BASYSCTL)
-    rra     
+    rla     
     jr      nc,.default
     ld      a,(SCOLOR)
     byte    $01
@@ -204,7 +204,7 @@ _ttyclr:
 
 ttymove80:
     ld      a,(BASYSCTL)
-    rra     
+    rla     
     jr      nc,.nocolor
     in      a,(IO_VCTRL)
     set     7,a                   ; Select COLOR RAM

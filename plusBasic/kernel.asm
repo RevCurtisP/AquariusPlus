@@ -12,7 +12,7 @@ _jump_table:
     jp      str_stringdesc        ; Build descriptor for null terminated string
     jp      str_tempdesc          ; Build descriptor for null terminated string in DSCTMP
     jp      sys_fill_mem          ; Fill main memory with byte
-    jp      just_ret
+    jp      sys_swap_mem          ; Swap bytes
     jp      just_ret
     jp      just_ret
     jp      just_ret

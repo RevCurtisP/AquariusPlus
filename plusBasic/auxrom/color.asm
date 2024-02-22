@@ -12,7 +12,7 @@ palette_reset:
     ld      b,a
     ld      c,IO_VPALSEL
     ld      d,32
-    ld      hl, .default_palette
+    ld      hl, default_palette
 .palloop:
     out     (c), b
     ld      a, (hl)
@@ -23,7 +23,7 @@ palette_reset:
     jr      nz, .palloop
     ret
 
-.default_palette:
+default_palette:
     dw $111, $F11, $1F1, $FF1, $22E, $F1F, $3CC, $FFF
     dw $CCC, $3BB, $C2C, $419, $FF7, $2D4, $B22, $333
 

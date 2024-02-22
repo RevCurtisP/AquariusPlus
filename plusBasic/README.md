@@ -29,6 +29,7 @@
  - **CD {_dirname_}** - Display current path or change directory.
  - **CD$** - Return current path.  
  - **CHR$(_byte_)** - Convert ASCII value to string.
+ - **CIRCLE (_x_,_y_),_radius_{,{_color_}{,{_start_},{_end_}{,_aspect_}}}** - _Not implemented_
  - **CLEAR {_integer_{,_address_}}** - Clear all variables, optionally allocating string text space and top of BASIC RAM.
  - **CLOAD {{?}_filename_}|\*_array_** - Load or verify program or load array data from cassette.
  - **CLOSE** - _Not implemented_
@@ -67,7 +68,7 @@
  - **FILL {@_page_},_address_,_oount_,_byte_** - Fill block of memory with byte.
  - **FILL {@_page_},_address_,_oount_,WORD _integer_** - Fill block of memory with integer.
  - **FILL SCREEN {(_x_,y_)-(_x_,_y_)} {CHR _character_} {COLOR fgcolor, bgcolor}** - Fill screen with character and/or colors.
- - **FILL TILEMAP {(_x_,y_)-(_x_,_y_)} TILE _tileno_ {ATTR _attrs_} {PALETTE _palette_}** - Fill tilemap with specified tile, attributes and palette.
+ - **FILL TILEMAP {(_x_,y_)-(_x_,_y_)} TILE _tileno_{ ATTR _attrs_}{ PALETTE _palette_}** - Fill tilemap with specified tile, attributes and palette.
  - **FOR _var_=_expression_ TO _expression_ {STEP _expression_]** - Initiate a _FOR_ loop.
  - **FRE(_float_|_string_)** - Return amount of unused variable and array or string space (after forcing garage collection).
  - **GET ARGS _var_{,...}** - Read arguments from argument list after `GOSUB`.
@@ -94,6 +95,9 @@
  - **LEFT$(_string_,_len_)** - Return the first up to _len_ characters of string.
  - **LEN(_string_)** - Return length of string.
  - **\{LET} _var_=_expression_** - Define and assigns value to variable.
+ - **LINE {(_x1_,_y1_)}-(_x2_,_y2_){,{_color_}{,B{F}}}} - _Not implemented_
+ - **LINEH _x_,_y1_,_y2_** - _Not implemented_
+ - **LINEV _x1_,_x2_,_y_** - _Not implemented_
  - **LIST {_lineref_}** - Display program lines starting at beginning of program or specified line.
  - **LLIST {_lineref_}** - Outputs program lines to printer starting at beginning of program or specified line.
  - **LOAD _filespec_** - Load BASIC program into memory.
@@ -114,6 +118,7 @@
  - **LOOP PT3 {_filespec_}** - Play specified or previously loaded PT3 track repeatedly.
  - **LPOS(_expression__)** - Return current column position of printer.
  - **LPRINT TAB(_integer_)|SPC(_integer_)|_expression_|;|,{...}** - Output data to printer.
+ - **MENU** - _Not implemented_
  - **MID$(_string_,_start_{,_len_})** - Return first up to _len_ or all remaining characters starting at character _start_ of string.
  - **MKDIR _dirname_** - Create directory.
  - **MOUSEB** - Return mouse button state

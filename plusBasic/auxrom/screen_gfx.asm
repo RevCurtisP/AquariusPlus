@@ -207,11 +207,11 @@ _screen_color_page:
 .return 
     jp      (ix)
 
-_screen_restore_page:
-    pop     af
-    out     (IO_VCTRL),a
-    xor     a
-    ret
+;_screen_restore_page:
+;    pop     af
+;    out     (IO_VCTRL),a
+;    xor     a
+;    ret
 
 ;-----------------------------------------------------------------------------
 ; Convert Screen Coordinates to Size and Start Address
