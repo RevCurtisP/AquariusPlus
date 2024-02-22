@@ -74,6 +74,7 @@
  - **GET ARGS _var_{,...}** - Read arguments from argument list after `GOSUB`.
  - **GET SCREEN (_x_,y_)-(_x_,_y_) {CHR|ATTR} \*_array_|^_strvar_** - Copy text screen clip to array or string variable.
  - **GET TILEMAP (_x_,y_)-(_x_,_y_) \*_array_|^_strvar_** - Copy tilemap clip to array or string variable.
+ - **GETCHRSET** - Return character set currently in use.
  - **GETKEY** - Wait for key an return ASCII code.
  - **GETKEY$**  - Wait for key and return as string.
  - **GETPALETTE$(_palette_)** - Return palette contents.
