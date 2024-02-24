@@ -111,18 +111,18 @@ ST_LOOP:
 FN_MOUSE:
     rst     CHRGET                ; Skip MOUSE token
     jr      z,.snerr              ;   Error
-    push    af                    ; Stack = SfxChr, RtnAdr
+    push    af                    ; Stack = SfxChr, RetAdr
     rst     CHRGET                ; Skip Character after MOUSE
-    ex      (sp),hl               ; HL = SfxChr, Stack = TxtPtr, RtnAdr
+    ex      (sp),hl               ; HL = SfxChr, Stack = TxtPtr, RetAdr
     ld      bc,LABBCK
-    push    bc                    ; Stack = LABBCK, TxtPtr, RtnAdr
-    push    hl                    ; Stack = SfxChr, LABBCK, TxtPtr, RtnAdr
+    push    bc                    ; Stack = LABBCK, TxtPtr, RetAdr
+    push    hl                    ; Stack = SfxChr, LABBCK, TxtPtr, RetAdr
     call    esp_get_mouse         ; BC = xpos, D = buttons, E = ypos, L = wheel
     jr      nz,.not_found
     ld      a,(MOUSEWDLT)
     add     l                     ; Accumulate mouse wheel delta
     ld      (MOUSEWDLT),a
-    pop     af                    ; AF = SfxChr; Stack = LABBCK, TxtPtr, RtnAdr
+    pop     af                    ; AF = SfxChr; Stack = LABBCK, TxtPtr, RetAdr
     cp      'X'
     jr      z,.xpos
     cp      'Y'
@@ -140,7 +140,7 @@ FN_MOUSE:
     ld      a,e
     jp      SNGFLT
 .not_found:
-    pop     af                    ; Stack = LABBCK, TxtPtr, RtnAdr
+    pop     af                    ; Stack = LABBCK, TxtPtr, RetAdr
     ld      a,-1                  ; Return Not found
     jr      .signed_byte
 .xpos:
@@ -276,23 +276,23 @@ FN_COMPARE:
     cp      MULTK                 ; If *
     jp      z,.compare_arrays     ;   Compare Arrays
     call    get_page_addr         ; AF = PgFlg1, DE = Addr1
-    push    de                    ; Stack = Addr1, RtnAdr
-    push    af                    ; Stack = PgFlg1, Addr1, RtnAdr
+    push    de                    ; Stack = Addr1, RetAdr
+    push    af                    ; Stack = PgFlg1, Addr1, RetAdr
     call    get_comma_page_addr   ; AF = PgFlg2, DE = Addr2
-    push    af                    ; Stack = PgFlg2, PgFlg1, Addr1, RtnAdr
-    push    de                    ; Stack = Addr2, PgFlg2, PgFlg1, Addr1, RtnAdr
+    push    af                    ; Stack = PgFlg2, PgFlg1, Addr1, RetAdr
+    push    de                    ; Stack = Addr2, PgFlg2, PgFlg1, Addr1, RetAdr
     call    get_comma_int         ; DE = Length
     call    close_paren
     ld      b,d
     ld      c,e                   ; BC = Length
-    pop     de                    ; DE = Addr2 ; Stack = PgFlg2, PgFlg1, Addr1, RtnAdr
-    pop     af                    ; AF = PgFlg2; Stack = PgFlg1, Addr1, RtnAdr
+    pop     de                    ; DE = Addr2 ; Stack = PgFlg2, PgFlg1, Addr1, RetAdr
+    pop     af                    ; AF = PgFlg2; Stack = PgFlg1, Addr1, RetAdr
     ex      af,af'                ; AF' = PgFlg2
-    pop     af                    ; AF = PgFlg1; Stack = Addr1, RtnAdr
-    ex      (sp),hl               ; HL = Addr1 ; Stack = TxtPtr, RtnAdr
-    push    hl                    ; Stack = Addr1, TxtPtr, RtnAdr
+    pop     af                    ; AF = PgFlg1; Stack = Addr1, RetAdr
+    ex      (sp),hl               ; HL = Addr1 ; Stack = TxtPtr, RetAdr
+    push    hl                    ; Stack = Addr1, TxtPtr, RetAdr
     ld      hl,LABBCK             
-    ex      (sp),HL               ; HL = Addr1; Stack = LABBCK, TxtPtr, RtnAdr
+    ex      (sp),HL               ; HL = Addr1; Stack = LABBCK, TxtPtr, RetAdr
     jr      c,.page1              ; If Addr1 not paged
     ex      af,af'                ;   AF = PgFlg2, AF' = PgFlg1
     jr      c,.mem2page           ;   If Addr2 not paged
@@ -316,26 +316,26 @@ FN_COMPARE:
 
 .compare_arrays
     call    skip_star_array       ; DE = Addr1, BC = Len1
-    push    de                    ; Stack = Addr1, RtnAdr
-    push    bc                    ; Stack = Len1, Addr1, RtnAdr
+    push    de                    ; Stack = Addr1, RetAdr
+    push    bc                    ; Stack = Len1, Addr1, RetAdr
     call    get_comma             ; MO Error if no Comma
     call    get_star_array        ; DE = Addr2, BC = Len2
     call    close_paren           ; Require ')', TOERR if ','
-    ex      (sp),hl               ; HL = Len1; Stack = TxtPtr, Addr1, RtnAdr
+    ex      (sp),hl               ; HL = Len1; Stack = TxtPtr, Addr1, RetAdr
     sbc     hl,bc                 ; If Len1 - Len2 <> 0
     jr      nz,.badlen            ;   Return 0 (not equal)
-    pop     hl                    ; HL = TxtPtr; Stack = Addr1, RtnAdr
-    ex      (sp),hl               ; HL = Addr1, Stack = TxtPtr, RtnAdr
+    pop     hl                    ; HL = TxtPtr; Stack = Addr1, RetAdr
+    ex      (sp),hl               ; HL = Addr1, Stack = TxtPtr, RetAdr
     call    sys_mem_compare       ;      Compare Paged to Memory`
     ld      hl,LABBCK             
-    push    hl                    ; Stack = LABBCK, TxtPtr, RtnAdr
+    push    hl                    ; Stack = LABBCK, TxtPtr, RetAdr
     jp      float_signed_int      ; Return result
 .badlen
-    pop     hl                    ; HL = TxtPtr; Stack = Addr1, RtnAdr
-    pop     de                    ; Stack = RtnAdr
-    push    hl                    ; Stack = TxtPtr, RtnAdr
+    pop     hl                    ; HL = TxtPtr; Stack = Addr1, RetAdr
+    pop     de                    ; Stack = RetAdr
+    push    hl                    ; Stack = TxtPtr, RetAdr
     ld      hl,LABBCK             
-    push    hl                    ; Stack = LABBCK, TxtPtr, RtnAdr
+    push    hl                    ; Stack = LABBCK, TxtPtr, RetAdr
     xor     a
     jp      SNGFLT                ; Return 0
     
@@ -377,20 +377,91 @@ LSERR:
 ;-----------------------------------------------------------------------------
 ; TRIM functions stub
 ;-----------------------------------------------------------------------------
-; ToDo: Add TRIM$(), TRIMR$(), TRIML$()
+; ? TRIML$("   123   ");"<"
+; ? TRIMR$("   123   ");"<"
+; ? TRIM$("   123   ");"<"
+; ? TRIM$(\" \t1 2 3   \r\n")
+; ? TRIML$("@@@123@@@","@")
+; ? TRIMR$("@@@123@@@","@")
+; ? TRIM$("@@@123@@@","@")
+; ? TRIML$("*#*#123#*#","#*")
+; ? TRIMR$("#*#123*#*","#*")
+; ? TRIM$("#*#123#*#","*#")
+; ? TRIML$("      ");"<"
+; ? TRIMR$("      ");"<"
+; ? TRIM$("      ");"<"
+; ? TRIML$("@@@@@@","@");"<"
+; ? TRIMR$("@@@@@@","@");"<"
+; ? TRIM$("@@@@@@","@");"<"
 FN_TRIM:
     rst     CHRGET            ; Skip TRIM
+    jp      m,.token
+    ld      iy,string_trim
+    cp      '$'
+    jr      z,trim_stringd
+    ld      iy,string_trim_left
+    cp      'L'
+    jr      z,trim_string
+    ld      iy,string_trim_right
+    SYNCHK  'R'
+    jr      trim_stringd
+.token
     cp      XTOKEN            ; If XTOKEN
-    jr      z,_trimext        ;   Parse extended token
+    jr      z,.trimext        ;   Parse extended token
     cp      DIRTK             ; If DIR
     jp      z,FN_TRIMDIR      ;   Do TRIMDIR
-    jp      GSERR
-
-_trimext:
+    jr      .snerr
+.trimext:
     rst     CHRGET            ; Skip XTOKEN
     cp      EXTTK             ; If EXT
     jp      z,FN_TRIMEXT      ;   Do TRIMEXT$
+.snerr
     jp      SNERR
+
+trim_stringd:
+    dec     hl                    ; Back up to before $
+trim_string:
+    push    iy                    ; Stack = TrmRtn, RetAdr
+    rst     CHRGET                ; Skip L/R
+    SYNCHK  '$'                   ; 
+    SYNCHK  '('                   ; Require $(
+    call    FRMEVL                ; Evaluate argument
+    call    CHKSTR                ; Error if not string
+    ld      de,(FACLO)            ; DE = ArgDsc
+    ld      bc,null_desc          ; BC = TrmDsc 
+    ld      a,(hl)                ; A = Next character
+    cp      ','                  
+    jr      nz,.notcomma          ; If comma
+    push    de                    ;   Stack = ArgDsc, TrmRtn, RetAdr
+    rst     CHRGET                ;   Skip comma
+    call    FRMEVL                ;   Evaluate argument
+    call    CHKSTR                ;   Error if not string
+    ld      bc,(FACLO)            ;   BC = TrmDsc
+    pop     de                    ;   DE = ArgDsc; Stack = TrmRtn, RetAdr
+.notcomma
+    pop     iy                    ; IY = TrmRtn; Stack = RetAdr
+    SYNCHK  ')'                   ; Require )
+    push    hl                    ; Stack = TxtPtr, RetAdr
+    push    de                    ; Stack = ArgDsc, TxtPtr, ret
+    ld      d,b
+    ld      e,c                   ; DE = TrmDsc
+    call    FRETMP                ; HL = TrmDsc
+    call    string_addr_len       ; DE = TrmAdr, A = TrmLen
+    pop     hl                    ; HL = ArgDsc; Stack = TxtPtr, RetAdr
+    push    af                    ; Stack = TrmLen, TxtPtr, RetAdr
+    push    de                    ; Stack = TrmAdr, TrmLen, TxtPtr, RetAdr
+    call    FRETM2                ; HL = ArgDsc
+    call    string_addr_len       ; DE = ArgAdr, C = ArgLen
+    ex      de,hl                 ; HL = ArgAdr
+    pop     de                    ; DE = TrmAdr; Stack = TrmLen, TxtPtr, RetAdr
+    pop     af                    ; A = TrmLen; Stack = TxtPtr, RetAdr
+    ld      b,a                   ; B = TrmLen
+    call    aux_call              ; DE = TrmAdr, C = TrmLen
+    or      a                     ; Set flags
+    jr      nz,.ret_str
+    ld      hl,REDDY-1
+.ret_str
+    jp      STRNEX                ; Create temporary and return it
 
 ;-----------------------------------------------------------------------------
 ; FILL Statement stub
@@ -408,13 +479,13 @@ ST_FILL:
     jp      z,ST_FILL_TILE
     ;Fill memory
     call    get_page_addr         ; Check for Page Arg
-    push    de                    ; Stack = BgnAdr, RtnAdr
-    push    af                    ; Stack = PgFlag, BgnAdr, RtnAdr
+    push    de                    ; Stack = BgnAdr, RetAdr
+    push    af                    ; Stack = PgFlag, BgnAdr, RetAdr
     call    get_comma_int         ; DE = Count
-    push    de                    ; Stack = Count, PgFlag, BgnAdr, RtnAdr
+    push    de                    ; Stack = Count, PgFlag, BgnAdr, RetAdr
     call    get_comma             ; MOERR if no comma
     cp      XTOKEN
-    push    af                    ; Stack = WrdFlg, Count, PgFlag, BgnAdr, RtnAdr
+    push    af                    ; Stack = WrdFlg, Count, PgFlag, BgnAdr, RetAdr
     jr      nz,.not_xt            ; If extended token
     rst     CHRGET
     rst     SYNCHR
@@ -422,21 +493,21 @@ ST_FILL:
 .not_xt
     call    z,CHRGTR              ; Skip WORD
     call    GETINT                ; DE = FilVal
-    pop     af                    ; A = WrdFlg; Stack = Count, PgFlag, BgnAdr, RtnAdr
+    pop     af                    ; A = WrdFlg; Stack = Count, PgFlag, BgnAdr, RetAdr
     jr      z,.isword             ; If not FILL...WORD
-    push    af                    ;   Stack = WrdFlg, Count, PgFlag, BgnAdr, RtnAdr
+    push    af                    ;   Stack = WrdFlg, Count, PgFlag, BgnAdr, RetAdr
     ld      a,d
     or      a                     ;   If FilVal > 255
     jp      nz,FCERR              ;     Blow Up
-    pop     af                    ;   A = WrdFlg; Stack = Count, PgFlag, BgnAdr, RtnAdr
+    pop     af                    ;   A = WrdFlg; Stack = Count, PgFlag, BgnAdr, RetAdr
 .isword
     ex      af,af'                ; AF' = WrdFlg
-    pop     bc                    ; BC = Count; Stack = PgFlag, BgnAdr, RtnAdr
-    pop     af                    ; AF = PgFlag; Stack = BgnAdr, RtnAdr
-    ex      (sp),hl               ; HL = BgnAdr; Stack = TxtPtr, RtnAdr
-    push    hl                    ; Stack = BgnAdr, TxtPtr, RtnAdr
+    pop     bc                    ; BC = Count; Stack = PgFlag, BgnAdr, RetAdr
+    pop     af                    ; AF = PgFlag; Stack = BgnAdr, RetAdr
+    ex      (sp),hl               ; HL = BgnAdr; Stack = TxtPtr, RetAdr
+    push    hl                    ; Stack = BgnAdr, TxtPtr, RetAdr
     ld      hl,POPHRT             ; After fill, POP HL and RET
-    ex      (sp),hl               ; Stack = POPHRT, TxtPtr, RtnAdr
+    ex      (sp),hl               ; Stack = POPHRT, TxtPtr, RetAdr
     jr      c,.fill_page          ; If not paged
     ex      af,af'                ;   AF = WrdFlg
     jp      z,sys_fill_word       ;   If WORD, fill memory with int
@@ -544,18 +615,18 @@ ST_SET_FNKEY:
     dec     a                     ; Make it 0 to 15
     cp      16                    ; If > 15
     jp      nc,FCERR              ;   Illegal quantity
-    push    af                    ; Stack = FnkNum, RtnAdr
+    push    af                    ; Stack = FnkNum, RetAdr
     rst     SYNCHR                
     byte    TOTK                  ; Require TO
-    call    get_string_arg        ; BC = StrLen, DE = StrAdr; Stack = TxtPtr, FnkNum, RtnAdr
+    call    get_string_arg        ; BC = StrLen, DE = StrAdr; Stack = TxtPtr, FnkNum, RetAdr
     ld      a,c
     cp      32                    ; If longer than 31
     jp      nc,ERRLS              ;   String too long error
-    pop     hl                    ; HL = TxtPtr; Stack = FnkNum, RtnAdr
-    ex      (sp),hl               ; H = FnkNum; Stack = TxtPtr, RtnAdr
+    pop     hl                    ; HL = TxtPtr; Stack = FnkNum, RetAdr
+    ex      (sp),hl               ; H = FnkNum; Stack = TxtPtr, RetAdr
     ld      a,h                   ; A = FnkNum
     call    fnkey_write_buffer    ; Write to the buffer
-    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
+    pop     hl                    ; HL = TxtPtr; Stack = RetAdr
     ret
 
 
@@ -572,14 +643,14 @@ ST_PAUSE:
     jr      .snerr                ;   Else Syntax Error
 .nottoken
     call    FRMEVL                ; Get Operand
-    push    hl                    ; Stack = TxtPtr, RtnAdr
+    push    hl                    ; Stack = TxtPtr, RetAdr
     call    GETYPE                ; 
     jp      z,.string             ; If Numeric
 .snerr
     jp      SNERR                 ;   Syntax error
 .string
     call    STRPRT
-    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
+    pop     hl                    ; HL = TxtPtr; Stack = RetAdr
 .tryin
     jp      TRYIN                 ; Wait for key and return
     
@@ -605,9 +676,9 @@ ST_RESET:
 ;-----------------------------------------------------------------------------
 _reset_array
     call    get_array_argument    ; DE = AryAdr, BC = AryLen
-    push    hl                    ; Stack = TxtPtr, RtnAdr
+    push    hl                    ; Stack = TxtPtr, RetAdr
     call    GETYPE                ; A = 0 and Z set if string
-    push    af                    ; Stack = TypFlg, TxtPtr, RtnAdr
+    push    af                    ; Stack = TypFlg, TxtPtr, RetAdr
     ex      de,hl                 ; HL = AryAdr
     call    sys_fill_zero         ; Fill array data with zeros
     pop     af                    ; A = TypFlg
@@ -647,7 +718,7 @@ FN_VER:
     ex      (sp),hl               ; HL = StrFlg, Stack = TxtPtr, RetAdr
     push    hl                    ; Stack = StrFlg, TxtPtr, RetAdr
     call    free_addr_len         ; BC = StrLen, DE = StrAdr, HL = StrDsc
-    ex      de,hl                 ; HL = TxtAdr
+    ex      de,hl                 ; HL = StrAdr
     jr      .return_ver
 .getver    
     call    CONINT                ; Convert argument to byte

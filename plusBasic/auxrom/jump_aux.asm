@@ -51,5 +51,14 @@ _jump_table:
     jp      just_ret
     jp      just_ret
     jp      just_ret
+; Strings
+    jp      string_trim
+    jp      string_trim_left
+    jp      string_trim_right
+    jp      just_ret
+    jp      just_ret
+    jp      just_ret
+    jp      just_ret
+    jp      just_ret
 
 _end_jump_table:

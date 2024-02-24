@@ -87,7 +87,7 @@ just_ret:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.21w"
+    db "v0.21x"
 ifdef coredump
     db "_coredump"
 endif
@@ -197,6 +197,9 @@ sys_swap_mem:
     dec     bc
     jp      sys_swap_mem
   
+; Null string descriptor  
+null_desc:
+    word    0,null_desc
 
 ; ROM Signature
     assert !($20F6<$)   ; Overflow into Kernel jump table
@@ -1082,6 +1085,7 @@ aux_line_print:
     include "s3hooks.asm"       ; S3 BASIC direct mode hooks
     include "screen_gfx.asm"    ; Screen graphics routines
     include "screen_swap.asm"   ; Screen buffering routines
+    include "string.asm"        ; String manipulation routines
     include "tile.asm"          ; Tile graphics module
 
     free_rom_aux = $10000 - $

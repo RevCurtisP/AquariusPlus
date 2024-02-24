@@ -1,4 +1,6 @@
 # plusBASIC Release History
+ - v0.21x 
+   - Added TRIM$, TRIML$, and TRIMR$ functions
  - v0.21w 
    - Screen stash, restore, swap, and switch now preserve color print mode, border remap and palette
    - GETCHRSET returns character set currently in use (0 or 1)
