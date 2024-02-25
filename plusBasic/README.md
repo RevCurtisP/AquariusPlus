@@ -87,7 +87,7 @@
  - [ ] **HEX$(_string_)** - Convert ASCII string into hexadecimal string.
  - [ ] **IF _expression_ GOTO _linefref_|THEN _lineno_|_statement_** - Branch to line or execute statements if expression evaluates to true.
  - [ ] **IN(_port_)** - Read a Z80 I/O port.
- - [ ] **INDEX(\*_array_,_key_)** - Search for element of array
+ - [ ] **INDEX(\*_array_,_string_)** - Search for element of array
  - [ ] **INT(_expression_)** - Return expression rounded down to nearest integer.
  - [ ] **INKEY** - Return ASCII code of most recently pressed key.
  - [ ] **INKEY$** - Return most recently pressed key as string.

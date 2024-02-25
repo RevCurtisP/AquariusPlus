@@ -79,6 +79,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>DOKE {@<em>page</em>,}<em>address</em>,<em>integer</em></strong> - Write integer to memory.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>EDIT </strong> - <em>Not implemented</em></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>END</strong> - Terminate program execution.</li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>ERASE *array{,*array...}</strong> - Delete arrays.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>EVAL(<em>string</em>)</strong> - Evaluate expression in string.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>EXP(<em>float</em>)</strong> - Return argument to the power of mathematical constant <em>e</em>.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>FILEDIR$(<em>filespec</em>)</strong> - Extract path from filespec.</li>
@@ -104,6 +105,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>HEX$(<em>string</em>)</strong> - Convert ASCII string into hexadecimal string.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>IF <em>expression</em> GOTO <em>linefref</em>|THEN <em>lineno</em>|<em>statement</em></strong> - Branch to line or execute statements if expression evaluates to true.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>IN(<em>port</em>)</strong> - Read a Z80 I/O port.</li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>INDEX(*<em>array</em>,<em>string</em>)</strong> - Search for element of array</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>INT(<em>expression</em>)</strong> - Return expression rounded down to nearest integer.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>INKEY</strong> - Return ASCII code of most recently pressed key.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>INKEY$</strong> - Return most recently pressed key as string.</li>
@@ -227,14 +229,14 @@ _ <input disabled="disabled" type="checkbox" /> <strong>RND(<em>integer</em>)</s
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>SIN(<em>float</em>)</strong> - Return sine of argument.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>SOUND (<em>duration</em>,<em>frequency</em>)</strong> - Generate a tone through the television speaker.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>SQR(_float)</strong> - Return square root of argument.</li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>STASH BITMAP|TILEMAP|PALETTE <em>palette</em>{,...}</strong> - <em>Not implemented</em></li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>STASH BITMAP|TILEMAP</strong> - <em>Not implemented</em></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>STASH SCREEN</strong> - Copy current text screen to respective screen buffer.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>STOP</strong> - Interrupt program execution.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>STOP PT3</strong> - Stop currently playing PT3 track.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>STR$(<em>float</em>)</strong> - Convert floating point number to ASCII string.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>STRING$(<em>length</em>{,<em>byte</em>|<em>string</em>})</strong> - Create string of repeated character.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>STRPTR(<em>strvar</em>)</strong> - Return address of text for string variable.</li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>SWAP BITMAP|TILEMAP|PALETTE <em>palette</em>{,...}</strong> - <em>Not implemented</em></li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>SWAP BITMAP|TILEMAP</strong> - <em>Not implemented</em></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>SWAP SCREEN</strong> - Swap current text screen with respective screen buffer.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>SWAP VARS <em>var</em>,<em>var</em></strong> - <em>Not implemented</em></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>TAN(<em>float</em>)</strong> - Return tangent of argument.</li>
@@ -244,11 +246,11 @@ _ <input disabled="disabled" type="checkbox" /> <strong>RND(<em>integer</em>)</s
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>TIME$</strong> - Return the current time.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>TIMER</strong> - Return timer count.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>TIMER = <em>expression</em></strong> - Set and start jiffy timer.</li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>TRIM$(<em>string</em>{,<em>string</em>})</strong> - Remove character from both ends of string.</li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>TRIM$(<em>string</em>{,<em>string</em>})</strong> - Remove characters from both ends of string.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>TRIMDIR$(<em>filespec</em>)</strong> - Remove path from filespec.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>TRIMEXT$(<em>filespec</em>)</strong> - Remove extension from filespec.</li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>TRIML$(<em>string</em>{,<em>string</em>})</strong> - Remove character from left end of string.</li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>TRIMR$(<em>string</em>{,<em>string</em>})</strong> - Remove character from right end of string.</li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>TRIML$(<em>string</em>{,<em>string</em>})</strong> - Remove characters from left end of string.</li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>TRIMR$(<em>string</em>{,<em>string</em>})</strong> - Remove characters from right end of string.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>TRON</strong> - Enable line tracing.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>TROFF</strong> - Disable line tracing.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>USE CHRSET <em>0</em>|<em>1</em>|<em>filespec</em></strong> - Copy specified character set to character RAM.</li>
