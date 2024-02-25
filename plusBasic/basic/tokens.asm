@@ -97,7 +97,7 @@ EXTCMDS:
     db $80 + 'L',"OOP"            ; $9B             
     db $80 + 'S',"TR"             ; $9C             
     db $80 + 'V',"AR"             ; $9D             
-    db $80 + ' '                  ; $9E
+    db $80 + 'E',"RASE"           ; $9E
     db $80 + ' '                  ; $9F
     db $80 + ' '                  ; $A0
     db $80 + 'W',"ORD"            ; $A1
@@ -279,7 +279,7 @@ token_to_keyword:
 ; $E3 HEX         HEX                  compatible
 ; $E4 RENAME      VER
 ; $E5 DATE        DTM           DATETIME$ <--> DTM$(0)
-; $E6             DEC
+; $E6 DEC         DEC
 ; $E7 MOD         KEY             
 ; $E8 DEEK        DEEK              
 ; $E9 ERR         ERR [OR]            ERR <--> ERR(0), ERRLINE <--> ERR(1), ERR$ <--> ERR$(1)

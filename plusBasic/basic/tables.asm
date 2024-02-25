@@ -90,7 +90,7 @@ STJUMPS:
     dw      SNERR                 ;$C6 CHR$     
     dw      SNERR                 ;$C7 LEFT$    
     dw      SNERR                 ;$C8 RIGHT$   
-    dw      SNERR                 ;$C9 MID$     
+    dw      ST_MID                ;$C9 MID$     
     dw      SNERR                 ;$CA POINT
 ;PlusBASIC Statements and Functions
     dw      SNERR                 ;$CB 

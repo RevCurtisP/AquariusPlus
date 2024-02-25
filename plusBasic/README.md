@@ -61,6 +61,7 @@
  - [ ] **DOKE {@_page_,}_address_,_integer_** - Write integer to memory.
  - [ ] **EDIT {_lineref_}** - _Not implemented_
  - [ ] **END** - Terminate program execution.
+ - [ ] **ERASE \*array{,\*array...}** - Delete arrays.
  - [ ] **EVAL(_string_)** - Evaluate expression in string.
  - [ ] **EXP(_float_)** - Return argument to the power of mathematical constant _e_.
  - [ ] **FILEDIR$(_filespec_)** - Extract path from filespec. 
@@ -86,6 +87,7 @@
  - [ ] **HEX$(_string_)** - Convert ASCII string into hexadecimal string.
  - [ ] **IF _expression_ GOTO _linefref_|THEN _lineno_|_statement_** - Branch to line or execute statements if expression evaluates to true.
  - [ ] **IN(_port_)** - Read a Z80 I/O port.
+ - [ ] **INDEX(\*_array_,_key_)** - Search for element of array
  - [ ] **INT(_expression_)** - Return expression rounded down to nearest integer.
  - [ ] **INKEY** - Return ASCII code of most recently pressed key.
  - [ ] **INKEY$** - Return most recently pressed key as string.
@@ -209,14 +211,14 @@
  - [ ] **SIN(_float_)** - Return sine of argument.
  - [ ] **SOUND (_duration_,_frequency_)** - Generate a tone through the television speaker.
  - [ ] **SQR(_float)** - Return square root of argument.
- - [ ] **STASH BITMAP|TILEMAP|PALETTE _palette_{,...}** - _Not implemented_
+ - [ ] **STASH BITMAP|TILEMAP** - _Not implemented_
  - [ ] **STASH SCREEN** - Copy current text screen to respective screen buffer.
  - [ ] **STOP** - Interrupt program execution.
  - [ ] **STOP PT3** - Stop currently playing PT3 track.
  - [ ] **STR$(_float_)** - Convert floating point number to ASCII string.
  - [ ] **STRING$(_length_{,_byte_|_string_})** - Create string of repeated character.
  - [ ] **STRPTR(_strvar_)** - Return address of text for string variable.
- - [ ] **SWAP BITMAP|TILEMAP|PALETTE _palette_{,...}** - _Not implemented_
+ - [ ] **SWAP BITMAP|TILEMAP** - _Not implemented_
  - [ ] **SWAP SCREEN** - Swap current text screen with respective screen buffer.
  - [ ] **SWAP VARS _var_,_var_** - _Not implemented_
  - [ ] **TAN(_float_)** - Return tangent of argument.

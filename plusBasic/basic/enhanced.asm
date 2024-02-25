@@ -295,8 +295,7 @@ FN_PEEK:
     jp      z,.peek_color
     cp      '$'                   ; If followed by dollar sign
     jr      z,.peekstring         ;   Do PEEK$()
-    SYNCHK  '('                   ; Require open paren
-    call    parse_page_arg        ; Parse page
+    call    paren_page_arg        ; Parse page
     push    af                    ; Save it
     call    GETINT                ; Parse Address
     SYNCHK  ')'                   ; Require close paren
@@ -318,8 +317,7 @@ FN_PEEK:
 
 .peekstring:
     rst     CHRGET                ; Skip token
-    SYNCHK  '('                   ; Require open paren
-    call    parse_page_arg        ; Parse page
+    call    paren_page_arg        ; Parse page
     push    af                    ; Stack = PgArg, RtnAdr
     call    GETINT                ; Parse Address
     push    de                    ; Stack = PkAdr, PgArg, RtnAdr
@@ -410,8 +408,7 @@ FN_PEEK:
 ;-----------------------------------------------------------------------------
 FN_DEEK:
     rst     CHRGET                ; Skip DEEK
-    SYNCHK  '('                   ; Require open paren
-    call    parse_page_arg        ; Parse page
+    call    paren_page_arg        ; Parse page
     push    af                    ; Save it
     call    GETINT                ; Parse Address
     SYNCHK  ')'                   ; Require close paren
@@ -435,6 +432,8 @@ FN_DEEK:
     jp      FLOAT_BC
 
 
+paren_page_arg:
+    SYNCHK  '('
 ; Check for and parse @page,
 ; Output: A, E = Page number`
 ;  Carry: Set if page specified

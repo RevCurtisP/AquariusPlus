@@ -111,6 +111,49 @@ FN_ERR: rst     CHRGET            ; Skip ERR Token
         jp      FLOAT_DE          ; Float it and Return
 
 ;----------------------------------------------------------------------------
+; Delete Array
+; ERASE *arrayvar{, *arrayvar...}
+;----------------------------------------------------------------------------
+ST_ERASE:
+        rst     CHRGET            ; Skip ERASE
+_erase: rst     SYNCHR
+        byte    MULTK             ;Require *
+        ld      a,1 
+        ld      (SUBFLG),a        ;THAT THIS IS "ERASE" CALLING PTRGET
+        call    PTRGET            ;GO FIND OUT WHERE TO ERASE
+        jp      nz,FCERR          ;PTRGET DID NOT FIND VARIABLE!
+        push    hl                ;SAVE THE TEXT POINTER
+        ld      (SUBFLG),a        ;ZERO OUT SUBFLG TO RESET "ERASE" FLAG
+        ld      h,b               ;[B,C]=START OF ARRAY TO ERASE
+        ld      l,c 
+        dec     bc                ;BACK UP TO THE FRONT
+LPBKNM: ld      a,(bc)            ;GET A CHARACTER. ONLY THE COUNT HAS HIGH BIT=0
+        dec     bc                ;SO LOOP UNTIL WE SKIP OVER THE COUNT
+        or      a                 ;SKIP ALL THE EXTRA CHARACTERS
+        jp      m,LPBKNM  
+        dec     bc  
+        dec     bc  
+        add     hl,de             ;[H,L]=THE END OF THIS ARRAY ENTRY
+        ex      de,hl             ;[D,E]=END OF THIS ARRAY
+        ld      hl,(STREND)       ;[H,L]=LAST LOCATION TO MOVE UP
+ERSLOP: rst     COMPAR            ;SEE IF THE LAST LOCATION IS GOING TO BE MOVED
+        ld      a,(de)            ;DO THE MOVE
+        ld      (bc),a  
+        inc     de                ;UPDATE THE POINTERS
+        inc     bc  
+        jr      nz,ERSLOP         ;MOVE THE REST
+        dec     bc  
+        ld      h,b               ;SETUP THE NEW STORAGE END POINTER
+        ld      l,c 
+        ld      (STREND),hl 
+        pop     hl                ;GET BACK THE TEXT POINTER
+        ld      a,(hl)            ;SEE IF MORE ERASURES NEEDED
+        cp      ','               ;ADDITIONAL VARIABLES DELIMITED BY COMMA
+        ret     nz                ;ALL DONE IF NOT
+        rst     CHRGET
+        jr      _erase
+
+;----------------------------------------------------------------------------
 ; INSTR
 ;----------------------------------------------------------------------------
 ;; ? INSTR(2,"ABCABCABC","ABC")
@@ -233,6 +276,112 @@ ext_instr:
     dec     b                     ; Decrement HayLen
     jp      nz,.cnt_loop          ; If not at end of NdlTxt, check next character
     jr      .pop1ret0             ; Else discard OfsOfc and return 0
+
+
+;----------------------------------------------------------------------------
+; LEFT HAND SIDE MID$
+; MID$(var$,len{,pos}) = string$
+;----------------------------------------------------------------------------
+ST_MID: SYNCHK  '('               ; MUST HAVE (                                      AF     BC     DE     HL   Stack
+        call    PTRGET            ; GET A STRING VAR                               ------ ------  Dsc1  TxtPtr 
+        call    CHKSTR            ; MAKE SURE IT WAS A STRING                         
+        push    hl                ; SAVE TEXT POINTER                                                          TxtPtr
+        push    de                ; SAVE DESC. POINTER                                                         Dsc1,TxtPtr
+        ex      de,hl             ; PUT DESC. POINTER IN [H,L]                                   TxtPtr  Dsc1
+        inc     hl                ; MOVE TO ADDRESS FIELD                                                 ++
+        inc     hl                ;                                                                       ++
+        ld      e,(hl)            ; GET ADDRESS OF LHS IN [D,E]                                           
+        inc     hl                ; BUMP DESC. POINTER                                                    ++
+        ld      d,(hl)            ; PICK UP HIGH BYTE OF ADDRESS                                 Addr1
+        ld      hl,(TOPMEM)       ; SEE IF LHS STRING IS IN STRING SPACE                               (STREND)
+        rst     COMPAR            ; BY COMPARING IT WITH TOPMEM                     
+        jr      c,NCPMID          ; IF ALREADY IN STRING SPACE DONT COPY.           
+        pop     hl                ; GET BACK DESC. POINTER                                               Dsc1  TxtPtr
+        push    hl                ; SAVE BACK ON STACK                                                         Dsc1,TxtPtr
+        call    STRCPY            ; COPY THE STRING LITERAL INTO STRING SPACE                    DSCTMP   ~~
+        pop     hl                ; GET BACK DESC. POINTER                                               Dsc1  TxtPtr
+        push    hl                ; BACK ON STACK AGAIN                                                        Dsc1,TxtPtr
+        ld      de,DSCTMP         ; Get New String Descriptor Address                             DscN
+        call    VMOVE             ; MOVE NEW DESC. INTO OLD SLOT.                                  ~~     ~~                                                          
+NCPMID: pop     hl                ; GET DESC. POINTER                                                    Dsc1  TxtPtr
+        ex      (sp),hl           ; GET TEXT POINTER TO [H,L] DESC. TO STACK                            TxtPtr  Dsc1
+        SYNCHK  ','               ; MUST HAVE COMMA
+        call    GETBYT            ; GET ARG#2 (OFFSET INTO STRING)                 Arg2
+        or      a                 ; MAKE SURE NOT ZERO
+        jp      z,FCERR           ; BLOW HIM UP IF ZERO
+        push    af                ; SAVE ARG#2 ON STACK                                                        Arg2,Dsc1
+        ld      a,(hl)            ; RESTORE CURRENT CHAR                         (TxtPtr)
+        ld      e,255             ; IF TWO ARG GUY, TRUNCATE.                                     255
+        cp      ')'               ; [E] SAYS USE ALL CHARS 
+        jp      z,.MID2           ; IF ONE ARGUMENT THIS IS CORRECT
+        SYNCHK ','  
+        call    GETBYT            ; GET ARGUMENT  IN  [E]                          Arg3           Arg3
+.MID2:  SYNCHK  ')'               ; MUST BE FOLLOWED BY )                           ~~                         Arg3,Arg2,Dsc1
+        push    de                ; SAVE THIRD ARG ([E]) ON STACK                 
+                                  ; MUST HAVE = SIGN
+        call    FRMEQL            ; EVALUATE RHS OF THING.
+        push    hl                ; SAVE TEXT POINTER.                                                         TxtPtr,Arg3,Arg2,Dsc1
+        call    FRESTR            ; FREE UP TEMP RHS IF ANY.                        ~~             ~~    Dsc2
+        ex      de,hl             ; PUT RHS DESC. POINTER IN [D,E]                                Dsc2    ~~
+        pop     hl                ; TEXT POINTER TO [H,L]                                               TxtPtr Arg3,Arg2,Dsc1
+        pop     bc                ; ARG #3 TO C.                                           Arg3                Arg2,Dsc1
+        pop     af                ; ARG #2 TO A.                                    Arg2                       Dsc1
+        ld      b,a               ; AND [B]                                               A2  A3
+        ex      (sp),hl           ; GET LHS DESC. POINTER TO [H,L]                                       Dsc1  TxtPtr    
+                                  ; TEXT POINTER TO STACK                                 
+        push    hl                ;                                                                            Dsc1,TxtPtr
+        ld      hl,POPHRT         ; GET ADDR TO RETURN TO                                               POPHRT 
+        ex      (sp),hl           ; SAVE ON STACK & GET BACK TXT PTR.                                    Dsc1  POPHRT,TxtPtr
+        ld      a,c               ; GET ARG #3                                      Arg3
+        or      a                 ; SET CC'S
+        ret     z                 ; IF ZERO, DO NOTHING
+        ld      a,(hl)            ; GET LENGTH OF LHS                              (Dsc1)
+        sub     b                 ; SEE HOW MANY CHARS IN REMAINDER OF STRING
+        jp      c,FCERR           ; CANT ASSIGN PAST LEN(LHS)!
+        inc     a                 ; MAKE PROPER COUNT
+        cp      c                 ; SEE IF # OF CHARS IS .GT. THIRD ARG
+        jr      c,BIGLEN          ; IF SO, DONT TRUNCATE
+        ld      a,c               ; TRUNCATE BY USING 3RD ARG.                      Arg3
+BIGLEN: ld      c,b               ; GET OFFSET OF STRING IN [C]
+        dec     c                 ; MAKE PROPER OFFSET                                    Arg2
+        ld      b,0               ; SET UP [B,C] FOR LATER DAD B.
+        push    de                ; SAVE [D,E]                                                                 Dsc2,POPHRT,TxtPtr
+        inc     hl                                                                              
+        inc     hl                ; POINTER TO ADDRESS FIELD.                                                      
+        ld      e,(hl)            ; GET LOW BYTE IN [E]
+        inc     hl                ; BUMP POINTER
+        ld      h,(hl)            ; GET HIGH BYTE IN [H]
+        ld      l,e               ; NOW COPY LOW BYTE BACK TO [L]                                        Txt1
+        add     hl,bc             ; ADD OFFSET                                                          + Arg2
+        ld      b,a               ; SET COUNT OF LHS IN [B]
+        pop     de                ; RESTORE [D,E]                                                 Dsc2        POPHRT,TxtPtr  
+        ex      de,hl             ; MOVE RHS. DESC. POINTER TO [H,L]
+        ld      c,(hl)            ; GET LEN(RHS) IN [C]
+        inc     hl                ; MOVE POINTER
+        inc     hl                ; MOVE POINTER
+        ld      a,(hl)            ; GET LOW BYTE OF ADDRESS IN [A]
+        inc     hl                ; BUMP POINTER.
+        ld      h,(hl)            ; GET HIGH BYTE OF ADDRESS IN [H]
+        ld      l,a               ; COPY LOW BYTE TO [L]
+        ex      de,hl             ; ADDRESS OF RHS NOW IN [D,E]
+        ld      a,c               ; IS RHS NULL?
+        or      a                 ; TEST
+        ret     z                 ; THEN ALL DONE.
+; NOW ALL SET UP FOR ASSIGNMENT.
+; [H,L] = LHS POINTER
+; [D,E] = RHS POINTER
+; C = LEN(RHS)
+; B = LEN(LHS)
+.MIDLP: ld      a,(de)            ; GET BYTE FROM RHS.
+        ld      (hl),a            ; STORE IN LHS
+        inc     de                ; BUMP RHS POINTER
+        inc     hl                ; BUMP LHS POINTER.
+        dec     c                 ; BUMP DOWN COUNT OF RHS.
+        ret     z                 ; IF ZERO, ALL DONE. IF LHS ENDED, ALSO DONE.
+        djnz    .MIDLP            ; IF NOT DONE, MORE COPYING.
+        ret                       ; BACK TO NEWSTT
+  
+
 
 ;----------------------------------------------------------------------------
 ; Resume after error 
@@ -360,6 +509,47 @@ SPLP:   ld      (hl),a            ;SAVE CHAR
 ;----------------------------------------------------------------------------
 GETYPE: ld      a,(VALTYP)        ;REPLACEMENT FOR "GETYPE" RST
         dec     a               
+        ret
+
+;----------------------------------------------------------------------------
+ST_SWAP_VARS:  
+        rst     CHRGET            ; Skip VAR
+        SYNCHK  'S'
+        call    PTRGET            ;[D,E]=POINTER AT VALUE #1
+        push    de                ;SAVE THE POINTER AT VALUE #1
+        push    hl                ;SAVE THE TEXT POINTER
+        ld      hl,FACLO          ;TEMPORARY STORE LOCATION
+        call    VMOVE             ;FACLO =VALUE #1
+        ld      hl,ARYTAB         ;GET ARYTAB SO CHANGE CAN BE NOTED
+        ex      (sp),hl           ;GET THE TEXT POINTER BACK AND SAVE CURRENT [ARYTAB]
+        ld      a,(VALTYP)        ;Get Variable Type
+        push    af                ;SAVE THE TYPE OF VALUE #1
+        SYNCHK  ','               ;MAKE SURE THE VARIABLES ARE DELIMITED BY A COMMA
+        call    PTRGET            ;[D,E]=POINTER AT VALUE #2
+        pop     bc                ;[B]=TYPE OF VALUE #1
+        ld      a,(VALTYP)        ;[A]=TYPE OF VALUE #2
+        cmp     b                 ;MAKE SURE THEY ARE THE SAME
+        jp      nz,TMERR          ;IF NOT, "TYPE MISMATCH" ERROR
+        ex      (sp),hl           ;[H,L]=OLD [ARYTAB] SAVE THE TEXT POINTER
+        ex      de,hl             ;[D,E]=OLD [ARYTAB]
+        push    hl                ;SAVE THE POINTER AT VALUE #2
+        ld      hl,ARYTAB         ;GET NEW [ARYTAB]
+        rst     COMPAR  
+        jp      nz,FCERR          ;IF ITS CHANGED, ERROR
+        pop     de                ;[D,E]=POINTER AT VALUE #2
+        pop     hl                ;[H,L]=TEXT POINTER
+        ex      (sp),hl           ;SAVE THE TEXT POINTER ON THE STACK, [H,L]=POINTER AT VALUE #1
+        push    de                ;SAVE THE POINTER AT VALUE #2
+        call    VMOVE             ;TRANSFER VALUE #2 INTO VALUE #1'S OLD POSITION
+        pop     hl                ;[H,L]=POINTER AT VALUE #2
+        ld      de,FACLO          ;LOCATION OF VALUE #1
+        call    VMOVE             ;TRANSFER FACLO =VALUE #1 INTO VALUE #2'S OLD POSITION
+        pop     hl                ;GET THE TEXT POINTER BACK
+        ret   
+  
+VMOVE:  ex      de,hl             ;MOVE VALUE FROM (DE) TO (HL). ALTERS B,C,D,E,H,L  
+MOVVFM: ld      bc,4              ;MOVE VALUE FROM (HL) TO (DE)
+        ldir
         ret
 
 ;----------------------------------------------------------------------------

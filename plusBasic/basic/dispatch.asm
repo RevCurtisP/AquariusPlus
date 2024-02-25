@@ -61,6 +61,8 @@ extended_statement:
     dec     a                   ; $9A BREAK
     dec     a                   ; $9B LOOP
     jp      z,ST_LOOP
+    sub     a,3                 ; $9E ERASE
+    jp      z,ST_ERASE
     jp      SNERR 
    
 extended_function:

@@ -159,10 +159,12 @@ FN_IN:
 
 .extended
     rst     CHRGET                ; Skip XTOKEN
-    cp      KEYTK                 ; If KEY
-    jp      z,FN_INKEY            ;   Do INKEY
-    cp      STRTK                 ; Else if STR
-    jp      z,FN_INSTR            ;   Do INSTR
+    sub     KEYTK                 ; $86 KEY
+    jp      z,FN_INKEY            ; 
+    dec     a                     ; $87 DEX
+    jp      z,FN_INDEX
+    sub     STRTK-DEXTK           ; $9C STR
+    jp      z,FN_INSTR            ;
     jp      SNERR
 
 ;-----------------------------------------------------------------------------

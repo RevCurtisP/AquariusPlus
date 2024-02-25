@@ -1,4 +1,6 @@
 # plusBASIC Release History
+ - v0.21y
+   - Added SWAP VARS statement, ERASE statement, MID$ statement, and INDEX() function
  - v0.21x 
    - Added TRIM$, TRIML$, and TRIMR$ functions
  - v0.21w 
@@ -6,11 +8,6 @@
    - GETCHRSET returns character set currently in use (0 or 1)
    - Fixed color printing mode bug in 80 column mode
    - Tweaked Latin-1 character set PNGs
- - v0.21v8 - Screen switch, stash, swap, restore now cache palette
- - v0.21v4
-   - screen_swap and screen_restore now includes BASCRNCTL, VCTRL_REMAP_BC, and SCOLOR
- - v0.21v3 
-   - USE CHRSET sets/clears flag in BASYSCTL. GETCHRSET returns flag.
  - v0.21v
    - Added LOAD DIR filename$,\*array$
    - LOAD array$ ASC and LOAD DIR start at array index 1, put number of lines in index 0 

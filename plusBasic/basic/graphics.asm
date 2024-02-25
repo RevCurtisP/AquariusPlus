@@ -7,7 +7,7 @@
 ; USE CHRSET - Change Character Set
 ; Syntax: USE CHRSET [0|1|filename$]
 ;-----------------------------------------------------------------------------
-; USE CHRSET "latin1d.chr
+; USE CHRSET "latin1d.chr"
 ST_USECHR:
 .andmask = 255-BASCHRSET
 .ormask = BASCHRSET * 256

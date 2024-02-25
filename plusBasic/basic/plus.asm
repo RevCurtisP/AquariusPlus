@@ -92,6 +92,42 @@ FN_GETKEY:
     pop     bc                    ; Get rid of dummy return address
     jp      BUFCIN                ; Else Return String
 
+;----------------------------------------------------------------------------
+; Search for string in string array
+; INDEX(*array,string$)
+; ToDo: INSTR(*array,string${,start})
+;----------------------------------------------------------------------------
+; A$(0)="foo":A$(9)="bar"
+; ? INDEX(*A$,"foo")
+; ? INDEX(*A$,"bar")
+; ? INDEX(*A$,"baz")
+FN_INDEX:
+    rst     CHRGET                ; Skip DEX
+    SYNCHK  '('                   ; Require (
+    call    get_star_array        ; DE = AryAdr, BC = AryLen
+    call    CHKSTR                ; Error if nor string
+    srl     b
+    rr      c
+    srl     b
+    rr      c                     ; ArySiz = AryLen / 4
+    push    de                    ; Stack = AryAdr, RtnAdr
+    push    bc                    ; Stack = ArySiz, AryAdr, RtnAdr
+    SYNCHK  ','                   ; Require ,
+    call    FRMEVL                ; Evaluate search arg
+    SYNCHK  ')'                   ; Require (
+    push    hl                    ; Stack = TxtPtr, ArySiz, AryAdr, RtnAdr
+    call    free_addr_len         ; DE = StrAdr, A = StrLen
+    pop     hl                    ; HL = TxtPtr; Stack = ArySiz, AryAdr, RtnAdr
+    pop     bc                    ; BC = ArySiz; Stack = AryAdr, RtnAdr
+    ex      (sp),hl               ; HL = AryAdr; Stack = TxtPtr, RtnAdr
+    ex      de,hl                 ; HL = StrAdr, DE = AryAdr
+    ld      iy,string_search_array
+    call    aux_call
+    ld      de,LABBCK
+    push    de                    ; Stack = LABBCK, TxtPtr, RtnAdr 
+    ld      a,b                   ; 
+    jp      GIVINT                ; Float AB signed and return
+
 ;-----------------------------------------------------------------------------
 ; LOOP statements stub
 ;-----------------------------------------------------------------------------
@@ -220,11 +256,14 @@ ST_STASH:
 
 ;-----------------------------------------------------------------------------
 ; SWAP Statement Stub
-; Syntax: TIMER = Expression
 ;-----------------------------------------------------------------------------
 ST_SWAP:
     cp      SCRNTK                
     jp      z,ST_SWAP_SCREEN
+    rst     SYNCHR
+    byte    XTOKEN
+    cp      VARTK
+    jp      z,ST_SWAP_VARS
     jp      SNERR
 
 ;-----------------------------------------------------------------------------
@@ -424,8 +463,7 @@ trim_string:
     push    iy                    ; Stack = TrmRtn, RetAdr
     rst     CHRGET                ; Skip L/R
     SYNCHK  '$'                   ; 
-    SYNCHK  '('                   ; Require $(
-    call    FRMEVL                ; Evaluate argument
+    call    FRMPRN                ; Evaluate argument after (
     call    CHKSTR                ; Error if not string
     ld      de,(FACLO)            ; DE = ArgDsc
     ld      bc,null_desc          ; BC = TrmDsc 

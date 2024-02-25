@@ -55,8 +55,8 @@ _jump_table:
     jp      string_trim
     jp      string_trim_left
     jp      string_trim_right
-    jp      just_ret
-    jp      just_ret
+    jp      string_search
+    jp      string_search_array
     jp      just_ret
     jp      just_ret
     jp      just_ret

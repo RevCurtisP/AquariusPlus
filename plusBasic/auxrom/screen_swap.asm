@@ -457,7 +457,7 @@ screen_stash_palette:
 
 ;-----------------------------------------------------------------------------
 ; Copy current palette into buffer
-; Input: DE = Variable Buffer Address
+; Input: DE = Variable Buffer Offset
 ; Clobbers: A, HL
 ;-----------------------------------------------------------------------------
 screen_swap_palette:
@@ -490,7 +490,7 @@ _palt_buff_addr:
     add     a,a
     add     a,BUFPALT40
     ld      l,a                   ; HL = VarBufOfs
-    ld      h,d                   ; HL = PalBufAdr
+    ld      h,high(BANK1_BASE)    ; HL = PalBufAdr
     ld      bc,32*256
     ret
 
