@@ -23,14 +23,14 @@ ST_GETARGS:
     push    hl                    ; Save it                                   Stack: ra_ptr
     ld      a,(hl)
     inc     hl
-    ld      h,(hl)                
+    ld      h,(hl)
     ld      l,a                   ; HL = ArgVals Pointer
 ; Look for colon before ARGS
 .find_colon:
     inc     hl
     ld      a,(hl)
     or      a
-    jp      z,MOERR               
+    jp      z,MOERR
     cp      ':'
     jr      nz,.find_colon
 ; Skip Colon and Check for ARGS token
@@ -51,7 +51,7 @@ ST_GETARGS:
     ld      bc,TEMPST             ; Reset the Temporary String LIst
     ld      (TEMPPT),bc           ; to Avoid ST errors
     ld      a,(hl)                ; Get Char after ArgVal
-    cp      ','                                   
+    cp      ','
     jr      nz,.not_comma          ; If it's a comma
     rst     CHRGET                ;   Skip it
 .not_comma:
@@ -65,7 +65,7 @@ ST_GETARGS:
 .done
     ex      de,hl                 ; DE = *ArgVars
 ;    pop     bc                    ; BC = *ArgVals                             Stack: ra_ptr
-; Check for junk after argvals    
+; Check for junk after argvals
     pop     hl                    ; HL = *ArgVals                             Stack: ra_ptr
     call    CHRGT2                ; Reget char after last Arg
     jr      z,.is_term            ; Terminator OK
@@ -80,11 +80,11 @@ ST_GETARGS:
     ld      (hl),b                ; End of ArgVals is new Return Address
     ex      de,hl                 ; HL = *ArgVars
     ret
-    
+
 AGERR:
     ld      e,ERRAG
     jp      ERROR
-    
+
 
 ;-----------------------------------------------------------------------------
 ; RETURN arg, arg, ...
@@ -107,7 +107,7 @@ ST_RETURN:
     ld      a,(USFLG)             ;
     or      a                     ; Is flag set?
     jp      nz,STPRDY             ; Yes, abort to direct mode
-.line_ok:   
+.line_ok:
     ld      hl,NEWSTT             ; HL = NEWSTT, Stack = *RetVars
     ex      (sp),hl               ; HL = *RetVars; Stack = NEWSTT
     call    SYNCHR                ; Require RETURN after GOSUB Args
@@ -120,7 +120,7 @@ ST_RETURN:
     ex      (sp),hl               ; HL = *RetVals;  Stack: *RetVars, NEWSTT
     call    LETDO                 ; Evaluate RetVal into RetVar
     ld      a,(hl)                ; Get Char after RetVal
-    cp      ','                                   
+    cp      ','
     jr      nz,.not_comma         ; If it's a comma
     rst     CHRGET                ;   Skip it
 .not_comma:
@@ -133,3 +133,66 @@ ST_RETURN:
 pop_de_ret:
     pop     de                    ; HL = *RetVars; Stack = NEWSTT
     ret
+
+
+;-----------------------------------------------------------------------------
+; Parse RUN arguments
+; Currently only saves filename to ARGS buffer
+; Input: HL: Filename StrDsc
+;        DE: Filename TxtAdr
+;        BC: Filename StrLen
+; ARGS buffer is at offset RUNARGS in page BAS_BUFFR
+; Buffer format:
+;   0 - Arg Count (0 for now)
+;   1 - Reserved (0 to allow LOAD BC of count)
+;  2... Arguments: 2 byte length (MSB always 0), argument text
+;
+;-----------------------------------------------------------------------------
+run_args:
+    push    hl                    ; Stack = StrDsc, RtnAdr
+    push    de                    ; Stack = TxtAdr, StrDsc, RtnAdr
+    push    bc                    ; Stack = StrLen, TxtAdr, StrDsc, RtnAdr
+    ld      l,BAS_BUFFR           ; L = Page
+    ld      a,l                   ; A = Page
+    ld      de,RUNARGS
+    ld      bc,0                  ; ArgCnt = 0
+    call    page_write_word       ; Write ArgCnt
+    inc     de
+    inc     de                    ; Bump write address
+    pop     bc                    ; BC = StrLen; Stack = TxtAdr, StrDsc, RtnAdr
+    ld      a,l                   ; A = Page
+    call    page_write_word       ; Write StrLen
+    inc     de
+    inc     de                    ; Bump write address
+    ld      a,l                   ; A = Page
+    pop     hl                    ; HL = TxtAdrl Stack = StrDsc, RtnAdr
+    call    page_write_bytes      ; Write filename
+    pop     hl                    ; HL = StrDsc; Stack = RtnAdr
+    ret
+
+;-----------------------------------------------------------------------------
+; ARGS, ARGS$() functions
+;-----------------------------------------------------------------------------
+; RUN t/runt/runargs.bas
+FN_ARGS:
+    rst     CHRGET                ; Skip ARGS
+    cp      '$'
+    jr      z,.get_arg            ; If not $
+    push    hl                    ;   Stack = TxtPtr, RtnAdr
+    ld      bc,LABBCK
+    push    bc                    ;   Stack = LABBCK, TxtPtr,RtnAdr
+    ld      iy,runarg_count
+    call    aux_call              ; BC = ArgCnt
+    jp      FLOAT_BC              ;   Return ArgCnt
+.get_arg
+    rst     CHRGET                ; Skip $
+    call    PARCHK                ; Evaluate argument
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    call    CONINT                ; A, DE = ArgNum
+    call    get_strbuf_addr       ; HL = StrBuf
+    ld      b,d
+    ld      c,e                   ; BC = Argum
+    ld      iy,runarg_get
+    call    aux_call              ; BC = ArgCnt
+    jp      c,FCERR
+    jp      return_strbuf         ; and return it

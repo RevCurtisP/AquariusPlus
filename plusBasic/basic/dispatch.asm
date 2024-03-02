@@ -70,7 +70,9 @@ extended_function:
     ld      a,(hl)              ; Get Extended token
     sub     KEYTK               ; $86 KEY
     jp      z,FN_KEY
-    sub     VERTK-KEYTK         ; $92 VER
+    sub     ARGSTK-KEYTK        ; $8A ARGS
+    jp      z,FN_ARGS
+    sub     VERTK-ARGSTK        ; $92 VER
     jp      z,FN_VER
     dec     a                   ; $93 FILL
     dec     a                   ; $94 COMPARE

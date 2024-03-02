@@ -7,16 +7,30 @@
   - 
   - RUN "esp:settings
   - RUN ROM images  
-  -   RUN "minidiag.rom"
-  - RUN "/aqds/aqds.aqx
-  - CD /CPM:RUN "gocpm.aqx
+  -   RUN /roms/minidiag.rom
+  - RUN /aqds/aqds.aqx
+  - CD /CPM:RUN gocpm.aqx
   - PLAY SAMPLE
-    - RUN "bigben.baq
+    - RUN bigben.baq
+  - plusBASIC demos
+    - RUN /demos/plusbasic/sprite.bas
+    - RUN /demos/plusbasic/sprites.bas
+    - RUN /demos/plusbasic/bigsprite.bas
+    - RUN /demos/plusbasic/flipsprite.bas
+    - RUN /demos/plusbasic/mouse.bas
+    - RUN /demos/plusbasic/mdraw.bas
+    - RUN /demos/plusbasic/mdraw80.bas
   - Unit tests
-    - RUN "cp.baq
-    - RUN "pp.baq
-    - RUN "sc.baq
-    - RUN "sl.baq
+    - RUN cp.baq
+    - RUN pp.baq
+    - RUN sl.baq
+    - RUN tf.baq
+    - RUN tr.baq
+    - RUN ts.baq
   - PLAY PT3
     - LOAD PT3 "/music/songs1/dontstop.pt3"
     - PLAY PT3
+    - PAUSE PT3
+    - RESUME PT3
+    - PLAY PT3 "/music/songs1/dance.pt3"
+    - STOP PT3

@@ -1044,6 +1044,7 @@ run_cmd:
 
     ld      (SUBFLG),a            ; Stash FileSpec start character
     call    get_string_direct     ; HL = StrDsc, DE = TxtAdr, BC = StrLen; Stack = TxtPtr
+    call    run_args              ; HL = StrDsc; A, BC, DE clobbered
     jr      run_file              ; Load and run file
 
 con_run:
@@ -1175,7 +1176,6 @@ _lookup_file:
     ld      (de),a                ; Append * to filename
     inc     de                    ; Bump BUFPTR
     ret
-
 
 ;-----------------------------------------------------------------------------
 ; SAVE

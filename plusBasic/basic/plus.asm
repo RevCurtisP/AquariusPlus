@@ -205,6 +205,7 @@ FN_INKEY:
 ; KEY - Check 
 ; KEY(keycode) - Check if key is pressed
 ;-----------------------------------------------------------------------------
+; RUN progs/keymove.bas
 FN_KEY:
     rst     CHRGET                ; Skip KEY Token
     call    PARCHK                ; Evaluate argument
@@ -212,38 +213,9 @@ FN_KEY:
     ld      bc,LABBCK
     push    bc
     call    CONINT                ; A = Matrix code
-    cp      64
-    jp      nc,FCERR
-    push    af                    
-    and     $07                   ; Isolate row number
-    call    _bitmask              ; Get row bitmask
-    ld      e,a                   ; E = RowMsk
-    pop     af                    ; A = Matrix Code
-    and     $38                   
-    rra                           ; Isolate column number
-    rra
-    rra       
-    call    _bitmask              ; Get column bitmask
-    cpl                           ; Invert it
-    ld      b,a                   ; B = ColMsk
-    ld      c,IO_KEYBOARD
-    in      a,(c)                 ; Read key matrix
-    cpl                           ; Invert result
-    and     e                     ; Isolate row bit
-    jr      z,.zero               ; If set
-    ld      a,-1                  ;   Return true
-.zero  
+    call    key_pressed           ; A = -1 if pressed
+    jp      c,FCERR               ; Error if invalid keycode
     jp      float_signed_byte
-
-_bitmask
-    ld      b,a
-    inc     b
-    xor     a
-    ccf
-.loop
-    rla
-    djnz    .loop
-    ret
 
 ;-----------------------------------------------------------------------------
 ; STASH Statement Stub
@@ -401,6 +373,8 @@ FN_EVAL:
     ld      e,l
     xor     a                 ; Tokenize String
     ld      (DORES),a         ;
+    ld      bc,-1
+    ld      (TEMP3),bc
     ld      c,5               ;
     call    tokenize          ; Call KLOOP, restore Extended ROM
     ld      hl,BUF            ; Point to Line Buffer

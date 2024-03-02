@@ -1,4 +1,6 @@
 # plusBASIC Release History
+ - v0.21z 
+   - Added pseudovariable ARGS and ARGS$(0)
  - v0.21y
    - Added SWAP VARS statement, ERASE statement, MID$ statement, and INDEX() function
  - v0.21x 

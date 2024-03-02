@@ -198,8 +198,9 @@ BASBUF_BASE equ $C000   ; Base Address of BASIC Buffers
 SCRNVBASE   equ $0000   ; Graphics Module SysVar Base (see gfx.asm)
 FKEYDEFS    equ $0200   ; Function Key Definitions (32 bytes each)
 FKEYBASE    equ BASBUF_BASE + FKEYDEFS
-;         $0500-$7FF   ; Unused
-RUNARGS     equ $0800   ; RUN arguments (First is program name)
+;         $0500-$7FF    ; Unused
+RUNARGS     equ $0800   ; RUN arguments (see run_args in args.asm)
+RUNARGEND   equ $09FF   ; End of RUN arguments
 DEFCHRSET   equ $3400
 ALTCHRSET   equ $3800   ; Page Offset: Custom Character Set Buffer
 CHRSETLEN   equ 2048    ; Size of character set ROM

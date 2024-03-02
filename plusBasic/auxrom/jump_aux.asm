@@ -51,12 +51,25 @@ _jump_table:
     jp      just_ret
     jp      just_ret
     jp      just_ret
-; Strings
+; string.asm
     jp      string_trim
     jp      string_trim_left
     jp      string_trim_right
     jp      string_search
     jp      string_search_array
+    jp      just_ret
+    jp      just_ret
+    jp      just_ret
+; basbuf.asm
+    jp      basbuf_read_byte
+    jp      basbuf_read_bytes
+    jp      basbuf_read_word
+    jp      basbuf_write_byte
+    jp      basbuf_write_bytes
+    jp      basbuf_write_word
+    jp      runarg_count
+    jp      runarg_get
+    jp      just_ret
     jp      just_ret
     jp      just_ret
     jp      just_ret

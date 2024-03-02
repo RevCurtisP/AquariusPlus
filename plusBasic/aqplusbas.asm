@@ -87,7 +87,7 @@ just_ret:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.21y"
+    db "v0.21z"
 ifdef coredump
     db "_coredump"
 endif
@@ -1070,6 +1070,7 @@ aux_line_print:
     phase   $C000     ;Assemble in ROM Page 1 which will be in Bank 3
 
     include "jump_aux.asm"      ; Auxiliary routines jump tables
+    include "basbuf.asm"        ; Basic buffer read/write routines
     include "color.asm"         ; Color palette module
     include "dos.asm"           ; DOS routines
     include "esp_aux.asm"       ; ESP routines in auxiliary ROM

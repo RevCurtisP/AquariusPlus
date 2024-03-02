@@ -117,6 +117,8 @@ s3_stuffh_ext:
     jp      z,KLOOP               ;   Stuff it and continue
     cp      ':'                   ; If colon
     jp      z,KLOOP               ;   Stuff it and continue
+    cp      '('                   ; If colon
+    jp      z,KLOOP               ;   Stuff it and continue
     call    _stuff_chr                ; Else Stuff it
     jr      .string_loop          ;   and check next character
 .exaf_nodatt:

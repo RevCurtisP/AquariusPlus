@@ -13,11 +13,11 @@ _jump_table:
     jp      str_tempdesc          ; Build descriptor for null terminated string in DSCTMP
     jp      sys_fill_mem          ; Fill main memory with byte
     jp      sys_swap_mem          ; Swap bytes
-    jp      just_ret
-    jp      just_ret
-    jp      just_ret
-    jp      just_ret
-    jp      just_ret
+    jp      key_clear_fifo        ; Clear alternate keyboard buffer
+    jp      key_read_ascii        ; Read from alternate keyboard buffer
+    jp      key_read_scancode     ; Read scan code sequence from alternate keyboard buffer
+    jp      key_set_keymode       ; Set alternate keyboard buffer mode
+    jp      key_pressed           ; Check matrix for keypress
     jp      just_ret
     
 ; esp.asm
