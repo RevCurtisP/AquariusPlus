@@ -1,4 +1,6 @@
 # plusBASIC Release History
+ - v0.22 
+   - Added PT3STATUS, PT3LOOP, SET PT3 ON/OFF and fixed PAUSE PT3 while PT3 LOOP is active
  - v0.21z 
    - Added pseudovariable ARGS and ARGS$(0)
  - v0.21y

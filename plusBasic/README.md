@@ -163,6 +163,8 @@
  - [x] **PSG _register_,_byte_{;...}** - Not implemented
  - [x] **PSET (_x_,_y_)** - Draw bloxel on screen.
  - [x] **PSETB (_x_,_y_)** - _Not implemented_
+ - [ ] **PT3LOOP** - Return -1 if PT3 is set to loop, else 0.
+ - [ ] **PT3STATUS** - Return -1 if PT3 is playing, else 0.
  - [x] **PUT SCREEN (_x_,y_) {CHR|ATTR} \*_array_|^_strvar_** - Copy clip from array or string variable to text screen.
  - [x] **PUT TILEMAP (_x_,y_) \*_array_|^_strvar_** - Copy clip from array or string variable to tilemap.
  - [x] **READ _var_{,...}** - Read values from data statements into variables.
@@ -198,6 +200,7 @@
  - [x] **SET FNKEY _key_ TO _string_** - Set auto-typed text when function key is pressed.
  - [x] **SET KEY _mode_** - Set alternate keyboard port mode.
  - [x] **SET PALETTE _palette_{,_index_} TO _rgblist_** - Set palette entries.
+ - [x] **SET PT3 {ON|OFF}** - Set loop status of active or paused PT3 track.
  - [x] **SET SAVE ASC ON|OFF** - Enable or disable forced saving of BASIC programs in ASCII format.
  - [x] **SET SPRITE _spritedef_ {ON|OFF} {POS _x_,_y_} {TILE _tilelist_} {PALETTE _palettelist_} {ATTR _attrlist_}** - Set sprite properties.
  - [x] **SET SPRITE _spritedef_ TILECLIP \*_array_|^_strvar_** - Set sprite to tile indexes and properties in tilemap clip.

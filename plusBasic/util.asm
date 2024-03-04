@@ -401,13 +401,50 @@ pt3_enable:
 
 ;----------------------------------------------------------------------------
 ; End background PT3 player interrupts
-; Input C,DE = Timer count
 ; Clobbers: A,BC
 ;----------------------------------------------------------------------------
 pt3_disable:
     ld      b,IRQ_PT3PLAY
-    jp     clear_vblank_irq
+    jp      clear_vblank_irq
+
+;----------------------------------------------------------------------------
+; Set PT3 loop status
+; Input: A: $FF = On, 0 = Off
+; Clobbered: B
+;----------------------------------------------------------------------------
+pt3_loop:
+    and     PT3_LOOPS             ; Isolate repeat flah bit
+    ld      b,a                   ; B = LoopFlag
+    ld      a,(EXT_FLAGS)
+    and     $FF-PT3_LOOPS         ; Clear LoopBit
+    or      b                     ; Or in new LoopBit
+    ld      (EXT_FLAGS),a
+    ret
       
+;----------------------------------------------------------------------------
+; Get PT3 player status
+; Output: B: -1 if PT3 interrupt is active
+;         C: -1 if PT3 looped
+; Clobbered: A
+;----------------------------------------------------------------------------
+pt3_status:
+    call    .active
+    ld      b,a
+    call    .looped
+    ld      c,a
+    ret
+.active
+    ld      a,(IRQACTIVE)
+    and     IRQ_PT3PLAY
+    jr      .retstat
+.looped
+    ld      a,(EXT_FLAGS)
+    and     PT3_LOOPS
+.retstat
+    ret     z
+    or      255
+    ret
+
 ;-----------------------------------------------------------------------------
 ; Look up byte in table
 ; Input: A: Offset

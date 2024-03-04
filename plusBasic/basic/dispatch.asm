@@ -72,6 +72,9 @@ extended_function:
     jp      z,FN_KEY
     sub     ARGSTK-KEYTK        ; $8A ARGS
     jp      z,FN_ARGS
+    dec     a                   ; $8B SAMPTK
+    dec     a                   ; $8C PT3TK
+    jp      z,FN_PT3
     sub     VERTK-ARGSTK        ; $92 VER
     jp      z,FN_VER
     dec     a                   ; $93 FILL

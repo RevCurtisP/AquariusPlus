@@ -56,7 +56,7 @@ ST_PLAY_SAMPLE:
 ;-----------------------------------------------------------------------------
 ; PLAY PT3 Statement
 ;-----------------------------------------------------------------------------
-; LOOP pt3 "/music/songs1/dontstop.pt3"
+; LOOP PT3 "/music/songs1/dontstop.pt3"
 ; LOOP PT3
 ST_LOOP_PT3:
     rst     CHRGET                ; Skip PT3
@@ -66,8 +66,8 @@ ST_LOOP_PT3:
 ;-----------------------------------------------------------------------------
 ; PLAY PT3 Statement
 ;-----------------------------------------------------------------------------
-; play pt3 "/music/songs1/dontstop.pt3"
-; play pt3
+; PLAY PT3 "/music/songs1/dontstop.pt3"
+; PLAY PT3
 ST_PLAY_PT3
     rst     CHRGET                ; Skip PT3
     ld      a,(EXT_FLAGS)
@@ -112,5 +112,44 @@ ST_STOP_PT3:
     push    hl
     call    pt3_reset
     pop     hl
+    xor     a
+    jp      pt3_loop
     ret
 
+;-----------------------------------------------------------------------------
+; PT3STATUS and PT3LOOP Functions
+; Returns -1 if PT3 is playing/looped
+;-----------------------------------------------------------------------------
+FN_PT3:
+    rst     CHRGET                ; Skip PT3
+    call    pt3_status            ; B = Active, C = Looped
+    rst     SYNCHR
+    byte    XTOKEN
+    cp      STATK                 
+    jr      nz,.loop              ; If STATUS
+    rst     CHRGET                ;   Skip it
+    ld      a,b                   ;   A = Active
+    jr      .retstat              ; Else
+.loop
+    rst     CHRGET                ;   Skip LOOP
+    ld      a,c                   ;   A = Looped
+.retstat
+    push    hl
+    ld      bc,LABBCK
+    push    bc
+    jp      float_signed_byte
+
+;-----------------------------------------------------------------------------
+; SET PT3 LOOP ON/OFF
+;-----------------------------------------------------------------------------
+; SET PT3 LOOP ON: PRINT PT3LOOP
+; SET PT3 LOOP OFF: PRINT PT3LOOP
+ST_SET_PT3:
+    rst     CHRGET                ; Skip PT3
+    rst     SYNCHR
+    byte    XTOKEN
+    rst     SYNCHR                ; Require LOOP
+    byte    LOOPTK                
+    call    check_on_off          ; A = $FF if ON, 0 if OFF
+    jp      pt3_loop
+    

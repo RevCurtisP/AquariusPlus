@@ -589,6 +589,8 @@ ST_SET:
     jr      z,ST_SET_FAST
     cp      KEYTK                 ; $86
     jr      z,ST_SET_KEY
+    cp      PT3TK                 ; $8C
+    jp      z,ST_SET_PT3
     jp      SNERR
 
 ;-----------------------------------------------------------------------------
