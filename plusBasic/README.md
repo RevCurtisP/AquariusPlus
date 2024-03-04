@@ -95,7 +95,7 @@
  - [x] **INPUT {_stringliteral_;}_var_{,...}** - Prompt for keyboard input and assigns entries to variables.
  - [x] **INSTR({_offset_,}_haystack_,_needle)** - Search for string _needle_ in string _haystack_.
  - [x] **JOY(_stick)** - Read one or both game controllers.
- - [x] **KEY(_keycode_)** - Check if key is currently pressed.
+ - [x] **KEY({_keycode_|_string_})** - Check if key is currently pressed.
  - [x] **LEFT$(_string_,_len_)** - Return the first up to _len_ characters of string.
  - [x] **LEN(_string_)** - Return length of string.
  - [x] **\{LET} _var_=_expression_** - Define and assigns value to variable.

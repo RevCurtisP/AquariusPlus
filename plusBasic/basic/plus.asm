@@ -212,10 +212,54 @@ FN_KEY:
     push    hl                    ; Do the function stuff
     ld      bc,LABBCK
     push    bc
-    call    CONINT                ; A = Matrix code
-    call    key_pressed           ; A = -1 if pressed
-    jp      c,FCERR               ; Error if invalid keycode
+    call    GETYPE                ; Get argument type
+    jr      z,.string             ; If numeric
+    call    CONINT                ;   A = Matrix code
+    call    key_pressed           ;   A = -1 if pressed
+    jp      c,FCERR               ;   Error if invalid keycode
+    jp      float_signed_byte     ;   Return result
+.string
+    call    free_addr_len         ; DE = Address, BC - StrLen
+    jp      z,FCERR               ; Error if NULL string
+    ld      b,c
+.loop
+    ld      a,(de)
+    push    bc
+    push    de
+    call    keycode
+    ld      a,c
+    call    key_pressed
+    pop     de
+    pop     bc
+    jp      nz,float_signed_byte
+    inc     de
+    djnz    .loop
+    xor     a
     jp      float_signed_byte
+
+; Returns C = Keycode
+keycode:
+    ld      hl,keytable
+    ld      b,keytablen
+    ld      c,0
+.loop
+    cp      (hl)
+    ret     z
+    inc     hl
+    inc     c
+    djnz    .loop
+    jp      FCERR
+
+keytable:
+    byte    '=',$08,':',$0D,';','.',$9D,$7F
+    byte    '-','/','0','p','l',',',$8F,$8E
+    byte    '9','o','k','m','n','j',$9E,$9F
+    byte    '8','i','7','u','h','b',$9B,$9A
+    byte    '6','y','g','v','c','f',$8A,$8B
+    byte    '5','t','4','r','d','x',$89,$88
+    byte    '3','e','s','z',' ','a',$9C,$8C
+    byte    '2','w','1','q', 0 , 0 , 0 , 0 
+keytablen   equ   $-keytable
 
 ;-----------------------------------------------------------------------------
 ; STASH Statement Stub
