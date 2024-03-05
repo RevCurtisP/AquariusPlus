@@ -214,7 +214,9 @@ FN_KEY:
     push    bc
     call    GETYPE                ; Get argument type
     jr      z,.string             ; If numeric
-    call    CONINT                ;   A = Matrix code
+    ld      a,-1
+    rst     FSIGN
+    call    p,CONINT              ;   A = Matrix code
     call    key_pressed           ;   A = -1 if pressed
     jp      c,FCERR               ;   Error if invalid keycode
     jp      float_signed_byte     ;   Return result

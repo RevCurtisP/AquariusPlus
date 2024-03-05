@@ -41,6 +41,14 @@ key_set_keymode:
 ; Output: A: -1 if pressed, else 0
 ;-----------------------------------------------------------------------------
 key_pressed:
+    cp      $FF
+    jr      nz,.dokey
+    ld      bc,$FF                ; Select all keys
+    ld      c,IO_KEYBOARD
+    in      a,(c)                 ; Read key matrix
+    xor     c                     ; Reverse all bits
+    jr      .done
+.dokey
     cp      64
     ccf                           ; If KeyCode > 63
     ret     c                     ;   Return Carry set
@@ -60,6 +68,7 @@ key_pressed:
     in      a,(c)                 ; Read key matrix
     cpl                           ; Invert result
     and     e                     ; Isolate row bit
+.done
     ret     z                     ; Return 0 if not set
     or      -1                    ; Else return -1 with flags set
     ret

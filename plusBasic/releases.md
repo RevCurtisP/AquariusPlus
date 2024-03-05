@@ -1,4 +1,6 @@
 # plusBASIC Release History
+ - v0.22b
+   - Added KEY(-1) 
  - v0.22a
    - Added KEY("keys") 
  - v0.22 
