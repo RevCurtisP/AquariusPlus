@@ -75,7 +75,7 @@ extended_function:
     dec     a                   ; $8B SAMPTK
     dec     a                   ; $8C PT3TK
     jp      z,FN_PT3
-    sub     VERTK-ARGSTK        ; $92 VER
+    sub     VERTK-PT3TK         ; $92 VER
     jp      z,FN_VER
     dec     a                   ; $93 FILL
     dec     a                   ; $94 COMPARE

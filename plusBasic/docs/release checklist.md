@@ -11,7 +11,7 @@
   - RUN /aqds/aqds.aqx
   - CD /CPM:RUN gocpm.aqx
   - PLAY SAMPLE
-    - RUN bigben.baq
+    - CD /sounds:RUN bigben.baq
   - plusBASIC demos
     - RUN /demos/plusbasic/sprite.bas
     - RUN /demos/plusbasic/sprites.bas
@@ -28,9 +28,13 @@
     - RUN tr.baq
     - RUN ts.baq
   - PLAY PT3
-    - LOAD PT3 "/music/songs1/dontstop.pt3"
-    - PLAY PT3
+    - LOAD PT3 "/music/songs1/chuta.pt3"
+    - PRINT PT3STATUS
     - PAUSE PT3
+    - PRINT PT3STATUS
     - RESUME PT3
-    - PLAY PT3 "/music/songs1/dance.pt3"
     - STOP PT3
+    - PLAY PT3 "/music/songs1/dance.pt3"
+    - PRINT PT3LOOP
+    - LOOP PT3 "/music/songs1/dontstop.pt3"
+    - PRINT PT3LOOP

@@ -1,4 +1,6 @@
 # plusBASIC Release History
+ - v0.22c
+   - Fixed syntax error on extended functions VER through VARPTR
  - v0.22b
    - Added KEY(-1) 
  - v0.22a
