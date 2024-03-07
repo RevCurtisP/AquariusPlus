@@ -1,9 +1,14 @@
 100 REM Length restricted string input
 110 SET FNKEY 3 TO \"run /subr/input.bas\r"
-200 CLS:LOCATE 10,9:PRINT "Date Entry"
-210 GOSUB _indate:ARGS 10,10,D$ RETURN D$
-220 PRINT:PRINT D$
 
+200 CLS:LOCATE 10,9:PRINT "Date Entry"
+205 D$=DATE$
+210 GOSUB _indate:ARGS 10,10,D$ RETURN D1$
+215 PRINT:PRINT D1$
+220 GOSUB _date2ymd:ARGS D1$ RETURN Y,M,D
+225 PRINT Y;M;D
+230 GOSUB _ymd2date:ARGS Y,M,D RETURN D2$
+235 PRINT D2$
 
 59999 END
 60000 REM String Input Routine
@@ -19,11 +24,19 @@
 
 60020 REM Date Input Routine (YYYYMMDD) - Requires _input
 60021 REM GOSUB _indate:ARGS col,row,date$ RETURN date$
-60022 _indate:GET ARGS ZC,ZR,ZE$:ZV$="0123456789":ZF$="    ":ZY$=LEFT$(ZE$,4):ZM$=MID$(ZE$,5,2):ZY$=MID$(ZE$,7,2)
-60023 LOCATE ZC,ZR:PRINT LEFT$(ZY$+ZF$,4);"/";LEFT$(ZM$+ZF$,2);"/";LEFT$(ZM$+ZF$,2)
+60022 _indate:GET ARGS ZC,ZR,ZE$:ZV$="0123456789":ZF$="    ":ZY$=LEFT$(ZE$,4):ZM$=MID$(ZE$,5,2):ZD$=MID$(ZE$,7,2)
+60023 LOCATE ZC,ZR:PRINT LEFT$(ZY$+ZF$,4);"/";LEFT$(ZM$+ZF$,2);"/";LEFT$(ZD$+ZF$,2)
 60024 _zinyr:GOSUB _input:ARGS ZC,ZR,4,4,ZV$,ZY$,"Enter year (YYYY)" RETURN ZY$:ZY=VAL(ZY$)
 60025 _zinmo:GOSUB _input:ARGS ZC+5,ZR,2,2,ZV$,ZM$,"Enter month (MM)" RETURN ZM$:IF Z=140 THEN GOTO _zinyr
 60026 ZM=VAL(ZM$):IF ZM<1 OR ZM>12 THEN ZM$="":PRINT $"07";:GOTO _zinmo
 60027 _zindy:GOSUB _input:ARGS ZC+8,ZR,2,2,ZV$,ZD$,"Enter day (DD)" RETURN ZD$:ZD=VAL(ZD$):IF Z=140 THEN GOTO _zinmo
 60028 IF ZD<1 OR ZD>30+(ZM+7*(ZM>7) AND 1)+(ZM=2)*(2+(ZY MOD 4=0)-(ZY MOD 100=0)+(ZY MOD 400=0)) THEN ZD$="":PRINT $"07";:GOTO _zindy
 60029 RETURN ZY$+ZM$+ZD$  
+
+60100 REM Convert Date String (YYYYMMDD) to Year, Month, Day
+60101 REM GOSUB _date2ymd:ARGS date$ RETURN year,month,day
+60102 _date2ymd:GET ARGS ZD$:RETURN VAL(LEFT$(ZD$,4)),VAL(MID$(ZD$,5,2)),VAL(MID$(ZD$,7,2))
+
+60105 REM Convert Year, Month, Day to Date String (YYYYMMDD)
+60106 REM GOSUB _ymd2date:ARGS year,month,day RETURN date$
+60107 _ymd2date:GET ARGS ZY,ZM,ZD:RETURN RIGHT$("000%%"%(ZY),4)+RIGHT$("0%%"%(ZM),2)+RIGHT$("0%%"%(ZD),2)
