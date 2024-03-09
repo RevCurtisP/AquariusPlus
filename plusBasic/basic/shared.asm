@@ -408,6 +408,12 @@ get_int_reget:
     call    GETINT
     jp      CHRGT2
 
+
+parse_colors:
+    rst     SYNCHR                
+    byte    COLTK
+    rst     SYNCHR                ; Require COLOR
+    byte    ORTK
 ;-----------------------------------------------------------------------------
 ; Parse Foreground and Background Colors
 ; Output: A = Combined coloe

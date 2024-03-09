@@ -1,4 +1,6 @@
 # plusBASIC Release History
+ - v0.22d
+   - Added CLEAR BITMAP, FILL BITMAP. Implemented PSETB and PRESETB
  - v0.22c
    - Fixed syntax error on extended functions VER through VARPTR
  - v0.22b
@@ -11,13 +13,7 @@
    - Added pseudovariable ARGS and ARGS$(0)
  - v0.21y
    - Added SWAP VARS statement, ERASE statement, MID$ statement, and INDEX() function
- - v0.21x 
-   - Added TRIM$, TRIML$, and TRIMR$ functions
- - v0.21w 
-   - Screen stash, restore, swap, and switch now preserve color print mode, border remap and palette
-   - GETCHRSET returns character set currently in use (0 or 1)
-   - Fixed color printing mode bug in 80 column mode
-   - Tweaked Latin-1 character set PNGs
+ - v0.21x FILL BITMAP. ded TRIM$, TRIML$, and v0.21w 
  - v0.21v
    - Added LOAD DIR filename$,\*array$
    - LOAD array$ ASC and LOAD DIR start at array index 1, put number of lines in index 0 

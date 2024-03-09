@@ -289,8 +289,50 @@ ST_SET_TILE:
     ret
 
 ;-----------------------------------------------------------------------------
+; CLEAR BITMAP [COLOR foreground,background]
+;-----------------------------------------------------------------------------
+; CLEAR BITMAP:SCREEN 0,2:PAUSE
+ST_CLEAR_BITMAP:
+    rst     CHRGET                ; Skip BIT
+    rst     SYNCHR
+    byte    MAPTK
+    xor     a
+    jr      _fill_bitmap_byte
+
+;-----------------------------------------------------------------------------
+; FILL BITMAP [BYTE byte] [COLOR foreground,background]
+;-----------------------------------------------------------------------------
+; FILL BITMAP BYTE $AA COLOR 7,0:SCREEN 0,2:PAUSE
+ST_FILL_BITMAP:
+    rst     CHRGET                ; Skip BIT
+    rst     SYNCHR
+    byte    MAPTK
+    cp      XTOKEN                  
+    jr      nz,_fill_bitmap_color ; If Extended Token
+    rst     CHRGET                ;   Skip it
+    rst     SYNCHR                ;   Require BYTE
+    byte    BYTETK
+    call    GETBYT                ;   A = FillByte
+_fill_bitmap_byte:
+    push    hl                    ;   Stack = TxtPtr, NxtChr, RtnAdr
+    ld      iy,bitmap_fill_byte
+    call    aux_call              ;   Do the fill
+    pop     hl                    ;   HL = TxtPtr; Stack = NxtChr, RtnAdr
+    call    CHRGT2                ;   Reget next character
+    ret     z                     ;   Return if end of statement
+_fill_bitmap_color:
+    call    parse_colors          ; Require COLOR, A = Color Byte
+    push    hl                    ; Stack = TxtPtr, RtnAdr  
+    ld      iy,bitmap_fill_color
+_auxcall_popret:
+    call    aux_call              ;   Do the fill
+    pop     hl                    ;   HL = TxtPtr; Stack = NxtChr, RtnAdr
+    ret
+    
+;-----------------------------------------------------------------------------
 ; FILL SCREEN [(col,row)-(col,row)] [CHR chr|chr$] [COLOR fgcolor, bgcolor]
 ;-----------------------------------------------------------------------------
+; FILL SCREEN (10,5)-(20,15) CHR '*' COLOR 7,0
 ST_FILL_SCREEN:
     ld      iy,screen_size
     call    aux_call              ; Default to entire screen
@@ -323,11 +365,7 @@ ST_FILL_SCREEN:
     pop     de                    ;      Stack = RtnAdr
     ret                           ;      Return
 .notx
-    rst     SYNCHR                ; Else
-    byte    COLTK
-    rst     SYNCHR                ;   Require color
-    byte    ORTK
-    call    get_screen_colors     ;   A = Colors
+    call    parse_colors          ;   A = Colors
     pop     bc                    ;   BC = Cols; Stack = Rows, RtnAdr
     pop     de                    ;   DE = Rows; Stack = RtnAdr
     push    hl                    ;   Stack = TxtPtr, Cols, Rows, RtnAdr
@@ -337,6 +375,7 @@ ST_FILL_SCREEN:
     call    aux_call              ;   Do the fill
     pop     hl                    ;   HL = TxtPtr; Stack = Cols, Rows, RtnAdr
     ret
+
 
 ;-----------------------------------------------------------------------------
 ; FILL TILEMAP TILE tile# ATTR attrs PALETTE palette#

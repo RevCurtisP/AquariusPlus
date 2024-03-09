@@ -87,7 +87,7 @@ just_ret:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.22c"
+    db "v0.22d"
 ifdef coredump
     db "_coredump"
 endif
@@ -907,7 +907,7 @@ hook_table:                     ; ## caller   addr  performing function
     dw      HOOK8+1             ;  8 TRMNOK   0880  Improperly Formatted INPUT or DATA handler
     dw      eval_extension      ;  9 EVAL     09FD  Evaluate Number or String
     dw      keyword_to_token    ; 10 NOTGOS   0536  Converting Keyword to Token
-    dw      HOOK11+1            ; 11 CLEAR    0CCD  Execute CLEAR Statement
+    dw      clear_hook          ; 11 CLEAR    0CCD  Execute CLEAR Statement
     dw      new_hook            ; 12 SCRTCH   0BBE  Execute NEW Statement
     dw      outdo_hook          ; 13 OUTDO    198A  Execute OUTCHR
     dw      HOOK14+1            ; 14 ATN      1985  ATN() function
@@ -1073,6 +1073,7 @@ aux_line_print:
 
     include "jump_aux.asm"      ; Auxiliary routines jump tables
     include "basbuf.asm"        ; Basic buffer read/write routines
+    include "bitmap.asm"        ; Bitmap graphics routines
     include "color.asm"         ; Color palette module
     include "dos.asm"           ; DOS routines
     include "esp_aux.asm"       ; ESP routines in auxiliary ROM

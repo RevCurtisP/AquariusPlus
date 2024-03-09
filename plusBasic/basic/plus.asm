@@ -535,6 +535,8 @@ ST_FILL:
     jp      z,ST_FILL_SCREEN
     cp      TILETK
     jp      z,ST_FILL_TILE
+    cp      BITTK
+    jp      z,ST_FILL_BITMAP
     ;Fill memory
     call    get_page_addr         ; Check for Page Arg
     push    de                    ; Stack = BgnAdr, RetAdr

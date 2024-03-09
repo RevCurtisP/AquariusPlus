@@ -32,6 +32,7 @@
  - [x] **CHR$(_byte_)** - Convert ASCII value to string.
  - [x] **CIRCLE (_x_,_y_),_radius_{,{_color_}{,{_start_},{_end_}{,_aspect_}}}** - _Not implemented_
  - [x] **CLEAR {_integer_{,_address_}}** - Clear all variables, optionally allocating string text space and top of BASIC RAM.
+ - [x] **CLEAR BITMAP {_fgcolor_,_bgcolor_}** - Clear Bitmap Screen
  - [x] **CLOAD {{?}_filename_}|\*_array_** - Load or verify program or load array data from cassette.
  - [x] **CLOSE** - _Not implemented_
  - [x] **CLS {_fgcolor_,_bgcolor_}** - Clear the text screen.
@@ -69,6 +70,7 @@
  - [x] **FILEEXT$(_filespec_)** - Extract extension from filespec.
  - [x] **FILL {@_page_},_address_,_oount_,_byte_** - Fill block of memory with byte.
  - [x] **FILL {@_page_},_address_,_oount_,WORD _integer_** - Fill block of memory with integer.
+ - [x] **FILL BITMAP {BYTE byte} {COLOR fgcolor, bgcolor}
  - [x] **FILL SCREEN {(_x_,y_)-(_x_,_y_)} {CHR _character_} {COLOR fgcolor, bgcolor}** - Fill screen with character and/or colors.
  - [x] **FILL TILEMAP {(_x_,y_)-(_x_,_y_)} TILE _tileno_{ ATTR _attrs_}{ PALETTE _palette_}** - Fill tilemap with specified tile, attributes and palette.
  - [x] **FOR _var_=_expression_ TO _expression_ {STEP _expression_]** - Initiate a _FOR_ loop.
@@ -157,12 +159,12 @@
  - [x] **POINT(_x_,_y_)** - Return status of bloxel.
  - [x] **POS(_expression__)** - Return current cursor column on printer.
  - [x] **PRESET (_x_,_y_)** - Erase bloxel from screen.
- - [x] **PRESETB (_x_,_y_)** - _Not implemented_
+ - [x] **PRESETB (_x_,_y_)** - Erase pixels from 1bpp bitmap screen.
  - [x] **PRINT TAB(_integer_)|SPC(_integer_)|_expression_|;|,{...}** - Display data on screen.
  - [x] **PSG _register_,_byte_{,...}** - Write bytes to PSG register
  - [x] **PSG _register_,_byte_{;...}** - Not implemented
- - [x] **PSET (_x_,_y_)** - Draw bloxel on screen.
- - [x] **PSETB (_x_,_y_)** - _Not implemented_
+ - [x] **PSET (_x_,_y_)** - Draw bloxel on text screen.
+ - [x] **PSETB (_x_,_y_)** - Draw pixel from 1bpp bitmap screen.
  - [ ] **PT3LOOP** - Return -1 if PT3 is set to loop, else 0.
  - [ ] **PT3STATUS** - Return -1 if PT3 is playing, else 0.
  - [x] **PUT SCREEN (_x_,y_) {CHR|ATTR} \*_array_|^_strvar_** - Copy clip from array or string variable to text screen.

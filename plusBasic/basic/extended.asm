@@ -2,11 +2,21 @@
 ; Statements and Functions from Aquarius Extended BASIC
 ;====================================================================
 
+
+;-----------------------------------------------------------------------------
+; CLEAR statement extension (Hook 11)
+; CLEAR BITMAP [fgcolor, bgcolor]
+;-----------------------------------------------------------------------------
+clear_hook:
+    jp      z,CLEARC              ; If no operands just CLEAR
+    cp      BITTK                 
+    jp      nz,HOOK11+1           ;   continue with CLEAR
+    jp      ST_CLEAR_BITMAP
+
 ;-----------------------------------------------------------------------------
 ; CLS statement 
 ; syntax: CLS [fgcolor, bgcolor]
 ;-----------------------------------------------------------------------------
-
 ST_CLS:
     jp      z,do_cls              ; No parameters, use default
     call    get_color_args        ; Pares foreground and background colors

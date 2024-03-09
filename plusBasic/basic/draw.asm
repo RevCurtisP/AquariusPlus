@@ -9,8 +9,8 @@
 ST_PSET:
 ; Note: These two lines broke PSET and PRESET - no idea why
 ;       this will need to be resolved when implementing PSETB snd PRESETB
-;    cp      'B'
-;    jr      z,ST_PSETB
+    cp      'B'
+    jr      z,ST_PSETB
     call    SCAND                 ; Parse (X,Y)
     call    scale_xy              ; Convert X,Y
     ld      a,1   
@@ -19,8 +19,8 @@ ST_PSET:
     jp      RSETCC    
     
 ST_PRESET:    
-;    cp      'B'
-;    jr      z,ST_PRESETB
+    cp      'B'
+    jr      z,ST_PRESETB
     call    SCAND                 ; Parse (X,Y)
     call    scale_xy              ; Convert X,Y
     ld      a,0   
@@ -81,16 +81,33 @@ scale_xy:
     xor     (hl)                  ; bits 5 and 7 cleared
     ret                           ;
 
+_pset_code_size = $ - ST_PSET
+
+; RUN /pbt/bitmap.bas
 ST_PSETB:
-    or      a,$FF                 
-    push    af                    ; Stack = Mode, RtnAdr
-    rst     CHRGET
-    call    SCAND                 ; BC = X, DE = Y
-    
-    
+    ld      bc,bitmap_setpixel
+    jr      _psetb
 ST_PRESETB:
-    xor     a
-    push    af                    ; Stack = Mode, RtnAdr
-    rst     CHRGET
-    call    SCAND                 ; BC = X, DE = Y
+    ld      bc,bitmap_resetpixel
+_psetb:
+    push    bc                    ; Stack = SubAdr, RtnAdr
+    rst     CHRGET                ; Skip B
+    call    SCANDYX               ; C = Y, DE = X
+    pop     iy                    ; IY = SubAdr
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    call    aux_call
+    jp      c,FCERR               ; Error if illegal coordinate
+    pop     hl
+    ret
     
+; Scan (X,Y) into DE,C    
+SCANDYX:
+    SYNCHK  '('                   
+    call    GETINT                ; DE = X
+    push    de                    ; Stack = X, RtnAdr
+    SYNCHK  ','
+    call    GETBYT                ; A = Y
+    ld      c,a                   ; C = Y
+    pop     de                    ; DE = X; Stack = RtnAdr
+    SYNCHK  ')'
+    ret
