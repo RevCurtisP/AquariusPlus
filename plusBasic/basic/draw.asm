@@ -4,6 +4,30 @@
 
 
 ;-----------------------------------------------------------------------------
+; POINT, POINTB, and POINTC
+;-----------------------------------------------------------------------------
+; PSETB(1,1):? POINTB(1,1)
+; PRESETB(1,1):? POINTB(1,1)
+FN_POINT:
+    rst     CHRGET                ; Skip POINT
+    cp      'B'
+    jr      z,_pointb
+    cp      'C'
+    jp      nz,POINTX
+_pointc:
+    jp      GSERR
+    ld      bc,bitmapc_getpixel
+    jr      _point
+_pointb:    
+    ld      bc,bitmap_getpixel
+_point:
+    call    _psetb
+    push    hl
+    ld      bc,LABBCK
+    push    bc
+    jp      SNGFLT
+
+;-----------------------------------------------------------------------------
 ; Bloxel PRESET and PRESET with the EX AF,AF' factored out 
 ;-----------------------------------------------------------------------------
 ST_PSET:
@@ -93,11 +117,11 @@ _psetb:
     push    bc                    ; Stack = SubAdr, RtnAdr
     rst     CHRGET                ; Skip B
     call    SCANDYX               ; C = Y, DE = X
-    pop     iy                    ; IY = SubAdr
+    pop     iy                    ; IY = SubAdr; Stack = RtnAdr
     push    hl                    ; Stack = TxtPtr, RtnAdr
     call    aux_call
     jp      c,FCERR               ; Error if illegal coordinate
-    pop     hl
+    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     ret
     
 ; Scan (X,Y) into DE,C    

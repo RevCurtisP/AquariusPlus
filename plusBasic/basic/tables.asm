@@ -178,7 +178,7 @@ FNJUMPS:
     dw      HOOK27+1              ;$C7 LEFT$    
     dw      HOOK27+1              ;$C8 RIGHT$   
     dw      HOOK27+1              ;$C9 MID$     
-    dw      HOOK27+1              ;$CA POINT
+    dw      FN_POINT              ;$CA POINT
 ; PlusBASIC Statements and Functions
     dw      SNERR                 ;$CB XOR
     dw      SNERR                 ;$CC PUT  

@@ -1,4 +1,6 @@
 # plusBASIC Release History
+ - v0.22e
+   - Implemented POINTB(), added CLEAR BITMAPC and FILL BITMAPC
  - v0.22d
    - Added CLEAR BITMAP, FILL BITMAP. Implemented PSETB and PRESETB
  - v0.22c

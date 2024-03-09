@@ -32,7 +32,8 @@
  - [x] **CHR$(_byte_)** - Convert ASCII value to string.
  - [x] **CIRCLE (_x_,_y_),_radius_{,{_color_}{,{_start_},{_end_}{,_aspect_}}}** - _Not implemented_
  - [x] **CLEAR {_integer_{,_address_}}** - Clear all variables, optionally allocating string text space and top of BASIC RAM.
- - [x] **CLEAR BITMAP {_fgcolor_,_bgcolor_}** - Clear Bitmap Screen
+ - [ ] **CLEAR BITMAP {_fgcolor_,_bgcolor_}** - Clear 1bpp bitmap screen
+ - [ ] **CLEAR BITMAPC** - _Not implemented_
  - [x] **CLOAD {{?}_filename_}|\*_array_** - Load or verify program or load array data from cassette.
  - [x] **CLOSE** - _Not implemented_
  - [x] **CLS {_fgcolor_,_bgcolor_}** - Clear the text screen.
@@ -63,14 +64,15 @@
  - [x] **DOKE {@_page_,}_address_,_integer_** - Write integer to memory.
  - [x] **EDIT {_lineref_}** - _Not implemented_
  - [x] **END** - Terminate program execution.
- - [x] **ERASE \*array{,\*array...}** - Delete arrays.
+ - [x] **ERASE _\*array_{,_\*array_...}** - Delete arrays.
  - [x] **EVAL(_string_)** - Evaluate expression in string.
  - [x] **EXP(_float_)** - Return argument to the power of mathematical constant _e_.
  - [x] **FILEDIR$(_filespec_)** - Extract path from filespec. 
  - [x] **FILEEXT$(_filespec_)** - Extract extension from filespec.
  - [x] **FILL {@_page_},_address_,_oount_,_byte_** - Fill block of memory with byte.
  - [x] **FILL {@_page_},_address_,_oount_,WORD _integer_** - Fill block of memory with integer.
- - [x] **FILL BITMAP {BYTE byte} {COLOR fgcolor, bgcolor}
+ - [ ] **FILL BITMAP {BYTE _byte_} {COLOR _fgcolor_, _bgcolor_}** - Fill 1bpp bitmap with byte and/or colormap to colors
+ - [ ] **FILL BITMAPC COLOR _color_** - _Not implemented_**
  - [x] **FILL SCREEN {(_x_,y_)-(_x_,_y_)} {CHR _character_} {COLOR fgcolor, bgcolor}** - Fill screen with character and/or colors.
  - [x] **FILL TILEMAP {(_x_,y_)-(_x_,_y_)} TILE _tileno_{ ATTR _attrs_}{ PALETTE _palette_}** - Fill tilemap with specified tile, attributes and palette.
  - [x] **FOR _var_=_expression_ TO _expression_ {STEP _expression_]** - Initiate a _FOR_ loop.
@@ -150,13 +152,15 @@
  - [x] **PEEKSCREEN$(_address_,_length_)** - Read string from screen RAM.
  - [x] **PLAY PT3 {_filespec_}** - Play specified or previously loaded PT3 track.
  - [x] **PLAY SAMPLE @_page_,_address_** - Play digital sample from previously loaded file.
+ - [x] **POINT(_x_,_y_)** - Return status of bloxel.
+ - [ ] **POINTB(_x_,_y_)** - Return status of pixel.
+ - [ ] **POINTC(_x_,_y_)** - _Not implemented_
  - [x] **POKE {@_page_,}_address_,_byte_** - Write byte to memory.
  - [x] **POKE {@_page_,}_address_,_string_** - Write string to memory.
  - [x] **POKE COLOR _address_,_byte_** - Write byte to color RAM.
  - [x] **POKE COLOR _address_,_string_** - Write string to color RAM.
  - [x] **POKE SCREEN _address_,_byte_** - Write byte to screen RAM.
  - [x] **POKE SCREEN _address_,_string_** - Write string to screen RAM.
- - [x] **POINT(_x_,_y_)** - Return status of bloxel.
  - [x] **POS(_expression__)** - Return current cursor column on printer.
  - [x] **PRESET (_x_,_y_)** - Erase bloxel from screen.
  - [x] **PRESETB (_x_,_y_)** - Erase pixels from 1bpp bitmap screen.
@@ -164,7 +168,8 @@
  - [x] **PSG _register_,_byte_{,...}** - Write bytes to PSG register
  - [x] **PSG _register_,_byte_{;...}** - Not implemented
  - [x] **PSET (_x_,_y_)** - Draw bloxel on text screen.
- - [x] **PSETB (_x_,_y_)** - Draw pixel from 1bpp bitmap screen.
+ - [ ] **PSETB (_x_,_y_)** - Draw pixel on 1bpp bitmap screen.
+ - [ ] **PSETC (_x_,_y_),_color_** - Draw pixel from 1bpp bitmap screen.
  - [ ] **PT3LOOP** - Return -1 if PT3 is set to loop, else 0.
  - [ ] **PT3STATUS** - Return -1 if PT3 is playing, else 0.
  - [x] **PUT SCREEN (_x_,y_) {CHR|ATTR} \*_array_|^_strvar_** - Copy clip from array or string variable to text screen.

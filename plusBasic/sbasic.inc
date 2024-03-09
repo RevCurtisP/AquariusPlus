@@ -289,6 +289,7 @@ TRYIN       equ $1A2F   ; Wait for character from keyboard
 CNTCCN      equ $1A39   ; Check for and process Ctrl-C
 WRMCON:     equ $1A40
 RSETCC      equ $1A5D   ; Partway into PSET/PRESET`
+POINTX      equ $1A69   ; Enter POINT after initial CHRGET
 SCAND       equ $1A7F   ; Get parameters for PSET, PRESET, POINT, and SOUND
 SCALXY      equ $1A8E   ; Convert PSET Coordinates to Screen Position and Character Mask
 BITTAB      equ $1ACA   ; Semigraphic Pixel Index to Bit Mask Table

@@ -290,23 +290,26 @@ ST_SET_TILE:
 
 ;-----------------------------------------------------------------------------
 ; CLEAR BITMAP [COLOR foreground,background]
+; CLEAR BITMAPC
+;-----------------------------------------------------------------------------
 ;-----------------------------------------------------------------------------
 ; CLEAR BITMAP:SCREEN 0,2:PAUSE
 ST_CLEAR_BITMAP:
-    rst     CHRGET                ; Skip BIT
-    rst     SYNCHR
-    byte    MAPTK
+    call    _parse_bitmap
+    jr      nz,_clear_bitmap      ; If BITMAPC
+    ld      iy,bitmapc_clear
+    jr      _auxcall_ret
+_clear_bitmap:
     xor     a
     jr      _fill_bitmap_byte
-
 ;-----------------------------------------------------------------------------
 ; FILL BITMAP [BYTE byte] [COLOR foreground,background]
+; FILL BITMAPC COLOR color
 ;-----------------------------------------------------------------------------
 ; FILL BITMAP BYTE $AA COLOR 7,0:SCREEN 0,2:PAUSE
 ST_FILL_BITMAP:
-    rst     CHRGET                ; Skip BIT
-    rst     SYNCHR
-    byte    MAPTK
+    call    _parse_bitmap
+    jr      z,_fill_bitmapc       ; BITMAPC
     cp      XTOKEN                  
     jr      nz,_fill_bitmap_color ; If Extended Token
     rst     CHRGET                ;   Skip it
@@ -322,11 +325,31 @@ _fill_bitmap_byte:
     ret     z                     ;   Return if end of statement
 _fill_bitmap_color:
     call    parse_colors          ; Require COLOR, A = Color Byte
-    push    hl                    ; Stack = TxtPtr, RtnAdr  
     ld      iy,bitmap_fill_color
-_auxcall_popret:
+_auxcall_ret:
+    push    hl                    ; Stack = TxtPtr, RtnAdr  
     call    aux_call              ;   Do the fill
     pop     hl                    ;   HL = TxtPtr; Stack = NxtChr, RtnAdr
+    ret
+_fill_bitmapc:
+    call    parse_color           ; A = Color
+    ld      b,a
+    sla     a                     
+    sla     a                     
+    sla     a                     
+    sla     a                     
+    or      b                     ; Copy LSB to MSB
+    ld      iy,bitmapc_fill_byte
+    jr      _auxcall_ret          ; Do the fill
+
+_parse_bitmap:
+    rst     CHRGET                ; Skip BIT
+    rst     SYNCHR
+    byte    MAPTK
+    cp      'C'                   ; If BITMAP
+    ret     nz                    ;   Return NZ
+    rst     CHRGET                ; Else Skip C
+    xor     a                     ; and return Z
     ret
     
 ;-----------------------------------------------------------------------------

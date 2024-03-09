@@ -409,6 +409,15 @@ get_int_reget:
     jp      CHRGT2
 
 
+; Parse COLOR color
+parse_color:
+    rst     SYNCHR                
+    byte    COLTK
+    rst     SYNCHR                ; Require COLOR
+    byte    ORTK
+    jp      get_byte16
+
+; Parse COLOR fgcolor,bgcolor
 parse_colors:
     rst     SYNCHR                
     byte    COLTK
