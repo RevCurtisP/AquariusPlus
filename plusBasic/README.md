@@ -153,8 +153,8 @@
  - [x] **PLAY PT3 {_filespec_}** - Play specified or previously loaded PT3 track.
  - [x] **PLAY SAMPLE @_page_,_address_** - Play digital sample from previously loaded file.
  - [x] **POINT(_x_,_y_)** - Return status of bloxel.
- - [ ] **POINTB(_x_,_y_)** - Return status of pixel.
- - [ ] **POINTC(_x_,_y_)** - _Not implemented_
+ - [ ] **POINTB(_x_,_y_)** - Return status of pixel in 1bpp screen.
+ - [ ] **POINTC(_x_,_y_)** - Return status of pixel in 4bpp screen.
  - [x] **POKE {@_page_,}_address_,_byte_** - Write byte to memory.
  - [x] **POKE {@_page_,}_address_,_string_** - Write string to memory.
  - [x] **POKE COLOR _address_,_byte_** - Write byte to color RAM.
@@ -163,13 +163,14 @@
  - [x] **POKE SCREEN _address_,_string_** - Write string to screen RAM.
  - [x] **POS(_expression__)** - Return current cursor column on printer.
  - [x] **PRESET (_x_,_y_)** - Erase bloxel from screen.
- - [x] **PRESETB (_x_,_y_)** - Erase pixels from 1bpp bitmap screen.
+ - [ ] **PRESETB (_x_,_y_)** - Erase pixel from 1bpp bitmap screen.
+ - [ ] **PRESETC (_x_,_y_)** - Erase pixel from 4bpp bitmap screen.
  - [x] **PRINT TAB(_integer_)|SPC(_integer_)|_expression_|;|,{...}** - Display data on screen.
  - [x] **PSG _register_,_byte_{,...}** - Write bytes to PSG register
  - [x] **PSG _register_,_byte_{;...}** - Not implemented
  - [x] **PSET (_x_,_y_)** - Draw bloxel on text screen.
  - [ ] **PSETB (_x_,_y_)** - Draw pixel on 1bpp bitmap screen.
- - [ ] **PSETC (_x_,_y_),_color_** - Draw pixel from 1bpp bitmap screen.
+ - [ ] **PSETC (_x_,_y_),_color_** - Draw pixel from 4bpp bitmap screen.
  - [ ] **PT3LOOP** - Return -1 if PT3 is set to loop, else 0.
  - [ ] **PT3STATUS** - Return -1 if PT3 is playing, else 0.
  - [x] **PUT SCREEN (_x_,y_) {CHR|ATTR} \*_array_|^_strvar_** - Copy clip from array or string variable to text screen.

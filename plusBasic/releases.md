@@ -1,4 +1,8 @@
 # plusBASIC Release History
+ - v0.22f
+   - Implemented PSETC, PRESETC, and POINTC
+ - v0.22e2
+   - Fixed Y-coordinate clipping in PSETB, PRESETB, POTNTB
  - v0.22e
    - Implemented POINTB(), added CLEAR BITMAPC and FILL BITMAPC
  - v0.22d

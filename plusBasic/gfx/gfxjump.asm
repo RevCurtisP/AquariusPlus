@@ -6,6 +6,17 @@
 gfx_jump_table
     jp      gfx_startup           
     jp      gfx_init              
+
+    jp      bitmap_addr
+    jp      bitmap_clear
+    jp      bitmap_fill_byte
+    jp      bitmap_getpixel
+    jp      bitmap_resetpixel
+    jp      bitmap_setpixel
+    jp      bitmapc_addr
+    jp      bitmapc_clear
+    jp      bitmapc_fill_byte
+
     jp      palette_reset
     jp      palette_set           
     jp      palette_get           

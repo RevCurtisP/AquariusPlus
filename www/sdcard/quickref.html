@@ -171,8 +171,8 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>PLAY PT3 </strong> - Play specified or previously loaded PT3 track.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>PLAY SAMPLE @<em>page</em>,<em>address</em></strong> - Play digital sample from previously loaded file.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>POINT(<em>x</em>,<em>y</em>)</strong> - Return status of bloxel.</li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>POINTB(<em>x</em>,<em>y</em>)</strong> - Return status of pixel.</li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>POINTC(<em>x</em>,<em>y</em>)</strong> - <em>Not implemented</em></li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>POINTB(<em>x</em>,<em>y</em>)</strong> - Return status of pixel in 1bpp screen.</li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>POINTC(<em>x</em>,<em>y</em>)</strong> - Return status of pixel in 4bpp screen.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>POKE {@<em>page</em>,}<em>address</em>,<em>byte</em></strong> - Write byte to memory.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>POKE {@<em>page</em>,}<em>address</em>,<em>string</em></strong> - Write string to memory.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>POKE COLOR <em>address</em>,<em>byte</em></strong> - Write byte to color RAM.</li>
@@ -181,13 +181,14 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>POKE SCREEN <em>address</em>,<em>string</em></strong> - Write string to screen RAM.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>POS(<em>expression</em>_)</strong> - Return current cursor column on printer.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>PRESET (<em>x</em>,<em>y</em>)</strong> - Erase bloxel from screen.</li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>PRESETB (<em>x</em>,<em>y</em>)</strong> - Erase pixels from 1bpp bitmap screen.</li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>PRESETB (<em>x</em>,<em>y</em>)</strong> - Erase pixel from 1bpp bitmap screen.</li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>PRESETC (<em>x</em>,<em>y</em>)</strong> - Erase pixel from 4bpp bitmap screen.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>PRINT TAB(<em>integer</em>)|SPC(<em>integer</em>)|<em>expression</em>|;|,</strong> - Display data on screen.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>PSG <em>register</em>,<em>byte</em>{,...}</strong> - Write bytes to PSG register</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>PSG <em>register</em>,<em>byte</em>{;...}</strong> - Not implemented</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>PSET (<em>x</em>,<em>y</em>)</strong> - Draw bloxel on text screen.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>PSETB (<em>x</em>,<em>y</em>)</strong> - Draw pixel on 1bpp bitmap screen.</li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>PSETC (<em>x</em>,<em>y</em>),<em>color</em></strong> - Draw pixel from 1bpp bitmap screen.</li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>PSETC (<em>x</em>,<em>y</em>),<em>color</em></strong> - Draw pixel from 4bpp bitmap screen.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>PT3LOOP</strong> - Return -1 if PT3 is set to loop, else 0.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>PT3STATUS</strong> - Return -1 if PT3 is playing, else 0.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>PUT SCREEN (<em>x</em>,y_) {CHR|ATTR} *<em>array</em>|^<em>strvar</em></strong> - Copy clip from array or string variable to text screen.</li>

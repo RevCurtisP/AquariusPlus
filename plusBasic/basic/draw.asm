@@ -8,6 +8,8 @@
 ;-----------------------------------------------------------------------------
 ; PSETB(1,1):? POINTB(1,1)
 ; PRESETB(1,1):? POINTB(1,1)
+; PSETC(1,1),7:? POINTC(1,1)
+; PRESETC(1,1):? POINTC(1,1)
 FN_POINT:
     rst     CHRGET                ; Skip POINT
     cp      'B'
@@ -15,7 +17,6 @@ FN_POINT:
     cp      'C'
     jp      nz,POINTX
 _pointc:
-    jp      GSERR
     ld      bc,bitmapc_getpixel
     jr      _point
 _pointb:    
@@ -35,6 +36,8 @@ ST_PSET:
 ;       this will need to be resolved when implementing PSETB snd PRESETB
     cp      'B'
     jr      z,ST_PSETB
+    cp      'C'
+    jp      z,ST_PSETC
     call    SCAND                 ; Parse (X,Y)
     call    scale_xy              ; Convert X,Y
     ld      a,1   
@@ -45,6 +48,8 @@ ST_PSET:
 ST_PRESET:    
     cp      'B'
     jr      z,ST_PRESETB
+    cp      'C'
+    jp      z,ST_PRESETC
     call    SCAND                 ; Parse (X,Y)
     call    scale_xy              ; Convert X,Y
     ld      a,0   
@@ -123,7 +128,37 @@ _psetb:
     jp      c,FCERR               ; Error if illegal coordinate
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     ret
-    
+
+; PRESETC (1,1)
+; PRESETC (0,1)
+ST_PRESETC:
+    ld      bc,bitmapc_resetpixel
+    push    bc                    ; Stack = SubAdr, RtnAdr
+    rst     CHRGET                ; Skip C
+    call    SCANDYX               ; C = Y, DE = X
+    jr      _psetc
+
+; CLEAR BITMAPC
+; PSETC (1,1),12
+; PSETC (0,1),5
+ST_PSETC:
+    ld      bc,bitmapc_setpixel
+    push    bc                    ; Stack = SubAdr, RtnAdr
+    rst     CHRGET                ; Skip C
+    call    SCANDYX               ; C = Y, DE = X
+    push    bc                    ; Stack = Y, SubAdr, RtnAdr
+    push    de                    ; Stack = X, Y, SubAdr, RtnAdr
+    call    get_comma_byte16      ; A = Color
+    pop     de                    ; DE = X; Stack = Y, SubAdr, RtnAdr
+    pop     bc                    ; C = Y ; Stack = SubAdr, RtnAdr
+_psetc:
+    pop     iy                    ; IY = SubAdr; Stack = RtnAdr
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    call    aux_call
+    jp      c,FCERR               ; Error if illegal coordinate
+    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
+    ret
+
 ; Scan (X,Y) into DE,C    
 SCANDYX:
     SYNCHK  '('                   

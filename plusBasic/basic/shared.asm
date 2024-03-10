@@ -306,6 +306,8 @@ get_byte4:
     jp      nc,FCERR              ;   FC Error
     ret
 
+get_comma_byte16:
+    SYNCHK  ','                   ; Require comma
 ;-----------------------------------------------------------------------------
 ; Parse Byte 0 - 15
 ; Output: A,E = Nybble
