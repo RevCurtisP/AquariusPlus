@@ -196,6 +196,7 @@ IRQ_VLINE       equ $02     ; Video LINE interrupt
 ; Page 54 (BAS_BUFFR), swapped into Bank 3
 BASBUF_BASE equ $C000   ; Base Address of BASIC Buffers
 SCRNVBASE   equ $0000   ; Graphics Module SysVar Base (see gfx.asm)
+GFXVBASE    equ $0100
 FKEYDEFS    equ $0200   ; Function Key Definitions (32 bytes each)
 FKEYBASE    equ BASBUF_BASE + FKEYDEFS
 ;         $0500-$7FF    ; Unused

@@ -16,6 +16,10 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
   <body>
     <h1 id="plusbasic-release-history">plusBASIC Release History</h1>
     <ul>
+      <li>v0.22g
+<ul><li>Added bitmap_read_sysvars, GETBITMAPBC, GETBITMAPBX, and GETBITMAPBY</li><li>Added bitmap_write_color, bitmap_write_xpos, bitmap_write_ypos, and SET BITMAPBC BITMAPBX BITMAPBY</li><li>Added bitmapc_read_sysvars, GETBITMAPCC, GETBITMAPCX, and GETBITMAPCY</li><li>PSETB, PRESETB, POINTB, PSETC, PRESETC, and POINTC update last-x and last-y system variables</li><li>Changed CLEAR BITMAP to CLEAR BITMAPB, matching syntax of other BITMAP keywords</li><li>Added bitmapc_write_color, bitmapc_write_xpos, bitmapc_write_ypos, and SET BITMAPCC BITMAPCX BITMAPCY</li><li>If PSETB color operand not specified, use color from SET BITMAPCC</li><li>Renamed and reorganized several module assembly language files</li></ul></li>
+      <li>v0.22f1
+<ul><li>Added bitmap_move</li></ul></li>
       <li>v0.22f
 <ul><li>Implemented PSETC, PRESETC, and POINTC</li></ul></li>
       <li>v0.22e2
@@ -103,6 +107,36 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
 <ul><li>Added <code>KEY()</code> function</li></ul></li>
       <li>v0.20d
 <ul><li>Added <code>DEC()</code> function, fixed <code>esp_get_version</code>/<code>VER(0)</code>/<code>VER$(0)</code></li></ul></li>
+      <li>v0.20c - Refactored (and hopefully fixed) cartridge boot code</li>
+      <li>v0.20b - Fixed bug in init_charram</li>
+      <li>v0.20a
+<ul><li>Clear BASIC RAM before starting cart. Add IRQ and hook disable, screen reset to hardware cart startup</li></ul></li>
+      <li>v0.20u
+<ul><li>Fixed GETPALETTE$, modded file_load_pt3 to stop any running pt3play process</li></ul></li>
+      <li>v0.19t
+<ul><li>Replaced RESET PT3 with STOP PT3, added PAUSE PT3 and RESUME PT3</li></ul></li>
+      <li>v0.19s
+<ul><li>Fixed CLS when SET COLOR is active</li></ul></li>
+      <li>v0.19r
+<ul><li>Fixed PLAY PT3 and RESET PT3</li></ul></li>
+      <li>v0.19q
+<ul><li>PLAY PT3 fixes</li></ul></li>
+      <li>v0.19p
+<ul><li>implemented PT3 PLAY</li></ul></li>
+      <li>v0.19n
+<ul><li>Added LOAD PALLETE, SAVE PALETTE, RESET PALETTE and RESET SCREEN</li></ul></li>
+      <li>v0.19m
+<ul><li>Fixed routine screen_pos_addr which had broken GET SCREEN and PUT SCREEN</li><li>Implemented LOAD PT3 statement</li></ul></li>
+      <li>v0.19j
+<ul><li>Fixed printing to screen after SET COLOR</li></ul></li>
+      <li>v0.19i
+<ul><li>Converted plusBASIC patches to hooks to increase cartridge compatibility</li></ul></li>
+      <li>v0.19h
+<ul><li>Fixed ?Syntax error when RUNning ROM</li></ul></li>
+      <li>v0.19g
+<ul><li>Added SET SAVE ASC ON/OFF, preset DAC to $80 to eliminate click at begining of first sample</li></ul></li>
+      <li>v0.19f
+<ul><li>Fixed bank 1 not restored after, clicking in play_sample</li></ul></li>
     </ul>
   </body>
 </html>

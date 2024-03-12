@@ -87,10 +87,7 @@ just_ret:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.22f"
-ifdef coredump
-    db "_coredump"
-endif
+    db "v0.22g"
     db 0
 plus_len   equ   $ - plus_text
 
@@ -120,13 +117,6 @@ _reset:
 
     ; Set up temp stack in text line buffer
     ld      sp, $38A0
-
-ifdef coredump
-    ; Core dump check
-    ld      a,ROM_EXT_RO
-    out     (IO_BANK3),a
-    jp      core_dump
-endif
 
 init_banks:
 
@@ -177,26 +167,6 @@ _coldboot:
     call    spritle_clear_all     ; Clear all sprite properties
     jp      do_coldboot
 
-;-----------------------------------------------------------------------------
-; Input: BC: Byte Count
-;     DE,HL: Start addresses
-; Clobbers: AF,AF,BC,DE,HL
-;-----------------------------------------------------------------------------
-sys_swap_mem:
-    ld      a,b
-    or      c
-    ret     z
-    ld      a,(de)
-    ex      af,af'
-    ld      a,(hl)
-    ld      (de),a
-    ex      af,af'
-    ld      (hl),a
-    inc     hl
-    inc     de
-    dec     bc
-    jp      sys_swap_mem
-  
 ; Null string descriptor  
 null_desc:
     word    0,null_desc
@@ -885,7 +855,26 @@ _read_key:
     exx
     jp      key_read_ascii    ; Read key from keyboard and return
 
-
+;-----------------------------------------------------------------------------
+; Input: BC: Byte Count
+;     DE,HL: Start addresses
+; Clobbers: AF,AF,BC,DE,HL
+;-----------------------------------------------------------------------------
+sys_swap_mem:
+    ld      a,b
+    or      c
+    ret     z
+    ld      a,(de)
+    ex      af,af'
+    ld      a,(hl)
+    ld      (de),a
+    ex      af,af'
+    ld      (hl),a
+    inc     hl
+    inc     de
+    dec     bc
+    jp      sys_swap_mem
+ 
 ; ------------------------------------------------------------------------------
 ;  Hook Jump Table
 ; ------------------------------------------------------------------------------
@@ -1037,12 +1026,12 @@ aux_line_print:
     include "basic80.asm"       ; Statements and functions from MBASIC 80
     include "baslines.asm"      ; (De)tokenize, add, insert, delete program lines
     include "coldboot.asm"      ; Cold boot code
-    include "draw.asm"          ; Bitmap drawing statements and functions
+    include "basbitmap.asm"     ; Bitmap drawing statements and functions
     include "editor.asm"        ; Advanced line editor
     include "enhanced.asm"      ; Enhanced stardard BASIC statements and functions
     include "evalext.asm"       ; EVAL extension - hook 9
     include "extended.asm"      ; Statements and functions from Aquarius Extended BASIC
-    include "files.asm"         ; Disk and File I/O statements and functions
+    include "basfile.asm"         ; Disk and File I/O statements and functions
     include "graphics.asm"      ; Graphics statements and functions
     include "hooks.asm"         ; Extended BASIC hooks
     include "misc.asm"          ; Miscellaneous subroutines
@@ -1073,12 +1062,13 @@ aux_line_print:
 
     include "jump_aux.asm"      ; Auxiliary routines jump tables
     include "basbuf.asm"        ; Basic buffer read/write routines
-    include "bitmap.asm"        ; Bitmap graphics routines
+    include "gfxbitmap.asm"     ; Bitmap graphics routines
     include "color.asm"         ; Color palette module
     include "dos.asm"           ; DOS routines
     include "esp_aux.asm"       ; ESP routines in auxiliary ROM
     include "fileio.asm"        ; Disk and File I/O machine assembly routines
     include "gfx.asm"           ; Main graphics module
+    include "gfxvars.asm"       ; Graphics modules system variables
     include "s3hooks.asm"       ; S3 BASIC direct mode hooks
     include "screen_gfx.asm"    ; Screen graphics routines
     include "screen_swap.asm"   ; Screen buffering routines

@@ -79,8 +79,8 @@ ext_get_chrset:
     ret
 
 ;-----------------------------------------------------------------------------
-; SET COLOR statement
-; syntax: SET COLOR foreground, background
+; SET COLOR statements
+; SET COLOR foreground, background
 ;-----------------------------------------------------------------------------
 ST_SETCOLOR:
     rst     CHRGET                ; Skip CHR
@@ -293,13 +293,14 @@ ST_SET_TILE:
 ; CLEAR BITMAPC
 ;-----------------------------------------------------------------------------
 ;-----------------------------------------------------------------------------
-; CLEAR BITMAP:SCREEN 0,2:PAUSE
-ST_CLEAR_BITMAP:
-    call    _parse_bitmap
-    jr      nz,_clear_bitmap      ; If BITMAPC
-    ld      iy,bitmapc_clear
-    jr      _auxcall_ret
-_clear_bitmap:
+; CLEAR BITMAPB:SCREEN 0,2:PAUSE
+; CLEAR BITMAPB COLOR 7,0
+ST_CLEAR_BITMAP:              
+    call    parse_bitmap          ; Z = BITMAPB, NZ = BITMAPC    
+    jr      z,.bitmapb            ; If BITMAPC
+    ld      iy,bitmapc_clear      ;   Do 4bpp clearscreen and return
+    jr      _auxcall_ret          
+.bitmapb
     xor     a
     jr      _fill_bitmap_byte
 ;-----------------------------------------------------------------------------
@@ -308,7 +309,7 @@ _clear_bitmap:
 ;-----------------------------------------------------------------------------
 ; FILL BITMAP BYTE $AA COLOR 7,0:SCREEN 0,2:PAUSE
 ST_FILL_BITMAP:
-    call    _parse_bitmap
+    call    parse_bitmap
     jr      z,_fill_bitmapc       ; BITMAPC
     cp      XTOKEN                  
     jr      nz,_fill_bitmap_color ; If Extended Token
@@ -342,16 +343,6 @@ _fill_bitmapc:
     ld      iy,bitmapc_fill_byte
     jr      _auxcall_ret          ; Do the fill
 
-_parse_bitmap:
-    rst     CHRGET                ; Skip BIT
-    rst     SYNCHR
-    byte    MAPTK
-    cp      'C'                   ; If BITMAP
-    ret     nz                    ;   Return NZ
-    rst     CHRGET                ; Else Skip C
-    xor     a                     ; and return Z
-    ret
-    
 ;-----------------------------------------------------------------------------
 ; FILL SCREEN [(col,row)-(col,row)] [CHR chr|chr$] [COLOR fgcolor, bgcolor]
 ;-----------------------------------------------------------------------------

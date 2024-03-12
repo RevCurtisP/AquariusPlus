@@ -1,4 +1,15 @@
 # plusBASIC Release History
+ - v0.22g
+   - Added bitmap_read_sysvars, GETBITMAPBC, GETBITMAPBX, and GETBITMAPBY
+   - Added bitmap_write_color, bitmap_write_xpos, bitmap_write_ypos, and SET BITMAPBC BITMAPBX BITMAPBY
+   - Added bitmapc_read_sysvars, GETBITMAPCC, GETBITMAPCX, and GETBITMAPCY
+   - PSETB, PRESETB, POINTB, PSETC, PRESETC, and POINTC update last-x and last-y system variables
+   - Changed CLEAR BITMAP to CLEAR BITMAPB, matching syntax of other BITMAP keywords
+   - Added bitmapc_write_color, bitmapc_write_xpos, bitmapc_write_ypos, and SET BITMAPCC BITMAPCX BITMAPCY
+   - If PSETB color operand not specified, use color from SET BITMAPCC
+   - Renamed and reorganized several module assembly language files
+ - v0.22f1
+   - Added bitmap_move
  - v0.22f
    - Implemented PSETC, PRESETC, and POINTC
  - v0.22e2
@@ -10,20 +21,20 @@
  - v0.22c
    - Fixed syntax error on extended functions VER through VARPTR
  - v0.22b
-   - Added KEY(-1) 
+   - Added KEY(-1)
  - v0.22a
-   - Added KEY("keys") 
- - v0.22 
+   - Added KEY("keys")
+ - v0.22
    - Added PT3STATUS, PT3LOOP, SET PT3 ON/OFF and fixed PAUSE PT3 while PT3 LOOP is active
- - v0.21z 
+ - v0.21z
    - Added pseudovariable ARGS and ARGS$(0)
  - v0.21y
    - Added SWAP VARS statement, ERASE statement, MID$ statement, and INDEX() function
- - v0.21x FILL BITMAP. ded TRIM$, TRIML$, and v0.21w 
+ - v0.21x FILL BITMAP. ded TRIM$, TRIML$, and v0.21w
  - v0.21v
    - Added LOAD DIR filename$,\*array$
-   - LOAD array$ ASC and LOAD DIR start at array index 1, put number of lines in index 0 
-   - Updated read/write page checking to match new memory structure   
+   - LOAD array$ ASC and LOAD DIR start at array index 1, put number of lines in index 0
+   - Updated read/write page checking to match new memory structure
  - v0.21u
    - Added LOAD filename$,\*array$,ASC
  - v0.21s
@@ -97,3 +108,34 @@
    - Added `KEY()` function
  - v0.20d
    - Added `DEC()` function, fixed `esp_get_version`/`VER(0)`/`VER$(0)`
+ - v0.20c - Refactored (and hopefully fixed) cartridge boot code
+ - v0.20b - Fixed bug in init_charram
+ - v0.20a
+    - Clear BASIC RAM before starting cart. Add IRQ and hook disable, screen reset to hardware cart startup
+ - v0.20u
+    - Fixed GETPALETTE$, modded file_load_pt3 to stop any running pt3play process
+ - v0.19t
+    - Replaced RESET PT3 with STOP PT3, added PAUSE PT3 and RESUME PT3
+ - v0.19s
+    - Fixed CLS when SET COLOR is active
+ - v0.19r
+    - Fixed PLAY PT3 and RESET PT3
+ - v0.19q
+    - PLAY PT3 fixes
+ - v0.19p
+    - implemented PT3 PLAY
+ - v0.19n
+    - Added LOAD PALLETE, SAVE PALETTE, RESET PALETTE and RESET SCREEN
+ - v0.19m
+    - Fixed routine screen_pos_addr which had broken GET SCREEN and PUT SCREEN
+    - Implemented LOAD PT3 statement
+ - v0.19j
+    - Fixed printing to screen after SET COLOR
+ - v0.19i
+    - Converted plusBASIC patches to hooks to increase cartridge compatibility
+ - v0.19h
+    - Fixed ?Syntax error when RUNning ROM
+ - v0.19g
+    - Added SET SAVE ASC ON/OFF, preset DAC to $80 to eliminate click at begining of first sample
+ - v0.19f
+    - Fixed bank 1 not restored after, clicking in play_sample

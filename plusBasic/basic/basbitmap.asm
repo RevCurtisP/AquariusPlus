@@ -2,14 +2,80 @@
 ; Graphics Bitmap Drawing Statements and Functions
 ;====================================================================
 
+;-----------------------------------------------------------------------------
+; GETBITMAPBC, GETBITMAPBX, GETBITMAPBY
+; GETBITMAPCC, GETBITMAPCX, GETBITMAPCY
+;-----------------------------------------------------------------------------
+; PRINT GETBITMAPBC;GETBITMAPBX;GETBITMAPBY
+; PRINT GETBITMAPCC;GETBITMAPCX;GETBITMAPCY
+FN_GETBITMAP:
+    call    parse_bitmap
+    ld      de,bitmap_read_sysvars
+    jr      z,.skip
+    ld      de,bitmapc_read_sysvars
+.skip
+    push    de                    ; Stack = GetRtn, RtnAdr
+    call    parse_cxy             ; E = C/X/Y
+    pop     iy                    ; IY = GetRtn; Stack = RtnAdr
+    call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
+    push    de                    ; Stack = C/X/Y, LABBCK, TxtPtr, RtnAdr
+    call    aux_call              ; A = BmpClr, BC = BmpY, DE = BmpX
+    pop     hl                    ; L = C/X/Y; Stack = LABBCK, TxtPtr, RtnAdr
+    sla     l                     ; Set Carry if Y, NotZero if X
+    jp      c,FLOAT_BC            ; If Y, return BmpY
+    jp      nz,FLOAT_DE           ; If X, return BmpX
+    jp      SNGFLT                ; Else return BmpClr
+
+;-----------------------------------------------------------------------------
+; SET BITMAPBC fgcolor,bgcolor|BITMAPBX xpos|BITMAPBY ypos...
+;-----------------------------------------------------------------------------
+; SET BITMAPBC 7,3 BITMAPBX 300 BITMAPBY 65
+; SET BITMAPCC 15 BITMAPCX 300 BITMAPCY 65
+ST_SET_BITMAP:
+    call    parse_bitmap
+.loop
+    push    af                    ; Stack = B/C, RtnAdr
+    call    parse_cxy             ; E = C/X/Y
+    sla     e                     ; Set Carry if Y, NotZero if X
+    jr      nc,.noty              ; If Y
+    call    GETBYT                ;   DE = Y
+    ld      b,d
+    ld      c,e                   ;   BC = Y
+    pop     af                    ; A = B/C; Stack = RtnAdr
+    ld      iy,bitmap_write_ypos  
+    jr      z,.next
+    ld      iy,bitmapc_write_ypos  
+    jr      .next
+.noty
+    jr      z,.notx               ; Else if X
+    call    GETINT                ;   DE = X
+    pop     af                    ; A = B/C; Stack = RtnAdr
+    ld      iy,bitmap_write_xpos
+    jr      z,.next
+    ld      iy,bitmapc_write_xpos
+    jr      .next                 ; Else
+.notx
+    pop     af                    ;   A = B/C; Stack = RtnAdr
+    jr      nz,.notb
+    call    get_screen_colors     ;   A = Colors
+    ld      iy,bitmap_write_color 
+    jr      .next
+.notb
+    call    get_byte16
+    ld      iy,bitmapc_write_color 
+.next
+    call    aux_call
+    call    CHRGT2
+    ret     z
+    jr      ST_SET_BITMAP
 
 ;-----------------------------------------------------------------------------
 ; POINT, POINTB, and POINTC
 ;-----------------------------------------------------------------------------
-; PSETB(1,1):? POINTB(1,1)
-; PRESETB(1,1):? POINTB(1,1)
-; PSETC(1,1),7:? POINTC(1,1)
-; PRESETC(1,1):? POINTC(1,1)
+; PSETB(299,55):PRINT GETBITMAPBX;GETBITMAPBY;POINTB(299,55)
+; PRESETB(299,55):? POINTB(299,55)
+; PSETC(150,33),7:PRINT GETBITMAPCX;GETBITMAPCY;POINTC(150,33)
+; PRESETC(150,33):? POINTC(150,33)
 FN_POINT:
     rst     CHRGET                ; Skip POINT
     cp      'B'
@@ -148,7 +214,10 @@ ST_PSETC:
     call    SCANDYX               ; C = Y, DE = X
     push    bc                    ; Stack = Y, SubAdr, RtnAdr
     push    de                    ; Stack = X, Y, SubAdr, RtnAdr
-    call    get_comma_byte16      ; A = Color
+    ld      e,$FF                 ; -1 = Use default colot
+    cp      ','                   ; If comma
+    call    z,get_comma_byte16    ;   E = Color
+    ld      a,e                   ; A = Color
     pop     de                    ; DE = X; Stack = Y, SubAdr, RtnAdr
     pop     bc                    ; C = Y ; Stack = SubAdr, RtnAdr
 _psetc:

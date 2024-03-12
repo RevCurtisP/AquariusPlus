@@ -51,6 +51,8 @@ FN_DEC:
 ;-----------------------------------------------------------------------------
 FN_GET:
     rst     CHRGET                ; Skip GET Token
+    cp      BITTK
+    jp      z,FN_GETBITMAP
     cp      TILETK
     jp      z,FN_GETTILE
     rst     SYNCHR
@@ -627,6 +629,9 @@ ST_SET:
     jr      z,ST_SET_FNKEY
     cp      SAVETK                ; $DC
     jp      z,ST_SET_SAVE
+    cp      BITTK
+    jp      z,ST_SET_BITMAP
+
     rst     SYNCHR                ; Must be extended Token
     byte    XTOKEN                ; $FE
     cp      SPRITK                ; $84

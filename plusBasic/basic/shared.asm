@@ -175,6 +175,26 @@ skip_get_int:
     jp      GETINT
 
 ;-----------------------------------------------------------------------------
+; Parse C, X, or Y
+; Output: E: 0 = C, 1 = X, 255 = Y
+;-----------------------------------------------------------------------------
+parse_cxy:
+    ld      a,(hl)                ; A = NxtChr
+    ld      e,0                   ; E = 0
+    cp      'C'
+    jr      nz,.not_c             ; If C 
+    jp      CHRGTR                ;   Skip C and Return E
+.not_c    
+    cp      'X'                    
+    jr      nz,.not_x             ; If X 
+    inc     e                     ;   E = 1
+    jp      CHRGTR                ;   Skip X and Return E
+.not_x    
+    SYNCHK  'Y'                   ; Else require Y
+    dec     e                     ;   E = 255
+    ret                           ;   Return E
+
+;-----------------------------------------------------------------------------
 ; Parse @Page
 ; Output: A, E = Page number`
 ;         Carry Set if page specified
@@ -410,6 +430,21 @@ get_int_reget:
     call    GETINT
     jp      CHRGT2
 
+; Returns Z if BITMAPB, NZ if BITMAPC
+parse_bitmap:
+    rst     SYNCHR
+    byte    BITTK
+    rst     SYNCHR                ; Require BITMAP
+    byte    MAPTK
+    cp      'B'
+    jr      nz,.notb              ; If BITMAPB
+    rst     CHRGET                ;   Skip B
+    xor     a                     ;   and return Z
+    ret
+.notb    
+    SYNCHK  'C'                   ; Else Require C
+    or      $FF                   ;   and return NZ
+    ret
 
 ; Parse COLOR color
 parse_color:
