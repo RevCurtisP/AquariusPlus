@@ -314,6 +314,7 @@ oper_xor:
     xor     d                     
     jp      (hl)                  ;[M80] RETURN THE INTEGER [A,L]
 
+;;; ToDo: Give ERRMO or ERRTO if number of operands don't match.
 ;? "%%" % (1)
 oper_stringsub:
     push    hl                  ; Stack = TxtPtr, RtnAdr

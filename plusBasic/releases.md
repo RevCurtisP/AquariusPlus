@@ -1,4 +1,10 @@
 # plusBASIC Release History
+ - v0.22h
+   - Single PSET, PRESET, and POINT(), along with underlying routines.
+   - Single FILL BITMAP and CLEAR BITMAP along with underlying routines.
+   - Replaced SET BITMAP?? with COLOR, GETBITMAP?? with POSX, POSY, and COLOR
+   - Bitmap routines use EXT_FLAGS bits to determine 
+   - Added DRAW token, USE SCREEN stub.
  - v0.22g
    - Added bitmap_read_sysvars, GETBITMAPBC, GETBITMAPBX, and GETBITMAPBY
    - Added bitmap_write_color, bitmap_write_xpos, bitmap_write_ypos, and SET BITMAPBC BITMAPBX BITMAPBY

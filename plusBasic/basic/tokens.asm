@@ -13,7 +13,7 @@ TBLCMDS:
     db $80 + 'X',"OR"             ; $CB            
     db $80 + 'P',"UT"             ; $CC            
     db $80 + 'G',"ET"             ; $CD             
-    db $80 + ' '                  ; $CE            
+    db $80 + 'D',"RAW"            ; $CE            
     db $80 + ' '                  ; $CF             
     db $80 + 'L',"INE"            ; $D0             
     db $80 + 'S',"WAP"            ; $D1            

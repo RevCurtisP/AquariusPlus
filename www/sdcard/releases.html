@@ -16,6 +16,8 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
   <body>
     <h1 id="plusbasic-release-history">plusBASIC Release History</h1>
     <ul>
+      <li>v0.22h
+<ul><li>Single PSET, PRESET, and POINT(), along with underlying routines.</li><li>Single FILL BITMAP and CLEAR BITMAP along with underlying routines.</li><li>Replaced SET BITMAP?? with COLOR, GETBITMAP?? with POSX, POSY, and COLOR</li><li>Bitmap routines use EXT_FLAGS bits to determine</li><li>Added DRAW token, USE SCREEN stub.</li></ul></li>
       <li>v0.22g
 <ul><li>Added bitmap_read_sysvars, GETBITMAPBC, GETBITMAPBX, and GETBITMAPBY</li><li>Added bitmap_write_color, bitmap_write_xpos, bitmap_write_ypos, and SET BITMAPBC BITMAPBX BITMAPBY</li><li>Added bitmapc_read_sysvars, GETBITMAPCC, GETBITMAPCX, and GETBITMAPCY</li><li>PSETB, PRESETB, POINTB, PSETC, PRESETC, and POINTC update last-x and last-y system variables</li><li>Changed CLEAR BITMAP to CLEAR BITMAPB, matching syntax of other BITMAP keywords</li><li>Added bitmapc_write_color, bitmapc_write_xpos, bitmapc_write_ypos, and SET BITMAPCC BITMAPCX BITMAPCY</li><li>If PSETB color operand not specified, use color from SET BITMAPCC</li><li>Renamed and reorganized several module assembly language files</li></ul></li>
       <li>v0.22f1

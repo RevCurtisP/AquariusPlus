@@ -87,7 +87,7 @@ just_ret:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.22g"
+    db "v0.22h"
     db 0
 plus_len   equ   $ - plus_text
 
@@ -439,6 +439,9 @@ sys_ver_s3basic:
 ;       HL: Start Address
 ; Clobbers: BC, DE, HL
 ;-----------------------------------------------------------------------------
+sys_fill_mem_d
+    ld      a,d                   ; A = Byte
+    byte    $1E                   ; LD E over XOR
 sys_fill_zero:
     xor     a
 sys_fill_mem:
@@ -1062,13 +1065,13 @@ aux_line_print:
 
     include "jump_aux.asm"      ; Auxiliary routines jump tables
     include "basbuf.asm"        ; Basic buffer read/write routines
-    include "gfxbitmap.asm"     ; Bitmap graphics routines
     include "color.asm"         ; Color palette module
     include "dos.asm"           ; DOS routines
     include "esp_aux.asm"       ; ESP routines in auxiliary ROM
     include "fileio.asm"        ; Disk and File I/O machine assembly routines
     include "gfx.asm"           ; Main graphics module
-    include "gfxvars.asm"       ; Graphics modules system variables
+    include "gfxbitmap.asm"     ; Bitmap graphics routines
+    include "gfxvars.asm"       ; Graphics sysvars and lookup tables
     include "s3hooks.asm"       ; S3 BASIC direct mode hooks
     include "screen_gfx.asm"    ; Screen graphics routines
     include "screen_swap.asm"   ; Screen buffering routines

@@ -50,11 +50,11 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>CHR$(<em>byte</em>)</strong> - Convert ASCII value to string.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>CIRCLE (<em>x</em>,<em>y</em>),<em>radius</em>{,{,,{,<em>aspect</em>}}}</strong> - <em>Not implemented</em></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>CLEAR {<em>integer</em>{,<em>address</em>}}</strong> - Clear all variables, optionally allocating string text space and top of BASIC RAM.</li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>CLEAR BITMAP {<em>fgcolor</em>,<em>bgcolor</em>}</strong> - Clear 1bpp bitmap screen</li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>CLEAR BITMAPC</strong> - <em>Not implemented</em></li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>CLEAR BITMAP {<em>fgcolor</em>,<em>bgcolor</em>}</strong> - Clear bitmap screen</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>CLOAD {{?}<em>filename</em>}|*<em>array</em></strong> - Load or verify program or load array data from cassette.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>CLOSE</strong> - <em>Not implemented</em></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>CLS {<em>fgcolor</em>,<em>bgcolor</em>}</strong> - Clear the text screen.<!--CLS--></li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>COLOR <em>fgcolor</em>{,<em>bgcolor</em>}</strong> - Set or get bitmap default color(s).</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>COMPARE (<em><em>array</em>,</em><em>array</em>)</strong> - Compare the binary contents of two numeric arrays.<!--COMPARE--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>COMPARE ({@<em>page</em>,}<em>address</em>,{@<em>page</em>,}<em>address</em>,<em>length</em>)</strong> - Compare two blocks of memory.<!--COMPARE--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>COMPARE (<em>filespec</em>,<em>filespec</em>)</strong> - <em>Not implemented</em><!--COMPARE--></li>
@@ -80,6 +80,8 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>DIM <em>array</em>(<em>dim</em>{,...}){,...}</strong> - Create and allocates one or more arrays.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>DIR </strong> - Display disk directory.<!--DOKE--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>DOKE {@<em>page</em>,}<em>address</em>,<em>integer</em></strong> - Write integer to memory.<!--DOKE--></li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>DRAW <em>command_string</em></strong> - <em>Not implemented</em></li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>DRAW TEXT (<em>col</em>,<em>row)</em>),<em>string</em></strong> - <em>Not implemented</em></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>EDIT </strong> - <em>Not implemented</em></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>END</strong> - Terminate program execution.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>ERASE <em>*array</em>{,<em>*array</em>...}</strong> - Delete arrays.</li>
@@ -89,8 +91,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>FILEEXT$(<em>filespec</em>)</strong> - Extract extension from filespec.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>FILL {@<em>page</em>},<em>address</em>,<em>oount</em>,<em>byte</em></strong> - Fill block of memory with byte.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>FILL {@<em>page</em>},<em>address</em>,<em>oount</em>,WORD <em>integer</em></strong> - Fill block of memory with integer.</li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>FILL BITMAP  {COLOR <em>fgcolor</em>, <em>bgcolor</em>}</strong> - Fill 1bpp bitmap with byte and/or colormap to colors</li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>FILL BITMAPC COLOR <em>color</em></strong> - <em>Not implemented</em>**</li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>FILL BITMAP  {COLOR <em>fgcolor</em>, <em>bgcolor</em>}</strong> - Fill bitmap and/or colormap with byte and/or color(s).</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>FILL SCREEN {(<em>x</em>,y_)-(<em>x</em>,<em>y</em>)}  {COLOR fgcolor, bgcolor}</strong> - Fill screen with character and/or colors.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>FILL TILEMAP {(<em>x</em>,y_)-(<em>x</em>,<em>y</em>)} TILE <em ATTR _attrs_ PALETTE _palette_>tileno</em></strong> - Fill tilemap with specified tile, attributes and palette.<!--FILLTILE--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>FOR <em>var</em>=<em>expression</em> TO <em>expression</em> {STEP <em>expression</em>]</strong> - Initiate a <em>FOR</em> loop.</li>
@@ -100,12 +101,6 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>GET TILEMAP (<em>x</em>,y_)-(<em>x</em>,<em>y</em>) *<em>array</em>|^<em>strvar</em></strong> - Copy tilemap clip to array or string variable.<!--GETTILE--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>GETCHRSET</strong> - Return character set currently in use.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>GETCOLOR</strong> - Return screen printing colors.</li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>GETBITMAPBC</strong> - Return 1bpp bitmap draw colors.</li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>GETBITMAPBX</strong> - Return 1bpp bitmap last x-position.</li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>GETBITMAPBY</strong> - Return 1bpp bitmap last y-position.</li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>GETBITMAPCC</strong> - Return 4bpp bitmap draw color.</li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>GETBITMAPCX</strong> - Return 4bpp bitmap last x-position.</li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>GETBITMAPCY</strong> - Return 4bpp bitmap last y-position.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>GETKEY</strong> - Wait for key an return ASCII code.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>GETKEY$</strong>  - Wait for key and return as string.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>GETPALETTE$(<em>palette</em>)</strong> - Return palette contents.<!--GETPALETTE--></li>
@@ -177,25 +172,21 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>PEEKSCREEN$(<em>address</em>,<em>length</em>)</strong> - Read string from screen RAM.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>PLAY PT3 </strong> - Play specified or previously loaded PT3 track.<!--PLAYPT3--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>PLAY SAMPLE @<em>page</em>,<em>address</em></strong> - Play digital sample from previously loaded file.<!--PLAYSAMPLE--></li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>POINT(<em>x</em>,<em>y</em>)</strong> - Return status of bloxel.<!--POINT--></li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>POINTB(<em>x</em>,<em>y</em>)</strong> - Return status of pixel in 1bpp screen.<!--POINT--></li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>POINTC(<em>x</em>,<em>y</em>)</strong> - Return status of pixel in 4bpp screen.<!--POINT--></li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>POINT(<em>x</em>,<em>y</em>)</strong> - Return status of bloxel or pixel.<!--PSET--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>POKE {@<em>page</em>,}<em>address</em>,<em>byte</em></strong> - Write byte to memory.<!--POKE--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>POKE {@<em>page</em>,}<em>address</em>,<em>string</em></strong> - Write string to memory.<!--POKE--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>POKE COLOR <em>address</em>,<em>byte</em></strong> - Write byte to color RAM.<!--POKE--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>POKE COLOR <em>address</em>,<em>string</em></strong> - Write string to color RAM.<!--POKE--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>POKE SCREEN <em>address</em>,<em>byte</em></strong> - Write byte to screen RAM.<!--POKE--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>POKE SCREEN <em>address</em>,<em>string</em></strong> - Write string to screen RAM.<!--POKE--></li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>POS(<em>expression</em>_)</strong> - Return current cursor column on printer.</li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>PRESET (<em>x</em>,<em>y</em>)</strong> - Erase bloxel from screen.</li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>PRESETB (<em>x</em>,<em>y</em>)</strong> - Erase pixel from 1bpp bitmap screen.</li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>PRESETC (<em>x</em>,<em>y</em>)</strong> - Erase pixel from 4bpp bitmap screen.</li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>POS(<em>expression</em>_)</strong> - Return current cursor column.</li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>POSX</strong> - Return 1bpp bitmap last x-position.</li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>POSY</strong> - Return 1bpp bitmap last y-position.</li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>PRESET (<em>x</em>,<em>y</em>)</strong> - Erase bloxel or pixel.<!--PSET--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>PRINT TAB(<em>integer</em>)|SPC(<em>integer</em>)|<em>expression</em>|;|,</strong> - Display data on screen.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>PSG <em>register</em>,<em>byte</em>{,...}</strong> - Write bytes to PSG register</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>PSG <em>register</em>,<em>byte</em>{;...}</strong> - Not implemented</li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>PSET (<em>x</em>,<em>y</em>)</strong> - Draw bloxel on text screen.</li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>PSETB (<em>x</em>,<em>y</em>)</strong> - Draw pixel on 1bpp bitmap screen.</li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>PSETC (<em>x</em>,<em>y</em>){,<em>color</em>}</strong> - Draw pixel from 4bpp bitmap screen.</li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>PSET (<em>x</em>,<em>y</em>)</strong> - Draw bloxel or pixel.<!--PSET--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>PT3LOOP</strong> - Return -1 if PT3 is set to loop, else 0.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>PT3STATUS</strong> - Return -1 if PT3 is playing, else 0.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>PUT SCREEN (<em>x</em>,y_) {CHR|ATTR} *<em>array</em>|^<em>strvar</em></strong> - Copy clip from array or string variable to text screen.<!--PUTSCREEN--></li>
@@ -227,13 +218,9 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>SAVE SCREEN</strong> - <em>Not implemented</em></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>SAVE TILEMAP</strong> - <em>Not implemented</em></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>SCREEN ,,,,</strong> - Set screen mode.<!--SCREEN--></li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>SET BITMAPBC fgcolor, bgcolor BITMAPBX x BITMAPBY y</strong> - Set 1bpp bitmap draw colors, last-x, last-y.</li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>SET BITMAPCC color BITMAPCX x BITMAPCY y</strong> - Set 4bpp bitmap draw colors, last-x, last-y.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>SET COLOR <em>fgcolor</em>,<em>bgcolor</em></strong> - Enable color printing mode.<!--SETCOLOR--></li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>SET COLOR OFF</strong> - Disable color printing mode.<!--SAVE--></li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>SET COLORB <em>fgcolor</em>,<em>bgcolor</em></strong> - Set 1bpp bitmap draw colors.<!--SETCOLOR--></li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>SET COLORC <em>color</em></strong> - Set 4bpp bitmap draw color.<!--SETCOLOR--></li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>SET FAST ON|OFF</strong> - Enable or disables turbo mode.&lt;--SETFAST--&gt;</li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>SET COLOR OFF</strong> - Disable color printing mode.<!--SETCOLOR--></li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>SET FAST ON|OFF</strong> - Enable or disables turbo mode.<!--SETFAST--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>SET FNKEY <em>key</em> TO <em>string</em></strong> - Set auto-typed text when function key is pressed.<!--SETFNKY--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>SET KEY <em>mode</em></strong> - Set alternate keyboard port mode.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>SET PALETTE <em>palette</em>{,<em>index</em>} TO <em>rgblist</em></strong> - Set palette entries.<!--SETPALETTE--></li>
@@ -276,6 +263,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>TRON</strong> - Enable line tracing.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>TROFF</strong> - Disable line tracing.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>USE CHRSET <em>0</em>|<em>1</em>|<em>filespec</em></strong> - Copy specified character set to character RAM.<!--USECHR--></li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>USE SCREEN {@<em>page</em>,}<em>text</em>,<em>graphics</em></strong> - <em>Not implemented</em></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>USR(<em>expression</em>)</strong> - Call user-defined machine language routine passing argument and returning result.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>VAL(<em>float</em>)</strong> - Convert ASCII string to floating point number.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>VARPTR(<em>var{<span class="math">}_|\*_array{</span>}</em>)</strong> - Return address of variable, array element, or array</li>

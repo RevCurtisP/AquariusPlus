@@ -43,6 +43,20 @@ ST_USECHR:
     ret
 
 ;-----------------------------------------------------------------------------
+; USE SCREEN - Specify bitmap mode for drawing
+; Syntax: USE SCREEN text,graphics
+;-----------------------------------------------------------------------------
+ST_USE_SCREEN:
+    jp      GSERR                 ; Nor implemented error
+    rst     CHRGET                ; Skip SCREEN
+    call    get_byte4             ; A = text mode
+    push    af
+    call    get_comma             ; MO Error if no comma
+    call    get_byte4             ; A = graphics mode
+    pop     bc                    ; B = text mode
+    ret
+
+;-----------------------------------------------------------------------------
 ; GETATTR(X,Y) - Change Character Set
 ;-----------------------------------------------------------------------------
 FN_GETATTR
@@ -179,6 +193,10 @@ FN_SCREEN:
 ;-----------------------------------------------------------------------------
 ; SCREEN [text],[graphics],[sprites],[priority],[remap]
 ;-----------------------------------------------------------------------------
+; SCREEN 0:PRINT HEX$(PEEK($3830))
+; SCREEN 3:PRINT HEX$(PEEK($3830))
+; SCREEN 0,2:PRINT HEX$(PEEK($3830))
+; SCREEN 0,3:PRINT HEX$(PEEK($3830))
 ST_SCREEN:
     call    get_byte_optional     ; A = [text]
     jr      c,.no_text            ; If specified
@@ -208,7 +226,8 @@ ST_SCREEN:
     ld      a,c
     out     (IO_VCTRL),a          ; Write back out
 
-    ret
+    ld      iy,bitmap_set_mode_nobuff
+    jp      aux_call              ; Set EXT_FLAGS and return
 
 .do_gfx_mode
     cp      4
@@ -288,60 +307,6 @@ ST_SET_TILE:
     pop     hl                    ; HL = TxtPtr
     ret
 
-;-----------------------------------------------------------------------------
-; CLEAR BITMAP [COLOR foreground,background]
-; CLEAR BITMAPC
-;-----------------------------------------------------------------------------
-;-----------------------------------------------------------------------------
-; CLEAR BITMAPB:SCREEN 0,2:PAUSE
-; CLEAR BITMAPB COLOR 7,0
-ST_CLEAR_BITMAP:              
-    call    parse_bitmap          ; Z = BITMAPB, NZ = BITMAPC    
-    jr      z,.bitmapb            ; If BITMAPC
-    ld      iy,bitmapc_clear      ;   Do 4bpp clearscreen and return
-    jr      _auxcall_ret          
-.bitmapb
-    xor     a
-    jr      _fill_bitmap_byte
-;-----------------------------------------------------------------------------
-; FILL BITMAP [BYTE byte] [COLOR foreground,background]
-; FILL BITMAPC COLOR color
-;-----------------------------------------------------------------------------
-; FILL BITMAP BYTE $AA COLOR 7,0:SCREEN 0,2:PAUSE
-ST_FILL_BITMAP:
-    call    parse_bitmap
-    jr      z,_fill_bitmapc       ; BITMAPC
-    cp      XTOKEN                  
-    jr      nz,_fill_bitmap_color ; If Extended Token
-    rst     CHRGET                ;   Skip it
-    rst     SYNCHR                ;   Require BYTE
-    byte    BYTETK
-    call    GETBYT                ;   A = FillByte
-_fill_bitmap_byte:
-    push    hl                    ;   Stack = TxtPtr, NxtChr, RtnAdr
-    ld      iy,bitmap_fill_byte
-    call    aux_call              ;   Do the fill
-    pop     hl                    ;   HL = TxtPtr; Stack = NxtChr, RtnAdr
-    call    CHRGT2                ;   Reget next character
-    ret     z                     ;   Return if end of statement
-_fill_bitmap_color:
-    call    parse_colors          ; Require COLOR, A = Color Byte
-    ld      iy,bitmap_fill_color
-_auxcall_ret:
-    push    hl                    ; Stack = TxtPtr, RtnAdr  
-    call    aux_call              ;   Do the fill
-    pop     hl                    ;   HL = TxtPtr; Stack = NxtChr, RtnAdr
-    ret
-_fill_bitmapc:
-    call    parse_color           ; A = Color
-    ld      b,a
-    sla     a                     
-    sla     a                     
-    sla     a                     
-    sla     a                     
-    or      b                     ; Copy LSB to MSB
-    ld      iy,bitmapc_fill_byte
-    jr      _auxcall_ret          ; Do the fill
 
 ;-----------------------------------------------------------------------------
 ; FILL SCREEN [(col,row)-(col,row)] [CHR chr|chr$] [COLOR fgcolor, bgcolor]

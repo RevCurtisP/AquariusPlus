@@ -18,6 +18,14 @@ FRC_LONG:
     jp      c,QINT                 ;   Convert it
     jp      FCERR                  ; Else Illegal Quantity
 
+
+;-----------------------------------------------------------------------------
+; Convert C to an unsigned Floating Point number in FACC
+;-----------------------------------------------------------------------------
+FLOAT_C:
+    ld      a,c
+    jp      SNGFLT
+
 ;-----------------------------------------------------------------------------
 ; Convert BC into an unsigned Floating Point number in FACC
 ;-----------------------------------------------------------------------------
@@ -128,10 +136,17 @@ close_paren:
     SYNCHK  ')'
     ret
 
+
+;-----------------------------------------------------------------------------
+; If next character is a comma, Too many operands error
+;-----------------------------------------------------------------------------
+no_more:
+    ld      a,(hl)
+    cp      ','
+    ret     nz
 TOERR:
     ld      e,ERRTO
     jp      ERROR
-
 
 ;-----------------------------------------------------------------------------
 ; Parse foreground and background color arguments
@@ -140,8 +155,7 @@ TOERR:
 get_color_args:
     call    get_byte16            ; get foreground color
     push    af                    ; save it
-    SYNCHK  ','                   ; require commae
-    call    get_byte16            ; get background color
+    call    get_comma_byte16      ; get background color
     pop     af                    ; get back foreground color
     or      a                     ; clear carry
     rla       
@@ -327,7 +341,7 @@ get_byte4:
     ret
 
 get_comma_byte16:
-    SYNCHK  ','                   ; Require comma
+    call    get_comma             ; MO error if no comma
 ;-----------------------------------------------------------------------------
 ; Parse Byte 0 - 15
 ; Output: A,E = Nybble
@@ -337,6 +351,7 @@ get_byte16:
     call    GETBYT                ; get foreground color in e
     cp      16                    ; if > 15
     jp      nc,FCERR              ;   FC Error
+    or      a                     ; set flags
     ret
 
 ;-----------------------------------------------------------------------------
@@ -460,6 +475,9 @@ parse_colors:
     byte    COLTK
     rst     SYNCHR                ; Require COLOR
     byte    ORTK
+    byte    $01                   ; LD BC over SYNCHK
+get_comma_colors:
+    SYNCHK  ','
 ;-----------------------------------------------------------------------------
 ; Parse Foreground and Background Colors
 ; Output: A = Combined coloe
@@ -472,8 +490,7 @@ get_screen_colors:
     sla     a                     ;
     sla     a                     ;
     push    af                    ; Stack = FColor, Char, Cols, Rows, RtnAdr
-    SYNCHK  ','                   ; Require comma
-    call    get_byte16            ; A = BColor
+    call    get_comma_byte16      ; Require comma
     pop     bc                    ; D = FColor; Stack = Char, Cols, Rows, RtnAdr
     or      b                     ; A = Colors    
     ret

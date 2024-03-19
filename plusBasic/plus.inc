@@ -195,8 +195,8 @@ IRQ_VLINE       equ $02     ; Video LINE interrupt
 ;-----------------------------------------------------------------------------
 ; Page 54 (BAS_BUFFR), swapped into Bank 3
 BASBUF_BASE equ $C000   ; Base Address of BASIC Buffers
-SCRNVBASE   equ $0000   ; Graphics Module SysVar Base (see gfx.asm)
-GFXVBASE    equ $0100
+SCRNVBASE   equ $0000   
+GFXVBASE    equ $0100   ; GFX SysVar Base, 256 byte aligned (see gfx.asm)
 FKEYDEFS    equ $0200   ; Function Key Definitions (32 bytes each)
 FKEYBASE    equ BASBUF_BASE + FKEYDEFS
 ;         $0500-$7FF    ; Unused
@@ -205,7 +205,7 @@ RUNARGEND   equ $09FF   ; End of RUN arguments
 DEFCHRSET   equ $3400
 ALTCHRSET   equ $3800   ; Page Offset: Custom Character Set Buffer
 CHRSETLEN   equ 2048    ; Size of character set ROM
-; RNDTAB system variables
+; BASIC interpreter control flags
 BASOUTBUF   equ $01     ; BASYSCTL: redirect OUTput to BUFfer
 BASSAVASC   equ $02     ; BASYSCTL: Default SAVe to ASC
 BASKEYRPT   equ $04     ; BASYSCTL: KEY RePeaI on
@@ -215,8 +215,16 @@ BASCRNCLR   equ $80     ; BASYSCTL: PRINT updates Color RAM
 ; Screen Control Bitmask
 BASCRNCTL   equ BASCHRSET + BASCRNCLR
 BASCRNMSK   equ $FF - BASCRNCTL
-
-PT3_LOOPS   equ $02     ; EXT_FLAGS: PT3 songs repeat
+; Bitmap graphics mode: see gfx.asm for details
+GFXM_TEXT   equ $00     ; EXT_FLAGS: 40 colum mode (bloxels) 
+GFXM_WIDE   equ $01     ; EXT_FLAGS: 80 colum mode (bloxels) 
+GFXM_1BPP   equ $02     ; EXT_FLAGS: Bitmap mode (1bpp)
+GFXM_4BPP   equ $03     ; EXT_FLAGS: Bitmap mode (4bpp)
+GFXM_MASK   equ $03     ; Graphics mode bit mask
+GFXBUFLAG   equ $04     ; EXT_FLAGS: Bitmap operations are buffered
+GFXSETMSK   equ $F8     ; Mask for writing EXT_FLAGS
+; BASIC exrended control flags
+PT3_LOOPS   equ $20     ; EXT_FLAGS: PT3 songs repeat
 TRON_FLAG   equ $80     ; EXT_FLAGS: Trace on/off
 
 DFLTATTRS   equ $06     ; Default screen colors - Black on Cyan

@@ -96,7 +96,7 @@ STJUMPS:
     dw      SNERR                 ;$CB 
     dw      ST_PUT                ;$CC PUT
     dw      ST_GET                ;$CD GET
-    dw      SNERR                 ;$CE  
+    dw      GSERR                 ;$CE DRAW
     dw      SNERR                 ;$CF  
     dw      ST_LINE               ;$D0 LINE
     dw      ST_SWAP               ;$D1 SWAP 
@@ -135,7 +135,7 @@ STJUMPS:
     dw      SNERR                 ;$F2 MAP
     dw      SNERR                 ;$F3 
     dw      ST_RESUME             ;$F4 RESUME
-    dw      SNERR                 ;$F5 COL
+    dw      ST_COLOR              ;$F5 COL
     dw      ST_SCREEN             ;$F6 SCREEN 
     dw      ST_SET                ;$F7 SET
     dw      SNERR                 ;$F8 WRITE
@@ -160,7 +160,7 @@ FNJUMPS:
     dw      HOOK27+1              ;$B5 USR  
     dw      HOOK27+1              ;$B6 FRE     
     dw      HOOK27+1              ;$B7 LPOS    
-    dw      HOOK27+1              ;$B8 POS     
+    dw      FN_POS                ;$B8 POS     
     dw      HOOK27+1              ;$B9 SQR     
     dw      HOOK27+1              ;$BA RND     
     dw      HOOK27+1              ;$BB LOG     
@@ -222,7 +222,7 @@ FNJUMPS:
     dw      SNERR                 ;$F2 MAP
     dw      FN_FILE               ;$F3 FILE
     dw      SNERR                 ;$F4 RESUME
-    dw      SNERR                 ;$F5 COL
+    dw      FN_COLOR              ;$F5 COL
     dw      FN_SCREEN             ;$F6 SCREEN 
     dw      SNERR                 ;$F7 SET
     dw      SNERR                 ;$F8 WRITE

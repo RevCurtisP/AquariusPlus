@@ -118,6 +118,7 @@ init_screen_vars:
 screen_reset:
     ld      a,VCTRL_TEXT_EN
     out     (IO_VCTRL),a
+    call    bitmap_set_mode_nobuff
     xor     a
     jp      palette_reset
 

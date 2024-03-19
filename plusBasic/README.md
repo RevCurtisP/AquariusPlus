@@ -32,11 +32,11 @@
  - [x] **CHR$(_byte_)** - Convert ASCII value to string.
  - [x] **CIRCLE (_x_,_y_),_radius_{,{_color_}{,{_start_},{_end_}{,_aspect_}}}** - _Not implemented_
  - [x] **CLEAR {_integer_{,_address_}}** - Clear all variables, optionally allocating string text space and top of BASIC RAM.
- - [x] **CLEAR BITMAP {_fgcolor_,_bgcolor_}** - Clear 1bpp bitmap screen
- - [x] **CLEAR BITMAPC** - _Not implemented_
+ - [ ] **CLEAR BITMAP {_fgcolor_,_bgcolor_}** - Clear bitmap screen
  - [x] **CLOAD {{?}_filename_}|\*_array_** - Load or verify program or load array data from cassette.
  - [x] **CLOSE** - _Not implemented_
  - [x] **CLS {_fgcolor_,_bgcolor_}** - Clear the text screen.<!--CLS-->
+ - [ ] **COLOR _fgcolor_{,_bgcolor_}** - Set or get bitmap default color(s).
  - [x] **COMPARE (*_array_,*_array_)** - Compare the binary contents of two numeric arrays.<!--COMPARE-->
  - [x] **COMPARE ({@_page_,}_address_,{@_page_,}_address_,_length_)** - Compare two blocks of memory.<!--COMPARE-->
  - [x] **COMPARE (_filespec_,_filespec_)** - _Not implemented_<!--COMPARE-->
@@ -62,6 +62,8 @@
  - [x] **DIM _array_(_dim_{,...}){,...}** - Create and allocates one or more arrays.
  - [x] **DIR {_dirspec_}** - Display disk directory.<!--DOKE-->
  - [x] **DOKE {@_page_,}_address_,_integer_** - Write integer to memory.<!--DOKE-->
+ - [ ] **DRAW _command_string_** - _Not implemented_
+ - [ ] **DRAW TEXT (_col_,_row)_),_string_** - _Not implemented_
  - [x] **EDIT {_lineref_}** - _Not implemented_
  - [x] **END** - Terminate program execution.
  - [x] **ERASE _\*array_{,_\*array_...}** - Delete arrays.
@@ -71,8 +73,7 @@
  - [x] **FILEEXT$(_filespec_)** - Extract extension from filespec.
  - [x] **FILL {@_page_},_address_,_oount_,_byte_** - Fill block of memory with byte.
  - [x] **FILL {@_page_},_address_,_oount_,WORD _integer_** - Fill block of memory with integer.
- - [x] **FILL BITMAP {BYTE _byte_} {COLOR _fgcolor_, _bgcolor_}** - Fill 1bpp bitmap with byte and/or colormap to colors
- - [x] **FILL BITMAPC COLOR _color_** - _Not implemented_**
+ - [x] **FILL BITMAP {BYTE _byte_} {COLOR _fgcolor_, _bgcolor_}** - Fill bitmap and/or colormap with byte and/or color(s).
  - [x] **FILL SCREEN {(_x_,y_)-(_x_,_y_)} {CHR _character_} {COLOR fgcolor, bgcolor}** - Fill screen with character and/or colors.
  - [x] **FILL TILEMAP {(_x_,y_)-(_x_,_y_)} TILE _tileno_{ ATTR _attrs_}{ PALETTE _palette_}** - Fill tilemap with specified tile, attributes and palette.<!--FILLTILE-->
  - [x] **FOR _var_=_expression_ TO _expression_ {STEP _expression_]** - Initiate a _FOR_ loop.
@@ -82,12 +83,6 @@
  - [x] **GET TILEMAP (_x_,y_)-(_x_,_y_) \*_array_|^_strvar_** - Copy tilemap clip to array or string variable.<!--GETTILE-->
  - [x] **GETCHRSET** - Return character set currently in use.
  - [ ] **GETCOLOR** - Return screen printing colors.
- - [ ] **GETBITMAPBC** - Return 1bpp bitmap draw colors.
- - [ ] **GETBITMAPBX** - Return 1bpp bitmap last x-position.
- - [ ] **GETBITMAPBY** - Return 1bpp bitmap last y-position.
- - [ ] **GETBITMAPCC** - Return 4bpp bitmap draw color.
- - [ ] **GETBITMAPCX** - Return 4bpp bitmap last x-position.
- - [ ] **GETBITMAPCY** - Return 4bpp bitmap last y-position.
  - [x] **GETKEY** - Wait for key an return ASCII code.
  - [x] **GETKEY$**  - Wait for key and return as string.
  - [x] **GETPALETTE$(_palette_)** - Return palette contents.<!--GETPALETTE-->
@@ -159,25 +154,21 @@
  - [x] **PEEKSCREEN$(_address_,_length_)** - Read string from screen RAM.
  - [x] **PLAY PT3 {_filespec_}** - Play specified or previously loaded PT3 track.<!--PLAYPT3-->
  - [x] **PLAY SAMPLE @_page_,_address_** - Play digital sample from previously loaded file.<!--PLAYSAMPLE-->
- - [x] **POINT(_x_,_y_)** - Return status of bloxel.<!--POINT-->
- - [x] **POINTB(_x_,_y_)** - Return status of pixel in 1bpp screen.<!--POINT-->
- - [x] **POINTC(_x_,_y_)** - Return status of pixel in 4bpp screen.<!--POINT-->
+ - [ ] **POINT(_x_,_y_)** - Return status of bloxel or pixel.<!--PSET-->
  - [x] **POKE {@_page_,}_address_,_byte_** - Write byte to memory.<!--POKE-->
  - [x] **POKE {@_page_,}_address_,_string_** - Write string to memory.<!--POKE-->
  - [x] **POKE COLOR _address_,_byte_** - Write byte to color RAM.<!--POKE-->
  - [x] **POKE COLOR _address_,_string_** - Write string to color RAM.<!--POKE-->
  - [x] **POKE SCREEN _address_,_byte_** - Write byte to screen RAM.<!--POKE-->
  - [x] **POKE SCREEN _address_,_string_** - Write string to screen RAM.<!--POKE-->
- - [x] **POS(_expression__)** - Return current cursor column on printer.
- - [x] **PRESET (_x_,_y_)** - Erase bloxel from screen.
- - [x] **PRESETB (_x_,_y_)** - Erase pixel from 1bpp bitmap screen.
- - [x] **PRESETC (_x_,_y_)** - Erase pixel from 4bpp bitmap screen.
+ - [x] **POS(_expression__)** - Return current cursor column.
+ - [ ] **POSX** - Return 1bpp bitmap last x-position.
+ - [ ] **POSY** - Return 1bpp bitmap last y-position.
+ - [ ] **PRESET (_x_,_y_)** - Erase bloxel or pixel.<!--PSET-->
  - [x] **PRINT TAB(_integer_)|SPC(_integer_)|_expression_|;|,{...}** - Display data on screen.
  - [x] **PSG _register_,_byte_{,...}** - Write bytes to PSG register
  - [x] **PSG _register_,_byte_{;...}** - Not implemented
- - [x] **PSET (_x_,_y_)** - Draw bloxel on text screen.
- - [x] **PSETB (_x_,_y_)** - Draw pixel on 1bpp bitmap screen.
- - [x] **PSETC (_x_,_y_){,_color_}** - Draw pixel from 4bpp bitmap screen.
+ - [ ] **PSET (_x_,_y_)** - Draw bloxel or pixel.<!--PSET-->
  - [x] **PT3LOOP** - Return -1 if PT3 is set to loop, else 0.
  - [x] **PT3STATUS** - Return -1 if PT3 is playing, else 0.
  - [x] **PUT SCREEN (_x_,y_) {CHR|ATTR} \*_array_|^_strvar_** - Copy clip from array or string variable to text screen.<!--PUTSCREEN-->
@@ -209,13 +200,9 @@
  - [x] **SAVE SCREEN** - _Not implemented_
  - [x] **SAVE TILEMAP** - _Not implemented_
  - [x] **SCREEN {_text_},{_graphics_},{_sprites_},{_priority_},{_remap_}** - Set screen mode.<!--SCREEN-->
- - [ ] **SET BITMAPBC fgcolor, bgcolor BITMAPBX x BITMAPBY y** - Set 1bpp bitmap draw colors, last-x, last-y.
- - [ ] **SET BITMAPCC color BITMAPCX x BITMAPCY y** - Set 4bpp bitmap draw colors, last-x, last-y.
  - [x] **SET COLOR _fgcolor_,_bgcolor_** - Enable color printing mode.<!--SETCOLOR-->
- - [x] **SET COLOR OFF** - Disable color printing mode.<!--SAVE-->
- - [ ] **SET COLORB _fgcolor_,_bgcolor_** - Set 1bpp bitmap draw colors.<!--SETCOLOR-->
- - [ ] **SET COLORC _color_** - Set 4bpp bitmap draw color.<!--SETCOLOR-->
- - [x] **SET FAST ON|OFF** - Enable or disables turbo mode.<--SETFAST-->
+ - [x] **SET COLOR OFF** - Disable color printing mode.<!--SETCOLOR-->
+ - [x] **SET FAST ON|OFF** - Enable or disables turbo mode.<!--SETFAST-->
  - [x] **SET FNKEY _key_ TO _string_** - Set auto-typed text when function key is pressed.<!--SETFNKY-->
  - [x] **SET KEY _mode_** - Set alternate keyboard port mode.
  - [x] **SET PALETTE _palette_{,_index_} TO _rgblist_** - Set palette entries.<!--SETPALETTE-->
@@ -258,6 +245,7 @@
  - [x] **TRON** - Enable line tracing.
  - [x] **TROFF** - Disable line tracing.
  - [x] **USE CHRSET _0_|_1_|_filespec_** - Copy specified character set to character RAM.<!--USECHR-->
+ - [ ] **USE SCREEN {@_page_,}_text_,_graphics_** - _Not implemented_
  - [x] **USR(_expression_)** - Call user-defined machine language routine passing argument and returning result.
  - [x] **VAL(_float_)** - Convert ASCII string to floating point number.
  - [ ] **VARPTR(_var{$}_|\*_array{$}_)** - Return address of variable, array element, or array
