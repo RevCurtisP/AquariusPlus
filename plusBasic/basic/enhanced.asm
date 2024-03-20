@@ -30,6 +30,8 @@ ABORT_FN:
 ;-----------------------------------------------------------------------------
 ST_COPY:
     jp      z,COPY                ; No Parameters? Do Standard COPY
+    cp      FILETK                
+    jp      z,ST_COPY_FILE
     call    get_page_arg          ; Check for Page Arg
     push    af                    ; Stack = SrcPgFlg
     jr      nc,.no_fpg            ; If specified

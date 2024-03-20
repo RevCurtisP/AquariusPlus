@@ -62,7 +62,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>COPY</strong> - Copy text screen to serial printer.<!--COPY--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>COPY *<em>array</em> TO *array</strong> - <em>Not implemented</em><!--COPY--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>COPY {@<em>page</em>,}<em>address</em>,<em>length</em> TO {@<em>page</em>,}<em>address</em> </strong> - Copy bytes from one section of memory to another.<!--COPY--></li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>COPY <em>filespec</em> TO <em>filespec</em></strong> - <em>Not implemented</em>.<!--COPY--></li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>COPY FILE <em>filespec</em> TO <em>filespec</em></strong> - Copy file.<!--COPY--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>COS(<em>float</em>)</strong> - Return cosine of argument.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>CSAVE <em>filename</em>|*<em>array</em></strong> - Save program or array data to cassette.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>DATA <em>literal</em>{,...}</strong> - Define data for <code>READ</code> statement.</li>
@@ -131,7 +131,8 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>LOAD <em>filespec</em></strong> - Load BASIC program into memory.<!--LOAD--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>LOAD <em>filespec</em>,{@<em>page</em>,}<em>address</em></strong> - Load binary file into memory.<!--LOAD--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>LOAD <em>filespec</em>,*<em>array</em></strong> - Load binary file data into numeric or string array.<!--LOAD--></li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>LOAD <em>filespec</em>,*<em>array</em></strong>,ASC - Load ASCII into string array.<!--LOAD--></li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>LOAD <em>filespec</em>,*<em>array</em>,ASC</strong> - Load multi-line ASCII file into string array.<!--LOAD--></li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>LOAD <em>filespec</em>,^<em>string</em></strong> - Load up to 255 characters of file into string variable.<!--LOAD--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>LOAD BITMAP</strong> - <em>Not implemented</em></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>LOAD CHRSET <em>filespec</em></strong> - Load character set into alternate character buffer.<!--LOAD--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>LOAD DIR <em>filespec</em>,*<em>array</em></strong> - Load disk directory into string array.</li>
@@ -139,7 +140,6 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>LOAD PALETTE <em>p</em>,<em>filespec</em></strong> - Load file data ino palette.<!--LOAD--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>LOAD PT3 <em>filespec</em></strong> - Load PT3 track into PT player buffer.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>LOAD SCREEN <em>filespec</em></strong> - Load file data screen.</li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>LOAD STRING</strong> - <em>Not implemented</em></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>LOAD TILEMAP</strong> - <em>Not implemented</em></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>LOCATE <em>x</em>,<em>y</em></strong> - Move text cursor to specified position.<!--LOCATE--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>LOG(<em>float</em>)</strong> - Return natural logarithm of argument.</li>

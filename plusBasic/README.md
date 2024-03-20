@@ -44,7 +44,7 @@
  - [x] **COPY** - Copy text screen to serial printer.<!--COPY-->
  - [x] **COPY \*_array_ TO \*array** - _Not implemented_<!--COPY-->
  - [x] **COPY {@_page_,}_address_,_length_ TO {@_page_,}_address_ {FAST}** - Copy bytes from one section of memory to another.<!--COPY-->
- - [x] **COPY _filespec_ TO _filespec_** - _Not implemented_.<!--COPY-->
+ - [x] **COPY FILE _filespec_ TO _filespec_** - Copy file.<!--COPY-->
  - [x] **COS(_float_)** - Return cosine of argument.
  - [x] **CSAVE _filename_|\*_array_** - Save program or array data to cassette.
  - [x] **DATA _literal_{,...}** - Define data for `READ` statement.

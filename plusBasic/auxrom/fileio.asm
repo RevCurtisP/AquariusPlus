@@ -2,8 +2,58 @@
 ; File I/O Machine Language Routines
 ;====================================================================
 
-
-
+;-----------------------------------------------------------------------------
+; file_copy - Copy file
+; Input: DE: Destination filename string descriptor
+;        HL: Source filename string descriptor
+; Output:  A: Result
+; Clobbered: AF' BC, DE
+;-----------------------------------------------------------------------------
+file_copy:
+    call    dos_open_read         ; A = SrcFil
+    ret     m                     
+    push    af                    ; Stack = SrcFil, RtnAdr
+    ex      de,hl                 ; HL = DstSpc
+    call    dos_open_write        ; A = DstFil
+    pop     de                    ; D = SrcFil; Stack = RtnAdr
+    ret     m
+    ld      e,a                   ; E = DstFil
+    in      a,(IO_BANK1)           
+    push    af                    ; Stack = OldPg, RtnAdr
+    ld      a,TMP_BUFFR
+    out     (IO_BANK1),a          ; Map TMP_BUFFR into Bank 1
+    call    _do_copy              ;
+    ex      af,af'                ; AF' = Result
+    pop     af                    ; A = OldPg; Stack = RtnAdr
+    out     (IO_BANK1),a          ; Map original page into Bank 1
+    ex      af,af'                ; AF = Result
+    push    af                    ; Stack = Result, RtnAdr
+    ld      a,d                   ; A = SrcFil
+    call    dos_close             ; Close Source FIle
+    ld      a,e                   ; A = DstFil
+    call    dos_close             ; Close Destination FIle
+    pop     af                    ; AF = Result; Stack = RtnAdr
+    ret
+    
+_do_copy:
+    push    de                    ; Stack = SrcDst, RtnAdr
+    ld      a,d                   ; A = SrcFil
+    ld      bc,$4000              ; BC = LoadLen
+    ld      de,BANK1_BASE         ; DE = LoadAdr
+    call    esp_readc_bytes       ; A = Result, BC = Bytes Read
+    pop     de                    ; DE = SrcDst
+    ret     m                     ; Return if error
+    ld      a,b
+    or      c                     ; If zero bytes read
+    ret     z                     ;   Return
+    ld      a,e                   ; A = DstFil
+    push    de                    ; Stack = SrcDst, RtnAdr
+    ld      de,BANK1_BASE         ; DE = LoadAdr
+    call    esp_writec_bytes      ; A = Result
+    pop     de                    ; DE = SrcDst; Stack = RtnAdr
+    ret     m                     ; Return if error
+    jr      _do_copy
+    
 
 ;-----------------------------------------------------------------------------
 ; Return file extension
@@ -38,7 +88,6 @@ _chop_filespec
     ld      a,c
     or      a
     ret
-
 
 ;-----------------------------------------------------------------------------
 ; Return filespec without directory
@@ -160,8 +209,6 @@ file_load_altchrs:
 _load_chrset
     ld      a,BAS_BUFFR
     ld      bc,CHRSETLEN
-    jp      file_load_paged
-    
 ;-----------------------------------------------------------------------------
 ; Load binary file into paged memory`
 ; Input: A: Page

@@ -324,11 +324,15 @@ esp_write_byte:
 ; Clobbered registers: A, HL
 ;-----------------------------------------------------------------------------
 esp_write_bytes:
+    xor     a
+esp_writec_bytes:
+    push    af
+
     ld      a, ESPCMD_WRITE
     call    esp_cmd
 
     ; Send file descriptor
-    xor     a
+    pop     af
     call    esp_send_byte
 
     ; Send write size

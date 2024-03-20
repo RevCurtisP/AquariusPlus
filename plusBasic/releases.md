@@ -1,4 +1,6 @@
 # plusBASIC Release History
+ - v0.22j
+   - Implemented COPY FILE
  - v0.22i 
    - Removed LOAD STRING stub from source and README.md. Add LOAD and SAVE ^var$ to README.md.
  - v0.22h

@@ -91,26 +91,47 @@ ST_MKDIR:
 ; Syntax: RENAME oldfile$ TO newfile$
 ;-----------------------------------------------------------------------------
 ST_RENAME:
+    ld      de,dos_rename         ; DE = CallAdr
+    call    _file_from_to         ; A = Result
+    jp      m,_dos_error          
+    ret
+
+;-----------------------------------------------------------------------------
+; COPY FILE - Copy a file
+; Syntax: COPY FILE oldfile$ TO newfile$
+;-----------------------------------------------------------------------------
+; COPY FILE "dump.bin" TO "copy.bin"
+; COPY FILE "test.bin" TO "copy.bin"
+ST_COPY_FILE:
+    rst     CHRGET                ; Skip FILE
+    ld      de,file_copy
+    call    _file_from_to
+    jp      m,_not_eof_error      ; Check for error and return
+    ret
+
+_file_from_to:
+    push    de                    ; Stack = CallAdr, RtnAdr
     call    FRMEVL                ; Parse oldname
     call    CHKSTR                ; Gotta be a string
     call    SYNCHR                ; Require TO token
     byte    TOTK
-    push    hl                    ; Stack = textptr
-    ld      hl,(FACLO)            ; HL = olddesc
-    ex      (sp),hl               ; HL = textptr, HL = olddesc
+    push    hl                    ; Stack = TxtPtr, CallAdr, RtnAdr
+    ld      hl,(FACLO)            ; HL = OldDsc
+    ex      (sp),hl               ; HL = TxtPtr, Stacl = OldDsc, CallAdr, RtnAdr
     call    FRMEVL                ; Parse newname
-    push    hl                    ; Stack = textptr, olddesc
-    call    FRESTR                ; HL = newdesc
-    ex      de,hl                 ; DE = newdesc
-    pop     bc                    ; BC = textptr, Stack = olddesc
-    pop     hl                    ; HL = olddesc
-    push    bc                    ; Stack = textptr
-    push    de                    ; Stack = newdesc, TxtPtr
-    call    FRETM2                ; HL = olddesc
-    pop     de                    ; DE = newdesc, Stack = TxtPtr
-    ld      iy,dos_rename         ; Do the rename
+    push    hl                    ; Stack = TxtPtr, OldDsc, CallAdr, RtnAdr
+    call    FRESTR                ; HL = NewDsc
+    ex      de,hl                 ; DE = NewDsc
+    pop     bc                    ; BC = TxtPtr, Stack = OldDsc, CallAdr, RtnAdr
+    pop     hl                    ; HL = OldDsc; Stack = CallAdr, RtnAdr
+    pop     iy                    ; IY = CallAdr; Stack = RtnAdr
+    push    bc                    ; Stack = TxtPtr, RtnAdr
+    push    de                    ; Stack = NewDsc, TxtPtr, RtnAdr
+    call    FRETM2                ; HL = OldDsc
+    pop     de                    ; DE = NewDsc, Stack = TxtPtr, RtnAdr
     call    aux_call
-    jr      _check_error          ; Restore textptr and check for error
+    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
+    ret
 
 ;-----------------------------------------------------------------------------
 ; FILE Functions stub

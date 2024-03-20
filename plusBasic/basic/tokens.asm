@@ -133,6 +133,7 @@ SAVETK    equ     $DC
 TILETK    equ     $F0
 RGBTK     equ     $F1
 MAPTK     equ     $F2
+FILETK    equ     $F3
 COLTK     equ     $F5
 SCRNTK    equ     $F6
 SETTK     equ     $F7
