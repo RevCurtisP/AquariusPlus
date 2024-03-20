@@ -483,9 +483,6 @@ ST_LOAD:
     cp      SCRNTK
     jp      z,_load_screen
 
-    cp      STRNTK
-    jp      z,_load_string
-
     cp      FNTK
     jp      z,_load_fnkeys
 
@@ -985,18 +982,6 @@ _do_palette:
     push    de                    ; Stack = TxtPtr, RtnAdr
     jr      _aux_call
 
-
-
-; load pt3 "/music/songs1/dance.pt3"
-_load_string:
-    jp      GSERR
-
-    rst     CHRGET                ; Skip STRING
-    call    PTRGET                ; Parse string variable name
-    call    GETYPE                ; If not string
-    jp      nz,TMERR              ;   Type mismatch error
-
-
 ; load pt3 "/music/songs1/dontstop.pt3"
 ; load pt3 "/music/songs1/dance.pt3"
 _load_pt3:
@@ -1010,7 +995,6 @@ _aux_call
     pop     hl
     ret
 
-
 ;-----------------------------------------------------------------------------
 ; .SCR format: 2048 byte Screen+Color RAM ($3000-$3FFF)
 ; .SCP format
@@ -1018,7 +1002,6 @@ _aux_call
 ;  80 column: 2048 byte Screen + 2048 byte Color + 32 byte palette + 1 byte border flag
 ;-----------------------------------------------------------------------------
 _load_screen:
-
     rst     CHRGET                ; Skip SCREEN
     call    get_strdesc_arg       ; HL = FileSpec StrDsc; Stack = TxtPtr
     ld      iy,file_load_screen      ; Load character set and copy to character RAM

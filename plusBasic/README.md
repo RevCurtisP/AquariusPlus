@@ -113,7 +113,8 @@
  - [x] **LOAD _filespec_** - Load BASIC program into memory.<!--LOAD-->
  - [x] **LOAD _filespec_,{@_page_,}_address_** - Load binary file into memory.<!--LOAD-->
  - [x] **LOAD _filespec_,\*_array_** - Load binary file data into numeric or string array.<!--LOAD-->
- - [x] **LOAD _filespec_,\*_array_**,ASC - Load ASCII into string array.<!--LOAD-->
+ - [x] **LOAD _filespec_,\*_array_,ASC** - Load multi-line ASCII file into string array.<!--LOAD-->
+ - [x] **LOAD _filespec_,^_string_** - Load up to 255 characters of file into string variable.<!--LOAD-->
  - [x] **LOAD BITMAP** - _Not implemented_
  - [x] **LOAD CHRSET _filespec_** - Load character set into alternate character buffer.<!--LOAD-->
  - [x] **LOAD DIR _filespec_,\*_array_** - Load disk directory into string array.
@@ -121,7 +122,6 @@
  - [x] **LOAD PALETTE _p_,_filespec_** - Load file data ino palette.<!--LOAD-->
  - [x] **LOAD PT3 _filespec_** - Load PT3 track into PT player buffer.
  - [x] **LOAD SCREEN _filespec_** - Load file data screen.
- - [x] **LOAD STRING** - _Not implemented_
  - [x] **LOAD TILEMAP** - _Not implemented_
  - [x] **LOCATE _x_,_y_** - Move text cursor to specified position.<!--LOCATE-->
  - [x] **LOG(_float_)** - Return natural logarithm of argument.

@@ -1,4 +1,6 @@
 # plusBASIC Release History
+ - v0.22i 
+   - Removed LOAD STRING stub from source and README.md. Add LOAD and SAVE ^var$ to README.md.
  - v0.22h
    - Single PSET, PRESET, and POINT(), along with underlying routines.
    - Single FILL BITMAP and CLEAR BITMAP along with underlying routines.
