@@ -1,5 +1,8 @@
 @REM Copy assembled ROM and documentation to local www folder
-copy zout\sysrom.bin ..\www\sdcard\
-copy README.html ..\www\sdcard\quickref.html
-copy releases.html ..\www\sdcard\releases.html
-copy README.md ..\progs\quickref.md
+@SET _dest=..\www\sdcard
+copy zout\sysrom.bin %_dest%
+copy README.html %_dest%\quickref.html
+copy releases.html %_dest%\releases.html
+copy README.md %_dest%\quickref.md
+copy ..\util\bas2baq.py %_dest%
+copy ..\util\baq2bas.py %_dest%

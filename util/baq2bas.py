@@ -124,6 +124,8 @@ tokens = {
     0xCB: "XOR",
     0xCC: "PUT",
     0xCD: "GET",
+    0xCE: "DRAW",
+   #0xCF:
     0xD0: "LINE",
     0xD1: "SWAP",
     0xD2: "DOKE",
@@ -152,6 +154,7 @@ tokens = {
     0xE9: "ERR",
     0xEA: "STRING",
     0xEB: "BIT",
+   #0xEC:
     0xED: "EVAL",
     0xEE: "PAUSE",
     0xEF: "ELSE",
@@ -163,9 +166,12 @@ tokens = {
     0xF5: "COL",
     0xF6: "SCREEN",
     0xF7: "SET",
+    0xF8: "WRITE",
     0xF9: "USE",
     0xFA: "OPEN",
     0xFB: "CLOSE"
+   #0xFC:
+   #0xFD:
 }
 
 xprefix = 0xFE
@@ -173,6 +179,7 @@ xtokens = {
     0x80: "ATTR",        
     0x81: "PALETTE",          
     0x82: "OFF",               
+   #0x83 Unused (DATA) 
     0x84: "SPRITE",      
     0x85: "CHR",              
     0x86: "KEY",              
@@ -183,6 +190,7 @@ xtokens = {
     0x8B: "SAMPLE",               
     0x8C: "PT3",
     0x8D: "PIXEL",
+   #0x8E Unused (REM)
     0x8F: "NAME",
     0x90: "RESET",
     0x91: "EXT",
@@ -198,9 +206,14 @@ xtokens = {
     0x9B: "LOOP",                     
     0x9C: "STR",          
     0x9D: "VAR",          
+    0x9E: "ERASE",
+   #0x9F:
+   #0xA0:
     0xA1: "WORD",           
     0xA2: "CLIP",           
-    0xA3: "PTR"           
+    0xA3: "PTR",       
+    0xA4: "STATUS",
+    0xA5: "BYTE"
 }
 
 with open(args.input, "rb") as f:
