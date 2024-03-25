@@ -3,7 +3,7 @@
 115 S$="sysrom.bin"
 120 ON ERROR GOTO _error
 130 PRINT "Downloading %%..." % (S$)
-135 LOAD "http://aqplus.ohiodivide.com/sdcard/sysrom.bin",@32,0
+135 LOAD "http://aquarius.plus/release/"+S$,@32,0
 140 PRINT "Writing /%%..." % (S$)
 145 SAVE "/sysrom.bin",@32,0,49152
 150 PRINT "Press Ctrl-Esc to restart Aquarius+"

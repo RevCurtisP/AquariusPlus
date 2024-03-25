@@ -11,7 +11,7 @@
 ST_CD:
     ; Argument given?
     or      a
-    jr      nz, .change_dir     ; Yes
+    jr      nz, .change_dir       ; Yes
 
     push    hl
     call    _get_cd
@@ -93,7 +93,7 @@ ST_MKDIR:
 ST_RENAME:
     ld      de,dos_rename         ; DE = CallAdr
     call    _file_from_to         ; A = Result
-    jp      m,_dos_error          
+    jp      m,_dos_error
     ret
 
 ;-----------------------------------------------------------------------------
@@ -215,14 +215,14 @@ ST_DIR:
 
     ; Argument given?
     or      a
-    jr      nz, .witharg     ; Yes
+    jr      nz, .witharg          ; Yes
 
     push    hl                    ; Save Text Pointer
     ld      bc,0                  ; Empty String
     jr      .esp_command
 
 .witharg:
-    call    get_string_direct        ; Get FileSpec pointer in HL
+    call    get_string_direct     ; Get FileSpec pointer in HL
 
 .esp_command:
     call    esp_close_all
@@ -247,7 +247,7 @@ ST_DIR:
     jp      z, .done
     or      a
     jp      p, .ok2
-    pop     hl              ; Restore BASIC text pointer
+    pop     hl                    ; Restore BASIC text pointer
     jp      _dos_error
 
 .ok2:
@@ -264,7 +264,7 @@ ST_DIR:
 
     ; Extract month
     ld      a, d
-    rra                     ; Lowest bit in carry
+    rra                           ; Lowest bit in carry
     ld      a, e
     rra
     call    srl4out
@@ -515,17 +515,17 @@ ST_LOAD:
 
     ; Get string parameter with path
 
-    call    get_strdesc_arg        ; Get FileSpec pointer in HL
+    call    get_strdesc_arg       ; Get FileSpec pointer in HL
 
-    ex      (sp),hl                 ; HL = TxtPtr, Stack = StrDsc, RtnAdr
+    ex      (sp),hl               ; HL = TxtPtr, Stack = StrDsc, RtnAdr
 
     ; Check for second parameter
     call    CHRGT2
     cp      ','
-    jr      nz, .basic              ; No parameter -> load as basic program
+    jr      nz,.basic             ; No parameter -> load as basic program
     rst     CHRGET
-    cp      MULTK                   ; Token for '*'
-    jr      z,.array                ; Array parameter -> load as array
+    cp      MULTK                 ; Token for '*'
+    jr      z,.array              ; Array parameter -> load as array
     cp      EXPTK
     jr      z,.string
 
@@ -533,11 +533,11 @@ ST_LOAD:
 ; Load raw binary to address
 ; LOAD "tron.bin",$4200
 ; LOAD "tron.bim",$4200
-    call    get_page_arg            ; Check for page specifier
-    push    af                      ; Stack = Page, String Descriptor
+    call    get_page_arg          ; Check for page specifier
+    push    af                    ; Stack = Page, String Descriptor
     jr      nc,.bin_params
 
-    ld      a,(hl)                  ; If @page only
+    ld      a,(hl)                ; If @page only
     or      a
     jr      nz,.page_params
     ld      de,0
@@ -546,27 +546,27 @@ ST_LOAD:
 .page_params
     SYNCHK  ','
 .bin_params
-    call    FRMNUM                  ; Get number
-    call    FRCINT                  ; Convert to 16 bit integer
-    ld      bc,$FFFF                ; Load up to 64k
+    call    FRMNUM                ; Get number
+    call    FRCINT                ; Convert to 16 bit integer
+    ld      bc,$FFFF              ; Load up to 64k
 .load_bin
     ; Get back page filespec
-    pop     af                      ; AF = Page, Stack = String Descriptor
-    ex      (sp),hl                 ; HL = String Descriptor, Stack = Text Pointer
+    pop     af                    ; AF = Page, Stack = String Descriptor
+    ex      (sp),hl               ; HL = String Descriptor, Stack = Text Pointer
     jr      c,.load_paged
     ld      iy,file_load_binary
     call    aux_call
     jp      m,_dos_error
     call    esp_close_all
-    pop     hl                      ; Get Back Text Pointer
+    pop     hl                    ; Get Back Text Pointer
     ret
 
 ; Load raw binary into paged memory
 ; LOAD "/roms/logo.rom",@40,$1234
 ; LOAD "/roms/bio.rom",@63
 .load_paged
-    ld      bc,$FFFF                ; Load up to 64k
-    call    check_paged_address     ; Verify pages addres is between 0 and 16383
+    ld      bc,$FFFF              ; Load up to 64k
+    call    check_paged_address   ; Verify pages addres is between 0 and 16383
     ld      iy,file_load_paged
     call    aux_call
     jp      z,FCERR
@@ -635,7 +635,7 @@ _load_ascii:
     call    basic_append_line     ; Add line to BASIC program
     jr      .lineloop
 .badline
-    ld      a,ERRUS               ;
+    ld      a,ERRUS
 .done
     pop     bc                    ; Discard PrvLin; Stack = TxtPtr, RtnAdr
     push    af                    ; Stack = Status, TxtPtr, RtnAdr
@@ -652,28 +652,32 @@ _load_ascii:
 ; Input: HL: String descriptor address
 ; Clobbered registers: A, DE
 ;-----------------------------------------------------------------------------
-; LOAD "/t/memvars.baq
+; LOAD "/t/memvars.baq"
 load_basic_program:
     ; Open file
     call    _open_read
 
-    call    esp_read_byte       ; B = First byte of file
-    jp      m,_dos_error        ; Check for error
-    call    esp_close_all       ; Close and re-open file
+    call    esp_read_byte         ; B = First byte of file
+    jp      m,_dos_error          ; Check for error
+    call    esp_close_all         ; Close and re-open file
     call    _open_read
+    inc     b                     ; If first byte = $FF
+    jr      z,.load_caq_prog      ;   Load BAQ/CAQ
+    dec     b                     ; If first byte <> 0
+    jp      nz,_load_ascii        ;   Load program in ASCII format
+; LOAD "/t/savetok.bas"
+    ld      de,(TXTTAB)           ; Else
+    dec     de                    ;   DE = LoadAdr(0 before BASIC program)
+    jr      .load_prog
 
-    inc     b                   ; If first byte <>$FF
-    jp      nz,_load_ascii      ;   Load program in ASCII format
-
-    ; Check CAQ header
-    call    check_sync_bytes    ; Sync bytes
-    ld      bc, 6               ; Read filename
+.load_caq_prog
+    call    check_sync_bytes      ; Sync bytes
+    ld      bc, 6                 ; Read filename
     ld      de, FILNAM
     call    esp_read_bytes
-    call    check_sync_bytes    ; Sync bytes
-
-    ; Load actual program
+    call    check_sync_bytes      ; Sync bytes
     ld      de, (TXTTAB)
+.load_prog
     ld      bc, $FFFF
     call    esp_read_bytes
 
@@ -791,7 +795,7 @@ load_string_array:
     call    _open_read
 .loop
     call    esp_read_byte         ; B = StrLen
-    jp      m,_dos_error          
+    jp      m,_dos_error
     ld      a,b
     push    af                    ; Stack = StrLen, AryPtr, AryLen, TxtPtr, RtnAdr
     call    GETSPA                ; DE = StrAdr
@@ -808,7 +812,7 @@ load_string_array:
     dec     bc
     dec     bc
     dec     bc
-    dec     bc                    ; 
+    dec     bc
     ld      a,b
     or      c
     jp      z,_close_pop_ret
@@ -845,7 +849,7 @@ _read_dir:
 load_asc_array:
     SYNCHK  ','
     rst     SYNCHR                ; Require ,ASC
-    byte    ASCTK         
+    byte    ASCTK
     ex      (sp),hl               ; HL = StrDsc, Stack = TxtPtr, RtnAdr
     call    _open_read
     ld      iy,esp_read_line
@@ -1025,7 +1029,7 @@ _aux_call
 _load_screen:
     rst     CHRGET                ; Skip SCREEN
     call    get_strdesc_arg       ; HL = FileSpec StrDsc; Stack = TxtPtr
-    ld      iy,file_load_screen      ; Load character set and copy to character RAM
+    ld      iy,file_load_screen   ; Load character set and copy to character RAM
     call    aux_call
     jp      m,_dos_error
     pop     hl
@@ -1055,7 +1059,7 @@ con_run:
     jp      CONRUN
 
 run_c:
-    jp      RUNC              ; GOTO line number
+    jp      RUNC                  ; GOTO line number
 
 
 ;-----------------------------------------------------------------------------
@@ -1127,7 +1131,7 @@ run_file:
 
 _lookup_file:
     push    hl                    ; Stack = StrDsc, RtnAdr
-    ld      iy,file_get_ext       
+    ld      iy,file_get_ext
     call    aux_call              ; A = ExtLen
     pop     hl                    ; HL = StrDsc; Stack = RtnAdr
     ret     nz                    ; Return if extension specified
@@ -1142,18 +1146,18 @@ _lookup_file:
     ldir                          ; DE = StrEnd
     pop     hl                    ; HL = StrBuf; Stack = StrLen, RtnAdr
     pop     bc                    ; BC = StrLen; Stack = RtnAdr
-    ld      a,'.'                 
+    ld      a,'.'
     call    .add_char
     ld      a,'*'                 ; Add .* to filename
     call    .add_char
     ex      de,hl                 ; DE = StrBuf
-    ld      iy,dos_open_dir       
+    ld      iy,dos_open_dir
     call    aux_call
     jp      m,_dos_error
     call    get_strbuf_addr       ; HL = BufAdr
 .read_loop:
     push    af                    ; Stack = FilDsc, RtnAdr
-    ld      iy,dos_read_dir       
+    ld      iy,dos_read_dir
     call    aux_call              ; A = Result, B = NamLen, C = EntLen, DE = NamAdr, HL = BufAdr
     jp      c,LSERR               ; Error if overflow
     jp      m,.error
@@ -1164,7 +1168,7 @@ _lookup_file:
     call    aux_call              ; Close file
     ld      a,b                   ; A = NamLen, DE = NamAdr
     jp      STRAD2                ; Build string descriptor and return
-    
+
 .error
     cp      ERR_EOF               ; If not EOF
     jp      nz,_dos_error         ;   Error out
@@ -1200,39 +1204,41 @@ ST_SAVE:
     cp      XTOKEN
     jp      z,.save_extended
 
-    call    get_strdesc_arg         ; Get FileSpec pointer in HL
-    ex      (sp),hl                 ; HL = TxtPtr, Stack = StrDsc, RtnAdr
+    call    get_strdesc_arg       ; Get FileSpec pointer in HL
+    ex      (sp),hl               ; HL = TxtPtr, Stack = StrDsc, RtnAdr
 
     ; Check for second parameter
     call    CHRGT2
     cp      ','
-    jp      nz, save_basic_program
+    jp      nz,save_basic_program
     rst     CHRGET
     cp      EXPTK
-    jp      z,.string               ; Load to string
-    cp      $AA                     ; Token for '*'
-    jr      z,.array                ; Array parameter -> save array
+    jp      z,.string             ; Load to string
+    cp      $AA                   ; Token for '*'
+    jr      z,.array              ; Array parameter -> save array
     cp      ASCTK
     jp      z,save_ascii_program
-
+    cp      TOTK
+    jp      z,.save_tok
+    cp      XTOKEN                
+    jp      z,.save_xtoken
     ; Save binary data
-
-    call    get_page_arg            ; Check for page specifier
-    push    af                      ; Stack = Page, StrDsc, RtnAdr
+    call    get_page_arg           ; Check for page specifier
+    push    af                     ; Stack = Page, StrDsc, RtnAdr
     jr      nc,.bin_params
 
-    ld      a,(hl)                  ; If @page only
+    ld      a,(hl)                ; If @page only
     or      a
     jr      nz,.page_params
-    ld      de,0                    ; DE = BinAdr
-    ld      bc,$4000                ; BC = BinLen
+    ld      de,0                  ; DE = BinAdr
+    ld      bc,$4000              ; BC = BinLen
     jr      .save_bin
 .page_params
     SYNCHK  ','
 .bin_params
-    call    FRMNUM                  ; Get number
-    call    FRCINT                  ; Convert to 16 bit integer
-    push    de                      ; Stack = BinAdr, Page, StrDsc, RtnAdr
+    call    FRMNUM                ; Get number
+    call    FRCINT                ; Convert to 16 bit integer
+    push    de                    ; Stack = BinAdr, Page, StrDsc, RtnAdr
 
     ; Expect comma
     call    CHRGT2
@@ -1241,16 +1247,16 @@ ST_SAVE:
     inc     hl
 
     ; Get second parameter: length
-    call    FRMNUM                  ; Get number
-    call    FRCINT                  ; Convert to 16 bit integer; Stack = Page, StrDsc, RtnAdr
+    call    FRMNUM                ; Get number
+    call    FRCINT                ; Convert to 16 bit integer; Stack = Page, StrDsc, RtnAdr
     ld      b,d
-    ld      c,e                     ; BC = BinLen
-    pop     de                      ; DE = BinAdr; Stack
+    ld      c,e                   ; BC = BinLen
+    pop     de                    ; DE = BinAdr; Stack
 
 .save_bin
      ; Get back page filespec
-    pop     af                      ; AF = Page, Stack = StrDsc, RtnAdr
-    ex      (sp),hl                 ; HL = StrDsc, Stack = TxtPtr
+    pop     af                    ; AF = Page, Stack = StrDsc, RtnAdr
+    ex      (sp),hl               ; HL = StrDsc, Stack = TxtPtr
 
     ; Do the save
     jr      c,.save_paged
@@ -1300,6 +1306,32 @@ ST_SAVE:
     call    string_addr_len       ; BC = StrLen, DE = StrAdr
     pop     hl                    ; HL = NamDsc; Stack = TxtPtr, RtnAdr
     jr      .do_bin               ; Save it
+
+;-----------------------------------------------------------------------------
+; Save basic program in tokenized format
+;-----------------------------------------------------------------------------
+; 10 SAVE "/t/savetok.bas",TOK
+.save_tok
+    rst     CHRGET                ; Skip TO
+    SYNCHK  'K'                   ; Require K
+    ex      (sp),hl               ; HL = NamDsc; Stack = TxtPtr, RtnAdr
+    push    hl                    ; Stack = NamDsc, TxtPtr, RtnAdr
+    ld      de,(TXTTAB)           
+    dec     de                    ; DE = SavAdr (0 before BASIC program)
+    ld      hl,(VARTAB)           
+    xor     a                     ; Clear carry
+    sbc     hl,de                 ; HL = SavLen
+    ld      b,h
+    ld      c,l                   ; BC = StrLen
+    pop     hl                    ; HL = NamDsc; Stack = TxtPtr, RtnAdr
+    jr      .do_bin               ; Save it
+
+; 10 SAVE "/t/savecaq.baq",CAQ
+.save_xtoken
+    rst     CHRGET                ; Skip XTOKEN
+    rst     SYNCHR
+    byte    CAQTK                 ; Require CAQ
+    jp      save_caq_program
 
 ;-----------------------------------------------------------------------------
 ; Save basic program in ASCII format
@@ -1354,6 +1386,7 @@ _save_ascii:
     ret
 
 
+
 ;-----------------------------------------------------------------------------
 ; Save basic program
 ;-----------------------------------------------------------------------------
@@ -1361,17 +1394,18 @@ save_basic_program:
     ld      a,(BASYSCTL)
     and     BASSAVASC             ; If SET SAVE ASC ON
     jr      nz,_save_ascii        ;   SAVE as ASCII
+save_caq_program:
     ex      (sp),hl               ; HL = String Descriptor, Stack = Text Pointer
     call    _open_write           ; Create file
 
     ; Write CAQ header
-    ld      de, sync_bytes      ; Sync bytes
+    ld      de, sync_bytes        ; Sync bytes
     ld      bc, 13
     call    esp_write_bytes
-    ld      de, .caq_filename   ; Filename
+    ld      de, .caq_filename     ; Filename
     ld      bc, 6
     call    esp_write_bytes
-    ld      de, sync_bytes      ; Sync bytes
+    ld      de, sync_bytes        ; Sync bytes
     ld      bc, 13
     call    esp_write_bytes
 
@@ -1444,12 +1478,12 @@ save_string_array:
 .strloop
     call    string_addr_len       ; DE = StrAdr, BC = StrLen
     push    hl                    ; Stack = AryPtr, AryLen, TxtPtr, RtnAdr
-    ld      a,c             
+    ld      a,c
     call    esp_write_byte        ; Write string length
     call    esp_write_bytes       ; Write string data
     pop     hl                    ; HL = AryPtr; Stack = AryLen, TxtPtr, RtnAdr
     pop     de                    ; DE = AryLen; Stack = TxtPtr, RtnAdr
-    ld      b,4                   
+    ld      b,4
 .nextloop
     inc     hl
     dec     de
@@ -1573,30 +1607,30 @@ _open_error:
 ; PRINT A$
 
 ST_LINE_INPUT:
-    rst     CHRGET            ; Skip INPUT
-    SYNCHK  '#'               ; Require #
-    call    GETINT            ; Parse FilDsc
-    or      a                 ; If not 0
-    jp      nz,FCERR          ;   Error - For now
-    push    af                ; Stack = FilDsc, RtnAdr
-    SYNCHK  ','               ; Require comma
-    call    PTRGET            ; Get pointer to variable
-    call    GETYPE            ; If not string
-    jp      nz,TMERR          ;   Type mismatch error
-    pop     af                ; A = FilDsc; Stack = TxtPtr
-    push    hl                ; Stack = TxtPtr, RtnAdr
-    push    de                ; Stack = VarPtr, TxtPtr, RtnAdr
-    ld      bc,256            ; Maximum bytes
+    rst     CHRGET                ; Skip INPUT
+    SYNCHK  '#'                   ; Require #
+    call    GETINT                ; Parse FilDsc
+    or      a                     ; If not 0
+    jp      nz,FCERR              ;   Error - For now
+    push    af                    ; Stack = FilDsc, RtnAdr
+    SYNCHK  ','                   ; Require comma
+    call    PTRGET                ; Get pointer to variable
+    call    GETYPE                ; If not string
+    jp      nz,TMERR              ;   Type mismatch error
+    pop     af                    ; A = FilDsc; Stack = TxtPtr
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    push    de                    ; Stack = VarPtr, TxtPtr, RtnAdr
+    ld      bc,256                ; Maximum bytes
     ld      hl,(TOPMEM)
-    add     hl,bc             ; Work buffer
+    add     hl,bc                 ; Work buffer
     call    esp_read_line
     jp      m,_dos_error
-    call    TIMSTR            ; Copy buffer into temporary string
-    call    FREFAC            ; HL = TmpDsc
-    ex      de,hl             ; DE = TmpDsc
-    pop     hl                ; HL = VarPtr; Stack = TxtPtr, RtnAdr
-    call    MOVE              ; Copy descriptor to variable
-    pop     hl                ; HL = TxtPtr; Stack = RtnAdr
+    call    TIMSTR                ; Copy buffer into temporary string
+    call    FREFAC                ; HL = TmpDsc
+    ex      de,hl                 ; DE = TmpDsc
+    pop     hl                    ; HL = VarPtr; Stack = TxtPtr, RtnAdr
+    call    MOVE                  ; Copy descriptor to variable
+    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     ret
 
 ;-----------------------------------------------------------------------------

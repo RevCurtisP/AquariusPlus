@@ -191,7 +191,7 @@
  - [x] **RND(_integer_)** - Return new or previous psuedo-random number or seeds the random number generator.
  - [x] **RUN {_lineref_}** - Start program execution at first or specified line.
  - [x] **RUN _filespec_** - Load and runs specified program, cartridge image, or FPGA core.
- - [x] **SAVE _filespec_ {ASC}** - Save BASIC program to CAQ or ASCII file.<!--SAVE-->
+ - [x] **SAVE _filespec_{,ASC|CAQ|TOK}** - Save BASIC program to CAQ or ASCII or raw tokenized file.<!--SAVE-->
  - [x] **SAVE _filespec_,{@_page_,}_address_,_length_** - Save memory to binary file.<!--SAVE-->
  - [x] **SAVE _filespec_,\*_array_** - Save numeric or string array data to file.<!--SAVE-->
  - [x] **SAVE BITMAP** - _Not implemented_

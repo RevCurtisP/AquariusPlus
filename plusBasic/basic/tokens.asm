@@ -105,9 +105,10 @@ EXTCMDS:
     db $80 + 'P',"TR"             ; $A3
     db $80 + 'S',"TATUS"          ; $A4
     db $80 + 'B',"YTE"            ; $A5
+    db $80 + 'C',"AQ"             ; $A6
     db $80                        ; End of table marker
 
-EXTOKEN = $A6                     ; Last Token + 1
+EXTOKEN = $A7                     ; Last Token + 1
 
 ;-----------------------------------------------------------------------------
 ; plusBASIC tokens
@@ -173,6 +174,7 @@ CLIPTK    equ     $A2
 PTRTK     equ     $A3
 STATK     equ     $A4
 BYTETK    equ     $A5
+CAQTK     equ     $A6
 
 ;-----------------------------------------------------------------------------
 ; Convert keyword to token - hook 10

@@ -1,5 +1,5 @@
 @REM Copy assembled ROM and documentation to local www folder
-@SET _dest=..\www\sdcard
+@SET _dest=..\www\release
 copy zout\sysrom.bin %_dest%
 copy README.html %_dest%\quickref.html
 copy releases.html %_dest%\releases.html
