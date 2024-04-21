@@ -92,6 +92,52 @@ FN_GETKEY:
     pop     bc                    ; Get rid of dummy return address
     jp      BUFCIN                ; Else Return String
 
+
+;----------------------------------------------------------------------------
+; Search for string in memory
+; INMEM(address,string$)
+; INMEM(@page,address,string$)
+;----------------------------------------------------------------------------
+; PRINT INMEM(0,"Copyright")
+; PRINT INMEM($3900,"Copyright")
+; PRINT HEX$(INMEM(0,"Copy"+"wrong"))
+; PRINT HEX$(INMEM(@61,0,"Out of DATA"))
+; PRINT INMEM(@61,0,"WontFindMe")
+FN_INMEM:
+    rst     CHRGET                ; Skip MEM
+    call    paren_page_arg        ; AF = PgFlag
+    push    af                    ; Stack = PgFlag, RtnAdr
+    call    GETINT                ; DE = MemAdr
+    pop     af                    ; AF = PgFlag; Stack = RtnAdr
+    push    de                    ; Stack = MemAdr, RtnAdr
+    push    af                    ; Stack = PgFlag, MemAdr, RtnAdr
+    call    get_comma             ; Require comma
+    call    FRMEVL                ; Parse argument
+    call    CHKSTR                ; Error if not string
+    SYNCHK  ')'                   ; Require )
+    pop     af                    ; AF = PgFlag; Stack = MemAdr, RtnAdr
+    ex      (sp),hl               ; HL = MemAdr; Stack = TxtPtr, RtnAdr
+    ld      bc,LABBCK             
+    push    bc                    ; Stack = LABBCK, TxtPtr, RtnAdr
+    push    hl                    ; Stack = MemAdr, TxtPtr, RtnAdr
+    ex      af,af'                ; AF' = PgFlag
+    call    free_addr_len         ; DE = TxtAdr, BC = TxtLen
+    jp      z,pop_float_minus_one ; Return -1 if null string
+    pop     hl                    ; HL = MemAdr; Stack = TxtAdr, RtnAdr
+    ex      af,af'                ; AF = PgFlag
+    call    .search
+    ex      de,hl                 ; DE = Address in page
+    ld      a,d
+    and     e
+    inc     a                     ; If address = $FFFF
+    jp      z,float_signed_int    ;   Return -1
+    jp      FLOAT_DE              ; Else return unsigned address 
+.search
+    jp      nc,string_find        ; If no page, search main memory and return
+    call    page_find_string      ; Else search for page in string
+    jp      z,FCERR               ; Illegal quantity error if invalid address
+    ret
+
 ;----------------------------------------------------------------------------
 ; Search for string in string array
 ; INDEX(*array,string$)
@@ -121,12 +167,16 @@ FN_INDEX:
     pop     bc                    ; BC = ArySiz; Stack = AryAdr, RtnAdr
     ex      (sp),hl               ; HL = AryAdr; Stack = TxtPtr, RtnAdr
     ex      de,hl                 ; HL = StrAdr, DE = AryAdr
-    ld      iy,string_search_array
-    call    aux_call
+    call    .array
     ld      de,LABBCK
     push    de                    ; Stack = LABBCK, TxtPtr, RtnAdr 
     ld      a,b                   ; 
     jp      GIVINT                ; Float AB signed and return
+
+.array
+    ld      iy,string_search_array
+    jp      aux_call
+
 
 ;-----------------------------------------------------------------------------
 ; LOOP statements stub

@@ -42,7 +42,6 @@ _cmp_done:
 _cmp_error:
     jp      page_restore_bank3
     ret
-
       
 ;-----------------------------------------------------------------------------
 ; Compare paged memory to paged memory
@@ -313,6 +312,30 @@ page_fill_word:
 _success:
     xor     a                     ; Clear Carry Flag
     inc     a                     ; Clear Zero Flag
+    jp      page_restore_bank3    ; Restore BANK3 page and return
+
+;-----------------------------------------------------------------------------
+;   Input: A: Page
+;          B: String length
+;         DE: String address
+;         HL: Start address
+; Output: HL: Address in page ($FFFF = not found)
+;-----------------------------------------------------------------------------
+page_find_string:
+    ex      de,hl                 ; HL = StrAdr, DE = MemAdr
+    call    page__set4read_coerce
+    ret     z                     ; If invalid page, return error
+    ex      de,hl                 ; DE = StrAdr, HL = MemAdr
+    call    string_find           ; Search for string
+    ld      a,h
+    and     l
+    inc     a
+    jr      z,.done               ; IF HL <> $FFF
+    ld      a,h
+    and     $3F
+    ld      h,a                   ;  Coerce address to 0 - 16383
+.done
+    or      $FF                   ; Clear Z flag (no error)
     jp      page_restore_bank3    ; Restore BANK3 page and return
 
 ;-----------------------------------------------------------------------------

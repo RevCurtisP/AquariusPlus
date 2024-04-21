@@ -240,7 +240,9 @@ xtokens = {
     0xA2: "CLIP",           
     0xA3: "PTR",       
     0xA4: "STATUS",
-    0xA5: "BYTE"
+    0xA5: "BYTE",
+    0xA6: "CAQ",
+    0xA7: "MEM"
 }
 
 def error(idx, message):

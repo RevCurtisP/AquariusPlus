@@ -224,6 +224,7 @@ CHKFUN      equ $0DA4   ; Evaluate Ctrl-keys
 INLINC      equ $0D8E   ; Wait for and process direct mode keypress
 GOODCH      equ $0DE9   ; INLINC - Put key in input buffer
 TIMSTR      equ $0E2F   ; Create tempory string from null-terminated string
+TIMSTF      equ $0E32   ; Return parsed temporary string
 STRCPY      equ $0E39   ; Create copy of string
 STRINI      equ $0E50   ; Reserve space for new string and create descriptor
 STRAD2      equ $0E53   ; Build string descriptor in DSCTMP

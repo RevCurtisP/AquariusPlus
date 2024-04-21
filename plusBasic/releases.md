@@ -1,4 +1,7 @@
 # plusBASIC Release History
+ - v0.22l
+   - Added INMEM function
+   - Fixed stomping of temporay string in string trimming functions functions.
  - v0.22k
    - Added SAVE filespec$,CAQ to override SET SAVE ASC and SAVE filespec$,TOK to save raw tokenized program.
    - Updated load_basic_program accordingly

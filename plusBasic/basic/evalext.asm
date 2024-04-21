@@ -469,8 +469,5 @@ return_strlit:
     dec     hl                    ; Back up to before string
     ld      b,0                   ; NUL is the only teminator
     call    STRLT3            
-    call    FREFAC            
-    ld      bc,FINBCK             
-    push    bc                
-    jp      STRCPY
+    jp      TIMSTF                ; Return temporary string
 

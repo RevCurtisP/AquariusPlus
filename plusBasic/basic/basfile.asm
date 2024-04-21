@@ -164,6 +164,7 @@ FN_FILEEXT:
 ; ? FILEDIR$("/a/b/file.tmp")
 ; ? FILEDIR$("a/")
 ; ? FILEDIR$("/a/b/")
+; D$ = FILEDIR$("/a/b/file.tmp")+"sub"
 FN_FILEDIR:
     ld      iy,file_get_dir
     jr      _file_trim
@@ -195,7 +196,8 @@ _file_trim:
     call    PARCHK                ; Parse agument
     pop     iy                    ; IY = TrmRtn; Stack = RtnAdr
     push    hl                    ; Stack = TxtPtr, RtnAdr
-    call    free_addr_len         ; DE = StrAdr, BC = StrLen
+    call    FRETMS                ; Free temporary but not string space
+    call    string_addr_len       ; DE = StrAdr, BC = StrLen
     call    aux_call              ; DE = ExtAdr, A = ExtLen
     jr      nz,.ret_str
     ld      de,REDDY-1

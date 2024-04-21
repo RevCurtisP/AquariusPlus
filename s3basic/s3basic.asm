@@ -2605,7 +2605,7 @@ CSLOOP: ld      a,e               ;[M80] BOTH STRINGS ENDED
 STR:    call    CHKNUM            ;[M80] IS A NUMERIC
         call    FOUT              ;[M80] DO ITS OUTPUT
 TIMSTR: call    STRLIT            ;[M80] SCAN IT AND TURN IT INTO A STRING
-        call    FREFAC            ;[M80] FREE UP THE TEMP
+TIMSTF: call    FREFAC            ;[M80] FREE UP THE TEMP
         ld      bc,FINBCK         ;
         push    bc                ;[M80] SET UP ANSWER IN NEW TEMP
 ;; Copy String from StrDsc in HL, Return TmpDsc in DE

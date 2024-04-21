@@ -170,6 +170,47 @@ string_cmp_upper:
     xor     a                     ;;
     ret                           ;; Return 0 = Equal
 
+
+;-----------------------------------------------------------------------------
+; Search for string in memory
+;  Input:  B: String length
+;         DE: String address
+;         HL: Start address
+; Output: Zero set if strings match, otherwise zero cleared
+; Clobbered: A, B
+;-----------------------------------------------------------------------------
+;-----------------------------------------------------------------------------
+;   Input: A: Page
+;          C: String length
+;         DE: String address
+;         HL: Start address
+; Output: HL: Address in page ($FFFF = not found)
+;-----------------------------------------------------------------------------
+string_find:
+    ld      b,c                   ; B = StrLen
+.find
+    push    bc                    ; Stack = StrLen, RtnAdr
+    push    de                    ; Stack = StrAdr, StrLen, RtnAdr
+    push    hl                    ; Stack = MemAdr, StrAdr, StrLen, RtnAdr
+.compare
+    ld      a,(de)                
+    cp      (hl)                  ; If (StrPtr) = (MemPtr)
+    jr      nz,.nope
+    inc     de                    ;   Bump StrPtr
+    inc     hl                    ;   and MemPtr
+    djnz    .compare              ;   Loop until end of string
+.nope
+    pop     hl                    ; HL = MemAdr, Stack = StrAdr, StrLen, RtnAdr
+    pop     de                    ; DE = StrAdr, Stack = StrLen, RtnAdr
+    pop     bc                    ; B = StrLen, Stack = RtnAdr
+    ret     z                     ; Return if match 
+    inc     hl                    ; Bump MemAdr
+    ld      a,h
+    and     a,l                   ; If HL = $FFFF
+    inc     a                     ;   A = 0
+    jp      nz,.find              ; Else try again
+    ret
+
 ;-----------------------------------------------------------------------------
 ; Copy null terminated string
 ;  Input: DE: Destination address

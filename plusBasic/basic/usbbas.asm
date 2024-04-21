@@ -165,6 +165,8 @@ FN_IN:
     jp      z,FN_INDEX
     sub     STRTK-DEXTK           ; $9C STR
     jp      z,FN_INSTR            ;
+    sub     MEMTK-STRTK           ; $A7 MEM
+    jp      z,FN_INMEM            ;
     jp      SNERR
 
 ;-----------------------------------------------------------------------------

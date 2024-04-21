@@ -51,6 +51,11 @@ FLOAT_CDE:
     pop     hl
     ret
  
+ 
+pop_float_minus_one:
+    pop     af
+float_minus_one:
+    ld      a,-1
 ;-----------------------------------------------------------------------------
 ; Convert A into a signed Floating Point number in FACC
 ; Clobbers: A,BC,DE

@@ -444,7 +444,8 @@ parse_page_arg:
     jr      nz,.notat             ; If page prefix
     rst     CHRGET                ;   Skip '@'
     call    GETBYT                ;   Parse byte into E
-    SYNCHK  ','                   ;   Require comma
+    call    get_comma
+;   SYNCHK  ','                   ;   Require comma
     ld      a,e
     scf
     ret

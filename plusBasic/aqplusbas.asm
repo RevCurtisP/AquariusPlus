@@ -87,7 +87,7 @@ just_ret:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.22k"
+    db "v0.22l"
     db 0
 plus_len   equ   $ - plus_text
 
@@ -877,6 +877,10 @@ sys_swap_mem:
     inc     de
     dec     bc
     jp      sys_swap_mem
+
+
+
+    free_rom_sys = $2F00 - $
  
 ; ------------------------------------------------------------------------------
 ;  Hook Jump Table
@@ -999,7 +1003,6 @@ aux_line_print:
 ;-----------------------------------------------------------------------------
 ; Pad first 4k
 ;-----------------------------------------------------------------------------
-    free_rom_sys = $3000 - $
     assert !($2FFF<$)   ; ROM full!
     dc $3000-$,$76
 
