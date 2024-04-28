@@ -5,7 +5,6 @@
 ;-----------------------------------------------------------------------------
 ; Parse to 23-bit integer in CDE
 ;-----------------------------------------------------------------------------
-
 GET_LONG:
     call    FRMNUM                ; Parse a number
 
@@ -18,6 +17,12 @@ FRC_LONG:
     jp      c,QINT                 ;   Convert it
     jp      FCERR                  ; Else Illegal Quantity
 
+;-----------------------------------------------------------------------------
+; Parse to 23-bit integer in CDE
+;-----------------------------------------------------------------------------
+GET_STRING:
+    call    FRMEVL                ; Parse a number
+    jp      CHKSTR
 
 ;-----------------------------------------------------------------------------
 ; Convert C to an unsigned Floating Point number in FACC

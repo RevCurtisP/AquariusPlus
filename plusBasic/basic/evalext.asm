@@ -243,7 +243,6 @@ _escaped:
     push    hl              ; Save TxtPtr
     jp      return_strbuf
 
-
 ;-------------------------------------------------------------------------
 ; RETAOP Extension - Hook 29
 ; String Substitution: "xx%xx%xx..." % (formula, formula, ...)

@@ -177,9 +177,8 @@ s3_string_ext:
     or      a                     ; If EOL
     jp      z,STRNGR              ;   Finish CRUNCH
     cp      '"'                   ;
-    jr      nz,.not_quotes        ; If quotes
-    ld      a,(hl)                ;   Get next character
-    jp      STRNGR                ;   and pass it on
+    jp      z,KLOOP               ; If quotes
+    jr      nz,.not_quotes        ;   Continue crunching
 .not_quotes
     cp      $5C                   ; If not escape
     jr      nz,.escape_loop       ;   check next character

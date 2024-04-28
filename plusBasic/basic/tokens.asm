@@ -98,7 +98,7 @@ EXTCMDS:
     db $80 + 'S',"TR"             ; $9C             
     db $80 + 'V',"AR"             ; $9D             
     db $80 + 'E',"RASE"           ; $9E
-    db $80 + ' '                  ; $9F
+    db $80 + 'S',"PLIT"           ; $9F
     db $80 + ' '                  ; $A0
     db $80 + 'W',"ORD"            ; $A1
     db $80 + 'C',"LIP"            ; $A2

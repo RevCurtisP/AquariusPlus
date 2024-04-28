@@ -314,6 +314,37 @@ keytable:
 keytablen   equ   $-keytable
 
 ;-----------------------------------------------------------------------------
+; SPLIT Statement
+; Syntax: SPLIT string$ INTO *array$ {DEL delimiter$}
+;-----------------------------------------------------------------------------
+; DIM A$(9)
+; SPLIT \"1\t2\t3" INTO *A$ 
+ST_SPLIT:
+    rst     CHRGET                ; Skip SPLIT
+    call    GET_STRING            ; Parse SrcStr
+    rst     SYNCHR
+    byte    INTTK
+    SYNCHK  'O'                   ; Require INTO   
+    call    get_star_array        ; DE = DatAdr, BC = DatLen
+    push    de                    ; Stack = DatAdr, RtnAdr
+    push    bc                    ; Stack = DatLen, DatAdr, RtnAdr
+    cp      DELTK
+    jr      nz,.nodel             ; If DEL
+    call    GET_STRING            ;   Parse delimiter
+    push    hl                    ;   Stack = TxtPtr, DatLen, DatAdr, RtnAdr
+    call    FRETMP                ;   HL = DelDsc
+    call    string_addr_len       ;   DE = DelAdr, BC = DelLen
+    pop     hl                    ;   HL = TxtPtr; Stack = DelLen, DatAdr, RtnAdr
+    jr      z,.nodel              ;   If DelLen > 0
+    ld      a,(de)                ;     Set Delmtr
+    byte    $01                   ; Else (LD B, over XOR A;PUSH HL)
+.nodel
+    xor     a                     ;   A = NoDel
+    pop     bc                    ;   BC = DatLen; Stack = DatAdr, RtnAdr
+    ex      (sp),hl               ; HL = DatAdr; Stack = TxtPtr, RtnAdr
+    jp      POPHRT
+
+;-----------------------------------------------------------------------------
 ; STASH Statement Stub
 ;-----------------------------------------------------------------------------
 ST_STASH:

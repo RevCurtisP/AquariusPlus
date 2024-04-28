@@ -63,6 +63,8 @@ extended_statement:
     jp      z,ST_LOOP
     sub     a,3                 ; $9E ERASE
     jp      z,ST_ERASE
+    dec     a                   ; $9F SPLIT
+    jp      z,ST_SPLIT
     jp      SNERR 
    
 extended_function:

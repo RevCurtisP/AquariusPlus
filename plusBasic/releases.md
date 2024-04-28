@@ -1,4 +1,6 @@
 # plusBASIC Release History
+ - v0.22m
+   - Fixed spaces after escaped string being tokenized.
  - v0.22l
    - Added INMEM function
    - Fixed stomping of temporay string in string trimming functions functions.
