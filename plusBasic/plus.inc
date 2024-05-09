@@ -98,18 +98,26 @@ ERRLIN      equ $382A   ; LINE NUMBER WHERE LAST ERROR OCCURED.
 ERRFLG      equ $382C   ; USED TO SAVE THE ERROR NUMBER SO EDIT CAN BE
 ONEFLG      equ $382D   ; ONEFLG=1 IF WERE ARE EXECUTING AN ERROR TRAP ROUTINE
 ONELIN      equ $382E   ; THE pointer to the LINE TO GOTO WHEN AN ERROR OCCURS
-; DOS Variables - These can get overwritten between BASIC file operations
-; They might also be re-used by other modules
 EXT_FLAGS   equ $3830   ; Extended BASIC flags
 MOUSEWDLT   equ $3831   ; Accumulated change in mouse delta
 XTEMP0      equ $3832   ; Used by DEF SPRITE
 XTEMP1      equ $3833   ; Used by DEF SPRITE
 ;         $3834-$3835   ; unused (2 bytes)
 BAS_FDESC   equ $3837   ; ESP file descriptor to close on Error or Ctrl-C
+; Temporary variables used within statement code.
+; FILESTAT statement
 FILESIZE    equ $3838   ; File Size (32-bits $3838-$383B)
 FILEATTR    equ $383C   ; File Attribute
 FILEDATE    equ $383D   ; File Datestamp ($383D-$383E)
 FILETIME    equ $383F   ; File Timestamp ($383F-$3840)
+; SPLIT statement
+SPLITDSC    equ $3838   ; Source descriptor 
+SPLITTRM    equ $3838   ; Segment terminator  (overwrites LSB of SPLITDSC)
+SPLITSEG    equ $3839   ; Segment counter (overwrites MSB of SPLITDSC)
+SPLITADR    equ $383A   ; Array data start address 
+SPLITDEL    equ $383C   ; Delimiter character
+SPLITPTR    equ $383D   ; Pointer into array data
+SPLITLEN    equ $383F   ; Array data length
 
 ;-----------------------------------------------------------------------------
 ; Variables

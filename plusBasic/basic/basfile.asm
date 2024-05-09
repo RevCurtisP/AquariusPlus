@@ -1024,9 +1024,9 @@ _aux_call
 
 ;-----------------------------------------------------------------------------
 ; .SCR format: 2048 byte Screen+Color RAM ($3000-$3FFF)
-; .SCP format
-;  40 column: 2048 byte Screen+Color RAM + 32 byte palette + 1 byte border flag
-;  80 column: 2048 byte Screen + 2048 byte Color + 32 byte palette + 1 byte border flag
+; .SCP/.SCRN format
+;  40 column: 1024 byte Screen RAM + 1024 byte Color RAM + 32 byte palette + 1 byte border flag
+;  80 column: 2048 byte Screen RAM + 2048 byte Color RAM + 32 byte palette + 1 byte border flag
 ;-----------------------------------------------------------------------------
 _load_screen:
     rst     CHRGET                ; Skip SCREEN

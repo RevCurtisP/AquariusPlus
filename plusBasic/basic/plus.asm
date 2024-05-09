@@ -315,34 +315,155 @@ keytablen   equ   $-keytable
 
 ;-----------------------------------------------------------------------------
 ; SPLIT Statement
-; Syntax: SPLIT string$ INTO *array$ {DEL delimiter$}
+; Syntax: SPLIT string$ INTO *array$ DEL delimiter
 ;-----------------------------------------------------------------------------
-; DIM A$(9)
-; SPLIT \"1\t2\t3" INTO *A$ 
 ST_SPLIT:
     rst     CHRGET                ; Skip SPLIT
     call    GET_STRING            ; Parse SrcStr
+    ld      de,(FACLO)            ; DE = SrcDsc
+    ld      (SPLITDSC),de         ; SPLITDSC = SrcDsc
     rst     SYNCHR
     byte    INTTK
     SYNCHK  'O'                   ; Require INTO   
-    call    get_star_array        ; DE = DatAdr, BC = DatLen
-    push    de                    ; Stack = DatAdr, RtnAdr
-    push    bc                    ; Stack = DatLen, DatAdr, RtnAdr
-    cp      DELTK
-    jr      nz,.nodel             ; If DEL
-    call    GET_STRING            ;   Parse delimiter
-    push    hl                    ;   Stack = TxtPtr, DatLen, DatAdr, RtnAdr
-    call    FRETMP                ;   HL = DelDsc
+    call    get_star_array        ; DE = AryAdr, BC = AryLen
+    ld      (SPLITADR),de         ; SPLITADR = AryAdr
+    ld      (SPLITLEN),bc         ; SPLITLEN = AryLen
+    xor     a
+    ld      (de),a                ; array$(0) = ""
+    call    .skipfirst            ; SPLITPTR = AryPtr, SPLITLEN = AryLen
+    ret     z                     ; If array size = 1, return
+    rst     SYNCHR                ; Require DEL
+    byte    DELTK
+;get delimiter
+    call    FRMEVL                ; Evaluate delimiter
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    call    GETYPE                ; A = Type
+    jr      z,.string_del         ; If numeric
+    call    CONINT                ;   Convert to Byte
+    jr      .save_del             ; Else
+.string_del
+    call    FREFAC                ;   HL = DelDsc
+    call    string_addr_len       ;   DE = DelAdr, A,BC = DelLen
+    jr      z,.save_del           ;   If not null string
+    ld      a,(de)                ;     A = DelChr
+.save_del
+    ld      (SPLITDEL),a          ; SPLITDEL = DelChr
+    ld      hl,(SPLITDSC)         ; HL = SrcDsc
+    call    FRETM2                ; HL = SrcDsc
+    call    string_addr_len       ; DE = SrcAdr, BC = SrcLen
+    jp      z,.abort              ; If null string, pop TxtPtr and return
+    push    bc                    ; Stack = SrcLen, TxtPtr, RtnAdr
+    call    get_strbuf_addr       ; HL = StrBuf
+    pop     bc                    ; BC = SrcLen; Stack = TxtPtr, RtnAdr
+    push    hl                    ; Stack = StrBuf, TxtPtr, RtnAdr
+    ex      de,hl                 ; DE = StrBuf, HL = SrcAdr
+    ldir                          ; Copy Source String to String Buffer
+    xor     a
+    ld      (de),a                ; Null terminate string
+    ld      (SPLITSEG),a          ; SPLITCNT = SegCnt
+    pop     hl                    ; HL = BufPtr; Stack = TxtPtr, RtnAdr
+.loop
+    push    hl                    ; Stack = SegPtr, TxtPtr, RtnAdr
+    ld      a,(SPLITDEL)          ; A = DelChr
+    ld      b,a                   ; B = DelChr
+    ld      c,0
+.parse
+    ld      a,(hl)
+    or      a
+    jr      z,.store              ; If not NUL
+    cp      b                     
+    jr      z,.store              ; Or delimiter
+    inc     hl
+    inc     c                     ;   Check next character
+    jr      .parse
+.store
+    push    hl                    ; Stack = BufPtr, SegPtr, TxtPtr, RtnAdr
+    xor     a
+    ld      d,a
+    ld      e,a                   ; DE = 0
+    ld      b,a                   ; BC = SegLen                 
+    or      c                     ; A = SegLen
+    jr      z,.null               ; If SegLen <> 0
+    push    bc                    ;   Stack = SegLen, BufPtr, SegPtr, TxtPtr, RtnAdr
+    call    GETSPA                ;   DE = StrAdr
+    push    de                    ;   Stack = StrAdr, SegLen, BufPtr, TxtPtr, RtnAdr
+    call    FRETMS                ;   Free temporary but not string space
+    pop     de                    ;   DE = StrAdr; Stack = SegLen, BufPtr, SegPtr, TxtPtr, RtnAdr
+    pop     bc                    ;   BC = SegLen; Stack = BufPtr, SegPtr, TxtPtr, RtnAdr
+.null
+    ld      hl,(SPLITPTR)         ; HL = AryPtr
+    call    write_bcde2hl         ; Write string descriptor to array
+    ld      (SPLITPTR),hl         ; SPLITPTR = AryPtr
+    ld      a,b
+    or      c
+    pop     hl                    ; HL = BufPtr; Stack = SegPtr, TxtPtr, RtnAdr
+    ex      (sp),hl               ; HL = SegPtr, Stack = BufPtr, TxtPtr, RtnAdr
+    jr      z,.nocopy             ; If SegLen <> 0
+    ldir                          ;   Copy Segment to String Text
+.nocopy
+    ld      hl,SPLITSEG           ; Bump SegCnt
+    inc     (hl)
+    pop     hl                    ; HL = BufPtr; Stack = TxtPtr, RtnAdr
+    ld      a,(hl)                ; A = SegDel
+    inc     hl                    ; Skip segment delimiter
+    or      a                      
+    jr      z,.done               ; If not null (end of SrcStr)  
+    ld      bc,(SPLITLEN)         ;   BC = AryLen
+    call    .countdown            ;   If not last element
+    jr      nz,.loop              ;     Get next segment
+.done
+    ld      a,(SPLITSEG)          ; A = SegCnt
+    call    SNGFLT                ; Float Segment Count
+    call    FOUT                  ; Convert to ASCII
+    ld      de,FBUFFR+1           ; DE = FltAdr
+    call    str_length            ; A, BC = FltLen
+    push    bc                    ; Stack = FltLen, TxtPtr, RtnAdr
+    call    GETSPA                ; DE = StrAdr
+    push    de                    ; Stack = StrAdr, FltLen, TxtPtr, RtnAdr 
+    call    FRETMS                ; Free temporary but not string space
+    pop     de                    ; DE = StrAdr; Stack = FltLen, TxtPtr, RtnAdr
+    pop     bc                    ; BC = FltLen; Stack = TxtPtr, RtnAdr
+    dec     bc                    ; Adjust for skip leading space
+    push    de                    ; Stack = StrAdr, TxtPtr, RtnAdr
+    push    bc                    ; Stack = FltLen, StrAdr, TxtPtr, RtnAdr
+    ld      hl,FBUFFR+2           ; Skip leading space
+    ldir                          ; Copy FBUFFR to string space
+    pop     bc                    ; BC = FltLen; Stack = StrAdr, TxtPtr, RtnAdr
+    pop     de                    ; DE = StrAdr; Stack = TxtPtr, RtnAdr
+    ld      hl,(SPLITADR)         ; HL = SPLITADR
+    call    write_bcde2hl         ; Write string descriptor to VAR$(0)
+.abort
+    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
+    ret
+
+.skipfirst
+    xor     a
+    ld      b,4
+.skiploop
+    ld      (de),a
+    inc     de
+    djnz    .skiploop
+    ld      (SPLITPTR),de         ; SPLITPTR = AryPtr
+.countdown
+    dec     bc
+    dec     bc
+    dec     bc
+    dec     bc                    ; AryLen = AryLen - 4
+    ld      (SPLITLEN),bc         ; SPLITLEN = AryLen
+.array_len
+    ld      a,b
+    or      c                     ;   If not last element
+    ret
+
+get_delimiter:
+    call    FRMEVL                ; Evaluate delimiter
+    push    hl                    ;   Stack = TxtPtr, RtnAdr
+    call    FRESTR                ;   HL = DelDsc
     call    string_addr_len       ;   DE = DelAdr, BC = DelLen
-    pop     hl                    ;   HL = TxtPtr; Stack = DelLen, DatAdr, RtnAdr
-    jr      z,.nodel              ;   If DelLen > 0
-    ld      a,(de)                ;     Set Delmtr
-    byte    $01                   ; Else (LD B, over XOR A;PUSH HL)
-.nodel
-    xor     a                     ;   A = NoDel
-    pop     bc                    ;   BC = DatLen; Stack = DatAdr, RtnAdr
-    ex      (sp),hl               ; HL = DatAdr; Stack = TxtPtr, RtnAdr
-    jp      POPHRT
+    pop     hl
+    ret     z                     ;   If not null string
+    ld      a,(de)                ;     A = DelChr
+    ret
 
 ;-----------------------------------------------------------------------------
 ; STASH Statement Stub

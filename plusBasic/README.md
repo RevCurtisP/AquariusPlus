@@ -220,6 +220,7 @@
  - [x] **SGN(_expression_)** - Return signum of expression.
  - [x] **SIN(_float_)** - Return sine of argument.
  - [x] **SOUND (_duration_,_frequency_)** - Generate a tone through the television speaker.
+ - [x] **SPLIT _string_ INTO \*_array$_ DEL _delimiter_** - Split delimited string into string array elements
  - [x] **SQR(_float)** - Return square root of argument.
  - [x] **STASH BITMAP|TILEMAP** - _Not implemented_
  - [x] **STASH SCREEN** - Copy current text screen to respective screen buffer.

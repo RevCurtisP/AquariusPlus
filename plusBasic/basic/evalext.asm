@@ -240,6 +240,8 @@ _escaped:
 .done:
     xor     a
     ld      (de),a          ; Terminate string
+    dec     hl
+    rst     CHRGET          ; Skip trailing spaces
     push    hl              ; Save TxtPtr
     jp      return_strbuf
 

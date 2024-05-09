@@ -2642,7 +2642,7 @@ STRADX: inc     hl                ;[M80] STORE [D,E]=POINTER TO FREE SPACE
 ;;Build Descriptor for String Litersl
 STRLIT: dec     hl                ;;Back up to '"'
 STRLTI: ld      b,'"'             ;[M80] ASSUME STR ENDS ON QUOTE
-        ld      d,b               ;
+SRTLT3: ld      d,b               ;
 STRLT2: push    hl                ;[M80] SAVE POINTER TO START OF LITERAL
         ld      c,255             ;[M80] INITIALIZE CHARACTER COUNT
 STRGET: inc     hl                ;;Move past '"'

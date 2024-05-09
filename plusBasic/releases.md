@@ -1,4 +1,6 @@
 # plusBASIC Release History
+ - v0.22n
+   - Added SPLIT command
  - v0.22m
    - Fixed spaces after escaped string being tokenized.
  - v0.22l
