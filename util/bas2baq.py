@@ -234,7 +234,7 @@ xtokens = {
     0x9C: "STR",          
     0x9D: "VAR",          
     0x9E: "ERASE",
-   #0x9F:
+    0x9F: "SPLIT",
    #0xA0:
     0xA1: "WORD",           
     0xA2: "CLIP",           
