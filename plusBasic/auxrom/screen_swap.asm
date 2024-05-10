@@ -478,6 +478,127 @@ screen_swap_palette:
     ret
 
 
+;-----------------------------------------------------------------------------
+; Copy TMP_BUFFR to Screen, Palette, and IO_VCTRL to TMP_BUFFR
+; Output: BC = Length of data to copy
+; Sets flags: Carry if data length does not match screen mode
+; Clobbers: A, AF', BC, DE, HL
+;-----------------------------------------------------------------------------
+screen_read_tmpbfr:
+    call    _map_tmpbuffr
+    in      a,(IO_VCTRL)
+    ld      d,a                   ; D = IO_VCTRL
+    and     VCRTL_80COL_EN        ; A = $40 if 80-column
+    rra                           ; A = $20
+    rra                           ; A = $10
+    rra                           ; A = $08
+    add     $08                   ; A = $08 (40) or $10 (80)
+    cp      b                     ; If mismatch
+    scf                           ;   Return Carry set
+    ret     nz                    ; 
+    cp      $08                   ; Set Z if 40-column
+    push    bc                    ; Stack = DatLen, RtnAdr
+    push    de                    ; Stack = IO_VCTRL, DatLen, RtnAdr
+    jr      z,.col40              ; If 80 column mode
+    in      a,(IO_VCTRL)
+    and     $FF-VCTRL_TEXT_PAGE      
+    out     (IO_VCTRL),a          ;   Switch to Screen RAM
+    call    .copy                 ;   and copy to buffer
+    or      VCTRL_TEXT_PAGE          
+    out     (IO_VCTRL),a          ;   Switch to Color RAM
+    call    .copy_next            ;   and copy to buffer
+    jr      .trailer              ; Else
+.col40
+    call    .copy                 ;   Copy Screen+Color to buffer
+.trailer
+    pop     af                    ; A = IO_VCTRL; Stack = DatLen, RtnAdr
+    out     (IO_VCTRL),a          ; Restore VCTRL
+    ex      de,hl                 ; DE = DatPtr
+    pop     bc                    ; BC = DatLen; Stack = RtnAdr
+    ld      a,c                   ; A = DatLen LSB
+    cp      1                       
+    jr      z,.remap
+    cp      32
+    jp      c,.done               ; If embedded palette
+    push    bc                    ;   Stack = DatLen, RtnAdr
+    ld      bc,32                 ;   Total 32 bytes
+    xor     a                     ;   Start at index 0
+    call    palette_set           ;   Read palette to buffer
+    pop     bc                    ;   BC = DatLen; Stack = RtnAdr
+    ld      a,c
+    cp      33
+    jr      nz,.done              ;   If embedded VCTRL
+.remap
+    ld      a,(de)                ;     A = VCTRL
+    and     VCTRL_REMAP_BC        ;     
+    ld      b,a                   ;     B = vctrl_remap_bc
+    in      a,(IO_VCTRL)
+    and     $FF-VCTRL_REMAP_BC
+    or      b                     ;     Set VCTRL_REMAP_BC
+    out     (IO_VCTRL),a          ;     and write IO_VCTRL
+.done
+    xor     a                     ; Return no errors
+    jr      _restore_bank1
+.copy 
+    ld      hl,BANK1_BASE
+.copy_next
+    ld      de,SCREEN
+    ld      bc,2048
+    ldir
+    ret
+
+;-----------------------------------------------------------------------------
+; Copy Screen, Palette, and IO_VCTRL to TMP_BUFFR
+; Output: BC = Length of copied data
+; Clobbers: AF, AF', DE, HL
+;-----------------------------------------------------------------------------
+screen_write_tmpbfr:
+    call    _map_tmpbuffr
+    in      a,(IO_VCTRL)
+    push    af                    ; Stack = IO_VCTRL, RtnAdr
+    and     VCRTL_80COL_EN
+    jr      z,.col40              ; If 80 column mode
+    in      a,(IO_VCTRL)
+    and     $FF-VCTRL_TEXT_PAGE      
+    out     (IO_VCTRL),a          ;   Switch to Screen RAM
+    call    .copy                 ;   and copy to buffer
+    or      VCTRL_TEXT_PAGE          
+    out     (IO_VCTRL),a          ;   Switch to Color RAM
+    call    .copy_next            ;   and copy to buffer
+    jr      .trailer              ; Else
+.col40
+    call    .copy
+.trailer
+    xor     a                     ; Start at palette index 0
+    ld      bc,32                 ; Total 32 bytes
+    call    palette_get           ; Write palette to buffer
+    pop     af                    ; A = IO_VCTRL; Stack = RtnAdr
+    out     (IO_VCTRL),a          ; Restore VCTRL
+    ld      (de),a                ; Write VCTRL to buffer
+    inc     de
+    ex      de,hl                 ; HL = EndAdr
+    ld      bc,-BANK1_BASE
+    add     hl,bc                 ; HL = DatLen
+    ld      b,h
+    ld      c,l                   ; BC = DatLen
+    jr      _restore_bank1
+.copy
+    ld      de,BANK1_BASE
+.copy_next
+    ld      hl,SCREEN
+    ld      bc,2048
+    ldir
+    ret
+    
+_map_tmpbuffr:
+    ld      a,TMP_BUFFR
+    ex      af,af'
+    in      a,(IO_BANK1)
+_restore_bank1:
+    ex      af,af'
+    out     (IO_BANK1),a
+    ret
+
 ; Input: DE = Variable buffer address
 ; Output: HL = Palette buffer address, B = 32, C = 0
 _palt_buff_addr:

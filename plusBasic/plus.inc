@@ -38,7 +38,6 @@ RAM_BAS_1       equ 57      ; RAM for BASIC mapped into Bank 1
 RAM_BAS_2       equ 58      ; RAM for BASIC mapped into Bank 2
 RAM_BAS_3       equ 59      ; RAM for Bank 0 (unused by BASIC)
 
-;;;ToDo: use RAM_BAS_3 as TMP_BUFFER
 TMP_BUFFR       equ 50      ; Transient data buffer 
 BOOT_BUFR       equ 51      ; Boot ROM work area
 SCR_BUFFR       equ 52      ; Screen Buffers
@@ -177,7 +176,7 @@ VCTRL_MODE_MC   equ $06     ; xxxxx11x  Select 4bpp Bitmap Mode
 VCTRL_SPR_EN    equ $08     ; xxxx1xxx  Enable Sprites
 VCTRL_TEXT_PRIO equ $10     ; xxx1xxxx  Text Screen Priority 
 VCTRL_REMAP_BC  equ $20     ; xx1xxxxx  Remap Text Border Characters
-VCRTL_80COL_EN  equ $40     ; x1xxxxxx  Enable 80-column mode
+VCRTL_80COL_EN      equ $40     ; x1xxxxxx  Enable 80-column mode
 VCTRL_TEXT_PAGE equ $80     ; 1xxxxxxx  Select Text Page
 
 VCTRL_TEXT_BITS equ VCTRL_TEXT_EN + VCRTL_80COL_EN + VCTRL_TEXT_PAGE

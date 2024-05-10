@@ -37,7 +37,7 @@ _jump_table:
     jp      file_save_binary      ; Save binary file from main memory
     jp      file_save_paged       ; Save file from paged memory
     jp      file_save_palette     ; Get and save palette
-    jp      file_save_screen      ; ** not implemented ** 
+    jp      file_save_screen      ; Save screen image 
     jp      file_save_strbuf      ; Save BASIC string buffer to file
     jp      file_load_defchrs     ; Load file into default chrset buffer
     jp      just_ret              ; file_load_tilemap

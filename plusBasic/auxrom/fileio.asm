@@ -267,32 +267,29 @@ file_load_rom:
 ; Load screen image
 ; Input: HL: String descriptor address
 ; Output: A: result code
-; Flags Set: S if I/O error
+; Flags Set: S if I/O error, C if invalid file contents
 ; Clobbered: CD, DE, EF
 ;-----------------------------------------------------------------------------
+; ToDo: Add palette, border control bit
+;       Allow loading to a screen buffer
 file_load_screen:
-    call    dos_open_read
-    ret     m
-; Read first 2k into Screen RAM
-    ld      bc,2048
-    ld      de,SCREEN
-    call    esp_read_bytes
-    ret
-;ToDo: For extended SCP formats, load into buffer first
-    ret     m
-; Read second 2k into scratch RAM
-    ld      a,RAM_BAS_3
-    ld      bc,2048
-    ld      de,$3000
-    call    esp_read_paged
+    call    file_load_tmpbuffr    
+    ret     m                     ; Return if Error 
+    jp      screen_read_tmpbfr
 
-
-
-    push    af
-    call    esp_close_all
-    pop     af
-    or      a
-    ret
+;-----------------------------------------------------------------------------
+; Load file into TMP_BUFFR
+; Input: HL: String descriptor address
+; Output: A: result code
+;        BC: number of bytes read
+; Flags Set: S if I/O error, C if invalid file contents
+; Clobbered: CD, DE, EF
+;-----------------------------------------------------------------------------
+file_load_tmpbuffr:
+    ld      a,TMP_BUFFR            
+    ld      bc,$4000
+    ld      de,0
+    jp      file_load_paged       ; Load SCRN file into TMP_BUFFR
 
 ;-----------------------------------------------------------------------------
 ; Load PT3 file
@@ -401,9 +398,6 @@ file_save_paged:
     pop     af
     ret
 
-file_save_screen:
-    ret
-
 ;-----------------------------------------------------------------------------
 ; Save Pallete
 ; Input: A: Palette number
@@ -443,3 +437,22 @@ file_save_strbuf:
     xor     a
     ld      (de),a
     ret
+
+;-----------------------------------------------------------------------------
+; Save screen image
+; Input: HL: String descriptor address
+; Output: A: result code
+; Flags Set: S if I/O error
+; Clobbered: CD, DE, EF
+;-----------------------------------------------------------------------------
+; ToDo: Add palette, border control bit
+;       Allow loading to a screen buffer
+file_save_screen:
+    push    hl                    ; Stack = StrDsc, RtnAdr
+    call    screen_write_tmpbfr   ; BC = SavLen
+    pop     hl                    ; HL = StrDsc; Stack = RtnAdr
+file_save_tmpbuffr:
+    ld      de,0                  ; DE = SavAdr
+    ld      a,TMP_BUFFR           ; A = SavePg
+    jp      file_save_paged 
+

@@ -122,7 +122,7 @@
  - [x] **LOAD FNKEYS _filespec_** - Load function key definitions from file.<!--LOAD-->
  - [x] **LOAD PALETTE _p_,_filespec_** - Load file data ino palette.<!--LOAD-->
  - [x] **LOAD PT3 _filespec_** - Load PT3 track into PT player buffer.
- - [x] **LOAD SCREEN _filespec_** - Load file data screen.
+ - [x] **LOAD SCREEN _filespec_** - Load text screen from file.
  - [x] **LOAD TILEMAP** - _Not implemented_
  - [x] **LOCATE _x_,_y_** - Move text cursor to specified position.<!--LOCATE-->
  - [x] **LOG(_float_)** - Return natural logarithm of argument.
@@ -198,7 +198,7 @@
  - [x] **SAVE BITMAP** - _Not implemented_
  - [x] **SAVE FNKEYS _filespec_** - Save function key definitions to file.
  - [x] **SAVE PALETTE _p_,_filespec_** - Save palette contents to file.<!--SAVE-->
- - [x] **SAVE SCREEN** - _Not implemented_
+ - [ ] **SAVE SCREEN _filespec_** - Save text screen to file.
  - [x] **SAVE TILEMAP** - _Not implemented_
  - [x] **SCREEN {_text_},{_graphics_},{_sprites_},{_priority_},{_remap_}** - Set screen mode.<!--SCREEN-->
  - [x] **SET COLOR _fgcolor_,_bgcolor_** - Enable color printing mode.<!--SETCOLOR-->

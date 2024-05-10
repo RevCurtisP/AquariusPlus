@@ -1028,11 +1028,24 @@ _aux_call
 ;  40 column: 1024 byte Screen RAM + 1024 byte Color RAM + 32 byte palette + 1 byte border flag
 ;  80 column: 2048 byte Screen RAM + 2048 byte Color RAM + 32 byte palette + 1 byte border flag
 ;-----------------------------------------------------------------------------
+; SCREEN 1:SAVE SCREEN "/t/test41.scrn"
+; SCREEN 2:SAVE SCREEN "/t/test42.scrn"
+; SCREEN 3:SAVE SCREEN "/t/test80.scrn"
+; SCREEN 1:LOAD SCREEN "/t/test41.scrn":PAUSE
+; SCREEN 2:LOAD SCREEN "/t/test42.scrn":PAUSE
+; SCREEN 3:LOAD SCREEN "/t/test80.scrn":PAUSE
+; SCREEN 2:LOAD SCREEN "/t/testrm.scrn":PAUSE
+; SCREEN 2:LOAD SCREEN "/t/testpl.scrn":PAUSE
+_save_screen:
+    ld      iy,file_save_screen
+    jr      _do_screen
 _load_screen:
+    ld      iy,file_load_screen   ; Load character set and copy to character RAM
+_do_screen
     rst     CHRGET                ; Skip SCREEN
     call    get_strdesc_arg       ; HL = FileSpec StrDsc; Stack = TxtPtr
-    ld      iy,file_load_screen   ; Load character set and copy to character RAM
     call    aux_call
+    jp      c,BDFERR
     jp      m,_dos_error
     pop     hl
     ret
@@ -1203,6 +1216,8 @@ ST_SAVE:
     ld      a,(hl)
     cp      FNTK
     jp      z,.save_fnkeys
+    cp      SCRNTK                
+    jp      z,_save_screen        
     cp      XTOKEN
     jp      z,.save_extended
 
