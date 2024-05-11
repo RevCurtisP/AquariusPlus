@@ -118,6 +118,7 @@ SPLITDEL    equ $383C   ; Delimiter character
 SPLITPTR    equ $383D   ; Pointer into array data
 SPLITLEN    equ $383F   ; Array data length
 
+
 ;-----------------------------------------------------------------------------
 ; Variables
 ;-----------------------------------------------------------------------------

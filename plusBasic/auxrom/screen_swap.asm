@@ -485,7 +485,7 @@ screen_swap_palette:
 ; Clobbers: A, AF', BC, DE, HL
 ;-----------------------------------------------------------------------------
 screen_read_tmpbfr:
-    call    _map_tmpbuffr
+    call    page_map_bank1_af
     in      a,(IO_VCTRL)
     ld      d,a                   ; D = IO_VCTRL
     and     VCRTL_80COL_EN        ; A = $40 if 80-column
@@ -538,7 +538,7 @@ screen_read_tmpbfr:
     out     (IO_VCTRL),a          ;     and write IO_VCTRL
 .done
     xor     a                     ; Return no errors
-    jr      _restore_bank1
+    jp      page_restore_bank1_af
 .copy 
     ld      hl,BANK1_BASE
 .copy_next
@@ -553,7 +553,7 @@ screen_read_tmpbfr:
 ; Clobbers: AF, AF', DE, HL
 ;-----------------------------------------------------------------------------
 screen_write_tmpbfr:
-    call    _map_tmpbuffr
+    call    page_map_bank1_af
     in      a,(IO_VCTRL)
     push    af                    ; Stack = IO_VCTRL, RtnAdr
     and     VCRTL_80COL_EN
@@ -581,7 +581,7 @@ screen_write_tmpbfr:
     add     hl,bc                 ; HL = DatLen
     ld      b,h
     ld      c,l                   ; BC = DatLen
-    jr      _restore_bank1
+    jp      page_restore_bank1_af
 .copy
     ld      de,BANK1_BASE
 .copy_next
@@ -590,15 +590,6 @@ screen_write_tmpbfr:
     ldir
     ret
     
-_map_tmpbuffr:
-    ld      a,TMP_BUFFR
-    ex      af,af'
-    in      a,(IO_BANK1)
-_restore_bank1:
-    ex      af,af'
-    out     (IO_BANK1),a
-    ret
-
 ; Input: DE = Variable buffer address
 ; Output: HL = Palette buffer address, B = 32, C = 0
 _palt_buff_addr:

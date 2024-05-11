@@ -42,6 +42,8 @@ ST_DEF:
     jp      z,ST_DEF_SPRITE         ; DEF SPRITE
     cp      ATTRTK
     jp      z,ST_DEF_ATTR           ; DEF ATTRLIST
+    cp      BYTETK
+    jp      z,ST_DEF_ATTR           ; DEF BYTELIST
     cp      PALETK
     jp      z,ST_DEF_PALETTE        ; DEF PALETTELIST
     jp      SNERR

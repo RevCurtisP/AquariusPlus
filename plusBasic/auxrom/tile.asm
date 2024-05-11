@@ -34,6 +34,58 @@ tile_addr_page:
     pop       bc
     ld        a,VIDEO_RAM
     ret
+
+;-----------------------------------------------------------------------------
+; Build Tile from Character ROM
+; Input: A: ASCII Code
+;        B: Foreground Color
+;        C: Background Color
+;       DE: Buffer address
+;
+; Clobbered: A,BC,DE,HL,IX,IY
+;-----------------------------------------------------------------------------
+tile_from_chrrom:
+    ld      h,0
+    ld      l,a                   ; HL = AscVal
+    ld      a,CHAR_RAM
+    call    page_map_bank1        ; Stack = OldPg, RtnAdr
+    ld      iyh,b
+    ld      iyl,c                 ; IY = Colors
+    ld      b,3
+    call    shift_hl_left         ; HL = AscVal * 8
+    ld      bc,BANK1_BASE
+    add     hl,bc                 ; HL = ChrROM offset
+    ld      ixh,8
+.byteloop
+    ld      b,(hl)                ; B = ChrByt
+    inc     hl
+    ld      ixl,4
+.bitloop
+    call    .getcolor             ; A = LeftColor
+    rla
+    rla
+    rla
+    rla                           ; Shift to high nybble
+    ld      c,a                   ; C = LeftColor
+    call    .getcolor             ; A = RightColor
+    or      c                     ; Combine with LeftColor
+    ld      (de),a                ; Write to Buffer
+    inc     de
+    dec     ixl
+    jr      nz,.bitloop
+    dec     ixh
+    jr      nz,.byteloop
+    jp      page_restore_bank1    ; Restore original page and return
+    
+.getcolor:    
+    rl      b                     ; Shift bit into Carry
+    jr      nc,.bgcolor           ; If 1
+    ld      a,iyh                 ;   A = FgColr
+    ccf                           ;   Clear Carry
+    ret                           ; Else
+.bgcolor
+    ld      a,iyl                 ;   A = BgColr
+    ret
     
 ;-----------------------------------------------------------------------------
 ; Set tilemap offset

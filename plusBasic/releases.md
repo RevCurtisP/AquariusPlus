@@ -1,4 +1,6 @@
 # plusBASIC Release History
+ - v0.22p
+   - Added DEF TILE TO CHR and DEF BYTELIST
  - v0.22o
    - Implemented SAVE SCREEN and LOAD SCREEN statements
  - v0.22n

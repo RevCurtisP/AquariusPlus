@@ -53,11 +53,13 @@
  - [x] **DEC(_hexstring_)** - Convert hexadecimal string to integer.
  - [x] **DEEK({@_page_,}_address_)** - Read integer from memory.<!--DEEK-->
  - [x] **DEF ATTRLIST _strvar_=_attr_,...** - Create a string list of sprite and/or tile attributes.
+ - [x] **DEF BYTELIST _strvar_=_byte_,...** - Create a string list of bytes.
  - [x] **DEF FN _var_(_var_) = _expression_** - Define user-defined function.<!--DEFATTR-->
  - [x] **DEF INTLIST _strvar_=_integer_,...** - Create a string list of integers.
  - [x] **DEF PALETTELIST _strvar_=_palette_,...** - Create a string list of palette numbers.<!--DEFPALETTE-->
  - [x] **DEF RGBLIST _strvar_=_r_,_g_,_b_;...** - Create a string list of RGB values.<!--DEFRGB-->
  - [x] **DEF TILELIST _strvar_=_tileno_,...** - Create a string list of palatte indexes.<!--DEFTILE-->
+ - [x] **DEF TILELIST _strvar_ TO CHR _ascii_code, _fg_color_, _bg_color_** - Copy character definition to character definition
  - [x] **DEF USR=_address_** - _Not implemented_
  - [x] **DIM _array_(_dim_{,...}){,...}** - Create and allocates one or more arrays.
  - [x] **DIR {_dirspec_}** - Display disk directory.<!--DOKE-->

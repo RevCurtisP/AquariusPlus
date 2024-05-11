@@ -410,8 +410,6 @@ page_write_byte:
     ld      (de),a
     jp      page_restore_bank3
 
-
-
 ;-----------------------------------------------------------------------------
 ; Read Word from Page - wraps to next page if address is 16383
 ; Input: A: Page
@@ -531,6 +529,27 @@ page_map_bank1:
     ex      af,af'                ; A = NewPg
     out     (IO_BANK1),a          ; Map into Bank 3
     jp      (ix)
+
+;-----------------------------------------------------------------------------
+; Restore Page to Bank 1
+;  Input: A: Page to map into bank 1
+; Output: A: Page TMP_BUFFR
+;         A': Page mapped into bank 1
+;-----------------------------------------------------------------------------
+page_map_bank1_af:
+    ld      a,TMP_BUFFR
+    ex      af,af'
+    in      a,(IO_BANK1)
+;-----------------------------------------------------------------------------
+; Restore Page to Bank 1
+;  Input: A': Page to map into bank 1
+; Output: A: Page mapped into bank 1
+; Clobbers: AF'
+;-----------------------------------------------------------------------------
+page_restore_bank1_af:
+    ex      af,af'
+    out     (IO_BANK1),a
+    ret
 
 ;-----------------------------------------------------------------------------
 ; Map Page into Bank 3

@@ -685,7 +685,7 @@ FN_TILEMAP
 ;   Bit 1 = Horizontal Flip
 ;-----------------------------------------------------------------------------
 ST_DEF_ATTR:
-    rst     CHRGET                ; Skip COL
+    rst     CHRGET                ; Skip ATTR/BYTE
     call    _setupdef             ; DatLen, BufAdr, VarPtr
 .loop
     call    GETBYT                ; E = Attribute
@@ -755,6 +755,7 @@ _finish_def:
     pop     de                    ; Stack = VarPtr, RtnAdr
     ex      (sp),hl               ; HL = VarPtr; Stack = TxtPtr, RtnAdr
     push    hl                    ; Stack = VarPtr, TxtPtr, RtnAdr
+_assign_def_var:
     call    strbuf_temp_str       ; Copy Buffer to Temporary. Return HL = StrDsc
     push    hl                    ; Stack = StrDsc, VarPtr, TxtPtr
     jp      INBUFC                ; Copy Temporary to Variable and return
@@ -764,6 +765,7 @@ _setupdef:
     byte    LISTTK                ; Require LIST
 _defnolist:
     call    get_stringvar         ; DE = VarAdr
+_defgotvar:
     pop     bc                    ; BC = RtnAdr
     push    de                    ; VarAdr
     push    hl                    ; Stack = TxtPtr, VarAdr
@@ -816,17 +818,54 @@ _write_byte_strbuf:
 ;-----------------------------------------------------------------------------
 ; DEF TILELIST T$ = tile#, tile#, ...
 ; tile# is a integer between 0 and 511
+; DEF TILELIST T$ TO CHR ascii_code, fg_color, bg_color
 ;-----------------------------------------------------------------------------
 ST_DEF_TILELIST:
     rst     CHRGET                ; Skip TILE
-    call    _setupdef
+    rst     SYNCHR
+    byte    LISTTK                ; Require LIST
+    call    get_stringvar         ; DE = VarAdr
+    cp      TOTK
+    jr      z,_tile_to            
+    call    _defgotvar
 .loop
     call    get_int512            ; Get tile#
     call    _write_word_strbuf    ; Write it to string buffer
     call    CHRGT2                ; Reget next character
-    jr      z,_finish_def        ; If not end of statement
+    jr      z,_finish_def         ; If not end of statement
     SYNCHK  ','                   ;   Require comma
     jr      .loop                 ;   and get next tile#
+
+; DEF TILELIST T$ TO CHR 64,1,0
+; DEF TILELIST T$ TO CHR 32,1,0:? HEX$(T$)
+; DEF TILELIST T$ TO CHR '.',1,0:? HEX$(T$)
+; DEF TILELIST T$ TO CHR '"',1,0:? HEX$(T$)
+_tile_to:
+    rst     CHRGET                ; Skip TO
+    rst     SYNCHR
+    byte    XTOKEN                ; Require CHR
+    rst     SYNCHR
+    byte    CHRTK                 
+    push    de                    ; Stack = VarAdr, RtnAdr
+    call    GETBYT                ; A = AscVal
+    push    af                    ; Stack = AscVal, VarAdr, RtnAdr
+    call    get_comma_byte        ; A = FgColr
+    push    af                    ; Stack = FgColr, AscVal, VarAdr, RtnAdr
+    call    get_comma_byte        ; E = BgColr
+    pop     af                    ; A = FgColr; Stack = AscVal, VarAdr, RtnAdr
+    ld      d,a                   ; D = FgColr
+    call    no_more               ; Error if another comma
+    pop     af                    ; A = AscVal; Stack = VarAdr, RtnAdr
+    ex      (sp),hl               ; HL = VarAdr; Stack = TxtPtr, RtnAdr
+    push    hl                    ; Stack = VarAdr, TxtPtr, RtnAdr
+    call    get_strbuf_addr       ; HL = StrBuf
+    ld      b,d
+    ld      c,e                   ; BC = Colors
+    ex      de,hl                 ; DE = StrBuf, HL = Colors
+    ld      iy,tile_from_chrrom
+    call    aux_call              ; Build tile in String Buffer
+    ld      a,32                  ; A = DatLen
+    jp      _assign_def_var       ; Copy string buffer to variable and return
 
 ;-----------------------------------------------------------------------------
 ; GETTILE Function
