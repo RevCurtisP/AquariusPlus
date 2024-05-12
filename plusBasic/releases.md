@@ -1,4 +1,7 @@
 # plusBASIC Release History
+ - v0.22q
+   - Changed DEF TILE TO CHR to SET TILE TO CHR
+   - Wrote demo program /pbdemo/chrsprite.bas
  - v0.22p
    - Added DEF TILE TO CHR and DEF BYTELIST
  - v0.22o

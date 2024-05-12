@@ -49,6 +49,7 @@ tile_from_chrrom:
     ld      l,a                   ; HL = AscVal
     ld      a,CHAR_RAM
     call    page_map_bank1        ; Stack = OldPg, RtnAdr
+    push    de                    ; Stack = BufAdr, OldPg, RtnAdr
     ld      iyh,b
     ld      iyl,c                 ; IY = Colors
     ld      b,3
@@ -75,6 +76,8 @@ tile_from_chrrom:
     jr      nz,.bitloop
     dec     ixh
     jr      nz,.byteloop
+    pop     de                    ; DE = BufAdr; Stack = OldPg, RtnAdr
+    ld      bc,32                 ; BC = DatLen
     jp      page_restore_bank1    ; Restore original page and return
     
 .getcolor:    

@@ -59,7 +59,6 @@
  - [x] **DEF PALETTELIST _strvar_=_palette_,...** - Create a string list of palette numbers.<!--DEFPALETTE-->
  - [x] **DEF RGBLIST _strvar_=_r_,_g_,_b_;...** - Create a string list of RGB values.<!--DEFRGB-->
  - [x] **DEF TILELIST _strvar_=_tileno_,...** - Create a string list of palatte indexes.<!--DEFTILE-->
- - [x] **DEF TILELIST _strvar_ TO CHR _ascii_code, _fg_color_, _bg_color_** - Copy character definition to character definition
  - [x] **DEF USR=_address_** - _Not implemented_
  - [x] **DIM _array_(_dim_{,...}){,...}** - Create and allocates one or more arrays.
  - [x] **DIR {_dirspec_}** - Display disk directory.<!--DOKE-->
@@ -215,7 +214,8 @@
  - [x] **SET SPRITE _spritedef_ TILECLIP \*_array_|^_strvar_** - Set sprite to tile indexes and properties in tilemap clip.<!--SETSPRITE-->
  - [x] **SET SPRITE _spritedef_ TO _proplist_** - Set sprite properties from combined properties list.<!--SETSPRITE-->
  - [x] **SET SPRITE \* OFF|CLEAR** - Disable or clears all sprites.<!--SETSPRITE-->
- - [x] **SET TILE _tileno_ TO _tiledata_** - Write tile definition video RAM.<!--SETTILE-->
+ - [x] **SET TILE _tileno_ TO _tiledata_** - Write tile definition Video RAM.<!--SETTILE-->
+ - [x] **SET TILE _tileno_ TO CHR _ascii_code_, _fg_color_, _bg_color_** - Convert character definition to tile data and write to Video RAM.
  - [x] **SET TILEMAP (_x_,_y_) TO TILE _tileno_ {ATTR _attrs_} {PALETTE _palette_}** - Set tilemap cell to tile index, attributes, and palette.<!--SETTILEMAP-->
  - [x] **SET TILEMAP (_x_,_y_) TO _integer_** - Set tilemap cell to integer represeting combined tile index, attributes, and palette.<!--SETTILEMAP-->
  - [x] **SET TILEMAP OFFSET _x_,_y_** - Scroll tilemap to specified position.<!--SETTILEMAP-->

@@ -20,9 +20,12 @@ gfx_jump_table
     jp      palette_reset
     jp      palette_set           
     jp      palette_get           
-    jp      tile_set_pixel        
-    jp      tile_set              
+
+    jp      tile_from_chrrom
     jp      tile_get              
+    jp      tile_set              
+    jp      tile_set_pixel        
+
     jp      spritle_set_attr      
     jp      sprite_set_attrs      
     jp      spritle_set_palette   
