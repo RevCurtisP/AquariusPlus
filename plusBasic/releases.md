@@ -1,4 +1,6 @@
 # plusBASIC Release History
+ - v0.22s
+   - Added LOAD BITMAP and SAVE BITMAP
  - v0.22r
    - Added comments starting with apostrophe.
    - Fixed silent abort on duplicate line number in LOAD with ASC option.

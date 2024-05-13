@@ -319,6 +319,7 @@ err_codes:
         word    MSGAG
         word    MSGUD
         word    MSGTO
+        word    MSGIM
 err_disk:
         word    MSGBDF
         word    MSGFNF

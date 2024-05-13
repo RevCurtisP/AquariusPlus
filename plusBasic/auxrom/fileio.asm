@@ -196,6 +196,31 @@ file_load_binary:
     ret
 
 ;-----------------------------------------------------------------------------
+; Load bitmap image
+; Input: HL: String descriptor address
+; Output: A: result code
+; Flags Set: S if I/O error, C if invalid file contents
+; Clobbered: CD, DE, EF
+;-----------------------------------------------------------------------------
+file_load_bitmap:
+    call    file_load_tmpbuffr    
+    ret     m                     ; Return if Error 
+    jp      bitmap_read_tmpbfr
+
+;-----------------------------------------------------------------------------
+; Save bitmap image
+; Input: HL: String descriptor address
+; Output: A: result code
+; Flags Set: S if I/O error, C if invalid file contents
+; Clobbered: CD, DE, EF
+;-----------------------------------------------------------------------------
+file_save_bitmap:
+    push    hl                    ; Stack = StrDsc, RtnAdr
+    call    bitmap_write_tmpbfr   ; BC = SavLen
+    pop     hl                    ; HL = StrDsc; Stack = RtnAdr
+    jp      file_save_tmpbuffr    ; Save bitmap data to file
+
+;-----------------------------------------------------------------------------
 ; Load file into character RAM buffer
 ; Input: HL: File name string descriptor address
 ; Output: A: Result

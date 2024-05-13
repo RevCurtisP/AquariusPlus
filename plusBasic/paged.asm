@@ -536,8 +536,9 @@ page_map_bank1:
 ; Output: A: Page TMP_BUFFR
 ;         A': Page mapped into bank 1
 ;-----------------------------------------------------------------------------
-page_map_bank1_af:
+page_map_tmpbfr_af:
     ld      a,TMP_BUFFR
+page_map_bank1_af:
     ex      af,af'
     in      a,(IO_BANK1)
 ;-----------------------------------------------------------------------------

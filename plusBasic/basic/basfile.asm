@@ -506,6 +506,9 @@ ST_LOAD:
     cp      SCRNTK
     jp      z,_load_screen
 
+    cp      BITTK
+    jp      z,_load_bitmap
+
     cp      FNTK
     jp      z,_load_fnkeys
 
@@ -1028,8 +1031,29 @@ _aux_call
     ret
 
 ;-----------------------------------------------------------------------------
+; Bitmap file formats
+;-----------------------------------------------------------------------------
+_save_bitmap:
+    rst     CHRGET                ; Skip BIT
+    rst     SYNCHR                ; Require MAP
+    byte    MAPTK
+    call    get_strdesc_arg       ; HL = StrDsc, Stack = TxtPtr, RtnAdr
+    ld      a,(EXT_FLAGS)
+    and     GFXM_MASK
+    sub     2                     ; 0 = 1bpp, 1 = 4bpp
+    jp      c,IMERR               ; If GfxMode < 2, Invalid mode error
+    ld      iy,file_save_bitmap
+    jr      _do_bitmap_call
+_load_bitmap:
+    rst     CHRGET                ; Skip BIT
+    rst     SYNCHR                ; Require MAP
+    byte    MAPTK
+    ld      iy,file_load_bitmap
+    jr      _do_bitmap
+
+;-----------------------------------------------------------------------------
 ; .SCR format: 2048 byte Screen+Color RAM ($3000-$3FFF)
-; .SCP/.SCRN format
+; .SCRN format
 ;  40 column: 1024 byte Screen RAM + 1024 byte Color RAM + 32 byte palette + 1 byte border flag
 ;  80 column: 2048 byte Screen RAM + 2048 byte Color RAM + 32 byte palette + 1 byte border flag
 ;-----------------------------------------------------------------------------
@@ -1046,9 +1070,11 @@ _save_screen:
     jr      _do_screen
 _load_screen:
     ld      iy,file_load_screen   ; Load character set and copy to character RAM
-_do_screen
+_do_screen:
     rst     CHRGET                ; Skip SCREEN
+_do_bitmap:
     call    get_strdesc_arg       ; HL = FileSpec StrDsc; Stack = TxtPtr
+_do_bitmap_call:
     call    aux_call
     jp      c,BDFERR
     jp      m,_dos_error
@@ -1223,6 +1249,8 @@ ST_SAVE:
     jp      z,.save_fnkeys
     cp      SCRNTK                
     jp      z,_save_screen        
+    cp      BITTK
+    jp      z,_save_bitmap
     cp      XTOKEN
     jp      z,.save_extended
 
@@ -1710,4 +1738,11 @@ get_strdesc_arg:
 ;-----------------------------------------------------------------------------
 BDFERR:
     ld      e,ERRBDF
+    jp      ERROR
+
+;-----------------------------------------------------------------------------
+; Invalid mode error
+;-----------------------------------------------------------------------------
+IMERR:
+    ld      e,ERRIM
     jp      ERROR

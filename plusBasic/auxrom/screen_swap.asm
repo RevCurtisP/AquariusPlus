@@ -485,7 +485,7 @@ screen_swap_palette:
 ; Clobbers: A, AF', BC, DE, HL
 ;-----------------------------------------------------------------------------
 screen_read_tmpbfr:
-    call    page_map_bank1_af
+    call    page_map_tmpbfr_af
     in      a,(IO_VCTRL)
     ld      d,a                   ; D = IO_VCTRL
     and     VCRTL_80COL_EN        ; A = $40 if 80-column
@@ -553,7 +553,7 @@ screen_read_tmpbfr:
 ; Clobbers: AF, AF', DE, HL
 ;-----------------------------------------------------------------------------
 screen_write_tmpbfr:
-    call    page_map_bank1_af
+    call    page_map_tmpbfr_af
     in      a,(IO_VCTRL)
     push    af                    ; Stack = IO_VCTRL, RtnAdr
     and     VCRTL_80COL_EN

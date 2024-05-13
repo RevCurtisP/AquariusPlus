@@ -32,7 +32,8 @@ ERRUL   equ     $30   ; 25 Undefined label
 ERRAG   equ     $32   ; 26 ARG without GOSUB
 ERRUD   equ     $34   ; 27 Undimensioned array
 ERRTO   equ     $36   ; 28 Too many operands
-NONDSK  equ     $38   ; 29 Last non disk error
+ERRIM   equ     $38   ; 29 Invalid mode
+NONDSK  equ     $3A   ; 30 Last non disk error
 ; Disk errors
 DSKERRS equ     $60   ; Start of Disk Errors
 ERRBDF  equ     $60   ; 49 Bad File
@@ -131,9 +132,11 @@ MSGLBO: byte    "Line buffer overflow",0        ; 23
 MSGGS:  byte    "Statement not implemented",0   ; 24
 MSGUL:  byte    "Undefined line label",0        ; 25
 MSGAG:  byte    "ARGS without GOSUB",0          ; 26
+; plusBASIC errors
 MSGUD:  byte    "Undimensioned Array",0         ; 27 
 MSGTO:  byte    "Too many operands",0           ; 28
-        byte    0                               ; 29  Last non disk error                             
+MSGIM:  byte    "Invalid mode",0                ; 29
+        byte    0                               ; 30  Last non disk error                             
 
 ; File System Errors                            ;     ESP32 Error
 doserr_messages:

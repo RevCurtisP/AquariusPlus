@@ -137,7 +137,7 @@
  - [x] **LOAD _filespec_,\*_array_** - Load binary file data into numeric or string array.<!--LOAD-->
  - [x] **LOAD _filespec_,\*_array_,ASC** - Load multi-line ASCII file into string array.<!--LOAD-->
  - [x] **LOAD _filespec_,^_string_** - Load up to 255 characters of file into string variable.<!--LOAD-->
- - [x] **LOAD BITMAP** - _Not implemented._
+ - [ ] **LOAD BITMAP _filespec_** - Load bitmap screen file into Video RAM.
  - [x] **LOAD CHRSET _filespec_** - Load character set into alternate character buffer.<!--LOAD-->
  - [x] **LOAD DIR _filespec_,\*_array_** - Load disk directory into string array.
  - [x] **LOAD FNKEYS _filespec_** - Load function key definitions from file.<!--LOAD-->
@@ -217,7 +217,7 @@
  - [x] **SAVE _filespec_{,ASC|CAQ|TOK}** - Save BASIC program to CAQ or ASCII or raw tokenized file.<!--SAVE-->
  - [x] **SAVE _filespec_,{@_page_,}_address_,_length_** - Save memory to binary file.<!--SAVE-->
  - [x] **SAVE _filespec_,\*_array_** - Save numeric or string array data to file.<!--SAVE-->
- - [x] **SAVE BITMAP** - _Not implemented._
+ - [ ] **SAVE BITMAP _filespec_** - Save bitmap screen data from Video RAM to file.
  - [x] **SAVE FNKEYS _filespec_** - Save function key definitions to file.
  - [x] **SAVE PALETTE _p_,_filespec_** - Save palette contents to file.<!--SAVE-->
  - [ ] **SAVE SCREEN _filespec_** - Save text screen to file.
