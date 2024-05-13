@@ -1,4 +1,7 @@
 # plusBASIC Release History
+ - v0.22r
+   - Added comments starting with apostrophe.
+   - Fixed silent abort on duplicate line number in LOAD with ASC option.
  - v0.22q
    - Changed DEF TILE TO CHR to SET TILE TO CHR
    - Wrote demo program /pbdemo/chrsprite.bas

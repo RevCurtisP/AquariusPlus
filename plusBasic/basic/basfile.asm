@@ -606,8 +606,12 @@ ST_LOAD:
 ; Input: HL: String descriptor address
 ;     Stack: TxtPtr, RtnAdr
 ;-----------------------------------------------------------------------------
-;; LOAD "/t/memvars.baq"
-;; LOAD "/t/ascprog.bas"
+;; RUN "/t/memvars.baq"
+;; RUN "/t/ascprog.bas"
+;; RUN "/t/asczero.bas
+;; RUN "/t/ascbad.bas
+;; RUN "/t/ascdup.bas
+;; RUN "/t/ascsnerr.bas
 _load_ascii:
     ld      hl,(TXTTAB)
     inc     hl
@@ -627,7 +631,7 @@ _load_ascii:
     ex      de,hl                 ; HL = StrBuf
     ld      d,b
     ld      e,c                   ; DE = LinNum
-    inc     de                    ; DE = Bump LinNum for COMAP
+    inc     de                    ; DE = Bump LinNum for COMPAR
     ex      (sp),hl               ; HL = PrvLin; Stack = StrBuf, TxtPtr, RtnAdr
     rst     COMPAR                ; If PrvLin >= LinNum
     jr      nc,.badline           ;   Issue Error
@@ -638,6 +642,7 @@ _load_ascii:
     jr      .lineloop
 .badline
     ld      a,ERRUS
+    or      a
 .done
     pop     bc                    ; Discard PrvLin; Stack = TxtPtr, RtnAdr
     push    af                    ; Stack = Status, TxtPtr, RtnAdr

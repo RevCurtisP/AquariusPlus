@@ -168,6 +168,7 @@ LISPRT      equ $0598   ; Detokenize and print BASIC line
 RESSRC:     equ $05A8   ; Search keyword list
 NEWSTT:     equ $062C   ; Execute next statement
 GONE        equ $064B   ; Execute statement
+GONEX       equ $0656   ; Evaluate statement token
 CHRGTR      equ $066B   ; CALLable CHRGET
 CHRGT2      equ $066C   ; Get Current Character and Set Flags
 CHRGT3      equ $066D   ; Test character in A and set flags
@@ -186,6 +187,7 @@ GOTOLN      equ $06DF   ; GOTO line# in DE
 USERR       equ $06F3   ; Undefined line error
 DATA        equ $071C   ; Execute DATA statement
 REM         equ $071E   ; Execute REM statement
+LET         equ $0731   ; Execute LET statement
 LETDO       equ $0736   ; Execute LET, bypassing PTRGET and SYNCHK '='
 INBUFC      equ $0768   ; Copy temporary string to string variable
 NTOERR      equ $0782   ; Execute ON ... GOTO

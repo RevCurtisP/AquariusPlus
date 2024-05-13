@@ -1,23 +1,42 @@
 # plusBASIC Quick Reference Guide
 
+## Literals
+  - _Numeric literals_ evaluate to floating point or integer numbers.
+    - [x] **{_+_|_-_}{_digit_...|{_digit_}{_._}{_digit_...}}{_E_{_+_|_-_}_digit_...}** - A floating point decimal number.
+    - [x] **{_+_|_-_}{_digit_...}** - An integer decimal number.<!--literals.int-->
+    - [x] **$_hexdigit_...** - An integer hexadecimal number.<!--literals.hex-->
+    - [x] **'_character_'** - An integer number equal to the ASCII code of _character_.<!--literals.chr-->
+  - _String literals_ evaluate to floating point of integer values.
+    - [x] **"{_character_...}"** - A string containing the specified characters.<!--literals.str-->
+    - [x] **$"{_hexdigit_...}"** - A string containing the characters specified by each two-digit hexadecimal number.<!--literals.hexstr-->
+    - [x] **\\"{{_\\_}_character_}..."** - A string containing C style escape codes.<!--literals.escstr-->
 ## Operators
- - [x] **- _expression_** - Negate expression
- - [x] **_expression_ + _expression_** - Add second expression to first expression
- - [x] **_expression_ - _expression_** - Subtract second expression from first expression
- - [x] **_expression_ \* _expression_** - Multiply first expression by second expression
- - [x] **_expression_ / _expression_** - Divide  first expression by second expression
- - [x] **_expression_ ^ _expression_** - Raise first expression to power second expression
- - [x] **_expression_ > _expression_** - 
- - [x] **_expression_ = _expression_** - 
- - [x] **_expression_ < _expression_** - 
- - [x] **_expression_ >= _expression_** - 
- - [x] **_expression_ <= _expression_** - 
- - [x] **NOT _integer_** - 
- - [x] **_expression_ MOD _expression_** - 
- - [x] **_integer_ AND _integer_** - 
- - [x] **_integer_ OR _integer_** - 
- - [x] **_integer_ XOR _integer_** - 
- - [x] **_string_ %% (_expression_{,...})** - Perform string substitution.
+ - *Arithmetic operations* evaluate performed using floating point math.<!--operators.arithmetic-->
+   - [x] **- _expression_** - Negate expression<!--operators.arithmetic-->
+   - [x] **_expression_ + _expression_** - Add second expression to first expression.
+   - [x] **_expression_ - _expression_** - Subtract second expression from first expression.
+   - [x] **_expression_ \* _expression_** - Multiply first expression by second expression.
+   - [x] **_expression_ / _expression_** - Divide  first expression by second expression.
+   - [x] **_expression_ ^ _expression_** - Raise first expression to power second expression.
+   - [x] **_expression_ MOD _expression_** - Calculate the remainder of the first expression divided by the second expression.
+ - *Relational operations* return -1 if true, 0 if false.<!--operators.relational-->
+   - [x] **_expression_ > _expression_** - True if first expression is greater than second expression.
+   - [x] **_expression_ = _expression_** - True if first expression is equal second expression.
+   - [x] **_expression_ < _expression_** - True if first expression is less than second expression.
+   - [x] **_expression_ >= _expression_** - True if first expression is greater than or equal to second expression.
+   - [x] **_expression_ <= _expression_** - True if first expression is less than or equal to second expression.
+ - *Logical operators* perform the corresponding boolean operation on the bits of the each integer expression.<!--operators.logical-->
+   - [x] **NOT _integer_** - Sets resulting bit to 1 if the operand bit is 0.
+   - [x] **_integer_ AND _integer_** - Sets resulting bit to 1 if both operand bits are 1.
+   - [x] **_integer_ OR _integer_** - Sets the resulting bit to 1 if either operand bit is 1.
+   - [x] **_integer_ XOR _integer_** - Sets resulting bit to 1 if one operand bits is 1, and the other is 0.
+ - *String operators* create new temporary string.<!--operators.string-->
+   - [ ] **_string_ + _string_** - Concatenates second string to the end of first string.
+   - [x] **_string_ %% (_expression_{,...})** - Perform string substitution.
+
+## Special characters
+ - [ ] **\__label_** - Line label. Valid at the beginining of a line, or as the operand of a GOTO or GOSUB.
+ - [ ] **'comment** - Shortcut for REM. Valid at the beginning of a line, or after a statement terminating colon.
  
 ## Statement and functions
  - [x] **ABS(_expression_)** - Return absolute value of expression.
@@ -27,22 +46,23 @@
  - [x] **ASC$(_hexstring_)** - Convert _hex_string_ to an ASCII string.<!--ASC-->
  - [x] **ATN(_float_)** - Return arctangent of argument.
  - [x] **CALL _address_ {ARGS _hl_,_de_,_bc_,_a_}** - Executes machine language routine at address, optionally passing arguments into the associated registers.<!--CALL-->
+ - [ ] **CALL MODULE** - _Proposed enhancement._
  - [x] **CD {_dirname_}** - Display current path or change directory.
  - [x] **CD$** - Return current path.  
  - [x] **CHR$(_byte_)** - Convert ASCII value to string.
- - [x] **CIRCLE (_x_,_y_),_radius_{,{_color_}{,{_start_},{_end_}{,_aspect_}}}** - _Not implemented_
+ - [x] **CIRCLE (_x_,_y_),_radius_{,{_color_}{,{_start_},{_end_}{,_aspect_}}}** - _Not implemented._
  - [x] **CLEAR {_integer_{,_address_}}** - Clear all variables, optionally allocating string text space and top of BASIC RAM.
  - [ ] **CLEAR BITMAP {_fgcolor_,_bgcolor_}** - Clear bitmap screen
  - [x] **CLOAD {{?}_filename_}|\*_array_** - Load or verify program or load array data from cassette.
- - [x] **CLOSE** - _Not implemented_
+ - [x] **CLOSE** - _Not implemented._
  - [x] **CLS {_fgcolor_,_bgcolor_}** - Clear the text screen.<!--CLS-->
  - [ ] **COLOR _fgcolor_{,_bgcolor_}** - Set or get bitmap default color(s).
  - [x] **COMPARE (*_array_,*_array_)** - Compare the binary contents of two numeric arrays.<!--COMPARE-->
  - [x] **COMPARE ({@_page_,}_address_,{@_page_,}_address_,_length_)** - Compare two blocks of memory.<!--COMPARE-->
- - [x] **COMPARE (_filespec_,_filespec_)** - _Not implemented_<!--COMPARE-->
+ - [x] **COMPARE (_filespec_,_filespec_)** - _Not implemented._<!--COMPARE-->
  - [x] **CONT** - Resume program execution after STOP, Ctrl-C/Escape, or error.
  - [x] **COPY** - Copy text screen to serial printer.<!--COPY-->
- - [x] **COPY \*_array_ TO \*array** - _Not implemented_<!--COPY-->
+ - [x] **COPY \*_array_ TO \*array** - _Not implemented._<!--COPY-->
  - [x] **COPY {@_page_,}_address_,_length_ TO {@_page_,}_address_ {FAST}** - Copy bytes from one section of memory to another.<!--COPY-->
  - [x] **COPY FILE _filespec_ TO _filespec_** - Copy file.<!--COPY-->
  - [x] **COS(_float_)** - Return cosine of argument.
@@ -59,13 +79,13 @@
  - [x] **DEF PALETTELIST _strvar_=_palette_,...** - Create a string list of palette numbers.<!--DEFPALETTE-->
  - [x] **DEF RGBLIST _strvar_=_r_,_g_,_b_;...** - Create a string list of RGB values.<!--DEFRGB-->
  - [x] **DEF TILELIST _strvar_=_tileno_,...** - Create a string list of palatte indexes.<!--DEFTILE-->
- - [x] **DEF USR=_address_** - _Not implemented_
+ - [x] **DEF USR=_address_** - _Not implemented._
  - [x] **DIM _array_(_dim_{,...}){,...}** - Create and allocates one or more arrays.
  - [x] **DIR {_dirspec_}** - Display disk directory.<!--DOKE-->
  - [x] **DOKE {@_page_,}_address_,_integer_** - Write integer to memory.<!--DOKE-->
- - [ ] **DRAW _command_string_** - _Not implemented_
- - [ ] **DRAW TEXT (_col_,_row)_),_string_** - _Not implemented_
- - [x] **EDIT {_lineref_}** - _Not implemented_
+ - [ ] **DRAW _command_string_** - _Not implemented._
+ - [ ] **DRAW TEXT (_col_,_row)_),_string_** - _Not implemented._
+ - [x] **EDIT {_lineref_}** - _Not implemented._
  - [x] **END** - Terminate program execution.
  - [x] **ERASE _\*array_{,_\*array_...}** - Delete arrays.
  - [x] **EVAL(_string_)** - Evaluate expression in string.
@@ -107,9 +127,9 @@
  - [x] **LEFT$(_string_,_len_)** - Return the first up to _len_ characters of string.
  - [x] **LEN(_string_)** - Return length of string.
  - [x] **\{LET} _var_=_expression_** - Define and assigns value to variable.
- - [x] **LINE {(_x1_,_y1_)}-(_x2_,_y2_){,{_color_}{,B{F}}}}** - _Not implemented_
- - [x] **LINEH _x_,_y1_,_y2_** - _Not implemented_
- - [x] **LINEV _x1_,_x2_,_y_** - _Not implemented_
+ - [x] **LINE {(_x1_,_y1_)}-(_x2_,_y2_){,{_color_}{,B{F}}}}** - _Not implemented._
+ - [x] **LINEH _x_,_y1_,_y2_** - _Not implemented._
+ - [x] **LINEV _x1_,_x2_,_y_** - _Not implemented._
  - [x] **LIST {_lineref_}** - Display program lines starting at beginning of program or specified line.
  - [x] **LLIST {_lineref_}** - Outputs program lines to printer starting at beginning of program or specified line.
  - [x] **LOAD _filespec_** - Load BASIC program into memory.<!--LOAD-->
@@ -117,22 +137,23 @@
  - [x] **LOAD _filespec_,\*_array_** - Load binary file data into numeric or string array.<!--LOAD-->
  - [x] **LOAD _filespec_,\*_array_,ASC** - Load multi-line ASCII file into string array.<!--LOAD-->
  - [x] **LOAD _filespec_,^_string_** - Load up to 255 characters of file into string variable.<!--LOAD-->
- - [x] **LOAD BITMAP** - _Not implemented_
+ - [x] **LOAD BITMAP** - _Not implemented._
  - [x] **LOAD CHRSET _filespec_** - Load character set into alternate character buffer.<!--LOAD-->
  - [x] **LOAD DIR _filespec_,\*_array_** - Load disk directory into string array.
  - [x] **LOAD FNKEYS _filespec_** - Load function key definitions from file.<!--LOAD-->
+ - [ ] **LOAD MODULE** - _Proposed enhancement._
  - [x] **LOAD PALETTE _p_,_filespec_** - Load file data ino palette.<!--LOAD-->
  - [x] **LOAD PT3 _filespec_** - Load PT3 track into PT player buffer.
  - [x] **LOAD SCREEN _filespec_** - Load text screen from file.
- - [x] **LOAD TILEMAP** - _Not implemented_
+ - [x] **LOAD TILEMAP** - _Not implemented._
  - [x] **LOCATE _x_,_y_** - Move text cursor to specified position.<!--LOCATE-->
  - [x] **LOG(_float_)** - Return natural logarithm of argument.
  - [x] **LOOP PT3 {_filespec_}** - Play specified or previously loaded PT3 track repeatedly.
  - [x] **LPOS(_expression__)** - Return current column position of printer.
  - [x] **LPRINT TAB(_integer_)|SPC(_integer_)|_expression_|;|,{...}** - Output data to printer.
- - [x] **MENU** - _Not implemented_
+ - [x] **MENU** - _Not implemented._
  - [x] **MID$(_string_,_start_{,_len_})** - Return first up to _len_ or all remaining characters starting at character _start_ of string.
- - [x] **MID$(_strvar_,_start__{,_len_})=_string_** - _Not implemented_
+ - [x] **MID$(_strvar_,_start__{,_len_})=_string_** - _Not implemented._
  - [x] **MKDIR _dirname_** - Create directory.
  - [x] **MOUSEB** - Return mouse button state
  - [x] **MOUSEW** - Return mouse wheel delta
@@ -143,10 +164,10 @@
  - [x] **ON _integer_ GOSUB _lineref_,...** - `GOSUB` one of several line numbers based on _expression_.<!--ON-->
  - [x] **ON _integer_ GOTO _lineref_,...** - `GOTO` one of several line numbers based on _expression_.<!--ON-->
  - [x] **ON ERROR GOTO _lineref_** - Enable or disable error trapping.<!--ON-->
- - [x] **OPEN** - _Not implemented_
+ - [x] **OPEN** - _Not implemented._
  - [x] **OUT _port_,_byte_** - Write to a Z80 port.<!--OUT-->
  - [x] **PAUSE** - Halt program execution until key is pressed.<!--PAUSE-->
- - [x] **PAUSE _jiffies_** - _Not implemented_
+ - [x] **PAUSE _jiffies_** - _Not implemented._
  - [x] **PAUSE PT3** - Pause currently playing PT3 track.
  - [x] **PEEK({@_page_,}_address_)** - Read byte from memory.<!--PEEK-->
  - [x] **PEEK$({@_page_,}_address_,_length_)** - Read string from memory.<!--PEEK-->
@@ -184,10 +205,10 @@
  - [x] **RESET PALETTE _palette_** - Reset palette to default RGB values.
  - [x] **RESET SCREEN** - Reset current text screen to default settings.
  - [x] **RESTORE {_lineref_}** - Reset READ/DATA pointer to beginning of program or specified line.
- - [ ] **RESTORE BITMAP|TILEMAP** - _Not implemented_
+ - [ ] **RESTORE BITMAP|TILEMAP** - _Not implemented._
  - [x] **RESTORE SCREEN** - Copy respective screen buffer to current text screen..
  - [x] **RETURN {_expression_{,...}}** - Resume program execution after GOSUB, optionally returning results.
- - [x] **RGB(_r_,_g_,_b_)** - _Not implemented_<!--RGB-->
+ - [x] **RGB(_r_,_g_,_b_)** - _Not implemented._<!--RGB-->
  - [x] **RGB$(_r_,_g_,_b_)** - Return string representing a single palette entry.<!--RGB-->
  - [x] **RIGHT$(_string_,_len_)** - Return the last up to _byte_ characters of string.
  - [x] **RND(_integer_)** - Return new or previous psuedo-random number or seeds the random number generator.
@@ -196,11 +217,11 @@
  - [x] **SAVE _filespec_{,ASC|CAQ|TOK}** - Save BASIC program to CAQ or ASCII or raw tokenized file.<!--SAVE-->
  - [x] **SAVE _filespec_,{@_page_,}_address_,_length_** - Save memory to binary file.<!--SAVE-->
  - [x] **SAVE _filespec_,\*_array_** - Save numeric or string array data to file.<!--SAVE-->
- - [x] **SAVE BITMAP** - _Not implemented_
+ - [x] **SAVE BITMAP** - _Not implemented._
  - [x] **SAVE FNKEYS _filespec_** - Save function key definitions to file.
  - [x] **SAVE PALETTE _p_,_filespec_** - Save palette contents to file.<!--SAVE-->
  - [ ] **SAVE SCREEN _filespec_** - Save text screen to file.
- - [x] **SAVE TILEMAP** - _Not implemented_
+ - [x] **SAVE TILEMAP** - _Not implemented._
  - [x] **SCREEN {_text_},{_graphics_},{_sprites_},{_priority_},{_remap_}** - Set screen mode.<!--SCREEN-->
  - [x] **SET COLOR _fgcolor_,_bgcolor_** - Enable color printing mode.<!--SETCOLOR-->
  - [x] **SET COLOR OFF** - Disable color printing mode.<!--SETCOLOR-->
@@ -224,16 +245,16 @@
  - [x] **SOUND (_duration_,_frequency_)** - Generate a tone through the television speaker.
  - [x] **SPLIT _string_ INTO \*_array$_ DEL _delimiter_** - Split delimited string into string array elements
  - [x] **SQR(_float)** - Return square root of argument.
- - [x] **STASH BITMAP|TILEMAP** - _Not implemented_
+ - [x] **STASH BITMAP|TILEMAP** - _Not implemented._
  - [x] **STASH SCREEN** - Copy current text screen to respective screen buffer.
  - [x] **STOP** - Interrupt program execution.
  - [x] **STOP PT3** - Stop currently playing PT3 track.
  - [x] **STR$(_float_)** - Convert floating point number to ASCII string.
  - [x] **STRING$(_length_{,_byte_|_string_})** - Create string of repeated character.
  - [x] **STRPTR(_strvar_)** - Return address of text for string variable.
- - [x] **SWAP BITMAP|TILEMAP** - _Not implemented_
+ - [x] **SWAP BITMAP|TILEMAP** - _Not implemented._
  - [x] **SWAP SCREEN** - Swap current text screen with respective screen buffer.
- - [ ] **SWAP VARS _var_,_var_** - _Not implemented_
+ - [ ] **SWAP VARS _var_,_var_** - _Not implemented._
  - [x] **TAN(_float_)** - Return tangent of argument.
  - [x] **TILEMAP(_x_,_y_)** - Return tile index and properties in tile cell.
  - [x] **TILEMAPX** - Return X-offset of tilemap.
@@ -249,10 +270,10 @@
  - [x] **TRON** - Enable line tracing.
  - [x] **TROFF** - Disable line tracing.
  - [x] **USE CHRSET _0_|_1_|_filespec_** - Copy specified character set to character RAM.<!--USECHR-->
- - [ ] **USE SCREEN {@_page_,}_text_,_graphics_** - _Not implemented_
+ - [ ] **USE SCREEN {@_page_,}_text_,_graphics_** - _Not implemented._
  - [x] **USR(_expression_)** - Call user-defined machine language routine passing argument and returning result.
  - [x] **VAL(_float_)** - Convert ASCII string to floating point number.
  - [ ] **VARPTR(_var{$}_|\*_array{$}_)** - Return address of variable, array element, or array
  - [x] **VER(_expression_)** - Return System or plusBASIC version as integer.
  - [x] **VER$(_expression_)** - Return System or plusBASIC version as printable string.
- - [x] **WRITE** - _Not implemented_
+ - [x] **WRITE** - _Not implemented._

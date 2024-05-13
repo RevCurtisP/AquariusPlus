@@ -145,6 +145,7 @@ XPTRGT  equ     $2054   ;; | PTRGET Hook
 SKPLBL  equ     $205D   ;; | Skip label at beginning of line (SKPLBL)
 SKPLOG  equ     $2065   ;; | Skip Label in ON GOTO/GOSUB
 STRNGX  equ     $206A   ;; | Don't capitalize letters between single quotes
+CHKCMT  equ     $2072   ;; | Check for ' and treat as REM
 
 endif                   
 EXTBAS  equ     $2000   ;;Start of Extended Basic
@@ -1260,9 +1261,15 @@ GONE:   rst     CHRGET            ;[M80] GET THE STATEMENT TYPE
         push    de                ;[M80] STATEMENT
 GONE3:  ret     z                 ;[M80] IF A TERMINATOR TRY AGAIN
 ;[M80] "IF" COMES HERE
-GONE2:  sub     $80               ;[M80] "ON ... GOTO" AND "ON ... GOSUB" COME HERE
+GONE2:
+ifdef aqplus
+        jp      CHKCMT            ; | Check for ' and treat as REM
+        byte    $31,$07           ; | Fill out JP C, LET
+else
+        sub     $80               ;[M80] "ON ... GOTO" AND "ON ... GOSUB" COME HERE
         jp      c,LET             ;[M80] MUST BE A LET
-        cp      TABTK-$80         ;;End of Statement Tokens
+endif
+GONEX:  cp      TABTK-$80         ;;End of Statement Tokens
         rst     HOOKDO            ;;Handle Extended BASIC Statement Tokens`
 HOOK23: byte    23                ;
         jp      nc,SNERR          ;;Not a Statement Token

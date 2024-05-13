@@ -81,13 +81,18 @@
     jp      z,STRNG               ; If A is '"', process string literal
     jp      STRNGR                ; Else carry on
 
+    rst     HOOKDO                ; $2065 SKPLOG  skip_on_label: Skip label in ON GOTO
+    byte    40
+    jp      c,LET                 ; If not token, do LET
+    jp      GONEX                 ; Else evauate token
+
 just_ret:
     ret
 
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.22q"
+    db "v0.22r"
     db 0
 plus_len   equ   $ - plus_text
 
@@ -932,6 +937,7 @@ hook_table:                     ; ## caller   addr  performing function
     dw      skip_label          ; 37 SKPLBL   205D  Skip label at beginning of line (SKPLBL) Check for pressed 
     dw      skip_on_label       ; 38 SKPLOG   2065  Skip label in ON GOTO Check for pressed 
     dw      _string_ext         ; 39 STRNGX   206A  Don't capitalize letters between single quotes (STRNGX) Check for pressed 
+    dw      _check_comment      ; 40 CHKCMT   2027  Check for ' and treat as REM
 
 ; ------------------------------------------------------------------------------
 ;  Execute Hook Routine
@@ -999,6 +1005,17 @@ aux_line_print:
     call    LINPRT                ; Print the line number
     jp      page_set_aux          ; Remap Aux ROM and return
 
+; 10 _label:PRINT "testing":'comment
+; 20 'comment
+_check_comment:
+    cp      39                    ; If '
+    jr      z,.rem                ;   Treat as REM
+    sub     $80                   ; If not token
+    jp      c,LET                 ;   Do LET
+    jp      GONEX                 ; Else evauate token
+.rem
+    rst     CHRGET                ; Skip '
+    jp      REM                   ;   and do REM
 
 ;-----------------------------------------------------------------------------
 ; Pad first 4k
