@@ -10,7 +10,7 @@ _bmp_defaults
     byte    $06,0,0,0,$06,0,0,0,$70,0,0,0,$07,0,0,0
 _bmp_deflen = $ - _bmp_defaults   
 
-init_bitmap_vars:
+bitmap_init_vars:
     ld      hl,_bmp_defaults
     ld      de,BANK1_BASE+GFXVBASE
     ld      bc,_bmp_deflen
@@ -22,7 +22,7 @@ init_bitmap_vars:
     ex      af,af'                ; A = OldPg, af' = BMP_DRAWCOLOR
     out     (IO_BANK1),a          ; Map Original Page
     ret
-    
+
 ;-----------------------------------------------------------------------------
 ; Set bitmap mode system variable from video control register
 ; Input: A: Use buffer: $FF = Yes, 0 = No
@@ -569,7 +569,7 @@ __calc_1bpp_addr:
 
 ; Must preserve AF'
 ; A: GfxMode, DE: X, C: Y
-; Clobbers A
+; Clobbers A, HL
 _check_coords:
     rra                           ; Carry = TextMode
     rra
@@ -742,5 +742,49 @@ bitmap_write_tmpbfr:
     ld      bc,32
     call    palette_get
     jp      page_restore_bank1_af
+
+
+;-----------------------------------------------------------------------------
+; Read Bitmap Screen Section into Buffer
+; Input: BMPMODE: Mode: 0 = 1bpp, 1 = 4bpp
+;        STARTCOL: Start Column
+;        STARTROW: Start Row
+;        HL: End Row
+;        ENDCOL: End Row
+;        BUFADR: Buffer Address
+;        BUFLEN: Buffer Length
+;  Flags: Carry Set if invalid coordinates
+;         Not Zero if buffer overflow
+; Clobbered: A, AF', BC, DE, HL, IX, IY
+;--------------`---------------------------------------------------------------
+bitmap_get:
+    call    get_set_init         ; If coordinates out of range
+    ret     c                     ;   Return Carry Set
+    ret
+    
+    jr      nz,.get_4bpp          ; If A <> 0
+    
+.get_4bpp
+
+get_set_init:
+    ld      hl,(BUFADR)           
+    ld      (BUFPTR),hl           ; BufPtr = BufAdr
+    ld      bc,(BUFLEN)
+    add     hl,bc                 ; HL = BufEnd
+    ld      (BUFLEN),hl           ; BUFLEN = BufEnd
+    ld      a,(BMPMODE)             
+    and     a,1                   ; A = 0 (1bpp), 1 (4bpp)
+    or      2                     ; A = GfxMode
+    ld      (BMPMODE),a           ; BMPMODE = GfxMode
+    ld      de,(STARTCOL)
+    ld      bc,(STARTROW)
+    call    _check_coords         ; If start coordinates out of range
+    ret     c                     ;   Return Carry Set
+    ld      a,(BMPMODE)           ; A = GfxMode
+    ld      de,(ENDCOL)
+    ld      bc,(ENDROW)
+    call    _check_coords         ; If end coordinates out of range
+    ret                           ;  Return Carry Set
+
 
 _bitmap_code_size = $ - bitmap_resetpixel

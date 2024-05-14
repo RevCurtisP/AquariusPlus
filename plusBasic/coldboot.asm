@@ -32,7 +32,7 @@ do_coldboot:
     call    aux_call
     ld      iy,init_screen_vars
     call    aux_call
-    ld      iy,init_bitmap_vars
+    ld      iy,bitmap_init_vars
     call    aux_call
 
     ld      d,$10                 ; Row 5 = Shift

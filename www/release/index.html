@@ -1,0 +1,43 @@
+<html>
+  <head>
+    <title>plusBASIC Latest Release</title>
+  </head>
+  <body>
+    <h1>plusBASIC Latest Release</h1>
+    <p><h3>Downloads</h2>
+    <dl>
+      <dt><a href=sysrom.bin>sysrom.bin</a></dt>
+      <dd>The plusBASIC ROM file. Download this and copy to the root directory of your SD card.</dd>
+    </dl>
+    </p>
+    <p><h2>Documentation</h2>
+    <dl>
+      <dt><a href=quickref.html>Quick Reference Guide</a></dt>
+      <dd>Shows all statements, functions, and operators available in plusBASIC.
+      <dt><a href=release.html>Release History</a></dt>
+      <dd>List of features added in each release</dd>
+    </dl>
+    <p><h2>Useful programs</h2>
+    <dl>
+      <dt><a href=getsysrom.bas>getsysrom.bas</a></dt>
+      <dd>Program to automatically download the latest sysrom.bin.</dd>
+      <dt><a href=myip.bas>myip.bas</a></dt>
+      <dd>Displays Aquarius<sup>+</sup> public IP address.</dd>
+      <dt><a href=getver.bas>getver.bas</a></dt>
+      <dd>Displays current and newest plusNASIC.</dd>
+    </dl>
+    </p>
+    <p><h2>Utilities</h2>
+    <dl>
+      <dt><a href=bas2baq.py>bas2baq.py</a></dt>
+      <dd>Converts BASIC program in ASCII format to tokenized program in CAQ format.</dd>
+      <dt><a href=baq2bas.py>baq2bas.py</a></dt>
+      <dd>Converts BASIC program in tokenized program in CAQ format to ASCII format.</dd>
+    </dl>
+    </p>
+    <h2>Notes</h2>
+    <p>The Aquarius<sup>+</sup> bootloader checks for sysrom.bin in the SD card root directory, and loads it if found.
+    Otherwise, sysrom.bin is loaded from the ESP32 filesystem. If you encounter any errors after updating plusBASIC,
+    you can simply remove sysrom.bin from the SD card.</p>
+  </body>
+</html>

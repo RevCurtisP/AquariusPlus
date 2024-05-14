@@ -1221,3 +1221,14 @@ _get_rgb:
     pop     de                    ; D = Red; Stack = RtnAdr
     ld      e,a                   ; E = Green + Blue
     ret
+
+test_gs_init:
+    push    hl
+    ld      iy,get_set_init
+    call    aux_call
+    ld      a,0
+    rla                           ; A = Carry
+    ld      (BMPMODE),a           ; BMPMODE = Result
+    pop     hl
+    ret
+
