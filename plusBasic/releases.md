@@ -1,4 +1,6 @@
 # plusBASIC Release History
+ - v0.22t
+   - Added PAD$ function
  - v0.22s
    - Added LOAD BITMAP and SAVE BITMAP
  - v0.22r

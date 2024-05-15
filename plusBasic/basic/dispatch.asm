@@ -90,6 +90,8 @@ extended_function:
     jp      z,FN_STR
     dec     a                   ; $9D VAR
     jp      z,FN_VAR
+    sub     a,3
+    jp      z,FN_PAD            ; $A0 PAD
     jp      SNERR
 
 ; ------------------------------------------------------------------------------

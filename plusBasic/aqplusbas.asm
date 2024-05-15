@@ -92,7 +92,7 @@ just_ret:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.22s"
+    db "v0.22t"
     db 0
 plus_len   equ   $ - plus_text
 
@@ -1054,7 +1054,8 @@ _check_comment:
     include "enhanced.asm"      ; Enhanced stardard BASIC statements and functions
     include "evalext.asm"       ; EVAL extension - hook 9
     include "extended.asm"      ; Statements and functions from Aquarius Extended BASIC
-    include "basfile.asm"         ; Disk and File I/O statements and functions
+    include "basfile.asm"       ; Disk and File I/O statements and functions
+    include "bastring.asm"      ; String handling statements and functions
     include "graphics.asm"      ; Graphics statements and functions
     include "hooks.asm"         ; Extended BASIC hooks
     include "misc.asm"          ; Miscellaneous subroutines

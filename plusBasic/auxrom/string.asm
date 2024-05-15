@@ -16,17 +16,17 @@ string_search:
     ld      c,a                   ; C = Offset
     cp      (hl)                  ; If Ofs > HayLen
     ld      a,0                   ;   Return 0
-    ret     nc                                                              
+    ret     nc
     ld      a,(de)                ; A = NdlLen
     or      a                     ; Set flags
     ld      a,b                   ; A = Offset
     ret     z                     ; Return 0 if NdlLen = 0
     ld      a,(hl)                ; A = HayLen
-    inc     hl                 
+    inc     hl
     inc     hl                    ; Bump to text addrss
-    ld      b,(hl)             
-    inc     hl                                                              
-    ld      h,(hl)            
+    ld      b,(hl)
+    inc     hl
+    ld      h,(hl)
     ld      l,b                   ; HL = HayAdr
     ld      b,0                   ; BC = Offset
     add     hl,bc                 ; HL = HayPtr
@@ -36,11 +36,11 @@ string_search:
     push    de                    ; Stack = NdlDsc, Offset, OffCnt, RtnAdr
     ex      (sp),hl               ; HL = NdlDsc; Stack = HayPtr, Offset, OffCnt, RtnAdr
     ld      c,(hl)                ; C = NdlLen
-    inc     hl                    
-    inc     hl                
-    ld      e,(hl)            
+    inc     hl
+    inc     hl
+    ld      e,(hl)
     inc     hl                    ; DE = NdlAdr
-    ld      d,(hl)            
+    ld      d,(hl)
     pop     hl                    ; HL = HayAdr; Stack = OfsOfc, RtnAdr
 .cnt_loop
     push    hl                    ; Stack = HayAdr, OfsOfc, RtnAdr
@@ -56,25 +56,25 @@ string_search:
     inc     hl                    ;   Bump HayPtr
     dec     b                     ;   Decrement HayCnt
     jp      nz,.ofs_loop          ;   If HayCnt <> 0, check next character
-.pop3ret0 
+.pop3ret0
     pop     de                    ; Stack = NdlLen, HeyAdr, OfsOfc, RtnAdr
     pop     de                    ; Stack = HeyAdr, OfsOfc, RtnAdr
     pop     bc                    ; Stack = OfsOfc, RtnAdr
-.pop1ret0 
+.pop1ret0
     pop     de                    ; Stack = RtnAdr
     xor     a                     ; Return 0 with flags set
     ret                           ;
-.found 
+.found
     pop     hl                    ; Stack = NdlLen, HayAdr, Offset, OffCnt, RtnAdr
     pop     de                    ; Stack = HayAdr, OfsOfc, RtnAdr
     pop     de                    ; Stack = OfsOfc, RtnAdr
     pop     bc                    ; B = Offset
-    ld      a,b                   ; 
-    sub     h                     ; 
+    ld      a,b                   ;
+    sub     h                     ;
     add     c                     ;
     inc     a                     ; Return offset of Needle in Haystack
-    ret                           
-.notfound                         
+    ret
+.notfound
     pop     bc                    ; B = HayLen; Stack = NdlLen, HayAdr, OfsOfc, RtnAdr
     pop     de                    ; DE = NdlAdr; Stack = HayAdr, OfsOfc, RtnAdr
     pop     hl                    ; HL = HayAdr; Stack =  OfsOfc, RtnAdr
@@ -97,7 +97,7 @@ string_search_array:
 .loop
     ex      af,af'
     ld      a,b
-    or      c    
+    or      c
     dec     bc                    ; Decrement AryCnt
     jp      z,discard_ret         ; Return if -1
     ex      af,af'
@@ -171,10 +171,10 @@ string_trim_left:
     ld      a,b
     or      a
     jr      z,.whitespace          ; If trim chars
-.trim   
-    push    de                    ; Stack = TrmLst, RtnAdr      
+.trim
+    push    de                    ; Stack = TrmLst, RtnAdr
     push    bc                    ; Stack = TrmLen, TrmLst, RtnAdr
-.loop    
+.loop
     ld      a,(de)
     cp      (hl)
     jr      z,.next
@@ -214,7 +214,7 @@ string_trim_right:
     ret     z                     ;   Return
     push    hl                    ; Stack = StrAdr, RetAdr
     push    hl                    ; Stack = StrAdr, StrAdr, RetAdr
-    ld      hl,POPHRT             
+    ld      hl,POPHRT
     ex      (sp),hl               ; HL = StrAdr; Stack = POPHRT, StrAdr, RetAdr
     push    bc                    ; Stack = StrTrmLen, POPHRT, StrAdr, RetAdr
     ld      b,0
@@ -223,11 +223,11 @@ string_trim_right:
     ld      a,b
     or      a
     jr      z,.whitespace         ; If trim chars
-.trim   
-    push    de                    ; Stack = TrmLst, POPHRT, StrAdr, RtnAdr      
+.trim
+    push    de                    ; Stack = TrmLst, POPHRT, StrAdr, RtnAdr
     push    bc                    ; Stack = TrmLen, TrmLst, POPHRT, StrAdr, RtnAdr
     dec     hl                    ; Back up StrPtr
-.loop    
+.loop
     ld      a,(de)
     cp      (hl)
     jr      z,.next
@@ -250,3 +250,94 @@ string_trim_right:
     dec     c
     jr      nz,.whitespace
     ret
+
+;-----------------------------------------------------------------------------
+; Trim whitespace characters from right end of string
+; Input: A: pad character
+;       BC: pad length (negative for pad right)
+;       DE: buffer address
+;       HL: string descriptor
+; Output: BC: result length
+;-----------------------------------------------------------------------------
+string_pad:
+    ex      af,af'                ; A' = PadChr
+    ld      a,b
+    or      c                     ; If PadLen = 0
+    ret     z                     ;   Return DE = BufAdr, BC = 0
+    ld      a,b
+    rla
+    jp      c,.padleft            ; If BC >0
+    push    bc                    ;   Stack = PadLen, RtnAdr
+    push    de                    ;   Stack = BufAdr, PadLen, RtnAdr
+    call    .padcount             ;   A = PadCnt, BC = StrLen, DE = StrAdr, HL = PadCnt
+    ex      (sp),hl               ;   HL = BufAdr; Stack = PadCnt, PadLen, RtnAdr
+    push    hl                    ;   Stack = BufAdr, PadCnt, PadLen, RtnAdr
+    ex      de,hl                 ;   HL = StrAdr, DE = BufAdr
+    ldir                          ;   DE = BufPtr
+    pop     hl                    ;   HL = BufAdr; Stack = PadCnt, PadLen, RtnAdr
+    pop     bc                    ;   BC = PadCnt; Stack = PadLen, RtnAdr
+    ex      af,af'                ;   A = PadChr
+    ex      de,hl                 ;   HL = BufPtr
+    call    .pad_it               ;   HL = BufPtr
+    pop     bc                    ;   BC = PadLen; Stack = RtnAdr
+    ret
+.padleft
+    push    hl                    ;   Stack = StrDsc, RtnAdr
+    or      a                     ;   Clear carry
+    ld      hl,0
+    sbc     hl,bc                 ;   Padlen = -PadLen
+    ld      b,h
+    ld      c,l                   ;   BC = PadLen
+    pop     hl                    ;   HL = StrDsc; Stack = RtnAdr
+    push    bc                    ;   Stack = PadLen, RtnAdr
+    push    de                    ;   Stack = BufAdr, PadLen, RtnAdr
+    call    .padcount             ;   A = PadCnt, BC = StrLen, DE = StrAdr, HL = PadCnt
+    jr      nc,.no_trunc          ;   If StrLen > PadLen
+    add     hl,bc                 ;     HL = PadLen
+    push    hl                    ;     Stack = PadLen, BufAdr, PadLen, RtnAdr
+    ex      de,hl                 ;     HL = StrAdr, DE = PadLen
+    add     hl,bc
+    sbc     hl,de                 ;     HL = StrPtr
+    pop     bc                    ;     BC = PadLen; Stack = BufAdr, PadLen, RtnAdr
+    pop     de                    ;     DE = BufAdr; Stack = PadLen, RtnAdr
+    jr      .copy                 ;   Else
+.no_trunc
+    ex      de,hl                 ;     HL = StrAdr, DE = PadCnt
+    ex      (sp),hl               ;     HL = BufPtr; Stack = StrAdr, PadLen, RtnAdr
+    push    bc                    ;     Stack = StrLen, StrAdr, PadLen, RtnAdr
+    ld      b,d
+    ld      c,e                   ;     BC = PadLen
+    ex      af,af'                ;     A = PadChr
+    call    .pad_it               ;     HL = BufPtr
+    ex      de,hl                 ;     DE = BufPtr
+    pop     bc                    ;     BC = StrLen; Stack = StrAdr, PadLen, RtnAdr
+    pop     hl                    ;     HL = StrAdr; Stack = PadLen, RtnAdr
+.copy
+    ldir
+    pop     bc                    ;   BC = PadLen; Stack = RtnAdr
+    ret
+
+
+; In: BC: PadLen, HL: StrDsc
+; Out: BC = StrLen, DE = StrAdr, HL = PadCnt
+.padcount:
+    push    bc                    ; Stack = PadLen, RtnAdr
+    call    string_addr_len       ; DE = StrAdr, BC = StrLen
+    pop     hl                    ; HL = PadLen; Srack = PadLen, RtnAdr
+    or      a                     ; Clear carry
+    sbc     hl,bc                 ; HL = PadLen - StrLen
+    ret
+; In: HL = BufPtr, BC = PadLen; Out HL = BufPtr
+.pad_it
+    ld      e,a                   ; E = PadChr
+    ld      a,b
+    or      a                     ; If BC < 0
+    ret     m                     ;   Return
+.loop
+    ld      a,b
+    or      c                     ; If BC = 0
+    ret     z                     ;   Return
+    ld      (hl),e                ; Write PadChr to Buffer
+    inc     hl
+    dec     bc                    ; Decrement BC
+    jr      .loop

@@ -99,7 +99,7 @@ EXTCMDS:
     db $80 + 'V',"AR"             ; $9D             
     db $80 + 'E',"RASE"           ; $9E
     db $80 + 'S',"PLIT"           ; $9F
-    db $80 + ' '                  ; $A0
+    db $80 + 'P',"AD"             ; $A0
     db $80 + 'W',"ORD"            ; $A1
     db $80 + 'C',"LIP"            ; $A2
     db $80 + 'P',"TR"             ; $A3
@@ -170,6 +170,7 @@ BRKTK     equ     $9A
 LOOPTK    equ     $9B
 STRTK     equ     $9C
 VARTK     equ     $9D
+PADTK     equ     $A0 
 WORDTK    equ     $A1
 CLIPTK    equ     $A2
 PTRTK     equ     $A3

@@ -394,9 +394,22 @@ get_byte200:
     ret
 
 ;-----------------------------------------------------------------------------
-; Parse Character as byte or string
-; Output: A = Character ASCII value
+; Parse Optional Character after comma as byte or string
+;  Input: C = Default character
+; Output: A,C = Character ASCII value
 ; Clobbers: BC,DE
+;-----------------------------------------------------------------------------
+get_char_optional:
+    ld      a,(hl)                ; Get current character
+    cp      ','                   ; If not comma
+    ld      a,c                   ;   
+    ret     nz                    ;   Return default character
+skip_get_char:
+    rst     CHRGET                ; Skip character before expression
+;-----------------------------------------------------------------------------
+; Parse Character as byte or string
+; Output: A,C = Character ASCII value
+; Clobbers: B,DE
 ;-----------------------------------------------------------------------------
 get_char:
     call    FRMEVL                ; Evaluate Character
@@ -405,13 +418,14 @@ get_char:
     call    CONINT                ;   Convert to byte
     ret                           ; Else
 .string
-    push    hl                    ; Stack = TxtPtr, Cols, Rows, RtnAdr
+    push    hl                    ; Stack = TxtPtr, RtnAdr
     call    free_addr_len         ; BC = StrLen, DE = StrAdr
-    pop     hl                    ; HL = TxtPtr; Stack = Cols, Rows, RtnAdr
+    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     xor     a
     or      c
     jp      z,FCERR               ; Error if LEN = 0
     ld      a,(de)                ;   Get first character
+    ld      c,a
     ret
 
 ;-----------------------------------------------------------------------------

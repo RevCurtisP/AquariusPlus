@@ -166,6 +166,7 @@
  - [x] **ON ERROR GOTO _lineref_** - Enable or disable error trapping.<!--ON-->
  - [x] **OPEN** - _Not implemented._
  - [x] **OUT _port_,_byte_** - Write to a Z80 port.<!--OUT-->
+ - [ ] **PAD$(string,length{,char})** - Pad string on left or right.
  - [x] **PAUSE** - Halt program execution until key is pressed.<!--PAUSE-->
  - [x] **PAUSE _jiffies_** - _Not implemented._
  - [x] **PAUSE PT3** - Pause currently playing PT3 track.

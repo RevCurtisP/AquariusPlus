@@ -1,4 +1,4 @@
-100 REM Test TRIM functions
+100 REM Test TRIM and PAD functions
 110 QU=0:REM 0=Screen,1=Printer
 120 SCREEN 3:SET FNKEY 3 TO \"run /au/tr.baq\r"
 130 GOSUB _init
@@ -51,3 +51,13 @@
 372 GOSUB _assert: ARGS "TRIMEXT$(`no_ext`)=`no_ext`"
 373 GOSUB _assert: ARGS "TRIMEXT$(`a/b/file.tmp`)=`a/b/file`"
 
+400 GOSUB _title:ARGS("PAD$")
+401 GOSUB _assert:ARGS "PAD$(`xyz`,9)=`xyz      `"
+402 GOSUB _assert:ARGS "PAD$(`xyz`,-10)=`       xyz`"
+403 GOSUB _assert:ARGS "PAD$(`xyz`,1)=`x`"
+404 GOSUB _assert:ARGS "PAD$(`xyz`,-2)=`yz`"
+405 GOSUB _assert:ARGS "PAD$(`xyz`,0)=``"
+406 GOSUB _assert:ARGS "PAD$(`xyz`,9,`!`)=`xyz!!!!!!"
+407 GOSUB _assert:ARGS "PAD$(`xyz`,-10,`@`)=`@@@@@@@xyz`"
+408 GOSUB _assert:ARGS "PAD$(`xyz`,5,0)=`xyz`+$`0000`"
+409 GOSUB _assert:ARGS "PAD$(`xyz`,-6,0)=$`000000`+`xyz`"

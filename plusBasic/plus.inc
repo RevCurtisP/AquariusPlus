@@ -77,7 +77,7 @@ BORDERCHR   equ $33FF   ; Border character alternate memory location (40 column 
 ; Color RAM Hole
 BORDERCLR   equ $37FF   ; Border color alternate memory location
 
-; plusBASIC temporary files
+; plusBASIC temporary sysvars
 ; FILNAM ($3851-$3856) - CLOAD/CSAVE File Name
 ; FILNAF ($3857-$385C) - File Name on Tape
 BUFADR      equ $3857   ; Unpack buffer address

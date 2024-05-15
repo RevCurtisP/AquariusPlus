@@ -1,4 +1,4 @@
-;-----------------------------------------------------------------------------
+3;-----------------------------------------------------------------------------
 ; plus.asm - plusBASIC specific statements and functions
 ;-----------------------------------------------------------------------------
 
@@ -636,94 +636,6 @@ LSERR:
 
 
 ;-----------------------------------------------------------------------------
-; TRIM functions stub
-;-----------------------------------------------------------------------------
-; ? TRIML$("   123   ");"<"
-; ? TRIMR$("   123   ");"<"
-; ? TRIM$("   123   ");"<"
-; ? TRIM$(\" \t1 2 3   \r\n")
-; ? TRIML$("@@@123@@@","@")
-; ? TRIMR$("@@@123@@@","@")
-; ? TRIM$("@@@123@@@","@")
-; ? TRIML$("*#*#123#*#","#*")
-; ? TRIMR$("#*#123*#*","#*")
-; ? TRIM$("#*#123#*#","*#")
-; ? TRIML$("      ");"<"
-; ? TRIMR$("      ");"<"
-; ? TRIM$("      ");"<"
-; ? TRIML$("@@@@@@","@");"<"
-; ? TRIMR$("@@@@@@","@");"<"
-; ? TRIM$("@@@@@@","@");"<"
-FN_TRIM:
-    rst     CHRGET            ; Skip TRIM
-    jp      m,.token
-    ld      iy,string_trim
-    cp      '$'
-    jr      z,trim_stringd
-    ld      iy,string_trim_left
-    cp      'L'
-    jr      z,trim_string
-    ld      iy,string_trim_right
-    SYNCHK  'R'
-    jr      trim_stringd
-.token
-    cp      XTOKEN            ; If XTOKEN
-    jr      z,.trimext        ;   Parse extended token
-    cp      DIRTK             ; If DIR
-    jp      z,FN_TRIMDIR      ;   Do TRIMDIR
-    jr      .snerr
-.trimext:
-    rst     CHRGET            ; Skip XTOKEN
-    cp      EXTTK             ; If EXT
-    jp      z,FN_TRIMEXT      ;   Do TRIMEXT$
-.snerr
-    jp      SNERR
-
-trim_stringd:
-    dec     hl                    ; Back up to before $
-trim_string:
-    push    iy                    ; Stack = TrmRtn, RetAdr
-    rst     CHRGET                ; Skip L/R
-    SYNCHK  '$'                   ; 
-    call    FRMPRN                ; Evaluate argument after (
-    call    CHKSTR                ; Error if not string
-    ld      de,(FACLO)            ; DE = ArgDsc
-    ld      bc,null_desc          ; BC = TrmDsc 
-    ld      a,(hl)                ; A = Next character
-    cp      ','                  
-    jr      nz,.notcomma          ; If comma
-    push    de                    ;   Stack = ArgDsc, TrmRtn, RetAdr
-    rst     CHRGET                ;   Skip comma
-    call    FRMEVL                ;   Evaluate argument
-    call    CHKSTR                ;   Error if not string
-    ld      bc,(FACLO)            ;   BC = TrmDsc
-    pop     de                    ;   DE = ArgDsc; Stack = TrmRtn, RetAdr
-.notcomma
-    pop     iy                    ; IY = TrmRtn; Stack = RetAdr
-    SYNCHK  ')'                   ; Require )
-    push    hl                    ; Stack = TxtPtr, RetAdr
-    push    de                    ; Stack = ArgDsc, TxtPtr, ret
-    ld      d,b
-    ld      e,c                   ; DE = TrmDsc
-    call    FRETMP                ; HL = TrmDsc
-    call    string_addr_len       ; DE = TrmAdr, A = TrmLen
-    pop     hl                    ; HL = ArgDsc; Stack = TxtPtr, RetAdr
-    push    af                    ; Stack = TrmLen, TxtPtr, RetAdr
-    push    de                    ; Stack = TrmAdr, TrmLen, TxtPtr, RetAdr
-    call    FRETM2                ; HL = ArgDsc
-    call    string_addr_len       ; DE = ArgAdr, C = ArgLen
-    ex      de,hl                 ; HL = ArgAdr
-    pop     de                    ; DE = TrmAdr; Stack = TrmLen, TxtPtr, RetAdr
-    pop     af                    ; A = TrmLen; Stack = TxtPtr, RetAdr
-    ld      b,a                   ; B = TrmLen
-    call    aux_call              ; DE = TrmAdr, C = TrmLen
-    or      a                     ; Set flags
-    jr      nz,.ret_str
-    ld      hl,REDDY-1
-.ret_str
-    jp      STRNEX                ; Create temporary and return it
-
-;-----------------------------------------------------------------------------
 ; FILL Statement stub
 ; FILL [@page], startaddr, oount, byte
 ; FILL [@page], startaddr, count, WORD word
@@ -820,6 +732,7 @@ ST_PUT:
 ;-----------------------------------------------------------------------------
 ; SET Statement stub
 ;-----------------------------------------------------------------------------
+; ToDo: SET MOUSE ON/OFF/TILE (mouse.asm)
 ST_SET:
     cp      TILETK                ; $F0
     jp      z,ST_SET_TILE
