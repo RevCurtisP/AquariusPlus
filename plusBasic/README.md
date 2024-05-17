@@ -6,10 +6,23 @@
     - [x] **{_+_|_-_}{_digit_...}** - An integer decimal number.<!--literals.int-->
     - [x] **$_hexdigit_...** - An integer hexadecimal number.<!--literals.hex-->
     - [x] **'_character_'** - An integer number equal to the ASCII code of _character_.<!--literals.chr-->
-  - _String literals_ evaluate to floating point of integer values.
+  - _String literals_ evaluate to a string of ASCII characters.
     - [x] **"{_character_...}"** - A string containing the specified characters.<!--literals.str-->
     - [x] **$"{_hexdigit_...}"** - A string containing the characters specified by each two-digit hexadecimal number.<!--literals.hexstr-->
     - [x] **\\"{{_\\_}_character_}..."** - A string containing C style escape codes.<!--literals.escstr-->
+## Variables
+  - _Numeric variables_ contain an floating point or integer numbers.
+    - [ ] **_alpha_{_alphanum_|~...}** - Numeric variable.
+    - [ ] **_alpha_{_alphanum_|~...}((_index_{,_index_...})** - Numeric array element.
+  - _String variables_ contain a string of ASCII characters.
+    - [ ] **_alpha_{_alphanum_|~...}$** - String variable.
+    - [ ] **_alpha_{_alphanum_|~...}$((_index_{,_index_...})** - String array element.
+  - _String slices_ represent a substring of a string variable.
+    - [ ] **_var$_[_pos_]** - Character _pos_ of string variable _var$_.
+    - [ ] **_var$_[_start_ TO _end_]** - Characters _start_ through _end_ of string variable _var$_.
+    - [ ] **_array$(...)_[_pos_]** - Character _pos_ of string array element _array$(...)_.
+    - [ ] **_array$(...)_[_start_ TO _end_]** - Characters _start_ through _end_ of string array element _array$(...)_.
+    
 ## Operators
  - *Arithmetic operations* evaluate performed using floating point math.<!--operators.arithmetic-->
    - [x] **- _expression_** - Negate expression<!--operators.arithmetic-->
@@ -166,7 +179,7 @@
  - [x] **ON ERROR GOTO _lineref_** - Enable or disable error trapping.<!--ON-->
  - [x] **OPEN** - _Not implemented._
  - [x] **OUT _port_,_byte_** - Write to a Z80 port.<!--OUT-->
- - [ ] **PAD$(string,length{,char})** - Pad string on left or right.
+ - [ ] **PAD$(string,length{,char})** - Pad string on left or right.<!--PAD-->
  - [x] **PAUSE** - Halt program execution until key is pressed.<!--PAUSE-->
  - [x] **PAUSE _jiffies_** - _Not implemented._
  - [x] **PAUSE PT3** - Pause currently playing PT3 track.

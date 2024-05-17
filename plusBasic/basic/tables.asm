@@ -320,6 +320,7 @@ err_codes:
         word    MSGUD
         word    MSGTO
         word    MSGIM
+        word    MSGBR
 err_disk:
         word    MSGBDF
         word    MSGFNF

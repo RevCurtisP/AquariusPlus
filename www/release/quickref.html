@@ -26,11 +26,34 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>'<em>character</em>'</strong> - An integer number equal to the ASCII code of <em>character</em>.<!--literals.chr--></li>
 </ul>
 </li>
-<li><em>String literals</em> evaluate to floating point of integer values.
+<li><em>String literals</em> evaluate to a string of ASCII characters.
 <ul class="contains-task-list">
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>&quot;&quot;</strong> - A string containing the specified characters.<!--literals.str--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>$&quot;&quot;</strong> - A string containing the characters specified by each two-digit hexadecimal number.<!--literals.hexstr--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>\&quot;{{<em>\</em>}<em>character</em>}...&quot;</strong> - A string containing C style escape codes.<!--literals.escstr--></li>
+</ul>
+</li>
+</ul>
+<h2 id="variables">Variables</h2>
+<ul>
+<li><em>Numeric variables</em> contain an floating point or integer numbers.
+<ul class="contains-task-list">
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong><em>alpha</em>{<em>alphanum</em>|~...}</strong> - Numeric variable.</li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong><em>alpha</em>{<em>alphanum</em>|~...}((<em>index</em>{,<em>index</em>...})</strong> - Numeric array element.</li>
+</ul>
+</li>
+<li><em>String variables</em> contain a string of ASCII characters.
+<ul class="contains-task-list">
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong><em>alpha</em>{<em>alphanum</em>|~...}$</strong> - String variable.</li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong><em>alpha</em>{<em>alphanum</em>|~...}$((<em>index</em>{,<em>index</em>...})</strong> - String array element.</li>
+</ul>
+</li>
+<li><em>String slices</em> represent a substring of a string variable.
+<ul class="contains-task-list">
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong><em>var$</em>[<em>pos</em>]</strong> - Character <em>pos</em> of string variable <em>var$</em>.</li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong><em>var$</em>[<em>start</em> TO <em>end</em>]</strong> - Characters <em>start</em> through <em>end</em> of string variable <em>var$</em>.</li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong><em>array$(...)</em>[<em>pos</em>]</strong> - Character <em>pos</em> of string array element <em>array$(...)</em>.</li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong><em>array$(...)</em>[<em>start</em> TO <em>end</em>]</strong> - Characters <em>start</em> through <em>end</em> of string array element <em>array$(...)</em>.</li>
 </ul>
 </li>
 </ul>
@@ -205,7 +228,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>ON ERROR GOTO <em>lineref</em></strong> - Enable or disable error trapping.<!--ON--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>OPEN</strong> - <em>Not implemented.</em></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>OUT <em>port</em>,<em>byte</em></strong> - Write to a Z80 port.<!--OUT--></li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>PAD$(string,length{,char})</strong> - Pad string on left or right.</li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>PAD$(string,length{,char})</strong> - Pad string on left or right.<!--PAD--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>PAUSE</strong> - Halt program execution until key is pressed.<!--PAUSE--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>PAUSE <em>jiffies</em></strong> - <em>Not implemented.</em></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>PAUSE PT3</strong> - Pause currently playing PT3 track.</li>

@@ -146,6 +146,8 @@ SKPLBL  equ     $205D   ;; | Skip label at beginning of line (SKPLBL)
 SKPLOG  equ     $2065   ;; | Skip Label in ON GOTO/GOSUB
 STRNGX  equ     $206A   ;; | Don't capitalize letters between single quotes
 CHKCMT  equ     $2072   ;; | Check for ' and treat as REM
+ISVARX  equ     $207A   ;; | Variable evaluation extension
+LETEXT  equ     $2082   ;; | LET extension
 
 endif                   
 EXTBAS  equ     $2000   ;;Start of Extended Basic
@@ -1441,8 +1443,13 @@ REMER:  ld      a,(hl)            ;[M80] GET A CHAR
         cp      '"'               ;[M80] IS IT A QUOTE?
         jr      z,EXCHQT          ;[M80] IF SO TIME TO TRADE
         jr      REMER             ;
-LET:    call    PTRGET            ; DE = VarPtr
-        rst     SYNCHK            ; Require '='
+LET:    
+ifdef aqplus
+        jp      LETEXT
+else
+        call    PTRGET            ; DE = VarPtr
+endif
+LETEQ:  rst     SYNCHK            ; Require '='
         byte    EQUATK            ;
 LETDO:  push    de                ; Stack = VarPtr
         ld      a,(VALTYP)        ; A = VarTyp
@@ -1897,7 +1904,12 @@ LABBCK: call    CHKNUM            ;[M80] FUNCTIONS THAT DON'T RETURN
         pop     hl                ;[M80] STRING VALUES COME BACK HERE
         ret                       ;
 ;;Get Variable Value or String Pointer
-ISVAR:  call    PTRGET            ;[M80] GET A POINTER TO THE VARIABLE IN [D,E]
+ISVAR:  
+ifdef aqplus
+        jp      ISVARX
+else
+        call    PTRGET            ;[M80] GET A POINTER TO THE VARIABLE IN [D,E]
+endif
 RETVAR: push    hl                ;[M80] SAVE THE TEXT POINTER
         ex      de,hl             ;{M80} PUT THE POINTER TO THE VARIABLE OR STRING DESCRIPTOR
         ld      (FACLO),hl        ;[M80]IN CASE IT'S STRING STORE POINTER TO THE DESCRIPTOR IN FACLO.
@@ -4635,7 +4647,7 @@ BUFCIN: push    af                ;Jump here to Return A as a string
         ld      e,a               ;[M80] CHAR TO [D]
         call    SETSTR            ;[M80] STUFF IN DESCRIPTOR AND GOTO PUTNEW
 NULRT:  ld      hl,REDDY-1        ;
-        ld      (FACLO),hl        ;
+STRSET: ld      (FACLO),hl        ;
         ld      a,1               ;
         ld      (VALTYP),a        ;;Set Type to String
         pop     hl                ;

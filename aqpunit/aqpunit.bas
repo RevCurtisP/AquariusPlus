@@ -29,6 +29,9 @@
 946 _yes_err:QV=-(ERR=QE):QR(QV)=QR(QV)+1:GOSUB _output:ARGS QR$(QV)+"Error"+STR$(QE)+" in "+QA$
 948 RESUME:ON ERROR GOTO 0:RETURN
 
+952 _outnewline:IF QU THEN LPRINT:RETURN
+954 PRINT:QL=QL+1:RETURN
+
 960 _outquoted:GOSUB _quotes:ARGS QA$ RETURN QU$:GOTO _output:ARGS QU$
 
 970 _quotes:QX$="":GETARGS QS$

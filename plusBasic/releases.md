@@ -1,4 +1,8 @@
 # plusBASIC Release History
+ - v0.22u
+   - Added string slicing in the form var$[pos] and var$[start TO end]
+   - Added Bad range error
+   - Fixed null string causing String too long error when used as an argument in % string substitution
  - v0.22t
    - Added PAD$ function
  - v0.22s

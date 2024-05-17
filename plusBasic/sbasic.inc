@@ -188,6 +188,7 @@ USERR       equ $06F3   ; Undefined line error
 DATA        equ $071C   ; Execute DATA statement
 REM         equ $071E   ; Execute REM statement
 LET         equ $0731   ; Execute LET statement
+LETEQ       equ $0734   ; Continue LET at '='
 LETDO       equ $0736   ; Execute LET, bypassing PTRGET and SYNCHK '='
 INBUFC      equ $0768   ; Copy temporary string to string variable
 NTOERR      equ $0782   ; Execute ON ... GOTO
@@ -198,11 +199,13 @@ FRMEQL      equ $0980   ; Evaluate formula after eating equal sign
 FRMPRN      equ $0983   ; Evaluate formula after eating open paren
 FRMEVL:     equ $0985   ; Evaluate formula
 FRMCHK      equ $0986   ; Skip current character, then evaluate formula
+NTPLUS      equ $09BA   ;
 EVALOP      equ $09C3   ; Operator evaluator in FRMEVL
 QDOT:       equ $0A14   ; Continue EVAL routine
 PARCHK:     equ $0A37   ; Evaluate expression in` brackets
 LABBCK:     equ $0A49   ; Return numeric value from function
 ISVAR       equ $0A4E   ; Get variable value or string pointer
+RETVAR      equ $0A51   ; Put value of variable pointed to by DE in FACLO
 GIVINT      equ $0B21   ; Float Integer MSB=[A], LSB=[C]
 FLOATD      equ $0B23   ; Float Integer MSB=[A], LSB=[D]
 SNGFLT:     equ $0B36   ; Store variable 8 bit (out: B = value)
@@ -243,6 +246,7 @@ GETSPA:     equ $0EB3   ; Allocate string space
 STROUT:     equ $0E9D   ; Print null-terminated string in HL
 STRPRT      equ $0EA0   ; Print string with descriptor in FACLO
 GARBA2      equ $0EDB   ; Perform garbage collection
+CAT         equ $0F7C   ; String Concatenation Routine
 MOVSTA      equ $0FBC   ; Copy A bytes from [BC] to [DE]
 MOVSTR      equ $0FBD   ; Copy L bytes from [BC] to [DE]
 FRESTR      equ $0FC6   ; Free tempory string, return string descriptor address in HL
@@ -285,6 +289,7 @@ OUTDO       equ $198A   ; Output a Character
 CRDO:       equ $19EA   ; Print CR+LF
 BUFCIN      equ $1A02   ; Return A as string from function 
 NULRT       equ $1A0B   ; Return null string
+STRSET      equ $1A0E   ; Put HL in FACLO and 1 in VALTYP
 CHARCG      equ $1A18   ; Get saved keypress, check for Ctrl-C
 ISCNTC      equ $1A25   ; Check for Ctrl-C and Ctrl-S
 ISCNTS      equ $1A29   ; Check for Ctrl-S

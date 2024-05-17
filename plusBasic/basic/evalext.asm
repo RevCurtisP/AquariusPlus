@@ -16,17 +16,17 @@ eval_extension:
     jp      c,FIN                 ; IF NUMERIC, INTERPRET CONSTANT
     call    ISLETC                ; VARIABLE NAME?
     jp      nc,ISVAR              ; AN ALPHABETIC CHARACTER MEANS YES
-    cp      '$'                       
-    jr      z,.eval_hex     
-    cp      $27                   ; Apostrophe                       
-    jp      z,eval_ascii     
+    cp      '$'
+    jr      z,.eval_hex
+    cp      $27                   ; Apostrophe
+    jp      z,eval_ascii
     cp      $5C                   ; Backslash
     jp      z,_escaped
     cp      LISTTK
     jp      z,eval_list
     cp      PLUSTK                ; IGNORE "+"
     jp      z,eval_extension      ;
-    jp      QDOT     
+    jp      QDOT
 
 .eval_hex:
     inc     hl                    ; Bump Text Pointer
@@ -35,7 +35,7 @@ eval_extension:
     cp      '"'                   ; If Not a Quote
     jp      nz,eval_hex_int       ;   Convert HEX Number
     inc     hl                    ; Bump Again
-eval_hex_str:     
+eval_hex_str:
     call    STRLTI                ; Get String Literal
     push    hl                    ; Save Text Pointer
     jp      hex_to_asc            ; Convert to ASCII
@@ -45,9 +45,9 @@ eval_hex_int:
     ld      (VALTYP),a        ; Returning Number
     ld      c,a               ; Parse up to 255 characters
 _eval_hex:
-    ld      d,a               
+    ld      d,a
     ld      e,a               ; DE is the parsed Integer
-.hex_loop:    
+.hex_loop:
     dec     c
     jp      z,FLOAT_DE        ; Last Character - float it
     rst     CHRGET
@@ -65,7 +65,7 @@ _eval_hex:
     sub     '0'               ; Convert Hex Digit to Binary
     ld      b,4               ; Shift DE Left 4 bits
 .sla_loop
-    sla     e                
+    sla     e
     rl      d
     jp      c,OVERR           ;   Overflow!
     djnz    .sla_loop
@@ -74,11 +74,11 @@ _eval_hex:
     jr      .hex_loop         ; Look for Next Hex Digit
 
 .hex_cdtoken:
-    ld      a,d               
+    ld      a,d
     or      a                 ; If there's anything in the MSB
     jp      nz,OVERR          ;   Overflow!
     ld      d,e               ; Move LSB to MSB
-    ld      e,$CD             ; Make LSB CD  
+    ld      e,$CD             ; Make LSB CD
     jr      .hex_loop
 
 hex_to_asc:
@@ -113,29 +113,29 @@ hex_to_asc:
     jp      PUTNEW          ; Return Result String
 
 get_hex:
-    ld      a,(hl)          ; Get Hex Digit 
+    ld      a,(hl)          ; Get Hex Digit
     inc     hl              ; Bump Pointer
 cvt_hex:
-    cp      '.'             
+    cp      '.'
     jr      nz,.not_dot     ; If dot
     add     '0'-'.'         ;   Convert to 0
 .not_dot
-    cp      ':'             ; Test for Digit 
+    cp      ':'             ; Test for Digit
     jr      nc,.not_digit   ; If A <= '9'
     sub     '0'             ;   Convert Digit to Binary
     jr      c,.fcerr        ;   If it was less than '0', Error
-    ret                     ;   Else Return 
+    ret                     ;   Else Return
 .not_digit
     and     $5F             ; Convert to Upper Case
     sub     'A'-10          ; Make 'A' = 10
     jr      c,.fcerr        ; Error if it was less than 'A'
     cp      16              ; If less than 16
     ret     c               ;   Return
-.fcerr                      ; Else 
+.fcerr                      ; Else
     jp      FCERR           ;   Error
 
 null_string:
-    ld      hl,REDDY-1      ; Point at ASCII 0 
+    ld      hl,REDDY-1      ; Point at ASCII 0
     push    bc              ; Put Dummy Return Address on Stack
     jp      TIMSTR          ; Literalize and Return It
 
@@ -164,7 +164,7 @@ eval_ascii:
 ;; \e $1B Escape, \l LineFeed
 _escaped:
     inc     hl              ; Skip backslash
-    ld      a,(hl)          ; 
+    ld      a,(hl)          ;
     cp      '"'             ; If not followed by quotes
     jp      nz,SNERR        ;   Syntax error
     inc     hl              ; Skip quotes
@@ -178,7 +178,7 @@ _escaped:
     inc     hl              ; Bump to NxtChr
     cp      '"'             ; If double quote
     jr      z,.done         ;   Finish up
-    cp      $5C            
+    cp      $5C
     jr      nz,.no_escape   ; If backslash
     ld      a,(hl)
     inc     hl              ;   Eat it
@@ -187,10 +187,10 @@ _escaped:
     cp      'y'             ;   or <= 'x'
     jr      c,.sequence     ;     Interpret escape sequence
 .no_escape
-    ld      (de),a          ;   
+    ld      (de),a          ;
     inc     de
     jr      .escape_loop
-.sequence    
+.sequence
     ld      c,a             ; Save character
     ld      b,7             ; ^G
     sub     'a'             ;
@@ -218,14 +218,14 @@ _escaped:
     dec     a               ; If \x
     jr      z,.hexit        ;   Do hex to ascii
     ld      b,c             ; No map - write character
-.buff_it    
+.buff_it
     ld      a,b             ; Write mapped character to buffer
     jr      .no_escape      ; and loop
 .crlf
     ld      a,13            ; C/R
     ld      (de),a          ;  in the buffer
     inc     de
-    ld      a,10            ; L/F 
+    ld      a,10            ; L/F
     jr      .no_escape      ;  in and loop
 .hexit
     call    get_hex
@@ -262,7 +262,7 @@ oper_extension:
     jp        EVALOP              ;   Do the operator
 .notmod
     cp        XORTK
-    jp        nz,HOOK29+1         ; 
+    jp        nz,HOOK29+1         ;
     ld        hl,optab_xor        ;   HL = OPTAB entry
     jp        EVALOP              ;   Do the operator
 
@@ -276,7 +276,7 @@ optab_xor:
 ; MOD operator: LeftArg - INT( LeftArg / RightArg ) * RightArg
 oper_mod:
     pop     bc                    ; BCDE = LeftArg
-    pop     de  
+    pop     de
     push    de                    ; Stack = LeftArg
     push    bc
     ld      hl,(FACLO)            ; Stack = RightArg, LeftArg
@@ -289,7 +289,7 @@ oper_mod:
     pop     de
     call    FMULT                 ; FACC = RightArg * INT(LeftArg/Right)
     pop     bc                    ; BCDE = LeftArg
-    pop     de  
+    pop     de
     jp      FSUB                  ; Return LeftArg - RightArg * INT(LeftArg/Right)
 
 ; XOR operator - Copied from AND/OR
@@ -298,21 +298,21 @@ oper_xor:
     call    CHKNUM                ;[M65] MUST BE NUMBER
     call    FRCINT                ;COERCE RIGHT HAND ARGUMENT TO INTEGER
     pop     af                    ;GET BACK THE PRECEDENCE TO DISTINGUISH "AND" AND "OR"
-    ex      de,hl             
-    pop     bc                
-    ex      (sp),hl           
-    ex      de,hl             
-    call    MOVFR             
-    push    af                
-    call    FRCINT            
-    pop     af                
-    pop     bc                
-    ld      a,c               
+    ex      de,hl
+    pop     bc
+    ex      (sp),hl
+    ex      de,hl
+    call    MOVFR
+    push    af
+    call    FRCINT
+    pop     af
+    pop     bc
+    ld      a,c
     ld      hl,GIVINT             ;{M80} PLACE TO JUMP WHEN DONE
-    xor     e                     
-    ld      c,a                   
-    ld      a,b                   
-    xor     d                     
+    xor     e
+    ld      c,a
+    ld      a,b
+    xor     d
     jp      (hl)                  ;[M80] RETURN THE INTEGER [A,L]
 
 ;;; ToDo: Give ERRMO or ERRTO if number of operands don't match.
@@ -322,7 +322,7 @@ oper_stringsub:
     call    get_strbuf_addr     ; HL = BufAdr
     ex      (sp),hl             ; HL = TxtPtr; Stack = BufPtr, RtnAdr
     call    GETYPE              ; If expression is not a string
-    jp      nz,SNERR            ;   Syntax error
+    jp      nz,TMERR            ;   Type mismatch error
     rst     CHRGET              ; Skip %
     SYNCHK  '('                 ; Require (
     ex      (sp),hl             ; HL = BufPtr; Stack = TxtPtr, RtnAdr
@@ -332,22 +332,22 @@ oper_stringsub:
     call    free_addr_len       ; DE = StrAdr, BC = StrLen
     ld      b,1                 ; B = ReqComma, C = StrLen
     pop     hl                  ; HL = BufPtr; Stack = DatLen, TxtPtr, RtnAdr
-.loop:      
+.loop:
     inc     c                   ; Bump to Test at beginning of loop
     dec     c                   ; If not end of string
-    jr      z,.done         
+    jr      z,.done
     ld      a,(de)              ;   A = StrChar
     inc     de                  ;   Bump StrPtr
-    cp      '%'                     
-    jr      nz,.copychar        ;   If substitution character        
-    ex      af,af'                  
+    cp      '%'
+    jr      nz,.copychar        ;   If substitution character
+    ex      af,af'
     dec     c                   ;     If character follows
-    jr      z,.copychar              
+    jr      z,.copychar
     ld      a,(de)              ;       A = NextChar
     cp      '%'                 ;       If substitution character
     jr      z,.substitute       ;         Go substitute it
-    ex      af,af'                  
-.copychar:                      ;   
+    ex      af,af'
+.copychar:                      ;
     ld      (hl),a              ;   Write A to StrBuf
     inc     hl                  ;   Bump StrPtr
     pop     af                  ;   A = DatLen; Stack = BufPtr, RtnAdr
@@ -374,7 +374,7 @@ oper_stringsub:
     dec     b                   ; Update ReqComma
     jr      z,.nocomma          ; If not first arg
     SYNCHK  ','                 ;   Require comma
-.nocomma:   
+.nocomma:
     push    de                  ; Stack = StrPtr, DatLen, BufPtr, RtnAdr
     push    bc                  ; Stack = ReqCnt, StrPtr, DatLen, BufPtr, RtnAdr
     call    FRMEVL              ; Evaluate argument
@@ -390,7 +390,7 @@ oper_stringsub:
     jr      z,.notnum           ; If numeric
     call    FOUT                ;   Convert to text
     call    STRLIT              ;   Create Temp String
-.notnum                         ; 
+.notnum                         ;
     call    FRETMS
     call    free_addr_len       ; DE = ArgAdr, BC = ArgLen
 .spaces
@@ -408,6 +408,9 @@ oper_stringsub:
     pop     af                  ; A = DatLen; Stack = StrPtr, ReqCnt, TxtPtr, RtnAdr
     ld      b,c                 ; B = ArgLen
     ld      c,a                 ; C = DatLen
+    ld      a,b                 ; A = ArgLen
+    or      a                   
+    jp      z,.empty            ; If ArgLen > 0
 .copy
     ld      a,(de)              ; Copy from arg to buffer
     ld      (hl),a
@@ -416,14 +419,155 @@ oper_stringsub:
     inc     c                   ; Bump DatLen
     jp      z,LSERR             ; Error if > 255
     djnz    .copy               ; Do next arg character
-; Return with BC = ReqCnt, DE = StrPtr, HL = BufPtr; Stack = DatLen, TxtPtr, RtnAdr    
+.empty
+; Return with BC = ReqCnt, DE = StrPtr, HL = BufPtr; Stack = DatLen, TxtPtr, RtnAdr
     ld      a,c                 ; A = DatLen
     pop     de                  ; DE = StrPtr; Stack = ReqCnt, TxtPtr, RtnAdr
     pop     bc                  ; BC = ReqCnt; Stack = TxtPtr, RtnAdr
     push    af                  ; Stack = DatLen, TxtPtr, RtnAdr
     jr      .loop               ; Do next StrChr
+
+; clear:s$="abcd":s$[2]="x":?s$
+; clear:s$="abcd":s$[1,1]="x":?s$
+; S$="abcde"
+; S$[2]="x"
+; ? S$
+; S$[3 TO 4]="yz"
+; ? S$
+; 10 S$="abc":S$[2]="*":LIST
+; Errors
+; s$="abcd":s$[0]="x"
+; s$="abcd":s$[5]="x"
+; 
+; ToDo: If string text not in string space, copy it in and reassign
+let_extension:
+    call    GETYPE                ; If not string variable
+    jp      nz,LETEQ              ;   Continue LET
+    ld      a,(hl)
+    cp      '['                   ; If not followed by '['
+    jp      nz,LETEQ              ;   Continue LET
+    rst     CHRGET                ; Skip '['
+    call    copy_literal_string   ; If literal string, copy to string space
+    push    de                    ; Stack = VarPtr, RtnAdr
+    call    get_substring_range   ; DE = StrAdr, A,BC = StrLen, H = FrmPos, L = ToPos; Stack = TxtPtr, RtnAdr
+    cp      h                     ; If FrmPos > StrLen
+    jp      c,BRERR               ;   Substring out of range error
+    ex      (sp),hl               ; HL = TxtPtr; Stack = FrmTo, RtnAdr
+    rst     SYNCHR
+    byte    EQUATK                ; Require =
+    ex      (sp),hl               ; H = FrmPos, L = ToPos; Stack = TxtPtr, RtnAdr
+    push    de                    ; Stack = StrAdr, TxtPtr, RtnAdr
+    call    range_offset_len      ; DE = DstOfs, A = DstLen
+    pop     hl                    ; HL = StrAdr; Stack = TxtPtr, RtnAdr
+    jp      c,NULRT               ; If SubLen > StrLen, return ""
+    add     hl,de                 ; HL = SubAdr
+    ex      (sp),hl               ; HL = TxtPtr; Stack = DstAdr, RtnAdr
+    push    af                    ; Stack = DstLen, DstAdr, RtnAdr
+    call    FRMEVL                ; Evaluate Formula
+    pop     af                    ; A = DstLen; Stack = DstAdr, RtnAdr
+    ex      (sp),hl               ; HL = DstAdr; Stack = TxtPtr, RtnAdr
+    push    hl                    ; Stack = DstAdr, TxtPtr, RtnAdr
+    push    af                    ; Stack = DstLen, SubAdr, TxtPtr, RtnAdr
+    call    free_addr_len         ; DE = ScrAdr, BC = SrcLen
+    jp      z,pop3hl_ret          ; If "", just return
+    pop     af                    ; A = DstLen; Stack = DstAdr, TxtPtr, RtnAdr
+    cp      c                     
+    jr      nc,.skip              ; If SrcLen > DstLen
+    ld      c,a                   ;   SrcLen = DstLen
+.skip
+    pop     hl                    ; HL = DstAdr; Stack = TxtPtr, RtnAdr
+    ex      de,hl                 ; HL = SrcAdr, DE = DstAdr
+    ldir                          ; Copy into string variable
+    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
+    ret
     
+pop3hl_ret:    
+    pop     hl                    ; HL = SubLen; Stack = SubAdr, TxtPtr, RtnAdr
+pop2hl_ret:
+    pop     hl                    ; HL = SubAdr; Stack = TxtPtr, RtnAdr
+    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
+    ret
+
+; In: DE = VarPtr
+; CLobbers: A,BC
+copy_literal_string:
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    push    de                    ; Stack = VarPtr, TxtPtr, RtnAdr
+    ex      de,hl                 ; HL = VarPtr
+    call    string_addr_len       ; DE = StrAdr, BC = StrLen
+    jr      z,pop2hl_ret          ; If StrLen = 0, pop VarPtr & TxtPtr and return
+    ex      de,hl                 ; HL = StrAdr
+    ld      DE,(STRSPC)           ; DE = Bottom of String Space
+    rst     COMPAR                ; If StrAdr >= StrSpc
+    jr      nc,pop2hl_ret         ;   Pop VarPtr & TxtPtr and return
+    pop     hl                    ; HL = VarPtr; Stack = TxtPtr, RtnAdr
+    push    hl                    ; Stack = VarPtr, TxtPtr, RtnAdr
+    call    STRCPY                ; DE = DSCTMP
+    pop     hl                    ; HL = VarPtr; Stack = TxtPtr, RtnAdr
+    push    hl                    ; Stack = VarPtr, TxtPtr, RtnAdr
+; Copy (DSCTMP) to (HL)
+copy_dsctmp:
+    ld      de,DSCTMP
+    call    VMOVE                 ; Copy (DSCTMP) to (VarPtr)
+    pop     de                    ; DE = VarPtr; Stack = TxtPtr, RtnAdr
+    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
+    ret
     
+; var$[p] evaluates to character p of var$
+; var$[f TO t] evaluates to characters f through t of var$
+isvar_extension:
+    ld      a,(VALTYP)
+    or      a                     ; If not string variable
+    jp      z,RETVAR              ;   Return it
+    ld      a,(hl)
+    cp      '['                   ; If not followed by [
+    jp      nz,RETVAR             ;   Return it
+    rst     CHRGET                ; Skip [
+; Get substring
+    push    de                    ; Stack = VarPtr, RtnAdr
+    call    get_substring_range   ; DE = StrAdr, A,BC = StrLen, H = FrmPos, L = ToPos; Stack = TxtPtr, RtnAdr
+    jp      z,NULRT               ; If StrLen = 0, return ""
+    push    de                    ; Stack = StrAdr, TxtPtr, RtnAdr
+    call    range_offset_len      ; DE = SubOfs, A = SubLen
+    pop     hl                    ; HL = StrAdr; Stack = TxtPtr
+    jp      c,NULRT               ; If SubLen > StrLen, return ""
+    add     hl,de                 ; HL = SubAdr
+    ex      de,hl                 ; DE = SubAdr
+    call    STRAD2                ; HL = DSCTMP  
+    jp      PUTNEW                ; Make temporary and put inFACLO
+
+get_substring_range:
+    call    get_byte_range        ; A,D = FrmPos, E = ToPos
+    pop     ix                    ; IX = RtnAdr
+    or      a
+    jp      z,BRERR               ; If FrmPos = 0, Subtring out of range error
+    SYNCHK  ']'                   ; Require ]
+    ex      (sp),hl               ; HL = VarPtr; Stack = TxtPtr
+    push    de                    ; Stack = FrmTo, TxtPtr
+    call    string_addr_len       ; DE = StrAdr, A,BC = StrLen
+    pop     hl                    ; H = FrmPos, L = ToPos; Stack = TxtPtr
+    jp      (ix)                  ; Return to caller
+
+    
+; Input: C = Max, H = From, L = To
+; Output: A = Length, DE = Offset
+; Sets carry if out of range
+range_offset_len:
+    ld      a,c                   ; A = Len
+    cp      h                     ; If Len < From
+    ret     c                     ;   Return Carry Set
+    cp      l
+    jr      nc,.skip              ; If Len < To
+    ld      l,a                   ;   To = Len
+.skip
+    ex      de,hl                 ; D = From, E = To
+    dec     d                     ; Offset = From - 1
+    ld      a,e                   ; E = To
+    sub     d                     ; A = Length
+    ld      e,d
+    ld      d,0                   ; DE = Offset
+    ret
+
 ;-----------------------------------------------------------------------------
 ; LIST$(line#) - Detozenize Line line#
 ; LIST(NEXT) - Detozenize following Line
@@ -433,7 +577,7 @@ eval_list:
     SYNCHK  '$'                   ; Require $
     SYNCHK  '('                   ; Requite (
     cp      NEXTK
-    jr      nz,.not_next          ; If NEXT 
+    jr      nz,.not_next          ; If NEXT
     rst     CHRGET                ;   Skip NEXT
     push    hl                    ;   Stack = TxtPtr, RtnAdr
     call    REM                   ;   HL = End of BASIC line
@@ -469,6 +613,6 @@ return_strbuf:
 return_strlit:
     dec     hl                    ; Back up to before string
     ld      b,0                   ; NUL is the only teminator
-    call    STRLT3            
+    call    STRLT3
     jp      TIMSTF                ; Return temporary string
 

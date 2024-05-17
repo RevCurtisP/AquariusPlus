@@ -33,7 +33,8 @@ ERRAG   equ     $32   ; 26 ARG without GOSUB
 ERRUD   equ     $34   ; 27 Undimensioned array
 ERRTO   equ     $36   ; 28 Too many operands
 ERRIM   equ     $38   ; 29 Invalid mode
-NONDSK  equ     $3A   ; 30 Last non disk error
+ERRBR   equ     $3A   ; 30 Bad range
+NONDSK  equ     $3C   ; 31 Last non disk error
 ; Disk errors
 DSKERRS equ     $60   ; Start of Disk Errors
 ERRBDF  equ     $60   ; 49 Bad File
@@ -136,7 +137,8 @@ MSGAG:  byte    "ARGS without GOSUB",0          ; 26
 MSGUD:  byte    "Undimensioned Array",0         ; 27 
 MSGTO:  byte    "Too many operands",0           ; 28
 MSGIM:  byte    "Invalid mode",0                ; 29
-        byte    0                               ; 30  Last non disk error                             
+MSGBR:  byte    "Bad range",0                   ; 30
+        byte    0                               ; 31  Last non disk error                             
 
 ; File System Errors                            ;     ESP32 Error
 doserr_messages:

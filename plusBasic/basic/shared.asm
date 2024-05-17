@@ -240,6 +240,7 @@ req_page_arg:
     SYNCHK  '@'
     call    GETBYT                ;   Parse byte into E
     ld      a,e
+setcarry_ret:
     scf                           ;   Return Carry Set
     ret
 _notat
@@ -307,6 +308,37 @@ get_addr_len:
     pop     de                    ; DE = Address, Stack = Page+Flag
     ret
 
+
+;-----------------------------------------------------------------------------
+; Parse Byte Operand followed by optional TO and second operand
+; Output: A,D = From Operand
+;         E = To Operand
+;         Carry Set if no TO operand
+;-----------------------------------------------------------------------------
+get_byte_range:
+    call    GETBYT                ; A = FrmOpd
+    ld      d,a                   ; D = FrmOpd
+    ld      e,a                   ; E = FrmOpd
+    ld      a,(hl)                ; A = NxtChr
+    cp      TOTK                  ; If not TO
+    ld      a,d                   ;   A = FrmOpd
+    jr      nz,setcarry_ret       ;   Return Carry Set
+    push    de                    ; Stack = FrmOpd, RtnAdr
+    rst     CHRGET                ; Skip TO
+    call    GETBYT                ; A = ToOpd
+    pop     de                    ; D = FrmOpd; Stack = RtnAdr
+    cp      d                     ; If ToOpd < FrmOpd
+    jr      c,BRERR               ;   Bad range error
+    ld      e,a                   ; E = ToOpd
+    ld      a,d                   ; A = FrmOpd
+    or      a                     ; Clear Carry
+    ret
+    
+; Substring out of range error
+BRERR:
+    ld      e,ERRBR
+    jp      ERROR
+    
 ;-----------------------------------------------------------------------------
 ; Parse Optional Byte Operand
 ; Output: A = Operand (terminator or comma if none)

@@ -86,13 +86,23 @@
     jp      c,LET                 ; If not token, do LET
     jp      GONEX                 ; Else evauate token
 
+    call    PTRGET                ; $207A IFVARX - String Variable extension
+    rst     HOOKDO                
+    byte    41
+    jp      RETVAR                ; Carry on
+
+    call    PTRGET                ; $2082 LETEXT - LET extension
+    rst     HOOKDO                
+    byte    42
+    jp      LETEQ                 ; Continue at '=' after variable name
+
 just_ret:
     ret
 
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.22t"
+    db "v0.22u"
     db 0
 plus_len   equ   $ - plus_text
 
@@ -153,25 +163,6 @@ init_banks:
     ; Back to system ROM init
     jp      JMPINI
 
-;-----------------------------------------------------------------------------
-; Cold boot entry point
-; Executed on RESET if no cartridge detected
-;-----------------------------------------------------------------------------
-_coldboot:
-
-; Fill BASIC Buffers Page with zeroes from 0 to $2FFF
-; leaving custom character set buffer untouched
-    call    page_set_basbuf
-    ld      hl,$C000
-    ld      bc,DEFCHRSET-1
-    call    sys_fill_zero
-
-    call    init_chrsets
-    call    load_ptplay
-    call    page_set_plus
-    call    spritle_clear_all     ; Clear all sprite properties
-    jp      do_coldboot
-
 ; Null string descriptor  
 null_desc:
     word    0,null_desc
@@ -195,6 +186,26 @@ _warm_boot:
     ld      a,128
     out     (IO_PCMDAC),a
     jp      WRMCON                ; Go back to S3 BASIC
+
+;-----------------------------------------------------------------------------
+; Cold boot entry point
+; Executed on RESET if no cartridge detected
+;-----------------------------------------------------------------------------
+_coldboot:
+
+; Fill BASIC Buffers Page with zeroes from 0 to $2FFF
+; leaving custom character set buffer untouched
+    call    page_set_basbuf
+    ld      hl,$C000
+    ld      bc,DEFCHRSET-1
+    call    sys_fill_zero
+
+    call    init_chrsets
+    call    load_ptplay
+    call    page_set_plus
+    call    spritle_clear_all     ; Clear all sprite properties
+    jp      do_coldboot
+
 
 ;-----------------------------------------------------------------------------
 ; Default Interrupt Handler
@@ -938,6 +949,8 @@ hook_table:                     ; ## caller   addr  performing function
     dw      skip_on_label       ; 38 SKPLOG   2065  Skip label in ON GOTO Check for pressed 
     dw      _string_ext         ; 39 STRNGX   206A  Don't capitalize letters between single quotes (STRNGX) Check for pressed 
     dw      _check_comment      ; 40 CHKCMT   2027  Check for ' and treat as REM
+    dw      isvar_extension     ; 41 ISVAR    0A4E  Parse variable and put value in FACLO                
+    dw      let_extension       ; 42 LET      0731  Extensions to the LET command
 
 ; ------------------------------------------------------------------------------
 ;  Execute Hook Routine
