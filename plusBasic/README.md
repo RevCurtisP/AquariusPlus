@@ -69,7 +69,7 @@
  - [x] **CLOAD {{?}_filename_}|\*_array_** - Load or verify program or load array data from cassette.
  - [x] **CLOSE** - _Not implemented._
  - [x] **CLS {_fgcolor_,_bgcolor_}** - Clear the text screen.<!--CLS-->
- - [ ] **COLOR _fgcolor_{,_bgcolor_}** - Set or get bitmap default color(s).
+ - [ ] **COLOR _fgcolor_{,_bgcolor_}** - Set or get bitmap default color(s).<!--COLOR-->
  - [x] **COMPARE (*_array_,*_array_)** - Compare the binary contents of two numeric arrays.<!--COMPARE-->
  - [x] **COMPARE ({@_page_,}_address_,{@_page_,}_address_,_length_)** - Compare two blocks of memory.<!--COMPARE-->
  - [x] **COMPARE (_filespec_,_filespec_)** - _Not implemented._<!--COMPARE-->
@@ -91,6 +91,8 @@
  - [x] **DEF INTLIST _strvar_=_integer_,...** - Create a string list of integers.
  - [x] **DEF PALETTELIST _strvar_=_palette_,...** - Create a string list of palette numbers.<!--DEFPALETTE-->
  - [x] **DEF RGBLIST _strvar_=_r_,_g_,_b_;...** - Create a string list of RGB values.<!--DEFRGB-->
+ - [ ] **DEF SPRITE _strvar_= _spritle_, _x-offset_, y-offset;...** - Create a sprite definition.<!--DEFSPRITE-->
+ - [ ] **DEF SPRITE _strvar_= [_spritle_,...],...** - Create a sprite definition.<!--DEFSPRITE-->
  - [x] **DEF TILELIST _strvar_=_tileno_,...** - Create a string list of palatte indexes.<!--DEFTILE-->
  - [x] **DEF USR=_address_** - _Not implemented._
  - [x] **DIM _array_(_dim_{,...}){,...}** - Create and allocates one or more arrays.
@@ -151,11 +153,11 @@
  - [x] **LOAD _filespec_,\*_array_,ASC** - Load multi-line ASCII file into string array.<!--LOAD-->
  - [x] **LOAD _filespec_,^_string_** - Load up to 255 characters of file into string variable.<!--LOAD-->
  - [ ] **LOAD BITMAP _filespec_** - Load bitmap screen file into Video RAM.
- - [x] **LOAD CHRSET _filespec_** - Load character set into alternate character buffer.<!--LOAD-->
+ - [x] **LOAD CHRSET _filespec_** - Load character set into alternate character buffer.<!--CHRSET-->
  - [x] **LOAD DIR _filespec_,\*_array_** - Load disk directory into string array.
- - [x] **LOAD FNKEYS _filespec_** - Load function key definitions from file.<!--LOAD-->
+ - [x] **LOAD FNKEYS _filespec_** - Load function key definitions from file.<!--FNKEYS-->
  - [ ] **LOAD MODULE** - _Proposed enhancement._
- - [x] **LOAD PALETTE _p_,_filespec_** - Load file data ino palette.<!--LOAD-->
+ - [x] **LOAD PALETTE _p_,_filespec_** - Load file data ino palette.<!--LOADPALETTE-->
  - [x] **LOAD PT3 _filespec_** - Load PT3 track into PT player buffer.
  - [x] **LOAD SCREEN _filespec_** - Load text screen from file.
  - [x] **LOAD TILEMAP** - _Not implemented._
@@ -194,10 +196,10 @@
  - [ ] **POINT(_x_,_y_)** - Return status of bloxel or pixel.<!--PSET-->
  - [x] **POKE {@_page_,}_address_,_byte_** - Write byte to memory.<!--POKE-->
  - [x] **POKE {@_page_,}_address_,_string_** - Write string to memory.<!--POKE-->
- - [x] **POKE COLOR _address_,_byte_** - Write byte to color RAM.<!--POKE-->
- - [x] **POKE COLOR _address_,_string_** - Write string to color RAM.<!--POKE-->
- - [x] **POKE SCREEN _address_,_byte_** - Write byte to screen RAM.<!--POKE-->
- - [x] **POKE SCREEN _address_,_string_** - Write string to screen RAM.<!--POKE-->
+ - [x] **POKE COLOR _address_,_byte_** - Write byte to color RAM.<!--POKESCREEN-->
+ - [x] **POKE COLOR _address_,_string_** - Write string to color RAM.<!--POKESCREEN-->
+ - [x] **POKE SCREEN _address_,_byte_** - Write byte to screen RAM.<!--POKESCREEN-->
+ - [x] **POKE SCREEN _address_,_string_** - Write string to screen RAM.<!--POKESCREEN-->
  - [x] **POS(_expression__)** - Return current cursor column.
  - [ ] **POSX** - Return 1bpp bitmap last x-position.
  - [ ] **POSY** - Return 1bpp bitmap last y-position.
@@ -233,7 +235,7 @@
  - [x] **SAVE _filespec_,\*_array_** - Save numeric or string array data to file.<!--SAVE-->
  - [ ] **SAVE BITMAP _filespec_** - Save bitmap screen data from Video RAM to file.
  - [x] **SAVE FNKEYS _filespec_** - Save function key definitions to file.
- - [x] **SAVE PALETTE _p_,_filespec_** - Save palette contents to file.<!--SAVE-->
+ - [x] **SAVE PALETTE _p_,_filespec_** - Save palette contents to file.<!--SAVEPALETTE-->
  - [ ] **SAVE SCREEN _filespec_** - Save text screen to file.
  - [x] **SAVE TILEMAP** - _Not implemented._
  - [x] **SCREEN {_text_},{_graphics_},{_sprites_},{_priority_},{_remap_}** - Set screen mode.<!--SCREEN-->
@@ -264,7 +266,7 @@
  - [x] **STOP** - Interrupt program execution.
  - [x] **STOP PT3** - Stop currently playing PT3 track.
  - [x] **STR$(_float_)** - Convert floating point number to ASCII string.
- - [x] **STRING$(_length_{,_byte_|_string_})** - Create string of repeated character.
+ - [x] **STRING$(_length_{,_byte_|_string_})** - Create string of repeated character.<!--STRING-->
  - [x] **STRPTR(_strvar_)** - Return address of text for string variable.
  - [x] **SWAP BITMAP|TILEMAP** - _Not implemented._
  - [x] **SWAP SCREEN** - Swap current text screen with respective screen buffer.
@@ -283,7 +285,7 @@
  - [x] **TRIMR$(_string_{,_string_})** - Remove characters from right end of string.
  - [x] **TRON** - Enable line tracing.
  - [x] **TROFF** - Disable line tracing.
- - [x] **USE CHRSET _0_|_1_|_filespec_** - Copy specified character set to character RAM.<!--USECHR-->
+ - [x] **USE CHRSET _0_|_1_|_filespec_** - Copy specified character set to character RAM.<!--CHRSET-->
  - [ ] **USE SCREEN {@_page_,}_text_,_graphics_** - _Not implemented._
  - [x] **USR(_expression_)** - Call user-defined machine language routine passing argument and returning result.
  - [x] **VAL(_float_)** - Convert ASCII string to floating point number.
