@@ -595,6 +595,7 @@ FN_VAR:
     call    PTRGET                ; Get Pointer
     jp      nz,FCERR              ; FC Error if Not There
     SYNCHK  ')'                   ; Require ')'
+    xor     a
     ld      (SUBFLG),a            ; Reset Sub Flag
     pop     af                    ; A = VarPfx; Stack = RtnAdr
     push    hl                    ; Stack = TxtPtr, RtnAdr

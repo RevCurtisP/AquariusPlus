@@ -3,8 +3,6 @@
 120 SCREEN 3:SET FNKEY 3 TO \"run /au/ss.baq\r"
 130 GOSUB _init
 
-190 goto 300
-
 200 GOSUB _title:ARGS "Eval string$[]"
 210 GOSUB _output:ARGS LIST$(NEXT)
 212 S$="abcd"

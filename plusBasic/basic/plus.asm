@@ -314,6 +314,80 @@ keytable:
 keytablen   equ   $-keytable
 
 ;-----------------------------------------------------------------------------
+; JOIN Statement
+; Syntax: JOIN *array$ INTO string$ DEL delimiter
+;-----------------------------------------------------------------------------
+; A$(1)="a":JOIN *A$ INTO S$ DEL "|":? S$
+; FOR I=0 TO 8:B$(I)=CHR$(I+64):NEXT:JOIN *B$ INTO S$ DEL ",":? S$
+ST_JOIN:
+    rst     CHRGET                ; Skip SPLIT
+    call    get_star_array        ; DE = AryAdr, BC = AryLen
+    call    _skipfirst            ; SPLITPTR = AryPtr, SPLITLEN = AryLen
+    jp      z,BSERR               ; If only one element, Bad subscript error
+    rst     SYNCHR
+    byte    INTTK
+    SYNCHK  'O'                   ; Require INTO   
+    ld      de,(ARYTAB)           
+    push    de                    ; Stack = AryTab, RtnAdr
+    call    get_stringvar         ; DE = VarPtr
+    ld      (SPLITDSC),de         ; SPLITDSC = VarPtr      
+    pop     de                    ; DE = OldTab; Stack = RtnAdr
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    ld      hl,(ARYTAB)           
+    sbc     hl,de                 ;  
+    ex      de,hl                 ; DE = AryTab-OldTab
+    ld      hl,(SPLITPTR)         ; If arrays moved
+    add     hl,de                 ; Adjust array pointer
+    ld      (SPLITPTR),hl         
+    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
+    rst     SYNCHR                ; Require DEL
+    byte    DELTK
+    call    get_char              ; A = DelChr
+    ld      (SPLITDEL),a          ; SPLITDEL = DelChr
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    call    get_strbuf_addr       ; HL = StrBuf
+    ld      (BUFADR),hl           ; BufAdr = StrBuf
+    ld      (BUFPTR),hl           ; BufPtr = StrBuf
+    ld      bc,0
+    ld      (BUFLEN),bc           ; BufLen = 0
+.loop
+    ld      hl,(SPLITPTR)         ; HL = AryPtr
+    call    string_addr_len       ; DE = StrAdr, BC = StrLen
+    ex      de,hl                 ; HL = StrAdr
+    ld      de,(BUFPTR)           ; DE = BufPtr
+    ld      a,(BUFLEN)            ; A = Buflen
+    jr      z,.empty              ; If StrLen > 0
+    add     c                     ;   A = BufLen + StrLen + 1
+    inc     a                     ;   If A > 255
+    jp      c,LSERR               ;     String to long error
+    ldir                          ;   DE = NewPtr
+    dec     a
+.empty
+    inc     a
+    ld      (BUFLEN),a            ;   BufLen = A 
+    ld      a,(SPLITDEL)          ; A = DelChr
+    ld      (de),a                ; (NewPtr) = DelChr
+    inc     de                    ; Bump NewPtr
+    ld      (BUFPTR),de           ; DE = NewPtr
+    call    _skipone              ; If not last element
+    jr      nz,.loop              ;   Loop
+    ld      hl,(BUFPTR)
+    dec     hl                    ; Back up to last delimiter
+    ld      (hl),0                ; Terminate string
+    ld      a,(BUFLEN)            ; A = StrLen
+    dec     a                     ; Cut last delimiter
+    call    STRINI                ; HL = DscTmp, DE = DstAdr
+    push    hl                    ; Stack = DscTmp, TxtAdr, RtnAdr
+    ld      hl,(BUFADR)           ; HL = StrBuf
+    ld      bc,(BUFLEN)           ; BC = BufLen
+    ldir                          ; Copy Buffer to String Space
+    pop     hl                    ; HL = DscTmp; Stack = TxtAdr, RtnAdr
+    ld      de,(SPLITDSC)         ; DE = VarPtr
+    call    MOVVFM                ; Copy StrDsc to Variable
+    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
+    ret
+
+;-----------------------------------------------------------------------------
 ; SPLIT Statement
 ; Syntax: SPLIT string$ INTO *array$ DEL delimiter
 ;-----------------------------------------------------------------------------
@@ -326,11 +400,10 @@ ST_SPLIT:
     byte    INTTK
     SYNCHK  'O'                   ; Require INTO   
     call    get_star_array        ; DE = AryAdr, BC = AryLen
-    ld      (SPLITADR),de         ; SPLITADR = AryAdr
-    ld      (SPLITLEN),bc         ; SPLITLEN = AryLen
+    ld      (SPLITADR),de         ; SPLITADR = array$(0)
     xor     a
     ld      (de),a                ; array$(0) = ""
-    call    .skipfirst            ; SPLITPTR = AryPtr, SPLITLEN = AryLen
+    call    _clearfirst           ; SPLITPTR = AryPtr, SPLITLEN = AryLen
     ret     z                     ; If array size = 1, return
     rst     SYNCHR                ; Require DEL
     byte    DELTK
@@ -360,7 +433,7 @@ ST_SPLIT:
     ldir                          ; Copy Source String to String Buffer
     xor     a
     ld      (de),a                ; Null terminate string
-    ld      (SPLITSEG),a          ; SPLITCNT = SegCnt
+    ld      (SPLITSEG),a          ; SPLITSEG = SegCnt
     pop     hl                    ; HL = BufPtr; Stack = TxtPtr, RtnAdr
 .loop
     push    hl                    ; Stack = SegPtr, TxtPtr, RtnAdr
@@ -409,7 +482,7 @@ ST_SPLIT:
     or      a                      
     jr      z,.done               ; If not null (end of SrcStr)  
     ld      bc,(SPLITLEN)         ;   BC = AryLen
-    call    .countdown            ;   If not last element
+    call    _countdown            ;   If not last element
     jr      nz,.loop              ;     Get next segment
 .done
     ld      a,(SPLITSEG)          ; A = SegCnt
@@ -433,36 +506,46 @@ ST_SPLIT:
     ld      hl,(SPLITADR)         ; HL = SPLITADR
     call    write_bcde2hl         ; Write string descriptor to VAR$(0)
 .abort
+    ld      bc,(SPLITLEN)
+    ld      hl,(SPLITPTR)
+    call    fill_array_hl
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     ret
 
-.skipfirst
+;Input HL: Pointer into Array, BC: Remaining Array Length
+fill_array_hl:
+    ld      a,b                   
+    or      c                     ; If BC = 0
+    ret     z                     ;   Return
+    jp      sys_fill_zero         ; Fill to end with 0 bytes
+
+_skipone
+    ld    de,(SPLITPTR)
+    ld    bc,(SPLITLEN)
+_skipfirst
+    inc   de
+    inc   de
+    inc   de
+    inc   de
+    jr    _splitptr
+_clearfirst
     xor     a
     ld      b,4
 .skiploop
     ld      (de),a
     inc     de
     djnz    .skiploop
+_splitptr
     ld      (SPLITPTR),de         ; SPLITPTR = AryPtr
-.countdown
+_countdown
     dec     bc
     dec     bc
     dec     bc
     dec     bc                    ; AryLen = AryLen - 4
     ld      (SPLITLEN),bc         ; SPLITLEN = AryLen
-.array_len
+_array_len
     ld      a,b
     or      c                     ;   If not last element
-    ret
-
-get_delimiter:
-    call    FRMEVL                ; Evaluate delimiter
-    push    hl                    ;   Stack = TxtPtr, RtnAdr
-    call    FRESTR                ;   HL = DelDsc
-    call    string_addr_len       ;   DE = DelAdr, BC = DelLen
-    pop     hl
-    ret     z                     ;   If not null string
-    ld      a,(de)                ;     A = DelChr
     ret
 
 ;-----------------------------------------------------------------------------

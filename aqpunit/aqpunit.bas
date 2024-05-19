@@ -1,6 +1,4 @@
 
-
-
 880 _finish
 882 rem SCREEN RESET
 884 _passed: GOSUB _output:ARGS "Passed:"+STR$(QR(1))
@@ -29,10 +27,15 @@
 946 _yes_err:QV=-(ERR=QE):QR(QV)=QR(QV)+1:GOSUB _output:ARGS QR$(QV)+"Error"+STR$(QE)+" in "+QA$
 948 RESUME:ON ERROR GOTO 0:RETURN
 
-952 _outnewline:IF QU THEN LPRINT:RETURN
-954 PRINT:QL=QL+1:RETURN
+950 _outnewline:IF QU THEN LPRINT:RETURN
+952 PRINT:QL=QL+1:RETURN
 
-960 _outquoted:GOSUB _quotes:ARGS QA$ RETURN QU$:GOTO _output:ARGS QU$
+956 _outquoted:GOSUB _quotes:ARGS QA$ RETURN QU$:GOTO _output:ARGS QU$
+
+960 _outpart: GETARGS QU$:IF QU GOTO _lprint
+962 IF QL>20 THEN GOSUB _pause
+964 PRINT QU$;:QL=QL+1:RETURN
+966 _lprint:LPRINT QU$;:RETURN
 
 970 _quotes:QX$="":GETARGS QS$
 972 FOR QI=1 TO LEN(QS$):QC$=MID$(QA$,QI,1):IF QC$="`" THEN QC$=CHR$(34)

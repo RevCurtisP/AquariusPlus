@@ -75,9 +75,11 @@
 372 SAVE "ssa.sta",*A$
 374 GOSUB _outquoted:ARGS LIST$(NEXT)
 376 RENAME "ssa.sta" TO "sla.sta"
-380 GOSUB _outquoted:ARGS LIST$(NEXT)
-382 LOAD "sla.sta",*B$
-390 FOR I=0 TO 7
+380 GOSUB _output:ARGS LIST$(NEXT)
+382 FOR I=0 TO 9:B$(I)=STR$(I):NEXT
+384 GOSUB _outquoted:ARGS LIST$(NEXT)
+386 LOAD "sla.sta",*B$
+390 FOR I=0 TO 9
 392 GOSUB _assert:ARGS "B$(%%)=A$(%%)" % (I,I)
 394 NEXT
 398 DEL "sla.sta"

@@ -3,7 +3,7 @@
 copy zout\sysrom.bin %_dest%
 copy README.html %_dest%\quickref.html
 copy releases.html %_dest%\releases.html
-copy README.md %_dest%\quickref.md
+copy quickref.md %_dest%\quickref.md
 copy ..\util\bas2baq.py %_dest%
 copy ..\util\baq2bas.py %_dest%
 copy ..\pbutil\getver.bas %_dest%

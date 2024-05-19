@@ -1,4 +1,9 @@
 # plusBASIC Release History
+ - v0.22v
+   - Added JOIN statement 
+   - Added CLEAR *array
+   - All statements that write to multiple elements of string array, first zero out the array contents, then do a garbage collecion.
+   - Fixed DIM causes Syntax error after VARPTR()
  - v0.22u
    - Added string slicing in the form var$[pos] and var$[start TO end]
    - Added Bad range error

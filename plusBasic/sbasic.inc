@@ -265,6 +265,7 @@ NOSEC       equ $10F2   ; Continue PTRGET at check for '$'
 SKIPDS      equ $10FD   ; Continue PTRGET at skip of '$'
 CHKLET      equ $10E4   ; Continue PTRGET at check for letter
 ISSEC       equ $10E9   ; Continue PTRGET at skip non-letter
+BSERR       equ $11CD   ; Bad subscript error
 FSUB        equ $125E   ; Subtract: FACC = BCDE - FACC
 FADD        equ $1261   ; Add: FACC = BCDE + FACC
 FONE        equ $135F   ; Floating point constant 1

@@ -64,7 +64,8 @@
  - [x] **CD$** - Return current path.  
  - [x] **CHR$(_byte_)** - Convert ASCII value to string.
  - [x] **CIRCLE (_x_,_y_),_radius_{,{_color_}{,{_start_},{_end_}{,_aspect_}}}** - _Not implemented._
- - [x] **CLEAR {_integer_{,_address_}}** - Clear all variables, optionally allocating string text space and top of BASIC RAM.
+ - [x] **CLEAR {_integer_{,_address_}}** - Clear all variables, optionally allocating string text space and top of BASIC RAM.<!--CLEAR-->
+ - [ ] **CLEAR \*_array_{,...}** - Clear numeric or string array data.<!--CLEAR-->
  - [ ] **CLEAR BITMAP {_fgcolor_,_bgcolor_}** - Clear bitmap screen
  - [x] **CLOAD {{?}_filename_}|\*_array_** - Load or verify program or load array data from cassette.
  - [x] **CLOSE** - _Not implemented._
@@ -137,6 +138,7 @@
  - [x] **INKEY$** - Return most recently pressed key as string.
  - [x] **INPUT {_stringliteral_;}_var_{,...}** - Prompt for keyboard input and assigns entries to variables.
  - [x] **INSTR({_offset_,}_haystack_,_needle)** - Search for string _needle_ in string _haystack_.
+ - [ ] **JOIN \*_array$_ INTO _string_ DEL _delimiter_** - Join string array elements into delimited string.
  - [x] **JOY(_stick)** - Read one or both game controllers.
  - [x] **KEY({_keycode_|_string_})** - Check if key is currently pressed.<!--KEY-->
  - [x] **LEFT$(_string_,_len_)** - Return the first up to _len_ characters of string.
@@ -259,7 +261,7 @@
  - [x] **SGN(_expression_)** - Return signum of expression.
  - [x] **SIN(_float_)** - Return sine of argument.
  - [x] **SOUND (_duration_,_frequency_)** - Generate a tone through the television speaker.
- - [x] **SPLIT _string_ INTO \*_array$_ DEL _delimiter_** - Split delimited string into string array elements
+ - [ ] **SPLIT _string_ INTO \*_array$_ DEL _delimiter_** - Split delimited string into string array elements.
  - [x] **SQR(_float)** - Return square root of argument.
  - [x] **STASH BITMAP|TILEMAP** - _Not implemented._
  - [x] **STASH SCREEN** - Copy current text screen to respective screen buffer.
