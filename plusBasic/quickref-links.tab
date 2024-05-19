@@ -1,5 +1,6 @@
 ASC         BASIC-ASC-Function
 CALL        BASIC-CALL-Statement
+CLEAR       BASIC-CLEAR-Statement
 CLS         BASIC-CLS-Function
 COLOR       BASIC-COLOR-Statement-and-Function
 COLOR       BASIC-COMPARE-Function

@@ -2,6 +2,9 @@
 ; Enhanced direct mode Line Editor
 ;=====================================================================================
 
+; To test:
+; CALL $201E
+
 ;-----------------------------------------------------------------------------
 ; Line editor. Assumes that cursor is at end of line.
 ;  Input: C: Line length
@@ -106,6 +109,8 @@ _ctrlkey
     jr      _loop
 
 .backspace
+; ToDo: move text after cursor to left
+    jr      _beep
     ld      a,b 
     or      a                     ; If beginning of line
     jr      z,_beep               ;   Beep and wait for next key
@@ -113,7 +118,7 @@ _ctrlkey
     dec     c
     dec     hl                    ;   Decrement CurPos and CurAdr
     call    _move_left            ;   Move cursor left
-
+    ld      (de),a
     jp      _tloop                ;   and wait for next key
 
     exx

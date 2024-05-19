@@ -35,7 +35,7 @@ for line in links_in:
 
 out_lines = []
 
-html_out.writelines(html_header)
+#html_out.writelines(html_header)
 
 list_level = 0
 
@@ -94,7 +94,7 @@ for line in md_in.readlines():
 #   if html != line:
 #       html_out.write(html + "\n")
 
-html_out.writelines(html_trailer)
+#html_out.writelines(html_trailer)
 
 
 # Inserting wiki links into .md

@@ -215,7 +215,8 @@ xtokens = {
     0xA4: "STATUS",
     0xA5: "BYTE",
     0xA6: "CAQ",
-    0xA7: "MEM"
+    0xA7: "MEM",
+    0xA8: "JOIN"
 }
 
 with open(args.input, "rb") as f:

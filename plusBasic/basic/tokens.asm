@@ -99,6 +99,7 @@ EXTCMDS:
     db $80 + 'V',"AR"             ; $9D             
     db $80 + 'E',"RASE"           ; $9E
     db $80 + 'S',"PLIT"           ; $9F
+    
     db $80 + 'P',"AD"             ; $A0
     db $80 + 'W',"ORD"            ; $A1
     db $80 + 'C',"LIP"            ; $A2
@@ -107,9 +108,10 @@ EXTCMDS:
     db $80 + 'B',"YTE"            ; $A5
     db $80 + 'C',"AQ"             ; $A6
     db $80 + 'M',"EM"             ; $A7
+    db $80 + 'J',"OIN"            ; $A8
     db $80                        ; End of table marker
 
-EXTOKEN = $A8                     ; Last Token + 1
+EXTOKEN = $A9                     ; Last Token + 1
 
 ;-----------------------------------------------------------------------------
 ; plusBASIC tokens
@@ -170,6 +172,7 @@ BRKTK     equ     $9A
 LOOPTK    equ     $9B
 STRTK     equ     $9C
 VARTK     equ     $9D
+SPLITK    equ     $9F
 PADTK     equ     $A0 
 WORDTK    equ     $A1
 CLIPTK    equ     $A2
@@ -178,6 +181,7 @@ STATK     equ     $A4
 BYTETK    equ     $A5
 CAQTK     equ     $A6
 MEMTK     equ     $A7
+JOINTK    equ     $A8
 
 ;-----------------------------------------------------------------------------
 ; Convert keyword to token - hook 10

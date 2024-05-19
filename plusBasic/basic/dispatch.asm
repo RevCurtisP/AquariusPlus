@@ -65,6 +65,8 @@ extended_statement:
     jp      z,ST_ERASE
     dec     a                   ; $9F SPLIT
     jp      z,ST_SPLIT
+    sub     JOINTK-SPLITK       ; $A8 JOIN
+    jp      z,ST_JOIN
     jp      SNERR 
    
 extended_function:

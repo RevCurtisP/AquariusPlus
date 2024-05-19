@@ -10,8 +10,35 @@
 clear_hook:
     jp      z,CLEARC              ; If no operands just CLEAR
     cp      BITTK                 
-    jp      nz,HOOK11+1           ;   continue with CLEAR
-    jp      ST_CLEAR_BITMAP
+    jp      z,ST_CLEAR_BITMAP
+    cp      MULTK                 ; 
+    jp      z,ST_CLEAR_ARRAY
+    jp      HOOK11+1              ; Continue with )CLEAR
+
+ST_CLEAR_ARRAY:
+    call    get_star_array        ; DE = AryAdr, BC = AryLen 
+    call    clear_array
+    ld      a,(hl)
+    cp      ','
+    ret     nz'
+    rst     CHRGET
+    jp      ST_CLEAR_ARRAY
+
+; Input: A: Type, DE: Array Start, BC = Array Length
+clear_array:
+    call    GETYPE                ; A = AryTyp
+    push    hl                    ; Stack = TxrPtr, RtnAdr
+    push    de                    ; Stack = AryAdr, TxtPtr, RtnAdr
+    push    bc                    ; Stack = AryLen, AryAdr, TxtPtr, RtnAdr
+    push    af                    ; Stack = AryTyp, AryLen, AryAdr, TxtPtr, RtnAdr
+    ex      de,hl                 ; HL = AryAdr
+    call    sys_fill_zero         ; Fill array data with 0
+    pop     af                    ; AF = AryTyp; Stack = AryLen, AryAdr, TxtPtr, RtnAdr
+    call    z,GARBA2              ; If string, do garbage collection
+    pop     bc                    ; BC = AryLen; Stack = AryLen, AryAdr, TxtPtr, RtnAdr
+    pop     de                    ; DE = AryAdr; Stack = AryAdr, TxtPtr, RtnAdr
+    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
+    ret
 
 ;-----------------------------------------------------------------------------
 ; CLS statement 
@@ -54,7 +81,7 @@ ST_DEF:
 ST_DEF_FN:
     call    get_fn_ptr                ; GET A POINTER TO THE FUNCTION NAME
     call    ERRDIR                ; DEF IS "ILLEGAL DIRECT"
-    ld      bc,DATA               ; MEMORY, RESTORE THE TXTPTRAND GO TO "DATA" 
+    ld      bc,DATA               ; MEMORY, RESTORE THE TXTPTR AND GO TO "DATA" 
     push    bc                    ; SKIPPING THE REST OF THE FORMULA
     push    de              
     SYNCHK  '('                   ; SKIP OVER OPEN PAREN

@@ -802,6 +802,7 @@ load_caq_array:
     ret
 
 load_string_array:
+    call    clear_array           ; Fill array data with zero bytes
     call    _open_read
 .loop
     call    esp_read_byte         ; B = StrLen
@@ -842,6 +843,7 @@ load_dir_array:
     ex      (sp),hl               ; HL = StrDsc, Stack = TxtPtr, RtnAdr
     push    bc                    ; Stack = AryLen, TxtPtr, RtnAdr
     push    de                    ; Stack = AryPtr, AryLen, TxtPtr, RtnAdr
+    call    clear_array           ; Fill array data with zero bytes
     call    string_addr_len
     call    _open_dir             ; Open directory
     pop     de                    ; DE = AryPtr; Stack = AryLen, TxtPtr, RtnAdr
@@ -860,6 +862,7 @@ load_asc_array:
     SYNCHK  ','
     rst     SYNCHR                ; Require ,ASC
     byte    ASCTK
+    call    clear_array           ; Fill array data with zero bytes
     ex      (sp),hl               ; HL = StrDsc, Stack = TxtPtr, RtnAdr
     call    _open_read
     ld      iy,esp_read_line

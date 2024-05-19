@@ -112,7 +112,7 @@ FILEATTR    equ $383C   ; File Attribute
 FILEDATE    equ $383D   ; File Datestamp ($383D-$383E)
 FILETIME    equ $383F   ; File Timestamp ($383F-$3840)
 ; SPLIT statement
-SPLITDSC    equ $3838   ; Source descriptor 
+SPLITDSC    equ $3838   ; String descriptor 
 SPLITTRM    equ $3838   ; Segment terminator  (overwrites LSB of SPLITDSC)
 SPLITSEG    equ $3839   ; Segment counter (overwrites MSB of SPLITDSC)
 SPLITADR    equ $383A   ; Array data start address 
@@ -125,6 +125,12 @@ STARTCOL    equ $3838
 ENDCOL      equ $383A
 STARTROW    equ $383C
 ENDROW      equ $383E
+; enhance editor
+RIGHTCOL    equ $3838   ; Right bound (LINELEN-1)s
+LEFTCOL     equ $3839   ; Left bound (1)
+BOTLINE     equ $383A
+TOPLINE     equ $283B
+LINEDELTA   equ $283C   ; LINELEN - RIGHTCOL + LEFTCOL
 
 ;-----------------------------------------------------------------------------
 ; Variables

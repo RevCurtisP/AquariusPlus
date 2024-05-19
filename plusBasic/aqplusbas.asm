@@ -31,6 +31,7 @@
     jp      _ttymove_hook   ; $2015 TTYMOX TTYMOV extension - set screen colors if SYSCTRL bit set
     jp      _scroll_hook    ; $2018 SCROLX SCROLL extension - scroll color memory if SYSCTRL bit set
     jp      _start_screen   ; $201B RESETX Start-up screen extension
+    jp      _line_edit      ; $201E Vector to test line editor
 
     dc $2030-$,$76
     
@@ -102,7 +103,7 @@ just_ret:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.22u"
+    db "v0.22v"
     db 0
 plus_len   equ   $ - plus_text
 
