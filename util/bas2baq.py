@@ -243,7 +243,8 @@ xtokens = {
     0xA5: "BYTE",
     0xA6: "CAQ",
     0xA7: "MEM",
-    0xA8: "JOIN"
+    0xA8: "JOIN",
+    0xA9: "WAIT"
 }
 
 def error(idx, message):
