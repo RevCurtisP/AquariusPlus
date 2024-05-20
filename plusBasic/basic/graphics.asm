@@ -896,13 +896,11 @@ _get_aux
     call    aux_call
     ld      a,1
     ld      (VALTYP),a            ; Set Type to String
-    ;call    FRETMP                ; Free Temporary
     jp      FINBCK                ; Return String
 
 ;-----------------------------------------------------------------------------
 ; DEF SPRITE sprite$ = spritle#, x-offset, y-offset; spritle#, x-offset, y-offset
-; String Format:
-; SprCount,TotWidth,TotHeigth,(SprNum,Xoffset,Yoffset)...
+; String Format: SprCount,TotWidth,TotHeigth,(SprNum,Xoffset,Yoffset)...
 ;-----------------------------------------------------------------------------
 ST_DEF_SPRITE:
     rst     CHRGET                ; Skip SPRITE
@@ -1181,17 +1179,25 @@ FN_GETSPRITE:
     pop     hl                    ; HL = BufDsc; Stack = DummyAdr, TxtPtr, RtnAdr
     jp      FINBCK                ; Return String
 
-
 ;-----------------------------------------------------------------------------
 ; RGB$(r,g,b)
 ;-----------------------------------------------------------------------------
 FN_RGB:
     inc     hl                    ; Skip RGB
-    SYNCHK  '$'                   ; Require $
+    ld      a,(hl)
+    cp      '$'                   ; 
+    push    af                    ; Stack = '$', RtnAdr
+    call    z,CHRGTR              ; If $, skip it
     SYNCHK  '('                   ; Require Open Paren
     call    _get_rgb              ; DE = RGB value
     SYNCHK  ')'                   ; Require Close Paren
+    pop     af                    ; A = '$'; Stack = RrnAdr
     push    hl                    ; Stack = TxtPtr, RtnAdr
+    jr      z,.string             ; If not RGB$()
+    ld      bc,LABBCK             
+    push    bc                    ;   Push return address for FLOAT_DE
+    jp      FLOAT_DE              ;   Float RGB and return.
+.string    
     push    de                    ; Stack = RGB, TxtPtr, RtnAdr
     ld      a,2
     call    STRINI                ; Allocate two character string

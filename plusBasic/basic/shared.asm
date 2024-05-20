@@ -146,6 +146,12 @@ close_paren:
     SYNCHK  ')'
     ret
 
+;-----------------------------------------------------------------------------
+; Force FACC to an integer
+;-----------------------------------------------------------------------------
+force_integer:
+    call    CHKNUM
+    jp      FRCINT
 
 ;-----------------------------------------------------------------------------
 ; If next character is a comma, Too many operands error
@@ -404,9 +410,21 @@ get_byte16:
     ret
 
 ;-----------------------------------------------------------------------------
+; Parse Byte 0 - 31
+; Output: A,E = Nybble
+; Clobbers: BC
+;-----------------------------------------------------------------------------
+get_byte32:
+    call    GETBYT                ; get foreground color in e
+    cp      32                    ; if > 15
+    jp      nc,FCERR              ;   FC Error
+    or      a
+    ret
+
+;-----------------------------------------------------------------------------
 ; Parse Byte 0 - 15
 ; Output: A,E = Nybble
-; Clobbers: A,BC
+; Clobbers: BC
 ;-----------------------------------------------------------------------------
 get_byte64:
     call    GETBYT                ; get foreground color in e

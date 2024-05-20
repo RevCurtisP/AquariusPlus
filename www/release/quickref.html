@@ -144,10 +144,10 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
 <li><strong>DEF SPRITE <em>strvar</em>= <em>spritle</em>, <em>x-offset</em>, y-offset;...</strong> - Create a sprite definition.-&gt;</li>
 <li><strong>DEF SPRITE <em>strvar</em>= [<em>spritle</em>,...],...</strong> - Create a sprite definition.-&gt;</li>
 <li><strong>DEF TILELIST <em>strvar</em>=<em>tileno</em>,...</strong> - Create a string list of palatte indexes.-&gt;</li>
-<li><strong>DEF USR=<em>address</em></strong> - <em>Not implemented.</em></li>
+<li><strong>DEF USR=<em>address</em></strong> - Set USR() machine language routine address.</li>
 <li><strong>DIM <em>array</em>(<em>dim</em>{,...}){,...}</strong> - Create and allocates one or more arrays.</li>
 <li><strong>DIR </strong> - Display disk directory.-&gt;</li>
-<li><strong>DOKE {@<em>page</em>,}<em>address</em>,<em>integer</em></strong> - Write integer to memory.-&gt;</li>
+<li><strong>DOKE {@<em>page</em>,}<em>address</em>,<em>integer</em>{;...}</strong> - Write one or more integers to memory.-&gt;</li>
 <li><strong>DRAW <em>command_string</em></strong> - <em>Not implemented.</em></li>
 <li><strong>DRAW TEXT (<em>col</em>,<em>row)</em>),<em>string</em></strong> - <em>Not implemented.</em></li>
 <li><strong>EDIT </strong> - <em>Not implemented.</em></li>
@@ -179,7 +179,8 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
 <li><strong>HEX$(<em>number</em>)</strong> - Convert byte or integer into hexadecimal string.-&gt;</li>
 <li><strong>HEX$(<em>string</em>)</strong> - Convert ASCII string into hexadecimal string.-&gt;</li>
 <li><strong>IF <em>expression</em> GOTO <em>linefref</em>|THEN <em>lineno</em>|<em>statement</em></strong> - Branch to line or execute statements if expression evaluates to true.</li>
-<li><strong>IN(<em>port</em>)</strong> - Read a Z80 I/O port.-&gt;</li>
+<li><strong>IN(<em>port</em>)</strong> - Read byte from Z80 I/O port.-&gt;</li>
+<li><strong>IN$(<em>port</em>,<em>length</em>)</strong> - Read multiple bytes from Z80 I/O port.-&gt;</li>
 <li><strong>INDEX(*<em>array</em>,<em>string</em>)</strong> - Search for string in element of array</li>
 <li><strong>INMEM({@<em>page</em>,}<em>address</em>,<em>string</em>)</strong> - Search for string in memory.</li>
 <li><strong>INT(<em>expression</em>)</strong> - Return expression rounded down to nearest integer.</li>
@@ -219,7 +220,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
 <li><strong>LPRINT TAB(<em>integer</em>)|SPC(<em>integer</em>)|<em>expression</em>|;|,</strong> - Output data to printer.</li>
 <li><strong>MENU</strong> - <em>Not implemented.</em></li>
 <li><strong>MID$(<em>string</em>,<em>start</em>{,<em>len</em>})</strong> - Return first up to <em>len</em> or all remaining characters starting at character <em>start</em> of string.</li>
-<li><strong>MID$(<em>strvar</em>,<em>start</em>_{,<em>len</em>})=<em>string</em></strong> - <em>Not implemented.</em></li>
+<li><strong>MID$(<em>strvar</em>,<em>start</em>_{,<em>len</em>})=<em>string</em></strong> - Replace text in string variable.</li>
 <li><strong>MKDIR <em>dirname</em></strong> - Create directory.</li>
 <li><strong>MOUSEB</strong> - Return mouse button state</li>
 <li><strong>MOUSEW</strong> - Return mouse wheel delta</li>
@@ -231,7 +232,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
 <li><strong>ON <em>integer</em> GOTO <em>lineref</em>,...</strong> - <code>GOTO</code> one of several line numbers based on <em>expression</em>.-&gt;</li>
 <li><strong>ON ERROR GOTO <em>lineref</em></strong> - Enable or disable error trapping.-&gt;</li>
 <li><strong>OPEN</strong> - <em>Not implemented.</em></li>
-<li><strong>OUT <em>port</em>,<em>byte</em></strong> - Write to a Z80 port.-&gt;</li>
+<li><strong>OUT <em>port</em>,<em>byte</em>|<em>string</em>{,...}{;...}</strong> - Write to a Z80 port.-&gt;</li>
 <li><strong>PAD$(string,length{,char})</strong> - Pad string on left or right.-&gt;</li>
 <li><strong>PAUSE</strong> - Halt program execution until key is pressed.-&gt;</li>
 <li><strong>PAUSE <em>jiffies</em></strong> - <em>Not implemented.</em></li>
@@ -245,12 +246,9 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
 <li><strong>PLAY PT3 </strong> - Play specified or previously loaded PT3 track.-&gt;</li>
 <li><strong>PLAY SAMPLE @<em>page</em>,<em>address</em></strong> - Play digital sample from previously loaded file.-&gt;</li>
 <li><strong>POINT(<em>x</em>,<em>y</em>)</strong> - Return status of bloxel or pixel.-&gt;</li>
-<li><strong>POKE {@<em>page</em>,}<em>address</em>,<em>byte</em></strong> - Write byte to memory.-&gt;</li>
-<li><strong>POKE {@<em>page</em>,}<em>address</em>,<em>string</em></strong> - Write string to memory.-&gt;</li>
-<li><strong>POKE COLOR <em>address</em>,<em>byte</em></strong> - Write byte to color RAM.-&gt;</li>
-<li><strong>POKE COLOR <em>address</em>,<em>string</em></strong> - Write string to color RAM.-&gt;</li>
-<li><strong>POKE SCREEN <em>address</em>,<em>byte</em></strong> - Write byte to screen RAM.-&gt;</li>
-<li><strong>POKE SCREEN <em>address</em>,<em>string</em></strong> - Write string to screen RAM.-&gt;</li>
+<li><strong>POKE {@<em>page</em>,}<em>address</em>,<em>byte</em>|<em>string</em>{;..}.</strong> - Write bytes and/or strings to memory.-&gt;</li>
+<li><strong>POKE COLOR <em>address</em>,<em>byte</em>|<em>string</em>{;...}</strong> - Write bytes and/or strings to color RAM.-&gt;</li>
+<li><strong>POKE SCREEN <em>address</em>,<em>byte</em>|<em>string</em>{;...}</strong> - Write bytes and/or strings to screen RAM.-&gt;</li>
 <li><strong>POS(<em>expression</em>_)</strong> - Return current cursor column.</li>
 <li><strong>POSX</strong> - Return 1bpp bitmap last x-position.</li>
 <li><strong>POSY</strong> - Return 1bpp bitmap last y-position.</li>
@@ -275,7 +273,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
 <li><strong>RESTORE BITMAP|TILEMAP</strong> - <em>Not implemented.</em></li>
 <li><strong>RESTORE SCREEN</strong> - Copy respective screen buffer to current text screen..</li>
 <li><strong>RETURN {<em>expression</em>{,...}}</strong> - Resume program execution after GOSUB, optionally returning results.</li>
-<li><strong>RGB(<em>r</em>,<em>g</em>,<em>b</em>)</strong> - <em>Not implemented.</em>-&gt;</li>
+<li><strong>RGB(<em>r</em>,<em>g</em>,<em>b</em>)</strong> - Return integer representing a single palette entry.-&gt;</li>
 <li><strong>RGB$(<em>r</em>,<em>g</em>,<em>b</em>)</strong> - Return string representing a single palette entry.-&gt;</li>
 <li><strong>RIGHT$(<em>string</em>,<em>len</em>)</strong> - Return the last up to <em>byte</em> characters of string.</li>
 <li><strong>RND(<em>integer</em>)</strong> - Return new or previous psuedo-random number or seeds the random number generator.</li>
@@ -290,9 +288,10 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
 <li><strong>SAVE SCREEN <em>filespec</em></strong> - Save text screen to file.</li>
 <li><strong>SAVE TILEMAP</strong> - <em>Not implemented.</em></li>
 <li><strong>SCREEN ,,,,</strong> - Set screen mode.-&gt;</li>
+<li><strong>SET BREAK ON|OFF</strong> - <em>Incomplete</em> Enable or disable control-c checking.</li>
 <li><strong>SET COLOR <em>fgcolor</em>,<em>bgcolor</em></strong> - Enable color printing mode.-&gt;</li>
 <li><strong>SET COLOR OFF</strong> - Disable color printing mode.-&gt;</li>
-<li><strong>SET FAST ON|OFF</strong> - Enable or disables turbo mode.-&gt;</li>
+<li><strong>SET FAST ON|OFF</strong> - Enable or disable turbo mode.-&gt;</li>
 <li><strong>SET FNKEY <em>key</em> TO <em>string</em></strong> - Set auto-typed text when function key is pressed.-&gt;</li>
 <li><strong>SET KEY <em>mode</em></strong> - Set alternate keyboard port mode.</li>
 <li><strong>SET PALETTE <em>palette</em>{,<em>index</em>} TO <em>rgblist</em></strong> - Set palette entries.-&gt;</li>
@@ -321,7 +320,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
 <li><strong>STRPTR(<em>strvar</em>)</strong> - Return address of text for string variable.</li>
 <li><strong>SWAP BITMAP|TILEMAP</strong> - <em>Not implemented.</em></li>
 <li><strong>SWAP SCREEN</strong> - Swap current text screen with respective screen buffer.</li>
-<li><strong>SWAP VARS <em>var</em>,<em>var</em></strong> - <em>Not implemented.</em></li>
+<li><strong>SWAP VARS <em>var</em>,<em>var</em></strong> - Swap contents of two variables.</li>
 <li><strong>TAN(<em>float</em>)</strong> - Return tangent of argument.</li>
 <li><strong>TILEMAP(<em>x</em>,<em>y</em>)</strong> - Return tile index and properties in tile cell.</li>
 <li><strong>TILEMAPX</strong> - Return X-offset of tilemap.</li>
@@ -343,6 +342,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
 <li><strong>VARPTR(<em>var{<span class="math">}_|\*_array{</span>}</em>)</strong> - Return address of variable, array element, or array</li>
 <li><strong>VER(<em>expression</em>)</strong> - Return System or plusBASIC version as integer.</li>
 <li><strong>VER$(<em>expression</em>)</strong> - Return System or plusBASIC version as printable string.</li>
+<li><strong>WAIT <em>port</em>,<em>xor_mask</em>{,<em>and_mask</em>}</strong> - Pause until specifie bit pattern received from IO port.</li>
 <li><strong>WRITE</strong> - <em>Not implemented.</em></li>
 </ul>
 

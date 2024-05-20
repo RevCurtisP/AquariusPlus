@@ -1,5 +1,11 @@
 # plusBASIC Release History
- - v0.22v
+ - v0.22w
+   - Added WAIT, SET BREAK ON/OFF
+   - Implemented RGB(), DEF USR
+   - Added syntax OUT port,byte|string$;port,byte|string$...
+   - Syntax {@page,}address,byte;... to POKE, POKE COLOR, POKE SCREEN, and DOKE
+ - - ^ operator string substition gives Missing or Too many operands errors.
+   v0.22v
    - Added JOIN statement 
    - Added CLEAR *array
    - All statements that write to multiple elements of string array, first zero out the array contents, then do a garbage collecion.

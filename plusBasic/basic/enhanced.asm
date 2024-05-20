@@ -144,6 +144,7 @@ ST_POKE:
     jr      z,.poke_screen
     cp      COLTK
     jr      z,.poke_color
+.poke
     call    parse_page_arg        ; Parse page
     push    af                    ; Stack = Page, RtnAdr
     call    GETINT                ; Parse Address
@@ -159,7 +160,7 @@ ST_POKE:
     jr      c,.write_paged_byte   ; If page specified, write to it
     ld      a,c                   ; Write byte
     ld      (de),a                ; to address
-    ret
+    jr      .poke_done
 
 .pokestring
     pop     de                    ; DE = DstAdr; Stack = Page, RtnAdr
@@ -179,23 +180,28 @@ ST_POKE:
 .nullstring
     pop     hl                    ; Stack = DstAdr, RtnAdr
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
-    ret
+    jr      .poke_done
 
 .write_paged_byte:
     call    check_paged_address
     call    page_write_byte     ; If page specified, write to it
     jp      z,IQERR             ; FC error if illegal page
-    ret
+    jr      .poke_done
 
 .write_paged_bytes:
     call    check_paged_address
     call    page_write_bytes    ; If page specified, write to it
     jp      z,IQERR             ; FC error if illegal page
     pop     hl
-    ret
+.poke_done
+    ld      a,(hl)
+    cp      ';'
+    ret     nz
+    rst     CHRGET                  ; Skip ;
+    jr      .poke                   ; Get next address
 
 .poke_screen
-    rst     CHRGET                ; Skip SCREEN
+    rst     CHRGET                ; Skip SCREEN or ;
     call    .screen_args          ; Stack = AdrOfs, TxtPtr, RtnAdr
     jr      z,.screenstring       ; If Poking byte
     call    CONINT                ;   A = Byte
@@ -209,23 +215,35 @@ ST_POKE:
 .screen_done
     jp      c,FCERR               ; Error if Offset too large
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr 
+    ld      a,(hl)
+    cp      ';'
+    ret     nz
+    jr      .poke_screen            ; Get next address
     ret                           
 
 .poke_color
     rst     CHRGET                ; Skip COL
     rst     SYNCHR
     byte    ORTK                  ; Require OR
+.next_color
     call    .screen_args          ; Stack = AdrOfs, TxtPtr, RtnAdr
     jr      z,.colorstring        ; If Poking byte
     call    CONINT                ;   A = Byte
     pop     de                    ;   DE = AdrOfs; Stack = TxtPtr, RtnAdr
     call    color_write_byte      ;   Write byte
-    jr      .screen_done          ; Else
+    jr      .color_done           ; Else
 .colorstring
     call    FRESTR                ;   Free Temporary
     pop     de                    ;   DE = AdrOfs; Stack = TxtPtr, RtnAdr
     call    color_write_string    ;   Write wtring
-    jr      .screen_done          ; Else
+.color_done
+    jp      c,FCERR               ; Error if Offset too large
+    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr 
+    ld      a,(hl)
+    cp      ';'
+    ret     nz
+    rst     CHRGET                ; Skip ;
+    jr      .next_color 
 
 .screen_args
     call    GETINT                ; Get Address Offset
@@ -237,8 +255,6 @@ ST_POKE:
     push    de                    ; Stack = AdrOfs, TxtPtr
     push    hl                    ; Stack = RtnAdr, AdrOfs, TxtPtr
     jp      GETYPE                ; Get Operand Type 
-    
-
 
 ;-----------------------------------------------------------------------------
 ; DOKE
@@ -260,16 +276,21 @@ ST_DOKE:
     ld      a,c                   ; Get LSB
     ld      (de),a                ; Write to address
     inc     de
-    ld      a,b                   ; Get MSV
+    ld      a,b                   ; Get MSB
     ld      (de),a                ; Write to address
-    ret
+    jr      .doke_done
 
 .write_paged_word
     call    check_paged_address   ; Verify pages addres is between 0 and 16383
     call    page_write_word       ; If page specified, write to it
     jp      z,IQERR               ; FC error if illegal page
     jp      c,OVERR               ; Return overflow error if end of RAM
-    ret
+.doke_done
+    ld      a,(hl)
+    cp      ';'
+    ret     nz
+    rst     CHRGET                ; Skip semicolon
+    jr      ST_DOKE               ; Get next address
 
 ;-----------------------------------------------------------------------------
 ; Generate Illegal Quantity error if address in DE is not between 0 and 16383

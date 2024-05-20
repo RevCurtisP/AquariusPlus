@@ -229,7 +229,7 @@ CHRSETLEN   equ 2048    ; Size of character set ROM
 ; BASIC interpreter control flags
 BASOUTBUF   equ $01     ; BASYSCTL: redirect OUTput to BUFfer
 BASSAVASC   equ $02     ; BASYSCTL: Default SAVe to ASC
-BASKEYRPT   equ $04     ; BASYSCTL: KEY RePeaI on
+BASKEYRPT   equ $04     ; BASYSCTL: KEY RePeaT on
 BASCHRSET   equ $08     ; BASYSCTL: Character set in use (0 or 1)
 BASBRKOFF   equ $20     ; BASYSCTL: BReak OFF (Disable Ctrl-C)
 BASLPRNTR   equ $40     ; BASYSCTL: LPRINT device: (0 = Serial, 1 = ESP)

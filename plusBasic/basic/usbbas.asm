@@ -139,9 +139,12 @@ _null_string:
 ;-----------------------------------------------------------------------------
 ; IN() function
 ; syntax: var = IN(port)
+;         var$ = IN$(port, len)
 ;-----------------------------------------------------------------------------
 FN_IN:
     rst     CHRGET                ; Skip IN and Eat Spaces
+    cp      '$'                   ; If followed by dollar sign
+    jr      z,.instring          ;   Do IN$()
     cp      XTOKEN                ; If followed by extended token
     jr      z,.extended           ;   Handle it
     call    PARCHK
@@ -156,6 +159,30 @@ FN_IN:
     in      a, (c)           ; A = in(port)
     jp      SNGFLT           ; Return with 8 bit input value in variable var
 
+.instring
+    rst     CHRGET                ; Skip $
+    call    FRMPRN                ; Evaluate formula following (
+    call    force_integer         ; DE = IOPort
+    push    de                    ; Stack = IOPort, RtnAdr
+    call    get_comma_byte        ; DE = StrLen
+    SYNCHK  ')'                   ; Require )
+    ex      (sp),hl               ; HL = IOPort; Stack = TxtPtr, RtnAdr
+    push    hl                    ; Stack = IOPort, TxtPtr, RtnAdr
+    ld      a,e
+    or      a                     ; If SrtLen = 0
+    jp      z,FCERR               ;   Illegal quantity error
+    call    STRINI                ; HL = StrDsc, DE = StrAdr, A = StrLen
+    pop     bc                    ; BC = IOPort; Stack = TxtPtr, RtnAdr
+    push    hl                    ; Stack = StrDsc, TxtPtr, RtnAdr
+    ld      l,a                   ; L = SrtLen
+.loop    
+    in      a,(c)
+    ld      (de),a                
+    inc     de
+    dec     l
+    jr      nz,.loop
+    pop     hl                    ; HL = StrDsc; Stack = TxtPtr, RtnAdr
+    jp      PUTNEW
 
 .extended
     rst     CHRGET                ; Skip XTOKEN
@@ -286,17 +313,47 @@ ST_LOCATE:
 ; syntax: OUT port, data
 ;-----------------------------------------------------------------------------
 ST_OUT:
-    call    FRMNUM              ; Get/evaluate port
-    call    FRCINT              ; Convert number to 16 bit integer (result in DE)
+    call    GETINT              ; Convert number to 16 bit integer (result in DE)
     push    de                  ; Stored to be used in BC
-
-    ; Expect comma
-    SYNCHK  ","
-
-    call    GETBYT              ; Get/evaluate data
-    pop     bc                  ; BC = port
-    out     (c), a              ; Out data to port
-    ret
+    SYNCHK  ","                 ; Require comma
+.dloop
+    call    FRMEVL              ; Parse data portion
+    call    GETYPE              
+    jr      z,.string           ; If number
+    call    CONINT              ;   Convert to byte
+    pop     bc                  ;   BC = IOPort
+    out     (c), a              ;   Write byte to port
+    jr      .next               ; Else
+.string    
+    ex      (sp),hl             ;   HL = IOPort; Stack = TxtPtr
+    push    hl                  ;   Stack = IOPort, TxtPtr            
+    call    free_addr_len       ;   DE = StrAdr, BC = StrLen
+    ld      h,b
+    ld      l,c                 ;   HL = StrLen
+    pop     bc                  ;   BC = IOPort
+    jr      z,.pophl            ;   If not ""
+.sloop    
+    ld      a,(de)              ;     A = StrChr
+    out     (c),a               ;     Write to IOPort
+    inc     de                  ;     Bump StrPtr
+    dec     hl                  ;     Count down
+    ld      a,h
+    or      l                   ;     If HL = 0
+    jr      nz,.sloop           ;       OUT next character
+.pophl
+    pop     hl                  ;   HL = TxtPtr; Stack = RtnAdr
+.next
+    call    CHRGT2              ; Reget NxtChr
+    ret     z                   ; If terminator, return
+    ld      e,a                 ; Save NxtChr
+    rst     CHRGET              ; Skip it
+    ld      a,e                 ; Get it back
+    cp      ';'                 ; If semicolon
+    jr      z,ST_OUT            ;   Start over with next IOPort
+    cp      ','                 ; If not comma
+    jp      nz,SNERR            ;   Syntax error
+    push    bc                  ;   Stack = IOPort, RtnAdr
+    jr      .dloop              ;   Get next byte or string
 
 ;-----------------------------------------------------------------------------
 ; PSG statement

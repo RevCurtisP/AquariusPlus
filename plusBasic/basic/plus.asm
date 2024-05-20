@@ -838,7 +838,18 @@ ST_SET:
     jr      z,ST_SET_KEY
     cp      PT3TK                 ; $8C
     jp      z,ST_SET_PT3
+    cp      BRKTK                 ; $9A
+    jp      z,ST_SET_BREAK
     jp      SNERR
+
+;-----------------------------------------------------------------------------
+; Toggle control-c checking
+; Syntax: SET BREAK ON/OFF
+;-----------------------------------------------------------------------------
+ST_SET_BREAK:
+    call    get_on_off            ; A = $FF if ON, $00 if OFF
+    xor     $FF                   ; A = $00 if enaable, $FF if disabled
+    jp      sys_break_mode
 
 ;-----------------------------------------------------------------------------
 ; Set keybuffer mode

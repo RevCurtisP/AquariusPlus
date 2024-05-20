@@ -605,3 +605,25 @@ FN_VAR:
     dec     bc                    ; Else  
     dec     bc                    ;   Back up to beginning of array definition
     jp      FLOAT_BC              ;   and Float It
+
+;----------------------------------------------------------------------------
+; WAIT port, xor_mask, and_mask
+;----------------------------------------------------------------------------
+ST_WAIT:  
+        call    GETINT            ; get/evaluate port
+        push    de                ; stored to be used in BC
+        SYNCHK  ','               ; Compare RAM byte with following byte
+        call    GETBYT            ; get/evaluate data
+        push    af                ; SAVE THE MASK
+        call    CHRGT2            ; SEE IF THE STATEMENT ENDED
+        jr      z,NOTTHR          ; IF NO THIRD ARGUMENT SKIP THIS
+        SYNCHK  ','               ; MAKE SURE THERE IS A ","
+        CALL    GETBYT            ; Get XOR mask into E
+NOTTHR: pop     de                ; REGET THE "AND" MASK in D
+        ld      e,a               ; Put the XOR mask in E
+        pop     bc                ; Get back the Port #
+LOPINP: in      a,(c)             ; THE INPUT INSTR
+        xor     e                 ; XOR WITH MASK2
+        and     d                 ; AND WITH MASK
+        jr      z,LOPINP          ; LOOP UNTIL RESULT IS NON-ZERO 
+        ret                       ; NOTE: THIS LOOP CANNOT BE CONTROL-C'ED HOWEVER A RESTART AT 0 IS OK.

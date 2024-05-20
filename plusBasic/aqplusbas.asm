@@ -103,7 +103,7 @@ just_ret:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.22v"
+    db "v0.22w"
     db 0
 plus_len   equ   $ - plus_text
 
@@ -381,6 +381,20 @@ _turbo_mode
     and     ~SYSCTRL_TURBO        ;   mask out Fast Mode bit
     or      b                     ;   and copy the new Fast Mode bit in
     out     (IO_SYSCTRL),a        ; Write back to SYSCTRL
+    ret
+
+;-----------------------------------------------------------------------------
+; Enable/Disable Ctrl-C Break
+; Input: A = Bit 5 set for Disabled, reset for Enabled
+; Clobbers: B
+;-----------------------------------------------------------------------------
+sys_break_mode:
+    and     BASBRKOFF             ; Isolate Fast Mode bit
+    ld      b,a                   ;   and copy to B
+    ld      a,(BASYSCTL)          ; Read BASIC system control bits
+    and     ~BASBRKOFF            ;   mask out Break Mode bit
+    or      b                     ;   and copy the new Break Mode bit in
+    ld     (BASYSCTL),a           ; Write BASIC system control bits
     ret
 
 ;-----------------------------------------------------------------------------

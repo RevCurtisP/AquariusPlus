@@ -95,10 +95,10 @@
  - [ ] **DEF SPRITE _strvar_= _spritle_, _x-offset_, y-offset;...** - Create a sprite definition.<!--DEFSPRITE-->
  - [ ] **DEF SPRITE _strvar_= [_spritle_,...],...** - Create a sprite definition.<!--DEFSPRITE-->
  - [x] **DEF TILELIST _strvar_=_tileno_,...** - Create a string list of palatte indexes.<!--DEFTILE-->
- - [x] **DEF USR=_address_** - _Not implemented._
+ - [x] **DEF USR=_address_** - Set USR() machine language routine address.
  - [x] **DIM _array_(_dim_{,...}){,...}** - Create and allocates one or more arrays.
  - [x] **DIR {_dirspec_}** - Display disk directory.<!--DOKE-->
- - [x] **DOKE {@_page_,}_address_,_integer_** - Write integer to memory.<!--DOKE-->
+ - [x] **DOKE {@_page_,}_address_,_integer_{;...}** - Write one or more integers to memory.<!--DOKE-->
  - [ ] **DRAW _command_string_** - _Not implemented._
  - [ ] **DRAW TEXT (_col_,_row)_),_string_** - _Not implemented._
  - [x] **EDIT {_lineref_}** - _Not implemented._
@@ -130,7 +130,8 @@
  - [x] **HEX$(_number_)** - Convert byte or integer into hexadecimal string.<!--HEX-->
  - [x] **HEX$(_string_)** - Convert ASCII string into hexadecimal string.<!--HEX-->
  - [x] **IF _expression_ GOTO _linefref_|THEN _lineno_|_statement_** - Branch to line or execute statements if expression evaluates to true.
- - [x] **IN(_port_)** - Read a Z80 I/O port.<!--IN-->
+ - [x] **IN(_port_)** - Read byte from Z80 I/O port.<!--IN-->
+ - [x] **IN$(_port_,_length_)** - Read multiple bytes from Z80 I/O port.<!--IN-->
  - [x] **INDEX(\*_array_,_string_)** - Search for string in element of array
  - [ ] **INMEM({@_page_,}_address_,_string_)** - Search for string in memory.
  - [x] **INT(_expression_)** - Return expression rounded down to nearest integer.
@@ -170,7 +171,7 @@
  - [x] **LPRINT TAB(_integer_)|SPC(_integer_)|_expression_|;|,{...}** - Output data to printer.
  - [x] **MENU** - _Not implemented._
  - [x] **MID$(_string_,_start_{,_len_})** - Return first up to _len_ or all remaining characters starting at character _start_ of string.
- - [x] **MID$(_strvar_,_start__{,_len_})=_string_** - _Not implemented._
+ - [x] **MID$(_strvar_,_start__{,_len_})=_string_** - Replace text in string variable.
  - [x] **MKDIR _dirname_** - Create directory.
  - [x] **MOUSEB** - Return mouse button state
  - [x] **MOUSEW** - Return mouse wheel delta
@@ -182,7 +183,7 @@
  - [x] **ON _integer_ GOTO _lineref_,...** - `GOTO` one of several line numbers based on _expression_.<!--ON-->
  - [x] **ON ERROR GOTO _lineref_** - Enable or disable error trapping.<!--ON-->
  - [x] **OPEN** - _Not implemented._
- - [x] **OUT _port_,_byte_** - Write to a Z80 port.<!--OUT-->
+ - [x] **OUT _port_,_byte_|_string_{,...}{;...}** - Write to a Z80 port.<!--OUT-->
  - [ ] **PAD$(string,length{,char})** - Pad string on left or right.<!--PAD-->
  - [x] **PAUSE** - Halt program execution until key is pressed.<!--PAUSE-->
  - [x] **PAUSE _jiffies_** - _Not implemented._
@@ -196,12 +197,9 @@
  - [x] **PLAY PT3 {_filespec_}** - Play specified or previously loaded PT3 track.<!--PLAYPT3-->
  - [x] **PLAY SAMPLE @_page_,_address_** - Play digital sample from previously loaded file.<!--PLAYSAMPLE-->
  - [ ] **POINT(_x_,_y_)** - Return status of bloxel or pixel.<!--PSET-->
- - [x] **POKE {@_page_,}_address_,_byte_** - Write byte to memory.<!--POKE-->
- - [x] **POKE {@_page_,}_address_,_string_** - Write string to memory.<!--POKE-->
- - [x] **POKE COLOR _address_,_byte_** - Write byte to color RAM.<!--POKESCREEN-->
- - [x] **POKE COLOR _address_,_string_** - Write string to color RAM.<!--POKESCREEN-->
- - [x] **POKE SCREEN _address_,_byte_** - Write byte to screen RAM.<!--POKESCREEN-->
- - [x] **POKE SCREEN _address_,_string_** - Write string to screen RAM.<!--POKESCREEN-->
+ - [x] **POKE {@_page_,}_address_,_byte_|_string_{;..}.** - Write bytes and/or strings to memory.<!--POKE-->
+ - [x] **POKE COLOR _address_,_byte_|_string_{;...}** - Write bytes and/or strings to color RAM.<!--POKESCREEN-->
+ - [x] **POKE SCREEN _address_,_byte_|_string_{;...}** - Write bytes and/or strings to screen RAM.<!--POKESCREEN-->
  - [x] **POS(_expression__)** - Return current cursor column.
  - [ ] **POSX** - Return 1bpp bitmap last x-position.
  - [ ] **POSY** - Return 1bpp bitmap last y-position.
@@ -226,7 +224,7 @@
  - [ ] **RESTORE BITMAP|TILEMAP** - _Not implemented._
  - [x] **RESTORE SCREEN** - Copy respective screen buffer to current text screen..
  - [x] **RETURN {_expression_{,...}}** - Resume program execution after GOSUB, optionally returning results.
- - [x] **RGB(_r_,_g_,_b_)** - _Not implemented._<!--RGB-->
+ - [x] **RGB(_r_,_g_,_b_)** - Return integer representing a single palette entry.<!--RGB-->
  - [x] **RGB$(_r_,_g_,_b_)** - Return string representing a single palette entry.<!--RGB-->
  - [x] **RIGHT$(_string_,_len_)** - Return the last up to _byte_ characters of string.
  - [x] **RND(_integer_)** - Return new or previous psuedo-random number or seeds the random number generator.
@@ -241,9 +239,10 @@
  - [ ] **SAVE SCREEN _filespec_** - Save text screen to file.
  - [x] **SAVE TILEMAP** - _Not implemented._
  - [x] **SCREEN {_text_},{_graphics_},{_sprites_},{_priority_},{_remap_}** - Set screen mode.<!--SCREEN-->
+ - [x] **SET BREAK ON|OFF** - _Incomplete_ Enable or disable control-c checking.
  - [x] **SET COLOR _fgcolor_,_bgcolor_** - Enable color printing mode.<!--SETCOLOR-->
  - [x] **SET COLOR OFF** - Disable color printing mode.<!--SETCOLOR-->
- - [x] **SET FAST ON|OFF** - Enable or disables turbo mode.<!--SETFAST-->
+ - [x] **SET FAST ON|OFF** - Enable or disable turbo mode.<!--SETFAST-->
  - [x] **SET FNKEY _key_ TO _string_** - Set auto-typed text when function key is pressed.<!--SETFNKY-->
  - [x] **SET KEY _mode_** - Set alternate keyboard port mode.
  - [x] **SET PALETTE _palette_{,_index_} TO _rgblist_** - Set palette entries.<!--SETPALETTE-->
@@ -272,7 +271,7 @@
  - [x] **STRPTR(_strvar_)** - Return address of text for string variable.
  - [x] **SWAP BITMAP|TILEMAP** - _Not implemented._
  - [x] **SWAP SCREEN** - Swap current text screen with respective screen buffer.
- - [ ] **SWAP VARS _var_,_var_** - _Not implemented._
+ - [ ] **SWAP VARS _var_,_var_** - Swap contents of two variables.
  - [x] **TAN(_float_)** - Return tangent of argument.
  - [x] **TILEMAP(_x_,_y_)** - Return tile index and properties in tile cell.
  - [x] **TILEMAPX** - Return X-offset of tilemap.
@@ -294,4 +293,5 @@
  - [ ] **VARPTR(_var{$}_|\*_array{$}_)** - Return address of variable, array element, or array
  - [x] **VER(_expression_)** - Return System or plusBASIC version as integer.
  - [x] **VER$(_expression_)** - Return System or plusBASIC version as printable string.
+ - [ ] **WAIT _port_,_xor_mask_{,_and_mask_}** - Pause until specifie bit pattern received from IO port.
  - [x] **WRITE** - _Not implemented._

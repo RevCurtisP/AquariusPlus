@@ -109,9 +109,10 @@ EXTCMDS:
     db $80 + 'C',"AQ"             ; $A6
     db $80 + 'M',"EM"             ; $A7
     db $80 + 'J',"OIN"            ; $A8
+    db $80 + 'W',"AIT"            ; $A9
     db $80                        ; End of table marker
 
-EXTOKEN = $A9                     ; Last Token + 1
+EXTOKEN = $AA                     ; Last Token + 1
 
 ;-----------------------------------------------------------------------------
 ; plusBASIC tokens

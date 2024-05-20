@@ -296,7 +296,9 @@ ISCNTC      equ $1A25   ; Check for Ctrl-C and Ctrl-S
 ISCNTS      equ $1A29   ; Check for Ctrl-S
 TRYIN       equ $1A2F   ; Wait for character from keyboard
 CNTCCN      equ $1A39   ; Check for and process Ctrl-C
+CNTCCC      equ $1A3C   ; Enter CNTCCN after INCHRH call
 WRMCON:     equ $1A40
+CNTCCR      equ $1A4A   ; Finish CNTCCN
 RSETCC      equ $1A5D   ; Partway into PSET/PRESET`
 POINTX      equ $1A69   ; Enter POINT after initial CHRGET
 SCAND       equ $1A7F   ; Get parameters for PSET, PRESET, POINT, and SOUND
@@ -351,6 +353,7 @@ EQUATK      equ $B0     ; =
 LESSTK      equ $B1     ; <
 ONEFUN      equ $B2     ; First Function Token
 INTTK       equ $B3     ; INT
+USRTK       equ $B5     ; USR
 POSTK       equ $B8     ; POS
 ASCTK       equ $C5     ; ASC
 

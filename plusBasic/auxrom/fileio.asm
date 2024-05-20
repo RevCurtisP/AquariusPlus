@@ -295,8 +295,7 @@ file_load_rom:
 ; Flags Set: S if I/O error, C if invalid file contents
 ; Clobbered: CD, DE, EF
 ;-----------------------------------------------------------------------------
-; ToDo: Add palette, border control bit
-;       Allow loading to a screen buffer
+; ToDo: Allow loading to a screen buffer
 file_load_screen:
     call    file_load_tmpbuffr    
     ret     m                     ; Return if Error 
@@ -470,8 +469,7 @@ file_save_strbuf:
 ; Flags Set: S if I/O error
 ; Clobbered: CD, DE, EF
 ;-----------------------------------------------------------------------------
-; ToDo: Add palette, border control bit
-;       Allow loading to a screen buffer
+; ToDo: Allow saving from a screen buffer
 file_save_screen:
     push    hl                    ; Stack = StrDsc, RtnAdr
     call    screen_write_tmpbfr   ; BC = SavLen

@@ -54,13 +54,15 @@ ST_CLS:
 ;-----------------------------------------------------------------------------
 ST_DEF:
     cp      FNTK
-    jp      z,ST_DEF_FN
+    jr      z,ST_DEF_FN
     cp      INTTK         
     jp      z,ST_DEF_INT            ; DEF INTLIST
     cp      TILETK
     jp      z,ST_DEF_TILELIST       ; DEF TILELIST
     cp      RGBTK                   
     jp      z,ST_DEF_RGB            ; DEF RGBLIST
+    cp      USRTK
+    jr      z,ST_DEF_USR
     cp      XTOKEN          
     jp      nz,SNERR                ; Extended Token Prefix
     inc     hl
@@ -74,6 +76,17 @@ ST_DEF:
     cp      PALETK
     jp      z,ST_DEF_PALETTE        ; DEF PALETTELIST
     jp      SNERR
+
+;-----------------------------------------------------------------------------
+; DEF USR
+;-----------------------------------------------------------------------------
+ST_DEF_USR:
+    rst     CHRGET                  ; Skip USR
+    rst     SYNCHR
+    byte    EQUATK                  ; Require =
+    call    GETINT                  ; Parse USR routine address
+    ld      (USRADD),de
+    ret
 
 ;-----------------------------------------------------------------------------
 ; DEF FN

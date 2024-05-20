@@ -67,6 +67,8 @@ extended_statement:
     jp      z,ST_SPLIT
     sub     JOINTK-SPLITK       ; $A8 JOIN
     jp      z,ST_JOIN
+    dec     a                   ; $A9 WAIT
+    jp      z,ST_WAIT
     jp      SNERR 
    
 extended_function:

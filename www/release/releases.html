@@ -16,8 +16,18 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
   <body>
     <h1 id="plusbasic-release-history">plusBASIC Release History</h1>
     <ul>
-      <li>v0.22v
-<ul><li>Added JOIN statement</li><li>Added CLEAR *array</li><li>All statements that write to multiple elements of string array, first zero out the array contents, then do a garbage collecion.</li><li>Fixed DIM causes Syntax error after VARPTR()</li></ul></li>
+      <li>v0.22w
+<ul><li>Added WAIT, SET BREAK ON/OFF</li><li>Implemented RGB(), DEF USR</li><li>Added syntax OUT port,byte|string$;port,byte|string$...</li><li>Syntax {@page,}address,byte;... to POKE, POKE COLOR, POKE SCREEN, and DOKE</li></ul></li>
+      <li>
+        <ul>
+          <li>^ operator string substition gives Missing or Too many operands errors.
+v0.22v</li>
+          <li>Added JOIN statement</li>
+          <li>Added CLEAR *array</li>
+          <li>All statements that write to multiple elements of string array, first zero out the array contents, then do a garbage collecion.</li>
+          <li>Fixed DIM causes Syntax error after VARPTR()</li>
+        </ul>
+      </li>
       <li>v0.22u
 <ul><li>Added string slicing in the form var$[pos] and var$[start TO end]</li><li>Added Bad range error</li><li>Fixed null string causing String too long error when used as an argument in % string substitution</li></ul></li>
       <li>v0.22t

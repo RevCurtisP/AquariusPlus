@@ -9,6 +9,8 @@ direct_mode:
     call    text_screen
 
     ld      a,(BASYSCTL)
+    and     ~BASBRKOFF            ; Enable Ctrl-C break
+    ld      (BASYSCTL),a
     and     KB_REPEAT
     or      KB_ENABLE | KB_ASCII
     call    key_set_keymode       ; Turn on keybuffer, ASCII mode, no repeat

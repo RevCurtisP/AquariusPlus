@@ -315,7 +315,6 @@ oper_xor:
     xor     d
     jp      (hl)                  ;[M80] RETURN THE INTEGER [A,L]
 
-;;; ToDo: Give ERRMO or ERRTO if number of operands don't match.
 ;? "%%" % (1)
 oper_stringsub:
     push    hl                  ; Stack = TxtPtr, RtnAdr
@@ -360,6 +359,9 @@ oper_stringsub:
     pop     af                    ; A = DatLen; Stack = TxtPtr, RtnAdr
     call    strbuf_temp_str       ; HL = StrDsc
     ex      (sp),hl               ; HL = TxtPtr; Stack = StrDsc, RtnAdr
+    ld      a,(hl)                ; A = NxtChr
+    cp      ','                   ; If it's a comma
+    jp      z,no_more             ;   Too many operands
     SYNCHK  ')'                   ; Require )
     ex      (sp),hl               ; HL = StrDsc; Stack = TxtPtr, RtnAdr
     call    FRETMP                ; Free the temporary
@@ -372,9 +374,7 @@ oper_stringsub:
     inc     de                  ; Skip second substitution character
     dec     c
     dec     b                   ; Update ReqComma
-    jr      z,.nocomma          ; If not first arg
-    SYNCHK  ','                 ;   Require comma
-.nocomma:
+    call    nz,get_comma        ; If not first arg and no comma, Missing operand error
     push    de                  ; Stack = StrPtr, DatLen, BufPtr, RtnAdr
     push    bc                  ; Stack = ReqCnt, StrPtr, DatLen, BufPtr, RtnAdr
     call    FRMEVL              ; Evaluate argument
@@ -439,7 +439,6 @@ oper_stringsub:
 ; s$="abcd":s$[0]="x"
 ; s$="abcd":s$[5]="x"
 ; 
-; ToDo: If string text not in string space, copy it in and reassign
 let_extension:
     call    GETYPE                ; If not string variable
     jp      nz,LETEQ              ;   Continue LET
