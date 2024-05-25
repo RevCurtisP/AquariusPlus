@@ -41,6 +41,60 @@ SPR_HFLIP     equ   $02
 ;-----------------------------------------------------------------------------
 
 ;-----------------------------------------------------------------------------
+; Define Rectangular Sprite
+; Input: A: Starting spritle#
+;        C: Width in spritles
+;        E: Height in spritles
+;       HL: String buffer address
+; Outpur: BC: String length
+;       HL: String buffer address
+;-----------------------------------------------------------------------------
+sprite_def_rect:
+    ld      (BUFPTR),hl           ; BUFPTR = BufAdr
+    ld      l,a
+    xor     a                     ; Clear Carry
+    ld      h,a                   ; HL = SptCnt
+    ld      d,a                   ; DE = SptWid
+    ld      (SPRTLNUM),hl         ; SPRTLNUM = SptNum
+    ld      (SPRTCOLS),bc         ; SPRTCOLS
+    ld      (SPRTROWS),de         ; SRRTROWS
+    ld      a,c
+    rl      a
+    rl      a                     ; A = Width in pixels
+    rl      a                     ; A > 255
+    ret     c                     ;   Return Carry Set
+    ld      c,a                    ; 
+
+
+    ld      e,a                   ; B = Height
+    ld      a,c                   ; A = Rows
+    cp      32                    ; If Rows > 31
+    ret     c                     ;   Return Carry Set
+    rl      a
+    rl      a
+    rl      a
+    ld      b,a                   ; C = Width
+    pop     af                    ; A = SptCnt; Stack = BufAdr, RtnAdr
+    call    mult_a_de             ; HL = SptCnt
+    pop     de
+    xor     a
+    cp      h                     ; If SptCnt > 255
+    ret     c                     ;   Return Carry Set
+    ld      a,84
+    cp      l                     ; If SptCnt > 84
+    ret     c                     ;   Return Carry Set
+    ld      b,a                   ; B = SptCnt
+    pop     hl                    ; HL = BufPtr; Stack = SptlNo, RtnAdr
+    ld      (hl),a                ; Write SptCnt to buffer
+    inc     hl
+    ld      (hl),d                ; Write width to buffer
+    inc     hl
+    ld      (hl),b                ; Write height to buffer
+
+
+    ret
+
+;-----------------------------------------------------------------------------
 ; Set Sprite Attributes
 ; Input:  C: Attribute Count
 ;        DE: Attribute List Address
@@ -226,7 +280,7 @@ spritle_set_tile:
 ;          Attrs+Tile - +3
 ;;-----------------------------------------------------------------------------
 sprite_get_attrs:
-    ld      a,(hl)                ; SptlCnt
+    ld      a,(hl)                ; SptCnt
     ld      b,a
     add     a                     ; x 2     
     add     a                     ; x 4

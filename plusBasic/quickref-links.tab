@@ -1,5 +1,6 @@
 ASC         BASIC-ASC-Function
 CALL        BASIC-CALL-Statement
+CHRSET      BASIC-CHRSET-and-CHRDEF-Statements
 CLEAR       BASIC-CLEAR-Statement
 CLS         BASIC-CLS-Function
 COLOR       BASIC-COLOR-Statement-and-Function
@@ -14,6 +15,7 @@ DEFSPRITE   BASIC-DEF-SPRITE-Statement
 DEFTILE     BASIC-DEF-TILELIST-Statement
 DOKE        BASIC-POKE-and-DOKE-Statement
 FILLTILE    BASIC-FILLTILE-Statement
+FNKEYS      BASIC-LOADFNKEYS-Statement
 GETSCREEN   BASIC-GETSCREEN-Statement
 GETTILE     BASIC-GETTILE-Statement
 GETPALETTE  BASIC-GETPALETTE-Function
@@ -23,8 +25,6 @@ HEX         BASIC-HEX-Function
 IN          BASIC-IN-Function
 KEY         BASIC-KEY-Function
 LOAD        BASIC-LOAD-Statement
-CHRSET      BASIC-CHRSET-Statements
-FNKEYS      BASIC-LOADFNKEYS-Statement
 LOADPALETTE BASIC-LOADPALETTE-Statement
 LOCATE      BASIC-LOCATE-Statement
 ON          BASIC-ON-Statement

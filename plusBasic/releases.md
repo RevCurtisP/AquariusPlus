@@ -1,4 +1,9 @@
 # plusBASIC Release History
+ - v022.x
+    - Added SET CHRDEF, GETCHRDEF$(), and SAVE CHRSET
+    - Fixed characters 128 - 255 of default character set being overridden
+    - INPUT and READ now parse hexademical numbers
+    - Added DIM var()=list, READ \*var
  - v0.22w
    - Added WAIT, SET BREAK ON/OFF
    - Implemented RGB(), DEF USR
@@ -66,7 +71,8 @@
  - v0.22e
    - Implemented POINTB(), added CLEAR BITMAPC and FILL BITMAPC
  - v0.22d
-   - Added CLEAR BITMAP, FILL BITMAP. Implemented PSETB and PRESETB
+   - Added CLEAR BITMAP, FILL BITMAP.
+   - Implemented PSETB and PRESETB
  - v0.22c
    - Fixed syntax error on extended functions VER through VARPTR
  - v0.22b
@@ -79,7 +85,13 @@
    - Added pseudovariable ARGS and ARGS$(0)
  - v0.21y
    - Added SWAP VARS statement, ERASE statement, MID$ statement, and INDEX() function
- - v0.21x FILL BITMAP. ded TRIM$, TRIML$, and v0.21w
+ - v0.21x 
+   - Added TRIM$, TRIML$, and TRIMR$ functions
+ - v0.21w
+   - Added GETCHRSET function
+   - Improved screen switch/swap
+   - Fixed 80-column color mode printing
+   - Tweaked Latin-1 character sets
  - v0.21v
    - Added LOAD DIR filename$,\*array$
    - LOAD array$ ASC and LOAD DIR start at array index 1, put number of lines in index 0

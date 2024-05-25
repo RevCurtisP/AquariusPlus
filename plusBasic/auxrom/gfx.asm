@@ -10,6 +10,49 @@ gfx_init:
     ret
 
 ;-----------------------------------------------------------------------------
+; Get character definition from character RAM
+; Input: A = ASCII Code
+;       BC = Definition length
+;       DE = Buffer address
+;        L: Source 0: Char RAM
+; Output:
+; Flags: Carry Set if overflow
+;-----------------------------------------------------------------------------
+gfx_get_char_def:
+    call    _get_chardef_address    ; A = MemPg, DE = ChrAdr, HL = BufAdr
+    ex      de,hl                   ; HL = ChrAdr, DE = BufAdr
+    jp      page_read_bytes         ; Write to Character RAM and return
+
+;-----------------------------------------------------------------------------
+; Redefine character in character RAM
+; Input: A: ASCII code
+;       BC: Definition length
+;       DE: Definition address
+;        L: Destinaton 0: Char RAM
+; Output:
+; Flags: Carry Set if overflow
+;-----------------------------------------------------------------------------
+gfx_redefine_char:
+    call    _get_chardef_address    ; A = MemPg, DE = ChrAdr, HL = BufAdr
+    jp      page_write_bytes        ; Write to Character RAM and return
+
+; Input: A: ASCIcode, DE: Buffer Address, L: reserved
+; Output: A: Memory Page DE: address Offset, HL: Buffer Address
+_get_chardef_address:
+    ex      de,hl                   ; HL = BufAdr
+    ld      d,0
+    or      a                       ; Clear carry
+    rl      a
+    rl      d                       ; DA = ChrASC * 2
+    rl      a
+    rl      d                       ; DA = ChrASCe + 4
+    rl      a
+    rl      d                       ; DA = ChrASC * 8
+    ld      e,a                     ; DE = ChrASC * 8
+    ld      a,CHAR_RAM              ; A = MemPg
+    ret
+
+;-----------------------------------------------------------------------------
 ; Set bitmap drawing mode
 ;  Input: A: Mode (0: bloxel, 2: 1bpp, 3: 4bpp)
 ; Output: A: New EXT_FLAGS

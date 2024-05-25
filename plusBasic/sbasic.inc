@@ -192,6 +192,7 @@ LETEQ       equ $0734   ; Continue LET at '='
 LETDO       equ $0736   ; Execute LET, bypassing PTRGET and SYNCHK '='
 INBUFC      equ $0768   ; Copy temporary string to string variable
 NTOERR      equ $0782   ; Execute ON ... GOTO
+READC       equ $08C2   ; Continue READ after hook call
 FRMNUM:     equ $0972   ; Evaluate numeric expression
 CHKNUM:     equ $0975   ; Error if evaluated expression not a number
 CHKSTR:     equ $0976   ; Error if evaluated expression not string
@@ -228,6 +229,7 @@ NOTRUB      equ $0DA3   ; Continue Ctrl-key check
 CHKFUN      equ $0DA4   ; Evaluate Ctrl-keys
 INLINC      equ $0D8E   ; Wait for and process direct mode keypress
 GOODCH      equ $0DE9   ; INLINC - Put key in input buffer
+STR         equ $0E29   ; Execute STR$ function
 TIMSTR      equ $0E2F   ; Create tempory string from null-terminated string
 TIMSTF      equ $0E32   ; Return parsed temporary string
 STRCPY      equ $0E39   ; Create copy of string
@@ -258,13 +260,14 @@ LEN1:       equ $0FF7   ; Get string length (in: (FPREG) = string block, out: HL
 ASC2        equ $1006   ; Return DE = Pointer to String Text, A=First Character 
 CHR         equ $1013   ; CHR$ Function
 FINBCK      equ $101D   ; Return a String
+DIMNXT      equ $10CA   ; Require comma and DIM an array
 PTRGET:     equ $10D1   ; Get variable (out: BC = addr, DE = len)
 PTRGT2      equ $10D6   ; Get variable - called with first character of name in C
 EATEM       equ $10EA   ; Continue PTRGET at skip extra alphanumerics loop
-NOSEC       equ $10F2   ; Continue PTRGET at check for '$'
-SKIPDS      equ $10FD   ; Continue PTRGET at skip of '$'
 CHKLET      equ $10E4   ; Continue PTRGET at check for letter
 ISSEC       equ $10E9   ; Continue PTRGET at skip non-letter
+NOSEC       equ $10F2   ; Continue PTRGET at check for '$'
+SKIPDS      equ $10FD   ; Continue PTRGET at skip of '$'
 BSERR       equ $11CD   ; Bad subscript error
 FSUB        equ $125E   ; Subtract: FACC = BCDE - FACC
 FADD        equ $1261   ; Add: FACC = BCDE + FACC
@@ -272,6 +275,7 @@ FONE        equ $135F   ; Floating point constant 1
 FMULT       equ $13CB   ; Multiply: FACC = BCDE * FACC
 POPHRT      equ $141A   ; Pop HL and return
 FDIV        equ $142F   ; Divide: FACC = BCDE / FACC
+FLOAT       equ $14F6   ; Float signed number in A
 FLOATR      equ $14FB   ; Float signed number in B,A,D,E
 MOVFM       equ $1520   ; MOVE NUMBER FROM MEMORY [(HL)] TO FAC
 MOVFR       equ $1523   ; Move B,C,D,E to FACC

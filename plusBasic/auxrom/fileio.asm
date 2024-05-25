@@ -400,14 +400,25 @@ file_save_binary:
     ret
 
 ;-----------------------------------------------------------------------------
+; Save character RAM to file
+; Input: HL: File name string descriptor address
+; Output: A: Result
+; Clobbered registers: BC,DE,HL
+;-----------------------------------------------------------------------------
+file_save_chrset:
+    ld      a,CHAR_RAM
+    ld      bc,2048
+    ld      de,0
+
+;-----------------------------------------------------------------------------
 ; Save binary data from paged memory to file
 ; Input: A: Page
 ;       BC: length
-;       DE: destination address
+;       DE: source address
 ;       HL: string descriptor address
 ; Output: A: result code
 ;        BC: number of bytes actually read
-;        DE: next destination address
+;        DE: next source address
 ; Flags Set: S if I/O error
 ; Clobbered: HL
 ;-----------------------------------------------------------------------------

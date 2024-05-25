@@ -53,7 +53,7 @@ for line in md_in.readlines():
     if s > -1:
         e = line.find("-->",s)
         key = line[s+4:e]
-        line = line[:s] + line[e+1:]
+        line = line[:s] + line[s+e+1:]
 
     # Insert wiki link into line
     wiki = line

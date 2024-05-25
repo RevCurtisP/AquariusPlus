@@ -6,19 +6,6 @@
 
 ;-----------------------------------------------------------------------------
 ; Screen Data Buffers
-; Offsets into Page RAM_BAS_0
-;-----------------------------------------------------------------------------
-CHA40BUF   equ $0000   ; Screen 1 character buffer for switching
-CHA41BUF   equ $0800   ; Screen 2 character buffer for switching
-CHA80BUF   equ $1000   ; Screen 3 character buffer for switching
-xDEFCHRSET equ $1800   ; Character ROM 0 (Default)   
-CHR40SWP   equ $2000   ; Screen 1 character buffer for swapping 
-CHR41SWP   equ $2800   ; Screen 2 character buffer for swapping 
-CHR80SWP   equ $3000   ; Screen 3 character buffer for swapping 
-xALTCHRSET equ $3800   ; Character ROM 1 (Alternate)
-
-;-----------------------------------------------------------------------------
-; Screen Data Buffers
 ; Offsets into Page SCR_BUFFR
 ;-----------------------------------------------------------------------------
 SCRN40BUF   equ $0000   ; Primary 40 column buffer for screen switching

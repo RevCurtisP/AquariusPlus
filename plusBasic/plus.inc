@@ -115,18 +115,24 @@ FILETIME    equ $383F   ; File Timestamp ($383F-$3840)
 SPLITDSC    equ $3838   ; String descriptor 
 SPLITTRM    equ $3838   ; Segment terminator  (overwrites LSB of SPLITDSC)
 SPLITSEG    equ $3839   ; Segment counter (overwrites MSB of SPLITDSC)
-SPLITADR    equ $383A   ; Array data start address 
+ARRAYADR    equ $383A   ; Array data start address 
 SPLITDEL    equ $383C   ; Delimiter character
-SPLITPTR    equ $383D   ; Pointer into array data
-SPLITLEN    equ $383F   ; Array data length
+ARRAYTYP    equ $383C   ; Array Type
+ARRAYPTR    equ $383D   ; Pointer into array data
+ARRAYLEN    equ $383F   ; Array data length
 ; bitmap_get and bitmap_set
 BMPMODE     equ $3837   ; Bitmap Mode 0=1bpp, 2=4bpp
 STARTCOL    equ $3838
 ENDCOL      equ $383A
 STARTROW    equ $383C
 ENDROW      equ $383E
+; sprite_def
+SPRTLNUM    equ $3838   ; Spritle number
+SPRTCOLS    equ $383A   ; Width in spritles
+SPRTROWS    equ $383C   ; Height in spritles
+
 ; enhance editor
-RIGHTCOL    equ $3838   ; Right bound (LINELEN-1)s
+RIGHTCOL    equ $3838   ; Right bound (LINELEN-1)
 LEFTCOL     equ $3839   ; Left bound (1)
 BOTLINE     equ $383A
 TOPLINE     equ $283B
@@ -216,14 +222,15 @@ IRQ_VLINE       equ $02     ; Video LINE interrupt
 ;-----------------------------------------------------------------------------
 ; Page 54 (BAS_BUFFR), swapped into Bank 3
 BASBUF_BASE equ $C000   ; Base Address of BASIC Buffers
-SCRNVBASE   equ $0000   
+SCRNVBASE   equ $0000   ; Screen variable buffers (see screen.inc)
 GFXVBASE    equ $0100   ; GFX SysVar Base, 256 byte aligned (see gfx.asm)
 FKEYDEFS    equ $0200   ; Function Key Definitions (32 bytes each)
 FKEYBASE    equ BASBUF_BASE + FKEYDEFS
-;         $0500-$7FF    ; Unused
+;         $0500-$07FF   ; Unused
 RUNARGS     equ $0800   ; RUN arguments (see run_args in args.asm)
 RUNARGEND   equ $09FF   ; End of RUN arguments
-DEFCHRSET   equ $3400
+;         $1000-$2FFF   ; Unused
+DEFCHRSET   equ $3000   ; Page Offset: Default Character Set Buffer
 ALTCHRSET   equ $3800   ; Page Offset: Custom Character Set Buffer
 CHRSETLEN   equ 2048    ; Size of character set ROM
 ; BASIC interpreter control flags
@@ -231,6 +238,7 @@ BASOUTBUF   equ $01     ; BASYSCTL: redirect OUTput to BUFfer
 BASSAVASC   equ $02     ; BASYSCTL: Default SAVe to ASC
 BASKEYRPT   equ $04     ; BASYSCTL: KEY RePeaT on
 BASCHRSET   equ $08     ; BASYSCTL: Character set in use (0 or 1)
+BASCHRMOD   equ $10     ; BASYSCTL: Character set in use has been modified
 BASBRKOFF   equ $20     ; BASYSCTL: BReak OFF (Disable Ctrl-C)
 BASLPRNTR   equ $40     ; BASYSCTL: LPRINT device: (0 = Serial, 1 = ESP)
 BASCRNCLR   equ $80     ; BASYSCTL: PRINT updates Color RAM

@@ -322,7 +322,7 @@ keytablen   equ   $-keytable
 ST_JOIN:
     rst     CHRGET                ; Skip SPLIT
     call    get_star_array        ; DE = AryAdr, BC = AryLen
-    call    _skipfirst            ; SPLITPTR = AryPtr, SPLITLEN = AryLen
+    call    _skipfirst            ; ARRAYPTR = AryPtr, ARRAYLEN = AryLen
     jp      z,BSERR               ; If only one element, Bad subscript error
     rst     SYNCHR
     byte    INTTK
@@ -336,9 +336,9 @@ ST_JOIN:
     ld      hl,(ARYTAB)           
     sbc     hl,de                 ;  
     ex      de,hl                 ; DE = AryTab-OldTab
-    ld      hl,(SPLITPTR)         ; If arrays moved
+    ld      hl,(ARRAYPTR)         ; If arrays moved
     add     hl,de                 ; Adjust array pointer
-    ld      (SPLITPTR),hl         
+    ld      (ARRAYPTR),hl         
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     rst     SYNCHR                ; Require DEL
     byte    DELTK
@@ -351,7 +351,7 @@ ST_JOIN:
     ld      bc,0
     ld      (BUFLEN),bc           ; BufLen = 0
 .loop
-    ld      hl,(SPLITPTR)         ; HL = AryPtr
+    ld      hl,(ARRAYPTR)         ; HL = AryPtr
     call    string_addr_len       ; DE = StrAdr, BC = StrLen
     ex      de,hl                 ; HL = StrAdr
     ld      de,(BUFPTR)           ; DE = BufPtr
@@ -400,10 +400,10 @@ ST_SPLIT:
     byte    INTTK
     SYNCHK  'O'                   ; Require INTO   
     call    get_star_array        ; DE = AryAdr, BC = AryLen
-    ld      (SPLITADR),de         ; SPLITADR = array$(0)
+    ld      (ARRAYADR),de         ; ARRAYADR = array$(0)
     xor     a
     ld      (de),a                ; array$(0) = ""
-    call    _clearfirst           ; SPLITPTR = AryPtr, SPLITLEN = AryLen
+    call    _clearfirst           ; ARRAYPTR = AryPtr, ARRAYLEN = AryLen
     ret     z                     ; If array size = 1, return
     rst     SYNCHR                ; Require DEL
     byte    DELTK
@@ -464,9 +464,9 @@ ST_SPLIT:
     pop     de                    ;   DE = StrAdr; Stack = SegLen, BufPtr, SegPtr, TxtPtr, RtnAdr
     pop     bc                    ;   BC = SegLen; Stack = BufPtr, SegPtr, TxtPtr, RtnAdr
 .null
-    ld      hl,(SPLITPTR)         ; HL = AryPtr
+    ld      hl,(ARRAYPTR)         ; HL = AryPtr
     call    write_bcde2hl         ; Write string descriptor to array
-    ld      (SPLITPTR),hl         ; SPLITPTR = AryPtr
+    ld      (ARRAYPTR),hl         ; ARRAYPTR = AryPtr
     ld      a,b
     or      c
     pop     hl                    ; HL = BufPtr; Stack = SegPtr, TxtPtr, RtnAdr
@@ -481,7 +481,7 @@ ST_SPLIT:
     inc     hl                    ; Skip segment delimiter
     or      a                      
     jr      z,.done               ; If not null (end of SrcStr)  
-    ld      bc,(SPLITLEN)         ;   BC = AryLen
+    ld      bc,(ARRAYLEN)         ;   BC = AryLen
     call    _countdown            ;   If not last element
     jr      nz,.loop              ;     Get next segment
 .done
@@ -503,11 +503,11 @@ ST_SPLIT:
     ldir                          ; Copy FBUFFR to string space
     pop     bc                    ; BC = FltLen; Stack = StrAdr, TxtPtr, RtnAdr
     pop     de                    ; DE = StrAdr; Stack = TxtPtr, RtnAdr
-    ld      hl,(SPLITADR)         ; HL = SPLITADR
+    ld      hl,(ARRAYADR)         ; HL = ARRAYADR
     call    write_bcde2hl         ; Write string descriptor to VAR$(0)
 .abort
-    ld      bc,(SPLITLEN)
-    ld      hl,(SPLITPTR)
+    ld      bc,(ARRAYLEN)
+    ld      hl,(ARRAYPTR)
     call    fill_array_hl
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     ret
@@ -520,14 +520,14 @@ fill_array_hl:
     jp      sys_fill_zero         ; Fill to end with 0 bytes
 
 _skipone
-    ld    de,(SPLITPTR)
-    ld    bc,(SPLITLEN)
+    ld    de,(ARRAYPTR)
+    ld    bc,(ARRAYLEN)
 _skipfirst
     inc   de
     inc   de
     inc   de
     inc   de
-    jr    _splitptr
+    jr    _ARRAYPTR
 _clearfirst
     xor     a
     ld      b,4
@@ -535,14 +535,14 @@ _clearfirst
     ld      (de),a
     inc     de
     djnz    .skiploop
-_splitptr
-    ld      (SPLITPTR),de         ; SPLITPTR = AryPtr
+_ARRAYPTR
+    ld      (ARRAYPTR),de         ; ARRAYPTR = AryPtr
 _countdown
     dec     bc
     dec     bc
     dec     bc
     dec     bc                    ; AryLen = AryLen - 4
-    ld      (SPLITLEN),bc         ; SPLITLEN = AryLen
+    ld      (ARRAYLEN),bc         ; ARRAYLEN = AryLen
 _array_len
     ld      a,b
     or      c                     ;   If not last element
@@ -828,18 +828,20 @@ ST_SET:
 
     rst     SYNCHR                ; Must be extended Token
     byte    XTOKEN                ; $FE
-    cp      SPRITK                ; $84
-    jp      z,ST_SET_SPRITE
     cp      PALETK                ; $81
     jp      z,ST_SETPALETTE
-    cp      FASTK                 ; $88
-    jr      z,ST_SET_FAST
+    cp      SPRITK                ; $84
+    jp      z,ST_SET_SPRITE
+    cp      CHRTK                 ; $85
+    jr      z,ST_SET_CHR
     cp      KEYTK                 ; $86
     jr      z,ST_SET_KEY
+    cp      FASTK                 ; $88
+    jr      z,ST_SET_FAST
     cp      PT3TK                 ; $8C
     jp      z,ST_SET_PT3
     cp      BRKTK                 ; $9A
-    jp      z,ST_SET_BREAK
+    jr      z,ST_SET_BREAK
     jp      SNERR
 
 ;-----------------------------------------------------------------------------
@@ -850,6 +852,38 @@ ST_SET_BREAK:
     call    get_on_off            ; A = $FF if ON, $00 if OFF
     xor     $FF                   ; A = $00 if enaable, $FF if disabled
     jp      sys_break_mode
+
+;-----------------------------------------------------------------------------
+; Redifine character in Character RAM
+; Syntax: SET CHRDEF ascii_code TO string$
+; ToDo: SET CHRDEF ascii_code {IN char_set} TO string$
+;-----------------------------------------------------------------------------
+; SET CHRDEF 127 TO $"AA55AA55AA55AA55":PRINT CHR$(127)
+; SET CHRDEF "@" TO $"FF00FF00FF00FF00":PRINT "@"
+ST_SET_CHR:
+    rst     CHRGET                ; Skip CHR
+    rst     SYNCHR
+    byte    DEFTK                 ; Require DEF
+    call    get_char              ; A = ChrASC
+    push    af                    ; Stack = ChrASC, RtnAdr
+    rst     SYNCHR
+    byte    TOTK                  ; Require TO
+    call    get_string_arg        ; DE = StrAdr, BC = StrLen, Stack = TxtPtr, ChrASC, RtnAdr
+    ld      a,c
+    cp      8                     ; If StrLen <> 8
+    jp      nz,FCERR              ;   Illegal quantity error
+    pop     hl                    ; HL = TxtPtr; Stack = ChrASC, RtnAdr
+    pop     af                    ; A = ChrASC
+    push    hl                    ; Stack = TxtAdr, RtnAdr
+    ld      l,b                   ; Destination = 0 - ChrRAM
+    ld      iy,gfx_redefine_char        
+    call    aux_call
+    jp      c,LSERR
+    ld      a,(BASYSCTL)          ; Set character set modified flag
+    or      a,BASCHRMOD        
+    ld      (BASYSCTL),a
+    pop     hl                    ; HL = TxtAdr; Stack = RtnAdr
+    ret
 
 ;-----------------------------------------------------------------------------
 ; Set keybuffer mode

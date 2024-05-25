@@ -97,13 +97,31 @@
     byte    42
     jp      LETEQ                 ; Continue at '=' after variable name
 
+    rst     HOOKDO                ; $208A DIMEXT - Dim extension
+    byte    43
+    call    CHRGT2                ; Reget current character
+    ret     z                     ; If terminator, DIM statement is done
+    jp      DIMNXT                ; Else DIM the next array
+
+    rst     HOOKDO                ; $2093 READX - READ extension
+    byte    44
+read_cont:
+    ld      hl,(DATPTR)
+    jp      READC
+
+    rst     HOOKDO                ; $209B FINEXT - READ extension
+    byte    45
+    jp      FIN
+
+
+
 just_ret:
     ret
 
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.22w"
+    db "v0.22x"
     db 0
 plus_len   equ   $ - plus_text
 
@@ -115,6 +133,20 @@ auto_len = $ - auto_text
     db      $0D
 auto_desc
     dw      auto_len,auto_text
+
+
+
+; Null string descriptor  
+null_desc:
+    word    0,null_desc
+
+; ROM Signature
+    assert !($20F6<$)   ; Overflow into Kernel jump table
+    dc $20F7-$,$76
+    byte    "Aquarius+"
+
+; Start Kernel jump table at $2100
+    include "kernel.asm"
 
 ;-----------------------------------------------------------------------------
 ; Reset vector
@@ -163,18 +195,6 @@ init_banks:
 
     ; Back to system ROM init
     jp      JMPINI
-
-; Null string descriptor  
-null_desc:
-    word    0,null_desc
-
-; ROM Signature
-    assert !($20F6<$)   ; Overflow into Kernel jump table
-    dc $20F7-$,$76
-    byte    "Aquarius+"
-
-; Start Kernel jump table at $2100
-    include "kernel.asm"
 
 ;-----------------------------------------------------------------------------
 ; Intercept WRMCON call
@@ -720,7 +740,8 @@ _line_edit:
     push    hl
     call    get_linbuf_addr   ; HL = Line Buffer address
     ld      c,0               ; C = ChrCnt
-    call    edit              ; Edit the line
+    ld      iy,edit
+    call    aux_call          ; Edit the line
     pop     hl
     ret
 
@@ -966,6 +987,9 @@ hook_table:                     ; ## caller   addr  performing function
     dw      _check_comment      ; 40 CHKCMT   2027  Check for ' and treat as REM
     dw      isvar_extension     ; 41 ISVAR    0A4E  Parse variable and put value in FACLO                
     dw      let_extension       ; 42 LET      0731  Extensions to the LET command
+    dw      dim_extension       ; 43 DIM      10CC  Extensions to the LET command
+    dw      read_extension      ; 44 READ     08BE  Extensions to the LET command
+    dw      fin_extension       ; 45 FINEXT   209B  Extensions to FIN routine
 
 ; ------------------------------------------------------------------------------
 ;  Execute Hook Routine
@@ -1074,11 +1098,11 @@ _check_comment:
     include "dispatch.asm"      ; Statement/Function dispatch tables and routiness
     include "error.asm"         ; Error lookup table, messages and handling routines
     include "args.asm"          ; ARGS statement and function
+    include "arrays.asm"        ; Array handling extensions
     include "basic80.asm"       ; Statements and functions from MBASIC 80
     include "baslines.asm"      ; (De)tokenize, add, insert, delete program lines
     include "coldboot.asm"      ; Cold boot code
     include "basbitmap.asm"     ; Bitmap drawing statements and functions
-    include "editor.asm"        ; Advanced line editor
     include "enhanced.asm"      ; Enhanced stardard BASIC statements and functions
     include "evalext.asm"       ; EVAL extension - hook 9
     include "extended.asm"      ; Statements and functions from Aquarius Extended BASIC
@@ -1116,6 +1140,7 @@ _check_comment:
     include "basbuf.asm"        ; Basic buffer read/write routines
     include "color.asm"         ; Color palette module
     include "dos.asm"           ; DOS routines
+    include "editor.asm"        ; Advanced line editor
     include "esp_aux.asm"       ; ESP routines in auxiliary ROM
     include "fileio.asm"        ; Disk and File I/O machine assembly routines
     include "gfx.asm"           ; Main graphics module

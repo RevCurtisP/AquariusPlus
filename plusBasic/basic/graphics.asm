@@ -36,6 +36,7 @@ ST_USECHR:
     byte    $01                   ; LD BC over OR
 .default    
     or      BASCHRSET
+    and     $FF-BASCHRMOD         ; Clear CharRAM modified bit
     ld      (BASYSCTL),a
     pop     af                    ; A = ChrSet; Stack = TxtPtr, RtnAdr
     call    select_chrset         ;
@@ -64,18 +65,43 @@ FN_GETATTR
     jp      GSERR                 ; Not implemented error
 
 ;-----------------------------------------------------------------------------
-; GETCHR(X,Y) - Change Character Set
+; GETCHR(X,Y) - Get Character at (X,Y)
 ;-----------------------------------------------------------------------------
 FN_GETCHR:
     rst     CHRGET                ; Skip CHR
+    cp      DEFTK                 ;  If GETCHRDEF
+    jr      z,FN_GETCHRDEF        ;   Go do it
     cp      SETTK                 ; If GETCHRSET
     jr      z,FN_GETCHRSET        ;   Go do it
     jp      GSERR                 ; Not implemented error
 
 ;-----------------------------------------------------------------------------
-; GETCHRSET - Change Character Set
+; GETCHRDEF - Return Corrent Character Set
+; GETCHRDEF$(ascii_code)
 ;-----------------------------------------------------------------------------
-; USE CHRSET "/demos/charmaps/charmaps/bold.chr"
+; ToDo: GETCHRDEF(ascii_code, chrset)
+; PRINT HEX$(GETCHRDEF$(127))
+; PRINT HEX$(GETCHRDEF$('@'))
+FN_GETCHRDEF:
+    rst     CHRGET                ; Skip DEF
+    SYNCHK  '$'                   ; Require '$'
+    SYNCHK  '('                   ; Require (
+    call    get_char              ; C = ChrASC
+    ex      af,af'                ; A' = ChrASC
+    SYNCHK  ')'                   ; Require )
+    push    hl                    ; Stack = TxtPtr, RtnAdr  
+    ld      a,8                   ; A = BufLen
+    call    STRINI                ; DE = BufAdr
+    ex      af,af'                ; A = ChrASC
+    ld      bc,8                  ; BC = BufLen
+    ld      l,0                   ; L = ChrSet
+    ld      iy,gfx_get_char_def
+    call    aux_call
+    jp      PUTNEW
+
+;-----------------------------------------------------------------------------
+; GETCHRSET - Return Corrent Character Set
+;-----------------------------------------------------------------------------
 ; PRINT GETCHRSET
 FN_GETCHRSET:
     rst     CHRGET                ; Skip SET
@@ -83,10 +109,15 @@ FN_GETCHRSET:
     ld      hl,LABBCK           
     push    hl                    ; Stack = LABBCK, TxtPtr, RtnAdr
     call    ext_get_chrset
-    jp      SNGFLT                ; Float an return result
+    jp      FLOAT                 ; Float an return result
 ; Return current character set in A
 ext_get_chrset:
     ld      a,(BASYSCTL)          
+    ld      b,a
+    and     BASCHRMOD
+    ld      a,-1
+    ret     nz
+    ld      a,b
     and     BASCHRSET             ; A = 0 if default character Set
     ret     z
     ld      a,1                   ;   A = 1

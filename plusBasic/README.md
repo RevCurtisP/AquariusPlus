@@ -118,7 +118,8 @@
  - [x] **GET ARGS _var_{,...}** - Read arguments from argument list after `GOSUB`.
  - [x] **GET SCREEN (_x_,y_)-(_x_,_y_) {CHR|ATTR} \*_array_|^_strvar_** - Copy text screen clip to array or string variable.<!--GETSCREEN-->
  - [x] **GET TILEMAP (_x_,y_)-(_x_,_y_) \*_array_|^_strvar_** - Copy tilemap clip to array or string variable.<!--GETTILE-->
- - [x] **GETCHRSET** - Return character set currently in use.
+ - [ ] **GETCHRDEF$(_ascii_code_)** - Return characte definition.<!--CHRSET-->
+ - [x] **GETCHRSET** - Return character set currently in use.<!--CHRSET-->
  - [ ] **GETCOLOR** - Return screen printing colors.
  - [x] **GETKEY** - Wait for key an return ASCII code.
  - [x] **GETKEY$**  - Wait for key and return as string.
@@ -212,7 +213,8 @@
  - [x] **PT3STATUS** - Return -1 if PT3 is playing, else 0.
  - [x] **PUT SCREEN (_x_,y_) {CHR|ATTR} \*_array_|^_strvar_** - Copy clip from array or string variable to text screen.<!--PUTSCREEN-->
  - [x] **PUT TILEMAP (_x_,y_) \*_array_|^_strvar_** - Copy clip from array or string variable to tilemap.<!--PUTTILE-->
- - [x] **READ _var_{,...}** - Read values from data statements into variables.
+ - [x] **READ _var_{,...}** - Read values from DATA statements into variables.
+ - [x] **READ \*_array_{,...}** - Read values from DATA statements into an array.
  - [x] **REM _text_** - Denotes comment.
  - [x] **RENAME _filespec_ TO _filespec_** - Rename file or directory
  - [x] **RESUME _lineref_** - Clear error condition and continues program execution at specified line
@@ -234,12 +236,14 @@
  - [x] **SAVE _filespec_,{@_page_,}_address_,_length_** - Save memory to binary file.<!--SAVE-->
  - [x] **SAVE _filespec_,\*_array_** - Save numeric or string array data to file.<!--SAVE-->
  - [ ] **SAVE BITMAP _filespec_** - Save bitmap screen data from Video RAM to file.
+ - [ ] **SAVE CHRSET _filespec_** - Save curent character set to file.<!--CHRSET-->
  - [x] **SAVE FNKEYS _filespec_** - Save function key definitions to file.
  - [x] **SAVE PALETTE _p_,_filespec_** - Save palette contents to file.<!--SAVEPALETTE-->
  - [ ] **SAVE SCREEN _filespec_** - Save text screen to file.
  - [x] **SAVE TILEMAP** - _Not implemented._
  - [x] **SCREEN {_text_},{_graphics_},{_sprites_},{_priority_},{_remap_}** - Set screen mode.<!--SCREEN-->
  - [x] **SET BREAK ON|OFF** - _Incomplete_ Enable or disable control-c checking.
+ - [ ] **SET CHRDEF _ascii_code_,_string_** - Redefine character.<!--CHRSET-->
  - [x] **SET COLOR _fgcolor_,_bgcolor_** - Enable color printing mode.<!--SETCOLOR-->
  - [x] **SET COLOR OFF** - Disable color printing mode.<!--SETCOLOR-->
  - [x] **SET FAST ON|OFF** - Enable or disable turbo mode.<!--SETFAST-->

@@ -1000,6 +1000,13 @@ load_chrset:
     ld      iy,file_load_altchrs  ; Load into alternate character set buffer
     jr      _aux_call
 
+; SAVE CHRSET "/t/test.chrs"
+; PRINT COMPARE "/t/test.chrs" TO "esp:/default.chr"
+_save_chrset:
+    call    get_strdesc_arg       ; HL = FilStd; Stack = TxtPtr, PalNum, FilRtn, RtnAdr
+    ld      iy,file_save_chrset
+    jr      _aux_call
+
 _save_palette:
 ; save palette 0,"/t/default.pal"
     ld      iy,file_save_palette
@@ -1323,8 +1330,12 @@ ST_SAVE:
 .save_extended
     rst     CHRGET                ; Skip XTOKEN
     cp      PALETK
-    jp      z,_save_palette
-    jp      SNERR
+    jp      z,_save_palette       ; If not PALETTE
+    rst     SYNCHR
+    byte    CHRTK                 ;   Require CHRSET
+    rst     SYNCHR
+    byte    SETTK
+    jp      _save_chrset
 
 .save_fnkeys
     call    _set_up_fnkeys        ; A = BAS_BUFFR, BC = 512, DE = FKEYDEFS, HL = FilDsc

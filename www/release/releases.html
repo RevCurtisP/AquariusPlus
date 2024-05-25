@@ -16,6 +16,8 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
   <body>
     <h1 id="plusbasic-release-history">plusBASIC Release History</h1>
     <ul>
+      <li>v022.x
+<ul><li>Added SET CHRDEF, GETCHRDEF$(), and SAVE CHRSET</li><li>Fixed characters 128 - 255 of default character set being overridden</li><li>INPUT and READ now parse hexademical numbers</li><li>Added DIM var()=list, READ *var</li></ul></li>
       <li>v0.22w
 <ul><li>Added WAIT, SET BREAK ON/OFF</li><li>Implemented RGB(), DEF USR</li><li>Added syntax OUT port,byte|string$;port,byte|string$...</li><li>Syntax {@page,}address,byte;... to POKE, POKE COLOR, POKE SCREEN, and DOKE</li></ul></li>
       <li>
@@ -67,7 +69,7 @@ v0.22v</li>
       <li>v0.22e
 <ul><li>Implemented POINTB(), added CLEAR BITMAPC and FILL BITMAPC</li></ul></li>
       <li>v0.22d
-<ul><li>Added CLEAR BITMAP, FILL BITMAP. Implemented PSETB and PRESETB</li></ul></li>
+<ul><li>Added CLEAR BITMAP, FILL BITMAP.</li><li>Implemented PSETB and PRESETB</li></ul></li>
       <li>v0.22c
 <ul><li>Fixed syntax error on extended functions VER through VARPTR</li></ul></li>
       <li>v0.22b
@@ -80,7 +82,10 @@ v0.22v</li>
 <ul><li>Added pseudovariable ARGS and ARGS$(0)</li></ul></li>
       <li>v0.21y
 <ul><li>Added SWAP VARS statement, ERASE statement, MID$ statement, and INDEX() function</li></ul></li>
-      <li>v0.21x FILL BITMAP. ded TRIM$, TRIML$, and v0.21w</li>
+      <li>v0.21x
+<ul><li>Added TRIM$, TRIML$, and TRIMR$ functions</li></ul></li>
+      <li>v0.21w
+<ul><li>Added GETCHRSET function</li><li>Improved screen switch/swap</li><li>Fixed 80-column color mode printing</li><li>Tweaked Latin-1 character sets</li></ul></li>
       <li>v0.21v
 <ul><li>Added LOAD DIR filename$,*array$</li><li>LOAD array$ ASC and LOAD DIR start at array index 1, put number of lines in index 0</li><li>Updated read/write page checking to match new memory structure</li></ul></li>
       <li>v0.21u

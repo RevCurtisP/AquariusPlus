@@ -40,6 +40,10 @@ eval_hex_str:
     push    hl                    ; Save Text Pointer
     jp      hex_to_asc            ; Convert to ASCII
 
+fin_extension:
+    ld      a,(hl)
+    cp      '$'                   ; If not '$'
+    jp      nz,FIN                ;   Evaluate float
 eval_hex_int:
     xor     a
     ld      (VALTYP),a        ; Returning Number

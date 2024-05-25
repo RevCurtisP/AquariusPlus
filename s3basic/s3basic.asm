@@ -148,7 +148,9 @@ STRNGX  equ     $206A   ;; | Don't capitalize letters between single quotes
 CHKCMT  equ     $2072   ;; | Check for ' and treat as REM
 ISVARX  equ     $207A   ;; | Variable evaluation extension
 LETEXT  equ     $2082   ;; | LET extension
-
+DIMEXT  equ     $208A   ;; | DIM extension
+READX   equ     $2093   ;; | READ extension
+FINEXT  equ     $209B   ;; | FIN extension 
 endif                   
 EXTBAS  equ     $2000   ;;Start of Extended Basic
 XSTART  equ     $2010   ;;Extended BASIC Startup Routine
@@ -1671,8 +1673,12 @@ NOTQTI: push    hl                ;{M80} SAVE TEXT POINTER
         jr      INPCON            ;
 ;[M80] READ STATEMENT
 READ:   push    hl                ;[M80] SAVE THE TEXT POINTER
+ifdef aqplus
+        jp      READX
+else
         ld      hl,(DATPTR)       ;[M80] GET LAST DATA LOCATION
-        byte    $F6               ;[M80] "ORI" TO SET [A] NON-ZERO
+endif
+READC:  byte    $F6               ;[M80] "ORI" TO SET [A] NON-ZERO
 INPCON: xor     a                 ;[M80] SET FLAG THAT THIS IS AN INPUT
         ld      (FLGINP),a        ;[M80] STORE THE FLAG
         ex      (sp),hl           ;[M80] [H,L]=VARIABLE LIST POINTER
@@ -1727,7 +1733,11 @@ NOWGET: call    STRLT2            ;[M80] MAKE STRING DESCRIPTOR FOR VALUE AND CO
         push    de                ;[M80] TEXT POINTER GOES ON
         jp      INPCOM            ;[M80] DO ASSIGNMENT
 NUMINS: rst     CHRGET            ;
+ifdef aqplus
+        call    FINEXT            ;; Extended Number input
+else
         call    FIN               ;[M80] CALL # INPUTTER
+endif
         ex      (sp),hl           ;*** tail end of [M80] FIN?
         call    MOVMF             ;
         pop     hl                ;
@@ -3055,7 +3065,11 @@ VAL:    call    LEN1              ;[M80] DO SETUP, SET RESULT=REAL
         push    bc                ;[M80] THE FIRST CHARACTER OF THE NEXT STRING
         dec     hl                ;[M80] ***CALL CHRGET TO MAKE SURE
         rst     CHRGET            ;[M80] VAL(" -3")=-3
-        call    FIN               ;[M80] IN EXTENDED, GET ALL THE PRECISION WE CAN
+ifdef aqplus
+        call    FINEXT            ;; Extended Number input
+else
+        call    FIN               ;[M80] CALL # INPUTTER
+endif
         pop     bc                ;[M80] GET THE MODIFIED CHARACTER OF THE NEXT STRING INTO [B]
         pop     hl                ;[M80] GET THE POINTER TO THE MODIFIED CHARACTER
         ld      (hl),b            ;[M80] RESTORE THE CHARACTER
@@ -3087,10 +3101,15 @@ else
 endif
         ld      hl,(FRETOP)       ;[M80] TOP OF FREE AREA
         jp      GIVFLT            ;[M80] RETURN [H,L]-[D,E]
-DIMCON: dec     hl                ;[M80] SEE IF COMMA ENDED THIS VARIABLE
+DIMCON: 
+ifdef aqplus
+        jp      DIMEXT            ; Dim Extesion hook
+else
+        dec     hl                ;[M80] SEE IF COMMA ENDED THIS VARIABLE
         rst     CHRGET            ;
         ret     z                 ;[M80] IF TERMINATOR, GOOD BYE
-        rst     SYNCHK            ;
+endif
+DIMNXT: rst     SYNCHK            ;
         byte    ','               ;[M80] MUST BE COMMA
 ;{M80} DIMENSION
 DIM:    ld      bc,DIMCON       ;[M80] PLACE TO COME BACK TO

@@ -132,11 +132,12 @@ ST_COPY:
     jp      z,FCERR         ; Error if invalid page
     ret
 
+    
 ;-----------------------------------------------------------------------------
 ; Enhanced POKE
 ; syntax: POKE address, byte
 ;         POKE address, string$
-;         POKE @page, address, byte
+;         POKE @page, address, bytentn
 ;         POKE @page, address, string$
 ;-----------------------------------------------------------------------------
 ST_POKE:
@@ -493,3 +494,98 @@ ST_STOP:
     cp      PT3TK
     jp      z,ST_STOP_PT3
     jp      SNERR
+
+;-----------------------------------------------------------------------------
+; Enhanced STR$ function
+; STR$(*array{,BYTE|INT}
+;-----------------------------------------------------------------------------
+; ToDo: Separate Array To String Logic into Callable Routine
+
+; dim a(9):S$=STR$(*A)
+FN_STRS:
+    rst     CHRGET                ; Skip STR$
+    SYNCHK  '('                   ; Require (
+    cp      MULTK                 ; 
+    jr      z,.numeric_array;     ; If not *
+    call    FRMEVL                ;   Evaluate argument
+    SYNCHK  ')'                   ;   Require ')'
+    jp      STR                   ;   Execute S3BASIC STR$ function
+.numeric_array
+    call    get_star_array        ; DE = AryDat, BC = AryLen
+    call    CHKNUM                ; Type mismatch error if not numeric
+    ld      (ARRAYPTR),de         ; ARRAYPTR = AryPtr
+    ld      ix,.dofloat           ; Default to floating point
+    ld      de,4                  ; SegLen = 4
+    cp      ','                   
+    jr      nz,.nocomma           ; If comma
+    rst     CHRGET                ;   
+    rst     SYNCHR
+    byte    XTOKEN                ;   Extended Tokens only
+    ld      e,2                   ;   SegLen = 2
+    ld      ix,.doword
+    cp      WORDTK                ;   If not WORD
+    jr      z,.skipchr               
+    dec     e                     ;   SegLen = 4
+    ld      ix,.dobyte          
+    cp      BYTETK                ;   If not BYTE
+    jp      nz,SNERR              ;     Syntax error
+.skipchr
+    rst    CHRGET                 ;   Skip BYTE/WORD
+.nocomma
+    SYNCHK  ')'                   ; Require ')'
+    push    hl                    ; Stack = TxtPtr, Rtn
+    sra     b
+    rr      c                     ; BC = BC / 2
+    sra     b
+    jp      nz,LSERR              ; IF BC/4 is 255, String too long error
+    rr      c                     ; BC = BC / 4
+    ld      (ARRAYLEN),bc         ; ARRAYLEN = ArySiz
+    call    mult_a_de             ; HL = StrLen
+    ld      a,h
+    or      a                     ; If StrLen > 255
+    jp      nz,LSERR              ;   String too long error
+    ld      a,l                   ; A = StrLen
+    call    STRINI                ; DSCTMP = StrDsc, DE = StrAdr, A = StrLen
+    ld      (BUFPTR),de           ; BUFPTR = StrPtr
+    call    FREFAC                ; Free up temp
+.loop
+    call    jump_ix               ; Convert array element and write to string
+    jr      nz,.loop              ; If not done, loop
+    jp      PUTNEW                ; Else return the string
+; Subroutines    
+.dobyte
+    call    .array_to_facc        
+    call    CONINT                ; E = Byte
+    ld      hl,(BUFPTR)           ; HL = StrPtr
+    ld      (hl),e
+    inc     hl
+    jr      .next
+.doword
+    call    .array_to_facc        
+    call    FRCINT                ; DE = Word
+    ld      hl,(BUFPTR)           ; HL = StrPtr
+    ld      (hl),e
+    inc     hl
+    ld      (hl),d
+    inc     hl                    ; Copy word to string
+.next
+    ld      (BUFPTR),hl           ; HL = StrPtr
+    ld      hl,ARRAYLEN          
+    dec     (hl)                  ; ArySiz = ArySiz - 1
+    ret
+.dofloat:
+    ld      hl,(ARRAYPTR)         ; HL = AryPtr
+    ld      de,(BUFPTR)           ; DE = StrPtr
+    ld      bc,4                  ; Copy 4 byte Float from Array to String
+    ldir                          ; HL = AryPtr, DE = StrPtr
+    ld      (ARRAYPTR),hl         ; ARRAYPTR = AryPtr
+    ld      (BUFPTR),de           ; BUFPTR = StrPtr
+    ret
+; Copy array element to FACC
+.array_to_facc
+    ld      hl,(ARRAYPTR)         ; HL = AryPtr
+    ld      de,FACLO              ; DstAdr = FACC
+    ld      bc,4
+    ldir                          ; Do copy
+    ld      (ARRAYPTR),hl         ; ARRAYPTR = AryPtr
+    ret
