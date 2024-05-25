@@ -165,6 +165,7 @@
  - [x] **LOAD PT3 _filespec_** - Load PT3 track into PT player buffer.
  - [x] **LOAD SCREEN _filespec_** - Load text screen from file.
  - [x] **LOAD TILEMAP** - _Not implemented._
+ - [ ] **LOAD TILESET _tileno_,_filespec_** - Load tile definitions into Video RAM.
  - [x] **LOCATE _x_,_y_** - Move text cursor to specified position.<!--LOCATE-->
  - [x] **LOG(_float_)** - Return natural logarithm of argument.
  - [x] **LOOP PT3 {_filespec_}** - Play specified or previously loaded PT3 track repeatedly.
@@ -241,6 +242,7 @@
  - [x] **SAVE PALETTE _p_,_filespec_** - Save palette contents to file.<!--SAVEPALETTE-->
  - [ ] **SAVE SCREEN _filespec_** - Save text screen to file.
  - [x] **SAVE TILEMAP** - _Not implemented._
+ - [ ] **SAVE TILESET _tileno_,_tilecount_,_filespec_** - Save tile definitions to disk.
  - [x] **SCREEN {_text_},{_graphics_},{_sprites_},{_priority_},{_remap_}** - Set screen mode.<!--SCREEN-->
  - [x] **SET BREAK ON|OFF** - _Incomplete_ Enable or disable control-c checking.
  - [ ] **SET CHRDEF _ascii_code_,_string_** - Redefine character.<!--CHRSET-->

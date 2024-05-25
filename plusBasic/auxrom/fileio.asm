@@ -379,6 +379,74 @@ file_load_strbuf:
     ret
 
 ;-----------------------------------------------------------------------------
+; Load tileset into Video RAM
+;  Input: BC: Number of tiles
+;         DE: Starting tile#
+;         HL: String descriptor address
+; Output: A: result code
+;        BC: result length
+;        DE: terminator address
+; Flags Set: S if I/O error
+;            C if tile# out of range
+; Clobbered: HL
+;-----------------------------------------------------------------------------
+file_save_tileset:
+    push    hl                    ; Stack = StrDsc, RtnAdr
+    push    bc                    ; Stack = TilCnt, StrDsc, RtnAdr
+    call    _tile_address         ; HL = TilAdr
+    pop     de                    ; DE = TilCnt; Stack = StrDsc, RtnAdr
+    jp      c,POPHRT              ; If TileNo > 511 Return Carry Set
+    push    hl                    ; Stack = TilAdr, StrDsc, RtnAdr
+    ex      de,hl                 ; HL = TilCnt, DE = TilAdr
+    ld      b,5
+    call    shift_hl_left         ; TilLen = TileCnt * 32
+    ld      b,h
+    ld      c,l                   ; BC = TilLen
+    ex      de,hl                 ; HL = TilAdr
+    add     hl,bc                 ; HL = EndAdr
+    ex      de,hl                 ; DE = EndAdr
+    ld      hl,$4000
+    rst     COMPAR
+    pop     de                    ; DE = TilAdr; Stack = StrDsc, RtnAdr
+    pop     hl                    ; HL = StrDsc; Stack = RtnAdr
+    ret     c                     ; If EndAdr > $4000, return Carry Set
+    ld      a,VIDEO_RAM           ; A = Page
+    jp      file_save_paged
+
+;-----------------------------------------------------------------------------
+; Load tileset into Video RAM
+;  Input: DE: Starting tile#
+;         HL: String descriptor address
+; Output: A: result code
+;        BC: result length
+;        DE: terminator address
+; Flags Set: S if I/O error
+;            C if tile# out of range
+; Clobbered: HL
+;-----------------------------------------------------------------------------
+file_load_tileset:
+    push    hl                    ; Stack = StrDsc, RtnAdr
+    call    _tile_address         ; HL = TilAdr
+    jp      c,POPHRT              ; If TileNo > 511 Return Carry Set
+    ex      de,hl                 ; DE = TilAdr
+    ld      hl,$4000
+    sbc     hl,de                 ; MaxLen = 16534 - TilAdr
+    ld      b,h
+    ld      c,l                   ; BC = MaxLen
+    pop     hl                    ; HL = StrDsc; Stack = RtnAdr
+    ld      a,VIDEO_RAM           ; A = Page
+    jp      file_load_paged       ; Load tileset
+
+; Input: DE: Tile#; OutputL Tile Address; Clobbers: BC, DE
+_tile_address:
+    ld      hl,511
+    rst     COMPAR                ; If TileNo > 511
+    ret     c                     ;   Return Carry Set
+    ex      de,hl                 ; HL = Ti
+    ld      b,5
+    jp      shift_hl_left         ; TilAdr = TileNo * 32
+    
+;-----------------------------------------------------------------------------
 ; Save binary file into main memory
 ; Input: BC: maximum length
 ;        DE: destination address

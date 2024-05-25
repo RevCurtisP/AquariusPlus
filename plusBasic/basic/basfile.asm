@@ -515,6 +515,9 @@ ST_LOAD:
     cp      DIRTK
     jp      z,load_dir_array
 
+    cp      TILETK
+    jp      z,_load_tile
+
     cp      XTOKEN
     jp      z,_load_extended
 
@@ -1040,6 +1043,42 @@ _aux_call
     pop     hl
     ret
 
+
+; SAVE TILESET 128,249,"/cards/savetest.til"
+_save_tile:
+    rst     CHRGET                ; Skip TILE
+    rst     SYNCHR
+    byte    SETTK                 ; Require SET
+    call    get_int512            ; DE = TileNo
+    call    get_comma             ; Require Comma
+    push    de                    ; Stack = TileNo, RtnAdr
+    call    get_int512            ; DE = TilCnt
+    call    get_comma             ; Require Comma
+    push    de                    ; Stack = TilCnt, TileNo, RtnAdr
+    call    get_strdesc_arg       ; HL = StrDsc; Stack = TxtPtr, TilCnt, TileNo, RtnAdr
+    pop     ix                    ; IX = TxtPtr; Stack = TilCnt, TileNo, RtnAdr
+    pop     bc                    ; BC = TilCnt; Stack = TileNo, RtnAdr
+    pop     de                    ; DE = TileNo; Stack = RtnAdr
+    push    ix                    ; Stack = TxtPtr, RtnAdr
+    ld      iy,file_save_tileset  ; Save tiles
+    jr      _aux_call
+
+; LOAD TILESET 128,"/cards/cards.til"
+_load_tile:
+    rst     CHRGET                ; Skip TILE
+    rst     SYNCHR
+    byte    SETTK                 ; Require SET
+    call    get_int512            ; DE = TileNo
+    call    get_comma             ; Require Comma
+    push    de                    ; Stack = TileNo, RtnAdr
+    call    get_strdesc_arg       ; HL = StrDsc; Stack = TxtPtr, TileNo, RtnAdr
+    pop     bc                    ; BC = TxtPtr; Stack = TileNo, RtnAdr
+    pop     de                    ; DE = TileNo; Stack = RtnAdr
+    push    bc                    ; Stack = TxtPtr, RtnAdr
+    ld      iy,file_load_tileset  ; Load tiles
+    jr      _aux_call
+
+
 ;-----------------------------------------------------------------------------
 ; Bitmap file formats
 ;-----------------------------------------------------------------------------
@@ -1259,6 +1298,8 @@ ST_SAVE:
     jp      z,.save_fnkeys
     cp      SCRNTK                
     jp      z,_save_screen        
+    cp      TILETK                
+    jp      z,_save_tile        
     cp      BITTK
     jp      z,_save_bitmap
     cp      XTOKEN
