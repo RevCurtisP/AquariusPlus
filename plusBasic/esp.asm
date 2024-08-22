@@ -81,9 +81,12 @@ esp_close_all:
 ;         B: Byte read (0 if none)
 ;-----------------------------------------------------------------------------
 esp_read_byte:
+    xor     a
+esp_readc_byte:
+    push    af
     ld      a, ESPCMD_READ
     call    esp_cmd               ; Issue read command
-    xor     a
+    pop     af
     call    esp_send_byte         ; Send file descriptor
     ld      bc,1
     call    esp_send_bc           ; Number of bytes to read
@@ -100,22 +103,23 @@ esp_read_byte:
 
 ;-----------------------------------------------------------------------------
 ; Read bytes from ESP to main memory
-; Input: BC: number of bytes to read
+; Input: A: file descriptor (esp_readc_bytes)
+;        BC: number of bytes to read
 ;        DE: destination address
-; Output: A: Result
+; Output: A: result
 ;        BC: number of bytes actually read
-;     DE,HL: next address (start address if no bytes read)
+;        DE: end address + 1
+;         L: file descriptor
 ;-----------------------------------------------------------------------------
 esp_read_bytes:
     xor     a
-
 esp_readc_bytes:
-    push    af
+    ld      l,a
     ld      a, ESPCMD_READ
     call    esp_cmd
 
     ; Send file descriptor
-    pop     af
+    ld      a,l
     call    esp_send_byte
 
     ; Send read size
@@ -127,24 +131,28 @@ esp_readc_bytes:
 
     ; Get number of bytes actual read
     call    esp_get_bc
-
+;-----------------------------------------------------------------------------
+; Read bytes from ESP requeat to main memory
+; Input: BC: number of bytes to read
+;        DE: destination address
+; Output: A: 0 (success)
+;        BC: number of bytes read
+;        DE: end address + 1
+; Note: Will hang if ESP sends less than BC bytes
+;-----------------------------------------------------------------------------
+esp_get_bytes:
     push    bc
-
 .loop:
     ; Done reading? (BC=0)
     ld      a, b
     or      a, c
     jr      z, .done
-
     call    esp_get_byte
     ld      (de), a
     inc     de
     dec     bc
     jr      .loop
-
 .done:
-    ld      h,d                   ; Return end address in DE and HL
-    ld      l,e
     pop     bc
     ret
 
@@ -157,7 +165,7 @@ esp_readc_bytes:
 ; Output: A: result code (clobbered if page error)
 ;        BC: number of bytes actually read
 ;        DE: next destination address 
-;         H: destination page
+;         H: new destination page
 ;         L: file descriptor
 ; Flags Set: Z if illegal page
 ;            C if page overflow
@@ -185,15 +193,17 @@ esp_read_paged:
     push    bc                    ; Stack = BytCnt, RtnAdr
     dec     de
 .loop:
+    inc     de                    ; Update DE before checking BC
     ; Done reading? (BC=0)
     ld      a, b
     or      a, c
     jr      z, .done
 
-    inc     de
     ld      a,d
     or      a,e
-    call    z,page_next_de_address
+    jr      nz,.read_byte
+    call    page_next_de_address
+    ld      h,a                   ; H = New page
     jr      c,.error              ; Return if overflow
 .read_byte
     ;call    esp_get_byte

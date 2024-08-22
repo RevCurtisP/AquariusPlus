@@ -3,7 +3,7 @@
 ;=====================================================================================
 
 ;-----------------------------------------------------------------------------
-; esp_get_datetime - Read date and time into string buffer
+; espx_get_datetime - Read date and time into string buffer
 ; Input: HL = Buffer Address
 ; Sets: string_buff: Date and Time in format YYYYMMDDHHmmss
 ; Output:  E: String Length, DE = End of String, HL = Buffer Address
@@ -18,6 +18,61 @@ espx_get_datetime:
     jp      espx_read_to_buff      
 
 ;-----------------------------------------------------------------------------
+; espx_get_gamectrl - Read date and time into string buffer
+; Input: A: controller index 
+;       DE: buffer address
+; Output: A: result code 
+;        BC: number of bytes read
+;        DE: buffer address
+; Result: 0: success
+;        -1: ERR_NOT_FOUND
+; Buffer: 0  (Signed) Left stick X 
+;         1  ( Signed )  Left stick Y 
+;         2  ( Signed )  Right stick X
+;         3  ( Signed )  Right stick Y
+;         4  (Unsigned)  Left trigger 
+;         5  (Unsigned)  Right trigger
+;        6-7 (L-Endian)  Button Status
+;             0  A
+;             1  B
+;             2  X
+;             3  Y
+;             4  View
+;             5  Guide (Xbox button)
+;             6  Menu
+;             7  LS (Button in left stick)
+;             8  RS (Button in right stick)
+;             9  LB (Left shoulder button)
+;            10  RB (Right shoulder button)
+;            11  D-pad up
+;            12  D-pad down
+;            13  D-pad left
+;            14  D-pad right
+;            15  Share (Xbox Series S/X controller only)
+;-----------------------------------------------------------------------------
+espx_get_gamectrl:
+    or      a
+    jr      nz,ret_err_not_found
+
+    push    af                    ; Stack = CtlIdx, RtnAdr
+    ld      a,ESPCMD_GETGAMECTRL  ; Issue GETGAMECTRL command
+    call    esp_cmd
+    pop     af                    ; A = CtlIdx; Stack = RtnAdr
+    call    esp_send_byte         ; Response Type ($00)
+    call    esp_get_result 
+    ret     m                     
+    push    de
+    ld      bc,8
+    call    esp_get_bytes
+    pop     de
+    ret
+
+ret_err_not_found:
+    ld      a,ERR_NOT_FOUND
+    or      a
+    ret
+    
+;-----------------------------------------------------------------------------
 ; esp_get_mouse - Read date and time into string buffer
 ; Output:  A: 0 if succesful, else error code
 ;         BC: X-position
@@ -26,18 +81,21 @@ espx_get_datetime:
 ;          L: Wheel delta
 ;-----------------------------------------------------------------------------
 espx_get_mouse:
+    call    espn_get_mouse
+    jp      page_restore_bank3
+
+espn_get_mouse:
     ld      a,ESPCMD_GETMOUSE     ; Issue MOUSE command
     call    esp_cmd
     call    esp_get_byte
     or      a
-    jp      m,.return              
+    ret     m
     call    esp_get_long          ; BC = X, D = Y, E = Buttons
     xor     a
     call    esp_get_byte          ; A = Wheel Delta
     ld      l,a                   ; L = Wheel Delta
     xor     a                     ; Return success
-.return
-    jp      page_restore_bank3
+    ret
 
 ;-----------------------------------------------------------------------------
 ; Read CR, LF, CR/LF, or null terminated string

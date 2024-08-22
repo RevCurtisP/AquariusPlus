@@ -103,9 +103,6 @@ MOUSEWDLT   equ $3831   ; Accumulated change in mouse delta
 BAS_FDESC   equ $3832   ; ESP file descriptor to close on Error or Ctrl-C
 ;         $3834-$3835   ; unused (2 bytes)
 ; Temporary variables used within statement code.
-; DEF SPRITE
-XTEMP0      equ $3832   ; Used by DEF SPRITE
-XTEMP1      equ $3833   ; Used by DEF SPRITE
 ; FILESTAT statement
 FILESIZE    equ $3838   ; File Size (32-bits $3838-$383B)
 FILEATTR    equ $383C   ; File Attribute
@@ -126,7 +123,9 @@ STARTCOL    equ $3838
 ENDCOL      equ $383A
 STARTROW    equ $383C
 ENDROW      equ $383E
-; sprite_def
+; DEF SPRITE
+XTEMP0      equ $3836   ; Used by DEF SPRITE
+XTEMP1      equ $3837   ; Used by DEF SPRITE
 SPRTLNUM    equ $3838   ; Spritle number
 SPRTCOLS    equ $383A   ; Width in spritles
 SPRTROWS    equ $383C   ; Height in spritles
@@ -196,7 +195,7 @@ VCTRL_MODE_MC   equ $06     ; xxxxx11x  Select 4bpp Bitmap Mode
 VCTRL_SPR_EN    equ $08     ; xxxx1xxx  Enable Sprites
 VCTRL_TEXT_PRIO equ $10     ; xxx1xxxx  Text Screen Priority 
 VCTRL_REMAP_BC  equ $20     ; xx1xxxxx  Remap Text Border Characters
-VCRTL_80COL_EN      equ $40     ; x1xxxxxx  Enable 80-column mode
+VCRTL_80COL_EN  equ $40     ; x1xxxxxx  Enable 80-column mode
 VCTRL_TEXT_PAGE equ $80     ; 1xxxxxxx  Select Text Page
 
 VCTRL_TEXT_BITS equ VCTRL_TEXT_EN + VCRTL_80COL_EN + VCTRL_TEXT_PAGE
@@ -233,6 +232,7 @@ RUNARGEND   equ $09FF   ; End of RUN arguments
 DEFCHRSET   equ $3000   ; Page Offset: Default Character Set Buffer
 ALTCHRSET   equ $3800   ; Page Offset: Custom Character Set Buffer
 CHRSETLEN   equ 2048    ; Size of character set ROM
+ASCSETLEN   equ 768     ; Size of ASCII character set (' ' - DEL)
 ; BASIC interpreter control flags
 BASOUTBUF   equ $01     ; BASYSCTL: redirect OUTput to BUFfer
 BASSAVASC   equ $02     ; BASYSCTL: Default SAVe to ASC
@@ -253,8 +253,10 @@ GFXM_4BPP   equ $03     ; EXT_FLAGS: Bitmap mode (4bpp)
 GFXM_MASK   equ $03     ; Graphics mode bit mask
 GFXBUFLAG   equ $04     ; EXT_FLAGS: Bitmap operations are buffered
 GFXSETMSK   equ $F8     ; Mask for writing EXT_FLAGS
-; BASIC exrended control flags
+; BASIC extended control flags
+BASOUTOVR   equ $10     ; EXT_FLAGS: Allow OUT to all ports
 PT3_LOOPS   equ $20     ; EXT_FLAGS: PT3 songs repeat
+FERR_FLAG   equ $40     ; EXT_FLAGS: File operations generate BASIC errors
 TRON_FLAG   equ $80     ; EXT_FLAGS: Trace on/off
 
 DFLTATTRS   equ $06     ; Default screen colors - Black on Cyan
@@ -273,13 +275,15 @@ pt3init     equ PT3_BASE+$00    ; StartPlayer
 pt3tick     equ PT3_BASE+$03    ; PlayQuark  
 pt3stat     equ PT3_BASE+$06    ; CHECKLP
 pt3mute     equ PT3_BASE+$09    ; MUTE
+pt3fast     equ PT3_BASE+$0C    ; SetMode
+pt3mode     equ PT3_BASE+$0F    ; GetMode
 pt3song     equ $0A00           ; PT3 file load address
 
 ;-----------------------------------------------------------------------------
 ; Macros
 ;-----------------------------------------------------------------------------
 SYNCHK macro value
-    rst     $08
+    rst     SYNCHR
     db      'value'
 endm
 
@@ -291,6 +295,7 @@ ESPCMD_VERSION:    equ $02     ; Get version string
 ESPCMD_DATETIME    equ $03     ; Get current date and time
 ESPCMD_KEYMODE     equ $08     ; Set keyboard buffer mode
 ESPCMD_GETMOUSE    equ $0C     ; Get mouse position and button state
+ESPCMD_GETGAMECTRL equ $0E     ; Get wireless game controller status
 ESPCMD_OPEN:       equ $10     ; Open / create file
 ESPCMD_CLOSE:      equ $11     ; Close open file
 ESPCMD_READ:       equ $12     ; Read from file
@@ -309,7 +314,13 @@ ESPCMD_GETCWD:     equ $1E     ; Get current working directory
 ESPCMD_CLOSEALL:   equ $1F     ; Close any open file/directory descriptor
 ESPCMD_OPENDIR83   equ $20     ; Open directory in 8.3 filename mode
 ESPCMD_READLINE    equ $21     ; Read line from file
+ESPCMD_OPENDIREXT  equ $22     ; Open directory in extended mode
 ESPCMD_LOADFPGA    equ $40     ; Load FPGA core
+; Not yet implemented
+ESPCMD_WIFI_STATUS       equ $50  ; Get WiFi status
+ESPCMD_WIFI_SCAN         equ $51  ; Scan for WiFi APs
+ESPCMD_WIFI_CONFIG       equ $52  ; Configure WiFi
+ESPCMD_WIFI_SET_HOSTNAME equ $53  ; Set hostname	
 
 ;-----------------------------------------------------------------------------
 ; ESP32 error codes

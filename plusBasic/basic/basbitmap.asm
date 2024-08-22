@@ -26,8 +26,8 @@ ST_CLEAR_BITMAP:
 
 ;-----------------------------------------------------------------------------
 ; FILL BITMAP [BYTE byte] [COLOR foreground,background]
-; FILL BITMAPC COLOR color
 ;-----------------------------------------------------------------------------
+; To Do: FILL COLORMAP (x,y)-(x,y),fg,bg
 ; SCREEN 1,0:FILL BITMAP BYTE $EE:PAUSE
 ; SCREEN 1,0:FILL BITMAP BYTE $AA COLOR 7,0:PAUSE
 ; SCREEN 1,0:FILL BITMAP COLOR 2,8:PAUSE
@@ -77,11 +77,8 @@ ST_COLOR:
     rst     SYNCHR
     byte    ORTK                  ; Require OR
     call    _color_args
-    push    hl
     ld      iy,bitmap_write_color
-aux_call_popret:
-    call    aux_call
-    pop     hl
+    call    aux_call_preserve_hl
     jp      no_more               ; Error if any more operands
 
 ; Output: B: Color(s)

@@ -96,11 +96,10 @@ get_star_array:
     cp      MULTK                 ; If no *
     jp      nz,TMERR              ;   Type mismatch error
 skip_star_array:    
-    rst     CHRGET                ; Skip *
-    
+    rst     CHRGET                ; Skip *   
 ;-----------------------------------------------------------------------------
 ; Parse Array Variable without subscript
-; Output: A = Character after variable name, with CHRGET flags set
+; Output: A = Array Type: 0 = String, $FF = Numeric
 ;        DE = First Byte of Data
 ;        BC = Length of Data
 ;-----------------------------------------------------------------------------
@@ -129,7 +128,7 @@ get_array:
     ld      b,h
     ld      c,l                   ; BE = Data Length
     pop     hl                    ; HL = TxtPtr
-    jp      CHRGT2                ; Reread next character and set flags
+    jp      GETYPE                ; Reread next character and set flags
 
 ;Undimensioned Array Error
 UDERR:
@@ -182,6 +181,27 @@ get_color_args:
     ret
 
 ;-----------------------------------------------------------------------------
+; Require extended token
+; Input: C: Extended Token
+; Output: A: Next Character
+;-----------------------------------------------------------------------------
+get_pt3_tk:
+
+
+get_ptrtk:
+    ld      c,PTRTK
+get_extoken:
+    rst     CHRGET                ; Skip VAR
+    rst     SYNCHR
+    byte    XTOKEN
+    cp      c                     ; If NxtChr = Token
+    jp      z,CHRGTR              ;   Skip it and return
+    jp      SNERR                 ; Else Syntax error
+
+
+skip_get_comma:
+    rst     CHRGET
+;-----------------------------------------------------------------------------
 ; Require comma
 ;-----------------------------------------------------------------------------
 get_comma:
@@ -210,6 +230,14 @@ get_comma_int:
 skip_get_int:
     rst     CHRGET
     jp      GETINT
+
+;-----------------------------------------------------------------------------
+; Skip character, require (, return expression type
+;-----------------------------------------------------------------------------
+skip_frmprn_getype:
+  rst     CHRGET
+  call    FRMPRN
+  jp      GETYPE
 
 ;-----------------------------------------------------------------------------
 ; Parse C, X, or Y
@@ -564,6 +592,7 @@ get_comma_colors:
 ; Output: A = Combined coloe
 ; Clobbers: BC, DE
 ;-----------------------------------------------------------------------------
+; ToDo: eliminate get_color_args and call this instead
 get_screen_colors:
     call    get_byte16            ; A = FColor
     sla     a                     ;
@@ -597,6 +626,8 @@ check_on_off:
     xor     a                     ;   Return 0 with flags set
     ret
 
+skip_get_stringvar:
+    rst     CHRGET
 ;-----------------------------------------------------------------------------
 ; Parse String Variable Name
 ; Syntax: VAR$
@@ -623,17 +654,16 @@ inc_xtemp0:
 ; Increment text pointer, push it then LABBCK
 ; ------------------------------------------------------------------------------
 push_hlinc_labbck:
-        inc     hl                ; Skip current character
+    inc     hl                ; Skip current character
 ; ------------------------------------------------------------------------------
 ; Push text pointer then LABBCK
 ; ------------------------------------------------------------------------------
 push_hl_labbck:
-        ex      (sp),hl           ; HL = RtnAdr; Stack = TxtPtr
-        push    hl                ; Stack = RtnAdr, TxtPtr
-        ld      hl,LABBCK         ; HL = LABBCK
-        ex      (sp),hl           ; HL = RtnAdr; Stack = LABBCK, TxtPtr 
-        jp      (hl)              ; Fast Return
-
+    ex      (sp),hl           ; HL = RtnAdr; Stack = TxtPtr
+    push    hl                ; Stack = RtnAdr, TxtPtr
+    ld      hl,LABBCK         ; HL = LABBCK
+    ex      (sp),hl           ; HL = RtnAdr; Stack = LABBCK, TxtPtr 
+    jp      (hl)              ; Fast Return
 
 ;-----------------------------------------------------------------------------
 ; Scan Rectangular Coordinates

@@ -54,7 +54,10 @@ extended_statement:
     dec     a                   ; $94 COMPARE
     dec     a                   ; $95 PLAY
     jp      z,ST_PLAY
-    sub     a,3                 ; $98 STASH
+    dec     a                   ; $96 APPEND
+    jp      z,ST_APPEND
+    dec     a                   ; $97 TRIM
+    dec     a                   ; $98 STASH
     jp      z,ST_STASH
     dec     a                   ; $99 TRO
     jp      z,ST_TRO

@@ -67,15 +67,15 @@ init_screen_vars:
     ld      de,SCREEN + 41        ; CURRAM
     call    .init_buff            ; xxxSCRN40
     call    .init_buff            ; xxxSCRN41
-    ld      e,81                  
+    ld      e,81
 ; DE = CURRAM, HL = Buffer Address
 .init_buff:
     xor     a                     ; TTYPOS = 0
-    ld      (hl),a                
+    ld      (hl),a
     inc     hl
 
     ld      a,' '                 ; CURCHR = ' '
-    ld      (hl),a                
+    ld      (hl),a
     inc     hl
 
     ld      (hl),e                ; CURRAM = DE
@@ -84,7 +84,7 @@ init_screen_vars:
     inc     hl
 
     xor     a                     ; BASYSCTL = 0
-    ld      (hl),a                
+    ld      (hl),a
     inc     hl
 
     ld      (hl),a                ; IO_VCTRL = 0
@@ -93,7 +93,7 @@ init_screen_vars:
     ld      a,DFLTATTRS           ; SCOLOR - Defaults
     ld      (hl),a                ; IO_VCTRL = 0
     inc     hl
-    
+
     inc     hl                    ; Unused
     ret
 
@@ -101,7 +101,7 @@ init_screen_vars:
 .init_palettes
     ld    de,BANK1_BASE+BUFPALT40
     ld    a,5
-.loop    
+.loop
     call  .init_palette
     dec   a
     jr    nz,.loop
@@ -124,7 +124,7 @@ screen_reset:
 
 ;-----------------------------------------------------------------------------
 ; Expand Convert IO_VCTRL to screen status
-; Output: A,L: Bit 7-6: Text Mode 5: Border; 4: Priority; 3: Sprites; 2-1: Graphics 
+; Output: A,L: Bit 7-6: Text Mode 5: Border; 4: Priority; 3: Sprites; 2-1: Graphics
 ;           H: (IO_VCTRL)
 ;-----------------------------------------------------------------------------
 screen_status:
@@ -142,7 +142,7 @@ screen_status:
     bit     7,h                   ;     Test VCTRL_TEXT_PAGE
     jr      nz,.skip              ;     If in screen page 1
     ld      l,64
-.skip    
+.skip
     ld      a,h                   ; A = IO_VCTRL
     and     VCTRL_TEXT_MASK       ; Strip text screen bits
     or      l                     ; Or in text mode
@@ -161,7 +161,7 @@ screen_swap_vars:
     push    hl                    ; Stack = VarBufAdr, SwapBufAdr, RtnAdr
     push    af                    ; Stack = CurBASCHRSET, VarBufAdr, SwapBufAdr, RtnAdr
     call    screen_restore_vars   ; A = OrgBASCHRSET
-    pop     bc                    ; B = CurBASCHGSER; Stack = VarBufAdr, SwapBufAdr, RtnAdr 
+    pop     bc                    ; B = CurBASCHGSER; Stack = VarBufAdr, SwapBufAdr, RtnAdr
     cp      b                     ; If OrgBASCHRSET <> CurBASCHGSER
     call    nz,_select_chrset     ;   Switch to buffered character set
     pop     de                    ; DE = VarBufAdr; Stack = SwapBufAdr, RtnAdr
@@ -212,7 +212,7 @@ screen_stash:
     call    _map_screen_vars      ; Stack = SavePg, RtnAdr
     call    _svar_buff_addr       ; HL = BufAdr
     push    hl                    ; Stack = VarBufAdr, SavePg, RtnAdr
-    call    screen_stash_vars     ; 
+    call    screen_stash_vars     ;
     pop     de                    ; E = VarBufOfs; Stack = SavePg, RtnAdr
     call    screen_stash_palette  ; DE preserved
     call    _scrn_buff_addr       ; DE = BufAdr, BC = ScrLen, AF = 80cols
@@ -226,9 +226,9 @@ _copy_color:
     in      a,(IO_VCTRL)
     or      VCTRL_TEXT_PAGE
     out     (IO_VCTRL),a          ;   Select Color Page
-    ldir                          ;   Do the copy 
+    ldir                          ;   Do the copy
 _seltext_resret:
-    and     $FF-VCTRL_TEXT_PAGE    
+    and     $FF-VCTRL_TEXT_PAGE
     out     (IO_VCTRL),a          ;   Select Text Page
     jp      page_restore_bank1    ;   Restore page and return
 
@@ -271,7 +271,7 @@ screen_switch:
     cp      b                     ; If text modes are the same
     ret     z                     ;   Never mind
     push    bc                    ; Stack = VCTRLbits, RtnAdr
-    ld      hl,BUFSCRN40           
+    ld      hl,BUFSCRN40
     push    hl                    ; Stack = BufOfs, NewVCTRL
     call    screen_stash          ; Stash current screen to switch buffer
     pop     hl                    ; HL = BufOfs; Stack = NewVCTRL, RtnAdr
@@ -282,7 +282,7 @@ screen_switch:
     out     (IO_VCTRL),a          ; Switch to new text mode
     call    screen_restore        ; Restore new screen and return
     jp      set_linlen
-    
+
 .text_mode_table:
     byte    VCTRL_TEXT_OFF                  ; 0 = Text Off
     byte    VCTRL_TEXT_EN                   ; 1 = 40 Column Primary
@@ -314,7 +314,7 @@ screen_restore_vars:
 
     ld      d,(hl)                ; Offset $4
     inc     hl
-    ld      a,(BASYSCTL)          ; 
+    ld      a,(BASYSCTL)          ;
     and     $FF-BASCRNCTL         ; Clear screen control bits
     or      d                     ; And in saved bits
     ld      (BASYSCTL),a
@@ -322,9 +322,9 @@ screen_restore_vars:
 
     ld      d,(hl)                ; Offset $4
     inc     hl
-    in      a,(IO_VCTRL)          ; 
-    and     $FF-VCTRL_REMAP_BC    
-    or      d                     
+    in      a,(IO_VCTRL)          ;
+    and     $FF-VCTRL_REMAP_BC
+    or      d
     out     (IO_VCTRL),a
 
     ld      a,(hl)                ; Offset $6
@@ -373,7 +373,7 @@ screen_stash_vars:
 _scrn_buff_addr:
     call    _bank_screen_buff
     ld      hl,SCREEN
-    ld      a,high(BANK1_BASE)      
+    ld      a,high(BANK1_BASE)
     add     e
     ld      d,a
     ld      e,l
@@ -387,14 +387,14 @@ _scrn_buff_addr:
 ; Output: A: BASCHRSET
 ;         DE: Buffer offset
 ;         HL: Buffer Address
-;  Flags: Zero set if default chrset 
+;  Flags: Zero set if default chrset
 ;-----------------------------------------------------------------------------
 _svar_buff_addr:
     ld      h,high(BANK1_BASE)
     call    _svar_buff_ofs
     add     hl,de
-    ld      a,(BASYSCTL)          
-    and     BASCHRSET             
+    ld      a,(BASYSCTL)
+    and     BASCHRSET
     ret
 
 ;-----------------------------------------------------------------------------
@@ -414,12 +414,12 @@ _svar_buff_ofs:
     ccf                           ;     Carry = 0 (Screen Page)
     rra                           ;     A = New IO_VCTRL
     out     (IO_VCTRL),a
-    ret                           ; Else   
+    ret                           ; Else
 .not80
     rra                           ; Carry = TEXT_PAGE
-    ld      e,BUFSCRN41          
+    ld      e,BUFSCRN41
     ret     c
-    ld      e,BUFSCRN40          
+    ld      e,BUFSCRN40
     ret
 
 ;-----------------------------------------------------------------------------
@@ -477,74 +477,168 @@ screen_swap_palette:
     djnz    .loop
     ret
 
+;-----------------------------------------------------------------------------
+; Copy text color map from temp buffer into Screen RAM
+; Input: BC: Source file Length
+; Sets flags: Carry if data length does not match screen mode
+; Clobbers: AF,AF',BC,DE,HL
+; 40 column mode only: 1024 bytes
+; 80 column mode only: 2048 bytes
+;-----------------------------------------------------------------------------
+color_write_tmpbfr:
+    ld      iy,_read_tmpbfr
+color_read_tmpbfr:
+    ld      iy,_read_tmpbfr
+_color_tmpbfr:
+    call    page_map_tmpbfr
+    ld      a,c
+    or      a                     ; If FileSize not multiple of 256
+    jr      nz,_badfile           ;   Return Carry Set
+    in      a,(IO_VCTRL)
+    and     VCRTL_80COL_EN        ; Z if 40-column, NZ if 80-column
+    ld      a,b
+    jr      nz,.col80             ; If 40-column
+    cp      $04                   ;   If FileSize <> 1024
+    jr      nz,_badfile           ;     Return Carry Set
+    ld      de,COLOR              ;   DstAdr = ColorRAM
+    jr      _read_tmpbfr
+.col80
+    cp      $08
+    jr      nz,_badfile
+    ld      hl,BANK1_BASE         ; SrcAdr = TmpBuf
+_color80:
+    ld      de,SCREEN             ; DstAdr = Screen
+    in      a,(IO_VCTRL)
+    push    af
+    or      VCTRL_TEXT_PAGE
+    out     (IO_VCTRL),a
+    ldir
+    pop     af
+    out     (IO_VCTRL),a
+    jr      _done
+
+_write_tmpbfr:
+    ex      de,hl
+    ld      de,BANK1_base
+    jr      _copy
+_write_tmpbfr_scrn:
+    ld      hl,SCREEN             ; DstAdr = Screen
+    ld      de,BANK1_BASE         ; SrcAdr = TmpBuf
+    jr      _copy
+_read_tmpbfr_scrn:
+    ld      de,SCREEN             ; DstAdr = Screen
+_read_tmpbfr:
+    ld      hl,BANK1_BASE         ; SrcAdr = TmpBuf
+_copy:
+    ldir                          ;   Copy it
+_done:
+    xor     a                     ; Clear Carry
+    byte    $06                   ; LD B, over SCF
+_badfile:
+    scf
+    jp      page_restore_bank1
+
 
 ;-----------------------------------------------------------------------------
-; Copy TMP_BUFFR to Screen, Palette, and IO_VCTRL to TMP_BUFFR
+; Copy TMP_BUFFR to Screen RAM , Color RAM, Palette, and IO_VCTRL
 ; Output: BC = Length of data to copy
 ; Sets flags: Carry if data length does not match screen mode
-; Clobbers: A, AF', BC, DE, HL
+; Clobbers: A, AF', BC, DE, HLh
+;          ----- 40 Column Mode ------
+; Length   SCREEN COLOR PALETTE BORDER    SCREEN COLOR PALETTE BORDER
+;  1024        0
+
+;  40 column: 1024 byte Screen RAM + 1024 byte Color RAM {+ 32 byte palette} {+ 1 byte border flag}
+;  80 column: 2048 byte Screen RAM + 2048 byte Color RAM {+ 32 byte palette} {+ 1 byte border flag}
 ;-----------------------------------------------------------------------------
 screen_read_tmpbfr:
-    call    page_map_tmpbfr_af
+    call    page_map_tmpbfr
+    ld      de,SCREEN             ; DstAdr = Screen
+    ld      hl,BANK1_BASE
+    add     hl,bc
+    dec     hl                    ; HL = EndByte
     in      a,(IO_VCTRL)
-    ld      d,a                   ; D = IO_VCTRL
     and     VCRTL_80COL_EN        ; A = $40 if 80-column
-    rra                           ; A = $20
-    rra                           ; A = $10
-    rra                           ; A = $08
-    add     $08                   ; A = $08 (40) or $10 (80)
-    cp      b                     ; If mismatch
-    scf                           ;   Return Carry set
-    ret     nz                    ; 
-    cp      $08                   ; Set Z if 40-column
-    push    bc                    ; Stack = DatLen, RtnAdr
-    push    de                    ; Stack = IO_VCTRL, DatLen, RtnAdr
-    jr      z,.col40              ; If 80 column mode
-    in      a,(IO_VCTRL)
-    and     $FF-VCTRL_TEXT_PAGE      
-    out     (IO_VCTRL),a          ;   Switch to Screen RAM
-    call    .copy                 ;   and copy to buffer
-    or      VCTRL_TEXT_PAGE          
-    out     (IO_VCTRL),a          ;   Switch to Color RAM
-    call    .copy_next            ;   and copy to buffer
-    jr      .trailer              ; Else
-.col40
-    call    .copy                 ;   Copy Screen+Color to buffer
-.trailer
-    pop     af                    ; A = IO_VCTRL; Stack = DatLen, RtnAdr
-    out     (IO_VCTRL),a          ; Restore VCTRL
-    ex      de,hl                 ; DE = DatPtr
-    pop     bc                    ; BC = DatLen; Stack = RtnAdr
-    ld      a,c                   ; A = DatLen LSB
-    cp      1                       
-    jr      z,.remap
-    cp      32
-    jp      c,.done               ; If embedded palette
-    push    bc                    ;   Stack = DatLen, RtnAdr
-    ld      bc,32                 ;   Total 32 bytes
-    xor     a                     ;   Start at index 0
-    call    palette_set           ;   Read palette to buffer
-    pop     bc                    ;   BC = DatLen; Stack = RtnAdr
+    ld      a,b
+    jr      nz,.col80             ; If 40-column
+    cp      $04
+    jr      nz,.not1024           ;   If Size = 1024 - 1279
+    ld      a,c
+    cp      1                     ;   If 1025
+    call    z,.remap              ;     Copy remap bit
+    jr      .screen               ;   Copy Screen RAM
+.not1024
+    cp      $08                   ;   If not 2048 - 2033
+    jr      nz,_badfile           ;     Return error
     ld      a,c
     cp      33
-    jr      nz,.done              ;   If embedded VCTRL
-.remap
-    ld      a,(de)                ;     A = VCTRL
-    and     VCTRL_REMAP_BC        ;     
-    ld      b,a                   ;     B = vctrl_remap_bc
+    call    z,.remap
+    cp      32
+    call    z,.palette
+.check2049
+    cp      1
+    call    z,.remap
+.screen
+    or      a                     ;   If Size = 1024
+    jr      z,_read_tmpbfr_scrn   ;     Copy to Screen RAM and return
+    jr      _badfile              ;   Else return error
+.col80
+    cp      $08
+    jr      nz,.not2048           ; If 2048 - 2303
+    ld      a,c
+    jr      .check2049            ;   Copy to Screen RAM anf return
+.not2048
+    cp      $10                   ; If not 4096 - 4361
+    jr      nz,_badfile           ;   Return error
+    ld      a,c
+    cp      33
+    call    z,.remap
+    cp      32
+    call    z,.palette
+    cp      1
+    call    z,.remap
+    or      a
+    jr      nz,_badfile
     in      a,(IO_VCTRL)
-    and     $FF-VCTRL_REMAP_BC
-    or      b                     ;     Set VCTRL_REMAP_BC
-    out     (IO_VCTRL),a          ;     and write IO_VCTRL
-.done
-    xor     a                     ; Return no errors
-    jp      page_restore_bank1_af
-.copy 
-    ld      hl,BANK1_BASE
-.copy_next
+    push    af
+    or      VCTRL_TEXT_PAGE
+    out     (IO_VCTRL),a          ; Switch to Color RAM
+    ld      hl,BANK1_BASE+2048
     ld      de,SCREEN
     ld      bc,2048
-    ldir
+    ldir                          ; Copy Color RAM data
+    pop     af
+    out     (IO_VCTRL),a          ;   Switch to Screen RAM
+    ld      bc,2048
+    jr      _read_tmpbfr_scrn
+
+.palette:
+    push    bc
+    push    hl
+    xor     a
+    ld      d,h
+    ld      e,a
+    ld      l,a                   ; HL = PalAdr
+    ld      bc,32
+    call    palette_set
+    pop     hl
+    pop     bc
+    xor     a
+    ld      c,a
+    ld      l,a
+    ret
+
+.remap
+    ld      a,(hl)                ; A = VCTRL
+    and     VCTRL_REMAP_BC        ;
+    ld      e,a                   ; B = vctrl_remap_bc
+    in      a,(IO_VCTRL)
+    and     $FF-VCTRL_REMAP_BC
+    or      e                     ; Set VCTRL_REMAP_BC
+    out     (IO_VCTRL),a          ; and write IO_VCTRL
+    dec     c                     ; BC = PrvLen
+    dec     l                     ; HL = PrvEnd
+    ld      a,c
     ret
 
 ;-----------------------------------------------------------------------------
@@ -553,16 +647,16 @@ screen_read_tmpbfr:
 ; Clobbers: AF, AF', DE, HL
 ;-----------------------------------------------------------------------------
 screen_write_tmpbfr:
-    call    page_map_tmpbfr_af
+    call    page_map_tmpbfr
     in      a,(IO_VCTRL)
     push    af                    ; Stack = IO_VCTRL, RtnAdr
     and     VCRTL_80COL_EN
     jr      z,.col40              ; If 80 column mode
     in      a,(IO_VCTRL)
-    and     $FF-VCTRL_TEXT_PAGE      
+    and     $FF-VCTRL_TEXT_PAGE
     out     (IO_VCTRL),a          ;   Switch to Screen RAM
     call    .copy                 ;   and copy to buffer
-    or      VCTRL_TEXT_PAGE          
+    or      VCTRL_TEXT_PAGE
     out     (IO_VCTRL),a          ;   Switch to Color RAM
     call    .copy_next            ;   and copy to buffer
     jr      .trailer              ; Else
@@ -581,7 +675,7 @@ screen_write_tmpbfr:
     add     hl,bc                 ; HL = DatLen
     ld      b,h
     ld      c,l                   ; BC = DatLen
-    jp      page_restore_bank1_af
+    jp      page_restore_bank1
 .copy
     ld      de,BANK1_BASE
 .copy_next
@@ -589,7 +683,7 @@ screen_write_tmpbfr:
     ld      bc,2048
     ldir
     ret
-    
+
 ; Input: DE = Variable buffer address
 ; Output: HL = Palette buffer address, B = 32, C = 0
 _palt_buff_addr:
@@ -598,7 +692,7 @@ _palt_buff_addr:
     cp      $20
     jr      c,.skip
     sub     8
-.skip    
+.skip
     add     a,a
     add     a,a
     add     a,BUFPALT40
@@ -627,7 +721,7 @@ _bank_color_page:
 
 ; Clobbered: A, BC
 _map_screen_buff:
-    ld      a,SCR_BUFFR           
+    ld      a,SCR_BUFFR
     byte    $01                   ; LD BC over LD A
 _map_screen_vars:
     ld      a,BAS_BUFFR
@@ -637,9 +731,8 @@ _map_screen_vars:
 ; Input: A = BASYSCTL
 ; Clobbered: AF',BC,DE,HL,IX
 _select_chrset:
-    and     BASCHRSET     
+    and     BASCHRSET
     rra
     rra
-    rra                           ; Move 
+    rra                           ; Move
     jp      select_chrset
-  

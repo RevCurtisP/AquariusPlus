@@ -54,507 +54,297 @@ _do_copy:
     ret     m                     ; Return if error
     jr      _do_copy
     
+;====================================================================
+; Directory Related File I/O Routines
+;====================================================================
+
 
 ;-----------------------------------------------------------------------------
-; Return file extension
-; Input: BC: filespec length
-;        DE: filespec address
-; Output: A,BC: extension length
-;         DE: extension address
-; Clobbered: HL
-;-----------------------------------------------------------------------------
-file_get_ext:
-    ld      l,'.'                 ; Delimiter
-_chop_filespec
-    ex      de,hl                 ; HL = SpcAdr; E = Delim
-    add     hl,bc                 ; HL = SpcEnd + 1
-    ld      b,c                   ; B = Counter
-    ld      c,0                   ; C = ExtLen
-.loop
-    dec     hl                    ; Move left
-    ld      a,(hl)                ; Get character
-    cp      e
-    jr      z,.found              ; If not Delim
-    inc     c                     ;   Bump length
-    djnz    .loop                 ;   Count down
-    ex      de,hl                 ;   Restore hl
-    ld      c,b                   ;   BC = 0
-    jr      .return               ; Else
-.found
-    ex      de,hl                 ; DE = DotAdr
-    inc     de                    ; DE = ExtAdr
-    ld      b,0                   ; BC = ExtLen
-.return
-    ld      a,c
-    or      a
-    ret
-
-;-----------------------------------------------------------------------------
-; Return filespec without directory
-; Input: BC: filespec length
-;        DE: filespec address
-; Output: A,BC: filename length
-;         DE: filename address
-; Clobbered: HL
-;-----------------------------------------------------------------------------
-file_trim_dir:
-    push    de                    ; Stack = StrAdr, RtnAdr
-    push    bc                    ; Stack = StrLen, StrAdr, RtnAdr
-    push    de                    ; Stack = StrAdr, StrLen, StrAdr, RtnAdr
-    ld      l,'/'                 ; Delimiter
-    call    _chop_filespec        ; DE = NamAdr, A,BC = NamLen
-    pop     hl                    ; HL = StrAdr; Stack = StrLen, StrAdr, RtnAdr
-    rst     COMPAR                ;
-    jr      z,.no_dir             ; If NamAdr <> StrAdr
-    ld      a,c
-    or      a
-    jr      pop2hlr_aux 
-
-.no_dir
-    pop     bc                    ; BC = StrLen; ; Stack = StrAdr, RtnAdr
-    pop     de                    ; HL = StrAdr; ; Stack = RtnAdr
-    ld      a,c                   ; A = StrLen
-    or      a
-    ret
-    
-;-----------------------------------------------------------------------------
-; Return directory portion of filespec
-; Input: BC: filespec length
-;        DE: filespec address
-; Output: A,BC: directory length
-;         DE: directory address
-; Clobbered: HL
-;-----------------------------------------------------------------------------
-file_get_dir:
-    push    de                    ; Stack = StrAdr, RtnAdr
-    push    bc                    ; Stack = StrLen, StrAdr, RtnAdr
-    push    de                    ; Stack = StrAdr, StrLen, StrAdr, RtnAdr
-    ld      l,'/'                 ; Delimiter
-    call    _chop_filespec        ; DE = NamAdr, A,BC = NamLen
-    pop     hl                    ; HL = StrAdr; Stack = StrLen, StrAdr, RtnAdr
-    rst     COMPAR                ;
-    jr      z,.no_dir             ; If NamAdr <> StrAdr
-    pop     hl                    ; HL = OldLen; Stack = StrAdr, RtnAdr
-    dec     bc
-    jr      _no_ext
-.no_dir
-    xor     a                     ; Else
-    ld      b,a                   ;   A,BC = 0
-    ld      c,a
-pop2hlr_aux:
-    pop     hl                    ; Stack = StrAdr, RtnAdr
-    pop     hl                    ; Stack = RtnAdr
-    ret
-
-;-----------------------------------------------------------------------------
-; Return filespec without extension
-; Input: BC: filespec length
-;        DE: filespec address
-; Output: A: extension length
-;         BC: trimmed length
-;         DE: filespec address
-; Set Flags: NZ if file had extension, Z if it did not
-; Clobbered: HL
-;-----------------------------------------------------------------------------
-file_trim_ext:
-    ld      l,'.'                 ; Delimiter
-    push    de                    ; Stack = StrAdr, RtnAdr
-    push    bc                    ; Stack = StrLen, StrAdr, RtnAdr
-    call    _chop_filespec        ; DE = ExtAdr, A,BC = ExtLen
-    pop     hl                    ; HL = OldLen; Stack = StrAdr, RtnAdr
-    jr      z,_no_ext             ; If extension found
-    inc     bc                    ;   BC = ExtLen + 1
-_no_ext:
-    sbc     hl,bc                 ; HL = ChpLen
-    ld      b,h
-    ld      c,l                   ; BC = ChpLen
-    ld      a,c                   ; A = ChpLen
-    or      a                     ; Set flags
-    pop     de                    ; DE = StrAdr; Stack = RtnAdr
-    ret
-
-;-----------------------------------------------------------------------------
-; Load binary file into main memory
-; Input: BC: maximum length
-;        DE: destination address
-;        HL: string descriptor address
-; Output: A: result code
-;        BC: number of bytes actually read
-;        DE: next destination address
-; Flags Set: S if I/O error
-; Clobbered: HL
-;-----------------------------------------------------------------------------
-file_load_binary:
-    call    dos_open_read
-    ret     m
-    call    esp_read_bytes
-    ret     m
-    push    af
-    call    dos_close
-    pop     af
-    or      a
-    ret
-
-;-----------------------------------------------------------------------------
-; Load bitmap image
-; Input: HL: String descriptor address
-; Output: A: result code
-; Flags Set: S if I/O error, C if invalid file contents
-; Clobbered: CD, DE, EF
-;-----------------------------------------------------------------------------
-file_load_bitmap:
-    call    file_load_tmpbuffr    
-    ret     m                     ; Return if Error 
-    jp      bitmap_read_tmpbfr
-
-;-----------------------------------------------------------------------------
-; Save bitmap image
-; Input: HL: String descriptor address
-; Output: A: result code
-; Flags Set: S if I/O error, C if invalid file contents
-; Clobbered: CD, DE, EF
-;-----------------------------------------------------------------------------
-file_save_bitmap:
-    push    hl                    ; Stack = StrDsc, RtnAdr
-    call    bitmap_write_tmpbfr   ; BC = SavLen
-    pop     hl                    ; HL = StrDsc; Stack = RtnAdr
-    jp      file_save_tmpbuffr    ; Save bitmap data to file
-
-;-----------------------------------------------------------------------------
-; Load file into character RAM buffer
-; Input: HL: File name string descriptor address
+; Read directory - filenames only
+; Input: A: File descriptor
+;       HL: Buffer address
 ; Output: A: Result
-; Clobbered registers: BC,DE,HL
+;        BC: Entry Length
+;        HL: Entry Address
+; Clobbered: BC
 ;-----------------------------------------------------------------------------
-file_load_defchrs:
-    ld      de,DEFCHRSET
-    jr      _load_chrset
-file_load_altchrs:
-    ld      de,ALTCHRSET
-_load_chrset
-    ld      a,BAS_BUFFR
-    ld      bc,CHRSETLEN
-;-----------------------------------------------------------------------------
-; Load binary file into paged memory`
-; Input: A: Page
-;        BC: maximum length
-;        DE: destination address
-;        HL: string descriptor address
-; Output: A: result code
-;        BC: number of bytes actually read
-;        DE: next destination address
-;         H: destination page
-; Flags Set: Z if llegal page
-;            C if page overflow
-;            S if I/O error
-; Clobbered: AF',L
-;-----------------------------------------------------------------------------
-file_load_paged:
-    push    af                    ; Stack = Page, RtnAdr
-    call    dos_open_read
-    pop     hl                    ; H = Page, Stack = RtnAdr
+file_read_dir:
+    call    dos_read_dir          ; A = Result, B=NamLen, C=EntLen, DE=NamAdr, HL=BufAdr
     ret     m
-    call    esp_read_paged        ;
-    push    af                    ; Stack = Result, RtnAdr
-    ld      a,l
-    call    dos_close
-    pop     af                    ; AF = Result; Stack = RtnAdr
-    ret
-
-;-----------------------------------------------------------------------------
-; Load ROM file into page 35
-;        HL: string descriptor address
-;-----------------------------------------------------------------------------
-file_load_rom:
-    ld      a,RAM_BAS_3
-    ld      de, $C000
-    ld      bc, $4000
-    call    file_load_paged
-    ret     m
-
-    ; Check length
-    ld      a, b
-    cp      $20         ; 8KB ROM?
-    jr      z,.copy
-    xor     a
-    ret
-.copy
-    ld      a,RAM_BAS_3
-    call    page_map_bank1
-    ld      hl, BANK1_BASE
-    ld      de, BANK1_BASE+$2000
-    ld      bc, $2000
-    ldir
-    xor     a
-    jp      page_restore_bank1
-
-;-----------------------------------------------------------------------------
-; Load screen image
-; Input: HL: String descriptor address
-; Output: A: result code
-; Flags Set: S if I/O error, C if invalid file contents
-; Clobbered: CD, DE, EF
-;-----------------------------------------------------------------------------
-; ToDo: Allow loading to a screen buffer
-file_load_screen:
-    call    file_load_tmpbuffr    
-    ret     m                     ; Return if Error 
-    jp      screen_read_tmpbfr
-
-;-----------------------------------------------------------------------------
-; Load file into TMP_BUFFR
-; Input: HL: String descriptor address
-; Output: A: result code
-;        BC: number of bytes read
-; Flags Set: S if I/O error, C if invalid file contents
-; Clobbered: CD, DE, EF
-;-----------------------------------------------------------------------------
-file_load_tmpbuffr:
-    ld      a,TMP_BUFFR            
-    ld      bc,$4000
-    ld      de,0
-    jp      file_load_paged       ; Load SCRN file into TMP_BUFFR
-
-;-----------------------------------------------------------------------------
-; Load PT3 file
-; Input: HL: String descriptor address
-; Output: A: result code
-; Flags Set: S if I/O error
-; Clobbered: BC,DE,HL,IX,IY
-;-----------------------------------------------------------------------------
-; LOAD PT3 "/music/songs1/drops.pt3"
-file_load_pt3:
-    ld      a,PT3_BUFFR
-    ld      de,pt3song
-    ld      bc,$4000-pt3song
-    call    file_load_paged
-    push    af
-    call    pt3_reset
-    pop     af
-    ret
-
-;-----------------------------------------------------------------------------
-; Load Pallete
-; Input: A: Palette number
-;       HL: String descriptor address
-; Output: A: result code
-; Flags Set: S if I/O error
-;            C if file too large
-; Clobbered: BC, DE, EF
-; Populates: String Buffer
-;-----------------------------------------------------------------------------
-file_load_palette:
-    ld      e,a                   ; E = PalNum
-    push    de                    ; Stack = PalNum, RtnAdr
-    call    file_load_strbuf      ; A = Result, BC = DatLen, HL = StrBuf
-    pop     de                    ; E = PalNum; Stack = RtnAdr
-    ret     m                     ; Return if I/O Error
-    ld      a,32                  ; If result > 32
-    cp      c
-    jp      c,discard_ret         ;   Return overflow
-    ex      de,hl                 ; DE = StrBuf, L = PalNum
-    xor     a
-    jp      palette_set           ; Write out palette and return
-
-;-----------------------------------------------------------------------------
-; Read file into string buffer
-; Input: HL: String descriptor address
-; Output: A: result code
-;        BC: result length
-;        DE: terminator address
-;        HL: string buffer address
-; Flags Set: S if I/O error
-; Clobbered: HL
-;-----------------------------------------------------------------------------
-file_load_strbuf:
-    ex      de,hl                 ; DE = FilStd
-    call    get_strbuf_addr       ; HL = StrBuf, BC = BufMax
-    ex      de,hl                 ; DE = StrBuf, HL = FilStd
-    push    de                    ; Stack = StrBuf
-    call    file_load_binary      ; Load file into string buffer
-    pop     hl                    ; HL = StrBuf
-    ret     m
-    xor     a
-    ld      (de),a
-    ret
-
-;-----------------------------------------------------------------------------
-; Load tileset into Video RAM
-;  Input: BC: Number of tiles
-;         DE: Starting tile#
-;         HL: String descriptor address
-; Output: A: result code
-;        BC: result length
-;        DE: terminator address
-; Flags Set: S if I/O error
-;            C if tile# out of range
-; Clobbered: HL
-;-----------------------------------------------------------------------------
-file_save_tileset:
-    push    hl                    ; Stack = StrDsc, RtnAdr
-    push    bc                    ; Stack = TilCnt, StrDsc, RtnAdr
-    call    _tile_address         ; HL = TilAdr
-    pop     de                    ; DE = TilCnt; Stack = StrDsc, RtnAdr
-    jp      c,POPHRT              ; If TileNo > 511 Return Carry Set
-    push    hl                    ; Stack = TilAdr, StrDsc, RtnAdr
-    ex      de,hl                 ; HL = TilCnt, DE = TilAdr
-    ld      b,5
-    call    shift_hl_left         ; TilLen = TileCnt * 32
-    ld      b,h
-    ld      c,l                   ; BC = TilLen
-    ex      de,hl                 ; HL = TilAdr
-    add     hl,bc                 ; HL = EndAdr
-    ex      de,hl                 ; DE = EndAdr
-    ld      hl,$4000
-    rst     COMPAR
-    pop     de                    ; DE = TilAdr; Stack = StrDsc, RtnAdr
-    pop     hl                    ; HL = StrDsc; Stack = RtnAdr
-    ret     c                     ; If EndAdr > $4000, return Carry Set
-    ld      a,VIDEO_RAM           ; A = Page
-    jp      file_save_paged
-
-;-----------------------------------------------------------------------------
-; Load tileset into Video RAM
-;  Input: DE: Starting tile#
-;         HL: String descriptor address
-; Output: A: result code
-;        BC: result length
-;        DE: terminator address
-; Flags Set: S if I/O error
-;            C if tile# out of range
-; Clobbered: HL
-;-----------------------------------------------------------------------------
-file_load_tileset:
-    push    hl                    ; Stack = StrDsc, RtnAdr
-    call    _tile_address         ; HL = TilAdr
-    jp      c,POPHRT              ; If TileNo > 511 Return Carry Set
-    ex      de,hl                 ; DE = TilAdr
-    ld      hl,$4000
-    sbc     hl,de                 ; MaxLen = 16534 - TilAdr
-    ld      b,h
-    ld      c,l                   ; BC = MaxLen
-    pop     hl                    ; HL = StrDsc; Stack = RtnAdr
-    ld      a,VIDEO_RAM           ; A = Page
-    jp      file_load_paged       ; Load tileset
-
-; Input: DE: Tile#; OutputL Tile Address; Clobbers: BC, DE
-_tile_address:
-    ld      hl,511
-    rst     COMPAR                ; If TileNo > 511
-    ret     c                     ;   Return Carry Set
-    ex      de,hl                 ; HL = Ti
-    ld      b,5
-    jp      shift_hl_left         ; TilAdr = TileNo * 32
-    
-;-----------------------------------------------------------------------------
-; Save binary file into main memory
-; Input: BC: maximum length
-;        DE: destination address
-;        HL: string descriptor address
-; Output: A: result code
-;        BC: number of bytes actually read
-;        DE: next destination address
-; Flags Set: S if I/O error
-; Clobbered: HL
-;-----------------------------------------------------------------------------
-file_save_binary:
-    call    dos_open_write
-    ret     m
-    call    esp_write_bytes
-    push    af
-    call    esp_close_all
-    pop     af
-    or      a
-    ret
-
-;-----------------------------------------------------------------------------
-; Save character RAM to file
-; Input: HL: File name string descriptor address
-; Output: A: Result
-; Clobbered registers: BC,DE,HL
-;-----------------------------------------------------------------------------
-file_save_chrset:
-    ld      a,CHAR_RAM
-    ld      bc,2048
-    ld      de,0
-
-;-----------------------------------------------------------------------------
-; Save binary data from paged memory to file
-; Input: A: Page
-;       BC: length
-;       DE: source address
-;       HL: string descriptor address
-; Output: A: result code
-;        BC: number of bytes actually read
-;        DE: next source address
-; Flags Set: S if I/O error
-; Clobbered: HL
-;-----------------------------------------------------------------------------
-file_save_paged:
-    push    af
-    call    dos_open_write
-    jp      m,discard_ret
-    pop     af
-    call    esp_write_paged
-    push    af
-    call    esp_close_all
-    pop     af
-    ret
-
-;-----------------------------------------------------------------------------
-; Save Pallete
-; Input: A: Palette number
-;       HL: String descriptor address
-; Output: A: result code
-; Flags Set: S if I/O error
-;            C if file too large
-; Clobbered: BC, DE, EF
-; Populates: String Buffer
-;-----------------------------------------------------------------------------
-file_save_palette:
-    push    hl                    ; Stack = FilStd, RtnAdr
-    call    get_strbuf_addr       ; HL = StrBuf
-    ex      de,hl                 ; DE = StrBuf
-    ld      bc,32                 ; Read 16 palette entries
-    call    palette_get           ; Read palette into string buffer
-    pop     hl                    ; HL = FilStd; Stack = RtnAdr
-    ld      a,32                  ;
-;-----------------------------------------------------------------------------
-; Write string buffer to file
-; Input: A: Number of bytes to write
-;        HL: String descriptor address
-; Output: A: result code
-; Flags Set: S if I/O error
-; Clobbered: HL
-;-----------------------------------------------------------------------------
-file_save_strbuf:
-    ex      de,hl                 ; DE = FilStd
-    call    get_strbuf_addr       ; HL = StrBuf
-    ex      de,hl                 ; DE = StrBuf, HL = FilStd
-    push    de                    ; Stack = StrBuf, RtnAdr
+    push    de                    ; Stack = NamAdr, RtnAdr
+    push    bc                    ; Stack = EntLen, NamAdr, RtnAdr
+    push    hl                    ; Stack = BufAdr, EntLen, NamAdr, RtnAdr
+    ld      de,4
+    add     hl,de                 ; HL = AttrAdr
+    ld      a,(hl)                ; A = Attrs
+    pop     hl                    ; HL = BufAdr; Stack = EntLen, NamAdr, RtnAdr
+    pop     de                    ; DE = EntLen; Stack = NamAdr, RtnAdr
+    ld      d,0
+    add     hl,de                 ; HL = TrmAdr
+    and     1                     ; A = AttrDir
+    jr      z,.notdir             ; If directory
+    ld      (hl),"/"              ;   Append /
+    inc     hl
+    ld      (hl),0                ;   Terminate FilName
+    inc     b                     ;   Bump NamLen
+.notdir
+    ld      c,b                   ; EntLen = NamLen
     ld      b,0
-    ld      c,a
-    call    file_save_binary      ; Save string buffer to file
-    pop     hl                    ; HL = StrBuf; Stack = RtnAdr
-    ret     m
-    xor     a
-    ld      (de),a
+    pop     hl                    ; HL = NamAdr; Stack = RtnAdr
+    xor     a                     ; Return success
     ret
 
 ;-----------------------------------------------------------------------------
-; Save screen image
-; Input: HL: String descriptor address
-; Output: A: result code
-; Flags Set: S if I/O error
-; Clobbered: CD, DE, EF
+; Read directory entry into formatted string
+; YY-MM-DD HH:MM fsize filespec
+; Input: A: File descriptor
+;       HL: Buffer address
+; Output: A: Result
+;         B: Filename length
+;         C: Entry length
+;        DE: Filename address
+;        HL: Buffer address
 ;-----------------------------------------------------------------------------
-; ToDo: Allow saving from a screen buffer
-file_save_screen:
-    push    hl                    ; Stack = StrDsc, RtnAdr
-    call    screen_write_tmpbfr   ; BC = SavLen
-    pop     hl                    ; HL = StrDsc; Stack = RtnAdr
-file_save_tmpbuffr:
-    ld      de,0                  ; DE = SavAdr
-    ld      a,TMP_BUFFR           ; A = SavePg
-    jp      file_save_paged 
+file_read_dir_asc:
+    push    af                    ; Stack = FilDsc, RtnAdr
+    ld      a,ESPCMD_READDIR      ; Read entry
+    call    esp_cmd
+    pop     af                    ; A = FilDsc; Stack = RtnAdr
+    call    esp_send_byte
+    call    esp_get_byte          ; A = Result
+    or      a                     ; Set flags
+    ret     m                     ; Return if error
+
+    push    hl                    ; Stack = BufAdr, RtnAdr
+    push    hl                    ; Stack = BufAdr, BufAdr, RtnAdr
+    call    esp_get_de            ; DE = Date, A = D
+    srl     a                     ; A = Year - 1980
+    add     80                    
+    call    buffer_a_2digits      ; Write to buffer
+    call    buffer_dash           ; Write '-' to buffer
+    ld      a, d                  ; Extract Month
+    rra                           ; Lowest bit in carry
+    ld      a, e
+    rra
+    call    srl4buffer            ; Shift right and writte to buffer
+    call    buffer_dash           ; Write '-' to buffer
+    ld      a, e
+    and     $1F                   ; A = Day
+    call    buffer_a_2digits
+    call    buffer_space
+
+    call    esp_get_de            ; DE = Time (hhhhhmmm mmmsssss), A =  D
+    call    srl3buffer            ; Write hours to buffer
+    call    buffer_colon          ; Write ':' to buffer
+    ld      a,d
+    and     $07
+    ld      c,a
+    ld      a,e
+    ld      b,5
+.srlrra
+    srl     c
+    rra
+    djnz    .srlrra               ; A = Minutes
+    call    buffer_a_2digits
+    call    buffer_space
+
+    call    esp_get_byte          ; A = Attributes
+    and     1                     ; If directory
+    jr      z,.filesize
+    call    esp_get_long          ;   Skip file length 
+    ld      de,_dirstr            ;   Print " <DIR>"
+.dirloop    
+    ld      a,(de)
+    or      a
+    jr      z,.do_filename
+    inc     de
+    ld      (hl),a
+    inc     hl
+    jr      .dirloop              
+.filesize
+    call    esp_get_long          ;   BCDE = File Dize
+    ld      a,d                   ;   Megabytes range?
+    or      a
+    jr      nz,.mb
+    ld      a,e
+    cp      $9C                   ; If >=10,240,000 show Megabytes
+    jr      c,.notmb
+    ld      a,b
+    cp      $40
+    jr      nc, .mb
+.notmb
+    ld      a,e                   ; Kilobytes range?
+    or      a
+    jr      nz,.kb
+    ld      a,b
+    cp      $27                   ; If >=10,000 show Kilobytes
+    jr      c,.notkb
+    cp      $10
+    jr      nc,.kb
+.notkb
+    call    buffer_bc_4digits
+    ld      a,'B'
+    jr      .suffix
+.kb:
+    ld      c,b
+    ld      b,e
+    call    srlb_rrl_buf2
+    ld      a,'K'
+    jr      .suffix
+.mb:
+    ld      b,d
+    ld      c,e
+    call    srlb_rrl_buf4
+    ld      a,'M'
+    ld      (hl),a
+    inc     hl
+.suffix
+    ld      (hl),a
+    inc     hl
+.do_filename
+    call    buffer_space
+.filename:
+    call    esp_get_byte
+    or      a
+    jr      z,.done
+    ld      (hl),a
+    inc     hl
+    jr      .filename
+.done:
+    xor     a                     ; Write terminating NUL
+    ld      (hl),a
+    pop     bc                    ; BC = BufAdr; Stack = BufAdr, RtnAdr
+    sbc     hl,bc                 ; HL = StrLen
+    ld      c,l                   ; C = StrLen
+    ld      a,c
+    sub     21                    ; 
+    ld      b,a                   ; B = NamLen
+    pop     hl                    ; HL = BufAdr
+    ld      a,l
+    add     21
+    ld      e,a
+    ld      a,h
+    add     0
+    ld      d,a                   ; DE = NamPtr
+    xor     a
+    ret
+
+;-----------------------------------------------------------------------------
+; Write colon or dash to buffer
+; Input: HL: Buffer pointer
+; Output: HL: Updated buffer pointer
+; Clobbered: A, BC
+;-----------------------------------------------------------------------------
+buffer_colon:
+    ld      a,':'
+    byte    $01                   ; LD BC, over LD A
+buffer_dash:
+    ld      a,'-'
+    byte    $01                   ; LD BC, over LD A
+;-----------------------------------------------------------------------------
+; Write space to buffer
+; Input: HL: Buffer pointer
+; Output: HL: Updated buffer pointer
+; Clobbered: A
+;-----------------------------------------------------------------------------
+buffer_space:
+    ld      a,' '
+    ld      (hl),a
+    inc     hl
+    ret
+
+;-----------------------------------------------------------------------------
+; Shift A right and right to buffer
+;-----------------------------------------------------------------------------
+srl4buffer:
+    srl     a
+srl3buffer:
+    srl     a
+    srl     a
+    srl     a
+;-----------------------------------------------------------------------------
+; Write 2 number digit in A to buffer
+; Input: A: Number
+;       HL: Buffer pointer
+; Output: HL: Updated buffer pointer
+; Clobbered: A, C
+;-----------------------------------------------------------------------------
+buffer_a_2digits:
+    cp      100
+    jr      c, .l0
+    sub     a, 100
+    jr      buffer_a_2digits
+.l0:
+    ld      c, 0
+.l1:
+    inc     c
+    sub     a, 10
+    jr      nc, .l1
+    add     a, 10
+    push    a
+
+    ld      a, c
+    add     '0'-1
+    ld      (hl),a
+    inc     hl
+    pop     a
+    add     '0'
+    ld      (hl),a
+    inc     hl
+    ret
+
+srlb_rrl_buf4:
+    srl     b
+    rr      c
+    srl     b
+    rr      c
+srlb_rrl_buf2:
+    srl     c
+    rr      b
+    srl     c
+    rr      b
+;-----------------------------------------------------------------------------
+; Output 4 number digit in BC
+;-----------------------------------------------------------------------------
+buffer_bc_4digits:
+    push    hl                    ; Stack = BufPtr, RtnAdr
+    ld      h,b
+    ld      l,c
+    ld      e,'0'
+    ld	    bc,-10000
+    call	  .num1
+    ld	    bc,-1000
+    call	  .num1
+    ld	    bc,-100
+    call	  .num1
+    ld	    c,-10
+    call	  .num1
+    ld      e,0
+    ld	    c,-1
+    call    .num1
+    pop     hl                    ; HL = BufPtr; Stack = RtnAdr
+    ret
+.num1:
+    ld	    a,-1
+.num2:
+    inc	    a
+    add	    hl,bc
+    jr	    c,.num2
+    sbc	    hl,bc
+    add     a,'0'
+    cp      e
+    jr      nz,.num3
+    add     a,' '-'0'
+    byte    $16                   ; LD D over DEC E
+.num3
+    dec     e
+    pop     ix                    ; IX = RtnAdr
+    ex      (sp),hl               ; HL = BufPtr
+    ld      (hl),a
+    inc     hl
+    ex      (sp),hl               ; Stack = BufPtr
+    jp      (ix)                  ; Return
+
+_dirstr:   
+    byte    " <DIR>",0
 

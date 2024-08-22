@@ -1,7 +1,7 @@
 100 REM Test TRIM and PAD functions
-110 QU=0:REM 0=Screen,1=Printer
-120 SCREEN 3:SET FNKEY 3 TO \"run /au/tr.baq\r"
-130 GOSUB _init
+110 GOSUB _init
+123 SET FNKEY 3 TO \"RUN tr.baq\r"
+124 SET FNKEY 4 TO \"RUN ts.baq\r"
 
 210 GOSUB _title:ARGS "TRIM$"
 211 GOSUB _assert:ARGS "TRIM$(`   123   `)=`123`)"

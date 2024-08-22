@@ -11,7 +11,7 @@
 ;-----------------------------------------------------------------------------
 basbuf_read_byte:
     ld      a,BAS_BUFFR
-    call    page_read_byte        
+    call    page_read_byte
     inc     de
     ret
 
@@ -36,7 +36,7 @@ basbuf_read_bytes:
 ;-----------------------------------------------------------------------------
 basbuf_read_word:
     ld      a,BAS_BUFFR
-    call    page_read_word        
+    call    page_read_word
     inc     de
     inc     de
     ret
@@ -51,7 +51,7 @@ basbuf_read_word:
 ;-----------------------------------------------------------------------------
 basbuf_write_bytes:
     ld      a,BAS_BUFFR
-    jp      page_fast_write_bytes
+    jp      buffer_write_bytes
 
 ;-----------------------------------------------------------------------------
 ; Write word to BASIC buffer
@@ -62,7 +62,7 @@ basbuf_write_bytes:
 ;-----------------------------------------------------------------------------
 basbuf_write_byte:
     ld      a,BAS_BUFFR
-    call    page_write_byte        
+    call    buffer_write_byte
     inc     de
     ret
 
@@ -75,10 +75,34 @@ basbuf_write_byte:
 ;-----------------------------------------------------------------------------
 basbuf_write_word:
     ld      a,BAS_BUFFR
-    call    page_write_word
+    call    buffer_write_word
     inc     de
     inc     de
     ret
+
+;-----------------------------------------------------------------------------
+; Write string to Function Key buffer
+; Input: A: Function Key (0-15)
+;       BC: String length
+;       DE: String Address
+; Clobbered: A,BC,DE,HL
+;-----------------------------------------------------------------------------
+fnkey_write_buffer:
+    ex      de,hl                 ; HL = String Address
+    ld      d,FKEYBASE/512        ; 011??000
+    and     $0F                   ; 011??000 0 0000XXXX
+    rla                           ; 011??000 0 000XXXX0
+    rla                           ; 011??000 0 00XXXX00
+    rla                           ; 011??000 0 0XXXX000
+    rla                           ; 011??000 0 XXXX0000
+    rla                           ; 011??000 X XXX00000
+    rl      d                     ; 11??000X 0 XXX00000
+    ld      e,a                   ; DE = Buffer Address
+    ld      a,BAS_BUFFR
+    call    buffer_write_bytes
+    ld      a,BAS_BUFFR
+    inc     de
+    jp      buffer_write_byte
 
 ;----------------------------------------------------------------------------
 ; Get RUN arguments count

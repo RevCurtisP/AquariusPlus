@@ -5,6 +5,7 @@
 ;-----------------------------------------------------------------------------
 ; Hook 2 - READY (Enter Direct Mode
 ;-----------------------------------------------------------------------------
+;; ToDo: Always enable key repeat in direct mode?
 direct_mode:
     call    text_screen
 
@@ -14,9 +15,14 @@ direct_mode:
     and     KB_REPEAT
     or      KB_ENABLE | KB_ASCII
     call    key_set_keymode       ; Turn on keybuffer, ASCII mode, no repeat
+    call    ferr_flag_on
     call    close_bas_fdesc       ; Clean up after aborted file commnds
     jp      HOOK2+1            
 
+ferr_flag_on:
+    ld      a,FERR_FLAG
+    jp      set_ferr_flag
+    
 text_screen:
     in      a,(IO_VCTRL)
     and     a,~VCTRL_MODE_MC
@@ -46,11 +52,16 @@ new_hook:
 close_bas_fdesc:
     ld      a,(BAS_FDESC)         ; Get File Descriptor in Use
     or      a                     ; If Valid Descriptor
-    ret     m
+    ret     z
     ld      iy,dos_close           
+    jp      p,.notdir
+    ld      iy,dos_close_dir
+.notdir
+    and     $7F
+    dec     a
     call    aux_call              ; Close the File
 init_bas_fdesc:
-    ld      a,128
+    xor     a
     ld      (BAS_FDESC),a         ;   Set to No File
     ret
 

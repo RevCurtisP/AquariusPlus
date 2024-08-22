@@ -24,6 +24,16 @@ dos_close_all:
     jp      esp_get_result 
 
 ;------------------------------;-----------------------------------------------------------------------------
+; Close directory pointed to by descriptor
+; Input: A: file descriptor
+; Output: A: result
+;-----------------------------------------------------------------------------
+dos_close_dir:
+    push    af
+    ld      a, ESPCMD_CLOSEDIR
+    jr      _close
+
+;------------------------------;-----------------------------------------------------------------------------
 ; Close file pointed to by descriptor
 ; Input: A: file descriptor
 ; Output: A: result
@@ -31,6 +41,7 @@ dos_close_all:
 dos_close:
     push    af
     ld      a, ESPCMD_CLOSE
+_close
     call    esp_cmd
     pop     af
     call    esp_send_byte
@@ -60,7 +71,7 @@ dos_create_dir:
 
 ;---------------------------------------------------------------
 ; dos_get_cwd - Get Current Directory
-; Input: HL: Buffer address
+;  Input: HL: Buffer Address
 ; Output:  A: Result, C: String Length, DE = End of String, HL = Buffer Address
 ; Clobbered: AF'
 ;-----------------------------------------------------------------------------
@@ -69,7 +80,6 @@ dos_get_cwd:
     call    esp_cmd
     call    esp_get_result 
     ret     m
-    call    get_strbuf_addr       ; HL = StrBuf
     jp      espx_read_buff        ; Read into StrBuf and Return
 
 ;-----------------------------------------------------------------------------
@@ -111,7 +121,8 @@ dos_filestat:
 ;-----------------------------------------------------------------------------
 dos_open_dir:
     ld      a, ESPCMD_OPENDIR     ; Set ESP Command
-    jp      esp_cmd_string        ; Get FileSpec and Do Command
+    call    esp_cmd
+    jr      _send_strdesc
 
 ;-----------------------------------------------------------------------------
 ; Open file for append to string descriptor
@@ -119,7 +130,16 @@ dos_open_dir:
 ; Output: A: file descriptor
 ;-----------------------------------------------------------------------------
 dos_open_append:
-    ld      a, FO_WRONLY | FO_CREATE | FO_TRUNC
+    ld      a, FO_WRONLY | FO_APPEND
+    jr      dos_open
+
+;-----------------------------------------------------------------------------
+; Open file for input/output to string descriptor
+; Input: HL: string descriptor
+; Output: A: file descriptor
+;-----------------------------------------------------------------------------
+dos_open_random:
+    ld      a, FO_CREATE
     jr      dos_open
 
 ;-----------------------------------------------------------------------------
@@ -150,6 +170,7 @@ dos_open:
     call    esp_cmd
     pop     af
     call    esp_send_byte
+_send_strdesc:
     call    esp_send_strdesc
     jp      esp_get_result 
 
@@ -223,8 +244,7 @@ dos_rename:
     call    esp_cmd               ; Issue ESP command 
     call    esp_send_strdesc      ; Send OldDsc
     pop     hl                    ; HL = NewDsc; Stack = RtnAdr
-    call    esp_send_strdesc      ; Send NewDsc
-    jp      esp_get_result        ; Get result and return
+    jr      _send_strdesc         ; Send NewDsc
 
 ;-----------------------------------------------------------------------------
 ; dos_rewind_file

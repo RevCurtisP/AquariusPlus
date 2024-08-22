@@ -2,6 +2,8 @@
 ; Paged Memory Management routines
 ;=============================================================================
 
+;; ToDo: Consolidate all __ and _ routines
+
 ;-----------------------------------------------------------------------------
 ; Compare paged memory to main memory
 ; Input: A: Page
@@ -58,9 +60,9 @@ _cmp_error:
 
 ;-----------------------------------------------------------------------------
 page_page_compare:
-    call    page_check_read_write
+    call    page_check_read_read
     jp      z,_cpp_error
-    call    page_swap_two         ; Bank1 = Source, Bank3 = Dest
+    call    page_swap_two         ; Bank1 = SrcPg, Bank3 = DstPg
     call    page_coerce_de_addr   
     call    page_coerce_hl_addr
     dec     de
@@ -102,7 +104,8 @@ _cpp_error:
 page_fast_copy:
     call    page_check_read_write
     ret     z
-    call    page_swap_two         ; Bank3 = DstPg, Bank2 = SrcPg
+page_fast_copy_sys:
+    call    page_swap_two         ; Bank1 = SrcPg, Bank3 = DstPg
     call    page_coerce_de_addr   ; Coerce DstAdr to Bank3
     call    page_coerce_hl_addr   ; Coerce SrcAdr to Bank1
     ldir                          ; Do the copy
@@ -122,7 +125,7 @@ page_full_copy:
     call    page_check_read_write
     ret     z
     push    hl                    ; Stack = HL, RetAddr
-    call    page_swap_two         ; Bank3 = A, Bank4 = A'
+    call    page_swap_two         ; Bank1 = SrcPg, Bank3 = DstPg
     ld      hl,$4000              ; Copying from page in bank 1
     ld      de,$C000              ; to page in bank 3
     ld      bc,$4000              ; Entire bank/page
@@ -213,7 +216,8 @@ page_mem_swap_bytes:
 page_copy_bytes:
     call    page_check_read_write
     ret     z
-    call    page_swap_two         ; Bank1 = Source, Bank3 = Dest
+page_copy_bytes_sys:
+    call    page_swap_two         ; Bank1 = SrcPg, Bank3 = DstPg
     call    page_coerce_de_addr   
     call    page_coerce_hl_addr
     dec     de
@@ -403,9 +407,13 @@ page_read_byte:
 ;        DE: Address coerced to $C000-$FFFF
 ;      Zero: Cleared if succesful, set if invalid page
 ;-----------------------------------------------------------------------------
+page_write_byte_sys:
+    call    page_coerce_de_addr
+    jr      _write_byte
 page_write_byte:
     call    page__set4write_coerce
     ret     z                     ; Return if illegal page
+_write_byte:
     ld      a,c
     ld      (de),a
     jp      page_restore_bank3
@@ -508,8 +516,15 @@ _map_page_bank3:
 
 
 ;-----------------------------------------------------------------------------
+; Map Temp Buffer into Bank 1
+; Returns with original page on stack
+; Clobbers AF',IX
+;-----------------------------------------------------------------------------
+page_map_tmpbfr:
+    ld      a,TMP_BUFFR
+    jr      page_map_bank1
+;-----------------------------------------------------------------------------
 ; Map Video RAM into Bank 1
-; Input: A = Page
 ; Returns with original page on stack
 ; Clobbers AF',IX
 ;-----------------------------------------------------------------------------
@@ -784,7 +799,7 @@ page_coerce_hl_addr:
     ex      af,af'                ; Save page and flags
     ld      a,h                   ; Address MSB    
     and     $3F
-    or      $40                   ; Make 49152 - 65535
+    or      $40                   ; Make 16384-32767
     ld      h,a                   ; Put back
     ex      af,af'                ; Restore page and flags
     ret
@@ -833,12 +848,25 @@ _set_page
 ;    and page in A is valid for Write
 ; Zero Flag: Clear if valid page, Set if not
 ;-----------------------------------------------------------------------------
+page_check_read_read
+    ex      af,af'
+    call    page_check_read       ; If Source Page not valid for read
+    ret     z                     ;   Return Error    
+    ex      af,af'
+    call    page_check_read       ; If Source Page not valid for read
+    ret     
+
+;-----------------------------------------------------------------------------
+; page_check_read_write
+; Verify page in A' is valid for Read
+;    and page in A is valid for Write
+; Zero Flag: Clear if valid page, Set if not
+;-----------------------------------------------------------------------------
 page_check_read_write:
     ex      af,af'
     call    page_check_read       ; If Source Page not valid for read
     ret     z                     ;   Return Error    
     ex      af,af'
-
 ;-----------------------------------------------------------------------------
 ; page_check_read
 ; page_check_write
@@ -852,10 +880,10 @@ page_check_write:
     jr      z,_page_ok            ;   do it
     cp      USER_RAM              ; If below main RAM
     jr      c,set_zero_flag       ;   error out
-    cp      ROM_SYS_PG            ; If SoftROM
+    cp      USER_END+1            ; If above user RAM
     jr      nc,set_zero_flag      ;   error out
 page_check_read:
-    cp      RAM_END_PG+1          ; If above user RAM
+    cp      RAM_END_PG+1
     jr      nc,set_zero_flag      ;   error out
 _page_ok
     cp      $FF                   ; Clear zero flag
@@ -897,7 +925,7 @@ page_check_next4write:
     jr      z,set_carry_flag      ;   error out
     cp      CHAR_RAM              ; If in character RAM
     jr      z,set_carry_flag      ;   error out
-    cp      ROM_SYS_PG-1          ; If rolling into soft ROM
+    cp      USER_END              ; If at end of user RAM
     jr      z,set_carry_flag      ;   error out
 page_check_next4read:
     cp      RAM_END_PG            ; If in last RAM page

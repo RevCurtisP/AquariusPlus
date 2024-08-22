@@ -3,6 +3,81 @@
 ;=============================================================================
 
 ;-----------------------------------------------------------------------------
+; Remove cursor from screen
+; Clobbered: None
+;-----------------------------------------------------------------------------
+screen_clear_cursor:
+    push    hl
+    push    af
+    ld      a,(CURCHR)
+    ld      hl,(CURRAM)
+    ld      (hl),a
+    pop     af
+    pop     hl
+    ret
+
+; Invert Screen corresponding to Screen RAM Offset
+; Input: DE: Screen RAM Offset
+; 
+screen_invert_color:
+    ld      hl,SCREEN
+    add     hl,de                 ; Add offset to screen
+    ex      de,hl                 ; DE = Screen address
+    jr      _invert_color
+
+; Invert Screen colors at cursor position
+; Clobbers: DE
+screen_invert_cursor:
+    push    af
+    ld      de,(CURRAM)           ; DE = ScrnAdr
+; DE = Screen RAM Address
+_invert_color:
+    in      a,(IO_VCTRL)
+    bit     6,a
+    jr      z,.toggle40           ; If 80 columns
+    set     7,a                   
+    out     (IO_VCTRL),a          ;   Select Color RAM pyage
+    ex      af,af'
+    call    swap_nybbles_de       ;   Swap nybbles
+    ex      af,af'
+    res     7,a                   ;   
+    out     (IO_VCTRL),a          ;   Select screen RAM age
+    pop     af
+    ret
+.toggle40                         ; Else
+    set     2,d                   ;   DE = ColrAdr
+    call    swap_nybbles_de       ;   Swap nybbles
+    pop     af
+    ret
+
+;-----------------------------------------------------------------------------
+; Swap high and low nybbles at address
+; DE = Address
+; Clobbered: A
+;-----------------------------------------------------------------------------
+swap_nybbles_de:
+    ld      a,(de)                ; 
+    call    swap_nybbles
+    ld      (de),a                  
+    ret
+
+;-----------------------------------------------------------------------------
+; Swap high and low nybbles in A
+;-----------------------------------------------------------------------------
+swap_nybbles:
+    or      a                     ; 0 abcd efgh
+    rla                           ; a bcde fgh0
+    adc     0                     ; 0 bcde fgha
+    rla                           ; b cdef gha0
+    adc     0                     ; 0 cdef ghab
+    rla                           ; c defg hab0
+    adc     0                     ; 0 defg habc
+    rla                           ; d efgh abc0
+    adc     0                     ; 0 efgh abcd
+    ret
+
+
+;-----------------------------------------------------------------------------
 ; Read Text Screen Section into Buffer
 ; Input: A: Mode: 1 = SCREEN, 2 = COLOR, 3 = Both
 ;        B: Start Column

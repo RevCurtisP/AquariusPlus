@@ -1,5 +1,63 @@
 # plusBASIC Release History
- - v022.x
+ - v0.22y
+    - Breaking changes
+      - `FILL {@page},address,oount,byte` is now `FILL BYTE {@page}, address, oount, byte`
+      - `FILL {@page},address,oount,WORD integer` is now `FILL WORD {@page}, address, count, integer`
+      - `LOAD COLOR` is now `LOAD SCREEN ATTR`
+      - `LOAD DIR ... \*array` now loads filenames only
+      - `LOAD DIR ... *array$,BIN` replaces old `LOAD DIR ... \*array`
+      - `SAVE filespec$,TOK` to `SAVE filespec$,BIN`.
+    - New statements and functions
+      - `APPEND filespec$,^var$`
+      - `BIT(val,bit#)`
+      - `COPY SCREEN TO @page,address`
+      - `FILL COLORMAP`
+      - `JOY$()` 
+      - `PT3FAST`
+      - `SET FILE ERROR ON/OFF`
+      - `SET PT3 FAST ON/OFF`
+    - Updated statements and functions
+      - `ATN` implemented.
+      - `FRE(_option_)` 
+      - `CLEAR CURSOR`
+      - `FRE(_option_)` 
+        - -1 - Returns the number of bytes in memory not being used by BASlC as unsigned int.
+        -  0 - Returns the number of bytes in memory not being used by BASlC as signed int.
+        -  1 - Returns the total size of string space (as set by the first argument of CLEAR).
+        -  2 - Returns the top of BAexSIC memory (as set by the second argument of CLEAR).
+        - "" - Garbage collect and return free string space
+      - `INPUT (_col_,_row_),_minlen_,_maxlen_,INT _var_`
+      - `LOAD CHRSET`
+        - 768 byte file loads to characters 32 to 127 (standard ASCII printable)
+        - 1024 byte file loads to characters 128 to 255 (high ASCII)
+        - 2048 byte file loads entire character set 
+      - `LOAD DIR ... *array$,ASC` loads formatted directory
+    - Operational changes
+      - `CLEAR`, `NEW`, and `RUN` close all files
+      - `LOAD filespec,@page,address` now load more than 64k
+      - `LOAD BITMAP` generates Error 49 if file size does not exactly match one of the supported formats.
+      - `LOAD` basic program sets FILE ERROR ON
+      - `LOAD` binary closes file
+      - Renamed `Disk I/O error` to `I/O error`
+    - Statements and functions now respecting SET FILE ERROR OFF
+      - `LOAD FNKEYS`
+      - `SAVE/LOAD PALETTE`
+      - `LOAD` string 
+      - `LOAD` array 
+      - `LOAD DIR`
+      - `DEL`
+      - `MKDIR`
+      - `CD` and `CD$`
+    - Bug fixes
+      - Syntax error on `LOAD filespec$,@page :`
+      - Syntax error in `SET SPRITE ... PALETTE`
+    - Added unit test front end `au.bas`, chained unit test programs
+    - Updated unit test framework an unit tests
+    - Restricted kernel page writes to not write past USER_END.
+    - System IRQ handler now preserves all registers
+ - v0.22x4
+    - Added LOAD TILESET and SAVE TILESET
+ - v0.22x
     - Added SET CHRDEF, GETCHRDEF$(), and SAVE CHRSET
     - Fixed characters 128 - 255 of default character set being overridden
     - INPUT and READ now parse hexademical numbers

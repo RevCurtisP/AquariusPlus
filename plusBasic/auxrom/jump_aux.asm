@@ -40,9 +40,9 @@ _jump_table:
     jp      file_save_screen      ; Save screen image 
     jp      file_save_strbuf      ; Save BASIC string buffer to file
     jp      file_load_defchrs     ; Load file into default chrset buffer
-    jp      just_ret              ; file_load_tilemap
-    jp      just_ret              ; file_save_tilemap
-    jp      just_ret
+    jp      file_load_tilemap     ; Load tilemap
+    jp      file_save_tilemap     ; Save tilemap
+    jp      file_read_dir         ; Read directory entry as ASCII string
     jp      just_ret
     jp      just_ret
     jp      just_ret

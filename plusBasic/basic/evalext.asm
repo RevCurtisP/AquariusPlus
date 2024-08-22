@@ -257,6 +257,7 @@ _escaped:
 ;    HL: Text Pointer
 ; TEMP3: Saved Text Pointer
 ;-------------------------------------------------------------------------
+; ToDo: Add IMP(lowest precedence boolean operator)
 oper_extension:
     cp        '%'                 ; If string sub operator
     jr        z,oper_stringsub    ;   Go do it

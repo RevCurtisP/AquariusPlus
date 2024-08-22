@@ -18,7 +18,7 @@ STJUMPS:
     dw      $05BC                 ;$81 FOR               
     dw      $0D13                 ;$82 NEXT              
     dw      $071C                 ;$83 DATA              
-    dw      $0893                 ;$84 INPUT             
+    dw      ST_INPUT              ;$84 INPUT             
     dw      $10CC                 ;$85 DIM               
     dw      $08BE                 ;$86 READ              
     dw      $0731                 ;$87 LET               
@@ -158,7 +158,7 @@ FNJUMPS:
     dw      HOOK27+1              ;$B3 INT     
     dw      HOOK27+1              ;$B4 ABS     
     dw      HOOK27+1              ;$B5 USR  
-    dw      HOOK27+1              ;$B6 FRE     
+    dw      FN_FRE                ;$B6 FRE     
     dw      HOOK27+1              ;$B7 LPOS    
     dw      FN_POS                ;$B8 POS     
     dw      HOOK27+1              ;$B9 SQR     
@@ -212,7 +212,7 @@ FNJUMPS:
     dw      FN_DEEK               ;$E8 DEEK
     dw      FN_ERR                ;$E9 ERR
     dw      FN_STRING             ;$EA STRING$
-    dw      SNERR                 ;$EB BIT
+    dw      FN_BIT                ;$EB BIT
     dw      SNERR                 ;$EC 
     dw      FN_EVAL               ;$ED EVAL
     dw      SNERR                 ;$EE PAUSE
@@ -321,6 +321,7 @@ err_codes:
         word    MSGTO
         word    MSGIM
         word    MSGBR
+        word    MSGES
 err_disk:
         word    MSGBDF
         word    MSGFNF

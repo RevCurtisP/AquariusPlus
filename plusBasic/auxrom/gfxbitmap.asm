@@ -208,6 +208,99 @@ bitmap_fill_color:
     out     (IO_VCTRL),a
     ret
 
+;-----------------------------------------------------------------------------
+; Fill 1bpp Color Map Rectangle with Byte
+; Input: B: Start Column
+;        C: End Column
+;        D: Start Row
+;        E: End Row
+;        L: Byte
+; Clobbered: A, BC, DE, H
+;-----------------------------------------------------------------------------
+colormap_fill:
+;    in      a,(IO_VCTRL)
+;    and     GFXM_MASK
+;    cp      GFXM_1BPP
+;    scf                           ; If not in 1bpp mode
+;    ret     nz                    ;   Return carry set
+    call    colormap_convert_rect ; A = RowCnt, C = ColCnt, DE = RowAdr
+    ret     c
+    ld      h,a                   ; H = RowCnt
+    ld      a,VIDEO_RAM
+    call    page_map_bank1
+    ld      a,h                   ; A = RowCnt
+    ex      de,hl                 ; D = AdrOfs, E = Byte, HL = RowAdr
+    ex      af,af'                ; A' = RowCnt
+;    ld      a,d
+;    add     h                     ; Add offset to RowAdr
+;    ld      h,a
+    ld      a,c                   ; A = ColCnt
+    ex      af,af'                ; A = RowCnt, A' = ColCnt
+.loop
+    push    hl                    ; Save RowAdr
+    ex      af,af'                ; A = ColCnt, A' = RowCnt
+    ld      b,a                   ; B = ColCnt
+.row
+    ld      (hl),e                ; Write Byte
+    inc     hl
+    djnz    .row                  ; Next Column
+    ld      c,40                  ; BC = Line Length
+    pop     hl                    ; HL = RowAdr
+    add     hl,bc                 ; HL = Next RowAdr
+    ex      af,af'                ; A = RowCnt, A' = ColCnt
+    dec     a
+    jr      nz,.loop
+    jp      page_restore_bank1
+
+;-----------------------------------------------------------------------------
+; Convert Color Map Coordinates to Size and Start Address
+; Input: B: Start Column
+;        C: End Column
+;        D: Start Row
+;        E: End Row
+; Output: A = Row Count
+;         C = Column Count
+;        DE = Start Address
+; Clobbered: IX
+;-----------------------------------------------------------------------------
+colormap_convert_rect:
+    call    colormap_bounds         ; Check EndCol and EndRow
+    ret     c
+    ld      ix,colormap_pos_addr
+    call    gfx_convert_rect      ; A = RowCnt, C = ColCnt, DE = RowAdr
+    ret
+
+;-----------------------------------------------------------------------------
+; Calculate screen position address
+; Input: C: Column
+;        E: Row
+; Output: DE = Cell Address
+; Clobbered: A
+;-----------------------------------------------------------------------------
+colormap_pos_addr:
+    push    hl
+    push    bc
+    ld      a,e                   ; A = Row
+    ld      de,40           
+    call    mult_a_de             ; HL = Row Address, BC = Column, A = 0
+    add     hl,bc                 ; Add column address
+    ld      bc,BANK1_BASE+8192    ; Add to ColorMap base address
+    add     hl,bc
+    ex      de,hl                 ; DE = Cursor address
+    pop     bc
+    pop     hl
+    ret
+    
+; In: C=Column, E=Row
+; Out: Carry set if out of bounds
+colormap_bounds:
+    ld      a,40
+    cp      b                     ; If EndCol > 39
+    ret     c                     ;   Return Carry Set
+    ld      a,25
+    cp      e                     ; If EndRow > 24
+    ret                           ;   Return Carry Set
+
 
 ;-----------------------------------------------------------------------------
 ; Draw line on 1bpp bitmap screen
@@ -636,27 +729,24 @@ _getmask:
 bitmap_read_tmpbfr:
     ld      h,b
     ld      l,c                   ; HL = DatLen
-    ld      de,$03E8
-    rst     COMPAR                ; If DatLen < 1000 
-    ret     c                     ;   Return carry set
-    ld      de,$14F0              ; 
-    rst     COMPAR                ; If DatLen < 8000 
-    jr      c,.color              ;   Copy 1bpp color only
+    ld      de,$1F40              ; 
+    rst     COMPAR                ; If DatLen = 8000 
+    jr      z,.bitmap1bpp         ;   Copy 1bpp pixels only
     ld      de,$2328              ; 
-    rst     COMPAR                ; Else If DatLen < 9000 
-    jr      c,.bitmap1bpp         ;   Copy 1bpp pixels only
+    rst     COMPAR                ; Else If DatLen = 9000 
+    jr      z,.color1bpp          ;   Copy 1bpp pixels + color
     ld      e,$48                 ; 
-    rst     COMPAR                ; Else If DatLen < 9000 
-    jr      c,.color1bpp          ;   Copy 1bpp pixels + color
+    rst     COMPAR                ; Else If DatLen = 9032 
+    jr      z,.palette1bpp        ;   Copy 1bpp pixels + color + palette
     ld      e,$E8                 ; 
-    rst     COMPAR                ; Else If DatLen < 9192
-    jr      c,.palette1bpp        ;   Copy 1bpp pixels + color + palette
+    rst     COMPAR                ; Else If DatLen = 9192 
+    jr      z,.bitgap1bpp         ;   Legacy 1bpp pixels
     ld      de,$3E80
-    rst     COMPAR                ; Else If DatLen < 16000
-    jr      c,.bitgap1bpp         ;   Copy 1bpp pixels + color + palette
+    rst     COMPAR                ; Else If DatLen = 16000
+    jr      z,.bitmap4bpp         ;   Copy 4bpp pixels
     ld      e,$A0
-    rst     COMPAR                ; Else If DatLen < 16032
-    jr      c,.bitmap4bpp         ;   Copy 4bpp pixels
+    rst     COMPAR                ; Else If DatLen <> 16032
+    jp      nz,ret_carry_set
 .palette4bpp    
     ld      de,BANK1_BASE+16000
     call    .palette
@@ -668,8 +758,11 @@ bitmap_read_tmpbfr:
     ld      de,8192
     jr      .zero
 .bitgap1bpp
-    ld      bc,9192               
+    ld      bc,8000               
     call    .bitmap
+    ld      de,8192
+    ld      bc,1000
+    call    .copy
     ld      de,BANK1_BASE+8000
     jr      .palette
 .palette1bpp
@@ -687,10 +780,7 @@ bitmap_read_tmpbfr:
 .zero
     ld      hl,0
 .copy
-    ld      a,TMP_BUFFR           ; Copying from buffer
-    ex      af,af'
-    ld      a,VIDEO_RAM           ; to Video RAM
-    jp      page_fast_copy
+    jp      copy_tmpbfr_vidram
 ; Enter with DE pointing to bitmap data
 .palette
     call    page_map_tmpbfr_af
@@ -699,6 +789,34 @@ bitmap_read_tmpbfr:
     ld      l,1
     call    palette_set
     jp      page_restore_bank1_af
+ 
+;-----------------------------------------------------------------------------
+; Copy 1bpp ColorMAP data in TMP_BUFFR to Video RAM
+; Input: BC = Length of data to copy
+; Sets flags: Carry if invalid data length
+; Clobbers: A, AF', BC, DE, HL
+;-----------------------------------------------------------------------------
+colormap_read_tmpbfr:
+    ld      h,b
+    ld      l,c
+    ld      de,1000
+    rst     COMPAR
+    jp      nz,ret_carry_set
+    ld      de,8192
+    jr      copy_tmpbase_vidram
+; Input: BC: BytCnt
+; Output: DE: NewDstAdr, HL: NewSrcAdr
+copy_tmpbase_vidbase:
+    ld      de,0
+copy_tmpbase_vidram:
+    ld      hl,0
+; Input: BC: BytCnt, DE: DstAdr, HL: SrcAdr
+; Output: DE: NewDstAdr, HL: NewSrcAdr
+copy_tmpbfr_vidram:
+    ld      a,TMP_BUFFR           ; Copying from buffer
+    ex      af,af'
+    ld      a,VIDEO_RAM           ; to Video RAM
+    jp      page_fast_copy
  
 ;-----------------------------------------------------------------------------
 ; Copy Bitmap date in TMP_BUFFR to Video RAM and palette
@@ -742,7 +860,6 @@ bitmap_write_tmpbfr:
     ld      bc,32
     call    palette_get
     jp      page_restore_bank1_af
-
 
 ;-----------------------------------------------------------------------------
 ; Read Bitmap Screen Section into Buffer

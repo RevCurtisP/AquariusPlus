@@ -5,15 +5,28 @@
 
 ;-----------------------------------------------------------------------------
 ; CLEAR statement extension (Hook 11)
+; CLEAR *array
 ; CLEAR BITMAP [fgcolor, bgcolor]
+; CLEAR CURSOR
 ;-----------------------------------------------------------------------------
+; CLEAR CURSOR:PAUSE
 clear_hook:
     jp      z,CLEARC              ; If no operands just CLEAR
     cp      BITTK                 
     jp      z,ST_CLEAR_BITMAP
     cp      MULTK                 ; 
-    jp      z,ST_CLEAR_ARRAY
-    jp      HOOK11+1              ; Continue with )CLEAR
+    jr      z,ST_CLEAR_ARRAY
+    cp      XTOKEN
+    jp      nz,HOOK11+1           ; Continue with CLEAR
+;ST_CLEAR_CURSOR:
+    rst     CHRGET                ; Skip XTOKEN
+    rst     SYNCHR
+    byte    CURTK
+    SYNCHK  'S'                   
+    rst     SYNCHR                ; Require CURSOR
+    byte    ORTK
+    ld      iy,screen_clear_cursor
+    jp      aux_call
 
 ST_CLEAR_ARRAY:
     call    get_star_array        ; DE = AryAdr, BC = AryLen 
@@ -39,6 +52,44 @@ clear_array:
     pop     de                    ; DE = AryAdr; Stack = AryAdr, TxtPtr, RtnAdr
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     ret
+
+
+;-----------------------------------------------------------------------------
+; ATN function
+;-----------------------------------------------------------------------------
+FN_ATN:
+    rst     FSIGN                 ; SEE IF ARG IS NEGATIVE
+    call    m,PSHNEG              ; IF ARG IS NEGATIVE, USE:
+    call    m,NEG                 ;     ARCTAN(X)=-ARCTAN(-X)
+    ld      a,(FAC)               ; SEE IF FAC .GT. 1
+    cp      129               
+    jp      c,ATN2          
+
+    ld      bc,$8100              ; GET THE CONSTANT 1
+    ld      d,c                
+    ld      e,c                   ; COMPUTE RECIPROCAL TO USE THE IDENTITY:
+    call    FDIV                  ;    ARCTAN(X)=PI/2-ARCTAN(1/X)
+    ld      hl,FSUBS              ; PUT FSUBS ON THE STACK SO WE WILL RETURN       
+    push    hl                    ;   TO IT AND SUBTRACT THE REULT FROM PI/2    
+ATN2:   
+    ld      hl,ATNCON             ; EVALUATE APPROXIMATION POLYNOMIAL
+  
+    call    POLYX              
+    ld      hl,PI2                ; GET POINTER TO PI/2 IN CASE WE HAVE TO
+    ret                           ;   SUBTRACT THE RESULT FROM PI/2
+  
+;CONSTANTS FOR ATN  
+ATNCON: 
+    db      9                     ;DEGREE
+    db      $4A,$D7,$3B,$78       ; .002866226
+    db      $02,$6E,$84,$7B       ; -.01616574
+    db      $FE,$C1,$2F,$7C       ; .04290961
+    db      $74,$31,$9A,$7D       ; -.07528964
+    db      $84,$3D,$5A,$7D       ; .1065626
+    db      $C8,$7F,$91,$7E       ; -.142089
+    db      $E4,$BB,$4C,$7E       ; .1999355
+    db      $6C,$AA,$AA,$7F       ; -.3333315
+    db      $00,$00,$00,$81       ; 1.0
 
 ;-----------------------------------------------------------------------------
 ; CLS statement 

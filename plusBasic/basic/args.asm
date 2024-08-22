@@ -156,17 +156,17 @@ run_args:
     ld      a,l                   ; A = Page
     ld      de,RUNARGS
     ld      bc,0                  ; ArgCnt = 0
-    call    page_write_word       ; Write ArgCnt
-    inc     de
-    inc     de                    ; Bump write address
+    call    buffer_write_word     ; Write ArgCnt
+;    inc     de
+;    inc     de                    ; Bump write address
     pop     bc                    ; BC = StrLen; Stack = TxtAdr, StrDsc, RtnAdr
     ld      a,l                   ; A = Page
-    call    page_write_word       ; Write StrLen
-    inc     de
-    inc     de                    ; Bump write address
+    call    buffer_write_word     ; Write StrLen
+;    inc     de
+;    inc     de                    ; Bump write address
     ld      a,l                   ; A = Page
     pop     hl                    ; HL = TxtAdrl Stack = StrDsc, RtnAdr
-    call    page_write_bytes      ; Write filename
+    call    buffer_write_bytes    ; Write filename
     pop     hl                    ; HL = StrDsc; Stack = RtnAdr
     ret
 

@@ -233,6 +233,8 @@ ttymove80:
 
 
 
+; Input: D: Column, E: Row
+; Output: HL: Screen RAM address
 move_cursor:
     push    af
     ; Restore character behind cursor

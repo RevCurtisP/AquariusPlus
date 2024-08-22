@@ -8,6 +8,8 @@
     <dl>
       <dt><a href=sysrom.bin>sysrom.bin</a></dt>
       <dd>The plusBASIC ROM file. Download this and copy to the root directory of your SD card.</dd>
+      <dt><a href=ptplay.bin>ptplay.bin</a></dt>
+      <dd>The p3player module. Only needed if newer version than `esp:ptplay.bin`.</dd>
     </dl>
     </p>
     <p><h2>Documentation</h2>
@@ -19,12 +21,16 @@
     </dl>
     <p><h2>Useful programs</h2>
     <dl>
+      <dt><a href=deltree.baq>deltree.baq</a></dt>
+      <dd>Deletes a directory and all it's contents.</dd>
       <dt><a href=getsysrom.bas>getsysrom.bas</a></dt>
       <dd>Program to automatically download the latest sysrom.bin.</dd>
+      <dt><a href=getver.bas>getver.bas</a></dt>
+      <dd>Displays current and newest plusBASIC.</dd>
       <dt><a href=myip.bas>myip.bas</a></dt>
       <dd>Displays Aquarius<sup>+</sup> public IP address.</dd>
-      <dt><a href=getver.bas>getver.bas</a></dt>
-      <dd>Displays current and newest plusNASIC.</dd>
+      <dt><a href=xtar.baq>xtar.baq</a></dt>
+      <dd>Extracts TAR archives.</dd>
     </dl>
     </p>
     <p><h2>Utilities</h2>
@@ -35,6 +41,12 @@
       <dd>Converts BASIC program in tokenized program in CAQ format to ASCII format.</dd>
     </dl>
     </p>
+    <p><h2>Applications and Games</h2>
+    <dl>
+      <dt><a href=/1stage>1stage</a></dt>
+      <dd>Programs by Sean Harrington.</dd>
+      <dt><a href=/odc>Ohio Divide</a></dt>
+      <dd>Programs by Curtis F Kaylor.</dd>
     <h2>Notes</h2>
     <p>The Aquarius<sup>+</sup> bootloader checks for sysrom.bin in the SD card root directory, and loads it if found.
     Otherwise, sysrom.bin is loaded from the ESP32 filesystem. If you encounter any errors after updating plusBASIC,

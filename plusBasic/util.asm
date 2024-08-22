@@ -122,9 +122,20 @@ print_string_immd:
     call    print_c_string        ;; Print the String
     jp      (hl)                  ;; Fast Return
 
+
 ;-----------------------------------------------------------------------------
 ; Free temporary string, then get string address and length
 ;  Input: HL: String descriptor of string
+; Output: BC: String length
+;         DE: String text address
+; Clobbered: A
+;-----------------------------------------------------------------------------
+free_hl_addr_len:
+    call    FRETM2
+    jr      string_addr_len
+
+;-----------------------------------------------------------------------------
+; Free temporary string, then get string address and length
 ; Output: BC: String length
 ;         DE: String text address
 ; Clobbered: A
@@ -423,10 +434,17 @@ mult_hl_10:
     pop     bc
     ret
 
+
+pt3_setmode:
+    ld      iy,pt3fast
+    jr      _pt3call
+pt3_getmode:
+    ld      iy,pt3mode
+    jr      _pt3call
 pt3_reset:
     call    pt3_disable
-pt3_init:
     ld      iy,pt3init
+_pt3call
     jp      pt3call
 
 ;----------------------------------------------------------------------------
@@ -435,7 +453,7 @@ pt3_init:
 ; Clobbers: A,B
 ;----------------------------------------------------------------------------
 pt3_start:
-    call    pt3_init
+    call    pt3_reset
 pt3_enable:
     ld      b,IRQ_PT3PLAY
     jp      enable_vblank_irq
@@ -469,6 +487,7 @@ pt3_loop:
 ; Clobbered: A
 ;----------------------------------------------------------------------------
 pt3_status:
+    call   pt3_getmode            ; E = Mode
     call    .active
     ld      b,a
     call    .looped

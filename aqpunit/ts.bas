@@ -1,9 +1,7 @@
 100 REM Test Tiles and Sprites
-110 QU=0:REM 0=Screen,1=Printer
-120 SET FAST ON
-130 SCREEN 3:GOSUB _init
-133 SET FNKEY 3 TO \"RUN /au/ts.baq\r"
-134 SET FNKEY 4 TO \"goto _dump\r"
+110 GOSUB _init
+123 SET FNKEY 3 TO \"RUN ts.baq\r"
+130 QC=1:'Last Unit Test Program
 
 200 GOSUB _title:ARGS "Tiles and Sprites"
 

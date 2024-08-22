@@ -2,6 +2,8 @@
 ; Graphics Statements and Functions
 ;====================================================================
 
+;; ToDo: Normalize SCREEN CHR and SCREEN ATTR
+;; LOAD SCREEN, SAVE SCREEN
 
 ;-----------------------------------------------------------------------------
 ; USE CHRSET - Change Character Set
@@ -155,11 +157,8 @@ ST_SETCOLOR:
 ST_RESET_PALETTE:
     rst     CHRGET                ; Skip PALETTE
     call    get_byte4             ; A = palette#
-    push    hl                    ; Stack = TxtPtr, RtnAdr
     ld      iy,palette_reset
-    call    aux_call
-    pop     hl
-    ret
+    jp      aux_call_preserve_hl
 
 ;-----------------------------------------------------------------------------
 ; SET PALETTE statement
@@ -231,10 +230,8 @@ FN_SCREEN:
 ST_SCREEN:
     call    get_byte_optional     ; A = [text]
     jr      c,.no_text            ; If specified
-    push    hl                    ; Stack = TxtPtr, RtnAdr
     ld      iy,screen_switch      
-    call    aux_call              ; Switch to new text screen
-    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
+    call    aux_call_preserve_hl
 .no_text
     in      a,(IO_VCTRL)
     ld      c,a                   ; C = Current VCTRL
@@ -279,11 +276,39 @@ ST_SCREEN:
     ld      c,a                   ; C = New VCTRL
     ret
 
+;-----------------------------------------------------------------------------
+; COPY SCREEN - Copy Screen RAM to paged memory
+; COPY SCREEN TO @page,address
+;-----------------------------------------------------------------------------
+; COPY SCREEN TO @32,0
+;; ToDo: Add COPY @page,address TO SCREEN
+ST_COPY_SCREEN:
+    rst     CHRGET                ; Skip SCREEN
+    rst     SYNCHR
+    byte    TOTK
+    call    get_page_addr         ; A = Page, DE = Address
+    jp      nc,FCERR              ; Error if page not specified
+    ld      iy,screen_write_paged
+    jr      aux_call_preserve_hl
+
+;-----------------------------------------------------------------------------
+; COPY TO SCREEN - Copy Screen RAM to paged memory
+; COPY @page,address TO SCREEN
+;-----------------------------------------------------------------------------
+;; ToDo: Implement this (will need to mod ST_COPY in enhanced.asm)
+; COPY @32,0 TO SCREEN
+    ret
+
+;-----------------------------------------------------------------------------
+; RESET SCREEN - Reset current text screen to default settings
+;-----------------------------------------------------------------------------
 ST_RESET_SCREEN:
     rst     CHRGET                ; Skip SCREEN
 _reset_screen:
-    push    hl
     ld      iy,screen_reset
+aux_call_preserve_hl:
+    push    hl
+aux_call_popret:
     call    aux_call
     pop     hl
     ret
@@ -311,9 +336,7 @@ _swapcall_pophrt:
     rst     CHRGET                ; Skip SCREEN
     push    hl                    ; Stack = TxtPtr, RtnAdr
     ld      hl,SWPSCRN40          ; Stash to Swap Buffers
-    call    aux_call              
-    pop     hl                    ; HL = TxtPtr; HL = RtnAdr
-    ret
+    jp      aux_call_popret              
 
 ;-----------------------------------------------------------------------------
 ; SET TILE Statement
@@ -370,8 +393,34 @@ _set_tile_ext:
     jr      _set_tile             ; Write the tile
 
 ;-----------------------------------------------------------------------------
+; FILL COLORMAP (col,row)-(col,row) COLOR fgcolor, bgcolor
+;-----------------------------------------------------------------------------
+; FILL COLORMAP (0,0)-(4,5) COLOR 7,1
+; FILL COLORMAP (10,5)-(20,15) COLOR 7,1
+ST_FILL_COLORMAP:
+    rst     CHRGET                ; Skip COL
+    rst     SYNCHR
+    byte    ORTK
+    rst     SYNCHR                ; Require ORMAP
+    byte    MAPTK                 
+    call    scan_rect             ; B = BgnCol, C = EndCol, D = BgnRow, E= EndRow
+    push    bc                    ; Stack = Cols, RtnAdr
+    push    de                    ; Stack = Rows, Cols, RtnAdr
+    call    parse_colors          ; A = Colors
+    pop     de                    ; DE = Rows; Stack = Cols, RtnAdr
+    pop     bc                    ; BC = Cols; Stack = RtnAdr
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    ld      l,a                   ; L = Colors
+    ld      iy,colormap_fill
+    call    aux_call
+    jp      c,FCERR               ; Illegal quantity error if out of bounds
+    pop     hl
+    ret
+
+;-----------------------------------------------------------------------------
 ; FILL SCREEN [(col,row)-(col,row)] [CHR chr|chr$] [COLOR fgcolor, bgcolor]
 ;-----------------------------------------------------------------------------
+; Will not change to FILL SCREEN CHR/ATTR because this is easier to parse
 ; FILL SCREEN (10,5)-(20,15) CHR '*' COLOR 7,0
 ST_FILL_SCREEN:
     ld      iy,screen_size
@@ -456,27 +505,11 @@ ST_FILL_TILE:
 ;GET SCREEN (2,2) - (10,10),*A
 ST_GET_SCREEN:
     rst     CHRGET                ; Skip SCREEN
-    call    _screen_suffix        ; Check for CHR and ATTR
-    push    bc                    ; Stack = Mode, RtnAdr
+    call    screen_suffix         ; Check for CHR and ATTR
+    ld      (XTEMP0),bc           ; XTEMP1 = Mode
     call    scan_rect             ; B = BgnCol, C = EndCol, D = BgnRow, E = EndRow
-    SYNCHK  ','                   ; Require comma
-    rst     SYNCHR
-    byte    MULTK                 ; Require * - for now
-    pop     af                    ; A = Mode; Stack = RtnAdr
-    push    de                    ; Stack = Rows, RtnAdr
-    push    bc                    ; Stack = Cols, Rows, RtnAdr
-    push    af                    ; Stack = Mode, Cols, Rows, RtnAdr
-    call    get_array             ; DE = Array Data Address
-    pop     af                    ; A = Mode, Stack = Cols, Rows, RtnAdr
-    pop     bc                    ; B = BgnCol, C = EndCol; Stack = Rows, RtnAdr
-    ex      (sp),hl               ; HL = Rows; Stack = TxtPtr, RtnAdr
-    ex      de,hl                 ; D = BgnRow, E = EndRow, HL = AryAdr
     ld      iy,screen_get
-    call    aux_call              ; In: B=BgnCol, C=EndCol, D=BgnRow, E=EndRow, HL: AryAdr
-    jp      c,FCERR
-    jp      z,FCERR
-    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
-    ret
+    jr      _do_get
 
 ;-----------------------------------------------------------------------------
 ; GET TILEMAP (col,row)-(col,row),*arrayvar
@@ -491,6 +524,7 @@ ST_GET_TILEMAP:
     byte    MAPTK
     call    scan_rect             ; B = BgnCol, C = EndCol, D = BgnRow, E = EndRow
     ld      iy,tilemap_get
+_do_get:
     SYNCHK  ','                   ; Require comma
     push    de                    ; Stack = Rows, RtnAdr
     push    bc                    ; Stack = Cols, Rows, RtnAdr
@@ -540,27 +574,13 @@ _parse_get_string:
 ;PUT SCREEN (4,4),*A
 ST_PUT_SCREEN:
     rst     CHRGET                ; Skip SCREEN
-    call    _screen_suffix        ; B: 1 = CHR, 2 = ATTR, 3 = Neither
-    push    bc                    ; Stack = Mode, RtnAdr
+    call    screen_suffix         ; B: 1 = CHR, 2 = ATTR, 3 = Neither
+    ld      (XTEMP0),bc           ; XTEMP1 = Mode
     call    SCAND                 ; C = Col, E = Row
-    SYNCHK  ','                   ; Require comma
-    rst     SYNCHR
-    byte    MULTK                 ; Require * - for now
-    pop     af                    ; A = Mode; Stack = RtnAdr
-    push    de                    ; Stack = Row, RtnAdr
-    push    bc                    ; Stack = Col, Row, RtnAdr
-    push    af                    ; Stack = Mode, Col, Row, RtnAdr
-    call    get_array             ; DE = Array Data Address
-    pop     af                    ; A = Mode, Stack = Col, Row, RtnAdr
-    pop     bc                    ; C = Col; Stack = Row, RtnAdr
-    ex      (sp),hl               ; HL = Row; Stack = TxtPtr, RtnAdr
-    ex      de,hl                 ; E = Row, HL = AryAdr
     ld      iy,screen_put
-    call    aux_call              ; In: C=Col, E=End, HL: AryAdr
-    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
-    ret
+    jr      _do_put
 
-_screen_suffix:
+screen_suffix:
     ld      b,3
     cp      XTOKEN                ; If Not Extended Token
     ret     nz                    ;   Return 3 (SCREEN+COLOR)
@@ -588,6 +608,7 @@ ST_PUT_TILEMAP:
     byte    MAPTK
     call    SCAND                 ; C = Col, E = Row
     ld      iy,tilemap_put
+_do_put:
     SYNCHK  ','                   ; Require comma
     push    de                    ; Stack = Row, RtnAdr
     push    bc                    ; Stack = Col, Row, RtnAdr
@@ -599,9 +620,16 @@ _put_from_string:
     call    PTRGET                ; Return DE = VarPtr
     push    hl                    ; Stack = TxtPtr, Cols, Rows, RtnAdr
     ex      de,hl                 ; HL = VarPtr
-    call    string_addr_len       ; DE = StrAdr
+    call    string_addr_len       ; DE = StrAdr, BC = StrLen
+    ld      a,b
+    or      c                     ; If StrLen = 0 
+    jr      z,ESERR               ;   Illegal quantity error
     pop     hl                    ; HL = TxtPtr; Stack = Cols, Rows, RtnAdr
     jr      _get_put              ; Put it
+
+ESERR:
+    ld      e,ERRES
+    jp      ERROR
 
 _get_put_array:
     rst     SYNCHR
@@ -611,6 +639,7 @@ _get_put:
     pop     bc                    ; C = Col; Stack = Row, RtnAdr
     ex      (sp),hl               ; HL = Row; Stack = TxtPtr, RtnAdr
     ex      de,hl                 ; E = Row, HL = AryAdr
+    ld      a,(XTEMP0+1)          ; A = Mode (GET/PUT SCREEN)
     call    aux_call
     jp      c,FCERR
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
@@ -703,32 +732,52 @@ _tilemap_offset:
     jp      aux_call
 
 ;-----------------------------------------------------------------------------
-; TILEMAPX, TILEMAPY
+; TILE functions stub
 ;-----------------------------------------------------------------------------
 FN_TILE:
     rst     CHRGET                ; Skip TILE
-    rst     SYNCHR
-    byte    MAPTK                 ; Require MAP
+    cp      MAPTK                 ; If TILEMAP
+    jr      z,FN_TILEMAP          ;   Go Do It
+    rst     SYNCHR                ; Else
+    byte    XTOKEN                ;   
+    rst     SYNCHR                ;   Require OFFSET
+    byte    OFFTK                 ;   
+    rst     SYNCHR                
+    byte    SETTK                 ;   
+;-----------------------------------------------------------------------------
+; TILEOFFSET
+;-----------------------------------------------------------------------------
+FN_TILEOFFSET:
+    call    tile_offset           ; BC = Offset
+    jr      push_labbck_floatbc
+
+;-----------------------------------------------------------------------------
+; TILEMAPX, TILEMAPY, TILEMAP()
+;-----------------------------------------------------------------------------
+FN_TILEMAP:
+    rst     CHRGET                ; Skip MAP
     cp      '('                   ; If (
-    jr      z,FN_TILEMAP          ; Go do TILEMAP(x,y)
-    push    AF                    ; Stack = 'X'/'Y', RtnAdr
+    jr      z,_tilemap_xy         ; Go do TILEMAP(x,y)
+    push    af                    ; Stack = 'X'/'Y', RtnAdr
+    rst     CHRGET                ; Skip X/Y
     ld      iy,tilemap_get_offset
     call    aux_call              ; BC = X-Offset, DE = Y-Offset
-    pop     AF                    ; A = 'X'/'Y', Stack = RtnAdr
+    pop     af                    ; A = 'X'/'Y', Stack = RtnAdr
     cp      'Y'                   ; If not TILEMAPY
     jr      z,push_labbck_floatde
     cp      'X'                   ;   If not TILEMAPX
     jp      nz,SNERR              ;     Return Error
+push_labbck_floatbc:
     ld      d,b                   ;   DE = X-Offset
     ld      e,c
 push_labbck_floatde:
-    call    push_hlinc_labbck     ; Stack = LABBCK, TxtPtr, RtnAdr
+    call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
     jp      FLOAT_DE              ;   Return Y-Offset
 
 ;-----------------------------------------------------------------------------
 ; TILEMAP(col,row) - Return tile# and properties
 ;-----------------------------------------------------------------------------
-FN_TILEMAP
+_tilemap_xy:
     call    SCAND                 ; Parse column and row
     call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
     ld      iy,tilemap_get_tile
@@ -924,6 +973,7 @@ _get_aux
     ld      bc,32                 ; BC = StrLen
     pop     hl                    ; HL = Palette#; Stack = DummyAdr, TxtPtr
     ld      a,l
+aux_call_finbck:
     call    aux_call
     ld      a,1
     ld      (VALTYP),a            ; Set Type to String
@@ -931,6 +981,8 @@ _get_aux
 
 ;-----------------------------------------------------------------------------
 ; DEF SPRITE sprite$ = spritle#, x-offset, y-offset; spritle#, x-offset, y-offset
+; DEF SPRITE sprite$ = [ spritle#, ... ] {; ...}
+; DEF SPRITE sprite$ = spritle_list$
 ; String Format: SprCount,TotWidth,TotHeigth,(SprNum,Xoffset,Yoffset)...
 ;-----------------------------------------------------------------------------
 ST_DEF_SPRITE:
@@ -1084,6 +1136,7 @@ ST_SET_SPRITE:
     jr      ST_SET_SPRITE
 
 .palette
+    rst     CHRGET                ; Skip PALETTE
     ld      ix,sprite_set_palettes; IX = jump address
     jr      .string_arg
 

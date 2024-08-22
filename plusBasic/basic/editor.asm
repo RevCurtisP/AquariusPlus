@@ -24,11 +24,11 @@ edit:
 _tloop
     ld      (hl),a                ; Make sure it's terminated
 _loop
-    call    _toggle_cursor        ; Display cursor
+    call    screen_invert_cursor  ; Display cursor
 .wait
     call    key_read_ascii        ; Wait for Key
     jr      z,.wait
-    call    _toggle_cursor        ; Display cursor
+    call    screen_invert_cursor  ; Display cursor
     cp      ' '                   ; If Control Key
     jr      c,_ctrlkey            ;   Process it
     cp      $7F                   ; If Cursor Key
@@ -106,10 +106,10 @@ _ctrlkey
     cp      'M'-64                ; Enter
     jr      z,_return             ; 
     cp      'H'-64                ; Backspace
-    jr      z,.backspace
+    jr      z,_back_upspace
     jr      _loop
 
-.backspace
+_back_upspace
 ; ToDo: move text after cursor to left
     jr      _beep
     ld      a,b 
@@ -182,11 +182,11 @@ _print_buffer:
     ld      b,a                   ;   B = ChrCnt
     call    _get_ttypos_curram    ;   A = TtyPos, DE = CurRAM
     push    af                    ;   Stack = TtyPos, CurAdr, PosLen, RtnAdr
-.loop
+.print_loop
     ld      a,(hl)                ;   Print the characters
     rst     OUTCHR                ;   
     inc     hl                    ;   
-    djnz    .loop                 ;   
+    djnz    .print_loop
     ld      a,' '
     ld      hl,(TTYPOS)
     ld      (hl),a                ;   Kill the cursor
@@ -224,40 +224,117 @@ _set_curchar:
 
 ; Move cursor left
 
-; Invert Screen colors at cursor position
-; Clobbers: DE
-_toggle_cursor:
-    push    af
-    ld      de,(CURRAM)           ; DE = ScrnAdr
-    in      a,(IO_VCTRL)
-    bit     6,a
-    jr      z,.toggle40           ; If 80 columns
-    set     7,a                   
-    out     (IO_VCTRL),a          ;   Select Color RAM page
-    ex      af,af'
-    call    .toggle               ;   Swap nybbles
-    ex      af,af'
-    res     7,a                   ;   
-    out     (IO_VCTRL),a          ;   Select screen RAM age
-    pop     af
-    ret
-.toggle40                         ; Else
-    set     2,d                   ;   DE = ColrAdr
-    call    .toggle               ;   Swap nybbles
-    pop     af
+con_input_string:
+    ld      iy,_is_string
+    jr    _do_input
+
+con_input_hex:
+    ld      iy,_is_hexdigit
+    jr    _do_input
+
+con_input_int:
+    ld      iy,_is_digit
+;-----------------------------------------------------------------------------
+; Enhanced Input Core Routine
+; Input: B: Minimum length
+;        C: Maximum length
+;        D: Column
+;        E: Row
+;       IY: Character validation routine
+; Output: L: ENtry length
+; Flags: Carry set if screen position out of bounds
+;        Sign set if aborted (Ctrl-C)
+;-----------------------------------------------------------------------------
+_do_input:
+    ld      hl,LINLEN
+    ld      a,c                   ; A = MaxLen
+    cp      37            
+    ccf                           ; If MaxLen > 36
+    ret     c                     ;   Return Carry Set
+    add     a,d                   ; A = Column + MaxLen
+    cp      (hl)
+    ccf                           ; If end of field past end of line
+    ret     c                     ;   Return Carry Set
+    ld      a,e                   ; A = Row
+    cp      25
+    ccf                           ; If Row > 25
+    ret     c                     ;   Return Carry Set
+    call    move_cursor           ; Move to input point
+    ld      de,BUF
+    ld      l,0                   ; B = CurLen
+_input_loop:
+    call    key_read_ascii        ; Get keypress
+    jr      z,_input_loop         ; If no key, try again
+    cp      3                     ; If Ctrl-C
+    jr      z,_abort_input        ;   Abort
+    cp      13                    ; If Enter
+    jr      z,_finish_input       ;   Try to leave
+    cp      8                     ; If Backspace
+    jr      z,_back_up            ;   Try to back up  
+    jp      (iy)                  ; Check character
+_good_char:
+    ex      af,af'                ; A' = KeyASC
+    ld      a,l                   ; A = CurLen
+    cp      c                     ; If CurLen >= MaxLen
+    jr      nc,_input_error       ;   Beep and loop
+    ex      af,af'                ; A = KeyASC
+    ld      (de),a                ; Put in buffer
+    inc     l                     ; CurLen += 1
+    inc     de                    ; BufPtr += 1
+    jr      _input_out            ; Print it and loop
+_back_up:
+    ld      a,l                   ; A = CurLen
+    or      a                     ; If CurLen = 0
+    jr      z,_input_error              ;   Beep and loop
+    dec     l                     ; CurLen -= 1
+    dec     de                    ; BufPtr -= 1
+    ld      a,8                   ; 
+    jr      _input_out            ; Back up cursor and loop
+_finish_input:
+    xor     a
+    ld      (de),a                ; Terminate entry
+    ld      a,l                   ; A = CurLen
+    cp      b                     ; If CurLen >= MinLen
+    ld      hl,BUF                ;   HL = BufAdr
+    ret     nc                    ;   Return Carry Clear
+_abort_input:
+    or      $FF                   ; Return Carry Clear, Sign Set
     ret
 
-.toggle
-    ld      a,(de)                ; 
-    or      a                     ; 0 abcd efgh
-    rla                           ; a bcde fgh0
-    adc     0                     ; 0 bcde fgha
-    rla                           ; b cdef gha0
-    adc     0                     ; 0 cdef ghab
-    rla                           ; c defg hab0
-    adc     0                     ; 0 defg habc
-    rla                           ; d efgh abc0
-    adc     0                     ; 0 efgh abcd
-    ld      (de),a                  
-    ret
-    
+_is_string:
+    cp      32                    ; If control character
+    jr      c,_input_error        ;   Reject it
+    cp      $A0                   ; If Latin-1 character
+    jr      nc,_good_char         ;   Process it
+    cp      $7F                   ; If DEL - $9F
+    jr      nc,_input_error       ;   Reject it
+    jr      _good_char            ; Else process it
+
+; Returns carry set if invalid character
+_is_hexdigit:
+    cp      'a'
+    jr      c,.notlower           ; If lower case letter
+    and     $5F                   ;   Convert to lower case
+.notlower
+    cp      'G'                   ; If > 'F'
+    jr      nc,_input_error       ;   Reject it
+    cp      'A'                   ; If >=  'A'
+    jr      nc,_good_char         ;   Process it
+_is_digit:
+    cp      '0'                   ; If < '0'
+    jr      c,_input_error        ;   Reject it
+    cp      ':'                   ; If <= '9'
+    jr      c,_good_char          ;   Process it
+_input_error:
+    ld      a,7                   ; Ring the bell
+_input_out:
+    push    hl                    ; Stack = CurLen, RtnAdr
+    ld      hl,(CURRAM)           
+    ld      (hl),a                ; Write character to screen
+    inc     hl
+    ld      (CURRAM),hl
+    ld      a,(hl)
+    ld      (CURCHR),a
+    pop     hl
+    jr      _input_loop           ; and loop
+

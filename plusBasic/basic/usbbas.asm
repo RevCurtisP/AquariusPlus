@@ -16,16 +16,16 @@
 ST_CALL:
     call    GETINT                ; Convert to 16 bit integer
     push    de                    ; Stack = CalAdr, RtnAdr
-    ld      a,(hl)      
+    ld      a,(hl)
     cp      XTOKEN                ; If no Extended token
     ret     nz                    ;   Jump to user code, HL = BASIC text pointer
     inc     hl
     ld      a,(hl)                ; Get extended token
-    cp      ARGSTK                
+    cp      ARGSTK
     jr      z,.call_args          ; If not ARGS
     dec     hl                    ;   Back up pointer
     ret     z                     ;   and Jump to user code
-    
+
 .call_args
     call    .get_arg              ; Stack = ArgHL, CalAdr, RtnAdr
     jr      nz,.arg_hl
@@ -37,11 +37,11 @@ ST_CALL:
 .arg_af:
     pop     de                    ; DE = ArgAF; Stack = ArgAF, ArgHL, ArgHL, CalAdr, RtnAdr
     ld      a,e                   ; A = ArgA
-.arg_bc:                                        
+.arg_bc:
     pop     bc                    ; BC = ArgBC; Stack = ArgDE, ArgHL, CalAdr, RtnAdr
-.arg_de:                                        
+.arg_de:
     pop     de                    ; DE = ArgDE; Stack = ArgHL, CalAdr, RtnAdr
-.arg_hl                              
+.arg_hl
     exx
     pop     hl                    ; HL' = ArgHL; Stack = CalAdr, RtnAdr
     pop     ix                    ; IX = CalAdr; Stack = RtnAdr
@@ -60,7 +60,7 @@ ST_CALL:
     ld      a,(hl)
     cp      ','                   ; Check for comma
     jp      (ix)                  ; and Return
-    
+
 
 ;-----------------------------------------------------------------------------
 ; HEX$() function
@@ -104,7 +104,7 @@ HEX_STRING:
     pop     af              ; A=Arg Length, Stack=Arg Text Address
     pop     hl              ; HL=Arg Text Address
     ex      de,hl           ; DE=Arg Text Address, HL=Result Text Address
-    ld      b,a             ; Loop through Arg String Text 
+    ld      b,a             ; Loop through Arg String Text
 .hexloop:
     ld      a,(de)          ; Get Arg String Character
     inc     de              ; and Bump Pointer
@@ -175,9 +175,9 @@ FN_IN:
     pop     bc                    ; BC = IOPort; Stack = TxtPtr, RtnAdr
     push    hl                    ; Stack = StrDsc, TxtPtr, RtnAdr
     ld      l,a                   ; L = SrtLen
-.loop    
+.loop
     in      a,(c)
-    ld      (de),a                
+    ld      (de),a
     inc     de
     dec     l
     jr      nz,.loop
@@ -187,7 +187,7 @@ FN_IN:
 .extended
     rst     CHRGET                ; Skip XTOKEN
     sub     KEYTK                 ; $86 KEY
-    jp      z,FN_INKEY            ; 
+    jp      z,FN_INKEY            ;
     dec     a                     ; $87 DEX
     jp      z,FN_INDEX
     sub     STRTK-DEXTK           ; $9C STR
@@ -203,48 +203,50 @@ FN_IN:
 ;          - 1 will read left joystick only
 ;          - 2 will read right joystick only
 ;
-; |        | Data bus |  Binary  | Hex  | Decimal |    
-; | Switch | grounded | 76543210 | code |  code   |          
-; | ------ | -------- | -------- |      | ------- |    
-; |  K1    |  D6      | .1...... |  BF  |   191   |    
-; |  K2    |  D7,2    | 1.....1. |  7B  |   123   |    +------------------------+
-; |  K3    |  D7,5    | 1..1.... |  5F  |    95   |    |                        |
-; |  K4    |  D5      | ..1..... |  DF  |   223   |    |    [K1]  [K2]  [K3]    |
-; |  K5    |  D7,1    | 1.....1. |  7D  |   125   |    |                        | 
-; |  K6    |  D7,0    | 1......1 |  7E  |   126   |    |    [K4]  [K5]  [K6]    |                      
-; |  P1    |  D1      | ......1. |  FD  |   253   |    |                        |                      
-; |  P2    |  D1,4    | ...1..1. |  ED  |   237   |    |                        |        
-; |  P3    |  D1,0,4  | ...1..11 |  EC  |   236   |    |      P12 P13 P14       |     
-; |  P4    |  D1,0    | ......11 |  FC  |   252   |    |   P11      |     P15   |  
-; |  P5    |  D0      | .......1 |  FE  |   254   |    |       \    |   /       |     
-; |  P6    |  D0,4    | ...1...1 |  EE  |   238   |    |   P10  \   |  /  P16   |  
-; |  P7    |  D3,0,4  | ...11..1 |  E6  |   230   |    |         \  | /         |       
-; |  P8    |  D3,0    | ....1..1 |  F6  |   246   |    |   P9 ------*------ P1  |      
-; |  P9    |  D3      | ....1... |  F7  |   247   |    |          / |  \        |      
-; |  P10   |  D3,4    | ...11... |  E7  |   231   |    |    P8   /  |   \  P2   |      
-; |  P11   |  D3,2,4  | ...111.. |  E3  |   227   |    |        /   |    \      |
-; |  P12   |  D3,2    | ....11.. |  F3  |   243   |    |     P7     |      P3   |      
-; |  P13   |  D2      | .....1.. |  FB  |   251   |    |        P6  P5  P4      |                       
-; |  P14   |  D2,4    | ...1.1.. |  EB  |   235   |    |                        |                       
-; |  P15   |  D1,2,4  | ...1.11. |  E9  |   233   |    +------------------------+                       
-; |  P16   |  D1,2    | .....11. |  F9  |   249   |                           
-
-
-
+; |        | Data bus |  Binary  | Hex  | Decimal | JOY  |  JOY()  |
+; | Switch | grounded | 76543210 | code |  code   | Hex  | Decimal |
+; | ------ | -------- | -------- | ---- | ------- | ---- | ------- |
+; |  K1    |  D6      | .1...... |  BF  |   191   |  40  |    64   |
+; |  K2    |  D7,2    | 1.....1. |  7B  |   123   |  84  |   132   |    +------------------------+   +-----------------------+
+; |  K3    |  D7,5    | 1..1.... |  5F  |    95   |  A0  |   160   |    |                        |   |                       |
+; |  K4    |  D5      | ..1..... |  DF  |   223   |  20  |    32   |    |    [K1]  [K2]  [K3]    |   |  [ 64]  [132]  [160]  |
+; |  K5    |  D7,1    | 1.....1. |  7D  |   125   |  82  |   130   |    |                        |   |                       |
+; |  K6    |  D7,0    | 1......1 |  7E  |   126   |  81  |   129   |    |    [K4]  [K5]  [K6]    |   |  [ 32]  [130]  [129]  |
+; |  P1    |  D1      | ......1. |  FD  |   253   |  02  |     2   |    |                        |   |                       |
+; |  P2    |  D1,4    | ...1..1. |  ED  |   237   |  12  |    18   |    |                        |   |                       |
+; |  P3    |  D1,0,4  | ...1..11 |  EC  |   236   |  13  |    19   |    |      P12 P13 P14       |   |       12  4  20       |
+; |  P4    |  D1,0    | ......11 |  FC  |   252   |  03  |     3   |    |   P11      |     P15   |   |    28     |     22    |
+; |  P5    |  D0      | .......1 |  FE  |   254   |  01  |     1   |    |       \    |   /       |   |       \   |   /       |
+; |  P6    |  D0,4    | ...1...1 |  EE  |   238   |  11  |    17   |    |   P10  \   |  /  P16   |   |  24    \  |  /    6   |
+; |  P7    |  D3,0,4  | ...11..1 |  E6  |   230   |  19  |    25   |    |         \  | /         |   |         \ | /         |
+; |  P8    |  D3,0    | ....1..1 |  F6  |   246   |  09  |     9   |    |   P9 ------*------ P1  |   |  8 -------*------- 2  |
+; |  P9    |  D3      | ....1... |  F7  |   247   |  08  |     8   |    |          / |  \        |   |         / | \         |
+; |  P10   |  D3,4    | ...11... |  E7  |   231   |  18  |    24   |    |    P8   /  |   \  P2   |   |   9    /  |  \   18   |
+; |  P11   |  D3,2,4  | ...111.. |  E3  |   227   |  1C  |    28   |    |        /   |    \      |   |       /   |   \       |
+; |  P12   |  D3,2    | ....11.. |  F3  |   243   |  0C  |    12   |    |     P7     |      P3   |   |     25    |    19     |
+; |  P13   |  D2      | .....1.. |  FB  |   251   |  04  |     4   |    |        P6  P5  P4      |   |       17  1  3        |
+; |  P14   |  D2,4    | ...1.1.. |  EB  |   235   |  14  |    20   |    |                        |   |                       |
+; |  P15   |  D1,2,4  | ...1.11. |  E9  |   233   |  16  |    22   |    +------------------------+   +-----------------------+
+; |  P16   |  D1,2    | .....11. |  F9  |   249   |  06  |     6   |
 ;-----------------------------------------------------------------------------
 FN_JOY:
-    rst     CHRGET            ; Skip Token and Eat Spaces
+    rst     CHRGET                ; Skip Token and Eat Spaces
+    cp      '$'                   
+    push    af                    ; Stack = FnSfx, RtnAdr
+    call    z,CHRGTR              ; If JOY$, skip $
     call    PARCHK
-    push    hl
+    pop     af                    ; A = FnSfx; Stack = RtnAdr
+    push    hl                    ; Stack = TxtPtr, RtnAdr
     ld      bc,LABBCK
-    push    bc
-    call    FRCINT         ; FRCINT - evalute formula pointed by HL result in DE
-
-    ld      a, e  
+    push    bc                    ; Stack = LABBCK, TxtPtr, RtnAdr
+    push    af                    ; Stack = FnSfx, LABBCK, TxtPtr, RtnAdr
+    call    CONINT                ; E = FnParm
+    pop     af                    ; A = FnSfx; Stack = LABBCK, TxtPtr, RtnAdr
+    ld      a, e                  ; A = FnParm
+    jr      z,_joy_string
     or      a
     jr      nz, .joy01
     ld      a, $03
-
 .joy01:
     ld      e, a
     ld      bc, $00F7
@@ -255,13 +257,11 @@ FN_JOY:
     out     (c), a
     dec     c
     ld      b, $FF
-
 .joy02:
     in      a,(c)
     djnz    .joy02
     cp      $FF
     jr      nz, .joy05
-
 .joy03:
     bit     1,e
     jr      z, .joy05
@@ -270,15 +270,54 @@ FN_JOY:
     out     (c), a
     dec     c
     ld      b, $FF
-
 .joy04:
     in      a, (c)
     djnz    .joy04
-
 .joy05:
     cpl
     jp      SNGFLT
 
+;-----------------------------------------------------------------------------
+; JOY$(stick) function
+; stick = controller index
+; Returns: 8 byte string
+;    1  ( Signed )  Left stick X 
+;    2  ( Signed )  Left stick Y 
+;    3  ( Signed )  Right stick X
+;    4  ( Signed )  Right stick Y
+;    5  (Unsigned)  Left trigger 
+;    6  (Unsigned)  Right trigger
+;    7  Bit 0  A
+;           1  B
+;           2  X
+;           3  Y
+;           4  View
+;           5  Guide (Xbox button)
+;           6  Menu
+;           7  LS (Button in left stick)
+;    8      0  RS (Button in right stick)
+;           1  LB (Left shoulder button)
+;           2  RB (Right shoulder button)
+;           3  D-pad up
+;           4  D-pad down
+;           5  D-pad left
+;           6  D-pad right
+;           7  Share (Xbox Series S/X controller only)
+;-----------------------------------------------------------------------------
+_joy_string:
+    push    af                    ; Stack = CtlIdx, LABBCK, TxtPtr, RtnAdr
+    ld      a,8                   ; A = BufLen
+    call    STRINI                ; HL = StrDsc, DE = StrAdr
+    pop     af                    ; C = CtlIdx
+    ld      iy,espx_get_gamectrl
+    call    aux_call              ; Read game controller status into buffer
+;    jp      m,dos_error           ; If result < 0, generate DOS Error
+    jp      p,FINBCK              ; Pop LABBCK and do PUTNEW
+    xor     a
+    ld      (FACLO),a             ; Return null string
+    pop     hl                    ; Stack = TxtPtr, RtnAdr
+    jp      NULRT
+    
 ;-----------------------------------------------------------------------------
 ; LOCATE statement
 ; Syntax: LOCATE col, row
@@ -312,27 +351,41 @@ ST_LOCATE:
 ; OUT statement
 ; syntax: OUT port, data
 ;-----------------------------------------------------------------------------
+; ToDo: Enable port restrictions after adding COPY SCREEN CHR/ATTR and updating aqunit/ss.bas
 ST_OUT:
     call    GETINT              ; Convert number to 16 bit integer (result in DE)
+; Restrict writing to dangerous ports
+    jr      .okay
+    ld      a,e                 ; A = Port
+    cp      IO_VCTRL             
+    jr      c,.okay             ; A < VCTRL, Okay
+    jp      z,FCERR             ; A = VCTRL, Error
+    cp      IO_IRQMASK          
+    jr      c,.okay
+    cp      IO_ESPCTRL
+    jp      c,FCERR
+    cp      IO_SYSCTRL      
+    jp      z,FCERR
+.okay
     push    de                  ; Stored to be used in BC
     SYNCHK  ","                 ; Require comma
 .dloop
     call    FRMEVL              ; Parse data portion
-    call    GETYPE              
+    call    GETYPE
     jr      z,.string           ; If number
     call    CONINT              ;   Convert to byte
     pop     bc                  ;   BC = IOPort
     out     (c), a              ;   Write byte to port
     jr      .next               ; Else
-.string    
+.string
     ex      (sp),hl             ;   HL = IOPort; Stack = TxtPtr
-    push    hl                  ;   Stack = IOPort, TxtPtr            
+    push    hl                  ;   Stack = IOPort, TxtPtr
     call    free_addr_len       ;   DE = StrAdr, BC = StrLen
     ld      h,b
     ld      l,c                 ;   HL = StrLen
     pop     bc                  ;   BC = IOPort
     jr      z,.pophl            ;   If not ""
-.sloop    
+.sloop
     ld      a,(de)              ;     A = StrChr
     out     (c),a               ;     Write to IOPort
     inc     de                  ;     Bump StrPtr

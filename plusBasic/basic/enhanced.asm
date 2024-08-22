@@ -25,13 +25,18 @@ ABORT_FN:
 
 ;-----------------------------------------------------------------------------
 ; Enhanced COPY
-; syntax: COPY @page TO @page
-;         COPY [@page,] source, length TO [@page,] destination [FAST]
+; COPY @page TO @page
+; COPY [@page,] source, length TO [@page,] destination [FAST]
+; COPY FILE filespec TO filespec
 ;-----------------------------------------------------------------------------
+; ToDo: COPY SCREEN TO @page,address
+;       COPY @page,address TO SCREEN
 ST_COPY:
     jp      z,COPY                ; No Parameters? Do Standard COPY
     cp      FILETK                
     jp      z,ST_COPY_FILE
+    cp      SCRNTK                
+    jp      z,ST_COPY_SCREEN
     call    get_page_arg          ; Check for Page Arg
     push    af                    ; Stack = SrcPgFlg
     jr      nc,.no_fpg            ; If specified
@@ -132,6 +137,88 @@ ST_COPY:
     jp      z,FCERR         ; Error if invalid page
     ret
 
+;-----------------------------------------------------------------------------
+; Enhanced FRE
+;FRE ( -1 ) Returns the number of bytes in memory not being used by BASlC as unsigned int.
+;FRE ( 0 ) Returns the number of bytes in memory not being used by BASlC as signed int.
+;FRE ( 1 ) Returns the total size of string space (as set by the first argument of CLEAR).
+;FRE ( 2 ) Returns the top of BASIC memory (as set by the second argument of CLEAR).
+;FRE ( "" ) Garbage collect and return free string space
+;-----------------------------------------------------------------------------
+FN_FRE:
+    rst     CHRGET
+    call    PARCHK
+    call    push_hl_labbck
+    call    GETYPE          ; If FRE(string)
+    jp      z,FRE_STR       ;   Garbage Collect and Return Free String Space 
+    rst     FSIGN           ; If argument < 0, A = -1
+    call    p,CONINT        ; Else A = argument
+    ld      hl,(STREND)     ; 
+    ex      de,hl           ; DE = End of Variables/Arrays
+    ld      hl,0            ; 
+    add     hl,sp           ; HL = Stack Pointer
+    inc     a               ; If FRE(01)
+    jp      z,FLOAT_DIFF    ;   Return Free Space as unsigned int
+    dec     a               ; If FRE(0)
+    jp      z,GIVFLT        ;   Return Free Space as signed int
+    ld      hl,(MEMSIZ)     ; 
+    ld      de,(STRSPC)     ;
+    dec     a               ; If FRE(1)
+    jp      z,FLOAT_DIFF    ;   Return Total String Space
+    ex      de,hl           ; 
+    dec     a               ; If FRE(2)
+    jr      z,_float_de     ;   Return Top of BASIC Memory
+    jp      FCERR           ; Else FC Error
+FRE_STR:
+    call    FREFAC          ; Free up string argumenr
+    call    GARBA2          ; Do garbage collection
+    ld      de,(STRSPC)     ; DE = Bottom of String Space
+    ld      hl,(FRETOP)     ; HL = Start of allocated strings
+FLOAT_DIFF:                 ; Return HL minus DE has a positive floating point number
+    ld      a,l             ; E = L - E
+    sub     e               ;
+    ld      e,a             ;
+    ld      a,h             ;
+    sbc     a,d             ; D = H - E - carry
+    ld      d,a
+_float_de:
+    jp      FLOAT_DE        ; Float It
+
+;-----------------------------------------------------------------------------
+; Enhanced INPUT
+; syntax: INPUT (col,row),minlen,maxlen,INT var
+;-----------------------------------------------------------------------------
+; 10 INPUT (20,15),1,3,INT I
+ST_INPUT:
+    cp      '('                   ; If not INPUT (...
+    jp      nz,INPUT              ;   Do regular INPUT
+    call    SCAND                 ; C = Col, E = Row
+    ld      d,c                   ; D = Col
+    push    de                    ; Stack = ColRow, RtnAdr
+    call    get_comma_byte        ; A = MinLen
+    push    af                    ; Stack = MinLen, ColRow, RtnAdr
+    call    get_comma_byte        ; E = MaxLen
+    pop     af                    ; A = MinLen; Stack = ColRow, RtnAdr
+    ld      d,a                   ; D = MinLen
+    push    de                    ; Stack = MinMax, ColRow, RtnAdr
+    call    get_comma             ; Missing operand error if no comma
+    rst     SYNCHR
+    byte    INTTK                 ; Require INT (for now)
+    call    PTRGET                ; DE = VarPtr
+    pop     bc                    ; BC = MinMax; Stack = ColRow, RtnAdr
+    ex      (sp),hl               ; HL = ColRow; Stack = TxtPtr, RtnAdr
+    ex      de,hl                 ; DE = ColRow; HL = VarPtr
+    push    hl                    ; Stack = VarPtr, TxtPtr, RtnAdr
+    call    GETYPE                ; A = VarTyp
+    jp      z,TMERR               ; If string, Type mismatch error (for now)
+    call    con_input_int
+    jp      c,FCERR               ; If bad parameters, Illegal quantity error
+    jp      m,WRMCON              ; If Ctrl-C, abort
+    call    FIN                   ; FACC = Entry
+    pop     hl                    ; HL = VarPtr
+    call    MOVMF                 ; Copy FACC to Variable
+    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
+    ret
     
 ;-----------------------------------------------------------------------------
 ; Enhanced POKE
@@ -207,12 +294,14 @@ ST_POKE:
     jr      z,.screenstring       ; If Poking byte
     call    CONINT                ;   A = Byte
     pop     de                    ;   DE = AdrOfs; Stack = TxtPtr, RtnAdr
-    call    screen_write_byte     ;   Write byte
+    ld      iy,screen_write_byte  ;   Write byte
+    call    aux_call
     jr      .screen_done          ; Else
 .screenstring
     call    FRESTR                ;   Free Temporary
     pop     de                    ;   DE = AdrOfs; Stack = TxtPtr, RtnAdr
-    call    screen_write_string   ;   Write wtring
+    ld      iy,screen_write_string
+    call    aux_call              ;   Write wtring
 .screen_done
     jp      c,FCERR               ; Error if Offset too large
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr 
@@ -231,12 +320,14 @@ ST_POKE:
     jr      z,.colorstring        ; If Poking byte
     call    CONINT                ;   A = Byte
     pop     de                    ;   DE = AdrOfs; Stack = TxtPtr, RtnAdr
-    call    color_write_byte      ;   Write byte
+    ld      iy,color_write_byte   ;   Write byte
+    call    aux_call
     jr      .color_done           ; Else
 .colorstring
     call    FRESTR                ;   Free Temporary
     pop     de                    ;   DE = AdrOfs; Stack = TxtPtr, RtnAdr
-    call    color_write_string    ;   Write wtring
+    ld      iy,color_write_string ;   Write wtring
+    call    aux_call
 .color_done
     jp      c,FCERR               ; Error if Offset too large
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr 
@@ -389,10 +480,12 @@ FN_PEEK:
     pop     af                    ; AF = PkRAM, Stack = RtnAdr
     push    hl                    ; Stack = TxtPtr, RtnAdr
     jr      z,.color
-    call    screen_read_byte
+    ld      iy,screen_read_byte
+    call    aux_call
     jr      .done_screen_color    
 .color
-    call    oolor_read_byte
+    ld      iy,oolor_read_byte
+    call    aux_call
 .done_screen_color
     jp      c,FCERR
     ld      bc,LABBCK             ; 
@@ -417,10 +510,12 @@ FN_PEEK:
     pop     bc                    ; BC = PkLen; Stack = TxtPtr, RtnAdr
     ex      af,af'                ; AF = PkRAM
     jr      z,.colorstring
-    call    screen_read_string    ; Read string
+    ld      iy,screen_read_string ; Read string
+    call    aux_call
     jr      .done_screen_string
 .colorstring
-    call    color_read_string
+    ld      iy,color_read_string
+    call    aux_call
 .done_screen_string
     jp      c,FCERR
     jp      PUTNEW                ; and return it
@@ -533,7 +628,7 @@ FN_STRS:
     rst    CHRGET                 ;   Skip BYTE/WORD
 .nocomma
     SYNCHK  ')'                   ; Require ')'
-    push    hl                    ; Stack = TxtPtr, Rtn
+    push    hl                    ; Stack = TxtPtr, RtnAdr
     sra     b
     rr      c                     ; BC = BC / 2
     sra     b

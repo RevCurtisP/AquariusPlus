@@ -13,7 +13,7 @@ import struct
 import sys
 
 parser = argparse.ArgumentParser(
-    description="Convert Aquarius BASIC .BAS file to text file"
+    description="Convert raw 8-bit RGB file to Aquarius+ Tiles and Tile Map"
 )
 parser.add_argument("input", help="RGB Input file (without .rgb extension")
 

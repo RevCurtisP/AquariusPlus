@@ -118,38 +118,50 @@ ST_STOP_PT3:
 
 ;-----------------------------------------------------------------------------
 ; PT3STATUS and PT3LOOP Functions
-; Returns -1 if PT3 is playing/looped
+; Returns -1 if PT3 is playing/looped/fast
 ;-----------------------------------------------------------------------------
 FN_PT3:
     rst     CHRGET                ; Skip PT3
-    call    pt3_status            ; B = Active, C = Looped
+    call    pt3_status            ; B = Active, C = Looped, E = Fast
     rst     SYNCHR
     byte    XTOKEN
-    cp      STATK                 
-    jr      nz,.loop              ; If STATUS
-    rst     CHRGET                ;   Skip it
-    ld      a,b                   ;   A = Active
-    jr      .retstat              ; Else
-.loop
-    rst     CHRGET                ;   Skip LOOP
-    ld      a,c                   ;   A = Looped
+    call    push_hlinc_labbck
+    cp      FASTK
+    ld      l,e
+    jr      z,.retstat
+    cp      LOOPTK
+    ld      l,c
+    jr      z,.retstat
+    cp      STATK
+    ld      l,b
+    jp      nz,SNERR
 .retstat
-    push    hl
-    ld      bc,LABBCK
-    push    bc
+    ld      a,l
     jp      float_signed_byte
+
 
 ;-----------------------------------------------------------------------------
 ; SET PT3 LOOP ON/OFF
 ;-----------------------------------------------------------------------------
 ; SET PT3 LOOP ON: PRINT PT3LOOP
 ; SET PT3 LOOP OFF: PRINT PT3LOOP
+; SET PT3 FAST ON: PRINT PT3FAST
+; SET PT3 FAST OFF: PRINT PT3FAST
 ST_SET_PT3:
     rst     CHRGET                ; Skip PT3
     rst     SYNCHR
     byte    XTOKEN
-    rst     SYNCHR                ; Require LOOP
-    byte    LOOPTK                
-    call    check_on_off          ; A = $FF if ON, 0 if OFF
-    jp      pt3_loop
+    ld      ix,pt3_setmode
+    cp      FASTK
+    jr      z,.set
+    ld      ix,pt3_loop
+    cp      LOOPTK                
+    jp      nz,SNERR
+.set
+    call    get_on_off          ; A = $FF if ON, 0 if OFF
+    ld      e,a                 ; For pt3_setmode
+    push    hl
+    call    jump_ix
+    pop     hl
+    ret
     

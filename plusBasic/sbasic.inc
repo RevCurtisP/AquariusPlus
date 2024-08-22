@@ -1,4 +1,4 @@
-;-----------------------------------------------------------------------------
+  ;-----------------------------------------------------------------------------
 ; sbasic.inc
 ;
 ; This file contains locations of SBASIC3 systen variables and ROM calls
@@ -192,6 +192,7 @@ LETEQ       equ $0734   ; Continue LET at '='
 LETDO       equ $0736   ; Execute LET, bypassing PTRGET and SYNCHK '='
 INBUFC      equ $0768   ; Copy temporary string to string variable
 NTOERR      equ $0782   ; Execute ON ... GOTO
+INPUT       equ $0893   ; Execute INPUT
 READC       equ $08C2   ; Continue READ after hook call
 FRMNUM:     equ $0972   ; Evaluate numeric expression
 CHKNUM:     equ $0975   ; Error if evaluated expression not a number
@@ -207,6 +208,7 @@ PARCHK:     equ $0A37   ; Evaluate expression in` brackets
 LABBCK:     equ $0A49   ; Return numeric value from function
 ISVAR       equ $0A4E   ; Get variable value or string pointer
 RETVAR      equ $0A51   ; Put value of variable pointed to by DE in FACLO
+GIVFLT      equ $0B1C   ; Float HL - DE   
 GIVINT      equ $0B21   ; Float Integer MSB=[A], LSB=[C]
 FLOATD      equ $0B23   ; Float Integer MSB=[A], LSB=[D]
 SNGFLT:     equ $0B36   ; Store variable 8 bit (out: B = value)
@@ -218,6 +220,7 @@ OMERR:      equ $0BB7   ; Out of memory error
 SCRTCH:     equ $0BBE   ; Execute NEW command
 RUNC:       equ $0BCB   ; Do the RUN
 CLEARC:     equ $0BCF   ; Clear variable and array space, then initialize stack
+CLEARV      equ $0BDF   ; Continue CLEAR after call to RESTOR
 STKINI:     equ $0BE5   ; Initialize stack
 ;FRMINT         $0B7F   ; Use GETINT instead. This routine has an unnecessary PUSH/POP HL
 RESTOR      equ $0C05   ; RESTORE statement
@@ -269,6 +272,7 @@ ISSEC       equ $10E9   ; Continue PTRGET at skip non-letter
 NOSEC       equ $10F2   ; Continue PTRGET at check for '$'
 SKIPDS      equ $10FD   ; Continue PTRGET at skip of '$'
 BSERR       equ $11CD   ; Bad subscript error
+FSUBS       equ $1258   ; Subtract: FACC = (HL) - FACCs
 FSUB        equ $125E   ; Subtract: FACC = BCDE - FACC
 FADD        equ $1261   ; Add: FACC = BCDE + FACC
 FONE        equ $135F   ; Floating point constant 1
@@ -277,6 +281,7 @@ POPHRT      equ $141A   ; Pop HL and return
 FDIV        equ $142F   ; Divide: FACC = BCDE / FACC
 FLOAT       equ $14F6   ; Float signed number in A
 FLOATR      equ $14FB   ; Float signed number in B,A,D,E
+NEG         equ $150B   ; Negate number in FACC
 MOVFM       equ $1520   ; MOVE NUMBER FROM MEMORY [(HL)] TO FAC
 MOVFR       equ $1523   ; Move B,C,D,E to FACC
 MOVMF       equ $153A   ; MOVE NUMBER FROM FAC TO MEMORY [(HL)]
@@ -290,7 +295,11 @@ FIN0        equ $15EE   ; Parse floating point number wihout leading + or -
 LINPRT      equ $1675   ; Print Two Byte Number in HL as Decimal - Alters all Registers
 INT2STR:    equ $1679   ; Convert 16 bit integer in HL to text at FPSTR (starts with ' ')
 FOUT        equ $1680   ; Convert float in FAC to text
+PSHNEG      equ $1770   ; Push address of NEG routine on stack
+POLYX       equ $1837   ; Polynomial evaluator
+PI2         equ $1953   ; Constant: PI / 2
 OUTDO       equ $198A   ; Output a Character
+OUTCON      equ $198C   ; Output a Character, bypassing hook
 CRDO:       equ $19EA   ; Print CR+LF
 BUFCIN      equ $1A02   ; Return A as string from function 
 NULRT       equ $1A0B   ; Return null string
@@ -392,4 +401,33 @@ HOOK26      = $0894
 HOOK27      = $0A60
 HOOK28      = $08F1
 HOOK29      = $09A3
+
+;-----------------------------------------------------------------------------
+; plusBASIC RAM Memory Map
+;  12288 =============================         
+;                Screen RAM
+;  14336 =============================         
+;             System Variables
+; TXTTAB =============================         
+;              BASIC Program
+; VARTAB -----------------------------
+;             Simple Variables
+; ARYTAB -----------------------------
+;             Array Variables 
+; STREND -----------------------------
+;             Unused BASIC RAM  
+; STKSAV -----------------------------
+;                  Stack                       
+; TOPMEM =============================
+;           Enhanced Input Buffer
+;        -----------------------------
+;           String Building Buffer
+; STRSPC =============================         
+;            String Space in use
+; FRETOP -----------------------------    Set by first operand of CLEAR
+;            Unused String Space
+; MEMSIZ =============================    Set by second operand of CLEAR
+;          RAM Reserved using CLEAR
+;  49152 =============================
+;-----------------------------------------------------------------------------
 

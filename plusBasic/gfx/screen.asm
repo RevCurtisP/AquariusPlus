@@ -2,6 +2,52 @@
 ; Text Screen Assembly Routines
 ;=============================================================================
 
+;-----------------------------------------------------------------------------
+; Copy Current Screen to Paged RAM
+; Input: A: Page
+;        DE: Address
+; Clobbered: A,AF',BC,DE,HL
+;-----------------------------------------------------------------------------
+screen_read_paged:
+    ex      de,hl
+    ld      iy,_read_screen_paged
+    jr      _read_write_screen
+screen_write_paged:
+    ld      iy,_write_screen_paged
+_read_write_screen
+    ex      af,af'                ; A' = Page
+    in      a,(IO_VCTRL)          
+    and     VCRTL_80COL_EN        ; If 40-colomn mode
+    jp      z,jump_iy             ;   Write it and Return
+    ex      af,af'                ; A = Page
+    call    set_textpage_0
+    ex      af,af'
+    call    jump_iy               ; Write Screen RAM
+    jr      z,set_textpage_0
+    jr      c,set_textpage_0
+    ex      af,af'                ; A' = Page
+    in      a,(IO_VCTRL)          
+    or      VCTRL_TEXT_PAGE
+    out     (IO_VCTRL),a          ; Switch to text page 1
+    call    jump_iy               ; Write Color RAM
+set_textpage_0:
+    ex      af,af'
+    in      a,(IO_VCTRL)          
+    and     $FF-VCTRL_TEXT_PAGE
+    out     (IO_VCTRL),a          ; Switch to text page 0
+    ex      af,af'
+    ret
+_write_screen_paged
+    ex      af,af'                
+    ld      hl,SCREEN
+    ld      bc,2048
+    jp      page_write_bytes
+_read_screen_paged
+    ex      af,af'                
+    ld      de,SCREEN
+    ld      bc,2048
+    jp      page_read_bytes
+
 
 
 ;-----------------------------------------------------------------------------

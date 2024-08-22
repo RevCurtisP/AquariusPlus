@@ -17,9 +17,10 @@ SongData  = BaseAddr+$A00
       jp      PlayQuark         ;
       jp      CHECKLP
       jp      MUTE
+      jp      SetMode           
+      jp      GetMode
 
 StartPlayer:
-      ld      (CountDn),a       ; $FF = 60Hz, 0 = 50Hz
       LD      HL,SongData
       CALL    PT3_PLAY
       or      a                 ; Return Zero set
@@ -30,20 +31,36 @@ StartPlayer:
 PlayQuark:
       ld      a,(CountDn)
       or      a
-      jp      m,.play
-      jr      nz,.decrement
+      jp      m,_play
+      jr      nz,_decrement
       ld      a,6
-.decrement
+      ld      (CountDn),a
+      ret
+_decrement
       dec     a
       ld      (CountDn),a
-.play
+_play
       LD      HL,SongData
       CALL    PLAY        
       ld      hl,SETUP
       bit     7,(hl)            ; quit if end of song
       ret
-      jr      nz,StartPlayer
-      RET
+
+; Input: E: 0 - 50 Hz, $FF, 60 Hz
+; Clobbers: A
+SetMode:
+      ld      a,e 
+      ld      (CountDn),a
+      ret
+
+GetMode:
+      ld      e,0
+      ld      a,(CountDn)
+      or      a
+      ret     p
+      dec     e
+      ret
+
 
 include  "macros.i"   ; structure macros
 include   PTPlayer.asm

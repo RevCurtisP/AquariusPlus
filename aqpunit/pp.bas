@@ -1,10 +1,7 @@
-
 100 REM POKE and PEEK Unit Tests
-110 QU=0:REM 0=Screen,1=Printer
-120 SET FAST ON
-130 SCREEN 3:GOSUB _init
-133 SET FNKEY 3 TO \"RUN /au/pp.baq\r"
-134 SET FNKEY 4 TO \"goto _dump\r"
+110 GOSUB _init
+123 SET FNKEY 3 TO \"RUN pp.baq\r"
+124 SET FNKEY 4 TO \"RUN sb.baq\r"
 
 200 GOSUB _title:ARGS "POKE & PEEK"
 210 FOR I=1 TO 3:A=$3000+I:GOSUB _poke:ARGS A,I:NEXT
@@ -22,7 +19,7 @@
 250 GOSUB _title:ARGS "POKE & PEEK string"
 252 GOSUB _output:ARGS LIST$(NEXT)
 253 POKE $3026,'!':POKE $3020,"String"
-254 GOSUB _assert:ARGS "PEEK$($3020)=`String`"
+254 GOSUB _assert:ARGS "PEEK$($3020,6)=`String`"
 255 GOSUB _assert:ARGS "PEEK($3026)='!'"
 256 GOSUB _output:ARGS LIST$(NEXT)
 257 POKE $3026,""

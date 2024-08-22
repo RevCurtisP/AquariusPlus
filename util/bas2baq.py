@@ -244,12 +244,15 @@ xtokens = {
     0xA6: "CAQ",
     0xA7: "MEM",
     0xA8: "JOIN",
-    0xA9: "WAIT"
+    0xA9: "WAIT",
+    0xAA: "CUR",
+    0xAB: "HEX",
+    0xAC: "BIN"
 }
 
 def error(idx, message):
     print(f"{input_name}:{idx+1} {message}", file=sys.stderr)
-    exit(1)
+    sys.exit(128)
 
 
 # Write header

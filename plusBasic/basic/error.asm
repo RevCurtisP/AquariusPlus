@@ -34,7 +34,8 @@ ERRUD   equ     $34   ; 27 Undimensioned array
 ERRTO   equ     $36   ; 28 Too many operands
 ERRIM   equ     $38   ; 29 Invalid mode
 ERRBR   equ     $3A   ; 30 Bad range
-NONDSK  equ     $3C   ; 31 Last non disk error
+ERRES   equ     $3C   ; 31 Empty string
+NONDSK  equ     $3E   ; 32 Last non disk error
 ; Disk errors
 DSKERRS equ     $60   ; Start of Disk Errors
 ERRBDF  equ     $60   ; 49 Bad File
@@ -44,7 +45,7 @@ ERRIPR  equ     $66   ; 52 Invalid parameter
 ERRRPE  equ     $68   ; 53 End of file / directory            
 ERRFAE  equ     $6A   ; 54 File already exists                
 ERRIOE  equ     $6C   ; 55 Other error                        
-ERRNOD  equ     $7E   ; 56 No disk                            
+ERRNOD  equ     $6E   ; 56 No disk                            
 ERRNEM  equ     $70   ; 57 Not empty                          
 LSTERR  equ     $72   ; 58 Last error used for range checks
 
@@ -68,21 +69,30 @@ force_error:
 ;  Error Message Lookup Routines`
 ; ------------------------------------------------------------------------------
 get_errno_ptr:
+    or      a
+    jr      z,ret_null
     dec     a                     ; Convert to Error# to offset
     sla     a     
     ld      e,a                   ; Put in E
 get_errcode_ptr:
     ld      a,e                   ; Get Error Table Offset into A
-    cp      DSKERRS                
-    jr      c,.not_dos
-    sub     DSKERRS-NONDSK
-.not_dos
-    cp      LSTERR                ; Compare to End of Table
-    jr      c,.load_ptr           ; If Past End of Table
-    ld      a,ERRUE               ;   Display "UE" - Unprintable Error
+    cp      NONDSK                ; If Offset < NONDSK
+    jr      c,.load_ptr           ;   Display it
+    cp      DSKERRS               ; Else if Offset < DSKERRS
+    jr      c,.ue_err             ;   Display Unprintable
+    cp      LSTERR                ; Else if Offser < LSTERR
+    jr      c,.dos_err            ;   Display DOS error
+.ue_err
+    ld      a,ERRUE               ; Display "UE" - Unprintable Error
+    byte    $01                   ; LD BC, over SUB
+.dos_err
+    sub     DSKERRS-NONDSK        ; Else Adjust
 .load_ptr
     ld      l,a                   ; Table Starts at page boundary
     ld      h,high(err_codes)     ; Put address in HL
+    ret
+ret_null:
+    ld      hl,REDDY-1
     ret
 
 get_errno_msg:
@@ -106,6 +116,7 @@ ERRTXT: byte    " error",0
 
 ; Long Error Descriptions
 err_messages:
+MSGNE:  byte    "",0                            
 MSGNF:  byte    "NEXT without FOR",0            ; 1
 MSGSN:  byte    "Syntax",0                      ; 2
 MSGRG:  byte    "RETURN without GOSUB",0        ; 3
@@ -138,7 +149,8 @@ MSGUD:  byte    "Undimensioned Array",0         ; 27
 MSGTO:  byte    "Too many operands",0           ; 28
 MSGIM:  byte    "Invalid mode",0                ; 29
 MSGBR:  byte    "Bad range",0                   ; 30
-        byte    0                               ; 31  Last non disk error                             
+MSGES:  byte    "Empty string",0                ; 31
+        byte    0                               ; 32  Last non disk error                             
 
 ; File System Errors                            ;     ESP32 Error
 doserr_messages:
@@ -148,7 +160,7 @@ MSGTMF: byte    "Too many files",0              ; 51  -2: Too many open files / 
 MSGIPR: byte    "Invalid parameter",0           ; 52  -3: Invalid parameter                
 MSGRPE: byte    "Input past end",0              ; 53  -4: End of file / directory            
 MSGFAE: byte    "File already exists",0         ; 54  -5: File already exists                
-MSGIOE: byte    "Disk I/O",0                    ; 55  -6: Other error                        
+MSGIOE: byte    "I/O",0                         ; 55  -6: Other error
 MSGNOD: byte    "No disk",0                     ; 56  -7: No disk                             
 MSGNEM: byte    "Not empty",0                   ; 57  -8: Not empty                           
         byte    0                               ; 58  Last error used for range checks

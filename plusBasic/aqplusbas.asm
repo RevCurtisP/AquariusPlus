@@ -113,7 +113,11 @@ read_cont:
     byte    45
     jp      FIN
 
-
+    rst     HOOKDO                ; $20A0 CLEARX - CLEARC extension 
+    byte    46
+clear_cont: 
+    ld      hl,(VARTAB)
+    jp      CLEARV
 
 just_ret:
     ret
@@ -121,7 +125,7 @@ just_ret:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.22x4"
+    db "v0.22y"
     db 0
 plus_len   equ   $ - plus_text
 
@@ -150,7 +154,7 @@ null_desc:
 
 ;-----------------------------------------------------------------------------
 ; Reset vector
-;
+; 
 ; CAUTION: stack isn't available at this point, so don't use any instruction
 ;          that uses the stack.
 ;-----------------------------------------------------------------------------5
@@ -245,6 +249,12 @@ irq_handler:
     push    bc                    ; Stack = BC, AF
     push    de                    ; Stack = DE, BC, AF
     push    hl                    ; Stack = HL, DE, BC, AF
+    exx
+    push    bc                    ; Stack = BC', 
+    push    de                    ; Stack = DE', BC'
+    push    hl                    ; Stack = HL', DE', BC'
+    push    ix
+    push    iy
 
     rra                           ; Carry = IRQ_TIMER
     call    c,_timer
@@ -255,6 +265,12 @@ irq_handler:
     ld      a,IRQ_VBLANK
     out     (IO_IRQSTAT),a
 
+    pop     iy
+    pop     ix
+    pop     hl                    
+    pop     de
+    pop     bc
+    exx
     pop     hl                    
     pop     de
     pop     bc
@@ -592,7 +608,7 @@ copy_char_ram:
     ld      a,CHAR_RAM
     ld      bc,2048
     ld      de,0
-    jp      page_fast_copy        ; Copy It
+    jp      page_fast_copy_sys    ; Copy It
 
 ;-----------------------------------------------------------------------------
 ; Cartridge start entry point - A hold scramble value
@@ -737,12 +753,12 @@ _inlin_done:
 ; Currently writtec to be executed via BASIC CALL for development
 ;-----------------------------------------------------------------------------
 _line_edit:
-    push    hl
-    call    get_linbuf_addr   ; HL = Line Buffer address
-    ld      c,0               ; C = ChrCnt
-    ld      iy,edit
-    call    aux_call          ; Edit the line
-    pop     hl
+;    push    hl
+;    call    get_linbuf_addr   ; HL = Line Buffer address
+;    ld      c,0               ; C = ChrCnt
+;    ld      iy,edit
+;    call    aux_call          ; Edit the line
+;    pop     hl
     ret
 
 ; bas_read_to_buff - Read String from ESP to BASIC String Buffer
@@ -944,7 +960,7 @@ sys_swap_mem:
 ; BASIC Hook Jump Table
 ; 58 Bytes
 hook_table:                     ; ## caller   addr  performing function
-    dw      trap_error          ;  0 ERROR    03DB  Initialize Stack, Display Error, and Stop Program
+    dw      _trap_error         ;  0 ERROR    03DB  Initialize Stack, Display Error, and Stop Program
     dw      force_error         ;  1 ERRCRD   03E0  Print Error Message
     dw      direct_mode         ;  2 READY    0402  BASIC command line (immediate mode)
     dw      HOOK3+1             ;  3 EDENT    0428  Save Tokenized Line
@@ -958,7 +974,7 @@ hook_table:                     ; ## caller   addr  performing function
     dw      clear_hook          ; 11 CLEAR    0CCD  Execute CLEAR Statement
     dw      new_hook            ; 12 SCRTCH   0BBE  Execute NEW Statement
     dw      outdo_hook          ; 13 OUTDO    198A  Execute OUTCHR
-    dw      HOOK14+1            ; 14 ATN      1985  ATN() function
+    dw      FN_ATN              ; 14 ATN      1985  ATN() function
     dw      HOOK15+1            ; 15 DEF      0B3B  DEF statement
     dw      FN_FN               ; 16 FNDOER   0B40  FNxx() call
     dw      HOOK17+1            ; 17 LPTOUT   1AE8  Print Character to Printer
@@ -990,6 +1006,7 @@ hook_table:                     ; ## caller   addr  performing function
     dw      dim_extension       ; 43 DIM      10CC  Extensions to the LET command
     dw      read_extension      ; 44 READ     08BE  Extensions to the LET command
     dw      fin_extension       ; 45 FINEXT   209B  Extensions to FIN routine
+    dw      clear_extension     ; 46 CLEARX   20A0  Extensions to FIN routine
 
 ; ------------------------------------------------------------------------------
 ;  Execute Hook Routine
@@ -1033,6 +1050,10 @@ _stuffh_ext:
     call    page_set_aux
     jp      s3_stuffh_ext
 
+_trap_error:
+    call    page_set_plus
+    jp      trap_error
+
 aux_call:
     call    page_map_auxrom
     call    jump_iy
@@ -1069,6 +1090,51 @@ _check_comment:
     rst     CHRGET                ; Skip '
     jp      REM                   ;   and do REM
 
+clear_extension:
+    call    esp_close_all         ; Close all files
+    xor     a
+    ld      (BAS_FDESC),a         ; Clear currently open file
+    jp      clear_cont
+
+;-----------------------------------------------------------------------------
+; Internal routines to write to BASIC buffers 
+;-----------------------------------------------------------------------------
+buffer_write_byte:
+    call    _buffer_write_init
+    ld      a,c
+    ld      (de),a                ; Write the byte
+    inc     de
+    jr      _buffer_write_done
+
+buffer_write_word:
+    call    _buffer_write_init
+    ld      a,c
+    ld      (de),a
+    inc     de
+    ld      a,b
+    ld      (de),a
+    inc     de
+    jr      _buffer_write_done
+
+buffer_write_bytes:
+    call    _buffer_write_init
+    ldir
+_buffer_write_done:
+    ex      af,af'                ; A = OldPg
+    out     (IO_BANK3),a          ; Map old Page
+    ret
+
+
+_buffer_write_init:
+    ex      af,af'                ; A' = WritePg
+    in      a,(IO_BANK3)          ; A' = OldPg
+    ex      af,af'                ; A = WritePg, A' = OldPg
+    out     (IO_BANK3),a          ; Map WritePg into Bank 3
+    ld      a,d                   ; Coerce Address
+    or      $C0                   
+    ld      d,a                   
+    ret
+
 ;-----------------------------------------------------------------------------
 ; Pad first 4k
 ;-----------------------------------------------------------------------------
@@ -1103,6 +1169,7 @@ _check_comment:
     include "baslines.asm"      ; (De)tokenize, add, insert, delete program lines
     include "coldboot.asm"      ; Cold boot code
     include "basbitmap.asm"     ; Bitmap drawing statements and functions
+    include "edit.asm"          ; Enhanced INPUT and line editor
     include "enhanced.asm"      ; Enhanced stardard BASIC statements and functions
     include "evalext.asm"       ; EVAL extension - hook 9
     include "extended.asm"      ; Statements and functions from Aquarius Extended BASIC
@@ -1110,7 +1177,6 @@ _check_comment:
     include "bastring.asm"      ; String handling statements and functions
     include "graphics.asm"      ; Graphics statements and functions
     include "hooks.asm"         ; Extended BASIC hooks
-    include "misc.asm"          ; Miscellaneous subroutines
     include "play.asm"
     include "plus.asm"          ; plusBASIC unique statements and functions
     include "shared.asm"        ; Shared subroutines
@@ -1118,7 +1184,6 @@ _check_comment:
     include "usbbas.asm"        ; Statements and functions from USB BASIC
 
     ; Graphics modules
-    include "screen.asm"        ; Text screen graphics subroutines
     include "sprite.asm"        ; Sprite graphics module
     include "sound.asm"         ; Sound and Music
 
@@ -1140,13 +1205,18 @@ _check_comment:
     include "basbuf.asm"        ; Basic buffer read/write routines
     include "color.asm"         ; Color palette module
     include "dos.asm"           ; DOS routines
-    include "editor.asm"        ; Advanced line editor
     include "esp_aux.asm"       ; ESP routines in auxiliary ROM
-    include "fileio.asm"        ; Disk and File I/O machine assembly routines
+    include "fileaux.asm"       ; BASIC file operations auxiliary code
+    include "fileio.asm"        ; Disk and File I/O assembly routines
+    include "fileload.asm"      ; File LOAD I/O routines
+    include "filesave.asm"      ; File SAVE I/O routines
+    include "filestr.asm"       ; File related string assembly routines
     include "gfx.asm"           ; Main graphics module
     include "gfxbitmap.asm"     ; Bitmap graphics routines
     include "gfxvars.asm"       ; Graphics sysvars and lookup tables
+    include "misc.asm"          ; Miscellaneous subroutines
     include "s3hooks.asm"       ; S3 BASIC direct mode hooks
+    include "screen.asm"        ; Text screen graphics subroutines
     include "screen_gfx.asm"    ; Screen graphics routines
     include "screen_swap.asm"   ; Screen buffering routines
     include "string.asm"        ; String manipulation routines

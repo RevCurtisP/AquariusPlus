@@ -151,6 +151,7 @@ LETEXT  equ     $2082   ;; | LET extension
 DIMEXT  equ     $208A   ;; | DIM extension
 READX   equ     $2093   ;; | READ extension
 FINEXT  equ     $209B   ;; | FIN extension 
+CLEARX  equ     $20A0   ;; | CLEAR extension
 endif                   
 EXTBAS  equ     $2000   ;;Start of Extended Basic
 XSTART  equ     $2010   ;;Extended BASIC Startup Routine
@@ -2212,16 +2213,20 @@ HOOK12: byte    12                ;
         inc     hl                ;[M80] BUMP POINTER
         ld      (VARTAB),hl       ;[M80] NEW START OF VARIABLES
 ;;Clear Variablea, Reset Stack, and Reset Text Pointer
-RUNC:   ld      hl,(TXTTAB)     ;[M80] POINT AT THE START OF TEXT
-        dec     hl              ;
+RUNC:   ld      hl,(TXTTAB)       ;[M80] POINT AT THE START OF TEXT
+        dec     hl                ;
 ;[M80] CLEARC IS A SUBROUTINE WHICH INITIALIZES THE VARIABLE AND
 CLEARC: ld      (SAVTXT),hl       ;
         ld      hl,(MEMSIZ)       ;[M65] FREE UP STRING SPACE
         ld      (FRETOP),hl       ;
         xor     a                 ;
         call    RESTOR            ;[M65] RESTOR DATA
+ifdef aqplus
+        jp      CLEARX            ;; Do RESTORE then CLEAR hook
+else
         ld      hl,(VARTAB)       ;[M65] LIBERATE THE
-        ld      (ARYTAB),hl       ;[M65] VARIABLES AND
+endif
+CLEARV: ld      (ARYTAB),hl       ;[M65] VARIABLES AND
         ld      (STREND),hl       ;[M65] ARRAYS
 ;; Reset Stack Pointer
 STKINI: pop     bc                ;[M80] GET RETURN ADDRESS HERE
