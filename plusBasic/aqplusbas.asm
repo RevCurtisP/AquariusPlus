@@ -125,7 +125,7 @@ just_ret:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.22y"
+    db "v0.22y3"
     db 0
 plus_len   equ   $ - plus_text
 
@@ -317,8 +317,8 @@ pt3call:
     out     (IO_BANK3),a
     pop     af                    ; A = Bnk1pg; Stack = RtnAdr
     out     (IO_BANK1),a
-    pop     ix
     ex      af,af'
+    pop     ix
     ret
 
 ;-----------------------------------------------------------------------------
@@ -583,19 +583,29 @@ init_chrsets:
 load_ptplay:
     ld      a,PT3_BUFFR           ; Page
     ld      l,0
-    call    page_fill_all_byte    ; Zero out buffer
+    call    xpage_fill_all_byte   ; Zero out buffer
 
+    ld      hl,.ptrdsc            ; Try SD Card root
+    call    .load_ptplay
+    ret     p                     ; If not there
+    ld      hl,.ptdesc            ;   Load from ESP
+.load_ptplay:
     ld      a,PT3_BUFFR           ; Page
     ld      bc,$4000              ; Load up to 16k
     ld      de,PT3_BASE           ; Start address
-    ld      hl,.ptdesc
-    ld      iy,file_load_paged
+    ld      iy,xfile_load_paged
     jp      aux_call
 
 .ptplay:
     byte    "esp:ptplay.bin"
 .ptdesc:
     word    $-.ptplay,.ptplay
+
+.ptroot:
+    byte    "/ptplay.bin"
+.ptrdsc:
+    word    $-.ptroot,.ptroot
+
 
 ;-----------------------------------------------------------------------------
 ; Copy Character ROM into Character RAM

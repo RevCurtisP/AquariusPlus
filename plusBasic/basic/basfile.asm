@@ -620,7 +620,7 @@ load_dir_array:
 
 _load_fnkeys:
     call    _set_up_fnkeys
-    ld      iy,file_load_paged
+    ld      iy,xfile_load_paged
     jp      _aux_call_hl_error
 
 _set_up_fnkeys:

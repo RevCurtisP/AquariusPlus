@@ -1,5 +1,13 @@
 # plusBASIC Release History
- - v0.22y
+ - v0.22y3 (2024-08-23)
+    - Fix illegal quantity error on load paged caused by previous change
+ - v0.22y2 (2024-08-23)
+    - Load pt3play.bin from SD card, then esp: if not found
+ - v0.22y1 (2024-08-22)
+    - Fixed ptplay.bin not being loaded
+    - Fixed RUN rom-files crashing system
+    - Fixed LOAD FNKEY
+ - v0.22y (2024-08-21)
     - Breaking changes
       - `FILL {@page},address,oount,byte` is now `FILL BYTE {@page}, address, oount, byte`
       - `FILL {@page},address,oount,WORD integer` is now `FILL WORD {@page}, address, count, integer`
@@ -55,63 +63,62 @@
     - Updated unit test framework an unit tests
     - Restricted kernel page writes to not write past USER_END.
     - System IRQ handler now preserves all registers
- - v0.22x4
+ - v0.22x (2024-05-25)
     - Added LOAD TILESET and SAVE TILESET
- - v0.22x
     - Added SET CHRDEF, GETCHRDEF$(), and SAVE CHRSET
     - Fixed characters 128 - 255 of default character set being overridden
     - INPUT and READ now parse hexademical numbers
     - Added DIM var()=list, READ \*var
- - v0.22w
+ - v0.22w (2024-05-20)
    - Added WAIT, SET BREAK ON/OFF
    - Implemented RGB(), DEF USR
    - Added syntax OUT port,byte|string$;port,byte|string$...
    - Syntax {@page,}address,byte;... to POKE, POKE COLOR, POKE SCREEN, and DOKE
  - - ^ operator string substition gives Missing or Too many operands errors.
-   v0.22v
+   v0.22v (2024-05-19)
    - Added JOIN statement 
    - Added CLEAR *array
    - All statements that write to multiple elements of string array, first zero out the array contents, then do a garbage collecion.
    - Fixed DIM causes Syntax error after VARPTR()
- - v0.22u
+ - v0.22u 
    - Added string slicing in the form var$[pos] and var$[start TO end]
    - Added Bad range error
    - Fixed null string causing String too long error when used as an argument in % string substitution
- - v0.22t
+ - v0.22t (2024-05-15)
    - Added PAD$ function
- - v0.22s
+ - v0.22s (2024-05-13)
    - Added LOAD BITMAP and SAVE BITMAP
- - v0.22r
+ - v0.22r (2024-05-12)
    - Added comments starting with apostrophe.
    - Fixed silent abort on duplicate line number in LOAD with ASC option.
- - v0.22q
+ - v0.22q (2024-05-11)
    - Changed DEF TILE TO CHR to SET TILE TO CHR
    - Wrote demo program /pbdemo/chrsprite.bas
- - v0.22p
+ - v0.22p (2024-05-10)
    - Added DEF TILE TO CHR and DEF BYTELIST
- - v0.22o
+ - v0.22o (2024-05-09)
    - Implemented SAVE SCREEN and LOAD SCREEN statements
- - v0.22n
+ - v0.22n (2024-05-08)
    - Added SPLIT command
- - v0.22m
+ - v0.22m (2024-04-28)
    - Fixed spaces after escaped string being tokenized.
- - v0.22l
+ - v0.22l (2024-04-21)
    - Added INMEM function
    - Fixed stomping of temporay string in string trimming functions functions.
- - v0.22k
+ - v0.22k (2024-03-24)
    - Added SAVE filespec$,CAQ to override SET SAVE ASC and SAVE filespec$,TOK to save raw tokenized program.
    - Updated load_basic_program accordingly
- - v0.22j
+ - v0.22j (2024-03-20)
    - Implemented COPY FILE
- - v0.22i 
+ - v0.22i (2024-03-20)
    - Removed LOAD STRING stub from source and README.md. Add LOAD and SAVE ^var$ to README.md.
- - v0.22h
+ - v0.22h (2024-03-19)
    - Single PSET, PRESET, and POINT(), along with underlying routines.
    - Single FILL BITMAP and CLEAR BITMAP along with underlying routines.
    - Replaced SET BITMAP?? with COLOR, GETBITMAP?? with POSX, POSY, and COLOR
    - Bitmap routines use EXT_FLAGS bits to determine 
    - Added DRAW token, USE SCREEN stub.
- - v0.22g
+ - v0.22g (2024-03-11)
    - Added bitmap_read_sysvars, GETBITMAPBC, GETBITMAPBX, and GETBITMAPBY
    - Added bitmap_write_color, bitmap_write_xpos, bitmap_write_ypos, and SET BITMAPBC BITMAPBX BITMAPBY
    - Added bitmapc_read_sysvars, GETBITMAPCC, GETBITMAPCX, and GETBITMAPCY
@@ -120,141 +127,148 @@
    - Added bitmapc_write_color, bitmapc_write_xpos, bitmapc_write_ypos, and SET BITMAPCC BITMAPCX BITMAPCY
    - If PSETB color operand not specified, use color from SET BITMAPCC
    - Renamed and reorganized several module assembly language files
- - v0.22f1
    - Added bitmap_move
- - v0.22f
+ - v0.22f (2024-03-09)
    - Implemented PSETC, PRESETC, and POINTC
- - v0.22e2
    - Fixed Y-coordinate clipping in PSETB, PRESETB, POTNTB
- - v0.22e
+ - v0.22e (2024-03-09)
    - Implemented POINTB(), added CLEAR BITMAPC and FILL BITMAPC
- - v0.22d
+ - v0.22d (2024-03-08)
    - Added CLEAR BITMAP, FILL BITMAP.
    - Implemented PSETB and PRESETB
- - v0.22c
+ - v0.22c (2024-03-06)
+ - v0.22c (2024-03-06)
    - Fixed syntax error on extended functions VER through VARPTR
- - v0.22b
+ - v0.22b (2024-03-04)
    - Added KEY(-1)
- - v0.22a
+ - v0.22a (2024-03-04)
    - Added KEY("keys")
- - v0.22
+ - v0.22 (2024-03-04)
    - Added PT3STATUS, PT3LOOP, SET PT3 ON/OFF and fixed PAUSE PT3 while PT3 LOOP is active
- - v0.21z
+ - v0.21z (2024-03-01)
    - Added pseudovariable ARGS and ARGS$(0)
- - v0.21y
+ - v0.21y (2024-02-25)
    - Added SWAP VARS statement, ERASE statement, MID$ statement, and INDEX() function
- - v0.21x 
+ - v0.21x (2024-02-24) 
    - Added TRIM$, TRIML$, and TRIMR$ functions
- - v0.21w
+ - v0.21w (2024-02-21)
    - Added GETCHRSET function
    - Improved screen switch/swap
    - Fixed 80-column color mode printing
    - Tweaked Latin-1 character sets
- - v0.21v
+ - v0.21v (2024-02-14)
    - Added LOAD DIR filename$,\*array$
    - LOAD array$ ASC and LOAD DIR start at array index 1, put number of lines in index 0
    - Updated read/write page checking to match new memory structure
- - v0.21u
+ - v0.21u (2024-02-13)
    - Added LOAD filename$,\*array$,ASC
- - v0.21s
+ - v0.21s (2024-02-13)
    - Implemented DEF FNx and FNx
- - v0.21r
+ - v0.21r (2024-02-13)
    - Added function INSTR, kernel routine str_instr
- - v0.21q
+ - v0.21q (2024-02-12)
    - Added VARPTR() and STRPTR()
- - v0.20p
+ - v0.20p (2024-02-12)
    - Replaced SCREEN SAVE, SCREEN RESTORE, and SCREEN SWAP with STASH SCREEN, RESTORE SCREEN, and SWAP SCREEN.
- - v0.21o
+ - v0.21o (2024-02-12)
    - Removed character ROM data from sysrom binary, makerom script now does a simple copy with concatenate
- - v0.21n
+ - v0.21n (2024-02-11)
    - Fixed 'Unknown error' bug in SAVE paged binary over 32k in length
- - v0.21m
+ - v0.21m (2024-02-11)
    - Added MOUSEW
- - v0.21j -
+ - v0.21j (2024-0209)
    - Added SAVE/LOAD string arrays
- - v0.21h
+ - v0.21h (2024-02-05)
    - Modified legal write pages, PLAY SAMPLE allowed pages
- - v0.21g
+ - v0.21g (2024-02-03)
    - Reactivated JP descramble_rom in files.asm
- - v0.21f
+ - v0.21f (2024-02-03)
    - Loads ptplay.bin from ESP: instead of SD card
- - v0.21e
+ - v0.21e (2024-01-31)
    - Added LOOP PT3 [filename]
- - v0.21b
+ - v0.21c (2024-01-31)
+   - Separated pt3player code into loadable module
+ - v0.21b (2024-01-29)
    - Load default and Latin-1 character sets from ESP filesystem
- - v0.21a
+ - v0.21a (2024-01-29)
    - Added USE CHRSET filename$, changed Ctrl-O to switch to custom chrset, removed Ctrl-P option
- - v0.21
+ - v0.21 (2024-01-27)
    - SYSROM loaded in pages 60 through 62 as SoftROM
- - v0.20w
+ - v0.20w (2024-01-22)
    - Fixed tokenization bug when RUNing BASIC progam files in ASCII format
- - v0.20v
+ - v0.20v (2024-01-21)
    - Fixed DEF SPRITE [...] x-offset bug
- - v0.20u
+ - v0.20u (2024-01-18)
    - Added SET SPRITE var$ TILECLIP and debugged str_length
- - v0.20s
+ - v0.20s (2024-01-17)
    - Added `GET/PUT TILEMAP ... ^var$`, debugged FILL `[@page,]address,WORD int`, fixed `ASC$()` bug.
- - v0.20r
+ - v0.20r (2024-01-16)
     - Added TRON and TROFF statements and Extended BASIC jump table. Debugged graphics DEF statements.
- - v0.20q
+ - v0.20q (2024-01-14)
     - Finalized esp, paged, dos, and file_io jump table entries
- - v0.20n
+ - v0.20n (2024-01-13)
     - Added syntax `LIST$(NEXT)`, replaced all usage of `SBUFF` in paged memory with `STRBUF` in main memory
- - v0.20m
+ - v0.20m (2024-01-11)
    - Added `FILL [@page,] start, count, |byte|WORD int|`,  `sys_fill_word`, tokens `VARS` and `WORD`
    - Fixed spurious `FC error` in `GET SCREEN`
    - Finished `GET TILEMAP`, `PUT_TILEMAP`, `tilemap_get`, and `tilemap_put`
- - v0.20k
+ - v0.20k (2024-01-08)
    - Implemented `SET TILEMAP (x,y)` and `tilemap_set_tile`
- - v0.20j
+ - v0.20j (2024-01-07)
    - Allow both `,` and `;` as delimiters in `DEF INTLIST`
    - Fixed `ATTR attrs` and `PALETTE palette#` causing syntax error after `FILL TILEMAP tile#`
    - `.` treated as `0` in hex literal strings and `ASC$` function
- - v0.20i
+ - v0.20i (2024-01-06)
    - Added BASIC functions `FILEEXT$()`, `FILEDIR$()`, `TRIMDIR$()`, `TRIMEXT$()`
    - Added kernel routines `file_get_ext`, `file_trim_dir`, `file_get_dir`, `file_trim_ext`
    - Allow unquoted filename operand for `RUN` in direct mode
    - Added direct mode syntax `DEL file file file...`
    - Added syntax `LOAD filename$,@page` and `SAVE filename$,@page`
    - Added cartridge diagnostic mode assembly option
- - v0.20h
+ - v0.20h (2024-01-02)
    - Fixed 8k carts not working
- - v0.20g
+ - v0.20g (2024-12-30)
    - `FILL SCREEN`, `GET SCREEN`, `PUT SCREEN` now work in both 40 column and 80 column mode
- - v0.20f
+ - v0.20f (2024-12-30)
    - Added optional comma between end-coordinate and fill character in `FILL SCREEN`
- - v0.20e
+ - v0.20e (2024-12-29)
    - Added `KEY()` function
- - v0.20d
+ - v0.20d (2024-12-29)
    - Added `DEC()` function, fixed `esp_get_version`/`VER(0)`/`VER$(0)`
- - v0.20c - Refactored (and hopefully fixed) cartridge boot code
- - v0.20b - Fixed bug in init_charram
- - v0.20a
+ - v0.20c (2024-12-23)
+   - Refactored (and hopefully fixed) cartridge boot code
+ - v0.20b (2024-12-17)
+   - Fixed bug in init_charram
+ - v0.20a (2024-12-17)
     - Clear BASIC RAM before starting cart. Add IRQ and hook disable, screen reset to hardware cart startup
- - v0.20u
+ - v0.20u (2024-12-14)
     - Fixed GETPALETTE$, modded file_load_pt3 to stop any running pt3play process
- - v0.19t
+ - v0.19t (2024-12-13)
     - Replaced RESET PT3 with STOP PT3, added PAUSE PT3 and RESUME PT3
- - v0.19s
+ - v0.19s (2024-12-12)
     - Fixed CLS when SET COLOR is active
- - v0.19r
+ - v0.19r (2024-12-12)
     - Fixed PLAY PT3 and RESET PT3
- - v0.19q
+ - v0.19q (2024-12-13)
     - PLAY PT3 fixes
- - v0.19p
+ - v0.19p (2024-12-11)
     - implemented PT3 PLAY
- - v0.19n
+ - v0.19n (2024-12-08)
     - Added LOAD PALLETE, SAVE PALETTE, RESET PALETTE and RESET SCREEN
- - v0.19m
+ - v0.19m (2024-12-08)
     - Fixed routine screen_pos_addr which had broken GET SCREEN and PUT SCREEN
     - Implemented LOAD PT3 statement
- - v0.19j
+ - v0.19j (2024-12-04)
     - Fixed printing to screen after SET COLOR
- - v0.19i
+ - v0.19i (2024-12-03)
     - Converted plusBASIC patches to hooks to increase cartridge compatibility
- - v0.19h
+ - v0.19h (2024-12-02)
     - Fixed ?Syntax error when RUNning ROM
- - v0.19g
+ - v0.19g (2024-12-01)
     - Added SET SAVE ASC ON/OFF, preset DAC to $80 to eliminate click at begining of first sample
- - v0.19f
+ - v0.19f (2024-11-29)
     - Fixed bank 1 not restored after, clicking in play_sample
+ - v0.19e (2024-11-28)
+    - Moved Extended BASIC hook routines into Bank 1 ROM
+ - v0.19d (2024-11-27) 
+    - Moved dos and fileio modules into Aux ROM

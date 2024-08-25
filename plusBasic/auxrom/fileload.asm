@@ -129,13 +129,18 @@ _load_chrset
 ;            S if I/O error
 ; Clobbered: AF',L
 ;-----------------------------------------------------------------------------
+xfile_load_paged:
+    ld      ix,xesp_read_paged
+    jr      _load_paged
 file_load_paged:
+    ld      ix,esp_read_paged
+_load_paged:
     push    af                    ; Stack = Page, RtnAdr
     call    dos_open_read
     pop     hl                    ; H = Page, Stack = RtnAdr
     ret     m
 .readbytes
-    call    esp_read_paged        ; AF = Result, L = FilDsc
+    call    jump_ix               ; AF = Result, L = FilDsc
     jr      z,.done
     ex      af,af'                ; AF' = Result
     ld      a,b
@@ -158,7 +163,7 @@ file_load_rom:
     ld      a,RAM_BAS_3
     ld      de, $C000
     ld      bc, $4000
-    call    file_load_paged
+    call    xfile_load_paged
     ret     m
 
     ; Check length

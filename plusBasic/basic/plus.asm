@@ -1026,7 +1026,9 @@ ST_PAUSE:
 ;-----------------------------------------------------------------------------
 ; RESET Statement stub
 ;-----------------------------------------------------------------------------
-;; ToDo: RESET BIT
+;; ToDo: RESET BIT var,bit#
+;;       RESET CHRSET set#
+;;       RESET CHRDEF ascii_code
 ST_RESET:
     rst     CHRGET                ; Skip RESET
     cp      MULTK

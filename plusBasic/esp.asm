@@ -171,11 +171,16 @@ esp_get_bytes:
 ;            C if page overflow
 ;            S if I/O error
 ;-----------------------------------------------------------------------------
+xesp_read_paged:
+    ld      l,a                   ; L = FilDsc
+    ld      a,h                   ; A = Page
+    jr      _read_paged
 esp_read_paged:
     ld      l,a                   ; L = FilDsc
     ld      a,h                   ; A = Page
     call    page_check_write      ; If illegal page
     ret     z                     ;   Return error
+_read_paged:
     call    page_map_bank3        ; Map page into bank 3
     call    page_coerce_de_addr
     

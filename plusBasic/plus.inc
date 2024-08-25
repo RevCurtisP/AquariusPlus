@@ -36,7 +36,7 @@ CHAR_RAM        equ 21
 RAM_BAS_0       equ 56      ; RAM for Bank 0 (character ROM cache)
 RAM_BAS_1       equ 57      ; RAM for BASIC mapped into Bank 1
 RAM_BAS_2       equ 58      ; RAM for BASIC mapped into Bank 2
-RAM_BAS_3       equ 59      ; RAM for Bank 0 (unused by BASIC)
+RAM_BAS_3       equ 59      ; RAM for Bank 3 (unused by BASIC)
 
 TMP_BUFFR       equ 50      ; Transient data buffer 
 BOOT_BUFR       equ 51      ; Boot ROM work area

@@ -248,6 +248,12 @@ page_copy_bytes_sys:
 ; Output: Zero: Cleared if fill succesful, Set if invalid page
 ; Clobbers: A, BC, DE
 ;-----------------------------------------------------------------------------
+xpage_fill_all_byte:
+    ld      de,0
+    ld      bc,$4000
+    call    page_coerce_de_addr
+    call    __set_page
+    jr      _fill_byte
 page_fill_all_byte:
     ld      de,0
     ld      bc,$4000
@@ -264,7 +270,7 @@ page_fill_all_byte:
 page_fill_byte:
     call    page__set4write_coerce ; DE = Coerced Start Address
     ret     z                     ; If invalid page, return error
-.loop
+_fill_byte:
     ld      a,b
     or      c
     jp      z,_success
@@ -273,7 +279,7 @@ page_fill_byte:
     ld      (de),a
     call    page_inc_de_addr
     jp      c,page_restore_bank3
-    jr      .loop
+    jr      _fill_byte
 
 ;-----------------------------------------------------------------------------
 ; Fill Entire Page with Word
@@ -804,10 +810,10 @@ page_coerce_hl_addr:
     ex      af,af'                ; Restore page and flags
     ret
 
-page__set4read_coerce
+page__set4read_coerce:
     call    page_coerce_de_addr
     jr      page__set_for_read
-page__set4write_coerce
+page__set4write_coerce:
     call    page_coerce_de_addr
 page__set_for_write:
     call    page_check_write
