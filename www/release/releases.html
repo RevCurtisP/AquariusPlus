@@ -16,12 +16,8 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
   <body>
     <h1 id="plusbasic-release-history">plusBASIC Release History</h1>
     <ul>
-      <li>v0.22y3 (2024-08-23)
-<ul><li>Fix illegal quantity error on load paged caused by previous change</li></ul></li>
-      <li>v0.22y2 (2024-08-23)
-<ul><li>Load pt3play.bin from SD card, then esp: if not found</li></ul></li>
-      <li>v0.22y1 (2024-08-22)
-<ul><li>Fixed ptplay.bin not being loaded</li><li>Fixed RUN rom-files crashing system</li><li>Fixed LOAD FNKEY</li></ul></li>
+      <li>v0.23 (2024-08-26)
+<ul><li>Fixed ptplay.bin not being loaded</li><li>Fixed RUN rom-files crashing system</li><li>Fixed LOAD FNKEY</li><li>Load pt3play.bin from SD card, then esp: if not found</li></ul></li>
       <li>v0.22y (2024-08-21)
 <ul><li>Breaking changes
 <ul><li><code>FILL {@page},address,oount,byte</code> is now <code>FILL BYTE {@page}, address, oount, byte</code></li><li><code>FILL {@page},address,oount,WORD integer</code> is now <code>FILL WORD {@page}, address, count, integer</code></li><li><code>LOAD COLOR</code> is now <code>LOAD SCREEN ATTR</code></li><li><code>LOAD DIR ... \*array</code> now loads filenames only</li><li><code>LOAD DIR ... *array$,BIN</code> replaces old <code>LOAD DIR ... \*array</code></li><li><code>SAVE filespec$,TOK</code> to <code>SAVE filespec$,BIN</code>.</li></ul></li><li>New statements and functions

@@ -1,12 +1,9 @@
 # plusBASIC Release History
- - v0.22y3 (2024-08-23)
-    - Fix illegal quantity error on load paged caused by previous change
- - v0.22y2 (2024-08-23)
-    - Load pt3play.bin from SD card, then esp: if not found
- - v0.22y1 (2024-08-22)
+ - v0.23 (2024-08-26)
     - Fixed ptplay.bin not being loaded
     - Fixed RUN rom-files crashing system
     - Fixed LOAD FNKEY
+    - Load pt3play.bin from SD card, then esp: if not found
  - v0.22y (2024-08-21)
     - Breaking changes
       - `FILL {@page},address,oount,byte` is now `FILL BYTE {@page}, address, oount, byte`

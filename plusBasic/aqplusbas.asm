@@ -125,7 +125,7 @@ just_ret:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.22y3"
+    db "v0.23"
     db 0
 plus_len   equ   $ - plus_text
 

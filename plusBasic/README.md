@@ -1,6 +1,6 @@
 # plusBASIC Quick Reference Guide
 
-<|-- Do not edit this page. Contents are copied from generated file quickref_wiki.md -->
+<!-- Do not edit this page. Contents are copied from generated file quickref_wiki.md -->
 
 ## Literals
   - _Numeric literals_ evaluate to floating point or integer numbers.
