@@ -42,7 +42,7 @@ list_level = 0
 for line in md_in.readlines():
     line = line.rstrip()
     key = 0
-    
+
     # Strip checkboxes
     i = line.find("- [ ] ")
     if i < 0: i = line.find("- [x] ")
@@ -50,7 +50,7 @@ for line in md_in.readlines():
         
     # Strip html comments and get embedded key
     s = line.find("<!--")
-    if s > -1:
+    if s > 0:
         e = line.find("-->",s)
         key = line[s+4:e]
         line = line[:s] + line[s+e+1:]

@@ -722,7 +722,7 @@ _getmask:
 ;  8000 $1F40 1bpp pixels only
 ;  9000 $2328 1bpp pixel + color
 ;  9032 $2348 1bpp pixel + color + palette
-;  9192 $23E8 1bpp pixel + 192 byte gap + color
+;  9192 $23E8 1bpp pixel + palette + 160 byte gap + color
 ; 16000 $3E80 4bpp pixels only
 ; 16032 $3EA0 4bpp pixels + palette
 ;-----------------------------------------------------------------------------
@@ -760,11 +760,12 @@ bitmap_read_tmpbfr:
 .bitgap1bpp
     ld      bc,8000               
     call    .bitmap
-    ld      de,8192
-    ld      bc,1000
-    call    .copy
     ld      de,BANK1_BASE+8000
-    jr      .palette
+    call    .palette
+    ld      bc,1000
+    ld      de,8192
+    ld      hl,8192
+    jr      .copy
 .palette1bpp
     ld      de,BANK1_BASE+9000
     call    .palette 

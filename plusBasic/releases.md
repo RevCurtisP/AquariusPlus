@@ -1,5 +1,8 @@
 # plusBASIC Release History
- - v0.23 (2024-08-26)
+ - v0.23a (2023-08-26)
+    - Fixed LOAD BITMAP incorrectly loading 9192 byte legacy bitmaps.
+    - Fixed unit test for legacy bitmaps
+ - v0.23 (2024-08-25)
     - Fixed ptplay.bin not being loaded
     - Fixed RUN rom-files crashing system
     - Fixed LOAD FNKEY
@@ -23,7 +26,6 @@
       - `SET PT3 FAST ON/OFF`
     - Updated statements and functions
       - `ATN` implemented.
-      - `FRE(_option_)` 
       - `CLEAR CURSOR`
       - `FRE(_option_)` 
         - -1 - Returns the number of bytes in memory not being used by BASlC as unsigned int.
