@@ -342,24 +342,28 @@ ST_LOAD:
 ; Load raw binary to address
 ; LOAD "tron.bin",$4200
 ; LOAD "tron.bim",$4200
+    cp      '!'
+    jr      nz,.not_ext
+    call    get_ext_addr          ;   AF = PgFlg, DE = Addr    
+    jr      .load_bin
+.not_ext
     call    get_page_arg          ; Check for page specifier
     push    af                    ; Stack = Page, String Descriptor
     jr      nc,.bin_params        ; If page specified
-
     call    CHRGT2                ;   Reget character and set flags
     jr      nz,.page_params       ;   If @page only
     ld      de,0
     ld      bc,$4000
-    jr      .load_bin             ;   Else
+    jr      .pop_load_bin         ;   Else
 .page_params
     SYNCHK  ','
 .bin_params
-    call    FRMNUM                ;     Get number
-    call    FRCINT                ;     Convert to 16 bit integer
+    call    GETINT                ;     DE = Addr
     ld      bc,$FFFF              ;     Load up to 64k
-.load_bin
+.pop_load_bin
     ; Get back page filespec
     pop     af                    ; AF = Page, Stack = String Descriptor
+.load_bin
     ex      (sp),hl               ; HL = String Descriptor, Stack = Text Pointer
     jr      c,.load_paged
     ld      iy,file_load_binary
@@ -1028,6 +1032,7 @@ ST_APPEND:
 ; SAVE "filename",ASC             Save BASIC program as ASCII text
 ; SAVE "filename",addr,len        Save binary data
 ; SAVE "filename",@page,addr,len  Save paged binary data
+; SAVE "filename",!extaddr,len  Save paged binary data
 ; SAVE "filename",*a              Save numeric array a
 ; SAVE "filename",^a$             Save string
 ;-----------------------------------------------------------------------------
@@ -1062,30 +1067,36 @@ ST_SAVE:
     cp      XTOKEN
     jp      z,.save_xtoken
     ; Save binary data
-    call    get_page_arg           ; Check for page specifier
-    push    af                     ; Stack = Page, StrDsc, RtnAdr
+    cp      '!'
+    jr      nz,.not_ext           ; If !
+    call    get_ext_addr          ;   AF = PgFlg, DE = Addr 
+    push    af                    ;   Stack = PgFlg, StrDsc, RtnAdr
+    push    de                    ;   Stack = BinAdr, PgFlg, StrDsc, RtnAdr
+    jr      .get_len              ; Else
+.not_ext
+    call    get_page_arg          ;   Check for page specifier
+    push    af                    ;   Stack = Page, StrDsc, RtnAdr
     jr      nc,.bin_params
 
-    ld      a,(hl)                ; If @page only
+    ld      a,(hl)                ;   If @page only
     or      a
     jr      nz,.page_params
-    ld      de,0                  ; DE = BinAdr
-    ld      bc,$4000              ; BC = BinLen
-    jp      _save_bin
+    ld      de,0                  ;     DE = BinAdr
+    ld      bc,$4000              ;     BC = BinLen
+    jp      _pop_save_bin         ;     Save the page
 .page_params
-    SYNCHK  ','
+    call    get_comma             ;   MO error if no comma
 .bin_params
-    call    FRMNUM                ; Get number
-    call    FRCINT                ; Convert to 16 bit integer
-    push    de                    ; Stack = BinAdr, Page, StrDsc, RtnAdr
-    call    get_comma
+    call    GETINT                ;   DE = BinAdr
+    push    de                    ;   Stack = BinAdr, Page, StrDsc, RtnAdr
+.get_len
+    call    get_comma             ; MO error if no comma
     ; Get second parameter: length
-    call    FRMNUM                ; Get number
-    call    FRCINT                ; Convert to 16 bit integer; Stack = Page, StrDsc, RtnAdr
+    call    GETINT                ; DE = length
     ld      b,d
     ld      c,e                   ; BC = BinLen
     pop     de                    ; DE = BinAdr; Stack
-    jr      _save_bin      
+    jr      _pop_save_bin      
 
 .save_extended
     rst     CHRGET                ; Skip XTOKEN
@@ -1166,9 +1177,10 @@ _file_string:
     pop     hl                    ; HL = NamDsc; Stack = TxtPtr, RtnAdr
     jr      _save_append_bin      ; Save it
 
+_pop_save_bin:
+    pop     af                    ; AF = Page, Stack = StrDsc, RtnAdr
 _save_bin:
     ld      iy,file_save_binary
-    pop     af                    ; AF = Page, Stack = StrDsc, RtnAdr
     ex      (sp),hl               ; HL = StrDsc, Stack = TxtPtr
     jr      c,_save_paged
 _save_append_bin:

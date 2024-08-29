@@ -14,7 +14,7 @@ screen_read_paged:
     jr      _read_write_screen
 screen_write_paged:
     ld      iy,_write_screen_paged
-_read_write_screen
+_read_write_screen:
     ex      af,af'                ; A' = Page
     in      a,(IO_VCTRL)          
     and     VCRTL_80COL_EN        ; If 40-colomn mode
@@ -37,12 +37,12 @@ set_textpage_0:
     out     (IO_VCTRL),a          ; Switch to text page 0
     ex      af,af'
     ret
-_write_screen_paged
+_write_screen_paged:
     ex      af,af'                
     ld      hl,SCREEN
     ld      bc,2048
     jp      page_write_bytes
-_read_screen_paged
+_read_screen_paged:
     ex      af,af'                
     ld      de,SCREEN
     ld      bc,2048

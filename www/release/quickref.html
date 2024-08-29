@@ -67,10 +67,13 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>APPEND <em>filespec</em>,^<em>strvar</em></strong> - Append string to file.<!--SAVE--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
+        <strong>ARGS <em>arg</em>{,...} {RETURN <em>var</em>{,...}}</strong> - Specify subroutine arguments and return variables.</li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
         <strong>ARGS</strong> - Return number of RUN arguments</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>ARGS$(<em>index</em>)</strong> - Return RUN argument number <em>index</em>.</li>
+        <strong>ARGS$(<em>argno</em>)</strong> - Return RUN argument number <em>index</em>.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>ASC(<em>string</em>)</strong> - Return ASCII value of the first character of <em>string</em>.<!--ASC--></li>
@@ -133,7 +136,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>COMPARE (<em><em>array</em>,</em><em>array</em>)</strong> - Compare the binary contents of two numeric arrays.<!--COMPARE--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>COMPARE ({@<em>page</em>,}<em>address</em>,{@<em>page</em>,}<em>address</em>,<em>length</em>)</strong> - Compare two blocks of memory.<!--COMPARE--></li>
+        <strong>COMPARE ({�!_ext_addr_�|�{@<em>page</em>,}_address_�,�!_ext_addr_�|�{@<em>page</em>,}_address_�,<em>length</em>)</strong> - Compare two blocks of memory.<!--COMPARE--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>COMPARE (<em>filespec</em>,<em>filespec</em>)</strong> - <em>Not implemented.</em><!--COMPARE--></li>
@@ -148,13 +151,16 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>COPY *<em>array</em> TO *array</strong> - <em>Not implemented.</em><!--COPY--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>COPY {@<em>page</em>,}<em>address</em>,<em>length</em> TO {@<em>page</em>,}<em>address</em></strong> - Copy bytes from one section of memory to another.<!--COPY--></li>
+        <strong>COPY �!_ext_addr_�|�{@<em>page</em>,}_address_�,<em>length</em> TO �!_ext_addr_�|�{@<em>page</em>,}_address_� </strong> - Copy bytes from one section of memory to another.<!--COPY--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>COPY FILE <em>filespec</em> TO <em>filespec</em></strong> - Copy file.<!--COPY--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>COPY SCREEN TO @page,address</strong> - Copy file.<!--COPY--></li>
+        <strong>COPY SCREEN TO �!_ext_addr_�|�@<em>page</em>,_address_�</strong> - Copy screen to paged memory.</li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>COPY �!_ext_addr_�|�@<em>page</em>,_address_� TO SCREEN</strong> - Copy paged memory to screen.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>COS(<em>float</em>)</strong> - Return cosine of argument.</li>
@@ -175,7 +181,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>DEC(<em>hexstring</em>)</strong> - Convert hexadecimal string to integer.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>DEEK({@<em>page</em>,}<em>address</em>)</strong> - Read integer from memory.<!--DEEK--></li>
+        <strong>DEEK(�!_ext_addr_�|�@<em>page</em>,_address_�)</strong> - Read integer from memory.<!--DEEK--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>DEF ATTRLIST <em>strvar</em>=<em>attr</em>,...</strong> - Create a string list of sprite and/or tile attributes.</li>
@@ -208,13 +214,22 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>DEF USR=<em>address</em></strong> - Set USR() machine language routine address.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>DIM <em>array</em>(<em>dim</em>{,...}){,...}</strong> - Create and allocates one or more arrays.</li>
+        <strong>DIM <em>array</em>(<em>dim</em>{,...}),...</strong> - Create and allocate one or more arrays.</li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>DIM <em>array</em>(<em>dim</em>{,...})=expr,...</strong> - Create and populate array.</li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>DIM(*<em>array</em>)</strong> - Return number of dimensions in array.</li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>DIM(*<em>array</em>,<em>dim</em>)</strong> - Return size of array dimension.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>DIR </strong> - Display disk directory.<!--DOKE--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>DOKE {@<em>page</em>,}<em>address</em>,<em>integer</em>{;...}</strong> - Write one or more integers to memory.<!--DOKE--></li>
+        <strong>DOKE {�!_ext_addr_�|�@<em>page</em>,_address_�,<em>integer</em>{;...}</strong> - Write one or more integers to memory.<!--DOKE--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>DRAW <em>command_string</em></strong> - <em>Not implemented.</em></li>
@@ -394,7 +409,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>LOAD <em>filespec</em></strong> - Load BASIC program into memory.<!--LOAD--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>LOAD <em>filespec</em>,{@<em>page</em>,}<em>address</em></strong> - Load binary file into memory.<!--LOAD--></li>
+        <strong>LOAD <em>filespec</em>,�!_ext_addr_�|�{@<em>page</em>,}_address_�</strong> - Load binary file into memory.<!--LOAD--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>LOAD <em>filespec</em>,*<em>array</em></strong> - Load binary file data into numeric or string array.<!--LOAD--></li>
@@ -526,10 +541,10 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>PAUSE PT3</strong> - Pause currently playing PT3 track.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>PEEK({@<em>page</em>,}<em>address</em>)</strong> - Read byte from memory.<!--PEEK--></li>
+        <strong>PEEK(�!_ext_addr_�|�{@<em>page</em>,}_address_�)</strong> - Read byte from memory.<!--PEEK--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>PEEK$({@<em>page</em>,}<em>address</em>,<em>length</em>)</strong> - Read string from memory.<!--PEEK--></li>
+        <strong>PEEK$(�!_ext_addr_�|�{@<em>page</em>,}_address_�,<em>length</em>)</strong> - Read string from memory.<!--PEEK--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>PEEKCOLOR(<em>address</em>)</strong> - Read byte from color RAM.</li>
@@ -547,13 +562,13 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>PLAY PT3 {<em>filespec</em>}</strong> - Play specified or previously loaded PT3 track.<!--PLAYPT3--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>PLAY SAMPLE @<em>page</em>,<em>address</em></strong> - Play digital sample from previously loaded file.<!--PLAYSAMPLE--></li>
+        <strong>PLAY SAMPLE �!_ext_addr_�|�@<em>page</em>,_address_�</strong> - Play digital sample from previously loaded file.<!--PLAYSAMPLE--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>POINT(<em>x</em>,<em>y</em>)</strong> - Return status of bloxel or pixel.<!--PSET--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>POKE {@<em>page</em>,}<em>address</em>,<em>byte</em>|<em>string</em>{;..}.</strong> - Write bytes and/or strings to memory.<!--POKE--></li>
+        <strong>POKE �!_ext_addr_�|�{@<em>page</em>,}_address_�,<em>byte</em>|<em>string</em>{;..}.</strong> - Write bytes and/or strings to memory.<!--POKE--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>POKE COLOR <em>address</em>,<em>byte</em>|<em>string</em>{;...}</strong> - Write bytes and/or strings to color RAM.<!--POKESCREEN--></li>
@@ -847,7 +862,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>TIMER</strong> - Return timer count.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>TIMER = <em>expression</em></strong> - Set and start jiffy timer.<!--TIMER--></li>
+        <strong>TIMER = <em>long</em></strong> - Set and start jiffy timer.<!--TIMER--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>TRIM$(<em>string</em>{,<em>string</em>})</strong> - Remove characters from both ends of string.</li>

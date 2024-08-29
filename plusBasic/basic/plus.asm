@@ -124,6 +124,8 @@ FN_GETKEY:
 ; INMEM(address,string$)
 ; INMEM(@page,address,string$)
 ;----------------------------------------------------------------------------
+; ToDo: INMEM(!extaddr,string)
+;       Have to mod to return long
 ; PRINT INMEM(0,"Copyright")
 ; PRINT INMEM($3900,"Copyright")
 ; PRINT HEX$(INMEM(0,"Copy"+"wrong"))
@@ -639,7 +641,7 @@ ST_TIMER:
 
 ;----------------------------------------------------------------------------
 ; Compare blocks of memory
-; Syntax: COMPARE( [@page,] address, [@page,] address, length)
+; Syntax: COMPARE( !extaddr|{@page,}address , !extaddr|{@page,}address , length)
 ;----------------------------------------------------------------------------
 FN_COMPARE:
     rst     CHRGET                ; Skip COMPARE
@@ -763,6 +765,8 @@ LSERR:
 ; FILL WORD $5000,13,$1234
 ; FILL BYTE @33,35,27,$A5
 ; FILL WORD @33,126,7,$CDEF
+; FILL BYTE !8888,27,$A5
+; FILL WORD !9999,7,$CDEF
 ST_FILL:
     rst     CHRGET                ; Skip FILL
     cp      SCRNTK

@@ -155,7 +155,7 @@ run_args:
     ld      l,BAS_BUFFR           ; L = Page
     ld      a,l                   ; A = Page
     ld      de,RUNARGS
-    ld      bc,0                  ; ArgCnt = 0
+    ld      bc,1                  ; ArgCnt = 0
     call    buffer_write_word     ; Write ArgCnt
 ;    inc     de
 ;    inc     de                    ; Bump write address

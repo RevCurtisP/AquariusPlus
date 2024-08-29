@@ -16,6 +16,9 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
   <body>
     <h1 id="plusbasic-release-history">plusBASIC Release History</h1>
     <ul>
+      <li>v0.23b
+<ul><li>Added extended memory addressing (!long) to
+<ul><li>COPY, COMPARE()</li><li>FILL BYTE, FILL WORD,</li><li>LOAD, SAVE</li><li>POKE, PEEK(), PEEK$(), DOKE, DEEK</li><li>PLAY SAMPLE</li></ul></li><li>Moved gfx/screen.asm to auxrom/screen.asm</li><li>Implemented COPY @page,address TO SCREEN</li><li>Fixed ARGS always returning 0,ARGS$() crashing system.</li><li>Fixed DIR returning wrong file size</li></ul></li>
       <li>v0.23a (2023-08-26)
 <ul><li>Fixed LOAD BITMAP incorrectly loading 9192 byte legacy bitmaps.</li><li>Fixed unit test for legacy bitmaps</li></ul></li>
       <li>v0.23 (2024-08-25)

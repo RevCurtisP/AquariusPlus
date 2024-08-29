@@ -29,33 +29,40 @@ ABORT_FN:
 ; COPY [@page,] source, length TO [@page,] destination [FAST]
 ; COPY FILE filespec TO filespec
 ;-----------------------------------------------------------------------------
-; ToDo: COPY SCREEN TO @page,address
-;       COPY @page,address TO SCREEN
+; ToDo: COPY @page,address TO SCREEN
 ST_COPY:
     jp      z,COPY                ; No Parameters? Do Standard COPY
     cp      FILETK                
     jp      z,ST_COPY_FILE
     cp      SCRNTK                
     jp      z,ST_COPY_SCREEN
+    cp      '!'
+    jr      nz,.not_ext           ; If !
+    call    get_ext_addr          ;   AF = PgFlg, DE = Addr
+    jr      .pg_addr
+.not_ext    
     call    get_page_arg          ; Check for Page Arg
     push    af                    ; Stack = SrcPgFlg
     jr      nc,.no_fpg            ; If specified
     ld      a,(hl)
     cp      TOTK                  ; and followed by TO
-    jr      z,.page2page          ;   Do Page to Page copy
+    jp      z,.page2page          ;   Do Page to Page copy
     SYNCHK  ','
 .no_fpg
     call    GETINT                ; DE = SrcAdr
     pop     af                    ; AF = SrcPgFlg
+.pg_addr
     push    de                    ; Stack = SrcAdr
     push    af                    ; Stack = SrcPgFlg, SrcAdr
+    ld      a,(hl)
+    cp      TOTK
+    jr      z,.copy_page_addr_to
     SYNCHK  ','                   ; Require Comma
     call    GETINT                ; DE = Len
     push    de                    ; Stack = Len, SrcPgFlg, SrcAdr
     rst     SYNCHR
     byte    TOTK
     call    get_page_addr         ; A = DstPgFlg, DE = DstAdr
-
     push    af                    ; Save AF
     ld      a,(hl)                ; Get character after DstAdr
     cp      XTOKEN                ; If Extended Token Prefix
@@ -66,7 +73,6 @@ ST_COPY:
     byte    FASTK                 ;   SNERR if not FAST
 .not_xtoken
     pop     af                    ; Restore AF
-
     ex      af,af'                ; AF' = DstPgFlg
     pop     bc                    ; BC = Len; Stack = SrcPgFlg, SrcAdr
     pop     af                    ; AF = SrcPgFlg, Stack = SrcAdr
@@ -126,6 +132,16 @@ ST_COPY:
     pop      hl
     ret
 
+.copy_page_addr_to
+    rst     CHRGET                ; Skip TO
+    ld      ix,copy_to_screen
+    rst     SYNCHR
+    byte    SCRNTK                ;   Only TO SCREEN allowed right now
+.do_page_addr_to
+    pop     af                    ; AF = SrcPgFlg; Stack = SrcAdr, RtnAdr
+    pop     de                    ; DE = SrcAdr; Stack = SrcAdr, RtnAdr
+    jp      nc,MOERR              ; If no page, Missing operand error
+    jp      (ix)     
 
 .page2page:
     rst     CHRGET          ; Skip TO
@@ -224,8 +240,10 @@ ST_INPUT:
 ; Enhanced POKE
 ; syntax: POKE address, byte
 ;         POKE address, string$
-;         POKE @page, address, bytentn
+;         POKE @page, address, byte
 ;         POKE @page, address, string$
+;         POKE extaddr, byte
+;         POKE extaddr, string$
 ;-----------------------------------------------------------------------------
 ST_POKE:
     cp      SCRNTK
@@ -233,9 +251,8 @@ ST_POKE:
     cp      COLTK
     jr      z,.poke_color
 .poke
-    call    parse_page_arg        ; Parse page
+    call    get_page_addr         ; AF = PgFlg, DE = Addr
     push    af                    ; Stack = Page, RtnAdr
-    call    GETINT                ; Parse Address
     push    de                    ; Stack = Addr, Page, RtnAdr
     SYNCHK  ','                   ; Require comma
     call    FRMEVL                ; Evaluate argumenr
@@ -354,9 +371,8 @@ ST_POKE:
 ;         DOKE @page, address, word
 ;-----------------------------------------------------------------------------
 ST_DOKE:
-    call    parse_page_arg        ; Parse page
+    call    get_page_addr         ; AF = PgFlg, DE = Addr
     push    af                    ; Save it
-    call    GETINT                ; Parse Address
     push    de                    ; Save It
     SYNCHK  ','                   ; Require comma
     call    GETINT                ; Parse Word
@@ -399,8 +415,10 @@ check_paged_address:
 ; Enhanced PEEK
 ; syntax: PEEK(address)
 ;         PEEK(@page, address)
+;         PEEK(!extaddr)
 ;         PEEK$(address, length)
 ;         PEEK$(@page, address, length)
+;         PEEK$(!extaddr, extaddr)
 ;-----------------------------------------------------------------------------
 FN_PEEK:
     rst     CHRGET                ; Skip token
@@ -410,9 +428,8 @@ FN_PEEK:
     jp      z,.peek_color
     cp      '$'                   ; If followed by dollar sign
     jr      z,.peekstring         ;   Do PEEK$()
-    call    paren_page_arg        ; Parse page
+    call    get_par_page_addr     ; AF = PgFlg, DE = Addr
     push    af                    ; Save it
-    call    GETINT                ; Parse Address
     SYNCHK  ')'                   ; Require close paren
     pop     af                    ; Get page
     push    hl                    ; Save text pointer
@@ -432,11 +449,10 @@ FN_PEEK:
 
 .peekstring:
     rst     CHRGET                ; Skip token
-    call    paren_page_arg        ; Parse page
+    call    get_par_page_addr_len ; AF = PgFlg, BC = Len, DE = Addr
     push    af                    ; Stack = PgArg, RtnAdr
-    call    GETINT                ; Parse Address
     push    de                    ; Stack = PkAdr, PgArg, RtnAdr
-    SYNCHK  ','                   ; Require comma
+      SYNCHK  ','                   ; Require comma
     call    GETBYT                ; Parse Length
     SYNCHK  ')'                   ; Require close paren
     pop     bc                    ; BC = PkAdr; Stack = PgArg, RtnAdr
@@ -527,9 +543,8 @@ FN_PEEK:
 ;-----------------------------------------------------------------------------
 FN_DEEK:
     rst     CHRGET                ; Skip DEEK
-    call    paren_page_arg        ; Parse page
+    call    get_par_page_addr     ; AF = PgFlg, DE = Addr
     push    af                    ; Save it
-    call    GETINT                ; Parse Address
     SYNCHK  ')'                   ; Require close paren
     pop     af                    ; Get page
     push    hl                    ; Save text pointer

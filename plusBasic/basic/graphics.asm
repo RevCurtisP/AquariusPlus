@@ -280,8 +280,6 @@ ST_SCREEN:
 ; COPY SCREEN - Copy Screen RAM to paged memory
 ; COPY SCREEN TO @page,address
 ;-----------------------------------------------------------------------------
-; COPY SCREEN TO @32,0
-;; ToDo: Add COPY @page,address TO SCREEN
 ST_COPY_SCREEN:
     rst     CHRGET                ; Skip SCREEN
     rst     SYNCHR
@@ -289,6 +287,15 @@ ST_COPY_SCREEN:
     call    get_page_addr         ; A = Page, DE = Address
     jp      nc,FCERR              ; Error if page not specified
     ld      iy,screen_write_paged
+    jr      aux_call_preserve_hl
+
+;-----------------------------------------------------------------------------
+; COPY TO SCREEN - Copy paged memory to Screen RAM 
+; COPY @page,address TO SCREEN
+;-----------------------------------------------------------------------------
+; On entry, A = Page, DE = Address
+copy_to_screen:
+    ld      iy,screen_read_paged
     jr      aux_call_preserve_hl
 
 ;-----------------------------------------------------------------------------

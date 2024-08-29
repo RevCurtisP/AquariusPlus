@@ -78,6 +78,13 @@ float_signed_byte:
     pop     hl
     ret
 
+float_byte:
+    push    hl
+sngflt_pophrt:
+    call    SNGFLT
+    pop     hl
+    ret
+
 ;-----------------------------------------------------------------------------
 ; Convert DE into a signed Floating Point number in FACC
 ; Clobbers: A,BC,DE
@@ -129,6 +136,19 @@ get_array:
     ld      c,l                   ; BE = Data Length
     pop     hl                    ; HL = TxtPtr
     jp      GETYPE                ; Reread next character and set flags
+
+get_par_array_pointer:
+    SYNCHK  '('                   ; Requite (
+get_star_array_pointer:
+    rst     SYNCHR
+    byte    MULTK
+get_array_pointer:
+    ld      a,1                   ; SEARCH ARRAYS ONLY
+    ld      (SUBFLG),a            
+    call    PTRGET                ; BC = NumDim, DE = NxtAry
+    jp      nz,UDERR              ; NOT THERE - ERROR
+    ld      (SUBFLG),a            ; CLEAR THIS
+    ret
 
 ;Undimensioned Array Error
 UDERR:
@@ -281,6 +301,22 @@ _notat
     or      a                     ; Else return Carry Clear
     ret     
 
+
+require_page_addr:
+    cp      '!'
+    jr      z,get_ext_addr
+    cp      '@'
+    jp      nz,MOERR
+    jr      _at_page_addr
+
+get_par_page_addr:
+    SYNCHK  '('
+    jr      get_page_addr
+get_comma_page_addr:
+    ld      a,(hl)
+    cp      ','
+    jp      nz,MOERR
+    rst     CHRGET
 ;-----------------------------------------------------------------------------
 ; Parse @Page, Address
 ; Output: A = Page number`
@@ -288,12 +324,10 @@ _notat
 ;         Carry Set if page specified
 ; Clobbered: BC
 ;-----------------------------------------------------------------------------
-get_comma_page_addr:
-    ld      a,(hl)
-    cp      ','
-    jp      nz,MOERR
-    rst     CHRGET
 get_page_addr:
+    cp      '!'
+    jr      z,get_ext_addr
+_at_page_addr
     call    get_page_arg          ; Get (optional) Page
     push    af                    ; Stack = Page+Flag
     jr      nc,_no_page           ; If Page specified
@@ -306,6 +340,26 @@ _no_page:
     pop     af                    ; AF = Page+Flag
     ret
 
+get_ext_addr:
+    rst     CHRGET                ; Skip !
+    call    GET_LONG              ; CDE = LngAdr
+    ld      b,d                   ; B = MdlByt
+    ld      a,d
+    and     $3F
+    ld      d,a                   ; DE = LngAdr & $FFFF
+    ld      a,c                   ; C = HiByte
+    rl      b
+    rla
+    rl      b
+    rla                           ; A = LngAdr / $10000
+    add     32                    ; A = Page
+    cp      RAM_END_PG+1          ; If past end of memory
+    jp      nc,FCERR              ;   Illegal quantity
+    scf                           ; Set Page Flag
+    ret
+
+get_par_page_addr_len:
+    SYNCHK  '('
 ;-----------------------------------------------------------------------------
 ; Parse @Page, Address, Length
 ; Output: A = Page number`

@@ -346,6 +346,7 @@ FORTK       equ $81     ; FOR
 NEXTK       equ $82     ; NEXT
 DATATK      equ $83     ; DATA
 INPUTK      equ $84     ; INPUT
+DIMTK       equ $85     ; DIM
 GOTOTK      equ $88     ; GOTO
 RUNTK       equ $89     ; RUN
 RESTK       equ $8B     ; RESTORE    

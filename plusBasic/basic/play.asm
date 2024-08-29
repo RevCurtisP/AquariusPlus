@@ -28,30 +28,15 @@ ST_PLAY:
 ; CD "sounds"
 ; LOAD "bigben1.saq",@40,0
 ; PLAY SAMPLE @40,0
+; PLAY SAMPLE !131072
 ST_PLAY_SAMPLE:
     rst     CHRGET                ; Skip SAMPLE
-    cp      '@'
-    jr      nz,.not_page          ; If followed by @
-    call    req_page_arg          ;   A = Page
-    cp      32                    ;  If not RAM page
-    jp      c,FCERR               ;     Illegal quantity error
-    cp      50                    ;   If reserved page
-    jp      nc,FCERR              ;     Illegal quantity error
-    push    af                    ;     Stack = Page, RtnAdr
-    ld      de,0                  ;   Default Address to 0
-    call    CHRGT2                ;   Reget character
-    jr      z,.no_addr            ;   If not end of statement
-    SYNCHK  ','                   ;     Require comma
-    call    get_int16k            ;     DE = Address
-.no_addr
-    pop     af                    ;   A = Page; Stack = RtnAdr
-    push    hl                    ;   Stack = TxtPtr, RtnAdr
-    ex      de,hl                 ;   HL = Address
-    call    play_sample           ;   Play the sample
-    pop     hl                    ;   HL = TxtPtr; Stack = RtnAdr
+    call    require_page_addr     ; AF = PgFlg, DE = Addr
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    ex      de,hl                 ; HL = Address
+    call    play_sample           ; Play the sample
+    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     ret
-.not_page
-    jp      SNERR                 ; Else Syntax error
 
 ;-----------------------------------------------------------------------------
 ; PLAY PT3 Statement

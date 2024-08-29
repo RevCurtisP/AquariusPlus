@@ -1,4 +1,15 @@
 # plusBASIC Release History
+ - v0.23b
+    - Added extended memory addressing (!long) to 
+      - COPY, COMPARE()
+      - FILL BYTE, FILL WORD, 
+      - LOAD, SAVE
+      - POKE, PEEK(), PEEK$(), DOKE, DEEK
+      - PLAY SAMPLE
+    - Moved gfx/screen.asm to auxrom/screen.asm
+    - Implemented COPY @page,address TO SCREEN
+    - Fixed ARGS always returning 0,ARGS$() crashing system.
+    - Fixed DIR returning wrong file size
  - v0.23a (2023-08-26)
     - Fixed LOAD BITMAP incorrectly loading 9192 byte legacy bitmaps.
     - Fixed unit test for legacy bitmaps

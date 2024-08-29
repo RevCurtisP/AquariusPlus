@@ -22,6 +22,8 @@ eval_extension:
     jp      z,eval_ascii
     cp      $5C                   ; Backslash
     jp      z,_escaped
+    cp      DIMTK
+    jp      z,eval_dim
     cp      LISTTK
     jp      z,eval_list
     cp      PLUSTK                ; IGNORE "+"
@@ -573,8 +575,56 @@ range_offset_len:
     ret
 
 ;-----------------------------------------------------------------------------
-; LIST$(line#) - Detozenize Line line#
-; LIST(NEXT) - Detozenize following Line
+; DIMS() - Get Array Dimensions
+; DIMS(*array) - number of dimensions
+; DIMS(*array,dimension) - size of dimension
+;-----------------------------------------------------------------------------
+; DIM A(9):? DIM(*A),DIM(*A,1)
+; DIM B$(3,2):? DIM(*B$),DIM(*B$,1);DIM(*B$,2)
+eval_dim:
+    rst     CHRGET                ; Skip DIM
+    call    get_par_array_pointer ; BC = CntPtr
+    ld      a,(bc)                ; A = DimCnt
+    push    bc                    ; Stack = DimCnt, RtnAdr
+    push    af                    ; Stack = CntPtr, DimCnt, RtnAdr
+    ld      e,0                   ; DimNum = 0
+    ld      a,(hl)
+    cp      ','                   ; If Comma
+    jr      nz,.no_dimnum
+    rst     CHRGET                ; Skip comma
+    call    GETBYT                ; E = DimNum
+.no_dimnum
+    SYNCHK  ')'                   ; No comma for now
+    ld      a,e                   ; A = DimNum
+    or      a                     
+    jr      nz,.dimsize           ; If DimNum = 0
+    pop     af                    ;   A = DimCnt; Stack = CntPtr, RtnAdr
+    pop     bc                    ;   BC = CntPtr; Stack = RtnAdr
+    jp      float_byte            ;   Float A
+.dimsize
+    pop     af                    ; A = DimCnt
+    ex      (sp),hl               ; HL = CntPtr; Stack = TxtPtr, RtnAdr
+    sub     e                     ; DimPos = DimCnt - DimNum
+    jp      c,FCERR               ; If DimNum > DimCnt  Illegal quantity error
+    ld      b,a                   ; B = DimNum
+    inc     b
+    dec     hl                    ; Back up for Skip
+.dimloop
+    inc     hl
+    inc     hl                    ; HL = NxtDim
+    djnz    .dimloop
+    ld      e,(hl)
+    inc     hl
+    ld      d,(hl)                ; DE = DimSiz
+    dec     de                    ; DE = LstIdx
+float_de_pophrt:
+    call    FLOAT_DE
+    pop     hl
+    ret
+
+;-----------------------------------------------------------------------------
+; LIST$(line#) - Detokenize Line line#
+; LIST(NEXT) - Detokenize following Line
 ;-----------------------------------------------------------------------------
 eval_list:
     rst     CHRGET                ; Skip LIST

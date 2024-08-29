@@ -129,6 +129,7 @@ runarg_get:
     push    bc                    ; Stack = ArgNum, RtnAdr
     call    runarg_count          ; A = ArgCnt, DE = ArgPtr
     pop     bc                    ; C = ArgNum; Stack = RtnAdr
+    inc     bc                    ; Bump ArgNum for compare
     cp      c                     ; If ArgCnt < ArgNum
     ret     c                     ;   and Return
     ld      de,RUNARGS+2

@@ -56,8 +56,9 @@
 ## Statement and functions
  - [ ] **ABS(_expression_)** - Return absolute value of expression.
  - [ ] **APPEND _filespec_,^_strvar_** - Append string to file.<!--SAVE-->
+ - [ ] **ARGS _arg_{,...} {RETURN _var_{,...}}** - Specify subroutine arguments and return variables.
  - [ ] **ARGS** - Return number of RUN arguments
- - [ ] **ARGS$(_index_)** - Return RUN argument number _index_.
+ - [ ] **ARGS$(_argno_)** - Return RUN argument number _index_.
  - [ ] **ASC(_string_)** - Return ASCII value of the first character of _string_.<!--ASC-->
  - [ ] **ASC$(_hexstring_)** - Convert _hex_string_ to an ASCII string.<!--ASC-->
  - [ ] **ATN(_float_)** - Return arctangent of argument.
@@ -78,21 +79,22 @@
  - [ ] **CLS {_fgcolor_,_bgcolor_}** - Clear the text screen.<!--CLS-->
  - [ ] **COLOR _fgcolor_{,_bgcolor_}** - Set or get bitmap default color(s).<!--COLOR-->
  - [ ] **COMPARE (*_array_,*_array_)** - Compare the binary contents of two numeric arrays.<!--COMPARE-->
- - [ ] **COMPARE ({@_page_,}_address_,{@_page_,}_address_,_length_)** - Compare two blocks of memory.<!--COMPARE-->
+ - [ ] **COMPARE ({«!_ext_addr_»|«{@_page_,}_address_»,«!_ext_addr_»|«{@_page_,}_address_»,_length_)** - Compare two blocks of memory.<!--COMPARE-->
  - [ ] **COMPARE (_filespec_,_filespec_)** - _Not implemented._<!--COMPARE-->
  - [ ] **CONT** - Resume program execution after STOP, Ctrl-C/Escape, or error.
  - [ ] **COPY** - Copy text screen to serial printer.<!--COPY-->
  - [ ] **COPY \*_array_ TO \*array** - _Not implemented._<!--COPY-->
- - [ ] **COPY {@_page_,}_address_,_length_ TO {@_page_,}_address_ {FAST}** - Copy bytes from one section of memory to another.<!--COPY-->
+ - [ ] **COPY «!_ext_addr_»|«{@_page_,}_address_»,_length_ TO «!_ext_addr_»|«{@_page_,}_address_» {FAST}** - Copy bytes from one section of memory to another.<!--COPY-->
  - [ ] **COPY FILE _filespec_ TO _filespec_** - Copy file.<!--COPY-->
- - [ ] **COPY SCREEN TO @page,address** - Copy file.<!--COPY-->
+ - [ ] **COPY SCREEN TO «!_ext_addr_»|«@_page_,_address_»** - Copy screen to paged memory.
+ - [ ] **COPY «!_ext_addr_»|«@_page_,_address_» TO SCREEN** - Copy paged memory to screen.
  - [ ] **COS(_float_)** - Return cosine of argument.
  - [ ] **CSAVE _filename_|\*_array_** - Save program or array data to cassette.
  - [ ] **DATA _literal_{,...}** - Define data for `READ` statement.
  - [ ] **DATE$** - Return the current date.<!--DATETIME-->
  - [ ] **DATETIME$** - Return the current date and time.<!--DATETIME-->
  - [ ] **DEC(_hexstring_)** - Convert hexadecimal string to integer.
- - [ ] **DEEK({@_page_,}_address_)** - Read integer from memory.<!--DEEK-->
+ - [ ] **DEEK(«!_ext_addr_»|«@_page_,_address_»)** - Read integer from memory.<!--DEEK-->
  - [ ] **DEF ATTRLIST _strvar_=_attr_,...** - Create a string list of sprite and/or tile attributes.
  - [ ] **DEF BYTELIST _strvar_=_byte_,...** - Create a string list of bytes.
  - [ ] **DEF FN _var_(_var_) = _expression_** - Define user-defined function.<!--DEFATTR-->
@@ -103,9 +105,12 @@
  - [ ] **DEF SPRITE _strvar_= [_spritle_,...],...** - Create a sprite definition.<!--DEFSPRITE-->
  - [ ] **DEF TILELIST _strvar_=_tileno_,...** - Create a string list of tile indexes.<!--DEFTILE-->
  - [ ] **DEF USR=_address_** - Set USR() machine language routine address.
- - [ ] **DIM _array_(_dim_{,...}){,...}** - Create and allocates one or more arrays.
+ - [ ] **DIM _array_(_dim_{,...}),...** - Create and allocate one or more arrays.
+ - [ ] **DIM _array_(_dim_{,...})=expr,...** - Create and populate array.
+ - [ ] **DIM(\*_array_)** - Return number of dimensions in array.
+ - [ ] **DIM(\*_array_,_dim_)** - Return size of array dimension.
  - [ ] **DIR {_dirspec_}** - Display disk directory.<!--DOKE-->
- - [ ] **DOKE {@_page_,}_address_,_integer_{;...}** - Write one or more integers to memory.<!--DOKE-->
+ - [ ] **DOKE {«!_ext_addr_»|«@_page_,_address_»,_integer_{;...}** - Write one or more integers to memory.<!--DOKE-->
  - [ ] **DRAW _command_string_** - _Not implemented._
  - [ ] **DRAW TEXT (_col_,_row)_),_string_** - _Not implemented._
  - [ ] **EDIT {_lineref_}** - _Not implemented._
@@ -165,7 +170,7 @@
  - [ ] **LIST {_lineref_}** - Display program lines starting at beginning of program or specified line.
  - [ ] **LLIST {_lineref_}** - Outputs program lines to printer starting at beginning of program or specified line.
  - [ ] **LOAD _filespec_** - Load BASIC program into memory.<!--LOAD-->
- - [ ] **LOAD _filespec_,{@_page_,}_address_** - Load binary file into memory.<!--LOAD-->
+ - [ ] **LOAD _filespec_,«!_ext_addr_»|«{@_page_,}_address_»** - Load binary file into memory.<!--LOAD-->
  - [ ] **LOAD _filespec_,\*_array_** - Load binary file data into numeric or string array.<!--LOAD-->
  - [ ] **LOAD _filespec_,\*_array_,ASC** - Load multi-line ASCII file into string array.<!--LOAD-->
  - [ ] **LOAD _filespec_,^_string_** - Load up to 255 characters of file into string variable.<!--LOAD-->
@@ -209,16 +214,16 @@
  - [ ] **PAUSE** - Halt program execution until key is pressed.<!--PAUSE-->
  - [ ] **PAUSE _jiffies_** - _Not implemented._
  - [ ] **PAUSE PT3** - Pause currently playing PT3 track.
- - [ ] **PEEK({@_page_,}_address_)** - Read byte from memory.<!--PEEK-->
- - [ ] **PEEK$({@_page_,}_address_,_length_)** - Read string from memory.<!--PEEK-->
+ - [ ] **PEEK(«!_ext_addr_»|«{@_page_,}_address_»)** - Read byte from memory.<!--PEEK-->
+ - [ ] **PEEK$(«!_ext_addr_»|«{@_page_,}_address_»,_length_)** - Read string from memory.<!--PEEK-->
  - [ ] **PEEKCOLOR(_address_)** - Read byte from color RAM.
  - [ ] **PEEKCOLOR$(_address_,_length_)** - Read string from color RAM.
  - [ ] **PEEKSCREEN(_address_)** - Read byte from screen RAM.
  - [ ] **PEEKSCREEN$(_address_,_length_)** - Read string from screen RAM.
  - [ ] **PLAY PT3 \{_filespec_}** - Play specified or previously loaded PT3 track.<!--PLAYPT3-->
- - [ ] **PLAY SAMPLE @_page_,_address_** - Play digital sample from previously loaded file.<!--PLAYSAMPLE-->
+ - [ ] **PLAY SAMPLE «!_ext_addr_»|«@_page_,_address_»** - Play digital sample from previously loaded file.<!--PLAYSAMPLE-->
  - [ ] **POINT(_x_,_y_)** - Return status of bloxel or pixel.<!--PSET-->
- - [ ] **POKE {@_page_,}_address_,_byte_|_string_{;..}.** - Write bytes and/or strings to memory.<!--POKE-->
+ - [ ] **POKE «!_ext_addr_»|«{@_page_,}_address_»,_byte_|_string_{;..}.** - Write bytes and/or strings to memory.<!--POKE-->
  - [ ] **POKE COLOR _address_,_byte_|_string_{;...}** - Write bytes and/or strings to color RAM.<!--POKESCREEN-->
  - [ ] **POKE SCREEN _address_,_byte_|_string_{;...}** - Write bytes and/or strings to screen RAM.<!--POKESCREEN-->
  - [ ] **POS(_expression__)** - Return current cursor column.
@@ -316,7 +321,7 @@
  - [ ] **TILEMAPY** - Return X-offset of tilemap.
  - [ ] **TIME$** - Return the current time.<!--DATETIME-->
  - [ ] **TIMER** - Return timer count.
- - [ ] **TIMER = _expression_** - Set and start jiffy timer.<!--TIMER-->
+ - [ ] **TIMER = _long_** - Set and start jiffy timer.<!--TIMER-->
  - [ ] **TRIM$(_string_{,_string_})** - Remove characters from both ends of string.
  - [ ] **TRIMDIR$(_filespec_)** - Remove path from filespec.
  - [ ] **TRIMEXT$(_filespec_)** - Remove extension from filespec.
