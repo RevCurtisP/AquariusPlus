@@ -3,52 +3,106 @@
 ;=============================================================================
 
 ;-----------------------------------------------------------------------------
+; Fill Color RAM with current/default colors
+;-----------------------------------------------------------------------------
+screen_clear_color:
+    ld      a,(BASYSCTL)
+    rla     
+    ld      a,DFLTATTRS
+    jr      nc,.skip
+    ld      a,(SCOLOR)
+.skip
+    ld      c,IO_VCTRL
+    in      b,(c)
+    bit     6,b    
+    jr      nz,.clear80
+    ld      hl,COLOR
+    ld      bc,1024
+    jp      sys_fill_mem
+.clear80
+    set     7,b
+    out     (c),b
+    push    bc  
+    ld      hl,SCREEN
+    ld      bc,2048
+    call    sys_fill_mem
+    pop     bc
+    res     7,b
+    out     (c),b
+    ret
+
+;-----------------------------------------------------------------------------
 ; Copy Current Screen to Paged RAM
 ; Input: A: Page
 ;        DE: Address
 ; Clobbered: A,AF',BC,DE,HL
 ;-----------------------------------------------------------------------------
+; COPY SCREEN TO @32,0
+; COPY SCREEN TO @34,0 FAST
+; SCREEN 3:COPY SCREEN TO @33,0:SCREEN 1
+; COPY @32,0 TO SCREEN
+; COPY @34,0 TO SCREEN FAST
+; SCREEN 3:COPY @33,0 TO SCREEN:SCREEN 1
+screen_read_fast:
+    ld      iy,_paged_to_screen_fast
+    jr      _screen_read
 screen_read_paged:
-    ex      de,hl
-    ld      iy,_read_screen_paged
+    ld      iy,_paged_to_screen
+_screen_read:
+    ex      de,hl                 ; HL - Address
+    jr      _read_write_screen
+screen_write_fast:
+    ld      iy,_screen_to_paged_fast
     jr      _read_write_screen
 screen_write_paged:
-    ld      iy,_write_screen_paged
+    ld      iy,_screen_to_paged
 _read_write_screen:
-    ex      af,af'                ; A' = Page
-    in      a,(IO_VCTRL)          
-    and     VCRTL_80COL_EN        ; If 40-colomn mode
+    ld      c,IO_VCTRL
+    in      b,(c)          
+    bit     6,b                   ; If 40-colomn mode
     jp      z,jump_iy             ;   Write it and Return
-    ex      af,af'                ; A = Page
-    call    set_textpage_0
-    ex      af,af'
+    call    screen_textpage_0
+    push    af                    ; Stack = Page, RtnAdr
     call    jump_iy               ; Write Screen RAM
-    jr      z,set_textpage_0
-    jr      c,set_textpage_0
-    ex      af,af'                ; A' = Page
-    in      a,(IO_VCTRL)          
-    or      VCTRL_TEXT_PAGE
-    out     (IO_VCTRL),a          ; Switch to text page 1
+    pop     af                    ; A = Page; Stack = RtnAdr
+    call    screen_textpage_1
     call    jump_iy               ; Write Color RAM
-set_textpage_0:
-    ex      af,af'
-    in      a,(IO_VCTRL)          
-    and     $FF-VCTRL_TEXT_PAGE
-    out     (IO_VCTRL),a          ; Switch to text page 0
-    ex      af,af'
-    ret
-_write_screen_paged:
-    ex      af,af'                
+    jr      screen_textpage_0
+_screen_to_paged_fast:
+    ld      ix,page_fast_write_bytes
+    jr      _to_paged
+_screen_to_paged:
+    ld      ix,page_write_bytes
+_to_paged:
     ld      hl,SCREEN
-    ld      bc,2048
-    jp      page_write_bytes
-_read_screen_paged:
-    ex      af,af'                
+    jr      _copy
+_paged_to_screen_fast:
+    ld      ix,page_fast_read_bytes
+    jr      _to_screen
+_paged_to_screen:
+    ld      ix,page_read_bytes
+_to_screen:
     ld      de,SCREEN
+_copy:
     ld      bc,2048
-    jp      page_read_bytes
+    push    ix
+    call    jump_ix
+    pop     ix
+    ret
 
-
+screen_textpage_1:
+    push    af
+    in      a,(IO_VCTRL)
+    or      a,VCTRL_TEXT_PAGE
+    jr      _set_text_page
+screen_textpage_0:
+    push    af
+    in      a,(IO_VCTRL)
+    and     a,$FF-VCTRL_TEXT_PAGE
+_set_text_page:
+    out     (IO_VCTRL),a
+    pop     af
+    ret
 
 ;-----------------------------------------------------------------------------
 ; Read byte from screen

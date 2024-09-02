@@ -102,7 +102,9 @@ espn_get_mouse:
 ;  Input: A: File descriptor
 ;        BC: Maximum line length
 ;        HL: String buffer address
-; Output: BC: String length
+; Output: A: Result
+;        BC: String length
+;         D: File descriptor
 ; Clobbered: A
 ;-----------------------------------------------------------------------------
 espx_read_line:
@@ -110,11 +112,14 @@ espx_read_line:
     ld      a,ESPCMD_READLINE     
     call    esp_cmd
     pop     af
+    push    af                    ; Stack = FilDsc, RtnAdr
     call    esp_send_byte         ; Send file descriptor
     call    esp_send_bc           ; Send maximum line length
     call    esp_get_result 
+    pop     de                    ; D = FilDsc; Stack = RtnAdr
     ret     m                     ; Return if error
     push    hl                    ; Stack = BufAdr, RtnAdr
+    push    de                    ; Stack = FilDsc, BufAdr, RtnAdr
     ld      bc,0                  ; Initialize length
 .loop
     call    esp_get_byte          ; Read byte
@@ -125,6 +130,7 @@ espx_read_line:
     inc     bc                    ;   Update length
     jr      .loop                 ;   Read next byte
 .done
+    pop     de                    ; D = FilDsc; Stack = BufAdr, RtnAdr
     pop     hl                    ; HL = BufAdr; Stack = RtnAdr
     ret
 

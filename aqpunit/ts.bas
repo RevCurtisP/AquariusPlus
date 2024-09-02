@@ -1,7 +1,7 @@
 100 REM Test Tiles and Sprites
-110 GOSUB _init
-123 SET FNKEY 3 TO \"RUN ts.baq\r"
-130 QC=1:'Last Unit Test Program
+
+110 QG$="tx"
+120 GOSUB _init
 
 200 GOSUB _title:ARGS "Tiles and Sprites"
 

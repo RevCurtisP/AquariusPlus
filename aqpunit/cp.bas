@@ -1,9 +1,6 @@
 100 REM Unit Tests for COPY
-110 GOSUB _init
-123 SET FNKEY 3 TO \"RUN cp.baq\r"
-124 SET FNKEY 4 TO \"RUN pp.baq\r"
-
-190 REM Tests
+110 QG$="pp"
+120 GOSUB _init
 
 200 GOSUB _title:ARGS "COPY"
 202 PRINT "Building binary data";

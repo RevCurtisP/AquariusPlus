@@ -1,7 +1,7 @@
 100 REM Test Save and Load Extensions
-110 GOSUB _init
-123 SET FNKEY 3 TO \"RUN sx.baq\r"
-124 SET FNKEY 4 TO \"RUN tf.baq\r"
+
+110 QG$="tf"
+120 GOSUB _init
 
 200 GOSUB _title:ARGS "SAVE and LOAD Extensions"
 202 SET FILE ERROR OFF

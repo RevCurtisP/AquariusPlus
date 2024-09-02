@@ -1,7 +1,6 @@
 100 REM POKE and PEEK Unit Tests
-110 GOSUB _init
-123 SET FNKEY 3 TO \"RUN pp.baq\r"
-124 SET FNKEY 4 TO \"RUN sb.baq\r"
+110 QG$="sb"
+120 GOSUB _init
 
 200 GOSUB _title:ARGS "POKE & PEEK"
 210 FOR I=1 TO 3:A=$3000+I:GOSUB _poke:ARGS A,I:NEXT

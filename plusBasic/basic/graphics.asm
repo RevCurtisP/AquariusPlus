@@ -2,8 +2,7 @@
 ; Graphics Statements and Functions
 ;====================================================================
 
-;; ToDo: Normalize SCREEN CHR and SCREEN ATTR
-;; LOAD SCREEN, SAVE SCREEN
+; ToDo: Fix and _check_coords, test screen_bounds, colormap_bounds
 
 ;-----------------------------------------------------------------------------
 ; USE CHRSET - Change Character Set
@@ -287,7 +286,15 @@ ST_COPY_SCREEN:
     call    get_page_addr         ; A = Page, DE = Address
     jp      nc,FCERR              ; Error if page not specified
     ld      iy,screen_write_paged
-    jr      aux_call_preserve_hl
+    push    af                    ; Stack = PgFlg, RtnAdr
+    ld      a,(hl)
+    cp      XTOKEN
+    jr      nz,_copy_screen
+    rst     CHRGET
+    rst     SYNCHR
+    byte    FASTK
+    ld      iy,screen_write_fast
+    jr      _copy_screen
 
 ;-----------------------------------------------------------------------------
 ; COPY TO SCREEN - Copy paged memory to Screen RAM 
@@ -296,7 +303,18 @@ ST_COPY_SCREEN:
 ; On entry, A = Page, DE = Address
 copy_to_screen:
     ld      iy,screen_read_paged
+    push    af                    ; Stack = PgFlg, RtnAdr
+    ld      a,(hl)
+    cp      XTOKEN
+    jr      nz,_copy_screen
+    rst     CHRGET
+    rst     SYNCHR
+    byte    FASTK
+    ld      iy,screen_read_fast
+_copy_screen
+    pop     af                    ; A = PgFlg; Stack = RtnAdr
     jr      aux_call_preserve_hl
+
 
 ;-----------------------------------------------------------------------------
 ; COPY TO SCREEN - Copy Screen RAM to paged memory
@@ -419,9 +437,7 @@ ST_FILL_COLORMAP:
     push    hl                    ; Stack = TxtPtr, RtnAdr
     ld      l,a                   ; L = Colors
     ld      iy,colormap_fill
-    call    aux_call
-    jp      c,FCERR               ; Illegal quantity error if out of bounds
-    pop     hl
+    jp      aux_call_fc_popret
     ret
 
 ;-----------------------------------------------------------------------------
@@ -464,21 +480,20 @@ ST_FILL_SCREEN:
     call    parse_colors          ;   A = Colors
     pop     bc                    ;   BC = Cols; Stack = Rows, RtnAdr
     pop     de                    ;   DE = Rows; Stack = RtnAdr
-    push    hl                    ;   Stack = TxtPtr, Cols, Rows, RtnAdr
+    push    hl                    ;   Stack = TxtPtr, RtnAdr
     ld      h,-1                  ;   H = Fill Text
     ld      l,a                   ;   L = Fill Byte
     ld      iy,screen_fill
-    call    aux_call              ;   Do the fill
-    pop     hl                    ;   HL = TxtPtr; Stack = Cols, Rows, RtnAdr
-    ret
-
+    jp      aux_call_fc_popret
 
 ;-----------------------------------------------------------------------------
 ; FILL TILEMAP TILE tile# ATTR attrs PALETTE palette#
 ; FILL TILEMAP (col,row)-(col,row) TILE tile# ATTR attrs PALETTE palette#
 ;-----------------------------------------------------------------------------
-;FILL TILEMAP (5,4) - (12,11) TILE 128
-;FILL TILEMAP TILE 511
+; FILL TILEMAP (5,4) - (12,11) TILE 128
+; FILL TILEMAP TILE 511
+; Errors
+; FILL TILEMAP (-1,0)-(63,31) TILE 128 PALETTE 0
 ST_FILL_TILE:
     rst     CHRGET                ; Skip TILE
     rst     SYNCHR                ; Require MAP
@@ -500,9 +515,7 @@ ST_FILL_TILE:
     ex      (sp),hl               ; HL = Rows; Stack = TxtPtr, RtnAdr
     ex      de,hl                 ; DE = Rows, HL = TilPrp
     ld      iy,tilemap_fill
-    call    aux_call              ; In: B=BgnCol, C=EndCol, D=BgnRow, E=EndRow, HL: TilPrp
-    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
-    ret
+    jp      aux_call_fc_popret
 
 ;-----------------------------------------------------------------------------
 ; GET SCREEN (col,row)-(col,row) *arrayvar
@@ -647,10 +660,7 @@ _get_put:
     ex      (sp),hl               ; HL = Row; Stack = TxtPtr, RtnAdr
     ex      de,hl                 ; E = Row, HL = AryAdr
     ld      a,(XTEMP0+1)          ; A = Mode (GET/PUT SCREEN)
-    call    aux_call
-    jp      c,FCERR
-    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
-    ret
+    jp      aux_call_fc_popret
 
 
 ;-----------------------------------------------------------------------------
@@ -691,6 +701,7 @@ ST_SET_TILEMAP:
     ex      (sp),hl               ;   L = Row; Stack = TxtPtr, RtnAdr
     ex      de,hl                 ;   E = Row, HL = TilDef
     ld      iy,tilemap_set_tile
+aux_call_fc_popret:
     call    aux_call              ;   Write tile to tilemap
     jp      c,FCERR               ;   Error if invalid coordinates
     pop     hl                    ;   HL = TxtPtr; Stack = RtnAdr

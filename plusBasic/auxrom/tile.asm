@@ -303,10 +303,14 @@ tile_convert_rect:
 ; In: C=Column, E=Row
 ; Out: Carry set if out of bounds
 _tilemap_bounds:
-    ld      a,64
-    cp      b                     ; If EndCol > 63
+    ld      a,63
+    cp      b                     ; If StartCol > 63
     ret     c                     ;   Return Carry Set
-    ld      a,32
+    cp      c                     ; If EndCol > 63
+    ret     c                     ;   Return Carry Set
+    ld      a,31
+    cp      d                     ; If StartRow > 31
+    ret     c                     ;   Return Carry Set
     cp      e                     ; If EndRow > 31
     ret                           ;   Return Carry Set
 

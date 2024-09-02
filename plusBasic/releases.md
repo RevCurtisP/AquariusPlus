@@ -1,5 +1,14 @@
 # plusBASIC Release History
- - v0.23b
+ - v0.23c (2024-09-01)
+    - Enabled SET BREAK ON/OFF
+    - Fixed PEEK$ Syntax error
+    - Added ASC option to SAVE/LOAD PALETTE.
+    - Added FAST option to COPY SCEEN TO ... and COPY ... TO SCEEN
+    - Added `CLEAR COLOR`
+    - Fixed page_read_paged and page_write_paged to return next paged address
+    - Fixed FILL TILEMAP out of bounds error checking
+    - Added continuous chain option to unit tests
+ - v0.23b(2024-08-28)
     - Added extended memory addressing (!long) to 
       - COPY, COMPARE()
       - FILL BYTE, FILL WORD, 

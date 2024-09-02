@@ -23,6 +23,7 @@ file_close:
     ld      a,l
     call    dos_close
     pop     af
+_or_a_ret:
     or      a
     ret
 
@@ -151,6 +152,7 @@ _load_paged:
 .done
     push    af                    ; Stack = Result, RtnAdr
     ld      a,l
+_close_pop_af:
     call    dos_close
     pop     af                    ; AF = Result; Stack = RtnAdr
     ret
@@ -251,17 +253,21 @@ file_load_pt3:
     ret
 
 ;-----------------------------------------------------------------------------
-; Load Pallete
+; Load Palette
 ; Input: A: Palette number
+;        B: File type: 0 = binary, else ASCII
 ;       HL: String descriptor address
 ; Output: A: result code
 ; Flags Set: S if I/O error
-;            C if file too large
+;            C if invalid file
 ; Clobbered: BC, DE, EF
 ; Populates: String Buffer
 ;-----------------------------------------------------------------------------
 file_load_palette:
     ld      e,a                   ; E = PalNum
+    ld      a,b
+    or      a
+    jr      nz,_load_palette_asc
     push    de                    ; Stack = PalNum, RtnAdr
     call    file_load_strbuf      ; A = Result, BC = DatLen, HL = StrBuf
     pop     de                    ; E = PalNum; Stack = RtnAdr
@@ -273,6 +279,69 @@ file_load_palette:
     xor     a
     jp      palette_set           ; Write out palette and return
 
+_load_palette_asc:
+    call    dos_open_read         ; A = FilDsc
+    ret     m                     ; Return if I/O Error
+    push    de                    ; Stack = PalNum, RtnAdr
+    push    af                    ; Stack = FilDsc, PalNum, RtnAdr
+    call    get_strbuf_addr       ; HL = StrBuf
+    ld      d,h
+    ld      e,l                   ; DE = BinPtr
+    ld      bc,32
+    add     hl,bc                 ; LinBuf = StrBuf+32
+    pop     af                    ; A = FilDsc; Stack = PalNum, RtnAdr
+.loop
+    push    hl                    ; Stack = LinBuf, PalNum, RtnAdr
+    push    de                    ; Stack = BinPtr, LinBuf, PalNum, RtnAdr
+    ld      bc,255-32
+    call    espx_read_line        ; A = Result, C = LinLen, D = FilDsc
+    ld      b,d                   ; B = FilDsc
+    jp      m,.finish
+    pop     de                    ; DE = BinPtr; Stack = LinBuf, PalNum, RtnAdr
+    ld      a,(hl)                
+    inc     hl
+    cp      '#'                   
+    jr      nz,.next              ; If first character is #
+    ld      a,c                   
+    cp      7                     ;   If LinLen < 7
+    jr      c,.badline            ;     Exit with carry set
+    push    bc                    ;   Stack = FilDsc, LinBuf, PalNum, RtnAdr
+    call    asc_to_rgb            ;   Read RRGGBB to (DE)
+    pop     bc                    ;   B = FilDsc; Stack = LinBuf, PalNum, RtnAdr
+    jr      c,.badline
+    ld      a,b                   ;   A = FilDsc
+.next
+    pop     hl                    ; HL = LinBuf; Stack = PalNum, RtnAdr
+    jr      .loop
+.finish
+    pop     de                    ; DE = BinPtr, Stack = LinBuf, PalNum, RtnAdr
+    pop     hl                    ; Stack = PalNum, RtnAdr
+    pop     hl                    ; L = PalNum; Stack = RtnAdr
+    push    af                    ; Stack = Result, RtnAdr
+    ld      a,b                   ; A = FilDsc
+    call    dos_close             
+    pop     af                    ; AF = Result; Stack = RtnAdr
+    jp      p,.write              ; If Error
+    cp      ERR_EOF               ;   and not EOF
+    jp      nz,_or_a_ret          ;   Return it
+.write
+    push    hl                    ; Stack = PalNum, RtnAdr
+    call    get_strbuf_addr       ; HL = StrBuf
+    ex      de,hl                 ; DE = StrBuf; HL = BinPtr
+    sbc     hl,de                 
+    ld      b,h
+    ld      c,l                   ; BC = BinLen
+    pop     hl                    ; L = PalNum; Stack = RtnAdr
+    xor     a                     ; Palette entry 0
+    jp      palette_set           ; Write palette and return
+.badline
+    pop     hl                    ; HL = LinBuf; Stack = PalNum, RtnAdr
+    pop     hl                    ; HL = PalNum; Stack = RtnAdr
+.close
+    push    af
+    ld      a,b                   ; A = FilDsc
+    jp      _close_pop_af
+    
 ;-----------------------------------------------------------------------------
 ; Read file into string buffer
 ; Input: HL: String descriptor address

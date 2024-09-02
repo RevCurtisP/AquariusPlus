@@ -118,6 +118,9 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>CLEAR BITMAP {<em>fgcolor</em>,<em>bgcolor</em>}</strong> - Clear bitmap layer.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
+        <strong>CLEAR COLOR</strong> - Set Color RAM to current foreground and background colors.</li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
         <strong>CLEAR CURSOR</strong> - Temporarily remove cursor from screen.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
@@ -154,10 +157,13 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>COPY �!_ext_addr_�|�{@<em>page</em>,}_address_�,<em>length</em> TO �!_ext_addr_�|�{@<em>page</em>,}_address_� </strong> - Copy bytes from one section of memory to another.<!--COPY--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
+        <strong>COPY �!_ext_addr_�|�@<em>page</em>,_address_�,<em>length</em> TO SCREEN </strong> - Copy bytes from one section of memory to another.<!--COPY--></li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
         <strong>COPY FILE <em>filespec</em> TO <em>filespec</em></strong> - Copy file.<!--COPY--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>COPY SCREEN TO �!_ext_addr_�|�@<em>page</em>,_address_�</strong> - Copy screen to paged memory.</li>
+        <strong>COPY SCREEN TO �!_ext_addr_�|�@<em>page</em>,_address_� </strong> - Copy screen to paged memory.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>COPY �!_ext_addr_�|�@<em>page</em>,_address_� TO SCREEN</strong> - Copy paged memory to screen.</li>
@@ -442,7 +448,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>LOAD MODULE</strong> - <em>Proposed enhancement.</em></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>LOAD PALETTE <em>p</em>,<em>filespec</em></strong> - Load file data ino palette.<!--LOADPALETTE--></li>
+        <strong>LOAD PALETTE <em>p</em>,<em>filespec</em>{,ASC}</strong> - Load file data ino palette.<!--LOADPALETTE--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>LOAD PT3 <em>filespec</em></strong> - Load PT3 track into PT player buffer.</li>
@@ -703,7 +709,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>SAVE FNKEYS <em>filespec</em></strong> - Save function key definitions to file.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>SAVE PALETTE <em>p</em>,<em>filespec</em></strong> - Save palette contents to file.<!--SAVEPALETTE--></li>
+        <strong>SAVE PALETTE <em>p</em>,<em>filespec</em>{,ASC}</strong> - Save palette contents to file.<!--SAVEPALETTE--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>SAVE SCREEN <em>filespec</em></strong> - Save text screen to file.</li>
@@ -733,7 +739,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>SET BIT</strong> - <em>Not implemented</em></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>SET BREAK ON|OFF</strong> - <em>Incomplete</em> Enable or disable control-c checking.</li>
+        <strong>SET BREAK ON|OFF</strong> - Enable or disable control-c checking.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>SET CHRDEF <em>ascii_code</em>,<em>string</em></strong> - Redefine character.<!--CHRSET--></li>

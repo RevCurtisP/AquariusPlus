@@ -892,7 +892,7 @@ ST_SET:
 ;-----------------------------------------------------------------------------
 ST_SET_BREAK:
     call    get_on_off            ; A = $FF if ON, $00 if OFF
-    xor     $FF                   ; A = $00 if enaable, $FF if disabled
+    xor     $FF                   ; A = $00 if enable, $FF if disabled
     jp      sys_break_mode
 
 ;-----------------------------------------------------------------------------

@@ -239,9 +239,9 @@ FNJUMPS:
 ; Aligned to next 256 byte boundary
 ;===========================================================================
 
-    dc $C1A0-$,$76
+    dc $C200-$,$76
 
-_jump_table
+_jump_table:
     jp      get_linbuf_addr       ; Get Line Buffer Address
     jp      get_strbuf_addr       ; Get String Buffer Address
     jp      FLOAT_BC              ; Convert BC to unsigned float in FACC

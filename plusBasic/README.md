@@ -73,6 +73,7 @@
  - [ ] **CLEAR {_integer_{,_address_}}** - Clear all variables, optionally allocating string text space and top of BASIC RAM.<!--CLEAR-->
  - [ ] **CLEAR \*_array_{,...}** - Clear numeric or string array data.<!--CLEAR-->
  - [ ] **CLEAR BITMAP {_fgcolor_,_bgcolor_}** - Clear bitmap layer.
+ - [ ] **CLEAR COLOR** - Set Color RAM to current foreground and background colors.
  - [ ] **CLEAR CURSOR** - Temporarily remove cursor from screen.
  - [ ] **CLOAD {{?}_filename_}|\*_array_** - Load or verify program or load array data from cassette.
  - [ ] **CLOSE** - _Not implemented._
@@ -85,8 +86,9 @@
  - [ ] **COPY** - Copy text screen to serial printer.<!--COPY-->
  - [ ] **COPY \*_array_ TO \*array** - _Not implemented._<!--COPY-->
  - [ ] **COPY «!_ext_addr_»|«{@_page_,}_address_»,_length_ TO «!_ext_addr_»|«{@_page_,}_address_» {FAST}** - Copy bytes from one section of memory to another.<!--COPY-->
+ - [ ] **COPY «!_ext_addr_»|«@_page_,_address_»,_length_ TO SCREEN {FAST}** - Copy bytes from one section of memory to another.<!--COPY-->
  - [ ] **COPY FILE _filespec_ TO _filespec_** - Copy file.<!--COPY-->
- - [ ] **COPY SCREEN TO «!_ext_addr_»|«@_page_,_address_»** - Copy screen to paged memory.
+ - [ ] **COPY SCREEN TO «!_ext_addr_»|«@_page_,_address_» {FAST}** - Copy screen to paged memory.
  - [ ] **COPY «!_ext_addr_»|«@_page_,_address_» TO SCREEN** - Copy paged memory to screen.
  - [ ] **COS(_float_)** - Return cosine of argument.
  - [ ] **CSAVE _filename_|\*_array_** - Save program or array data to cassette.
@@ -181,7 +183,7 @@
  - [ ] **LOAD DIR \{_filespec_,}\*_array_**,BIN - Load binary disk directory into string array.
  - [ ] **LOAD FNKEYS _filespec_** - Load function key definitions from file.<!--FNKEYS-->
  - [ ] **LOAD MODULE** - _Proposed enhancement._
- - [ ] **LOAD PALETTE _p_,_filespec_** - Load file data ino palette.<!--LOADPALETTE-->
+ - [ ] **LOAD PALETTE _p_,_filespec_{,ASC}** - Load file data ino palette.<!--LOADPALETTE-->
  - [ ] **LOAD PT3 _filespec_** - Load PT3 track into PT player buffer.
  - [ ] **LOAD SCREEN _filespec_** - Load text screen from file.
  - [ ] **LOAD SCREEN ATTR _filespec_** - Load text colors from file.
@@ -268,7 +270,7 @@
  - [ ] **SAVE BITMAP _filespec_** - Save bitmap screen data from Video RAM to file.
  - [ ] **SAVE CHRSET _filespec_** - Save curent character set to file.<!--CHRSET-->
  - [ ] **SAVE FNKEYS _filespec_** - Save function key definitions to file.
- - [ ] **SAVE PALETTE _p_,_filespec_** - Save palette contents to file.<!--SAVEPALETTE-->
+ - [ ] **SAVE PALETTE _p_,_filespec_{,ASC}** - Save palette contents to file.<!--SAVEPALETTE-->
  - [ ] **SAVE SCREEN _filespec_** - Save text screen to file.
  - [ ] **SAVE SCREEN ATTR _filespec_** - _Not implemented_
  - [ ] **SAVE SCREEN CHR _filespec_** - _Not implemented_
@@ -278,7 +280,7 @@
  - [ ] **SCROLL BITMAP** - Not implemented.
  - [ ] **SCROLL SCREEN** - Not implemented.
  - [ ] **SET BIT** - _Not implemented_
- - [ ] **SET BREAK ON|OFF** - _Incomplete_ Enable or disable control-c checking.
+ - [ ] **SET BREAK ON|OFF** - Enable or disable control-c checking.
  - [ ] **SET CHRDEF _ascii_code_,_string_** - Redefine character.<!--CHRSET-->
  - [ ] **SET COLOR _fgcolor_,_bgcolor_** - Enable color printing mode.<!--SETCOLOR-->
  - [ ] **SET COLOR OFF** - Disable color printing mode.<!--SETCOLOR-->

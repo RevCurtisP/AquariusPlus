@@ -125,7 +125,7 @@ just_ret:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.23b"
+    db "v0.23c"
     db 0
 plus_len   equ   $ - plus_text
 
@@ -384,7 +384,7 @@ in_direct:
 _iscntc_hook:
     inc     sp                    ; Discard CALL XCNTC return address
     inc     sp
-    call    CNTCCN                ; Check for Control-C
+    call    _check_ctrl_c         ; Check for Control-C
     ret     z                     ; Return if no keypress
     cp      'D'-64                ; If Ctrl-D
     jr      z,.turbo_off          ;   Disable Turbo Mode
@@ -395,10 +395,9 @@ _iscntc_hook:
     xor     a
     jp      sys_turbo_mode
 
-;;; Todo: SET BREAK ON/OFF - BASYSCTL bit 5    
 _check_ctrl_c:    
     ld      a,(BASYSCTL)
-    and     $20
+    and     BASBRKOFF
     jp      z,CNTCCN
     call    INCHRH
     or      a

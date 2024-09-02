@@ -39,6 +39,8 @@ tokenize:
     call    KLOOP
     jp      page_set_plus
 
+
+
 ;-----------------------------------------------------------------------------
 ; Convert byte to two digit number
 ;  Input: A: byte
@@ -51,9 +53,9 @@ byte_to_hex:
     rra
     rra
     rra
-    call    .hex
+    call    nybble_to_hex
     ld      a, b
-.hex:
+nybble_to_hex:
     and     $0F
     cp      10
     jr      c, .chr

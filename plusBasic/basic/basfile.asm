@@ -673,15 +673,13 @@ _save_chrset:
     ld      iy,file_save_chrset
     jr      _aux_call
 
-
-;; ToDo: LOAD/SAVE ASCII
-;; GiMP palette text format
-;; 16 lines of #RRGGBB (Hex)
 _save_palette:
 ; save palette 0,"/t/default.pal"
+; save palette 1,"/t/palette.txt",ASC
     ld      iy,file_save_palette
     jr      _do_palette
 ; load palette 0,"/t/gray.pal"
+; load palette 0,"/t/palette.txt",ASC
 _load_palette:
     ld      iy,file_load_palette
 _do_palette:
@@ -691,11 +689,21 @@ _do_palette:
     push    af                    ; Stack = PalNum, FilRtn, RtnAdr
     SYNCHK  ','                   ; Require comma
     call    get_strdesc_arg       ; HL = FilStd; Stack = TxtPtr, PalNum, FilRtn, RtnAdr
+    ex      (sp),hl               ; HL = TxtPtr; Stack = FilStd, PalNum, FilRtn, RtnAdr
+    call    CHRGT2                ; Reget Character
+    ld      b,0
+    jr      z,.do_save_load       ; If not terminator
+    SYNCHK  ','                   
+    rst     SYNCHR                ; Require ,ASC
+    byte    ASCTK   
+    dec     b
+.do_save_load:    
+    ex      (sp),hl               ; HL = FilStd; Stack = TxtPtr, PalNum, FilRtn, RtnAdr
     pop     de                    ; DE = TxtPtr
     pop     af                    ; A = PalNum; Stack = FilRtn, RtnAdr
     pop     iy                    ; IY = FilRtn; Stack = RtnAdr
     push    de                    ; Stack = TxtPtr, RtnAdr
-    jp      _aux_call_hl_error
+    jp      _aux_call_bdf
 
 ; load pt3 "/music/songs1/dontstop.pt3"
 ; load pt3 "/music/songs1/dance.pt3"

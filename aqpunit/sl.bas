@@ -1,9 +1,7 @@
 100 REM Test Save and Load
-110 GOSUB _init
-123 SET FNKEY 3 TO \"RUN sl.baq\r"
-124 SET FNKEY 4 TO \"RUN ss.baq\r"
 
-190 REM Tests
+110 QG$="ss"
+120 GOSUB _init
 
 200 GOSUB _title:ARGS "SAVE and LOAD"
 202 SET FILE ERROR OFF

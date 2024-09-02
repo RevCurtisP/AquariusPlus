@@ -1,7 +1,7 @@
 100 REM Test SPLIT and JOIN statements
-110 GOSUB _init
-123 SET FNKEY 3 TO \"run sj.baq\r"
-124 SET FNKEY 4 TO \"run sl.baq\r"
+
+110 QG$="sl"
+120 GOSUB _init
 
 200 GOSUB _title:ARGS "SPLIT and JOIN":GOSUB _outnewline
 201 DIM A$(5)

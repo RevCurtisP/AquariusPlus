@@ -90,9 +90,32 @@ file_save_paged:
     pop     af
     ret
 
+
+_save_palette_asc:
+    push    hl                    ; Stack = FilStd, RtnAdr
+    call    _get_palette
+    call    get_strbuf_addr       ; HL = StrBuf
+    ld      d,h
+    ld      e,l                   ; DE = StrBuf
+    ld      bc,32
+    add     hl,bc                 ; AscAdr = StrBuf+32
+    push    hl                    ; Stack = AscAdr, FilStd,, RtnAdr
+    ld      c,16
+    call    rgb_to_asc
+    pop     de                    ; DE = AscAdr; Stack = FilStd, RtnAdr
+    pop     hl                    ; HL = FilStd; Stack = RtnAdr
+    jr      _save_string
+
+_get_palette:
+    call    get_strbuf_addr       ; HL = StrBuf
+    ex      de,hl                 ; DE = StrBuf
+    ld      bc,32                 ; Read 16 palette entries
+    jp      palette_get           ; Read palette into string buffer
+
 ;-----------------------------------------------------------------------------
 ; Save Pallete
 ; Input: A: Palette number
+;        C: File Type - 0: Binary, !0: ASCII
 ;       HL: String descriptor address
 ; Output: A: result code
 ; Flags Set: S if I/O error
@@ -101,13 +124,15 @@ file_save_paged:
 ; Populates: String Buffer
 ;-----------------------------------------------------------------------------
 file_save_palette:
+    ld      c,a
+    ld      a,b
+    or      a
+    ld      a,c
+    jr      nz,_save_palette_asc
     push    hl                    ; Stack = FilStd, RtnAdr
-    call    get_strbuf_addr       ; HL = StrBuf
-    ex      de,hl                 ; DE = StrBuf
-    ld      bc,32                 ; Read 16 palette entries
-    call    palette_get           ; Read palette into string buffer
+    call    _get_palette          ; 
     pop     hl                    ; HL = FilStd; Stack = RtnAdr
-    ld      a,32                  ;
+    ld      a,32                  
 ;-----------------------------------------------------------------------------
 ; Write string buffer to file
 ; Input: A: Number of bytes to write
@@ -120,9 +145,13 @@ file_save_strbuf:
     ex      de,hl                 ; DE = FilStd
     call    get_strbuf_addr       ; HL = StrBuf
     ex      de,hl                 ; DE = StrBuf, HL = FilStd
-    push    de                    ; Stack = StrBuf, RtnAdr
+; Input: A: StrLen, DE: StrAdr, HL: FilStd
+_save_string:
     ld      b,0
     ld      c,a
+; Input: BC: StrLen, DE: StrAdr, HL: FilStd
+file_save_string:
+    push    de                    ; Stack = StrBuf, RtnAdr
     call    file_save_binary      ; Save string buffer to file
     pop     hl                    ; HL = StrBuf; Stack = RtnAdr
     ret     m

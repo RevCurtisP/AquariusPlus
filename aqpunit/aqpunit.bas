@@ -7,13 +7,15 @@
 886 FOR I=0 TO 2:QA=$BFF8+I*2:DOKE QA,DEEK(QA)+QR(I):NEXT
 890 QS$=ARGS$(0)+\" - Passed: %%, Failed: %%, Errors: %%\n" % (QR(1), QR(0), QR(2))
 892 APPEND "out/_results.txt",^QS$:IF QU<>0 THEN GOSUB _outscreen:ARGS QS$
-894 IF QC THEN PRINT "Unit Tests Complete":END
-896 _theend:GOSUB _nlscreen:ARGS "F3=Run Again, F4=Run Next":END
+894 IF QC=0 THEN PRINT "Unit Tests Complete":END
+896 _theend:IF QG THEN RUN QG$+".baq"
+898 GOSUB _nlscreen:ARGS "F3=Run Again, F4=Run Next":END
 
 
 900 _init:
-902 DIM QR(2),QR$(2):QC=0:SET FAST ON:SCREEN 3:QZ=FRE("")
-904 IF FRE(2)=$BFF7 THEN QX=-1:QF=-PEEK($BFFE):QU=PEEK($BFFF):IF QU=0 THEN CLS
+901 SET FNKEY 3 To "run "+ARSG$(0)+CHR$(13):SET FNKEY 4 TO "run "+QG$+".baq"+CHR$(13)
+902 DIM QR(2),QR$(2):QC=LEN(QG$):SET FAST ON:SCREEN 3:QZ=FRE("")
+904 IF FRE(2)=$BFF6 THEN QX=-1:QG=PEEK($BFF7):QF=-PEEK($BFFE):QU=PEEK($BFFF):IF QU=0 THEN CLS
 906 IF QU=2 THEN QF$=TRIMEXT$(ARGS$(0)):QF$="out/"+QF$+".out":SAVE QF$,^QZ$
 908 GOSUB _outscreen:ARGS "Running Tests":QR$(0)="Fail: ":QR$(1)="Pass: ":RETURN
 

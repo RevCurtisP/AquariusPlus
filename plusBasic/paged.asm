@@ -655,10 +655,11 @@ page_set_basbuf:
 ;       BC: Byte Count
 ;       DE: Destination address 0-16383 
 ;       HL: Source Address
-; Output: DE: Updated destination address (coerced)
+; Output: DE: New destination address (coerced)
+;         HL: New source address
 ; Flags Set: Z if llegal page
 ;            C if page overflow
-; Clobbers: A, AF', BC, HL
+; Clobbers: A, AF', BC
 ;-----------------------------------------------------------------------------
 page_write_bytes:
     call    page__set4write_coerce
@@ -676,6 +677,7 @@ page_write_bytes:
     dec     bc
     jr      .loop
 .success:
+    inc     de                    ; Bump DE to next address
     xor     a                     ; Clear Carry Flag
     inc     a                     ; Clear Zero Flag
 .done
@@ -688,12 +690,14 @@ page_write_bytes:
 ;       BC: Byte Count
 ;       DE: Destination Address
 ;       HL: Source Address  0-16383 
-; Output: Zero: Cleared if succesful, Set if invalid page
-;         Carry: Cleared if succesful, Set if overflow
-; Clobbers: A, BC, DE, HL
+; Output: DE: New destination address (coerced)
+;         HL: New source address
+; Flags Set: Z if llegal page
+;            C if page overflow
+; Clobbers: A, BC
 ;-----------------------------------------------------------------------------
 page_read_bytes:
-    ex      de,hl                 ; DE = Source Addr, HL = Dest Addr
+    ex      de,hl                 ; DE = SrcAdr, HL = Dst Adr
 page_read_bytes_ex:
     call    page__set_for_read
     ret     z
@@ -707,13 +711,14 @@ page_read_bytes_ex:
     jr      c,.done
     ld      a,(de)
     ld      (hl),a
-    inc     hl
     dec     bc
     jr      .loop
 .success
+    inc     de                    ; Bump DE to next address
     xor     a                     ; Clear Carry Flag
     inc     a                     ; Clear Zero Flag
 .done
+    ex      de,hl                 ; HL = SrcAdr, DE = DstAdr
     jp      page_restore_bank3    ; Restore BANK3 page and return
 
 ;-----------------------------------------------------------------------------

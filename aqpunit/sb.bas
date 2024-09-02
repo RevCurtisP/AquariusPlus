@@ -1,7 +1,6 @@
 100 REM Test [] substrings
-110 GOSUB _init
-123 SET FNKEY 3 TO \"run sb.baq\r"
-124 SET FNKEY 4 TO \"run sj.baq\r"
+110 QG$="sj"
+120 GOSUB _init
 
 200 GOSUB _title:ARGS "Eval string$[]"
 210 GOSUB _output:ARGS LIST$(NEXT)

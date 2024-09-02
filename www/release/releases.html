@@ -16,7 +16,9 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
   <body>
     <h1 id="plusbasic-release-history">plusBASIC Release History</h1>
     <ul>
-      <li>v0.23b
+      <li>v0.23c (2024-09-01)
+<ul><li>Enabled SET BREAK ON/OFF</li><li>Fixed PEEK$ Syntax error</li><li>Added ASC option to SAVE/LOAD PALETTE.</li><li>Added FAST option to COPY SCEEN TO ... and COPY ... TO SCEEN</li><li>Added <code>CLEAR COLOR</code></li><li>Fixed page_read_paged and page_write_paged to return next paged address</li><li>Fixed FILL TILEMAP out of bounds error checking</li><li>Added continuous chain option to unit tests</li></ul></li>
+      <li>v0.23b(2024-08-28)
 <ul><li>Added extended memory addressing (!long) to
 <ul><li>COPY, COMPARE()</li><li>FILL BYTE, FILL WORD,</li><li>LOAD, SAVE</li><li>POKE, PEEK(), PEEK$(), DOKE, DEEK</li><li>PLAY SAMPLE</li></ul></li><li>Moved gfx/screen.asm to auxrom/screen.asm</li><li>Implemented COPY @page,address TO SCREEN</li><li>Fixed ARGS always returning 0,ARGS$() crashing system.</li><li>Fixed DIR returning wrong file size</li></ul></li>
       <li>v0.23a (2023-08-26)

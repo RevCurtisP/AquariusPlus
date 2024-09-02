@@ -9,6 +9,7 @@
 ; CLEAR BITMAP [fgcolor, bgcolor]
 ; CLEAR CURSOR
 ;-----------------------------------------------------------------------------
+;; ToDo: Change CLEAR COLOR to CLS ATTR ?
 ; CLEAR CURSOR:PAUSE
 clear_hook:
     jp      z,CLEARC              ; If no operands just CLEAR
@@ -16,17 +17,23 @@ clear_hook:
     jp      z,ST_CLEAR_BITMAP
     cp      MULTK                 ; 
     jr      z,ST_CLEAR_ARRAY
+    ld      iy,screen_clear_color
+    cp      COLTK
+    jr      z,_clear__or
     cp      XTOKEN
     jp      nz,HOOK11+1           ; Continue with CLEAR
-;ST_CLEAR_CURSOR:
     rst     CHRGET                ; Skip XTOKEN
+_clear_cursor
+    ld      iy,screen_clear_cursor
     rst     SYNCHR
     byte    CURTK
     SYNCHK  'S'                   
+    byte    $06                   ; LD B, over CHRGET
+_clear__or:
+    rst     CHRGET
     rst     SYNCHR                ; Require CURSOR
     byte    ORTK
-    ld      iy,screen_clear_cursor
-    jp      aux_call
+    jp      aux_call_preserve_hl
 
 ST_CLEAR_ARRAY:
     call    get_star_array        ; DE = AryAdr, BC = AryLen 

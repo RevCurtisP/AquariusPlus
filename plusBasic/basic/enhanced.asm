@@ -29,7 +29,6 @@ ABORT_FN:
 ; COPY [@page,] source, length TO [@page,] destination [FAST]
 ; COPY FILE filespec TO filespec
 ;-----------------------------------------------------------------------------
-; ToDo: COPY @page,address TO SCREEN
 ST_COPY:
     jp      z,COPY                ; No Parameters? Do Standard COPY
     cp      FILETK                
@@ -451,19 +450,15 @@ FN_PEEK:
     rst     CHRGET                ; Skip token
     call    get_par_page_addr_len ; AF = PgFlg, BC = Len, DE = Addr
     push    af                    ; Stack = PgArg, RtnAdr
-    push    de                    ; Stack = PkAdr, PgArg, RtnAdr
-      SYNCHK  ','                   ; Require comma
-    call    GETBYT                ; Parse Length
     SYNCHK  ')'                   ; Require close paren
-    pop     bc                    ; BC = PkAdr; Stack = PgArg, RtnAdr
     pop     af                    ; AF = PgArg; Stack = RtnAdr
     push    hl                    ; Stack = TxtPtr, RtnAdr
     push    af                    ; Stack = PgArg, TxtPtr, RtnAdr
-    ld      a,e                   ; A = Length
+    ld      a,c                   ; A = Length
     or      a                     ; If Length is 0
     jp      z,null_string         ;   Return Empty String
-    push    bc                    ; Stack = PkAdr, PgArg, TxtPtr, RtnAdr
-    push    de                    ; Stack = Length, PkAdr, PgArg, TxtPtr, RtnAdr
+    push    de                    ; Stack = PkAdr, PgArg, TxtPtr, RtnAdr
+    push    bc                    ; Stack = Length, PkAdr, PgArg, TxtPtr, RtnAdr
     call    STRINI                ; Make String with Length [A], HL=StrDsc, DE=StrTxt
     pop     bc                    ; BC = Length; Stack = Address, PgArg, TxtPtr, RtnAdr
     pop     hl                    ; HL = PkAdr; Stack = PgArg, TxtPtr, RtnAdr
