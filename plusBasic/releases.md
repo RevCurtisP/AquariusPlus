@@ -1,4 +1,7 @@
 # plusBASIC Release History
+ - v0.23e (2024-09-07)
+    - Fixed file_load_paged executing random code when loading files over 65535 bytes.
+    - Added test to sl.baq for loading large files to paged RAM.
  - v0.23d (2024-09-06)
     - Fixed PEEKSCREEN() and PEEKCOLOR() for both 40 and 80 column mode
     - Refactored screen_read_byte, screen_write_byte, color_read_byte, and color_write_byte

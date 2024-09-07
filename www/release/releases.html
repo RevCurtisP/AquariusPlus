@@ -16,6 +16,8 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
   <body>
     <h1 id="plusbasic-release-history">plusBASIC Release History</h1>
     <ul>
+      <li>v0.23e (2024-09-07)
+<ul><li>Fixed file_load_paged executing random code when loading files over 65535 bytes.</li><li>Added test to sl.baq for loading large files to paged RAM.</li></ul></li>
       <li>v0.23d (2024-09-06)
 <ul><li>Fixed PEEKSCREEN() and PEEKCOLOR() for both 40 and 80 column mode</li><li>Refactored screen_read_byte, screen_write_byte, color_read_byte, and color_write_byte</li><li>Rewrote PEEKSCREEN$() PEEKCOLOR$(), color_read_string, and color_write_string</li><li>Added unit tests front end <code>au.baq</code> and unit test program <code>ps.baq</code></li></ul></li>
       <li>v0.23c (2024-09-01)

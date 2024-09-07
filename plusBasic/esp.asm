@@ -211,7 +211,6 @@ _read_paged:
     ld      h,a                   ; H = New page
     jr      c,.error              ; Return if overflow
 .read_byte
-    ;call    esp_get_byte
     in      a, (IO_ESPCTRL)
     rra
     jr      nc,.read_byte
