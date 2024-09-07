@@ -1,14 +1,19 @@
 # plusBASIC Release History
+ - v0.23d (2024-09-06)
+    - Fixed PEEKSCREEN() and PEEKCOLOR() for both 40 and 80 column mode
+    - Refactored screen_read_byte, screen_write_byte, color_read_byte, and color_write_byte
+    - Rewrote PEEKSCREEN$() PEEKCOLOR$(), color_read_string, and color_write_string
+    - Added unit tests front end `au.baq` and unit test program `ps.baq`
  - v0.23c (2024-09-01)
     - Enabled SET BREAK ON/OFF
     - Fixed PEEK$ Syntax error
     - Added ASC option to SAVE/LOAD PALETTE.
-    - Added FAST option to COPY SCEEN TO ... and COPY ... TO SCEEN
+    - Added FAST option to COPY SCREEN TO ... and COPY ... TO SCEEN
     - Added `CLEAR COLOR`
     - Fixed page_read_paged and page_write_paged to return next paged address
     - Fixed FILL TILEMAP out of bounds error checking
     - Added continuous chain option to unit tests
- - v0.23b(2024-08-28)
+ - v0.23b (2024-08-28)
     - Added extended memory addressing (!long) to 
       - COPY, COMPARE()
       - FILL BYTE, FILL WORD, 

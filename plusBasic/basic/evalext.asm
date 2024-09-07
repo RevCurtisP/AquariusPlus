@@ -93,7 +93,7 @@ hex_to_asc:
     ld      a,c             ; A = String Length
     srl     a               ; Divide Length by 2
     jp      c,FCERR         ;   Error if Length was Odd
-    jr      z,null_string   ;   If 0, Return Null String
+    jr      z,push_null_string    ;   If 0, Return Null String
     push    af              ; Save New String Length
     push    de              ; Save Argument String Address
     push    hl              ; Save Argument String Descriptor
@@ -140,10 +140,14 @@ cvt_hex:
 .fcerr                      ; Else
     jp      FCERR           ;   Error
 
+pop_null_string:
+    pop     bc
+    byte    $01                   ; LD BC, over PUSH BC
+push_null_string:
+    push    bc                    ; Put Dummy Return Address on Stack
 null_string:
-    ld      hl,REDDY-1      ; Point at ASCII 0
-    push    bc              ; Put Dummy Return Address on Stack
-    jp      TIMSTR          ; Literalize and Return It
+    ld      hl,REDDY-1            ; Point at ASCII 0
+    jp      TIMSTR                ; Literalize and Return It
 
 ;-------------------------------------------------------------------------
 ; Evaluate numeric character constant in the form of 'C'
@@ -436,6 +440,7 @@ oper_stringsub:
 
 ; clear:s$="abcd":s$[2]="x":?s$
 ; clear:s$="abcd":s$[1,1]="x":?s$
+; s$="abc":s$[3]="z"
 ; S$="abcde"
 ; S$[2]="x"
 ; ? S$
@@ -445,7 +450,8 @@ oper_stringsub:
 ; Errors
 ; s$="abcd":s$[0]="x"
 ; s$="abcd":s$[5]="x"
-; 
+
+; On Entry: DE = VarPtr, HL = TxtPtr
 let_extension:
     call    GETYPE                ; If not string variable
     jp      nz,LETEQ              ;   Continue LET
@@ -501,11 +507,11 @@ copy_literal_string:
     push    de                    ; Stack = VarPtr, TxtPtr, RtnAdr
     ex      de,hl                 ; HL = VarPtr
     call    string_addr_len       ; DE = StrAdr, BC = StrLen
-    jr      z,pop2hl_ret          ; If StrLen = 0, pop VarPtr & TxtPtr and return
+    jr      z,_no_copy            ; If StrLen = 0, pop VarPtr & TxtPtr and return
     ex      de,hl                 ; HL = StrAdr
     ld      DE,(STRSPC)           ; DE = Bottom of String Space
     rst     COMPAR                ; If StrAdr >= StrSpc
-    jr      nc,pop2hl_ret         ;   Pop VarPtr & TxtPtr and return
+    jr      nc,_no_copy           ;   Pop VarPtr & TxtPtr and return
     pop     hl                    ; HL = VarPtr; Stack = TxtPtr, RtnAdr
     push    hl                    ; Stack = VarPtr, TxtPtr, RtnAdr
     call    STRCPY                ; DE = DSCTMP
@@ -515,6 +521,7 @@ copy_literal_string:
 copy_dsctmp:
     ld      de,DSCTMP
     call    VMOVE                 ; Copy (DSCTMP) to (VarPtr)
+_no_copy:
     pop     de                    ; DE = VarPtr; Stack = TxtPtr, RtnAdr
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     ret
@@ -569,7 +576,7 @@ range_offset_len:
     ex      de,hl                 ; D = From, E = To
     dec     d                     ; Offset = From - 1
     ld      a,e                   ; E = To
-    sub     d                     ; A = Length
+    sub     a,d                   ; A = Length
     ld      e,d
     ld      d,0                   ; DE = Offset
     ret

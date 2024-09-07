@@ -18,6 +18,16 @@ FRC_LONG:
     jp      FCERR                  ; Else Illegal Quantity
 
 ;-----------------------------------------------------------------------------
+; Parse positiv integer into DE
+;-----------------------------------------------------------------------------
+GET_POS_INT
+    call    FRMEVL                ; FACC = address
+    call    CHKNUM                ; Error if not number
+    rst     FSIGN                 ; If Adress < 0
+    jp      m,FCERR        
+    jp      FRCINT                ; Address into DE and return
+
+;-----------------------------------------------------------------------------
 ; Parse to 23-bit integer in CDE
 ;-----------------------------------------------------------------------------
 GET_STRING:
@@ -383,11 +393,10 @@ get_page_addr_len:
 ; Parse Address, Length
 ; Output: BC = Length
 ;         DE = Address
-;         Carry Set if page specified
 ; Clobbers: A
 ;-----------------------------------------------------------------------------
 get_addr_len:
-    call    GETINT                ; DE = Address
+    call    GET_POS_INT           ; DE = Address
     push    de                    ; Stack = Address, Page+Flag
     SYNCHK  ','                   ; Require Comma
     call    GETINT                ; Get Length
@@ -566,7 +575,7 @@ get_char:
 ; Clobbers: A,BC
 ;-----------------------------------------------------------------------------
 get_int512:
-    call    GETINT                ; Get integer
+    call    GET_POS_INT           ; DE = Integer
     ld      a,d
     cp      2                     ; If not 0-511
     ret     c
@@ -578,7 +587,7 @@ get_int512:
 ; Clobbers: A,BC
 ;-----------------------------------------------------------------------------
 get_int4096:
-    call    GETINT                ; Get integer
+    call    GET_POS_INT           ; DE = Integer
     ld      a,d
     cp      16                     ; If not 0-4095
     ret     c
@@ -590,12 +599,11 @@ get_int4096:
 ; Clobbers: A,BC
 ;-----------------------------------------------------------------------------
 get_int16k:
-    call    GETINT                ; Get integer
+    call    GET_POS_INT           ; DE = Integer
     ld      a,d
     cp      64                    ; If not 0-4095
     ret     c
     jp      FCERR
-    
     
 ;-----------------------------------------------------------------------------
 ; Parse Integer and reget next character
@@ -608,21 +616,21 @@ get_int_reget:
     call    GETINT
     jp      CHRGT2
 
-; Returns Z if BITMAPB, NZ if BITMAPC
-parse_bitmap:
-    rst     SYNCHR
-    byte    BITTK
-    rst     SYNCHR                ; Require BITMAP
-    byte    MAPTK
-    cp      'B'
-    jr      nz,.notb              ; If BITMAPB
-    rst     CHRGET                ;   Skip B
-    xor     a                     ;   and return Z
-    ret
-.notb    
-    SYNCHK  'C'                   ; Else Require C
-    or      $FF                   ;   and return NZ
-    ret
+;; Returns Z if BITMAPB, NZ if BITMAPC
+;parse_bitmap:
+;    rst     SYNCHR
+;    byte    BITTK
+;    rst     SYNCHR                ; Require BITMAP
+;    byte    MAPTK
+;    cp      'B'
+;    jr      nz,.notb              ; If BITMAPB
+;    rst     CHRGET                ;   Skip B
+;    xor     a                     ;   and return Z
+;    ret
+;.notb    
+;    SYNCHK  'C'                   ; Else Require C
+;    or      $FF                   ;   and return NZ
+;    ret
 
 ; Parse COLOR color
 parse_color:
@@ -740,6 +748,14 @@ scan_rect:
     ex      (sp),hl               ; L = BgnRow; Stack = TxtPtr, RtnAdr
     ld      d,l                   ; D = BgnRow, C = EndRow
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
+    ret
+
+
+free_strini:
+    call    STRINI                ; DE = StrPtr
+    push    de                    ; Stack = StrPtr, RtnAdr
+    call    FREFAC                ; HL = StrDsc
+    pop     de                    ; DE = StrPtr, RtnAdr
     ret
 
 ;-----------------------------------------------------------------------------

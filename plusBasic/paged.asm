@@ -711,6 +711,7 @@ page_read_bytes_ex:
     jr      c,.done
     ld      a,(de)
     ld      (hl),a
+    inc     hl
     dec     bc
     jr      .loop
 .success

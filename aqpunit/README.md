@@ -27,6 +27,35 @@ Run the .baq file to run the associated tests.
   - COPY @_frompage_,_fromaddr_,_count_ TO _toaddr_
   - COMPARE(@_frompage_,_fromaddr_,_toaddr_,_count_)
   - COPY @_frompage_,_fromaddr_,_count_ TO @_topage_,_toaddr_
+- pp.baq
+  - POKE _addr_,_byte_
+  - POKE _addr,_string_
+  - POKE @_page_,_addr_,_byte_
+  - POKE @_page_,_addr,_string_
+  - PEEK(_addr_)
+  - PEEK$(_addr_,_len_)
+  - PEEK(@_page_,_addr_)
+  - PEEK$(@_page_,_addr_,_len_)
+  - DOKE _addr_,_int_
+  - DOKE @_page_,_addr_,_int_
+  - DEEK(_addr_)
+  - DEEK(@_page_,_addr_)
+  - **_ToDo:_**
+    - POKE !_ext_addr_,_byte_
+    - POKE @_page_,_addr,_string_
+    - PEEK(!_ext_addr_)
+    - PEEK$(!_ext_addr_,_len_)
+    - DOKE !_ext_addr,_int_
+    - DEEK(!_ext_addr_)
+- ps.baq
+  - POKE SCREEN _offset_,_byte_
+  - POKE SCREEN _offset_,_string_
+  - POKE COLOR _offset_,_byte_
+  - POKE COLOR _offset_,_string__
+  - PEEKSCREEN(_addr_)
+  - PEEKSCREEN$(_addr_,_len_)
+  - PEEKCOLOR(_addr_)
+  - PEEKCOLOR$(_addr_,_len_)
 - sl.baq
   - SAVE/LOAD binary
   - SAVE/LOAD paged

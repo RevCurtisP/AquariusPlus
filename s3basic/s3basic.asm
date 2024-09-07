@@ -2707,7 +2707,7 @@ PUTNEW: ld      de,DSCTMP         ;[M80] [D,E] POINT AT RESULT DESCRIPTOR
         pop     hl                ;[M80] GET THE TEXT POINTER
         ld      a,(hl)            ;[M80] GET CURRENT CHARACTER INTO [A]
         ret     nz                ;
-        ld      de,ERRST          ;[M80] "STRING TEMPORARY" ERROR
+STERR:  ld      de,ERRST          ;[M80] "STRING TEMPORARY" ERROR
         jp      ERROR             ;[M80] GO TELL HIM
 ;;Output String
 STROUI: inc     hl                ;[M80] POINT AT NEXT CHARACTER
