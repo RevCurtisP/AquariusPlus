@@ -73,11 +73,11 @@
  - [ ] **CLEAR {_integer_{,_address_}}** - Clear all variables, optionally allocating string text space and top of BASIC RAM.<!--CLEAR-->
  - [ ] **CLEAR \*_array_{,...}** - Clear numeric or string array data.<!--CLEAR-->
  - [ ] **CLEAR BITMAP {_fgcolor_,_bgcolor_}** - Clear bitmap layer.
- - [ ] **CLEAR COLOR** - Set Color RAM to current foreground and background colors.
  - [ ] **CLEAR CURSOR** - Temporarily remove cursor from screen.
  - [ ] **CLOAD {{?}_filename_}|\*_array_** - Load or verify program or load array data from cassette.
  - [ ] **CLOSE** - _Not implemented._
  - [ ] **CLS {_fgcolor_,_bgcolor_}** - Clear the text screen.<!--CLS-->
+ - [ ] **CLEAR COLOR** - Fill Color RAM with current or specified foreground and background colors.
  - [ ] **COLOR _fgcolor_{,_bgcolor_}** - Set or get bitmap default color(s).<!--COLOR-->
  - [ ] **COMPARE (*_array_,*_array_)** - Compare the binary contents of two numeric arrays.<!--COMPARE-->
  - [ ] **COMPARE ({«!_ext_addr_»|«{@_page_,}_address_»,«!_ext_addr_»|«{@_page_,}_address_»,_length_)** - Compare two blocks of memory.<!--COMPARE-->
@@ -88,8 +88,8 @@
  - [ ] **COPY «!_ext_addr_»|«{@_page_,}_address_»,_length_ TO «!_ext_addr_»|«{@_page_,}_address_» {FAST}** - Copy bytes from one section of memory to another.<!--COPY-->
  - [ ] **COPY «!_ext_addr_»|«@_page_,_address_»,_length_ TO SCREEN {FAST}** - Copy bytes from one section of memory to another.<!--COPY-->
  - [ ] **COPY FILE _filespec_ TO _filespec_** - Copy file.<!--COPY-->
- - [ ] **COPY SCREEN TO «!_ext_addr_»|«@_page_,_address_» {FAST}** - Copy screen to paged memory.
- - [ ] **COPY «!_ext_addr_»|«@_page_,_address_» TO SCREEN** - Copy paged memory to screen.
+ - [ ] **COPY SCREEN {CHR|ATTR} TO «!_ext_addr_»|«@_page_,_address_» {FAST}** - Copy screen to paged memory.
+ - [ ] **COPY «!_ext_addr_»|«@_page_,_address_» TO SCREEN {CHR|ATTR}** - Copy paged memory to screen.
  - [ ] **COS(_float_)** - Return cosine of argument.
  - [ ] **CSAVE _filename_|\*_array_** - Save program or array data to cassette.
  - [ ] **DATA _literal_{,...}** - Define data for `READ` statement.
@@ -126,7 +126,7 @@
  - [ ] **FILL WORD {@_page_},_address_,_oount_,_integer_** - Fill block of memory with integer.
  - [ ] **FILL BITMAP {BYTE _byte_} {COLOR _fgcolor_, _bgcolor_}** - Fill bitmap and/or colormap with byte and/or color(s).
  - [ ] **FILL COLORMAP (_x_,y_)-(_x_,_y_) COLOR _fgcolor_, _bgcolor_** - Fill rectangular section of 1bpp colormap.
- - [ ] **FILL SCREEN {CHRS} {(_x_,y_)-(_x_,_y_)} _character_** - Fill screen with character and/or colors.
+ - [ ] **FILL SCREEN {CHR} {(_x_,y_)-(_x_,_y_)} _character_** - Fill screen with character and/or colors.
  - [ ] **FILL SCREEN COLOR {(_x_,y_)-(_x_,_y_)} _fgcolor_,_bgcolor_** - Fill screen with character and/or colors.
  - [ ] **FILL TILEMAP {(_x_,y_)-(_x_,_y_)} TILE _tileno_ { ATTR _attrs_} { PALETTE _palette_}** - Fill tilemap with specified tile, attributes and palette.<!--FILLTILE-->
  - [ ] **FOR _var_=_expression_ TO _expression_ {STEP _expression_]** - Initiate a _FOR_ loop.
@@ -276,7 +276,7 @@
  - [ ] **SAVE SCREEN CHR _filespec_** - _Not implemented_
  - [ ] **SAVE TILEMAP _filespec_** - _Save tile map to file.
  - [ ] **SAVE TILESET _tileno_,_tilecount_,_filespec_** - Save tile definitions to disk.
- - [ ] **SCREEN {_text_},{_graphics_},{_sprites_},{_priority_},{_remap_}** - Set screen mode.<!--SCREEN-->
+ - [ ] **SCREEN {_text_mode_},{_gfx_mode_},{_sprites_},{_priority_},{_remap_}** - Set screen mode.<!--SCREEN-->
  - [ ] **SCROLL BITMAP** - Not implemented.
  - [ ] **SCROLL SCREEN** - Not implemented.
  - [ ] **SET BIT** - _Not implemented_
@@ -321,6 +321,8 @@
  - [ ] **TILEMAP(_x_,_y_)** - Return tile index and properties in tile cell.
  - [ ] **TILEMAPX** - Return X-offset of tilemap.
  - [ ] **TILEMAPY** - Return X-offset of tilemap.
+ - [ ] **TILEOFFSET** - Return first free tile index for current graphics mode.
+ - [ ] **TILEOFFSET(_gfx_mode_)** - Return first free tile index for specified graphics mode.
  - [ ] **TIME$** - Return the current time.<!--DATETIME-->
  - [ ] **TIMER** - Return timer count.
  - [ ] **TIMER = _long_** - Set and start jiffy timer.<!--TIMER-->
@@ -332,7 +334,7 @@
  - [ ] **TRON** - Enable line tracing.
  - [ ] **TROFF** - Disable line tracing.
  - [ ] **USE CHRSET _0_|_1_|_filespec_** - Copy specified character set to character RAM.<!--CHRSET-->
- - [ ] **USE SCREEN {@_page_,}_text_,_graphics_** - _Not implemented._
+ - [ ] **USE SCREEN {@_page_,}_text_mode_,_gfx_mode_** - _Not implemented._
  - [ ] **USR(_expression_)** - Call user-defined machine language routine passing argument and returning result.
  - [ ] **VAL(_float_)** - Convert ASCII string to floating point number.
  - [ ] **VARPTR(_var{$}_|\*_array{$}_)** - Return address of variable, array element, or array

@@ -9,9 +9,9 @@ screen_clear_color:
     ld      a,(BASYSCTL)
     rla     
     ld      a,DFLTATTRS
-    jr      nc,.skip
+    jr      nc,screen_clear_color_a
     ld      a,(SCOLOR)
-.skip
+screen_clear_color_a:
     ld      c,IO_VCTRL
     in      b,(c)
     bit     6,b    
@@ -34,7 +34,8 @@ screen_clear_color:
 ;-----------------------------------------------------------------------------
 ; Copy Current Screen to Paged RAM
 ; Input: A: Page
-;        DE: Address
+;        B: 1 = Character Matrix, 2 = Color Matrix, 3 = Both
+;       DE: Address
 ; Clobbered: A,AF',BC,DE,HL
 ;-----------------------------------------------------------------------------
 ; COPY SCREEN TO @32,0
@@ -49,7 +50,7 @@ screen_read_fast:
 screen_read_paged:
     ld      iy,_paged_to_screen
 _screen_read:
-    ex      de,hl                 ; HL - Address
+    ex      de,hl                 ; HL = Address
     jr      _read_write_screen
 screen_write_fast:
     ld      iy,_screen_to_paged_fast
@@ -57,16 +58,24 @@ screen_write_fast:
 screen_write_paged:
     ld      iy,_screen_to_paged
 _read_write_screen:
+    push    bc                    ; Stack = ChrClr, RtnAdr
     ld      c,IO_VCTRL
     in      b,(c)          
-    bit     6,b                   ; If 40-colomn mode
-    jp      z,jump_iy             ;   Write it and Return
+    bit     6,b                   ; Set Z if 40-column mode
+    pop     bc                    ; B = ChrClr, RtnAdr
+    jp      z,jump_iy             ; If 40-columns, do it an return
     call    screen_textpage_0
-    push    af                    ; Stack = Page, RtnAdr
-    call    jump_iy               ; Write Screen RAM
-    pop     af                    ; A = Page; Stack = RtnAdr
+    push    bc                    ; Stack = ChrClr, RtnAdr
+    push    af                    ; Stack = Page, ChrClr, RtnAdr
+    bit     0,b
+    ld      b,3                   ; Copy 2048 bytes
+    call    nz,jump_iy            ; Write Screen RAM
+    pop     af                    ; A = Page; Stack = ; Stack = ChrClr, RtnAdr, RtnAdr
+    pop     bc                    ; B = ChrClr, RtnAdr
     call    screen_textpage_1
-    call    jump_iy               ; Write Color RAM
+    bit     1,b
+    ld      b,3                   ; Copy 2048 bytes
+    call    nz,jump_iy            ; Write Color RAM
     jr      screen_textpage_0
 _screen_to_paged_fast:
     ld      ix,page_fast_write_bytes
@@ -75,6 +84,9 @@ _screen_to_paged:
     ld      ix,page_write_bytes
 _to_paged:
     ld      hl,SCREEN
+    bit     0,b
+    jr      nz,_copy
+    ld      hl,COLOR
     jr      _copy
 _paged_to_screen_fast:
     ld      ix,page_fast_read_bytes
@@ -83,8 +95,18 @@ _paged_to_screen:
     ld      ix,page_read_bytes
 _to_screen:
     ld      de,SCREEN
+    bit     0,b
+    jr      nz,_copy
+    ld      de,COLOR
 _copy:
-    ld      bc,2048
+    ex      af,af'                ; A' = Page
+    ld      a,b                   ; A = ChrClr
+    ld      bc,$0800              ; Copy 2048 bytes
+    cp      3                    
+    jr      z,.copy               ; If not chars and colors
+    ld      b,$04                 ;   Copy 1024 bytes
+.copy
+    ex      af,af'                ; A' = Page
     push    ix
     call    jump_ix
     pop     ix

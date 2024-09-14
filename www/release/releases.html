@@ -16,6 +16,8 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
   <body>
     <h1 id="plusbasic-release-history">plusBASIC Release History</h1>
     <ul>
+      <li>v0.23f (2024-09-13)
+<ul><li>Added TILEOFFSET()</li><li>Changed <code>get_color_args</code> calls to <code>get_screen_colors</code> and remove <code>get_color_args</code> routine.</li><li>Changed <code>CLEAR COLOR</code> to <code>CLS COLOR {_fg_,_bg_}</code>.</li><li><code>CHR</code> and <code>ATTR</code> options to <code>COPY SCREEN TO...</code> and <code>COPY ... TO SCREEN</code>.</li><li>Wrote unit test <code>cs.baq</code> to test COPY SCREEN statements.</li><li>Modified <code>ss.baq</code> to use COPY SCREEN and enabled <code>OUT</code> port restrictions.</li></ul></li>
       <li>v0.23e (2024-09-07)
 <ul><li>Fixed file_load_paged executing random code when loading files over 65535 bytes.</li><li>Added test to sl.baq for loading large files to paged RAM.</li></ul></li>
       <li>v0.23d (2024-09-06)

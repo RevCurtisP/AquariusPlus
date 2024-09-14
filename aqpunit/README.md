@@ -66,11 +66,14 @@ Run the .baq file to run the associated tests.
   - SAVE/LOAD string variable
   - LOAD DIR binary
   - LOAD DIR text
-- slx.baq
+- sx.baq
   - SAVE/LOAD BITMAP
   - SAVE/LOAD CHRSET
   - SAVE/LOAD FNKEYS
   - SAVE/LOAD PALETTE
+  - **_ToDo:_**
+    - LOAD TILESET
+
 - tf.baq
   - DEF RGBLIST _var_$ = _r_,_g_,_b_; ...
   - SET PALETTE _palette_ TO _rgb_list_
@@ -100,3 +103,5 @@ Run the .baq file to run the associated tests.
     - **ToDo: Add tests**
   - TILEMAP(_x_,_y_)
     - **ToDo: Add tests**
+  - TILEOFFSET
+  - TILEOFFSET(_gfxmode_)

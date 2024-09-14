@@ -134,7 +134,7 @@ ST_SETCOLOR:
     byte    ORTK
     cp      XTOKEN
     jr      z,.extended
-    call    get_color_args
+    call    get_screen_colors
     ld      (SCOLOR),a
     ld      a,(BASYSCTL)
     or      a,BASCRNCLR
@@ -281,6 +281,8 @@ ST_SCREEN:
 ;-----------------------------------------------------------------------------
 ST_COPY_SCREEN:
     rst     CHRGET                ; Skip SCREEN
+    call    screen_suffix         ; B: 1 = CHR, 2 = ATTR, 3 = Neither
+    push    bc                    ; Stack = ScrSfx, RtnAdr
     rst     SYNCHR
     byte    TOTK
     call    get_page_addr         ; A = Page, DE = Address
@@ -304,7 +306,11 @@ ST_COPY_SCREEN:
 copy_to_screen:
     ld      iy,screen_read_paged
     push    af                    ; Stack = PgFlg, RtnAdr
-    ld      a,(hl)
+    ld      a,(hl)                ; Reget character
+    call    screen_suffix         ; B: 1 = CHR, 2 = ATTR, 3 = Neither
+    pop     af
+    push    bc                    ; Stack = ScrSfx, RtnAdr
+    push    af
     cp      XTOKEN
     jr      nz,_copy_screen
     rst     CHRGET
@@ -312,9 +318,9 @@ copy_to_screen:
     byte    FASTK
     ld      iy,screen_read_fast
 _copy_screen
-    pop     af                    ; A = PgFlg; Stack = RtnAdr
+    pop     af                    ; A = PgFlg; Stack = ScrSfx, RtnAdr
+    pop     bc                    ; B = ScrSfx; Stack = RtnAdr
     jr      aux_call_preserve_hl
-
 
 ;-----------------------------------------------------------------------------
 ; COPY TO SCREEN - Copy Screen RAM to paged memory
@@ -766,7 +772,14 @@ FN_TILE:
 ; TILEOFFSET
 ;-----------------------------------------------------------------------------
 FN_TILEOFFSET:
-    call    tile_offset           ; BC = Offset
+    cp      '('
+    jr      nz,.offset0
+    call    PARCHK                ; Parse argument
+    call    CONINT
+    byte    $16                   ; LD D, over XOR A
+.offset0
+    xor     a                     ; Default to 0
+    call    tile_offset_a         ; BC = Offset
     jr      push_labbck_floatbc
 
 ;-----------------------------------------------------------------------------

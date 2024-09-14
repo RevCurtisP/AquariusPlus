@@ -118,9 +118,6 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>CLEAR BITMAP {<em>fgcolor</em>,<em>bgcolor</em>}</strong> - Clear bitmap layer.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>CLEAR COLOR</strong> - Set Color RAM to current foreground and background colors.</li>
-      <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
         <strong>CLEAR CURSOR</strong> - Temporarily remove cursor from screen.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
@@ -131,6 +128,9 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>CLS {<em>fgcolor</em>,<em>bgcolor</em>}</strong> - Clear the text screen.<!--CLS--></li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>CLEAR COLOR</strong> - Fill Color RAM with current or specified foreground and background colors.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>COLOR <em>fgcolor</em>{,<em>bgcolor</em>}</strong> - Set or get bitmap default color(s).<!--COLOR--></li>
@@ -163,10 +163,10 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>COPY FILE <em>filespec</em> TO <em>filespec</em></strong> - Copy file.<!--COPY--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>COPY SCREEN TO �!_ext_addr_�|�@<em>page</em>,_address_� </strong> - Copy screen to paged memory.</li>
+        <strong>COPY SCREEN {CHR|ATTR} TO �!_ext_addr_�|�@<em>page</em>,_address_� </strong> - Copy screen to paged memory.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>COPY �!_ext_addr_�|�@<em>page</em>,_address_� TO SCREEN</strong> - Copy paged memory to screen.</li>
+        <strong>COPY �!_ext_addr_�|�@<em>page</em>,_address_� TO SCREEN {CHR|ATTR}</strong> - Copy paged memory to screen.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>COS(<em>float</em>)</strong> - Return cosine of argument.</li>
@@ -862,6 +862,12 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>TILEMAPY</strong> - Return X-offset of tilemap.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
+        <strong>TILEOFFSET</strong> - Return first free tile index for current graphics mode.</li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>TILEOFFSET(<em>gfx_mode</em>)</strong> - Return first free tile index for specified graphics mode.</li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
         <strong>TIME$</strong> - Return the current time.<!--DATETIME--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
@@ -895,7 +901,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>USE CHRSET <em>0</em>|<em>1</em>|<em>filespec</em></strong> - Copy specified character set to character RAM.<!--CHRSET--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>USE SCREEN {@<em>page</em>,}<em>text</em>,<em>graphics</em></strong> - <em>Not implemented.</em></li>
+        <strong>USE SCREEN {@<em>page</em>,}<em>text_mode</em>,<em>gfx_mode</em></strong> - <em>Not implemented.</em></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>USR(<em>expression</em>)</strong> - Call user-defined machine language routine passing argument and returning result.</li>

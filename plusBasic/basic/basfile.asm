@@ -1635,6 +1635,7 @@ _index_offset:
 
 tile_offset:
     ld      a,(EXT_FLAGS)
+tile_offset_a:
     and     3
     ld      bc,320
     sub     a,2

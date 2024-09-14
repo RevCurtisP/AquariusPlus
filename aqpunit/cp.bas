@@ -1,9 +1,9 @@
 100 REM Unit Tests for COPY
-110 QG$="pp"
+110 QG$="cs"
 120 GOSUB _init
 
 200 GOSUB _title:ARGS "COPY"
-202 PRINT "Building binary data";
+202 GOSUB _title:ARGS "Building binary data"
 204 A=$8000:FOR I=1 TO 8:FOR J=i TO 260 STEP 7:B=I+J
 206 IF B<256 THEN POKE A,B:A=A+1
 208 NEXT:PRINT ".";:NEXT:PRINT

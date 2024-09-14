@@ -194,23 +194,6 @@ TOERR:
     jp      ERROR
 
 ;-----------------------------------------------------------------------------
-; Parse foreground and background color arguments
-; Output: A: Screen memory byte value
-;-----------------------------------------------------------------------------
-get_color_args:
-    call    get_byte16            ; get foreground color
-    push    af                    ; save it
-    call    get_comma_byte16      ; get background color
-    pop     af                    ; get back foreground color
-    or      a                     ; clear carry
-    rla       
-    rla       
-    rla       
-    rla                           ; shift to high nybble
-    or      e                     ; combine background color
-    ret
-
-;-----------------------------------------------------------------------------
 ; Require extended token
 ; Input: C: Extended Token
 ; Output: A: Next Character
@@ -654,7 +637,6 @@ get_comma_colors:
 ; Output: A = Combined coloe
 ; Clobbers: BC, DE
 ;-----------------------------------------------------------------------------
-; ToDo: eliminate get_color_args and call this instead
 get_screen_colors:
     call    get_byte16            ; A = FColor
     sla     a                     ;

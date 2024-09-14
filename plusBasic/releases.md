@@ -1,4 +1,11 @@
 # plusBASIC Release History
+ - v0.23f (2024-09-13)
+    - Added TILEOFFSET()
+    - Changed `get_color_args` calls to `get_screen_colors` and remove `get_color_args` routine.
+    - Changed `CLEAR COLOR` to `CLS COLOR {_fg_,_bg_}`.
+    - `CHR` and `ATTR` options to `COPY SCREEN TO...` and `COPY ... TO SCREEN`.
+    - Wrote unit test `cs.baq` to test COPY SCREEN statements.
+    - Modified `ss.baq` to use COPY SCREEN and enabled `OUT` port restrictions.
  - v0.23e (2024-09-07)
     - Fixed file_load_paged executing random code when loading files over 65535 bytes.
     - Added test to sl.baq for loading large files to paged RAM.

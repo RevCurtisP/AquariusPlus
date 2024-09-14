@@ -349,13 +349,11 @@ ST_LOCATE:
 
 ;-----------------------------------------------------------------------------
 ; OUT statement
-; syntax: OUT port, data
+; Syntax: OUT port, data
+; Ports $E0, $EE - $F3, $FB
 ;-----------------------------------------------------------------------------
-; ToDo: Enable port restrictions after adding COPY SCREEN CHR/ATTR and updating aqunit/ss.bas
 ST_OUT:
     call    GETINT              ; Convert number to 16 bit integer (result in DE)
-; Restrict writing to dangerous ports
-    jr      .okay
     ld      a,e                 ; A = Port
     cp      IO_VCTRL             
     jr      c,.okay             ; A < VCTRL, Okay
