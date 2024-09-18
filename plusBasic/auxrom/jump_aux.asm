@@ -27,13 +27,15 @@ _jump_table:
     jp      file_trim_dir         ; Trim path from filespec
     jp      file_trim_ext         ; Trim extension from filespec
     jp      file_load_binary      ; Load binary file into main memory
-    jp      file_load_altchrs     ; Load file into alternate chrset buffer
+    jp      file_load_chrset      ; Load file into alternate chrset buffer
     jp      file_load_paged       ; Load binary file into paged memory
     jp      file_load_palette     ; Load and set palette 
     jp      file_load_pt3         ; Load PT3 file into PT3 buffer
     jp      file_load_rom         ; Load ROM file into page 35
     jp      file_load_screen      ; Load screen image
     jp      file_load_strbuf      ; Load file into BASIC string buffer
+    jp      just_ret
+    jp      just_ret
     jp      file_save_binary      ; Save binary file from main memory
     jp      file_save_paged       ; Save file from paged memory
     jp      file_save_palette     ; Get and save palette
@@ -42,11 +44,10 @@ _jump_table:
     jp      file_load_defchrs     ; Load file into default chrset buffer
     jp      file_load_tilemap     ; Load tilemap
     jp      file_save_tilemap     ; Save tilemap
+    jp      file_save_chrset      ;
+    jp      just_ret
+    jp      just_ret
     jp      file_read_dir         ; Read directory entry as ASCII string
-    jp      just_ret
-    jp      just_ret
-    jp      just_ret
-    jp      just_ret
     jp      just_ret
     jp      just_ret
     jp      just_ret
@@ -73,5 +74,5 @@ _jump_table:
     jp      just_ret
     jp      just_ret
     jp      just_ret
-
+    
 _end_jump_table:

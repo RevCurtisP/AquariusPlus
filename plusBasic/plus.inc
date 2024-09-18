@@ -101,6 +101,7 @@ ONELIN      equ $382E   ; THE pointer to the LINE TO GOTO WHEN AN ERROR OCCURS
 EXT_FLAGS   equ $3830   ; Extended BASIC flags
 MOUSEWDLT   equ $3831   ; Accumulated change in mouse delta
 BAS_FDESC   equ $3832   ; ESP file descriptor to close on Error or Ctrl-C
+IEND_KEY    equ $3833   ; Key pressed to end input
 ;         $3834-$3835   ; unused (2 bytes)
 ; Temporary variables used within statement code.
 ; FILESTAT statement
@@ -222,7 +223,7 @@ IRQ_VLINE       equ $02     ; Video LINE interrupt
 ; Page 54 (BAS_BUFFR), swapped into Bank 3
 BASBUF_BASE equ $C000   ; Base Address of BASIC Buffers
 SCRNVBASE   equ $0000   ; Screen variable buffers (see screen.inc)
-GFXVBASE    equ $0100   ; GFX SysVar Base, 256 byte aligned (see gfx.asm)
+GFXVBASE    equ $0100   ; GFX SysVar Base, 256 byte aligned (see gfxvars.asm)
 FKEYDEFS    equ $0200   ; Function Key Definitions (32 bytes each)
 FKEYBASE    equ BASBUF_BASE + FKEYDEFS
 ;         $0500-$07FF   ; Unused

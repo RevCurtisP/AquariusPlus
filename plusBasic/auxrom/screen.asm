@@ -206,7 +206,7 @@ _readwrite_hlde:
     ret
 
 ;-----------------------------------------------------------------------------
-; Write string to Color RAM
+; Read string from Color RAM
 ; Input: BC: String Length 
 ;        DE: Screen Offset
 ;        HL: String Pointer
@@ -216,7 +216,7 @@ color_read_string:
     xor     a                     ; Z = Read
     jr      _color_string
 ;-----------------------------------------------------------------------------
-; Write string from Screen RAM
+; Write string to Color RAM
 ; Input: BC: String Length 
 ;        DE: Screen Offset
 ;        HL: String Pointer
@@ -260,7 +260,7 @@ _color_string:
     ret
 
 ;-----------------------------------------------------------------------------
-; Read string from screen
+; Read string from Screen RAM
 ; Input: BC: Read Length 
 ;        DE: Screen Offset
 ;        HL: String Address

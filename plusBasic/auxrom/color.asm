@@ -179,7 +179,7 @@ asc_to_rgb:
     ret
 
 ; HL = AscPtr; Output: B: First nybble, A: Second nybble    
-read_nybbles
+read_nybbles:
     call    read_hex_nybble
     ld      b,a                   
     call    nc,read_hex_nybble

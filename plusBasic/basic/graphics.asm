@@ -1030,7 +1030,6 @@ ST_DEF_SPRITE:
     jr      z,_def_sprite_rect    ;   Do rectangular definition
 .loop
     call    _get_byte             ; A,E = Spritle#
-    jp      nc,FCERR
     call    _write_byte_strbuf    ; Write E to string buffer
     SYNCHK  ','
     call    _get_byte             ; A,E = Xoffset
@@ -1084,8 +1083,6 @@ _def_sprite_rect:
     rst     CHRGET                ; Skip [ or ,
 .loop
     call    _get_byte             ; A,E = sprite#
-    cp      64
-    jp      nc,FCERR
     call    _write_byte_strbuf    ; Write E to string buffer
     call    _write_bc_strbuf      ; Write X,Y to string buffer
     ld      a,c

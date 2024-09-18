@@ -455,6 +455,67 @@ _load_ascii:
     ld      e,a
     jp      ERROR                 ; Else issue BASIC error
 
+
+;-----------------------------------------------------------------------------
+; AQX Header
+;  0 - 5    "AQPLUS"
+;  6 - 9    "EXEC"
+; 10 - 11   Load address
+; 11 - 13   Program Length
+; 14 - 15   Execute address
+;-----------------------------------------------------------------------------
+run_aqx_program:
+    call    ferr_flag_on
+    call    _open_read            ; A = FilDsc
+    
+    ld      bc,16
+    ld      de,FBUFFR
+    call    esp_read_bytes        ; Read aqx header
+    ld      a,l
+    ex      af,af'                ; AF' = FilDsc
+    ld      a,16
+    cp      c                     ; If full header not read
+    jp      nz,.badfile           ;   Bad file error
+; Validate load address and length
+    ld      de,(FBUFFR+10)        ; DE = Load address
+    ld      bc,(FBUFFR+12)        ; BC = Program Length
+    ld      hl,$4000              
+    rst     COMPAR                ; If Load Address < $4000
+    jp      c,.badfile            ;   Bad file error
+    add     hl,bc                 ; 
+    ex      de,hl                 ; DE = PrgEnd
+    ld      hl,-512
+    add     hl,sp                 ; HL = StkPtr - 512
+    rst     COMPAR                ; If TopAdr < PrgEnd
+    jp      c,.badfile            ;   Bad file error
+; Load the executable
+ ;   dec     de                    ; Back up to last byte of program
+    push    de                    ; Stack = EndAdr
+    ex      af,af'                ; AF = FilDsc
+    ld      de,(FBUFFR+10)        ; DE = Load Address
+    call    esp_read_bytes        ; DE = EndAdr
+    ld      a,l                   ; L = FilDsc
+    ld      iy,dos_close
+    call    aux_call              ; Close file
+    pop     hl                    ; HL = PrgEnd
+; Check execution address
+    rst     COMPAR                ; If EndAdr < PrgEnd
+    jp      c,.badfile            ;   Bad file error
+    ld      de,(FBUFFR+14)        ; DE = ExeAdr
+    rst     COMPAR                ; If ExeAdr >= PrgEnd
+    jp      c,.badfile            ;   Bad file error
+    ld      hl,(FBUFFR+10)        ; HL = BgnAdr
+    rst     COMPAR                ; If ExeAdr < BgnAdr
+    jp      c,.badfile            ;   Bad file error
+; Start the program    
+    ex      de,hl                 ; HL = ExeAdr
+    call    jump_hl
+    pop     hl
+    ret
+.badfile
+    call    _badfile
+    jp      _pop_hl_doserror    
+    
 ;-----------------------------------------------------------------------------
 ; Load CAQ/BAS file
 ; Input: HL: String descriptor address
@@ -912,11 +973,10 @@ run_file:
 ;For (16k) cartridge binaries
 ;the bytes at 0x2003...05...07...09...0B...0D...0F are consistent.
 ;2A, 9C, B0, 6C, 64, A8, 70
-
     ; Check for .ROM extension
     ld      a, c                  ; A = String Length
     cp      a, 5                  ; If less than 5
-    jr      c, .load_basic        ; Too short to have ROM extension
+    jr      c, .check_header      ; Too short to have ROM extension
     sub     a, 4                  ; Position of last four characters of String
     ld      c, a
     push    hl                    ; Save String Descriptor
@@ -937,6 +997,24 @@ run_file:
     call    string_cmp_upper      ; Compare Them
     pop     hl
     jr      z,.load_core
+
+.check_header
+    ld      (FBUFFR),hl           ; FBUFFR = FilSpcDsc
+    call    ferr_flag_on          ; 
+    call    _open_read
+    ld      de,FBUFFR+2
+    ld      bc,10
+    call    esp_read_bytes        ; B = First byte of file
+    jp      m,_dos_error          ; Check for error
+    ld      a,l                   ; A = FilDsc
+    ld      iy,dos_close
+    call    aux_call              ; Close file
+    ld      de,FBUFFR+2
+    ld      hl,.aqxsig            ; HL = "AQPLUSEXEC"
+    ld      b,10
+    call    string_cmp_upper
+    ld      hl,(FBUFFR)
+    jp      z,run_aqx_program
 
 .load_basic:
     pop     bc                    ; Discard Text Pointer
@@ -960,6 +1038,10 @@ run_file:
 
 .cartsig
     byte    $2A, $9C, $B0, $6C, $64, $A8, $70
+
+;Keep 
+.aqxsig
+    byte    "AQPLUSEXEC"
 
 _lookup_file:
     push    hl                    ; Stack = StrDsc, RtnAdr

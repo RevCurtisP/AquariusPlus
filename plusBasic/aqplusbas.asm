@@ -125,7 +125,7 @@ just_ret:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.23f"
+    db "v0.23g"
     db 0
 plus_len   equ   $ - plus_text
 
@@ -1211,6 +1211,7 @@ _buffer_write_init:
     phase   $C000     ;Assemble in ROM Page 1 which will be in Bank 3
 
     include "jump_aux.asm"      ; Auxiliary routines jump tables
+    include "jump_gfx.asm"      ; Graphics routines jump tables
     include "basbuf.asm"        ; Basic buffer read/write routines
     include "color.asm"         ; Color palette module
     include "dos.asm"           ; DOS routines

@@ -1,4 +1,8 @@
 # plusBASIC Release History
+ - v0.23g (2024-09-18)
+    - Fixed get_byte 64 which was causing DEF SPRITE to error on spritle 63 
+    - Added PAD token to bas2baq.py and baq2bas.py
+    - Added AqExec file support to RUN file
  - v0.23f (2024-09-13)
     - Added TILEOFFSET()
     - Changed `get_color_args` calls to `get_screen_colors` and remove `get_color_args` routine.

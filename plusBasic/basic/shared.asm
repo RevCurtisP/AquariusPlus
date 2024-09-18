@@ -502,7 +502,7 @@ get_byte32:
 ;-----------------------------------------------------------------------------
 get_byte64:
     call    GETBYT                ; get foreground color in e
-    cp      63                    ; if > 15
+    cp      64                    ; if > 15
     jp      nc,FCERR              ;   FC Error
     ret
 

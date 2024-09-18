@@ -125,6 +125,7 @@ print_c_string:
 print_string_immd:
     pop     hl                    ;; Get String Address off Stack
     call    print_c_string        ;; Print the String
+jump_hl:
     jp      (hl)                  ;; Fast Return
 
 

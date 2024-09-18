@@ -25,6 +25,9 @@ con_input_int:
 ; Flags: Carry set if screen position out of bounds
 ;        Sign set if aborted (Ctrl-C)
 ;-----------------------------------------------------------------------------
+; ToDo: Ajdust Row to match LOCATE
+; ToDo: Populate IEND_KEY
+; ToDo: Add ENDKEY function
 _do_input:
     push    bc                    ; Stack = MinMax, RtnAdr
     call    get_strbuf_addr       ; HL = StrBuf

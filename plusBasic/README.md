@@ -107,6 +107,7 @@
  - [ ] **DEF SPRITE _strvar_= [_spritle_,...],...** - Create a sprite definition.<!--DEFSPRITE-->
  - [ ] **DEF TILELIST _strvar_=_tileno_,...** - Create a string list of tile indexes.<!--DEFTILE-->
  - [ ] **DEF USR=_address_** - Set USR() machine language routine address.
+ - [ ] **DEL _filespec_** - Delete file or directory.
  - [ ] **DIM _array_(_dim_{,...}),...** - Create and allocate one or more arrays.
  - [ ] **DIM _array_(_dim_{,...})=expr,...** - Create and populate array.
  - [ ] **DIM(\*_array_)** - Return number of dimensions in array.
