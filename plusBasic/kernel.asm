@@ -2,7 +2,7 @@
 ; Kernel jump table - Starts at $2100
 ;=====================================================================================
 _jump_table:
-; system
+; <<System Routines>>
     jp      aux_call              ; Call routine in auxillary ROM
     jp      ext_call              ; Call routine in extended ROM
     jp      str_copy              ; Copy null-terminated string
@@ -18,9 +18,9 @@ _jump_table:
     jp      key_read_scancode     ; Read scan code sequence from alternate keyboard buffer
     jp      key_set_keymode       ; Set alternate keyboard buffer mode
     jp      key_pressed           ; Check matrix for keypress
-    jp      just_ret
+    jp      gfx_call
     
-; esp.asm
+; esp.asm <<ESP Interface>>
     jp      esp_cmd               ; Issue command 
     jp      esp_cmd_string        ; Issue ESP command with string argument
     jp      esp_get_result        ; Get first ESP result byte
@@ -54,7 +54,7 @@ _jump_table:
     jp      just_ret
     jp      just_ret
 
-; page.asm
+; page.asm <<Paged Memory>>
     jp      page_check_next4read  ; Verify next page is valid for read
     jp      page_check_next4write ; Verify next page is valid for write
     jp      page_check_read       ; Verify page is valid for Read

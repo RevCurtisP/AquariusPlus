@@ -242,13 +242,13 @@ FNJUMPS:
     dc $C200-$,$76
 
 _jump_table:
+; <<Extended ROM>>
     jp      get_linbuf_addr       ; Get Line Buffer Address
     jp      get_strbuf_addr       ; Get String Buffer Address
     jp      FLOAT_BC              ; Convert BC to unsigned float in FACC
     jp      FLOAT_DE              ; Convert DE to unsigned float in FACC
     jp      FLOAT_CDE             ; Convert CDE to unsigned float in FACC
-
-_end_jump_table
+_end_jump_table:
 
 ;===========================================================================
 ; Escaped String Escape Sequence lookup tables

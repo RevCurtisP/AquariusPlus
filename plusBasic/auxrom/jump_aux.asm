@@ -1,8 +1,10 @@
 ;=====================================================================================
 ; Auxiliary ROM jump table - Starts at $C000
 ;=====================================================================================
+;;;ToDo: Add comments re: aux_call and update makeinc.py to parse them
+
 _jump_table:
-; dos
+; dos <<DOS>>
     jp      dos_change_dir        ; Change Directory
     jp      dos_close             ; Close file or directory
     jp      dos_close_all         ; Close all files
@@ -20,7 +22,7 @@ _jump_table:
     jp      dos_rewind            ; Move to beginning of file
     jp      dos_seek              ; Move to position in file
     jp      dos_tell              ; Get current position in file
-; file_io
+; file_io <<File I/O>>
     jp      file_get_dir          ; Extract path from filespec
     jp      file_get_ext          ; Extract extension from filespec
     jp      just_ret
@@ -52,7 +54,7 @@ _jump_table:
     jp      just_ret
     jp      just_ret
     jp      just_ret
-; string.asm
+; string.asm <<String Operations>>
     jp      string_trim
     jp      string_trim_left
     jp      string_trim_right
@@ -61,7 +63,7 @@ _jump_table:
     jp      just_ret
     jp      just_ret
     jp      just_ret
-; basbuf.asm
+; basbuf.asm <<BASIC Line Buffer>>
     jp      basbuf_read_byte
     jp      basbuf_read_bytes
     jp      basbuf_read_word

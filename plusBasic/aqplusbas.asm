@@ -1063,6 +1063,7 @@ _trap_error:
     call    page_set_plus
     jp      trap_error
 
+gfx_call:
 aux_call:
     call    page_map_auxrom
     call    jump_iy
