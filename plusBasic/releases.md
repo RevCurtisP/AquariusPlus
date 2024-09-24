@@ -1,18 +1,22 @@
 # plusBASIC Release History
+ - v0.23h (2024-09-23)
+    - Added ENDKEY, FILESTATUS$(), FILEDATETIME$(), FILEATTR(), and FILELEN()
+    - Added optional position argument to ASC()
+    - Modified enhanced INPUT to exit on Ctrl-X, Tab, Back-Tab, Cursor-Up, and Cursor-Down
  - v0.23g (2024-09-18)
     - Fixed get_byte 64 which was causing DEF SPRITE to error on spritle 63 
     - Added PAD token to bas2baq.py and baq2bas.py
     - Added AqExec file support to RUN file
  - v0.23f (2024-09-13)
     - Added TILEOFFSET()
-    - Changed `get_color_args` calls to `get_screen_colors` and remove `get_color_args` routine.
-    - Changed `CLEAR COLOR` to `CLS COLOR {_fg_,_bg_}`.
-    - `CHR` and `ATTR` options to `COPY SCREEN TO...` and `COPY ... TO SCREEN`.
-    - Wrote unit test `cs.baq` to test COPY SCREEN statements.
-    - Modified `ss.baq` to use COPY SCREEN and enabled `OUT` port restrictions.
+    - Changed `get_color_args` calls to `get_screen_colors` and remove `get_color_args` routine
+    - Changed `CLEAR COLOR` to `CLS COLOR {_fg_,_bg_}`
+    - `CHR` and `ATTR` options to `COPY SCREEN TO...` and `COPY ... TO SCREEN`
+    - Wrote unit test `cs.baq` to test COPY SCREEN statements
+    - Modified `ss.baq` to use COPY SCREEN and enabled `OUT` port restrictions
  - v0.23e (2024-09-07)
-    - Fixed file_load_paged executing random code when loading files over 65535 bytes.
-    - Added test to sl.baq for loading large files to paged RAM.
+    - Fixed file_load_paged executing random code when loading files over 65535 bytes
+    - Added test to sl.baq for loading large files to paged RAM
  - v0.23d (2024-09-06)
     - Fixed PEEKSCREEN() and PEEKCOLOR() for both 40 and 80 column mode
     - Refactored screen_read_byte, screen_write_byte, color_read_byte, and color_write_byte

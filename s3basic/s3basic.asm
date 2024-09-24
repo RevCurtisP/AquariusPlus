@@ -2692,8 +2692,8 @@ STRFIN: cp      '"'               ;[M80] IF QUOTE TERMINATES THE STRING
         call    z,CHRGTR          ;[M80] SKIP OVER THE QUOTE
         ex      (sp),hl           ;[M80] SAVE POINTER AT END OF STRING
         inc     hl                ;
-        ex      de,hl             ;[M80] GET POINTER TO TEMP
-        ld      a,c               ;[M80] GET CHARACTER COUNT IN A
+STRNEX: ex      de,hl             ;[M80] GET POINTER TO TEMP
+STRNEL: ld      a,c               ;[M80] GET CHARACTER COUNT IN A
 STRNEW: call    STRAD2            ;[M80] SAVE STR INFO
 ;;Set Pointer to Temporary String Descriptor
 PUTNEW: ld      de,DSCTMP         ;[M80] [D,E] POINT AT RESULT DESCRIPTOR

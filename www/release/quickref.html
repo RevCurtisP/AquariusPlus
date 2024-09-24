@@ -76,7 +76,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>ARGS$(<em>argno</em>)</strong> - Return RUN argument number <em>index</em>.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>ASC(<em>string</em>)</strong> - Return ASCII value of the first character of <em>string</em>.<!--ASC--></li>
+        <strong>ASC(<em>string</em>{,<em>pos</em>})</strong> - Return ASCII value of the first character of <em>string</em>.<!--ASC--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>ASC$(<em>hexstring</em>)</strong> - Convert <em>hex_string</em> to an ASCII string.<!--ASC--></li>
@@ -253,6 +253,9 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>END</strong> - Terminate program execution.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
+        <strong>ENDKEY</strong> - Return key used to exit enhanced INPUT.</li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
         <strong>ERASE <em>*array</em>{,<em>*array</em>...}</strong> - Delete arrays.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
@@ -262,10 +265,22 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>EXP(<em>float</em>)</strong> - Return argument to the power of mathematical constant <em>e</em>.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
+        <strong>FILEDATETIME$(<em>filespec</em>)</strong> - Return file timestamp.</li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>FILEATTR(<em>filespec</em>)</strong> - Return file attribute byte.</li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
         <strong>FILEDIR$(<em>filespec</em>)</strong> - Extract path from filespec.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>FILEEXT$(<em>filespec</em>)</strong> - Extract extension from filespec.</li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>FILELEN(<em>filespec</em>)</strong> - Return file length.</li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>FILESTATUS$(<em>filespec</em>)</strong> - Return file information as binary string.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>FILL BYTE {@<em>page</em>},<em>address</em>,<em>oount</em>,<em>byte</em></strong> - Fill block of memory with byte.</li>
@@ -742,7 +757,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>SET BIT</strong> - <em>Not implemented</em></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>SET BREAK ON|OFF</strong> - Enable or disable control-c checking.</li>
+        <strong>SET BREAK ON|OFF</strong> - <em>Not functioning</em> Enable or disable control-c checking.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>SET CHRDEF <em>ascii_code</em>,<em>string</em></strong> - Redefine character.<!--CHRSET--></li>

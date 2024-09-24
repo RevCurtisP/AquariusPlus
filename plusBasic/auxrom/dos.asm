@@ -69,6 +69,31 @@ dos_create_dir:
     ld      a, ESPCMD_MKDIR       ; Set ESP Command
     jp      esp_cmd_string        ; Issue ESP command
 
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+; dos_stat - Get file information
+; - Returns first 9 bytes of the specified files directory entry into
+; | specified buffer (see dos_read_dir for structure)
+; Input: DE: Buffer address
+;        HL: Filespec string descriptor
+; Output:  A: Result
+;         BC: Data Length
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+dos_stat:
+    call    send_stat_cmd         ; Send stat command
+    ret     m
+    push    de  
+    ld      bc,9
+    call    esp_get_bytes         ; Get status byte
+    pop     de
+    xor     a
+    ret
+    
+send_stat_cmd:
+    ld      a, ESPCMD_STAT        
+    call    esp_cmd               ; Issue STAT command
+    call    esp_send_strdesc      ; Send FilSpc 
+    jp      esp_get_result        ; Return A = Result
+    
 ;---------------------------------------------------------------
 ; dos_get_cwd - Get Current Directory
 ;  Input: HL: Buffer Address
@@ -81,36 +106,6 @@ dos_get_cwd:
     call    esp_get_result 
     ret     m
     jp      espx_read_buff        ; Read into StrBuf and Return
-
-;-----------------------------------------------------------------------------
-; dos_get_file_stat - Return File Status
-; Input: BC: String Length
-;        DE: String Address
-; Output:  A: Result
-; Clobbered: BC, DE
-;-----------------------------------------------------------------------------
-;; FILEDATE$(#filenum/filespec$)
-;; FILETIME$(#filenum/filespec$)
-;; FILEATTR(#filenum/filespec$)
-;; FILELEN(#filenum/filespec$)
-dos_filestat:
-    ld      a, ESPCMD_STAT        ; Set ESP Command
-    call    esp_cmd               ; Issue ESP command 
-    jp      m,.done               ; Return if Error
-    call    esp_send_string       ; Send filename  
-    call    esp_get_de
-    ld      (FILEDATE),de
-    call    esp_get_de
-    ld      (FILETIME),de
-    call    esp_get_byte
-    ld      (FILEATTR),de
-    call    esp_get_long
-    ld      (FILESIZE),bc
-    ld      (FILESIZE+2),de
-    call    esp_get_result 
-.done
-    jp      page_restore_bank3
-
 
 ;-----------------------------------------------------------------------------
 ; dos_open_dir - Open Directory for Read

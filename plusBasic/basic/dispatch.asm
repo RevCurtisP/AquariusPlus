@@ -99,6 +99,14 @@ extended_function:
     jp      z,FN_VAR
     sub     a,3
     jp      z,FN_PAD            ; $A0 PAD
+    sub     a,13                ; $AD MIN
+    jp      z,GSERR
+    dec     a                   ; $AE MAX
+    jp      z,GSERR
+    dec     a                   ; $AF UPR
+    jp      z,GSERR
+    dec     a                   ; $B0 LWR
+    jp      z,GSERR
     jp      SNERR
 
 ; ------------------------------------------------------------------------------

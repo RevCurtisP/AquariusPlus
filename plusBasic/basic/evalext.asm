@@ -22,6 +22,8 @@ eval_extension:
     jp      z,eval_ascii
     cp      $5C                   ; Backslash
     jp      z,_escaped
+    cp      ENDTK
+    jp      z,eval_end
     cp      DIMTK
     jp      z,eval_dim
     cp      LISTTK
@@ -628,6 +630,19 @@ float_de_pophrt:
     call    FLOAT_DE
     pop     hl
     ret
+
+;-----------------------------------------------------------------------------
+; ENDKEY - Return key that ended INPUT enhanced input
+;-----------------------------------------------------------------------------
+; ? ENDKEY
+eval_end:
+    rst     CHRGET                ; Skip End
+    rst     SYNCHR
+    byte    XTOKEN
+    rst     SYNCHR                ; Require KEY
+    byte    KEYTK
+    ld      a,(IEND_KEY)
+    jp      float_byte
 
 ;-----------------------------------------------------------------------------
 ; LIST$(line#) - Detokenize Line line#

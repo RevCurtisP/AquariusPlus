@@ -2,9 +2,10 @@
 ; esp.asm - ESP32 routines
 ;=====================================================================================
 
-;-----------------------------------------------------------------------------
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ; Issue command to ESP
-;-----------------------------------------------------------------------------
+; Input: A = Esp command
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 esp_cmd:
     push    a
 
@@ -25,41 +26,47 @@ esp_cmd:
     pop     a
     jp      esp_send_byte
 
-;-----------------------------------------------------------------------------
-; Load FPGA Core 
-; Input:  DE: path string address
-;         BC: path string length
-;-----------------------------------------------------------------------------
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+; Load and execute FPGA Core 
+; Input: A = Esp command
+; Input:  DE: Filespec address
+;         BC: Filespec length
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 esp_load_fpga:
     ld      a,ESPCMD_LOADFPGA
-;-----------------------------------------------------------------------------
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ; Issue ESP command with string argument
+; - Writes the specitied command byte to the ESP, 
+; | immediately followed by the specified string
 ; Input:  A: Command
+;        BC: String Length
 ;        DE: String Address
-;        BC: String Length
 ; Output: A: Result
-;        DE: Address of Byte after String
 ;        BC: String Length
-;-----------------------------------------------------------------------------
+;        DE: Address of Byte after String
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 esp_cmd_string:
     call    esp_cmd
     call    esp_send_string
 
-;-----------------------------------------------------------------------------
-; Get first result byte
-; Output: A: Result, negativ if error
-;-----------------------------------------------------------------------------
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+; Resd first byte of result from ESP command
+; - Returns a signed Byte
+; - Result will be negative with M flag set if an error occurred
+; Output: A: Result
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 esp_get_result:
     call    esp_get_byte
     or      a
     ret
 
-;-----------------------------------------------------------------------------
-; Get system version string
-;  Input: HL: String buffer address
-; Output: BC: String length
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+; Return system version
+; - Populates a string buffer with the current firmwsre version
+; Input: HL: String buffer address
+; Output: BC: Length of version string
 ; Clobbered: A
-;-----------------------------------------------------------------------------
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 esp_get_version:
     ld      a, ESPCMD_VERSION
     call    esp_cmd
@@ -74,12 +81,13 @@ esp_close_all:
     call    esp_cmd
     jp      esp_get_result 
 
-;-----------------------------------------------------------------------------
-; Read a byte from ESP to main memory
+; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+; Read byte from ESP
+; - Requests a single byte from the current ESP operation
 ; Output: A: Result
-;         C: 1 if succesful, else 0
+;         C: Number of bytes read (0 or 1)
 ;         B: Byte read (0 if none)
-;-----------------------------------------------------------------------------
+; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 esp_read_byte:
     xor     a
 esp_readc_byte:
@@ -292,7 +300,7 @@ esp_send_strdesc:
     ret
 
 ;-----------------------------------------------------------------------------
-; Send String
+; Send terminated String
 ; Input:  DE: string address
 ;         BC: string length
 ; Output: BC: number of bytes written
@@ -467,11 +475,10 @@ esp_send_de:
     ld      a,e
     call    esp_send_byte
     ld      a,d
-
-;-----------------------------------------------------------------------------
-; Write data to ESP
-; Input: A: byte
-;-----------------------------------------------------------------------------
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+; Write byte to ESP
+; Input: A = Byte
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 esp_send_byte:
     push    af
 .wait:

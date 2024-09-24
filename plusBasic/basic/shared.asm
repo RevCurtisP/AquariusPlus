@@ -65,7 +65,18 @@ FLOAT_CDE:
     call    FLOATR                ; Float It
     pop     hl
     ret
- 
+
+;-----------------------------------------------------------------------------
+; Convert BCDE into an unsigned Floating Point number in FACC
+; Clobbers: A,BC,DE
+;-----------------------------------------------------------------------------
+;; ToDo: Make this actually float the entire 32-bit integer
+FLOAT_DEBC:
+    push    de
+    ld      d,b
+    ld      e,c
+    pop     bc
+    jr      FLOAT_CDE
  
 pop_float_minus_one:
     pop     af
@@ -88,6 +99,8 @@ float_signed_byte:
     pop     hl
     ret
 
+FLOAT_B
+    ld      a,b
 float_byte:
     push    hl
 sngflt_pophrt:

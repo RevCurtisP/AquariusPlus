@@ -115,9 +115,11 @@ EXTCMDS:
     db $80 + 'B',"IN"             ; $AC
     db $80 + 'M',"IN"             ; $AD
     db $80 + 'M',"AX"             ; $AE
+    db $80 + 'U',"PR"             ; $AF
+    db $80 + 'L',"WR"             ; $B0
     db $80                        ; End of table marker
 
-EXTOKEN = $AF                     ; Last Token + 1
+EXTOKEN = $B1                     ; Last Token + 1
 
 ;-----------------------------------------------------------------------------
 ; plusBASIC tokens
@@ -135,6 +137,7 @@ DELTK     equ     $DF
 CDTK      equ     $E0
 INTK      equ     $E1
 MODTK     equ     $E7
+DATETK    equ     $E5
 ERRTK     equ     $E9
 STRNTK    equ     $EA
 BITTK     equ     $EB
@@ -193,6 +196,8 @@ HEXTK     equ     $AB
 BINTK     equ     $AC
 MINTK     equ     $AD
 MAXTK     equ     $AE
+UPRTK     equ     $AF
+LWRTK     equ     $B0
 
 ;-----------------------------------------------------------------------------
 ; Convert keyword to token - hook 10

@@ -59,7 +59,7 @@
  - [ ] **ARGS _arg_{,...} {RETURN _var_{,...}}** - Specify subroutine arguments and return variables.
  - [ ] **ARGS** - Return number of RUN arguments
  - [ ] **ARGS$(_argno_)** - Return RUN argument number _index_.
- - [ ] **ASC(_string_)** - Return ASCII value of the first character of _string_.<!--ASC-->
+ - [ ] **ASC(_string_{,_pos_})** - Return ASCII value of the first character of _string_.<!--ASC-->
  - [ ] **ASC$(_hexstring_)** - Convert _hex_string_ to an ASCII string.<!--ASC-->
  - [ ] **ATN(_float_)** - Return arctangent of argument.
  - [ ] **BIT(_integer_,_bit#_)** - Return status of bit in integer.
@@ -118,11 +118,16 @@
  - [ ] **DRAW TEXT (_col_,_row)_),_string_** - _Not implemented._
  - [ ] **EDIT {_lineref_}** - _Not implemented._
  - [ ] **END** - Terminate program execution.
+ - [ ] **ENDKEY** - Return key used to exit enhanced INPUT.
  - [ ] **ERASE _\*array_{,_\*array_...}** - Delete arrays.
  - [ ] **EVAL(_string_)** - Evaluate expression in string.
  - [ ] **EXP(_float_)** - Return argument to the power of mathematical constant _e_.
+ - [ ] **FILEDATETIME$(_filespec_)** - Return file timestamp.
+ - [ ] **FILEATTR(_filespec_)** - Return file attribute byte.
  - [ ] **FILEDIR$(_filespec_)** - Extract path from filespec. 
  - [ ] **FILEEXT$(_filespec_)** - Extract extension from filespec.
+ - [ ] **FILELEN(_filespec_)** - Return file length.
+ - [ ] **FILESTATUS$(_filespec_)** - Return file information as binary string.
  - [ ] **FILL BYTE {@_page_},_address_,_oount_,_byte_** - Fill block of memory with byte.
  - [ ] **FILL WORD {@_page_},_address_,_oount_,_integer_** - Fill block of memory with integer.
  - [ ] **FILL BITMAP {BYTE _byte_} {COLOR _fgcolor_, _bgcolor_}** - Fill bitmap and/or colormap with byte and/or color(s).
@@ -281,7 +286,7 @@
  - [ ] **SCROLL BITMAP** - Not implemented.
  - [ ] **SCROLL SCREEN** - Not implemented.
  - [ ] **SET BIT** - _Not implemented_
- - [ ] **SET BREAK ON|OFF** - Enable or disable control-c checking.
+ - [ ] **SET BREAK ON|OFF** - _Not functioning_ Enable or disable control-c checking.
  - [ ] **SET CHRDEF _ascii_code_,_string_** - Redefine character.<!--CHRSET-->
  - [ ] **SET COLOR _fgcolor_,_bgcolor_** - Enable color printing mode.<!--SETCOLOR-->
  - [ ] **SET COLOR OFF** - Disable color printing mode.<!--SETCOLOR-->

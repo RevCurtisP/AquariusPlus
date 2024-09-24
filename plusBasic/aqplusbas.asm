@@ -125,7 +125,7 @@ just_ret:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.23g"
+    db "v0.23h"
     db 0
 plus_len   equ   $ - plus_text
 
@@ -1063,12 +1063,32 @@ _trap_error:
     call    page_set_plus
     jp      trap_error
 
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+; Call Graphics subsystem subroutine
+; - Maps Auxilarry ROM into Bank 3
+; - Executes routine, passing all registers except AF' and IX
+; - Restores Bank 3 and returns all registers exoept AF'
+; Input: IY = Routine address
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 gfx_call:
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+; Call Auxilary ROM subroutine
+; - Maps Auxilarry ROM into Bank 3
+; - Executes routine, passing all registers except AF' and IX
+; - Restores Bank 3 and returns all registers exoept AF'
+; Input: IY = Routine address
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 aux_call:
     call    page_map_auxrom
     call    jump_iy
     jp      page_restore_bank3
-
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+; Call Extended ROM subroutine
+; - Maps Extended ROM into Bank 3
+; - Executes routine, passing all registers except AF' and IX
+; - Restores Bank 3 and returns all registers exoept AF'
+; Input: IY = Routine address
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ext_call:
     call    page_map_extrom
     call    jump_iy
@@ -1217,14 +1237,15 @@ _buffer_write_init:
     include "color.asm"         ; Color palette module
     include "dos.asm"           ; DOS routines
     include "esp_aux.asm"       ; ESP routines in auxiliary ROM
-    include "fileaux.asm"       ; BASIC file operations auxiliary code
-    include "fileio.asm"        ; Disk and File I/O assembly routines
+    include "fileaux.asm"       ; BASIC File auxilarry routines
+    include "fileio.asm"        ; Disk and File I/O assembly ronibuutines
     include "fileload.asm"      ; File LOAD I/O routines
     include "filesave.asm"      ; File SAVE I/O routines
     include "filestr.asm"       ; File related string assembly routines
     include "gfx.asm"           ; Main graphics module
     include "gfxbitmap.asm"     ; Bitmap graphics routines
     include "gfxvars.asm"       ; Graphics sysvars and lookup tables
+    include "loadaux.asm"       ; BASIC file operations auxiliary code
     include "misc.asm"          ; Miscellaneous subroutines
     include "s3hooks.asm"       ; S3 BASIC direct mode hooks
     include "screen.asm"        ; Text screen graphics subroutines

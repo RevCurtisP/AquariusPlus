@@ -5,12 +5,15 @@ _jump_table:
 ; <<System Routines>>
     jp      aux_call              ; Call routine in auxillary ROM
     jp      ext_call              ; Call routine in extended ROM
+    jp      gfx_call              ; Call graphics routine
     jp      str_copy              ; Copy null-terminated string
     jp      str_length            ; Get null-terminated string length
     jp      print_c_string        ; Print null-terminated string
     jp      print_string_immd     ; Print inline null terminated string
     jp      str_stringdesc        ; Build descriptor for null terminated string
     jp      str_tempdesc          ; Build descriptor for null terminated string in DSCTMP
+    jp      uppercase_char        ; Convert character to lowercase
+    jp      lowercase_char        ; Convert character to uppercase
     jp      sys_fill_mem          ; Fill main memory with byte
     jp      sys_swap_mem          ; Swap bytes
     jp      key_clear_fifo        ; Clear alternate keyboard buffer
@@ -18,7 +21,8 @@ _jump_table:
     jp      key_read_scancode     ; Read scan code sequence from alternate keyboard buffer
     jp      key_set_keymode       ; Set alternate keyboard buffer mode
     jp      key_pressed           ; Check matrix for keypress
-    jp      gfx_call
+    jp      just_ret
+    jp      just_ret
     
 ; esp.asm <<ESP Interface>>
     jp      esp_cmd               ; Issue command 

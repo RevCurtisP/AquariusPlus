@@ -10,12 +10,41 @@ FN_ASC:
     inc     hl                    ; Check character directly after ASC Token
     ld      a,(hl)                ; (don't skip spaces)
     cp      '$'                   ; If it's not a dollar sign
-    jr      nz,ABORT_FN           ;   Return to do normal ASC
+    jr      nz,asc_chr            ;   Return to do normal ASC
     rst     CHRGET                ; Eat $ and Skip Spaces
     call    PARCHK                ; Parse Argument in Parentheses
     push    hl                    ; Save Text Pointer
     call    CHKSTR                ; TM Error if Not a String
     jp      hex_to_asc            ; Convert to ASCII
+
+asc_chr:
+    SYNCHK  '('
+    call    GET_STRING
+    ld      de,(FACLO)
+    push     de                   ; Stack = StrDsc
+    ld      de,1                  ; ChrPos = 1
+    ld      a,(hl)
+    cp      ','
+    jr      nz,_asc_char
+    rst     CHRGET                ; Skip Comma
+    call    GETBYT                ; DE = ChrPos
+    or      a
+    jp      z,FCERR
+_asc_char:
+    SYNCHK  ')'
+    ex      (sp),hl               ; HL = StrDsc; Stack = TxtPtr                  
+    ld      bc,LABBCK
+    push    bc                    ; Stack = LABCK, TxtPtr
+    push    de                    ; Stack = ChrPos, LABBCK, TxtPtr 
+    call    free_hl_addr_len      ; DE = StrAdr, BC = StrLen
+    pop     hl                    ; HL = ChrPos; Stack = LABBCK, TxtPtr    
+    ld      a,c
+    cp      l                     ; If ChrPos > StrLen
+    jp      c,FCERR               ;   Illegal quantity
+    dec     hl                    ; Adjust ChrPos for add
+    add     hl,de                 ; HL = ChrAdr
+    ld      a,(hl)                ; A = ChrAsc
+    jp      SNGFLT
 
 ABORT_FN:
     dec     hl                    ; Back up to Function Token
@@ -228,7 +257,7 @@ ST_INPUT:
     jp      z,TMERR               ; If string, Type mismatch error (for now)
     call    con_input_int
     jp      c,FCERR               ; If bad parameters, Illegal quantity error
-    jp      m,WRMCON              ; If Ctrl-C, abort
+    jp      m,pop2hl_ret          ; If aborted, don't change variable
     call    FIN                   ; FACC = Entry
     pop     hl                    ; HL = VarPtr
     call    MOVMF                 ; Copy FACC to Variable

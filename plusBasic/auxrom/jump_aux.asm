@@ -10,7 +10,7 @@ _jump_table:
     jp      dos_close_all         ; Close all files
     jp      dos_create_dir        ; Create directory
     jp      dos_delete            ; Delete file/directory
-    jp      dos_filestat          ; Return File Status
+    jp      dos_stat              ; Return File Status
     jp      dos_get_cwd           ; Get Current Directory
     jp      dos_open              ; Open file
     jp      dos_open_append       ; Open file for write

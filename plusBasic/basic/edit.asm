@@ -25,9 +25,6 @@ con_input_int:
 ; Flags: Carry set if screen position out of bounds
 ;        Sign set if aborted (Ctrl-C)
 ;-----------------------------------------------------------------------------
-; ToDo: Ajdust Row to match LOCATE
-; ToDo: Populate IEND_KEY
-; ToDo: Add ENDKEY function
 _do_input:
     push    bc                    ; Stack = MinMax, RtnAdr
     call    get_strbuf_addr       ; HL = StrBuf
@@ -42,6 +39,7 @@ _do_input:
     cp      (hl)
     ccf                           ; If end of field past end of line
     ret     c                     ;   Return Carry Set
+    inc     e                     ; Bump Row to match LOCATE
     ld      a,e                   ; A = Row
     cp      25
     ccf                           ; If Row > 25
@@ -53,8 +51,18 @@ _do_input:
 _input_loop:
     call    key_read_ascii        ; Get keypress
     jr      z,_input_loop         ; If no key, try again
-    cp      3                     ; If Ctrl-C
+    cp      3                    ; If Ctrl-C
     jr      z,_abort_input        ;   Abort
+    cp      24                    ; If Ctrl-X
+    jr      z,_abort_input        ;   Abort
+    cp      9                     ; If Tab
+    jr      z,_finish_input       ;   Try to leave
+    cp      140                   ; If BackTab
+    jr      z,_finish_input       ;   Try to leave
+    cp      143                   ; If Up
+    jr      z,_finish_input       ;   Try to leave
+    cp      159                   ; If Down
+    jr      z,_finish_input       ;   Try to leave
     cp      13                    ; If Enter
     jr      z,_finish_input       ;   Try to leave
     cp      8                     ; If Backspace
@@ -79,7 +87,11 @@ _back_up:
     ld      a,8                   ; 
     jr      _input_out            ; Back up cursor and loop
 _finish_input:
+    ld      (IEND_KEY),a          ; Save Key Value
     ld      a,l                   ; A = CurLen
+    or      a
+    jr      z,_return_abort
+_validate_input:
     cp      b                     ; If CurLen >= MinLen
     jr      c,_input_error
     xor     a
@@ -87,7 +99,9 @@ _finish_input:
     ld      hl,(BUFADR)           ; HL = BufAdr
     ret
 _abort_input:
-    or      $FF                   ; Return Carry Clear, Sign Set
+    ld      (IEND_KEY),a          ; Save Key Value
+_return_abort:
+    or      $FF                   ; Set Sign Bit
     ret
 
 _is_string:

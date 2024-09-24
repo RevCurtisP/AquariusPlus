@@ -211,7 +211,8 @@ RETVAR      equ $0A51   ; Put value of variable pointed to by DE in FACLO
 GIVFLT      equ $0B1C   ; Float HL - DE   
 GIVINT      equ $0B21   ; Float Integer MSB=[A], LSB=[C]
 FLOATD      equ $0B23   ; Float Integer MSB=[A], LSB=[D]
-SNGFLT:     equ $0B36   ; Store variable 8 bit (out: B = value)
+SNGFLT:     equ $0B36   ; Float byte in A
+SNGFLB:     equ $0B36   ; Float byte in B
 ERRDIR      equ $0B45   ; Error if in direct mode
 GTBYTC      equ $0B53   ; Skip character, evaluate expression (integer 0-255)
 GETBYT:     equ $0B54   ; Evaluate numeric expression (integer 0-255)
@@ -244,8 +245,9 @@ STRLIT      equ $0E5F   ; Build descriptor for string litersl
 STRLTI      equ $0E60   ; Do STRLIT, without decrementing HL
 STRLT3      equ $0E62   ; Do STRLTI with delimiter in B 
 STRLT2      equ $0E63   ; Do STRLTI with delimiters in B and C
-STRNEX      equ $0E79   ; Build temporary descriptor for string with address HL, length C
-STRNEW      equ $0E7B   ; Build temporary descriptor for string with address DE, length A
+STRNEX      equ $0E79   ; Return string with address HL, length C
+STRNEL      equ $0E7A   ; Return string with address DE, length C
+STRNEW      equ $0E7B   ; Return string with address DE, length A
 PUTNEW      equ $0E7E   ; Set Pointer to Temporary String
 GETSPA:     equ $0EB3   ; Allocate string space
 STROUT:     equ $0E9D   ; Print null-terminated string in HL
@@ -342,6 +344,7 @@ SCNLBL  equ     $200F   ;; | Line label hook for GOTO, GOSUB, and RESTORE
 XINIT:      equ $E010   ; Cartridge entry point
 
 ; Standard BASIC Tokens
+ENDTK       equ $80     ; ENDTK
 FORTK       equ $81     ; FOR
 NEXTK       equ $82     ; NEXT
 DATATK      equ $83     ; DATA
@@ -369,6 +372,7 @@ ONEFUN      equ $B2     ; First Function Token
 INTTK       equ $B3     ; INT
 USRTK       equ $B5     ; USR
 POSTK       equ $B8     ; POS
+LENTK       equ $C2     ; LEN
 ASCTK       equ $C5     ; ASC
 
 ;Adddress of Byte following Hook RST

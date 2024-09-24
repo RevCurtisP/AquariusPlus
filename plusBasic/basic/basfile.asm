@@ -73,6 +73,7 @@ FN_CD:
 _get_cd:
     call    get_strbuf_addr       ; HL = StrBuf
     ld      iy,dos_get_cwd        ; Read current directory into buffer
+_aux_call_doserror:
     call    aux_call
     jr      _ret_p_doserror
 
@@ -159,11 +160,19 @@ _file_from_to:
 FN_FILE:
     rst     CHRGET                ; Skip FILE
     cp      DIRTK                 ; If DIR
-    jr      z,FN_FILEDIR          ;   Do FILEDIR$
+    jr      z,FN_FILEDIR          ;   Do FILEDIR$()
+    cp      DATETK                ; If DATE
+    jr      Z,FN_FILEDATETIME     ;   Do FILEDATETIME$()
+    cp      LENTK                 ; If LEN
+    jr      Z,FN_FILELEN          ;   Do FILELEN()
     rst     SYNCHR
     byte    XTOKEN                ; Must be extended Token
+    cp      ATTRTK                ; If ATTR
+    jr      z,FN_FILEATTR         ;   Do FILEATTR$()
     cp      EXTTK                 ; If EXT
-    jr      z,FN_FILEEXT          ;   Do FILEEXT$
+    jr      z,FN_FILEEXT          ;   Do FILEEXT$()
+    cp      STATK                 ; If STAT
+    jr      z,FN_FILESTATUS       ;   Do FILESTAT$()
     jp      SNERR
 
 ;-----------------------------------------------------------------------------
@@ -188,6 +197,76 @@ FN_FILEEXT:
 FN_FILEDIR:
     ld      iy,file_get_dir
     jr      _file_trim
+
+;-----------------------------------------------------------------------------
+; FILELEN(filespec$)
+;-----------------------------------------------------------------------------
+; ? FILELEN("1.palt")
+FN_FILELEN:
+    rst     CHRGET                ; Skip ATTR
+    call    PARCHK                ; Parse agument
+    call    CHKSTR                ; Error if not string
+    call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
+    call    FRESTR                ; HL = StrDsc
+    ld      iy,file_size
+    call    _aux_call_doserror    ; Get FilSiz
+    jp      FLOAT_DEBC            ; Float it and return
+
+;-----------------------------------------------------------------------------
+; FILEATTR(filespec$)
+;-----------------------------------------------------------------------------
+; ? FILEATTR("1.palt")
+FN_FILEATTR:
+    rst     CHRGET                ; Skip ATTR
+    call    PARCHK                ; Parse agument
+    call    CHKSTR                ; Error if not string
+    call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
+    call    FRESTR                ; HL = StrDsc
+    ld      iy,file_attrs
+    call    _aux_call_doserror    ; Get AtrByt
+    jp      SNGFLB                ; Float it and return
+
+;-----------------------------------------------------------------------------
+; FILEDATETIME$(filespec$)
+;-----------------------------------------------------------------------------
+; ? FILEDATETIME$("1.palt")
+FN_FILEDATETIME:
+    inc     hl                    ; Skip DATE
+    rst     SYNCHR
+    byte    TIMETK
+    ld      iy,file_datetime
+    push    iy                    ; Stack = AuxRtn, RtnAdr
+    ld      a,14                  ; A = StrSiz
+    jr      _file_stat            ; Go do it
+  
+;-----------------------------------------------------------------------------
+; FILESTATUS$(filespec$)
+;-----------------------------------------------------------------------------
+; S$=FILESTATUS$("1.palt")
+; ? HEX$(S$)
+FN_FILESTATUS:
+    ld      iy,dos_stat
+    push    iy                    ; Stack = AuxRtn, RtnAdr
+    ld      a,9                   ; A = StrSiz
+    inc     hl                    ; Skip STATUS
+_file_stat:
+    push    af                    ; Stack = StrSiz, AuxRtn, RtnAdr
+    SYNCHK  '$'                   ; Require $
+    call    PARCHK                ; Parse agument
+    call    CHKSTR                ; Error if not string
+    pop     a                     ; A = StrSiz; Stack = AuxRtn, RtnAdr
+    pop     iy                    ; IY = AuxRtn; Stack = RtnAdr
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    ld      hl,(FACLO)            ; HL = ArgDsc
+    push    hl                    ; Stack = ArgDsc, TxtPtr, RtnAdr
+    call    GETSPA                ; DE = StrAdr
+    call    FRETMS                ; Free temporary but not string space
+    pop     hl                    ; HL = ArgDsc; Stack = TxtPtr, RtnAdr
+    push    de                    ; Stack = StrAdr, TxtPtr, RtnAdr
+    call    FRETM2                ; Free ArgDsc
+    pop     de                    ; DE = StrAdr; Stack = TxtPtr, RtnAdr
+    call    _aux_call_doserror    ; Populate string
+    jp      STRNEL                ; Return the string
 
 ;-----------------------------------------------------------------------------
 ; TRIMDIR$(filespec$)

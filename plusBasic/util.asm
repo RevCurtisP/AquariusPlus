@@ -89,6 +89,19 @@ mult_a_de:
     ret
 
 ;-----------------------------------------------------------------------------
+; Convert character to lowercase
+;  Input: A: Character
+; Output: A: Lowercased character
+;-----------------------------------------------------------------------------
+lowercase_char:
+    cp      'A'                   ;;
+    ret     c                     ;;If >= 'a'
+    cp      '['                   ;;
+    ret     nc                    ;;and less than <'{'
+    or      $A0                   ;;Clear Bit 5
+    ret                           ;;
+
+;-----------------------------------------------------------------------------
 ; Convert character to uppercase
 ;  Input: A: Character
 ; Output: A: Uppercased character
