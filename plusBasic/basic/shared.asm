@@ -262,6 +262,7 @@ skip_get_int:
 ;-----------------------------------------------------------------------------
 skip_frmprn_getype:
   rst     CHRGET
+frmprn_getype:
   call    FRMPRN
   jp      GETYPE
 
@@ -612,21 +613,11 @@ get_int_reget:
     call    GETINT
     jp      CHRGT2
 
-;; Returns Z if BITMAPB, NZ if BITMAPC
-;parse_bitmap:
-;    rst     SYNCHR
-;    byte    BITTK
-;    rst     SYNCHR                ; Require BITMAP
-;    byte    MAPTK
-;    cp      'B'
-;    jr      nz,.notb              ; If BITMAPB
-;    rst     CHRGET                ;   Skip B
-;    xor     a                     ;   and return Z
-;    ret
-;.notb    
-;    SYNCHK  'C'                   ; Else Require C
-;    or      $FF                   ;   and return NZ
-;    ret
+skip_paren_colors:
+    rst     CHRGET
+get_paren_colors:
+    SYNCHK  '('
+    jr      get_screen_colors
 
 ; Parse COLOR color
 parse_color:
@@ -647,8 +638,8 @@ get_comma_colors:
     SYNCHK  ','
 ;-----------------------------------------------------------------------------
 ; Parse Foreground and Background Colors
-; Output: A = Combined coloe
-; Clobbers: BC, DE
+; Output: A,DE = Combined coloe
+; Clobbers: BC
 ;-----------------------------------------------------------------------------
 get_screen_colors:
     call    get_byte16            ; A = FColor
@@ -660,6 +651,7 @@ get_screen_colors:
     call    get_comma_byte16      ; Require comma
     pop     bc                    ; D = FColor; Stack = Char, Cols, Rows, RtnAdr
     or      b                     ; A = Colors    
+    ld      e,a                   ; DE = Colors
     ret
 
 ;-----------------------------------------------------------------------------

@@ -1,4 +1,7 @@
 # plusBASIC Release History
+ - v0.23i (2024-10-09)
+    - Added ATTR(), ATTR$()
+    - Implemented GETCOLOR
  - v0.23h (2024-09-23)
     - Added ENDKEY, FILESTATUS$(), FILEDATETIME$(), FILEATTR(), and FILELEN()
     - Added optional position argument to ASC()

@@ -125,7 +125,7 @@ just_ret:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.23h"
+    db "v0.23i"
     db 0
 plus_len   equ   $ - plus_text
 
@@ -1251,6 +1251,7 @@ _buffer_write_init:
     include "screen.asm"        ; Text screen graphics subroutines
     include "screen_gfx.asm"    ; Screen graphics routines
     include "screen_swap.asm"   ; Screen buffering routines
+    include "sprite_aux.asm"    ; Sprite graphics module
     include "string.asm"        ; String manipulation routines
     include "tile.asm"          ; Tile graphics module
 

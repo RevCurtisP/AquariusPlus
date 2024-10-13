@@ -280,6 +280,18 @@ file_load_palette:
     xor     a
     jp      palette_set           ; Write out palette and return
 
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+; Resource: Palette
+; File extension: .palt
+; Legacy extension: .pal
+; Binary 32 bytes
+; - 16 pairs of $GB $0R (little-endian $0RGB
+; ASCII
+; - Up to 16 lines of hexadecimal RGB values in the format #RRGGBB
+; - Lines that do not start with # are ignored
+; - Text after #RRGGBB is ignored
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 _load_palette_asc:
     call    dos_open_read         ; A = FilDsc
     ret     m                     ; Return if I/O Error

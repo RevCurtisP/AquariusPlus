@@ -59,7 +59,7 @@ ST_USE_SCREEN:
     ret
 
 ;-----------------------------------------------------------------------------
-; GETATTR(X,Y) - Change Character Set
+; GETATTR(X,Y) - Get Colors at (X,Y)
 ;-----------------------------------------------------------------------------
 FN_GETATTR
     rst     CHRGET                ; Skip ATTR
@@ -123,6 +123,21 @@ ext_get_chrset:
     ret     z
     ld      a,1                   ;   A = 1
     ret
+
+
+;-----------------------------------------------------------------------------
+; GETCOLOR function
+;-----------------------------------------------------------------------------
+FN_GETCOLOR:
+    inc     hl                    ; Skip COL
+    rst     SYNCHR
+    byte    ORTK                  ; Require OR
+    call    push_hl_labbck
+    ld      a,(BASYSCTL)
+    and     a,BASCRNCLR           ; If not in Color Print mode
+    jp      z,float_minus_one     ;   Return Negative 1
+    ld      a,(SCOLOR)
+    jp      SNGFLT
 
 ;-----------------------------------------------------------------------------
 ; SET COLOR statements
@@ -1018,7 +1033,14 @@ aux_call_finbck:
 ;-----------------------------------------------------------------------------
 ST_DEF_SPRITE:
     rst     CHRGET                ; Skip SPRITE
-    call    _defnolist            ; Stack = DatLen, BufPtr, VarPtr
+    call    _defnolist            ; Stack = DatLen, BufPtr, VarPtr, RtnAdr
+if 0
+    push    hl                    ; Stack = TxtPtr, DatLen, BufPtr, VarPtr; RtnAdr
+    call    FRMEVL
+    call    GETYPE
+    jp      z,_def_sprite_string
+    pop     hl
+endif
     xor     a                     ; A = SptlCnt (0)
     ld      b,a                   ; B = MaxYoffset (0)
     ld      c,a                   ; C = MaxXoffset (0)
@@ -1114,6 +1136,18 @@ _def_sprite_rect:
     ld      c,a                   ; C = MaxXoffset
     jr      _sprite_done
 
+;; DEF SPRITE S$ = $"010203"
+; Stack = TxtPtr, DatLen, BufPtr, VarPtr, RtnAdr
+_def_sprite_string:
+    call    free_addr_len         ; DE = StrAdr, BC = StrLen
+    pop     hl                    ; HL = TxtPtr; Stack = DatLen, BufPtr, VarPtr, RtnAdr
+    pop     af                    ; Stack = BufPtr, VarPtr, RtnAdr
+    ex      (sp),hl               ; HL = BufAdr; Stack = VarPtr, RtnAdr
+    ld      iy,sprite_define
+    call    aux_call              ; A = BufLen
+    call    strbuf_temp_str       ; HL = StrDsc
+    push    hl                    ; Stack = StrDsc, VarPtr, TxtPtr
+    jp      INBUFC                ; Copy Temporary to Variable and return    
     
 ;-----------------------------------------------------------------------------
 ; SET SPRITE sprite$ [ON|OFF] [POS x,y] [TILE tilelist$] [PALETTE palettelist$] [ATTR attrlist$]

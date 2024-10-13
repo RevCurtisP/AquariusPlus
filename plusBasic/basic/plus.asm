@@ -3,6 +3,28 @@
 ;-----------------------------------------------------------------------------
 
 ;-----------------------------------------------------------------------------
+; ATTR(fgcolor,bgcolor)
+;-----------------------------------------------------------------------------
+; ? ATTR(1,3);ATTR(2,1)
+; ? ATTR$(1,3,2),ATTR$(2,1,4)
+FN_ATTR:
+    rst     CHRGET                ; Skip ATTR
+    cp      '$'                   
+    jr      nz,_attr_byte         ; If ATTR$
+    call    skip_paren_colors     ;   DE = AtrByt
+    push    af                    ;   Stack = AtrByt, RtnAdr
+    call    get_comma_byte        ;   DE = Count
+    SYNCHK  ')'
+    pop     af                    ;   A = AtrByt; Stack = RtnAdr
+    call    push_hl_labbck
+    jp      SPACE2                ;   Do STRING$
+
+_attr_byte:
+    call    get_paren_colors      ;   DE = AtrByt
+    SYNCHK  ')'
+    jp      push_labbck_floatde
+
+;-----------------------------------------------------------------------------
 ; BIT(expr,bit#)
 ;-----------------------------------------------------------------------------
 ; ToDo: Allow expr to be a string
@@ -77,6 +99,8 @@ FN_DEC:
 ;-----------------------------------------------------------------------------
 FN_GET:
     rst     CHRGET                ; Skip GET Token
+    cp      COLTK
+    jp      z,FN_GETCOLOR
     cp      TILETK
     jp      z,FN_GETTILE
     rst     SYNCHR

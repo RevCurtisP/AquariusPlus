@@ -14,5 +14,18 @@ body {
 }
 
 button {
-  border: ridge;
+  background-color: #2222ee;
+  border: ridge black;
+  color: #eeeeee;
+  font-size: 150%;
+  font-weight: bold;
+  margin: 5px;
+}
+
+a:visited {
+  color: #aaaaaa;
+}
+
+#menu {
+  text-align: center;
 }
