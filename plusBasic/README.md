@@ -59,9 +59,11 @@
  - [ ] **ARGS _arg_{,...} {RETURN _var_{,...}}** - Specify subroutine arguments and return variables.
  - [ ] **ARGS** - Return number of RUN arguments
  - [ ] **ARGS$(_argno_)** - Return RUN argument number _index_.
- - [ ] **ASC(_string_{,_pos_})** - Return ASCII value of the first character of _string_.<!--ASC-->
+ - [x] **ASC(_string_{,_pos_})** - Return ASCII value of the first character of _string_.<!--ASC-->
  - [ ] **ASC$(_hexstring_)** - Convert _hex_string_ to an ASCII string.<!--ASC-->
  - [ ] **ATN(_float_)** - Return arctangent of argument.
+ - [ ] **ATTR(_fgcolor_,_bgcolor_)** - Build color attribute byte.
+ - [ ] **ATTR$(_fgcolor_,_bgcolor_,_count_)** - Build color attributes string.
  - [ ] **BIT(_integer_,_bit#_)** - Return status of bit in integer.
  - [ ] **BIT$()** - _Not implemented_
  - [ ] **CALL _address_ {ARGS _hl_,_de_,_bc_,_a_}** - Executes machine language routine at address, optionally passing arguments into the associated registers.<!--CALL-->

@@ -77,7 +77,9 @@ extended_statement:
 extended_function:
     inc     hl                  ; Skip extended prefix
     ld      a,(hl)              ; Get Extended token
-    sub     KEYTK               ; $86 KEY
+    sub     ATTRTK              ; $80 ATTR
+    jp      z,FN_ATTR
+    sub     KEYTK-ATTRTK        ; $86 KEY
     jp      z,FN_KEY
     sub     ARGSTK-KEYTK        ; $8A ARGS
     jp      z,FN_ARGS
