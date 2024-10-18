@@ -738,13 +738,6 @@ scan_rect:
     ret
 
 
-free_strini:
-    call    STRINI                ; DE = StrPtr
-    push    de                    ; Stack = StrPtr, RtnAdr
-    call    FREFAC                ; HL = StrDsc
-    pop     de                    ; DE = StrPtr, RtnAdr
-    ret
-
 ;-----------------------------------------------------------------------------
 ; Create temporary string from string buffer
 ;  Input: A = Buffer data length

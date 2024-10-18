@@ -89,28 +89,31 @@ FN_HEX:
     jp      TIMSTR                ; Create BASIC string
 
 HEX_STRING:
-    push    hl              ; Stack = TxtPtr
-    push    bc              ; Stack = DummyRtn, TxtPtr
-    call    free_addr_len   ; BC = StrLen, DE = StrAdr, HL = StrDsc
-    ex      de,hl           ; HL = StrAdr
-    ld      a,c             ; A = ArgLen
-    or      a               ; If Length is 0
-    jr      z,_null_string  ;   Return Null String
-    push    hl              ; Stack=Arg Text Address
-    push    af              ; Stack=Arg Length, Arg Text Address
-    add     a,a             ; New String will be Twice as long
-    jp      c,LSERR         ; LS Error if greater than 255
-    call    STRINI          ; Create Result String returning HL=Descriptor, DE=Text Address
-    pop     af              ; A=Arg Length, Stack=Arg Text Address
-    pop     hl              ; HL=Arg Text Address
-    ex      de,hl           ; DE=Arg Text Address, HL=Result Text Address
-    ld      b,a             ; Loop through Arg String Text
+    push    hl                    ; Stack = TxtPtr
+    push    bc                    ; Stack = DmyRtn, TxtPtr
+    call    faclo_addr_len        ; BC = ArgLen, DE = ArgAdr, HL = ArgDsc
+    ex      de,hl                 ; DE = ArgDsc, HL = ArgAdr
+    ld      a,c                   ; A = ArgLen
+    or      a                     ; If Length is 0
+    jr      z,_null_string        ;   Return Null String
+    push    de                    ; Stack = ArgDsc, DmyRtn, TxtPtr
+    push    hl                    ; Stack = ArgAdr, ArgDsc, DmyRtn, TxtPtr
+    push    af                    ; Stack = ArgLen, ArgAdr, ArgDsc, DmyRtn, TxtPtr
+    add     a,a                   ; NewLen = ArgLen * 2
+    jp      c,LSERR               ; LS Error if greater than 255
+    call    STRINI                ; DE = NewAdr
+    pop     af                    ; A = ArgLen; Stack = ArgAdr, ArgDsc, DmyRtn, TxtPtr
+    pop     hl                    ; HL = ArgAdr; Stack = ArgDsc, DmyRtn, TxtPtr
+    ex      de,hl                 ; DE = ArgAdr, HL = NewAdr
+    ld      b,a                   ; Loop through Arg String Text
 .hexloop:
-    ld      a,(de)          ; Get Arg String Character
-    inc     de              ; and Bump Pointer
-    call    _hexbyte        ; Convert to Hex in Result String
-    djnz    .hexloop        ; Loop until B=0
-    jp      FINBCK          ; Return Result String
+    ld      a,(de)                ; Get Arg String Character
+    inc     de                    ; and Bump Pointer
+    call    _hexbyte              ; Convert to Hex in Result String
+    djnz    .hexloop              ; Loop until B=0
+    pop     de                    ; DE = ArgDsc; Stack = DmyRtn, TxtPtr
+    call    FRETMP                ; Free ArgStr
+    jp      FINBCK                ; Return Result String
 
 _hexbyte:
     ld      c,a

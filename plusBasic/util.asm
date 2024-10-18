@@ -153,6 +153,10 @@ free_hl_addr_len:
     call    FRETM2
     jr      string_addr_len
 
+faclo_addr_len:
+    ld      hl,(FACLO)
+    jr      string_addr_len
+
 ;-----------------------------------------------------------------------------
 ; Free temporary string, then get string address and length
 ; Output: BC: String length

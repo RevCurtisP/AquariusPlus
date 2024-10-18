@@ -232,16 +232,3 @@ tilemap_get_tile       equ $C1F5
 tilemap_fill           equ $C1F8 
 tilemap_get            equ $C1FB 
 tilemap_put            equ $C1FE 
-
-; Tiles
-tile_set               equ $C20D 
-tile_get               equ $C210 
-tile_from_chrrom       equ $C213 
-tile_combine_props     equ $C216 
-tilemap_set_offset     equ $C21F 
-tilemap_get_offset     equ $C222 
-tilemap_set_tile       equ $C225 
-tilemap_get_tile       equ $C228 
-tilemap_fill           equ $C22B 
-tilemap_get            equ $C22E 
-tilemap_put            equ $C231 

@@ -16,7 +16,10 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
   <body>
     <h1 id="plusbasic-release-history">plusBASIC Release History</h1>
     <ul>
-      <li>v0.23i (2024-10-??)
+      <li>v0.23j (2024-10-18)
+<ul><li>Breaking changes
+<ul><li><code>FILL BITMAP BYTE</code> is now <code>FILL BITMAP BYTES</code></li><li><code>FILL BYTE</code> is now <code>FILL BYTES</code></li><li><code>FILL WORD</code> is now <code>FILL WORDS</code></li></ul></li><li>Added BYTE(), WORD(), and WORD$() functions</li><li>S3 BASIC CONINT routine now allows signed numbers (-256 through 255)</li><li>Fixed DEC() Overflow error when argument is not a literal string</li><li>Fixed ASC$() corrupting argument contents</li><li>var$[...] now returns a temporary so that FRETOP won't get clobbered</li></ul></li>
+      <li>v0.23i (2024-10-09)
 <ul><li>Added ATTR(), ATTR$()</li><li>Implemented GETCOLOR</li></ul></li>
       <li>v0.23h (2024-09-23)
 <ul><li>Added ENDKEY, FILESTATUS$(), FILEDATETIME$(), FILEATTR(), and FILELEN()</li><li>Added optional position argument to ASC()</li><li>Modified enhanced INPUT to exit on Ctrl-X, Tab, Back-Tab, Cursor-Up, and Cursor-Down</li></ul></li>

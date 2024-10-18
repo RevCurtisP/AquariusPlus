@@ -204,13 +204,30 @@ file_load_screen:
 ;        BC: number of bytes actually read
 ;        DE: next destination address
 ;         H: destination page
-; Flags Set: S if I/O error, C if invalid file contents
-; Clobbered: 
+; Flags Set: S if I/O error, C if buffer crosses page bpundary
+; Clobbered: AF', L
 ;-----------------------------------------------------------------------------
 file_load_tmpbuffr:
     ld      a,TMP_BUFFR
     ld      bc,$4000
     ld      de,0
+;-----------------------------------------------------------------------------
+; Load file into buffer
+; - Load specified file into a buffer in paged memory
+;   - Buffer must be contained eith a memory page
+; Input: A = Page
+;       BC = Buffer Length
+;       DE - Guffer Srart Address
+;         HL: String descriptor address
+; Output: A: result code
+;        BC: number of bytes actually read
+;        DE: next destination address
+;         H: destination page
+; Flags Set: S if I/O error, C if buffer crosses page bpundary
+; Clobbered: AF', L
+; Clobbered: AF', L
+;-----------------------------------------------------------------------------
+;; YoDo: Return carry set if BC + DE > 116384
 file_load_buffer:
     push    af                    ; Stack = Page, RtnAdr
     call    dos_open_read         ; A = FilDsc

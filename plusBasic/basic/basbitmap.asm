@@ -28,13 +28,13 @@ ST_CLEAR_BITMAP:
 ; FILL BITMAP [BYTE byte] [COLOR foreground,background]
 ;-----------------------------------------------------------------------------
 ; To Do: FILL COLORMAP (x,y)-(x,y),fg,bg
-; SCREEN 1,0:FILL BITMAP BYTE $EE:PAUSE
-; SCREEN 1,0:FILL BITMAP BYTE $AA COLOR 7,0:PAUSE
+; SCREEN 1,0:FILL BITMAP BYTES $EE:PAUSE
+; SCREEN 1,0:FILL BITMAP BYTES $AA COLOR 7,0:PAUSE
 ; SCREEN 1,0:FILL BITMAP COLOR 2,8:PAUSE
-; SCREEN 3,0:FILL BITMAP BYTE $AA COLOR 6,1:PAUSE
-; SCREEN 0,2:FILL BITMAP BYTE $AB COLOR 6,1:PAUSE
-; SCREEN 0,3:FILL BITMAP BYTE $AE:PAUSE
-; SCREEN 0,3:FILL BITMAP BYTE $AA COLOR 6,1:PAUSE
+; SCREEN 3,0:FILL BITMAP BYTES $AA COLOR 6,1:PAUSE
+; SCREEN 0,2:FILL BITMAP BYTES $AB COLOR 6,1:PAUSE
+; SCREEN 0,3:FILL BITMAP BYTES $AE:PAUSE
+; SCREEN 0,3:FILL BITMAP BYTES $AA COLOR 6,1:PAUSE
 ST_FILL_BITMAP:
     rst     CHRGET                ; Skip BIT    
     rst     SYNCHR
@@ -42,8 +42,9 @@ ST_FILL_BITMAP:
     cp      XTOKEN                  
     jr      nz,.fill_color        ; If Extended Token
     rst     CHRGET                ;   Skip it
-    rst     SYNCHR                ;   Require BYTE
-    byte    BYTETK
+    rst     SYNCHR                
+    byte    BYTETK                ;   Require BYTES
+    SYNCHK  'S'
     call    GETBYT                ;   A = FillByte
     ld      b,a                   ;   B = FillByte
     push    hl                    ;   Stack = TxtPtr, RtnAdr

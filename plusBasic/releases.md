@@ -1,4 +1,14 @@
 # plusBASIC Release History
+ - v0.23j (2024-10-18)
+    - Breaking changes
+      - `FILL BITMAP BYTE` is now `FILL BITMAP BYTES`
+      - `FILL BYTE` is now `FILL BYTES`
+      - `FILL WORD` is now `FILL WORDS`
+    - Added BYTE(), WORD(), and WORD$() functions
+    - S3 BASIC CONINT routine now allows signed numbers (-256 through 255)
+    - Fixed DEC() Overflow error when argument is not a literal string
+    - Fixed ASC$() corrupting argument contents
+    - var$[...] now returns a temporary so that FRETOP won't get clobbered
  - v0.23i (2024-10-09)
     - Added ATTR(), ATTR$()
     - Implemented GETCOLOR

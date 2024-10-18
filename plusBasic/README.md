@@ -1,4 +1,5 @@
 # plusBASIC Quick Reference Guide
+<!-- ToDo: BASIC-System-Statements-and-Functions -->
 
 <!-- Do not edit this page. Contents are copied from generated file quickref_wiki.md -->
 
@@ -131,9 +132,9 @@
  - [ ] **FILEEXT$(_filespec_)** - Extract extension from filespec.<!--filesystem-->
  - [ ] **FILELEN(_filespec_)** - Return file length.<!--filesystem-->
  - [ ] **FILESTATUS$(_filespec_)** - Return file information as binary string.<!--filesystem-->
- - [ ] **FILL BYTE {@_page_},_address_,_oount_,_byte_** - Fill block of memory with byte.
- - [ ] **FILL WORD {@_page_},_address_,_oount_,_integer_** - Fill block of memory with integer.
- - [ ] **FILL BITMAP {BYTE _byte_} {COLOR _fgcolor_, _bgcolor_}** - Fill bitmap and/or colormap with byte and/or color(s).
+ - [ ] **FILL BYTES {@_page_},_address_,_oount_,_byte_** - Fill block of memory with byte.
+ - [ ] **FILL WORDS {@_page_},_address_,_oount_,_integer_** - Fill block of memory with integer.
+ - [ ] **FILL BITMAP {BYTES _byte_} {COLOR _fgcolor_, _bgcolor_}** - Fill bitmap and/or colormap with byte and/or color(s).
  - [ ] **FILL COLORMAP (_x_,y_)-(_x_,_y_) COLOR _fgcolor_, _bgcolor_** - Fill rectangular section of 1bpp colormap.
  - [ ] **FILL SCREEN {CHR} {(_x_,y_)-(_x_,_y_)} _character_** - Fill screen with character and/or colors.<!--FILLSCREEN-->
  - [ ] **FILL SCREEN COLOR {(_x_,y_)-(_x_,_y_)} _fgcolor_,_bgcolor_** - Fill screen with character and/or colors.<!--FILLSCREEN-->
@@ -351,4 +352,6 @@
  - [ ] **VER(_expression_)** - Return System or plusBASIC version as integer.
  - [ ] **VER$(_expression_)** - Return System or plusBASIC version as printable string.
  - [ ] **WAIT _port_,_xor_mask_{,_and_mask_}** - Pause until specifie bit pattern received from IO port.
+ - [ ] **WORD(_string_{,_offset_})** - Convert two consecutive bytes in string to unsigned word.
+ - [ ] **WORD$(_integer_)** - Convert integer to unsigned two byte binary string.
  - [ ] **WRITE** - _Not implemented._

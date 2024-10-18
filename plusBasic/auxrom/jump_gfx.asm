@@ -123,24 +123,6 @@ _jump_table:
     jp      just_ret
     jp      just_ret
     jp      just_ret
-; tile.asm <<Tiles>>
-    jp      tile_set
-    jp      tile_get
-    jp      tile_from_chrrom
-    jp      tile_combine_props
-    jp      just_ret
-    jp      just_ret
-    jp      tilemap_set_offset
-    jp      tilemap_get_offset
-    jp      tilemap_set_tile
-    jp      tilemap_get_tile
-    jp      tilemap_fill
-    jp      tilemap_get
-    jp      tilemap_put
-    jp      just_ret
-    jp      just_ret
-    jp      just_ret
-    jp      just_ret
 ; sprite_aux.asm
     
 _end_jump_table:

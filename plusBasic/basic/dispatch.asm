@@ -99,9 +99,13 @@ extended_function:
     jp      z,FN_STR
     dec     a                   ; $9D VAR
     jp      z,FN_VAR
-    sub     a,3
-    jp      z,FN_PAD            ; $A0 PAD
-    sub     a,13                ; $AD MIN
+    sub     a,3                 ; $A0 PAD
+    jp      z,FN_PAD
+    dec     a                   ; $A1 WORD
+    jp      z,FN_WORD
+    sub     a,BYTETK-WORDTK     ; $A5 BYTE
+    jp      z,FN_BYTE          
+    sub     a,MINTK-BYTETK      ; $AD MIN
     jp      z,GSERR
     dec     a                   ; $AE MAX
     jp      z,GSERR

@@ -35,7 +35,7 @@
 318 DEL "work/pagedload.bin"
 
 322 GOSUB _outquoted:ARGS LIST$(NEXT)
-324 FILL BYTE @39,0,255,0:LOAD "assets/large.bin",@35,0
+324 FILL BYTES @39,0,255,0:LOAD "assets/large.bin",@35,0
 326 GOSUB _assert:ARGS "PEEK$(@39,0,5)=$`0102030405`"
 
 364 GOSUB _outquoted:ARGS LIST$(NEXT)

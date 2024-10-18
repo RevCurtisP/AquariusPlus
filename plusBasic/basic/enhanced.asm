@@ -3,25 +3,32 @@
 ;======================================================================================
 
 ;-----------------------------------------------------------------------------
-; ASC$(hexstring$)
-; Convert Hexadecimal String to Binary String
+; ASC(string$)
+; Enhanced:
+; ASC(string$, offset)
+; ASC$(hexstring$) - Convert Hexadecimal String to Binary String
 ;-----------------------------------------------------------------------------
 FN_ASC:
     inc     hl                    ; Check character directly after ASC Token
     ld      a,(hl)                ; (don't skip spaces)
-    cp      '$'                   ; If it's not a dollar sign
-    jr      nz,asc_chr            ;   Return to do normal ASC
-    rst     CHRGET                ; Eat $ and Skip Spaces
-    call    PARCHK                ; Parse Argument in Parentheses
-    push    hl                    ; Save Text Pointer
-    call    CHKSTR                ; TM Error if Not a String
-    jp      hex_to_asc            ; Convert to ASCII
+    cp      '$'                   
+    jr      nz,asc_chr            ; If ASC$
+    rst     CHRGET                ;   Eat $ and Skip Spaces
+    call    PARCHK                ;   Parse Argument in Parentheses
+    push    hl                    ;   Save Text Pointer
+    call    CHKSTR                ;   TM Error if Not a String
+    jp      hex_to_asc            ;   Convert to ASCII and return
 
 asc_chr:
+    ld      iy,SNGFLT
+sng_chr:
+    push    iy                    ; Stack = FltJmp, RtnAdr
     SYNCHK  '('
     call    GET_STRING
+    pop     bc                    ; BC = FltJmp; Stack = RtnAdr
     ld      de,(FACLO)
-    push     de                   ; Stack = StrDsc
+    push    de                    ; Stack = StrDsc, RtnAdr
+    push    bc                    ; Srack = FltJmp, StrDsc, RtnAdr
     ld      de,1                  ; ChrPos = 1
     ld      a,(hl)
     cp      ','
@@ -32,25 +39,20 @@ asc_chr:
     jp      z,FCERR
 _asc_char:
     SYNCHK  ')'
-    ex      (sp),hl               ; HL = StrDsc; Stack = TxtPtr                  
+    pop     iy                    ; IY = FltJmp; Stack = StrDsc, RtnAdr
+    ex      (sp),hl               ; HL = StrDsc; Stack = TxtPtr, RtnAdr                
     ld      bc,LABBCK
-    push    bc                    ; Stack = LABCK, TxtPtr
-    push    de                    ; Stack = ChrPos, LABBCK, TxtPtr 
+    push    bc                    ; Stack = LABCK, TxtPtr, RtnAdr
+    push    de                    ; Stack = ChrPos, LABBCK, TxtPtr, RtnAdr
     call    free_hl_addr_len      ; DE = StrAdr, BC = StrLen
-    pop     hl                    ; HL = ChrPos; Stack = LABBCK, TxtPtr    
+    pop     hl                    ; HL = ChrPos; Stack = LABBCK, TxtPtr. RtnAdr
     ld      a,c
     cp      l                     ; If ChrPos > StrLen
     jp      c,FCERR               ;   Illegal quantity
     dec     hl                    ; Adjust ChrPos for add
     add     hl,de                 ; HL = ChrAdr
-    ld      a,(hl)                ; A = ChrAsc
-    jp      SNGFLT
-
-ABORT_FN:
-    dec     hl                    ; Back up to Function Token
-    ld      a,(hl)                ; Re-Read Token
-    sub     ONEFUN                ; Convert to Offset
-    jp      HOOK27+1              ; Continue with Standard Function Code
+    ld      a,(hl)                ; A = ChrVal
+    jp      (iy)                  ; FloatIt
 
 ;-----------------------------------------------------------------------------
 ; Enhanced COPY
@@ -624,6 +626,34 @@ ST_RESTORE:
     jp      z,ST_RESTORE_SCREEN
     call    CHRGT3                ; Set digit and terminator flags
     jp      RESTOR
+
+;-----------------------------------------------------------------------------
+; SGNINT(string$)
+; SGNINT(string$, offset)
+;-----------------------------------------------------------------------------
+;; ToDo: Finish and add to dispatch table
+FN_SGN:
+    inc     hl                    ; Check character directly after SGN Token
+    ld      a,(hl)                ; (don't skip spaces)
+    cp      INTTK                  
+    jr      nz,ABORT_FN
+    rst     CHRGET                ; Skip INT
+    call    frmprn_getype
+    jr      nz,sgnint
+    ld      iy,float_signed_int
+    jp      word_str
+    
+ABORT_FN:
+    dec     hl                    ; Back up to Function Token
+    ld      a,(hl)                ; Re-Read Token
+    sub     ONEFUN                ; Convert to Offset
+    jp      HOOK27+1              ; Continue with Standard Function Code
+
+sgnint:
+    SYNCHK  ')'                   ; Require )
+    call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
+    call    FRCINT                ; DE = ArgVal
+    jp      float_signed_int      ; Return as floated signed integer
 
 ;-----------------------------------------------------------------------------
 ; Enhanced STOP statement stub

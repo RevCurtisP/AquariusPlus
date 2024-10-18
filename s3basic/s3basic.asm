@@ -2116,21 +2116,24 @@ GTBYTC: rst     CHRGET            ;
 ;;Evaluate 8 bit Numeric Value
 GETBYT: call    FRMNUM            ;[M80] EVALUATE A FORMULA
 ;;Convert FAC to Byte in [A]
-CONINT: call    INTFR2            ;[M80] CONVERT THE FAC TO AN INTEGER IN [D,E]
-        ld      a,d               ;[M80] SET THE CONDITION CODES BASED ON THE HIGH ORDER
-        or      a                 ;
-        jp      nz,FCERR          ;[M80] WASN'T ERROR
-        dec     hl                ;[M80] fUNCTIONS CAN GET HERE WITH BAD [H,L] BUT NOT SERIOUS
-        rst     CHRGET            ;[M80] SET CONDITION CODES ON TERMINATOR
-        ld      a,e               ;[M80] RETURN THE RESULT IN [A] AND [E]
-        ret                       ;
+CONINT: call    FRCINT            ;; DE = int(FACC)                           0B57  call    INTFR2   
+        inc     d                 ;; If D = -1                                0B5A  ld      a,d      
+        jr      z,CONINC          ;;   Return E                               0B5B  or      a        
+                                  ;;                                          0B5C  jp      nz,FCERR
+        dec     d                 ;; Else if D = 0                            0B5D
+        jr      z,CONINC          ;;   Return E                               0B5E   
+                                  ;;                                          0B5F  dec     hl    
+        jp      FCERR             ;; Else FC error                            0B60  rst     CHRGET  
+                                  ;;                                          0B61  ld      a,e     
+                                  ;;                                          0B62  ret
 ;;; Code Change: Remove Memory Protection
 PEEK:   call    FRCINT            ;[M80] GET AN INTEGER IN [D,E]
-        nop                       ;;                                          0B66  call    PROMEM
-        nop                       ;;                                          0B67
-        nop                       ;;                                          0B68
-        ld      a,(de)            ;[M80] GET THE VALUE TO RETURN
-        jp      SNGFLT            ;[M80] AND FLOAT IT
+        ld      a,(de)            ;[M80] GET THE VALUE TO RETURN              0B66  call    PROMEM
+        jr      SNGFLT            ;[M80] AND FLOAT IT                         0B67
+CONINC: dec     hl                ;; Back up TxtPtr                           0B69  ld      a,(de)
+        rst     CHRGET            ;; Set flags for next character             0B6A  jp      SNGFLT
+RETBYT: ld      a,e               ;;                                          0B6B
+        ret                       ;;                                          OB6C
 ;;; Code Change: Remove Memory Protection
 POKE:   call    FRMNUM            ;[M80] READ A FORMULA
         call    FRCINT            ;{M80} FORCE VALUE INTO INT IN [D,E]        Original Code
@@ -2145,7 +2148,6 @@ POKE:   call    FRMNUM            ;[M80] READ A FORMULA
         ld      (de),a            ;[M80] STORE IT AWAY
         ret                       ;[M80] SCANNED EVERYTHING
 
-;; Orphan Code - GETINT does the same thing
 ;;; Code Change: New Default USR Routine - Execute Code at Argument Address
 ;;; Replaces orphan routine FRMINT  (use GETINT instead)- 9 bytes             Original Code
 USRDO:  call    FRCINT            ;;Convert Argument to Int in DE             0B7F  call    FRMEVL  
@@ -2157,7 +2159,7 @@ USRDO:  call    FRCINT            ;;Convert Argument to Int in DE             0B
                                   ;;                                          0B85
         jp      (IX)              ;;Jump to it                                0B86  pop     hl
                                   ;;                                          0B87  ret
-                                  
+;;; Now orphan code 10 bytes                                  
 PROMEM: push    hl                ;
         ld      hl,$2FFF          ;
         rst     COMPAR            ;{M80} IS [D.E] LESS THAN 3000H?

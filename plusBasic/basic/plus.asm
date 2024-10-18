@@ -49,6 +49,15 @@ auxcall_floatsbyte:
     jp      float_signed_byte     ; Else return it
 _bit_string:
     jp      GSERR
+
+;-----------------------------------------------------------------------------
+; BYTE(string)
+; BYTE(string,offset)
+;-----------------------------------------------------------------------------
+FN_BYTE:
+    rst     CHRGET                ; Skip BYTE
+    ld      iy,float_signed_byte  ; Returning signed byte
+    jp      sng_chr               ; Execute ASC() code
     
 ;-----------------------------------------------------------------------------
 ; DATE$ - Get Current Date
@@ -92,7 +101,7 @@ FN_DEC:
     xor     a               ; Set A to 0
     inc     c               ; Bump Length for DEC C
     ex      de,hl
-    jp      eval_hex_int    ; Convert the Text
+    jp      eval_hex        ; Convert the Text
     
 ;-----------------------------------------------------------------------------
 ; GET functions stub
@@ -793,12 +802,12 @@ LSERR:
 ; FILL SCREEN CHR becomes FILL SCREEN
 ; FILL SCREEN ATTR becomes FILL COLOR
 ;
-; FILL BYTE $4003,29,$5A
-; FILL WORD $5000,13,$1234
-; FILL BYTE @33,35,27,$A5
-; FILL WORD @33,126,7,$CDEF
-; FILL BYTE !8888,27,$A5
-; FILL WORD !9999,7,$CDEF
+; FILL BYTES $4003,29,$5A
+; FILL WORDS $5000,13,$1234
+; FILL BYTES @33,35,27,$A5
+; FILL WORDS @33,126,7,$CDEF
+; FILL BYTES !8888,27,$A5
+; FILL WORDS !9999,7,$CDEF
 ST_FILL:
     rst     CHRGET                ; Skip FILL
     cp      SCRNTK
@@ -818,6 +827,7 @@ ST_FILL:
 .fillmem
     push    af                    ; Stack = BytWrd, RtnAdr
     rst     CHRGET                ; Skip BYTE/WORD
+    SYNCHK  'S'                   ; Require S
     call    get_page_addr         ; Check for Page Arg
     pop     bc                    ; BC = BytWrd; Stack = RtnAdr
     push    de                    ; Stack = BgnAdr, RtnAdr
@@ -889,6 +899,8 @@ ST_PUT:
 ; ToDo: SET BIT var,bit#
 ; ToDo: SET MOUSE ON/OFF/TILE (mouse.asm)
 ST_SET:
+    cp      BITTK                 ; $EB
+    jr      z,ST_SET_BIT
     cp      TILETK                ; $F0
     jp      z,ST_SET_TILE
     cp      COLTK                 ; $F5
@@ -917,6 +929,13 @@ ST_SET:
     cp      BRKTK                 ; $9A
     jr      z,ST_SET_BREAK
     jp      SNERR
+
+;-----------------------------------------------------------------------------
+; Set specified bit in variable to 1
+; Syntax: SET BIT VAR,bit#
+;-----------------------------------------------------------------------------
+ST_SET_BIT:
+    jp      GSERR
 
 ;-----------------------------------------------------------------------------
 ; Toggle control-c checking
@@ -1151,3 +1170,74 @@ FN_VER:
     jp      z,TIMSTR              ; If VER$(), return version string
     call    sys_num_ver           ; Else convert to integer
     jp      FLOAT_CDE             ; and return it
+
+;-----------------------------------------------------------------------------
+; WORD(string)
+; WORD(string,offset)
+; WORD$(integer)
+;-----------------------------------------------------------------------------
+; ? WORD($"FFFF")
+; ? WORD($"0000")
+; ? WORD("ABCD",2)
+; ? WORD$($3141)
+FN_WORD:
+    inc     hl                    ; Check character directly after ASC Token
+    ld      a,(hl)                ; (don't skip spaces)
+    cp      '$'                   
+    jr       z,str_word           
+
+    call    frmprn_getype
+    jp      nz,word_int
+    ld      iy,FLOAT_DE
+word_str:
+    ld      de,(FACLO)
+    push    de                    ; Stack = StrDsc, RtnAdr
+    push    iy                    ; Stack = FltJmp, RtnAdr
+    ld      de,1                  ; WrdPos = 1
+    ld      a,(hl)
+    cp      ','
+    jr      nz,_first_word
+    rst     CHRGET                ; Skip Comma
+    call    GETBYT                ; DE = WrdPos
+    or      a
+    jp      z,FCERR
+_first_word:    
+    SYNCHK  ')'
+    pop     iy                    ; IY = FltJmp; Stack = StrDsc, RtnAdr
+    ex      (sp),hl               ; HL = StrDsc; Stack = TxtPtr, RtnAdr                
+    ld      bc,LABBCK
+    push    bc                    ; Stack = LABCK, TxtPtr, RtnAdr
+    push    de                    ; Stack = WrdPos, LABBCK, TxtPtr, RtnAdr
+    call    free_hl_addr_len      ; DE = StrAdr, BC = StrLen
+    pop     hl                    ; HL = WrdPos; Stack = LABBCK, TxtPtr. RtnAdr
+    ld      a,c
+    dec     a                     ; A = StrLen - 1
+    cp      l                     ; If WrdPos > StrLen-1
+    jp      c,FCERR               ;   Illegal quantity
+    dec     hl                    ; Adjust WrdPos for add
+    add     hl,de                 ; HL = WrdAdr
+    ld      e,(hl)                
+    inc     hl
+    ld      d,(hl)                ; DE = WrdVal
+    jp      (iy)                  ; Float it
+
+word_int:
+    SYNCHK  ')'                   ; Require )
+    call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
+    call    FRCINT                ; DE = ArgVal
+    jp      FLOAT_DE
+
+str_word:
+    rst     CHRGET                ; Skip $
+    call    PARCHK                
+    push    hl                    ; Stack = TxtPtr. RtnAdr
+    call    FRCINT                ; DE = ArgVal
+    push    de                    ; Stack = ArgVal, TxtPtr, RtnAdr
+    ld      a,2
+    call    STRINI                ; Allocate 2 byte string
+    pop     de                    ; DE = ArgVal; Stack = TxtPtr. RtnAdr
+    ld      hl,(DSCTMP+2)         ; HL = StrAdr
+    ld      (hl),e                ; Write ArgVal to string
+    inc     hl
+    ld      (hl),d                
+    jp      PUTNEW                ; and return it

@@ -52,7 +52,7 @@ eval_hex_int:
     xor     a
     ld      (VALTYP),a        ; Returning Number
     ld      c,a               ; Parse up to 255 characters
-_eval_hex:
+eval_hex:
     ld      d,a
     ld      e,a               ; DE is the parsed Integer
 .hex_loop:
@@ -90,22 +90,19 @@ _eval_hex:
     jr      .hex_loop
 
 hex_to_asc:
-    ld      hl,(FACLO)      ; Get String Descriptor Address
-    call    string_addr_len ; Get Arg Length in C, Address in DE
-    ld      a,c             ; A = String Length
-    srl     a               ; Divide Length by 2
-    jp      c,FCERR         ;   Error if Length was Odd
-    jr      z,push_null_string    ;   If 0, Return Null String
-    push    af              ; Save New String Length
-    push    de              ; Save Argument String Address
-    push    hl              ; Save Argument String Descriptor
-    call    STRINI          ; Create Result String returning HL=Descriptor, DE=Text Address
-    pop     de              ; Get Back Argument Descriptor
-    call    FRESTR          ; and Free It
-    ld      de,(DSCTMP+2)   ; Get Result String Text Address
-    pop     hl              ; Get Argument String Address
-    pop     af              ; Get New String Length
-    ld      b,a             ; Loop Count = Result String Length
+    ld      hl,(FACLO)            ; HL = ArgDsc
+    call    string_addr_len       ; BC = ArgLen, DE = ArgAdr
+    ld      a,c                   ; A = ArgLen
+    srl     a                     ; NewLen = ArgLen / 2
+    jp      c,FCERR               ; Error if ArgLen was Odd
+    jr      z,push_null_string    ; If NewLen = 0 Return Null String
+    push    hl                    ; Stack = ArgDsc, RtnAdr
+    push    af                    ; Stack = NewLen, ArgDsc, RtnAdr
+    push    de                    ; Stack = ArgAdr, NewLen, ArgDsc, RtnAdr
+    call    STRINI                ; DE = NewAdr
+    pop     hl                    ; HL = ArgAdr; Stack = NewLen, ArgDsc, RtnAdr
+    pop     af                    ; A = NewLen; Stack = ArgDsc, RtnAdr
+    ld      b,a                   ; LopCnt = NewLen
 .asc_loop:
     call    get_hex         ; Get Hex Digit from Argument
     sla     a               ; Shift to High Nybble
@@ -118,7 +115,9 @@ hex_to_asc:
     ld      (de),a          ; Store in Result String
     inc     de              ; Bump Result Pointer
     djnz    .asc_loop
-    jp      PUTNEW          ; Return Result String
+    pop     de                    ; DE = ArgDsc; Stack = RtnAdr
+    call    FRETMP                ; Free ArgDsc
+    jp      PUTNEW          ; Return NewStr
 
 get_hex:
     ld      a,(hl)          ; Get Hex Digit
@@ -544,12 +543,16 @@ isvar_extension:
     jp      z,NULRT               ; If StrLen = 0, return ""
     push    de                    ; Stack = StrAdr, TxtPtr, RtnAdr
     call    range_offset_len      ; DE = SubOfs, A = SubLen
-    pop     hl                    ; HL = StrAdr; Stack = TxtPtr
+    pop     hl                    ; HL = StrAdr; Stack = TxtPtr, RtnAdr
     jp      c,NULRT               ; If SubLen > StrLen, return ""
     add     hl,de                 ; HL = SubAdr
-    ex      de,hl                 ; DE = SubAdr
-    call    STRAD2                ; HL = DSCTMP  
-    jp      PUTNEW                ; Make temporary and put inFACLO
+    push    hl                    ; Stack = SubAdr, TxtPtr, RtnAdr
+    call    STRINI
+    pop     hl                    ; HL = SubAdr; Stack = TxtPtr, RtnAdr
+    ld      c,a
+    ld      b,0
+    ldir
+    jp      PUTNEW                ; Make temporary and put in FACLO
 
 get_substring_range:
     call    get_byte_range        ; A,D = FrmPos, E = ToPos
