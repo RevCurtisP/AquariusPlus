@@ -1,4 +1,4 @@
-;-----------------------------------------------------------------------------
+    ;-----------------------------------------------------------------------------
 ; regs.inc
 ;
 ; Aquarius+ I/O Registers and Memory Banks
@@ -113,6 +113,7 @@ FILETIME    equ $383F   ; File Timestamp ($383F-$3840)
 SPLITDSC    equ $3838   ; String descriptor 
 SPLITTRM    equ $3838   ; Segment terminator  (overwrites LSB of SPLITDSC)
 SPLITSEG    equ $3839   ; Segment counter (overwrites MSB of SPLITDSC)
+ARRAYREQ    equ $3839   ; String must be quoted
 ARRAYADR    equ $383A   ; Array data start address 
 SPLITDEL    equ $383C   ; Delimiter character
 ARRAYTYP    equ $383C   ; Array Type

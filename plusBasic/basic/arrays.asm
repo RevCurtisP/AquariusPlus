@@ -27,6 +27,8 @@ dim_extension:
     inc     hl
     ld      (ARRAYLEN),bc         ; BC = AryLen
     ld      a,(hl)                ; A = NumDims
+    or      a                     ; If no dimensions
+    jp      z,UDERR               ;   Undimensioned array error
     inc     hl
     add     a,a                   ; A = NumDims * 2
     ld      b,0
@@ -36,6 +38,8 @@ dim_extension:
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     call    CHRGT2                ; Reget current character
     ret     z                     ; If terminator, return
+    ld      a,$FF
+    ld      (ARRAYREQ),a          ; Strings must be quoted
     call    array_read            ; Read literals into array
     ret     c                     ; Return if end of statement
     call    CHRGT2                ; If terminator
@@ -68,6 +72,8 @@ read_extension:
     push    hl                    ;   Stack = TxtPtr, RtnAdr
     jp      read_cont             ;   Continue normal read
 .read_array
+    xor     a
+    ld      (ARRAYREQ),a          ; Unquoted strings allowed
     call    get_star_array        ; DE = AryAdr, BC = AryLen
     push    hl                    ; Stack = TxtPtr, RtnAdr
     ld      (ARRAYPTR),de
@@ -79,7 +85,8 @@ read_extension:
 .read_loop
     rst     CHRGET                ; Skip DATA
     jr      z,.more_data          ; If not terminator
-    call    _array_read            ;   If array filled
+    call    _array_read           ;   If array filled
+    ld      (DATPTR),hl
     jp      nc,POPHRT             ;     Pop text pointer and return
 .more_data
     call    DATA                  ;; Skip next statement
@@ -118,9 +125,21 @@ _array_read:
     ld      hl,FACLO              ;   HL = FACC
     jr      .next                 ; Else
 .string
-    dec     hl                    ;   Back up TxtPtr
-    ld      d,':'                 ;   Set terminators
+    call    CHRGT2                ;   A = First character
+    cp      ','
+    jr      z,.comma
+    ld      d,a                   ;   If it's a quote, terminators will be quote
+    ld      e,a                   ;   
+    cp      '"'
+    jr      z,.parse              ;   If not quoted
+    ld      a,(ARRAYREQ)
+    or      a                     ;     If quotes required
+    jp      nz,TMERR              ;       Type mismatch error
+.comma
+    ld      d,':'                 ;     Terminators are colon and comms
     ld      b,','                 ;    
+    dec     hl                    ;     Back up TxtPtr
+.parse
     call    STRLT2                ;   Parse string literal
     push    hl                    ;   Stack = TxtPtr, RtnAdr
     call    FREFAC                ;   HL = StrDsc 

@@ -1,5 +1,5 @@
 100 REM POKE and PEEK Unit Tests
-110 QG$="ps"
+110 QG$="pp"
 120 GOSUB _init
 
 200 GOSUB _title:ARGS "POKE & PEEK"

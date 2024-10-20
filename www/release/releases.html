@@ -16,6 +16,9 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
   <body>
     <h1 id="plusbasic-release-history">plusBASIC Release History</h1>
     <ul>
+      <li>v0.23k (2024-10-19)
+<ul><li>Breaking change
+<ul><li>Keyword <code>PT3</code> has been changed to <code>TRACK</code></li></ul></li><li><code>READ *var$</code> now parses quoted strings correctly.</li><li>DIM <code>var$(...)=</code> requires quoted strings unless string is empty</li></ul></li>
       <li>v0.23j (2024-10-18)
 <ul><li>Breaking changes
 <ul><li><code>FILL BITMAP BYTE</code> is now <code>FILL BITMAP BYTES</code></li><li><code>FILL BYTE</code> is now <code>FILL BYTES</code></li><li><code>FILL WORD</code> is now <code>FILL WORDS</code></li></ul></li><li>Added BYTE(), WORD(), and WORD$() functions</li><li>S3 BASIC CONINT routine now allows signed numbers (-256 through 255)</li><li>Fixed DEC() Overflow error when argument is not a literal string</li><li>Fixed ASC$() corrupting argument contents</li><li>var$[...] now returns a temporary so that FRETOP won't get clobbered</li></ul></li>

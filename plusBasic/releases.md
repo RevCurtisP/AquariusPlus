@@ -1,4 +1,9 @@
 # plusBASIC Release History
+ - v0.23k (2024-10-19)
+    - Breaking change
+      - Keyword `PT3` has been changed to `TRACK`
+    - `READ *var$` now parses quoted strings correctly.
+    - DIM `var$(...)=` requires quoted strings unless string is empty
  - v0.23j (2024-10-18)
     - Breaking changes
       - `FILL BITMAP BYTE` is now `FILL BITMAP BYTES`

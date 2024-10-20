@@ -188,7 +188,7 @@ xtokens = {
     0x89: "TEXT",               
     0x8A: "ARGS",               
     0x8B: "SAMPLE",               
-    0x8C: "PT3",
+    0x8C: "TRACK",
     0x8D: "PIXEL",
    #0x8E Unused (REM)
     0x8F: "NAME",

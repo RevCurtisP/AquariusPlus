@@ -67,7 +67,7 @@
  - [ ] **ATTR$(_fgcolor_,_bgcolor_,_count_)** - Build color attributes string.
  - [ ] **BIT(_integer_,_bit#_)** - Return status of bit in integer.
  - [ ] **BIT$()** - _Not implemented_
- - [ ] **BYTE(_string_{,_pos_})** - Return signed byte value of specified character in _string_.<!--ASC-->
+ - [ ] **BYTE(_string_{,_pos_})** - Return signed byte value of specified character in _string_.
  - [ ] **CALL _address_ {ARGS _hl_,_de_,_bc_,_a_}** - Executes machine language routine at address, optionally passing arguments into the associated registers.<!--CALL-->
  - [ ] **CALL MODULE** - _Proposed enhancement._
  - [ ] **CD {_dirname_}** - Display current path or change directory.<!--filesystem-->
@@ -195,7 +195,6 @@
  - [ ] **LOAD FNKEYS _filespec_** - Load function key definitions from file.<!--FNKEYS-->
  - [ ] **LOAD MODULE** - _Proposed enhancement._
  - [ ] **LOAD PALETTE _p_,_filespec_{,ASC}** - Load file data ino palette.<!--LOADPALETTE-->
- - [ ] **LOAD PT3 _filespec_** - Load PT3 track into PT player buffer.
  - [ ] **LOAD SCREEN _filespec_** - Load text screen from file.
  - [ ] **LOAD SCREEN ATTR _filespec_** - Load text colors from file.
  - [ ] **LOAD SCREEN CHR _filespec_** - _Not implemented_
@@ -203,9 +202,10 @@
  - [ ] **LOAD TILESET _filespec_** - Load tile definitions to Video RAM.
  - [ ] **LOAD TILESET INDEX _tileno_,_filespec_** - Load tile definitions relative to start of Video RAM.
  - [ ] **LOAD TILESET OFFSET _tileno_,_filespec_** - Load tile definitions relative to end of tilemap/bitmap.
+ - [ ] **LOAD TRACK _filespec_** - Load tracker file track into tracker player buffer.
  - [ ] **LOCATE _x_,_y_** - Move text cursor to specified position.<!--LOCATE-->
  - [ ] **LOG(_float_)** - Return natural logarithm of argument.<!--math-->
- - [ ] **LOOP PT3 {_filespec_}** - Play specified or previously loaded PT3 track repeatedly.
+ - [ ] **LOOP TRACK {_filespec_}** - Play specified or previously loaded tracker file repeatedly.
  - [ ] **LPOS(_expression__)** - Return current column position of printer.
  - [ ] **LPRINT TAB(_integer_)|SPC(_integer_)|_expression_|;|,{...}** - Output data to printer.<!--print-->
  - [ ] **MENU** - _Not implemented._
@@ -226,15 +226,15 @@
  - [ ] **PAD$(string,length{,char})** - Pad string on left or right.<!--PAD-->
  - [ ] **PAUSE** - Halt program execution until key is pressed.<!--PAUSE-->
  - [ ] **PAUSE _jiffies_** - _Not implemented._<!--PAUSE-->
- - [ ] **PAUSE PT3** - Pause currently playing PT3 track.<!--pt3-->
+ - [ ] **PAUSE TRACK** - Pause currently playing track.<!--pt3-->
  - [ ] **PEEK(«!_ext_addr_»|«{@_page_,}_address_»)** - Read byte from memory.<!--PEEK-->
  - [ ] **PEEK$(«!_ext_addr_»|«{@_page_,}_address_»,_length_)** - Read string from memory.<!--PEEK-->
  - [ ] **PEEKCOLOR(_address_)** - Read byte from color RAM.<!--PEEK-->
  - [ ] **PEEKCOLOR$(_address_,_length_)** - Read string from color RAM.<!--PEEK-->
  - [ ] **PEEKSCREEN(_address_)** - Read byte from screen RAM.<!--PEEK-->
  - [ ] **PEEKSCREEN$(_address_,_length_)** - Read string from screen RAM.<!--PEEK-->
- - [ ] **PLAY PT3 \{_filespec_}** - Play specified or previously loaded PT3 track.<!--pt3-->
  - [ ] **PLAY SAMPLE «!_ext_addr_»|«@_page_,_address_»** - Play digital sample from previously loaded file.<!--PLAYSAMPLE-->
+ - [ ] **PLAY TRACK \{_filespec_}** - Play specified or previously loaded tracker file.<!--pt3-->
  - [ ] **POINT(_x_,_y_)** - Return status of bloxel or pixel.<!--pixel-->
  - [ ] **POKE «!_ext_addr_»|«{@_page_,}_address_»,_byte_|_string_{;..}.** - Write bytes and/or strings to memory.<!--POKE-->
  - [ ] **POKE COLOR _address_,_byte_|_string_{;...}** - Write bytes and/or strings to color RAM.<!--POKESCREEN-->
@@ -247,9 +247,6 @@
  - [ ] **PSG _register_,_byte_{,...}** - Write bytes to PSG register
  - [ ] **PSG _register_,_byte_{;...}** - Not implemented
  - [ ] **PSET (_x_,_y_)** - Draw bloxel or pixel.<!--pixel-->
- - [ ] **PT3FAST** - Return -1 if PT3 is set to fast, else 0.<!--pt3-->
- - [ ] **PT3LOOP** - Return -1 if PT3 is set to loop, else 0.<!--pt3-->
- - [ ] **PT3STATUS** - Return -1 if PT3 is playing, else 0.<!--pt3-->
  - [ ] **PUT SCREEN (_x_,y_) \*_array_|^_strvar_** - Copy clip from array or string variable to text screen.<!--PUTSCREEN-->
  - [ ] **PUT SCREEN CHR (_x_,y_) \*_array_|^_strvar_** - Copy clip from array or string variable to text screen.<!--PUTSCREEN-->
  - [ ] **PUT SCREEN ATTR (_x_,y_) \*_array_|^_strvar_** - Copy clip from array or string variable to text screen.<!--PUTSCREEN-->
@@ -259,7 +256,7 @@
  - [ ] **REM _text_** - Denotes comment.<!--REM-->
  - [ ] **RENAME _filespec_ TO _filespec_** - Rename file or directory
  - [ ] **RESUME _lineref_** - Clear error condition and continues program execution at specified line
- - [ ] **RESUME PT3** - Resume playing paused PT3 track.
+ - [ ] **RESUME TRACK** - Resume playing paused track.
  - [ ] **RESET \*_array_** - Set all array elements to 0 or empty string and collect garbage if string array.
  - [ ] **RESET BIT** - _Not implemented_
  - [ ] **RESET PALETTE _palette_** - Reset palette to default RGB values.
@@ -301,8 +298,8 @@
  - [ ] **SET FNKEY _key_ TO _string_** - Set auto-typed text when function key is pressed.<!--SETFNKY-->
  - [ ] **SET KEY _mode_** - Set alternate keyboard port mode.
  - [ ] **SET PALETTE _palette {INDEX _index_} TO _rgblist_** - Set palette entries.<!--SETPALETTE-->
- - [ ] **SET PT3 FAST {ON|OFF}** - Set PT3 to 50Hz or 60Hz mode.<!--pt3-->
- - [ ] **SET PT3 LOOP {ON|OFF}** - Set loop status of active or paused PT3 track.<!--pt3-->
+ - [ ] **SET TRACK FAST {ON|OFF}** - Set tracker playback to 50Hz or 60Hz mode.<!--pt3-->
+ - [ ] **SET TRACK LOOP {ON|OFF}** - Set loop status of active or paused track.<!--pt3-->
  - [ ] **SET SAVE ASC ON|OFF** - Enable or disable forced saving of BASIC programs in ASCII format.<!--SETSAVE-->
  - [ ] **SET SPRITE _spritedef_ {ON|OFF} {POS _x_,_y_} {TILE _tilelist_} {PALETTE _palettelist_} {ATTR _attrlist_}** - Set sprite properties.<!--SETSPRITE-->
  - [ ] **SET SPRITE _spritedef_ TILECLIP \*_array_|^_strvar_** - Set sprite to tile indexes and properties in tilemap clip.<!--SETSPRITE-->
@@ -321,7 +318,7 @@
  - [ ] **STASH BITMAP|TILEMAP** - _Not implemented._
  - [ ] **STASH SCREEN** - Copy current text screen to respective screen buffer.
  - [ ] **STOP** - Interrupt program execution.<!--flow-->
- - [ ] **STOP PT3** - Stop currently playing PT3 track.<!--pt3-->
+ - [ ] **STOP TRACK** - Stop currently playing track.<!--pt3-->
  - [ ] **STR$(_float_)** - Convert floating point number to ASCII string.<!--convert-->
  - [ ] **STRING$(_length_{,_byte_|_string_})** - Create string of repeated character.<!--STRING-->
  - [ ] **STRPTR(_strvar_)** - Return address of text for string variable.
@@ -337,6 +334,9 @@
  - [ ] **TIME$** - Return the current time.<!--DATETIME-->
  - [ ] **TIMER** - Return timer count.
  - [ ] **TIMER = _long_** - Set and start jiffy timer.<!--TIMER-->
+ - [ ] **TRACKFAST** - Return -1 if tracker playback is set to fast, else 0.<!--pt3-->
+ - [ ] **TRACKLOOP** - Return -1 if tracker playback is set to loop, else 0.<!--pt3-->
+ - [ ] **TRACKSTATUS** - Return -1 if track is playing, else 0.<!--pt3-->
  - [ ] **TRIM$(_string_{,_string_})** - Remove characters from both ends of string.
  - [ ] **TRIMDIR$(_filespec_)** - Remove path from filespec.
  - [ ] **TRIMEXT$(_filespec_)** - Remove extension from filespec.

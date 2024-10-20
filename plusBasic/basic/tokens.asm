@@ -78,7 +78,7 @@ EXTCMDS:
     db $80 + 'T',"EXT"            ; $89             
     db $80 + 'A',"RGS"            ; $8A             
     db $80 + 'S',"AMPLE"          ; $8B             
-    db $80 + 'P',"T3"             ; $8C             
+    db $80 + 'T',"RACK"           ; $8C
     db $80 + 'P',"IXEL"           ; $8D             
     db $80 + ' '                  ; $8E unused (REM)             
     db $80 + 'N',"AME"            ; $8F             
