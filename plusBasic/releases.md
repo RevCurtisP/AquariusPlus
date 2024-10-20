@@ -1,4 +1,6 @@
 # plusBASIC Release History
+ - v0.23l (2024-10-20)
+    - Added statement `SET SPEED` and function `GET SPEED`
  - v0.23k (2024-10-19)
     - Breaking change
       - Keyword `PT3` has been changed to `TRACK`

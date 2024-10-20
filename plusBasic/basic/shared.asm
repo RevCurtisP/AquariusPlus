@@ -472,6 +472,8 @@ get_byte2:
     jp      nc,FCERR              ;   FC Error
     ret
 
+skip_get_byte4:
+    rst     CHRGET
 ;-----------------------------------------------------------------------------
 ; Parse Byte between 0 - 3
 ; Output: A,E = Nybble

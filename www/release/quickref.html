@@ -15,8 +15,11 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
   </head>
   <body>
     <h1 id="plusbasic-quick-reference-guide">plusBASIC Quick Reference Guide</h1>
-    <!-- ToDo: BASIC-System-Statements-and-Functions -->
     <!-- Do not edit this page. Contents are copied from generated file quickref_wiki.md -->
+    <!-- ToDo: 
+  Move ASC, ASC$, CHR$, HEX$, add BYTE$, DEC, WORD, WORD$ to page BASIC-Conversion-Functions
+  Move IN, IN$, OUT, add DEF USR, GETSPEED, PAUSE, SET FASTSET, WAIT to BASIC-System-Statements-and-Functions
+-->
     <h2 id="literals">Literals</h2>
     <ul>
       <li>
@@ -80,7 +83,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>ASC(<em>string</em>{,<em>pos</em>})</strong> - Return ASCII value of specified character in <em>string</em>.<!--ASC--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>ASC$(<em>hexstring</em>)</strong> - Convert <em>hex_string</em> to an ASCII string.<!--ASC--></li>
+        <strong>ASC$(<em>hexstring</em>)</strong> - Convert hexadecimal string to ASCII string.<!--ASC--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>ATN(<em>float</em>)</strong> - Return arctangent of argument.<!--math--></li>
@@ -98,7 +101,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>BIT$()</strong> - <em>Not implemented</em></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>BYTE(<em>string</em>{,<em>pos</em>})</strong> - Return signed byte value of specified character in <em>string</em>.</li>
+        <strong>BYTE(<em>string</em>{,<em>pos</em>})</strong> - Return signed byte value of specified character in <em>string</em>.<!--convert--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>CALL <em>address</em> {ARGS <em>hl</em>,<em>de</em>,<em>bc</em>,<em>a</em>}</strong> - Executes machine language routine at address, optionally passing arguments into the associated registers.<!--CALL--></li>
@@ -113,7 +116,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>CD$</strong> - Return current path.<!--filesystem--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>CHR$(<em>byte</em>)</strong> - Convert ASCII value to string.</li>
+        <strong>CHR$(<em>byte</em>)</strong> - Convert ASCII value to string.<!--convert--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>CIRCLE (<em>x</em>,<em>y</em>),<em>radius</em>{,{,,{,<em>aspect</em>}}}</strong> - <em>Not implemented.</em></li>
@@ -353,6 +356,9 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>GETPALETTE$(<em>palette</em>)</strong> - Return palette contents.<!--GETPALETTE--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
+        <strong>GETSPEED</strong> - Return current turbo setting.<!--system--></li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
         <strong>GETSPRITE$(<em>spritedef</em>)</strong> - Return attributes of each spritle in the spritedef.<!--GETSPRITE--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
@@ -386,7 +392,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>INMEM({@<em>page</em>,}<em>address</em>,<em>string</em>)</strong> - Search for string in memory.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>INT(<em>expression</em>)</strong> - Return expression rounded down to nearest integer.</li>
+        <strong>INT(<em>expression</em>)</strong> - Return expression rounded down to nearest integer.<!--math--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>INKEY</strong> - Return ASCII code of most recently pressed key.<!--KEY--></li>
@@ -416,7 +422,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>KEY({<em>keycode</em>|<em>string</em>})</strong> - Check if key is currently pressed.<!--key--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>LEFT$(<em>string</em>,<em>len</em>)</strong> - Return the first up to <em>len</em> characters of string.</li>
+        <strong>LEFT$(<em>string</em>,<em>len</em>)</strong> - Return the first up to <em>len</em> characters of string.<!--string--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>LEN(<em>string</em>)</strong> - Return length of string.</li>
@@ -503,7 +509,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>LOAD TILESET OFFSET <em>tileno</em>,<em>filespec</em></strong> - Load tile definitions relative to end of tilemap/bitmap.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>LOAD TRACK <em>filespec</em></strong> - Load tracker file track into tracker player buffer.</li>
+        <strong>LOAD TRACK <em>filespec</em></strong> - Load tracker file track into tracker player buffer.<!--track--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>LOCATE <em>x</em>,<em>y</em></strong> - Move text cursor to specified position.<!--LOCATE--></li>
@@ -512,7 +518,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>LOG(<em>float</em>)</strong> - Return natural logarithm of argument.<!--math--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>LOOP TRACK </strong> - Play specified or previously loaded tracker file repeatedly.</li>
+        <strong>LOOP TRACK </strong> - Play specified or previously loaded tracker file repeatedly.<!--track--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>LPOS(<em>expression</em>_)</strong> - Return current column position of printer.</li>
@@ -524,10 +530,10 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>MENU</strong> - <em>Not implemented.</em></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>MID$(<em>string</em>,<em>start</em>{,<em>len</em>})</strong> - Return first up to <em>len</em> or all remaining characters starting at character <em>start</em> of string.</li>
+        <strong>MID$(<em>string</em>,<em>start</em>{,<em>len</em>})</strong> - Return first up to <em>len</em> or all remaining characters starting at character <em>start</em> of string.<!--string--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>MID$(<em>strvar</em>,<em>start</em>_{,<em>len</em>})=<em>string</em></strong> - Replace text in string variable.</li>
+        <strong>MID$(<em>strvar</em>,<em>start</em>_{,<em>len</em>})=<em>string</em></strong> - Replace text in string variable.<!--string--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>MKDIR <em>dirname</em></strong> - Create directory.<!--filesystem--></li>
@@ -575,7 +581,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>PAUSE <em>jiffies</em></strong> - <em>Not implemented.</em><!--PAUSE--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>PAUSE TRACK</strong> - Pause currently playing track.<!--pt3--></li>
+        <strong>PAUSE TRACK</strong> - Pause currently playing track.<!--track--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>PEEK(�!_ext_addr_�|�{@<em>page</em>,}_address_�)</strong> - Read byte from memory.<!--PEEK--></li>
@@ -599,7 +605,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>PLAY SAMPLE �!_ext_addr_�|�@<em>page</em>,_address_�</strong> - Play digital sample from previously loaded file.<!--PLAYSAMPLE--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>PLAY TRACK {<em>filespec</em>}</strong> - Play specified or previously loaded tracker file.<!--pt3--></li>
+        <strong>PLAY TRACK {<em>filespec</em>}</strong> - Play specified or previously loaded tracker file.<!--track--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>POINT(<em>x</em>,<em>y</em>)</strong> - Return status of bloxel or pixel.<!--pixel--></li>
@@ -665,7 +671,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>RESUME <em>lineref</em></strong> - Clear error condition and continues program execution at specified line</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>RESUME TRACK</strong> - Resume playing paused track.</li>
+        <strong>RESUME TRACK</strong> - Resume playing paused track.<!--track--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>RESET *<em>array</em></strong> - Set all array elements to 0 or empty string and collect garbage if string array.</li>
@@ -698,7 +704,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>RGB$(<em>r</em>,<em>g</em>,<em>b</em>)</strong> - Return string representing a single palette entry.<!--RGB--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>RIGHT$(<em>string</em>,<em>len</em>)</strong> - Return the last up to <em>byte</em> characters of string.</li>
+        <strong>RIGHT$(<em>string</em>,<em>len</em>)</strong> - Return the last up to <em>byte</em> characters of string.<!--string--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>RND(<em>integer</em>)</strong> - Return new or previous psuedo-random number or seeds the random number generator.<!--math--></li>
@@ -791,13 +797,16 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>SET PALETTE _palette  TO <em>rgblist</em></strong> - Set palette entries.<!--SETPALETTE--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>SET TRACK FAST {ON|OFF}</strong> - Set tracker playback to 50Hz or 60Hz mode.<!--pt3--></li>
+        <strong>SET TRACK FAST {ON|OFF}</strong> - Set tracker playback to 50Hz or 60Hz mode.<!--track--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>SET TRACK LOOP {ON|OFF}</strong> - Set loop status of active or paused track.<!--pt3--></li>
+        <strong>SET TRACK LOOP {ON|OFF}</strong> - Set loop status of active or paused track.<!--track--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>SET SAVE ASC ON|OFF</strong> - Enable or disable forced saving of BASIC programs in ASCII format.<!--SETSAVE--></li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>SET SPEED <em>speed</em></strong> - Set turbo mode.<!--system--><!--system--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>SET SPRITE <em>spritedef</em> {ON|OFF} {POS <em>x</em>,<em>y</em>}   </strong> - Set sprite properties.<!--SETSPRITE--></li>
@@ -851,7 +860,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>STOP</strong> - Interrupt program execution.<!--flow--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>STOP TRACK</strong> - Stop currently playing track.<!--pt3--></li>
+        <strong>STOP TRACK</strong> - Stop currently playing track.<!--track--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>STR$(<em>float</em>)</strong> - Convert floating point number to ASCII string.<!--convert--></li>
@@ -899,28 +908,28 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>TIMER = <em>long</em></strong> - Set and start jiffy timer.<!--TIMER--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>TRACKFAST</strong> - Return -1 if tracker playback is set to fast, else 0.<!--pt3--></li>
+        <strong>TRACKFAST</strong> - Return -1 if tracker playback is set to fast, else 0.<!--track--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>TRACKLOOP</strong> - Return -1 if tracker playback is set to loop, else 0.<!--pt3--></li>
+        <strong>TRACKLOOP</strong> - Return -1 if tracker playback is set to loop, else 0.<!--track--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>TRACKSTATUS</strong> - Return -1 if track is playing, else 0.<!--pt3--></li>
+        <strong>TRACKSTATUS</strong> - Return -1 if track is playing, else 0.<!--track--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>TRIM$(<em>string</em>{,<em>string</em>})</strong> - Remove characters from both ends of string.</li>
+        <strong>TRIM$(<em>string</em>{,<em>string</em>})</strong> - Remove characters from both ends of string.<!--string--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>TRIMDIR$(<em>filespec</em>)</strong> - Remove path from filespec.</li>
+        <strong>TRIMDIR$(<em>filespec</em>)</strong> - Remove path from filespec.<!--filesystem--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>TRIMEXT$(<em>filespec</em>)</strong> - Remove extension from filespec.</li>
+        <strong>TRIMEXT$(<em>filespec</em>)</strong> - Remove extension from filespec.<!--filesystem--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>TRIML$(<em>string</em>{,<em>string</em>})</strong> - Remove characters from left end of string.</li>
+        <strong>TRIML$(<em>string</em>{,<em>string</em>})</strong> - Remove characters from left end of string.<!--string--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>TRIMR$(<em>string</em>{,<em>string</em>})</strong> - Remove characters from right end of string.</li>
+        <strong>TRIMR$(<em>string</em>{,<em>string</em>})</strong> - Remove characters from right end of string.<!--string--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>TRON</strong> - Enable line tracing.</li>
@@ -953,10 +962,10 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>WAIT <em>port</em>,<em>xor_mask</em>{,<em>and_mask</em>}</strong> - Pause until specifie bit pattern received from IO port.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>WORD(<em>string</em>{,<em>offset</em>})</strong> - Convert two consecutive bytes in string to unsigned word.</li>
+        <strong>WORD(<em>string</em>{,<em>offset</em>})</strong> - Convert two consecutive bytes in string to unsigned word.<!--convert--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>WORD$(<em>integer</em>)</strong> - Convert integer to unsigned two byte binary string.</li>
+        <strong>WORD$(<em>integer</em>)</strong> - Convert integer to unsigned two byte binary string.<!--convert--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>WRITE</strong> - <em>Not implemented.</em></li>

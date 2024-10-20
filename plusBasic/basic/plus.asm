@@ -124,6 +124,8 @@ FN_GET:
     jp      z,FN_GETATTR
     cp      KEYTK
     jr      z,FN_GETKEY
+    cp      SPEEDTK
+    jr      z,FN_GETSPEED
     jp      SNERR
 
 ;-----------------------------------------------------------------------------
@@ -151,6 +153,12 @@ FN_GETKEY:
     pop     bc                    ; Get rid of dummy return address
     jp      BUFCIN                ; Else Return String
 
+FN_GETSPEED:
+    rst     CHRGET                ; Skip SPEED
+    call    get_turbo_mode
+push_hl_labbck_floata:
+    call    push_hl_labbck
+    jp      SNGFLT
 
 ;----------------------------------------------------------------------------
 ; Search for string in memory
@@ -928,6 +936,8 @@ ST_SET:
     jp      z,ST_SET_PT3
     cp      BRKTK                 ; $9A
     jr      z,ST_SET_BREAK
+    cp      SPEEDTK               ; $B1
+    jr      z,ST_SET_SPEED
     jp      SNERR
 
 ;-----------------------------------------------------------------------------
@@ -992,12 +1002,23 @@ ST_SET_KEY:
     ret
 
 ;-----------------------------------------------------------------------------
+; Set Z80 Clock Speed
+; Syntax: SET SPEED speed
+;-----------------------------------------------------------------------------
+ST_SET_SPEED:
+    call    skip_get_byte4         ; 
+    jr      _turbo_mode
+;-----------------------------------------------------------------------------
 ; Set Fast Mode
 ; Syntax: SET FAST ON/OFF
 ;-----------------------------------------------------------------------------
 ST_SET_FAST:
     call    get_on_off            ; A = $FF if ON, $00 if OFF
-    jp      sys_turbo_mode
+    and     1                     ; A = 1 if ON, 0 if OFF
+_turbo_mode:
+    call    set_turbo_mode
+    jp      c,FCERR               ; If illegal mode, Illlegal quantity
+    ret
 
 ;-----------------------------------------------------------------------------
 ; Set Fast Mode

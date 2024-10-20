@@ -220,7 +220,12 @@ xtokens = {
     0xA9: "WAIT",
     0xAA: "CUR",
     0xAB: "HEX",
-    0xAC: "BIN"
+    0xAC: "BIN",
+    0xAD: "MIN",
+    0xAE: "MAX",
+    0xAF: "UPR",
+    0xB0: "LWR",
+    0xB1: "SPEED"
 }
 
 with open(args.input, "rb") as f:

@@ -49,7 +49,6 @@ PEEK        BASIC-PEEK-and-DEEK-Functions
 POKE        BASIC-POKE-and-DOKE-Statement
 POKESCREEN  BASIC-POKE-SCREEN-and-POKE-COLOR-Statements
 print       BASIC-PRINT-Statements
-pt3         BASIC-PT3-Statements
 PUTSCREEN   BASIC-PUT-SCREEN-Statement
 PUTTILE     BASIC-PUT-TILEMAP-Statement
 READ        BASIC-READ-Statement
@@ -68,6 +67,9 @@ SETSPRITE   BASIC-SETSPRITE-Statement
 SETTILE     BASIC-SET-TILE-Statement
 SETTILEMAP  BASIC-SET-TILEMAP-Statement
 STRING      BASIC-STRING-Function
+string      BASIC-String-Functions
+system      BASIC-System-Statements-and-Functions
 tilemap     BASIC-TILEMAP-Functions
 TIMER       BASIC-TIMER-Functions
+track       BASIC-TRACK-Statements
 USR         BASIC-USR-Function

@@ -78,7 +78,7 @@ EXTCMDS:
     db $80 + 'T',"EXT"            ; $89             
     db $80 + 'A',"RGS"            ; $8A             
     db $80 + 'S',"AMPLE"          ; $8B             
-    db $80 + 'T',"RACK"           ; $8C
+    db $80 + 'T',"RACK"           ; $`
     db $80 + 'P',"IXEL"           ; $8D             
     db $80 + ' '                  ; $8E unused (REM)             
     db $80 + 'N',"AME"            ; $8F             
@@ -117,9 +117,10 @@ EXTCMDS:
     db $80 + 'M',"AX"             ; $AE
     db $80 + 'U',"PR"             ; $AF
     db $80 + 'L',"WR"             ; $B0
+    db $80 + 'S',"PEED"           ; $B1
     db $80                        ; End of table marker
 
-EXTOKEN = $B1                     ; Last Token + 1
+EXTOKEN = $B2                     ; Last Token + 1
 
 ;-----------------------------------------------------------------------------
 ; plusBASIC tokens
@@ -198,6 +199,7 @@ MINTK     equ     $AD
 MAXTK     equ     $AE
 UPRTK     equ     $AF
 LWRTK     equ     $B0
+SPEEDTK   equ     $B1
 
 ;-----------------------------------------------------------------------------
 ; Convert keyword to token - hook 10

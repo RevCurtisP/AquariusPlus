@@ -125,7 +125,7 @@ just_ret:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.23k"
+    db "v0.23l"
     db 0
 plus_len   equ   $ - plus_text
 
@@ -393,7 +393,7 @@ _iscntc_hook:
     byte    $3E                   ; LD A,$AF to Enable Turbo Mode
 .turbo_off
     xor     a
-    jp      sys_turbo_mode
+    jp      set_turbo_mode
 
 _check_ctrl_c:    
     ld      a,(BASYSCTL)
@@ -405,19 +405,41 @@ _check_ctrl_c:
 
 ;-----------------------------------------------------------------------------
 ; Enable/Disable Turbo mode
-; Input: A = Bit 2 set for On, reset for Off
-; Clobbers: B
+; Input: A: 0 = 3 Mhz, 1 = 7 Mhz, 2 = undefined, 3 = unlimited
+; Returns: A = SYSCTRL bits actually set
+; Clobbered: B
+;  speed: 0 = 3.88 Mhz
+;         1 = 7,16 Mhz
+;         2 = Undefined (returns Carry set)
+;         3 = Unlimited
 ;-----------------------------------------------------------------------------
-sys_turbo_mode:
-    and     SYSCTRL_TURBO         ; Isolate Fast Mode bit
+set_turbo_mode:
+    cp      4                     ; If A > 4
+    ccf     
+    ret     c                     ;   Return Carry Set
+    cp      2                     ; or A = 2              
+    jr      nz,.turbo             ; Return Carry Set
+.ret_c
+    scf
+    ret
+.turbo
+    rla
+    rla                           ; Rotate bits into place
+    and     SYSCTRL_TURBO         ; Isolate turbo bits
     ld      b,a                   ;   and copy to B
-_turbo_mode
     in      a,(IO_SYSCTRL)        ; Read SYSCTRL
     and     ~SYSCTRL_TURBO        ;   mask out Fast Mode bit
     or      b                     ;   and copy the new Fast Mode bit in
     out     (IO_SYSCTRL),a        ; Write back to SYSCTRL
     ret
 
+get_turbo_mode:
+    in      a,(IO_SYSCTRL)        ; Read SYSCTRL
+    and     SYSCTRL_TURBO         ;   mask out Fast Mode bit
+    rra
+    rra
+    ret
+    
 ;-----------------------------------------------------------------------------
 ; Enable/Disable Ctrl-C Break
 ; Input: A = Bit 5 set for Disabled, reset for Enabled

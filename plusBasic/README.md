@@ -1,7 +1,10 @@
 # plusBASIC Quick Reference Guide
-<!-- ToDo: BASIC-System-Statements-and-Functions -->
-
 <!-- Do not edit this page. Contents are copied from generated file quickref_wiki.md -->
+
+<!-- ToDo: 
+  Move ASC, ASC$, CHR$, HEX$, add BYTE$, DEC, WORD, WORD$ to page BASIC-Conversion-Functions
+  Move IN, IN$, OUT, add DEF USR, GETSPEED, PAUSE, SET FASTSET, WAIT to BASIC-System-Statements-and-Functions
+-->
 
 ## Literals
   - _Numeric literals_ evaluate to floating point or integer numbers.
@@ -61,18 +64,18 @@
  - [ ] **ARGS** - Return number of RUN arguments
  - [ ] **ARGS$(_argno_)** - Return RUN argument number _index_.
  - [ ] **ASC(_string_{,_pos_})** - Return ASCII value of specified character in _string_.<!--ASC-->
- - [ ] **ASC$(_hexstring_)** - Convert _hex_string_ to an ASCII string.<!--ASC-->
+ - [ ] **ASC$(_hexstring_)** - Convert hexadecimal string to ASCII string.<!--ASC-->
  - [ ] **ATN(_float_)** - Return arctangent of argument.<!--math-->
  - [ ] **ATTR(_fgcolor_,_bgcolor_)** - Build color attribute byte.
  - [ ] **ATTR$(_fgcolor_,_bgcolor_,_count_)** - Build color attributes string.
  - [ ] **BIT(_integer_,_bit#_)** - Return status of bit in integer.
  - [ ] **BIT$()** - _Not implemented_
- - [ ] **BYTE(_string_{,_pos_})** - Return signed byte value of specified character in _string_.
+ - [ ] **BYTE(_string_{,_pos_})** - Return signed byte value of specified character in _string_.<!--convert-->
  - [ ] **CALL _address_ {ARGS _hl_,_de_,_bc_,_a_}** - Executes machine language routine at address, optionally passing arguments into the associated registers.<!--CALL-->
  - [ ] **CALL MODULE** - _Proposed enhancement._
  - [ ] **CD {_dirname_}** - Display current path or change directory.<!--filesystem-->
  - [ ] **CD$** - Return current path.<!--filesystem-->
- - [ ] **CHR$(_byte_)** - Convert ASCII value to string.
+ - [ ] **CHR$(_byte_)** - Convert ASCII value to string.<!--convert-->
  - [ ] **CIRCLE (_x_,_y_),_radius_{,{_color_}{,{_start_},{_end_}{,_aspect_}}}** - _Not implemented._
  - [ ] **CLEAR {_integer_{,_address_}}** - Clear all variables, optionally allocating string text space and top of BASIC RAM.<!--CLEAR-->
  - [ ] **CLEAR \*_array_{,...}** - Clear numeric or string array data.<!--CLEAR-->
@@ -152,6 +155,7 @@
  - [ ] **GETKEY** - Wait for key an return ASCII code.
  - [ ] **GETKEY$**  - Wait for key and return as string.
  - [ ] **GETPALETTE$(_palette_)** - Return palette contents.<!--GETPALETTE-->
+ - [ ] **GETSPEED** - Return current turbo setting.<!--system-->
  - [ ] **GETSPRITE$(_spritedef_)** - Return attributes of each spritle in the spritedef.<!--GETSPRITE-->
  - [ ] **GETTILE$(_tileno_)** - Return tile pixels.<!--GETTILE-->
  - [ ] **GOSUB _lineref_{:ARGS _expression_{,...} {RETURN _var_{,...}}** - Branch to subroutine with optional call and return arguments.<!--flow-->
@@ -163,7 +167,7 @@
  - [ ] **IN$(_port_,_length_)** - Read multiple bytes from Z80 I/O port.<!--IN-->
  - [ ] **INDEX(\*_array_,_string_)** - Search for string in element of array
  - [ ] **INMEM({@_page_,}_address_,_string_)** - Search for string in memory.
- - [ ] **INT(_expression_)** - Return expression rounded down to nearest integer.
+ - [ ] **INT(_expression_)** - Return expression rounded down to nearest integer.<!--math-->
  - [ ] **INKEY** - Return ASCII code of most recently pressed key.<!--KEY-->
  - [ ] **INKEY$** - Return most recently pressed key as string.<!--KEY-->
  - [ ] **INPUT {_stringliteral_;}_var_{,...}** - Prompt for keyboard input and assigns entries to variables.<!--input-->
@@ -173,7 +177,7 @@
  - [ ] **JOY(_stick_)** - Read one or both game controllers.<!--JOY-->
  - [ ] **JOY$(_id_)** - Read wireless game controller.<!--JOY-->
  - [ ] **KEY({_keycode_|_string_})** - Check if key is currently pressed.<!--key-->
- - [ ] **LEFT$(_string_,_len_)** - Return the first up to _len_ characters of string.
+ - [ ] **LEFT$(_string_,_len_)** - Return the first up to _len_ characters of string.<!--string-->
  - [ ] **LEN(_string_)** - Return length of string.
  - [ ] **\{LET} _var_=_expression_** - Define and assigns value to variable.<!--let-->
  - [ ] **LINE {(_x1_,_y1_)}-(_x2_,_y2_){,{_color_}{,B{F}}}}** - _Not implemented._
@@ -202,15 +206,15 @@
  - [ ] **LOAD TILESET _filespec_** - Load tile definitions to Video RAM.
  - [ ] **LOAD TILESET INDEX _tileno_,_filespec_** - Load tile definitions relative to start of Video RAM.
  - [ ] **LOAD TILESET OFFSET _tileno_,_filespec_** - Load tile definitions relative to end of tilemap/bitmap.
- - [ ] **LOAD TRACK _filespec_** - Load tracker file track into tracker player buffer.
+ - [ ] **LOAD TRACK _filespec_** - Load tracker file track into tracker player buffer.<!--track-->
  - [ ] **LOCATE _x_,_y_** - Move text cursor to specified position.<!--LOCATE-->
  - [ ] **LOG(_float_)** - Return natural logarithm of argument.<!--math-->
- - [ ] **LOOP TRACK {_filespec_}** - Play specified or previously loaded tracker file repeatedly.
+ - [ ] **LOOP TRACK {_filespec_}** - Play specified or previously loaded tracker file repeatedly.<!--track-->
  - [ ] **LPOS(_expression__)** - Return current column position of printer.
  - [ ] **LPRINT TAB(_integer_)|SPC(_integer_)|_expression_|;|,{...}** - Output data to printer.<!--print-->
  - [ ] **MENU** - _Not implemented._
- - [ ] **MID$(_string_,_start_{,_len_})** - Return first up to _len_ or all remaining characters starting at character _start_ of string.
- - [ ] **MID$(_strvar_,_start__{,_len_})=_string_** - Replace text in string variable.
+ - [ ] **MID$(_string_,_start_{,_len_})** - Return first up to _len_ or all remaining characters starting at character _start_ of string.<!--string-->
+ - [ ] **MID$(_strvar_,_start__{,_len_})=_string_** - Replace text in string variable.<!--string-->
  - [ ] **MKDIR _dirname_** - Create directory.<!--filesystem-->
  - [ ] **MOUSEB** - Return mouse button state<!--mouse-->
  - [ ] **MOUSEW** - Return mouse wheel delta<!--mouse-->
@@ -226,7 +230,7 @@
  - [ ] **PAD$(string,length{,char})** - Pad string on left or right.<!--PAD-->
  - [ ] **PAUSE** - Halt program execution until key is pressed.<!--PAUSE-->
  - [ ] **PAUSE _jiffies_** - _Not implemented._<!--PAUSE-->
- - [ ] **PAUSE TRACK** - Pause currently playing track.<!--pt3-->
+ - [ ] **PAUSE TRACK** - Pause currently playing track.<!--track-->
  - [ ] **PEEK(«!_ext_addr_»|«{@_page_,}_address_»)** - Read byte from memory.<!--PEEK-->
  - [ ] **PEEK$(«!_ext_addr_»|«{@_page_,}_address_»,_length_)** - Read string from memory.<!--PEEK-->
  - [ ] **PEEKCOLOR(_address_)** - Read byte from color RAM.<!--PEEK-->
@@ -234,7 +238,7 @@
  - [ ] **PEEKSCREEN(_address_)** - Read byte from screen RAM.<!--PEEK-->
  - [ ] **PEEKSCREEN$(_address_,_length_)** - Read string from screen RAM.<!--PEEK-->
  - [ ] **PLAY SAMPLE «!_ext_addr_»|«@_page_,_address_»** - Play digital sample from previously loaded file.<!--PLAYSAMPLE-->
- - [ ] **PLAY TRACK \{_filespec_}** - Play specified or previously loaded tracker file.<!--pt3-->
+ - [ ] **PLAY TRACK \{_filespec_}** - Play specified or previously loaded tracker file.<!--track-->
  - [ ] **POINT(_x_,_y_)** - Return status of bloxel or pixel.<!--pixel-->
  - [ ] **POKE «!_ext_addr_»|«{@_page_,}_address_»,_byte_|_string_{;..}.** - Write bytes and/or strings to memory.<!--POKE-->
  - [ ] **POKE COLOR _address_,_byte_|_string_{;...}** - Write bytes and/or strings to color RAM.<!--POKESCREEN-->
@@ -256,7 +260,7 @@
  - [ ] **REM _text_** - Denotes comment.<!--REM-->
  - [ ] **RENAME _filespec_ TO _filespec_** - Rename file or directory
  - [ ] **RESUME _lineref_** - Clear error condition and continues program execution at specified line
- - [ ] **RESUME TRACK** - Resume playing paused track.
+ - [ ] **RESUME TRACK** - Resume playing paused track.<!--track-->
  - [ ] **RESET \*_array_** - Set all array elements to 0 or empty string and collect garbage if string array.
  - [ ] **RESET BIT** - _Not implemented_
  - [ ] **RESET PALETTE _palette_** - Reset palette to default RGB values.
@@ -267,7 +271,7 @@
  - [ ] **RETURN {_expression_{,...}}** - Resume program execution after GOSUB, optionally returning results.<!--flow-->
  - [x] **RGB(_r_,_g_,_b_)** - Return integer representing a single palette entry.<!--RGB-->
  - [x] **RGB$(_r_,_g_,_b_)** - Return string representing a single palette entry.<!--RGB-->
- - [ ] **RIGHT$(_string_,_len_)** - Return the last up to _byte_ characters of string.
+ - [ ] **RIGHT$(_string_,_len_)** - Return the last up to _byte_ characters of string.<!--string-->
  - [ ] **RND(_integer_)** - Return new or previous psuedo-random number or seeds the random number generator.<!--math-->
  - [ ] **RUN {_lineref_}** - Start program execution at first or specified line.<!--run-->
  - [ ] **RUN _filespec_** - Load and runs specified program, cartridge image, or FPGA core.<!--run-->
@@ -298,9 +302,10 @@
  - [ ] **SET FNKEY _key_ TO _string_** - Set auto-typed text when function key is pressed.<!--SETFNKY-->
  - [ ] **SET KEY _mode_** - Set alternate keyboard port mode.
  - [ ] **SET PALETTE _palette {INDEX _index_} TO _rgblist_** - Set palette entries.<!--SETPALETTE-->
- - [ ] **SET TRACK FAST {ON|OFF}** - Set tracker playback to 50Hz or 60Hz mode.<!--pt3-->
- - [ ] **SET TRACK LOOP {ON|OFF}** - Set loop status of active or paused track.<!--pt3-->
+ - [ ] **SET TRACK FAST {ON|OFF}** - Set tracker playback to 50Hz or 60Hz mode.<!--track-->
+ - [ ] **SET TRACK LOOP {ON|OFF}** - Set loop status of active or paused track.<!--track-->
  - [ ] **SET SAVE ASC ON|OFF** - Enable or disable forced saving of BASIC programs in ASCII format.<!--SETSAVE-->
+ - [ ] **SET SPEED _speed_** - Set turbo mode.<!--system--><!--system-->
  - [ ] **SET SPRITE _spritedef_ {ON|OFF} {POS _x_,_y_} {TILE _tilelist_} {PALETTE _palettelist_} {ATTR _attrlist_}** - Set sprite properties.<!--SETSPRITE-->
  - [ ] **SET SPRITE _spritedef_ TILECLIP \*_array_|^_strvar_** - Set sprite to tile indexes and properties in tilemap clip.<!--SETSPRITE-->
  - [ ] **SET SPRITE _spritedef_ TO _proplist_** - Set sprite properties from combined properties list.<!--SETSPRITE-->
@@ -318,7 +323,7 @@
  - [ ] **STASH BITMAP|TILEMAP** - _Not implemented._
  - [ ] **STASH SCREEN** - Copy current text screen to respective screen buffer.
  - [ ] **STOP** - Interrupt program execution.<!--flow-->
- - [ ] **STOP TRACK** - Stop currently playing track.<!--pt3-->
+ - [ ] **STOP TRACK** - Stop currently playing track.<!--track-->
  - [ ] **STR$(_float_)** - Convert floating point number to ASCII string.<!--convert-->
  - [ ] **STRING$(_length_{,_byte_|_string_})** - Create string of repeated character.<!--STRING-->
  - [ ] **STRPTR(_strvar_)** - Return address of text for string variable.
@@ -334,14 +339,14 @@
  - [ ] **TIME$** - Return the current time.<!--DATETIME-->
  - [ ] **TIMER** - Return timer count.
  - [ ] **TIMER = _long_** - Set and start jiffy timer.<!--TIMER-->
- - [ ] **TRACKFAST** - Return -1 if tracker playback is set to fast, else 0.<!--pt3-->
- - [ ] **TRACKLOOP** - Return -1 if tracker playback is set to loop, else 0.<!--pt3-->
- - [ ] **TRACKSTATUS** - Return -1 if track is playing, else 0.<!--pt3-->
- - [ ] **TRIM$(_string_{,_string_})** - Remove characters from both ends of string.
- - [ ] **TRIMDIR$(_filespec_)** - Remove path from filespec.
- - [ ] **TRIMEXT$(_filespec_)** - Remove extension from filespec.
- - [ ] **TRIML$(_string_{,_string_})** - Remove characters from left end of string.
- - [ ] **TRIMR$(_string_{,_string_})** - Remove characters from right end of string.
+ - [ ] **TRACKFAST** - Return -1 if tracker playback is set to fast, else 0.<!--track-->
+ - [ ] **TRACKLOOP** - Return -1 if tracker playback is set to loop, else 0.<!--track-->
+ - [ ] **TRACKSTATUS** - Return -1 if track is playing, else 0.<!--track-->
+ - [ ] **TRIM$(_string_{,_string_})** - Remove characters from both ends of string.<!--string-->
+ - [ ] **TRIMDIR$(_filespec_)** - Remove path from filespec.<!--filesystem-->
+ - [ ] **TRIMEXT$(_filespec_)** - Remove extension from filespec.<!--filesystem-->
+ - [ ] **TRIML$(_string_{,_string_})** - Remove characters from left end of string.<!--string-->
+ - [ ] **TRIMR$(_string_{,_string_})** - Remove characters from right end of string.<!--string-->
  - [ ] **TRON** - Enable line tracing.
  - [ ] **TROFF** - Disable line tracing.
  - [ ] **USE CHRSET _0_|_1_|_filespec_** - Copy specified character set to character RAM.<!--CHRSET-->
@@ -352,6 +357,6 @@
  - [ ] **VER(_expression_)** - Return System or plusBASIC version as integer.
  - [ ] **VER$(_expression_)** - Return System or plusBASIC version as printable string.
  - [ ] **WAIT _port_,_xor_mask_{,_and_mask_}** - Pause until specifie bit pattern received from IO port.
- - [ ] **WORD(_string_{,_offset_})** - Convert two consecutive bytes in string to unsigned word.
- - [ ] **WORD$(_integer_)** - Convert integer to unsigned two byte binary string.
+ - [ ] **WORD(_string_{,_offset_})** - Convert two consecutive bytes in string to unsigned word.<!--convert-->
+ - [ ] **WORD$(_integer_)** - Convert integer to unsigned two byte binary string.<!--convert-->
  - [ ] **WRITE** - _Not implemented._
