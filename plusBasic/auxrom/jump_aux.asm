@@ -76,5 +76,7 @@ _jump_table:
     jp      just_ret
     jp      just_ret
     jp      just_ret
+; misc.asm <<Miscellaneous>>
+    jp      pause_jiffies
     
 _end_jump_table:

@@ -125,7 +125,7 @@ just_ret:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.23l"
+    db "v0.23m"
     db 0
 plus_len   equ   $ - plus_text
 
@@ -258,10 +258,11 @@ irq_handler:
 
     rra                           ; Carry = IRQ_TIMER
     call    c,_timer
-    rra                           ; Carry = IRQ_PT3PLAY
+    rra                           ; Carry = IRQ_USER
+    call    c,_user_irq
+    rra                           ; Carry = IRQ_TRACKER
     call    c,_pt3tick
-    
-    call    BASINTJP
+    rra                           ; Carry = IRQ_MOUSE
     ld      a,IRQ_VBLANK
     out     (IO_IRQSTAT),a
 
@@ -290,6 +291,14 @@ _timer:
     call    timer_tick
     ex      af,af'
     ret     
+
+_user_irq:
+    push    af
+    or      a                     ; Clear Zero, Carry flag
+    call    BASINTJP
+    call    c,userint_disable
+    pop     af
+    ret
 
 _pt3tick
     ld      iy,pt3tick

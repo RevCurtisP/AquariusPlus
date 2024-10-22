@@ -919,6 +919,8 @@ ST_SET:
     jp      z,ST_SET_SAVE
     cp      FILETK                ; $F3
     jp      z,ST_SET_FILE
+    cp      USRTK                 ; $B5
+    jp      z,ST_SET_USR
 
     rst     SYNCHR                ; Must be extended Token
     byte    XTOKEN                ; $FE
@@ -1073,6 +1075,23 @@ ST_SET_FNKEY:
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     ret
 
+;-----------------------------------------------------------------------------
+; Enable/Disable User Interrupt
+; Syntax: SET USRINT ON/OFF
+;-----------------------------------------------------------------------------
+ST_SET_USR:
+    inc     hl                    ; Skip USR
+    rst     SYNCHR
+    byte    INTTK                 ; Require INT
+    call    check_on_off          ; A = $FF if ON, $00 if OFF
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    ld      hl,userint_enable
+    jr      nz,.set_userint
+    ld      hl,userint_disable
+.set_userint
+    call    jump_hl
+    pop     hl
+    ret
 
 ;-----------------------------------------------------------------------------
 ; PAUSE Statement 
@@ -1084,14 +1103,18 @@ ST_PAUSE:
     byte    XTOKEN
     cp      PT3TK                 ;   If token is PT3
     jp      z,ST_PAUSE_PT3        ;     Do PAUSE PT3
-    jr      .snerr                ;   Else Syntax Error
 .nottoken
     call    FRMEVL                ; Get Operand
     push    hl                    ; Stack = TxtPtr, RtnAdr
     call    GETYPE                ; 
     jp      z,.string             ; If Numeric
-.snerr
-    jp      SNERR                 ;   Syntax error
+    call    FRCINT                ; DE = Jiffies
+    ld      a,(BASYSCTL)
+    and     BASBRKOFF
+    ld      iy,pause_jiffies
+    call    aux_call
+    pop     hl
+    jp      key_clear_fifo
 .string
     call    STRPRT
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr

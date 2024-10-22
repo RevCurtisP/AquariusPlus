@@ -65,3 +65,33 @@ bool_checkbit_string:
     adc     $FF                   ; Convert bit to 0/$FF
     or      a                     ; Clear carry
     ret
+
+;-----------------------------------------------------------------------------
+; Pause program execution
+; Input: A: Diaable Ctrl-C 
+;       DE: Number of jiffies
+; Clobbered: A, BC, DE, L
+;-----------------------------------------------------------------------------
+pause_jiffies: 
+    ld        l,a                 ; L = NoCtrl
+    ld        bc,$00FF
+.loop
+    ld        a,d                 ; If DE = 0
+    or        e                   ;   Return  
+    ret       z                   
+    ld        a,l                 ; A = NoCtrl
+    or        a
+    jr        nz,.wait            ; Ctrl-C enabled
+    in        a,(c)               ;   Poll keyboard
+    cp        $CF                 ;   If Ctrl-C
+    ret       z                   ;     Return
+.wait
+    in        a,(IO_VLINE)        
+    inc       a                   ; Wait for video line 255
+    jr        nz,.wait      
+.wait0
+    in        a,(IO_VLINE)        
+    dec       a                   ; Wait for video line 1
+    jr        nz,.wait0      
+    dec       de                  ; Count down
+    jr        .loop               ; and loop

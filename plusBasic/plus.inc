@@ -267,7 +267,9 @@ DFLTATTRS   equ $06     ; Default screen colors - Black on Cyan
 ; IRQACTIVE Bits
 ;-----------------------------------------------------------------------------
 IRQ_TIMER   equ $01     ; Bit 0 - Timer active
-IRQ_PT3PLAY equ $02     ; Bit 1 - PT3 Player running
+IRQ_USER    equ $02     ; Bit 1 - User Interrupt active
+IRQ_TRACKER equ $04     ; Bit 2 - Tracker Player running
+IRQ_MOUSE   equ $08     ; Bit 3 - Mouse routine running
 
 ;-----------------------------------------------------------------------------
 ; PT3 Player

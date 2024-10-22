@@ -1,4 +1,7 @@
 # plusBASIC Release History
+ - v0.23m (2024-10-21)
+    - Implemented `PAUSE jiffies`
+    - Added `DEF USRINT`, `SET USRINT ON/OFF`
  - v0.23l (2024-10-20)
     - Added statement `SET SPEED` and function `GET SPEED`
  - v0.23k (2024-10-19)

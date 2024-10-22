@@ -145,10 +145,21 @@ ST_DEF:
 ;-----------------------------------------------------------------------------
 ST_DEF_USR:
     rst     CHRGET                  ; Skip USR
+    ld      bc,USRADD               ; DefAdr = USR() 
+    cp      INTTK
+    jr      nz,.notint              ; If USRINT
+    rst     CHRGET                  ; 
+    ld      bc,BASINTADR            ;   DefAdr = User Interrupt
+.notint
+    push    bc                      ; Stack = DefAdr, RtnAdr
     rst     SYNCHR
     byte    EQUATK                  ; Require =
-    call    GETINT                  ; Parse USR routine address
-    ld      (USRADD),de
+    call    GETINT                  ; DE = UsrAdr
+    ex      (sp),hl                 ; HL = DefAdr; Stack = TxrPtr, RtnAdr
+    ld      (hl),e
+    inc     hl
+    ld      (hl),d                  ; (DefAdr) = UsrAdr
+    pop     hl                      ; HL = TxtPtr; Stack = RtnAdr
     ret
 
 ;-----------------------------------------------------------------------------

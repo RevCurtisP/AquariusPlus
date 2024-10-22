@@ -60,11 +60,11 @@
 ## Statement and functions
  - [ ] **ABS(_float_)** - Return absolute value of expression.<!--math-->
  - [ ] **APPEND _filespec_,^_strvar_** - Append string to file.<!--SAVE-->
- - [ ] **ARGS _arg_{,...} {RETURN _var_{,...}}** - Specify subroutine arguments and return variables.
+ - [ ] **ARGS  _arg_{,...} {RETURN _var_{,...}}** - Specify subroutine arguments and return variables.
  - [ ] **ARGS** - Return number of RUN arguments
  - [ ] **ARGS$(_argno_)** - Return RUN argument number _index_.
- - [ ] **ASC(_string_{,_pos_})** - Return ASCII value of specified character in _string_.<!--ASC-->
- - [ ] **ASC$(_hexstring_)** - Convert hexadecimal string to ASCII string.<!--ASC-->
+ - [ ] **ASC(_string_{,_pos_})** - Return ASCII value of specified character in _string_.<!--convert-->
+ - [ ] **ASC$(_hexstring_)** - Convert hexadecimal string to ASCII string.<!--convert-->
  - [ ] **ATN(_float_)** - Return arctangent of argument.<!--math-->
  - [ ] **ATTR(_fgcolor_,_bgcolor_)** - Build color attribute byte.
  - [ ] **ATTR$(_fgcolor_,_bgcolor_,_count_)** - Build color attributes string.
@@ -113,7 +113,8 @@
  - [ ] **DEF SPRITE _strvar_= _spritle_, _x-offset_, y-offset;...** - Create a sprite definition.<!--DEFSPRITE-->
  - [ ] **DEF SPRITE _strvar_= [_spritle_,...],...** - Create a sprite definition.<!--DEFSPRITE-->
  - [ ] **DEF TILELIST _strvar_=_tileno_,...** - Create a string list of tile indexes.<!--DEFTILE-->
- - [ ] **DEF USR=_address_** - Set USR() machine language routine address.
+ - [ ] **DEF USR=_address_** - Set USR() machine language routine address.<!--system-->
+ - [ ] **DEF USRINT=_address_** - Set user interupt machine language routine address.<!--system-->
  - [ ] **DEL _filespec_** - Delete file or directory.<!--filesystem-->
  - [ ] **DIM _array_(_dim_{,...}),...** - Create and allocate one or more arrays.<!--DIM-->
  - [ ] **DIM _array_(_dim_{,...})=expr,...** - Create and populate array.<!--DIM-->
@@ -315,20 +316,23 @@
  - [ ] **SET TILEMAP (_x_,_y_) TO TILE _tileno_ {ATTR _attrs_} {PALETTE _palette_}** - Set tilemap cell to tile index, attributes, and palette.<!--SETTILEMAP-->
  - [ ] **SET TILEMAP (_x_,_y_) TO _integer_** - Set tilemap cell to integer represeting combined tile index, attributes, and palette.<!--SETTILEMAP-->
  - [ ] **SET TILEMAP OFFSET _x_,_y_** - Scroll tilemap to specified position.<!--SETTILEMAP-->
+ - [ ] **SET USRINT ON|OFF** - Enable disable user interrupt.<!--system-->
  - [ ] **SGN(_expression_)** - Return signum of expression.<!--math-->
  - [ ] **SIN(_float_)** - Return sine of argument.<!--math-->
  - [ ] **SOUND (_duration_,_frequency_)** - Generate a tone through the television speaker.
  - [ ] **SPLIT _string_ INTO \*_array$_ DEL _delimiter_** - Split delimited string into string array elements.
  - [ ] **SQR(_float)** - Return square root of argument.<!--math-->
- - [ ] **STASH BITMAP|TILEMAP** - _Not implemented._
+ - [ ] **STASH BITMAP** - _Not implemented._
  - [ ] **STASH SCREEN** - Copy current text screen to respective screen buffer.
+ - [ ] **STASH TILEMAP** - _Not implemented._
  - [ ] **STOP** - Interrupt program execution.<!--flow-->
  - [ ] **STOP TRACK** - Stop currently playing track.<!--track-->
  - [ ] **STR$(_float_)** - Convert floating point number to ASCII string.<!--convert-->
  - [ ] **STRING$(_length_{,_byte_|_string_})** - Create string of repeated character.<!--STRING-->
  - [ ] **STRPTR(_strvar_)** - Return address of text for string variable.
- - [ ] **SWAP BITMAP|TILEMAP** - _Not implemented._
+ - [ ] **SWAP BITMAP** - _Not implemented._
  - [ ] **SWAP SCREEN** - Swap current text screen with respective screen buffer.
+ - [ ] **SWAP TILEMAP** - _Not implemented._
  - [ ] **SWAP VARS _var_,_var_** - Swap contents of two variables.
  - [ ] **TAN(_float_)** - Return tangent of argument.<!--math-->
  - [ ] **TILEMAP(_x_,_y_)** - Return tile index and properties in tile cell.<!--tilemap-->

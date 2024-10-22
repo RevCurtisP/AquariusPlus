@@ -71,7 +71,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>APPEND <em>filespec</em>,^<em>strvar</em></strong> - Append string to file.<!--SAVE--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>ARGS <em>arg</em>{,...} {RETURN <em>var</em>{,...}}</strong> - Specify subroutine arguments and return variables.</li>
+        <strong>ARGS  <em>arg</em>{,...} {RETURN <em>var</em>{,...}}</strong> - Specify subroutine arguments and return variables.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>ARGS</strong> - Return number of RUN arguments</li>
@@ -80,10 +80,10 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>ARGS$(<em>argno</em>)</strong> - Return RUN argument number <em>index</em>.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>ASC(<em>string</em>{,<em>pos</em>})</strong> - Return ASCII value of specified character in <em>string</em>.<!--ASC--></li>
+        <strong>ASC(<em>string</em>{,<em>pos</em>})</strong> - Return ASCII value of specified character in <em>string</em>.<!--convert--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>ASC$(<em>hexstring</em>)</strong> - Convert hexadecimal string to ASCII string.<!--ASC--></li>
+        <strong>ASC$(<em>hexstring</em>)</strong> - Convert hexadecimal string to ASCII string.<!--convert--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>ATN(<em>float</em>)</strong> - Return arctangent of argument.<!--math--></li>
@@ -230,7 +230,10 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>DEF TILELIST <em>strvar</em>=<em>tileno</em>,...</strong> - Create a string list of tile indexes.<!--DEFTILE--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>DEF USR=<em>address</em></strong> - Set USR() machine language routine address.</li>
+        <strong>DEF USR=<em>address</em></strong> - Set USR() machine language routine address.<!--system--></li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>DEF USRINT=<em>address</em></strong> - Set user interupt machine language routine address.<!--system--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>DEL <em>filespec</em></strong> - Delete file or directory.<!--filesystem--></li>
@@ -836,6 +839,9 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>SET TILEMAP OFFSET <em>x</em>,<em>y</em></strong> - Scroll tilemap to specified position.<!--SETTILEMAP--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
+        <strong>SET USRINT ON|OFF</strong> - Enable disable user interrupt.<!--system--></li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
         <strong>SGN(<em>expression</em>)</strong> - Return signum of expression.<!--math--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
@@ -851,10 +857,13 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>SQR(_float)</strong> - Return square root of argument.<!--math--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>STASH BITMAP|TILEMAP</strong> - <em>Not implemented.</em></li>
+        <strong>STASH BITMAP</strong> - <em>Not implemented.</em></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>STASH SCREEN</strong> - Copy current text screen to respective screen buffer.</li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>STASH TILEMAP</strong> - <em>Not implemented.</em></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>STOP</strong> - Interrupt program execution.<!--flow--></li>
@@ -872,10 +881,13 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>STRPTR(<em>strvar</em>)</strong> - Return address of text for string variable.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>SWAP BITMAP|TILEMAP</strong> - <em>Not implemented.</em></li>
+        <strong>SWAP BITMAP</strong> - <em>Not implemented.</em></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>SWAP SCREEN</strong> - Swap current text screen with respective screen buffer.</li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>SWAP TILEMAP</strong> - <em>Not implemented.</em></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>SWAP VARS <em>var</em>,<em>var</em></strong> - Swap contents of two variables.</li>

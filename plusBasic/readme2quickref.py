@@ -1,5 +1,7 @@
 # Reformat README.md into quickref.md
 
+import re
+
 md_in = open("README.md")
 md_out = open("quickref.md","w")
 wiki_out = open("quickref_wiki.md","w")
@@ -37,6 +39,8 @@ out_lines = []
 
 #html_out.writelines(html_header)
 
+kwords = []
+
 list_level = 0
 
 for line in md_in.readlines():
@@ -47,7 +51,23 @@ for line in md_in.readlines():
     i = line.find("- [ ] ")
     if i < 0: i = line.find("- [x] ")
     if i > 0: line = line[:i] + "- " + line[i+6:]
-        
+    
+    # Get statement/function name
+    kword = ""
+    if line[:5] == " - **":
+        l = line[5:]
+        m = re.search(r"^(.+?)[(_*{&=«\\]",l)
+        if m: kword = m.group(1)
+        i = kword.find("ON|OFF")
+        if i > 0: kword = kword[:i]
+        kword = kword.rstrip().replace(" ","-")
+        n = len(kword) - 1
+        if kword[n] == "$": 
+            kword = kword[:n]
+            if kword in kwords: kword = kword + "-1"
+        else:
+            kwords.append(kword)
+    
     # Strip html comments and get embedded key
     s = line.find("<!--")
     if s > 0:
@@ -59,6 +79,7 @@ for line in md_in.readlines():
     wiki = line
     if key and key in links:
         link = links[key]
+        if kword: link = link + "#" + kword
         b = wiki.find(" **")+3
         e = wiki.find("** ")
         wiki = wiki[:b] + "[" + wiki[b:e] + "](" + link + ")" + wiki[e:]

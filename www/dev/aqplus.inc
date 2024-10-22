@@ -166,69 +166,72 @@ basbuf_write_word      equ $C0B7
 runarg_count           equ $C0BA 
 runarg_get             equ $C0BD 
 
+; Miscellaneous
+pause_jiffies          equ $C0CC 
+
 ; Bitmap Graphics
-bitmap_init_vars       equ $C0CC ; Initialize bitmap system variables
-bitmap_set_mode        equ $C0CF ; Set bitmap mode system variable from video control register
-bitmap_read_sysvars    equ $C0D2 ; Read bitmap system variables
-bitmap_read_color      equ $C0D5 ; Get Bitmap Draw Colors
-bitmap_write_color     equ $C0D8 ; Set Bitmap Draw Colors
-bitmap_clear_screen    equ $C0DB ; Clear Bitmap
-bitmap_fill_byte       equ $C0DE ; Fill Bitmap with Byte
-bitmap_fill_color      equ $C0E1 ; Fill Bitmap Color RAM
-bitmap_line            equ $C0E4 ; [Future]
-bitmap_setpixel        equ $C0F9 ; Draw pixel
-bitmap_resetpixel      equ $C0FC ; Erase pixel on 1 bpp bitmap screen
-bitmap_getpixel        equ $C0FF ; Return pixel/bloxel at position
-bitmap_get             equ $C102 ; [future] Read Bitmap Screen Section into Buffer
-colormap_fill          equ $C111 ; Fill 1bpp Color Map Rectangle with Byte
+bitmap_init_vars       equ $C0CF ; Initialize bitmap system variables
+bitmap_set_mode        equ $C0D2 ; Set bitmap mode system variable from video control register
+bitmap_read_sysvars    equ $C0D5 ; Read bitmap system variables
+bitmap_read_color      equ $C0D8 ; Get Bitmap Draw Colors
+bitmap_write_color     equ $C0DB ; Set Bitmap Draw Colors
+bitmap_clear_screen    equ $C0DE ; Clear Bitmap
+bitmap_fill_byte       equ $C0E1 ; Fill Bitmap with Byte
+bitmap_fill_color      equ $C0E4 ; Fill Bitmap Color RAM
+bitmap_line            equ $C0E7 ; [Future]
+bitmap_setpixel        equ $C0FC ; Draw pixel
+bitmap_resetpixel      equ $C0FF ; Erase pixel on 1 bpp bitmap screen
+bitmap_getpixel        equ $C102 ; Return pixel/bloxel at position
+bitmap_get             equ $C105 ; [future] Read Bitmap Screen Section into Buffer
+colormap_fill          equ $C114 ; Fill 1bpp Color Map Rectangle with Byte
 
 ; Palette and Colors
-palette_reset          equ $C120 ; Reset palette to default colors
-palette_set            equ $C123 ; palette_set
-palette_get            equ $C126 ; Get palette
-rgb_to_asc             equ $C12C ; Convert Binary RGB list to ASCII
-asc_to_rgb             equ $C12F ; Convert ASCII RRGGBB to binary GB0R
+palette_reset          equ $C123 ; Reset palette to default colors
+palette_set            equ $C126 ; palette_set
+palette_get            equ $C129 ; Get palette
+rgb_to_asc             equ $C12F ; Convert Binary RGB list to ASCII
+asc_to_rgb             equ $C132 ; Convert ASCII RRGGBB to binary GB0R
 
 ; Text Screen Read and Write
-screen_clear_color     equ $C144 ; Fill Color RAM with current/default colors
-screen_read_byte       equ $C150 ; Read byte from screen
-screen_write_byte      equ $C153 ; Write byte to screen
-screen_read_string     equ $C156 ; Read string from Screen RAM
-screen_write_string    equ $C159 ; Write string to Screen RAM
-screen_read_paged      equ $C162 
-screen_write_paged     equ $C165 
-screen_read_fast       equ $C168 
-screen_write_fast      equ $C16B 
-oolor_read_byte        equ $C174 ; Read byte from Color RAM
-color_write_byte       equ $C177 ; Write byte to Color RAM
-color_read_string      equ $C17A ; Read string from Color RAM
-color_write_string     equ $C17D ; Write string to Color RAM
-screen_clear_cursor    equ $C18C ; Remove cursor from screen
-screen_invert_color    equ $C192 
-screen_invert_cursor   equ $C195 
-screen_get             equ $C19E ; Read Text Screen Section into Buffer
-screen_put             equ $C1A1 ; Write Text Screen Section from Buffer
-screen_fill            equ $C1A4 ; Fill Text or Color Screen Rectangle with Byte
+screen_clear_color     equ $C147 ; Fill Color RAM with current/default colors
+screen_read_byte       equ $C153 ; Read byte from screen
+screen_write_byte      equ $C156 ; Write byte to screen
+screen_read_string     equ $C159 ; Read string from Screen RAM
+screen_write_string    equ $C15C ; Write string to Screen RAM
+screen_read_paged      equ $C165 
+screen_write_paged     equ $C168 
+screen_read_fast       equ $C16B 
+screen_write_fast      equ $C16E 
+oolor_read_byte        equ $C177 ; Read byte from Color RAM
+color_write_byte       equ $C17A ; Write byte to Color RAM
+color_read_string      equ $C17D ; Read string from Color RAM
+color_write_string     equ $C180 ; Write string to Color RAM
+screen_clear_cursor    equ $C18F ; Remove cursor from screen
+screen_invert_color    equ $C195 
+screen_invert_cursor   equ $C198 
+screen_get             equ $C1A1 ; Read Text Screen Section into Buffer
+screen_put             equ $C1A4 ; Write Text Screen Section from Buffer
+screen_fill            equ $C1A7 ; Fill Text or Color Screen Rectangle with Byte
 
 ; Text Screen Switch and Swap
-init_screen_buffers    equ $C1B0 
-init_screen_vars       equ $C1B3 
-screen_reset           equ $C1BC 
-screen_status          equ $C1BF 
-screen_restore         equ $C1C8 
-screen_stash           equ $C1CB 
-screen_swap            equ $C1CE 
-screen_switch          equ $C1D1 
+init_screen_buffers    equ $C1B3 
+init_screen_vars       equ $C1B6 
+screen_reset           equ $C1BF 
+screen_status          equ $C1C2 
+screen_restore         equ $C1CB 
+screen_stash           equ $C1CE 
+screen_swap            equ $C1D1 
+screen_switch          equ $C1D4 
 
 ; Tilemap
-tile_set               equ $C1DA 
-tile_get               equ $C1DD 
-tile_from_chrrom       equ $C1E0 
-tile_combine_props     equ $C1E3 
-tilemap_set_offset     equ $C1EC 
-tilemap_get_offset     equ $C1EF 
-tilemap_set_tile       equ $C1F2 
-tilemap_get_tile       equ $C1F5 
-tilemap_fill           equ $C1F8 
-tilemap_get            equ $C1FB 
-tilemap_put            equ $C1FE 
+tile_set               equ $C1DD 
+tile_get               equ $C1E0 
+tile_from_chrrom       equ $C1E3 
+tile_combine_props     equ $C1E6 
+tilemap_set_offset     equ $C1EF 
+tilemap_get_offset     equ $C1F2 
+tilemap_set_tile       equ $C1F5 
+tilemap_get_tile       equ $C1F8 
+tilemap_fill           equ $C1FB 
+tilemap_get            equ $C1FE 
+tilemap_put            equ $C201 

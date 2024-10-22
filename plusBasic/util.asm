@@ -42,8 +42,6 @@ tokenize:
     call    KLOOP
     jp      page_set_plus
 
-
-
 ;-----------------------------------------------------------------------------
 ; Convert byte to two digit number
 ;  Input: A: byte
@@ -141,7 +139,6 @@ print_string_immd:
 jump_hl:
     jp      (hl)                  ;; Fast Return
 
-
 ;-----------------------------------------------------------------------------
 ; Free temporary string, then get string address and length
 ;  Input: HL: String descriptor of string
@@ -203,7 +200,6 @@ string_cmp_upper:
     djnz    string_cmp_upper      ;;
     xor     a                     ;;
     ret                           ;; Return 0 = Equal
-
 
 ;-----------------------------------------------------------------------------
 ; Search for string in memory
@@ -426,7 +422,6 @@ asc_to_bcd:
     ld      e,a                   ; Move digit into bottom nybble                  
     jr      .loop
 
-
 ;-----------------------------------------------------------------------------
 ; Convert BCD to Binary
 ;  Input: DE: BCD integer
@@ -438,8 +433,6 @@ bcd_to_bin:
     push    hl
     ld      hl,0                  ; Init binary result
     ld      a,d                   ; A = First digit
-
-
 
 ;-----------------------------------------------------------------------------
 ; HL = HL * 10
@@ -457,7 +450,25 @@ mult_hl_10:
     pop     bc
     ret
 
+;----------------------------------------------------------------------------
+; Enable user interrupts
+; Clobbers: A,BC
+;----------------------------------------------------------------------------
+userint_enable:
+    ld      b,IRQ_USER
+    jr      _enable_irq
 
+;----------------------------------------------------------------------------
+; Diswable user interrupts
+; Clobbers: A,BC
+;----------------------------------------------------------------------------
+userint_disable:
+    ld      b,IRQ_USER
+    jr      _clear_irq
+
+;----------------------------------------------------------------------------
+; Set Tracker Mode
+;----------------------------------------------------------------------------
 pt3_setmode:
     ld      iy,pt3fast
     jr      _pt3call
@@ -478,7 +489,8 @@ _pt3call
 pt3_start:
     call    pt3_reset
 pt3_enable:
-    ld      b,IRQ_PT3PLAY
+    ld      b,IRQ_TRACKER
+_enable_irq:
     jp      enable_vblank_irq
 
 ;----------------------------------------------------------------------------
@@ -486,7 +498,8 @@ pt3_enable:
 ; Clobbers: A,BC
 ;----------------------------------------------------------------------------
 pt3_disable:
-    ld      b,IRQ_PT3PLAY
+    ld      b,IRQ_TRACKER
+_clear_irq:
     jp      clear_vblank_irq
 
 ;----------------------------------------------------------------------------
@@ -518,7 +531,7 @@ pt3_status:
     ret
 .active
     ld      a,(IRQACTIVE)
-    and     IRQ_PT3PLAY
+    and     IRQ_TRACKER
     jr      .retstat
 .looped
     ld      a,(EXT_FLAGS)
