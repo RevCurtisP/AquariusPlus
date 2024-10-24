@@ -14,12 +14,18 @@
 ;   Add -Daddkeyrows to support extended 64 key keyboard.
 ;   (Requires new key decode tables in Extended ROM).
 ;
-;   Add -Daqlus to include Aquarius+ Mods
+;   Add -Daqlus to include Aquarius+ plusBASIC Mods
 ;   This will also turn on noreskeys and addkeyrows
 ;
 ifdef aqplus                
 noreskeys   equ   1               ;; |
+pluspatch   equ   1               ;; |
 endif
+
+ifdef sdbasic                
+pluspatch   equ   1               ;; |
+endif
+
 
 ifdef pckeys
 noreskeys   equ   1               ;; |
@@ -122,11 +128,13 @@ else
 endif
 ;;              $3900   ;;This is always 0
 BASTXT  equ     $3901   ;;Start of Basic Program
-ifdef aqplus            
-;;plusBASIC hard-coded intercepts
+ifdef pluspatch
 XPLUS   equ     $2000   ;; | plusBASIC Reset
 XCOLD   equ     $2003   ;; | plusBASIC Cold Start`
 XCART   equ     $2006   ;; | plusBASIC Start Cartridge
+endif
+ifdef aqplus            
+;;plusBASIC hard-coded intercepts
 XINTR   equ     $2009   ;; | plusBASIC Interrupt Handler
 XWARM   equ     $200C   ;; | plusBASIC Warm Start`
 XINCHR  equ     $200F   ;; | Alternate keyboard read
@@ -172,7 +180,7 @@ endif
 
 ;;RST 0 - Startup
 START:
-ifdef aqplus
+ifdef pluspatch
 ;;; Code Change: Aquarius+ only
 ;;; Instead of checking for the Extended BASIC signature
 ;;; jump straight into Extended BASIC init                                  Original Code
@@ -268,7 +276,7 @@ CRTCH2: add     a,(hl)            ;
         xor     (hl)              ;
         out     ($FF),a           ;;Write Scramble Byte to Port 255
         ld      (SCRMBL),a        ;;Save Scramble Byte
-ifdef aqplus
+ifdef pluspatch
         jp      XCART             ;; | Run Extended Cart Initialization Routine
 else                                  
         jp      XINIT             ;; | Execute Cartridge Code
@@ -343,7 +351,7 @@ COLDST: ld      hl,DEFALT         ;Set System Variable Default Values
         xor     a                 ;
         ld      (ENDBUF),a        ;;Clear byte after end of BUF
         ld      (BASTXT-1),a      ;;Clear byte before start of basic program
-ifdef aqplus
+ifdef pluspatch
 ;;; Code Change: Execute Aquarius+ Extended BASIC Cold Start
 ;;; On the Aquarius+ From MEMTST to before INITFF is unused                   Original Code
         jp      XCOLD             ;; | Do Extended BASIC Cold Start           010F  ld      hl,BASTXT+99
