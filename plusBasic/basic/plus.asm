@@ -1285,3 +1285,27 @@ str_word:
     inc     hl
     ld      (hl),d                
     jp      PUTNEW                ; and return it
+
+;-----------------------------------------------------------------------------
+; WRITE Statement stub
+;-----------------------------------------------------------------------------
+ST_WRITE:
+   cp       XTOKEN
+   jp       nz,GSERR
+   rst      CHRGET                ; Skip XTOKEN
+   cp       KEYTK
+   jr       z,ST_WRITE_KEYS
+   jp       SNERR
+   
+;-----------------------------------------------------------------------------
+; WRITE KEYS Statement
+; Syntax: WRITE KEYS string$
+;-----------------------------------------------------------------------------
+; WRITE KEYS \" ? 123\r"
+ST_WRITE_KEYS:
+   rst      CHRGET                ; Skip KEY
+   SYNCHK   'S'                   ; Require S
+   call     get_free_string       ; DE = StrAdr, BC = StrLen
+   ld       a,' '                 ; Will be gobbled by Ctrl-C check
+   ld       iy,autokey_write_buffer
+   jp       aux_call_popret       ; Write to auto-key buffer

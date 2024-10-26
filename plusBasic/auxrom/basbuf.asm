@@ -42,10 +42,10 @@ basbuf_read_word:
     ret
 
 ;-----------------------------------------------------------------------------
-; Read bytes from BASIC buffer
+; Write bytes from BASIC buffer
 ; Input: BC: Byte Count
-;        DE: Destination address
-;        HL: Source address (0-16383)
+;        DE: Destination address (0-16383)
+;        HL: Source address
 ; Output: DE: Coerced address after last byte written to destination
 ; Clobbered: AF,AF',BC,HL
 ;-----------------------------------------------------------------------------
@@ -54,8 +54,20 @@ basbuf_write_bytes:
     jp      buffer_write_bytes
 
 ;-----------------------------------------------------------------------------
+; Write string to Autokey buffer
+; Input: BC: String length
+;        E: String Address
+; Clobbered: A,BC,DE,HL
+;-----------------------------------------------------------------------------
+autokey_write_buffer:
+    ex      de,hl
+    ld      de,BASBUF_BASE+WRTKEYBUF-1
+    ld      (RESPTR),de           ; Set autokey address pointer to buffer.
+    inc     de
+    call    basbuf_write_bytes    ; C = 0 when done
+;-----------------------------------------------------------------------------
 ; Write word to BASIC buffer
-; Input: BC = Word
+; Input: C = Byte
 ;        DE = Address
 ; Output: DE = Coerced address + 2
 ; Clobbered: A
@@ -98,11 +110,9 @@ fnkey_write_buffer:
     rla                           ; 011??000 X XXX00000
     rl      d                     ; 11??000X 0 XXX00000
     ld      e,a                   ; DE = Buffer Address
-    ld      a,BAS_BUFFR
-    call    buffer_write_bytes
-    ld      a,BAS_BUFFR
+    call    basbuf_write_bytes
     inc     de
-    jp      buffer_write_byte
+    jp      basbuf_write_byte
 
 ;----------------------------------------------------------------------------
 ; Get RUN arguments count

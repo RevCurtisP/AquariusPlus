@@ -618,6 +618,29 @@ parse_page_arg:
     or      a                     ; Clear Carry Flag
     ret
 
+;; ToDo: Move ST_READ into read_extension and jump to ST_READ_KEYS from there
+ST_READ:
+    cp      XTOKEN
+    jp      nz,READ
+    inc     hl
+    ld      a,(hl)
+    cp      KEYTK
+    jr      z,ST_READ_KEYS
+    jp      SNERR
+    
+ST_READ_KEYS:
+    inc     (hl)                  ; Skip KEYTK
+    SYNCHK  'S'                   ; Require S
+    call    get_stringvar
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    push    de                    ; Stack = VarPtr, TxtPtr, RtnAdr
+    call    get_strbuf_addr       ; HL = BufAdr, BC = BufLen
+    ld      iy,read_keys
+    call    aux_call
+    call    strbuf_temp_str       ; Copy Buffer to Temporary. Return HL = StrDsc
+    push    hl                    ; Stack = StrDsc, VarPtr, TxtPtr, RtnAdr
+    jp      INBUFC                ; Copy Temporary to Variable and return
+
 ;-----------------------------------------------------------------------------
 ; Enhanced STOP statement stub
 ;-----------------------------------------------------------------------------

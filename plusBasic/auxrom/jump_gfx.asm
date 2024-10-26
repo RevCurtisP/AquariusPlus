@@ -1,6 +1,9 @@
 ; Graphics module jump table
 ;; ToDo: Add screen_aux routines as they are moved in from screen.asm
 ;; Comment all routines
+
+    dc $C100-$,$76
+
 _jump_table:
 
 ; gfxbitmap.asm <<Bitmap Graphics>>

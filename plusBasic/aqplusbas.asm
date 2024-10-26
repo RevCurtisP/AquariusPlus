@@ -26,7 +26,7 @@
     jp      _start_cart     ; $2006
     jp      irq_handler     ; $2009 interrupt handler
     jp      _warm_boot      ; $200C Called from main ROM for warm boot
-    jp      _keyread        ; $200F Called from COLORS
+    jp      _xkeyread       ; $200F XINCHR Called from COLORS
     jp      _sounds_hook    ; $2012 SOUNDX Adjust SOUNDS for turbo mode
     jp      _ttymove_hook   ; $2015 TTYMOX TTYMOV extension - set screen colors if SYSCTRL bit set
     jp      _scroll_hook    ; $2018 SCROLX SCROLL extension - scroll color memory if SYSCTRL bit set
@@ -125,7 +125,7 @@ just_ret:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.23m"
+    db "v0.23n"
     db 0
 plus_len   equ   $ - plus_text
 
@@ -396,13 +396,12 @@ _iscntc_hook:
     call    _check_ctrl_c         ; Check for Control-C
     ret     z                     ; Return if no keypress
     cp      'D'-64                ; If Ctrl-D
-    jr      z,.turbo_off          ;   Disable Turbo Mode
-    cp      'F'-64                ; If not Ctrl-F
-    jp      nz,ISCNTS             ;   Back to INCNTC
-    byte    $3E                   ; LD A,$AF to Enable Turbo Mode
-.turbo_off
-    xor     a
-    jp      set_turbo_mode
+    jr      z,set_turbo_off       ;   Disable Turbo Mode
+    cp      'F'-64                ; If Ctrl-F
+    jr      z,set_turbo_on        ;   Disable Turbo Mode
+    cp      'U'-64                ; If Ctrl-F
+    jr      z,set_turbo_unlmtd    ;   Disable Turbo Mode
+    jp      ISCNTS                ;   Back to INCNTC
 
 _check_ctrl_c:    
     ld      a,(BASYSCTL)
@@ -412,11 +411,18 @@ _check_ctrl_c:
     or      a
     ret 
 
+set_turbo_unlmtd:
+    ld      a,3
+    jr      set_turbo_mode
+set_turbo_on:
+    ld      a,1
+    byte    $E6                   ; AND A,$AF
+set_turbo_off:
+    xor   a
 ;-----------------------------------------------------------------------------
 ; Enable/Disable Turbo mode
 ; Input: A: 0 = 3 Mhz, 1 = 7 Mhz, 2 = undefined, 3 = unlimited
-; Returns: A = SYSCTRL bits actually set
-; Clobbered: B
+; Returns: A = Turbo mode actually set
 ;  speed: 0 = 3.88 Mhz
 ;         1 = 7,16 Mhz
 ;         2 = Undefined (returns Carry set)
@@ -427,26 +433,26 @@ set_turbo_mode:
     ccf     
     ret     c                     ;   Return Carry Set
     cp      2                     ; or A = 2              
-    jr      nz,.turbo             ; Return Carry Set
-.ret_c
-    scf
-    ret
+    jr      z,ret_c               ;   Return Carry Set
 .turbo
     rla
     rla                           ; Rotate bits into place
     and     SYSCTRL_TURBO         ; Isolate turbo bits
+    push    bc
     ld      b,a                   ;   and copy to B
     in      a,(IO_SYSCTRL)        ; Read SYSCTRL
     and     ~SYSCTRL_TURBO        ;   mask out Fast Mode bit
     or      b                     ;   and copy the new Fast Mode bit in
     out     (IO_SYSCTRL),a        ; Write back to SYSCTRL
-    ret
-
+    pop     bc
 get_turbo_mode:
     in      a,(IO_SYSCTRL)        ; Read SYSCTRL
     and     SYSCTRL_TURBO         ;   mask out Fast Mode bit
     rra
     rra
+    ret
+ret_c:
+    scf
     ret
     
 ;-----------------------------------------------------------------------------
@@ -776,10 +782,15 @@ clear_vblank_irq:
     ret     
 
 ;-----------------------------------------------------------------------------
-; Directly read alternate keyboard port
+; Read key for BASIC color cycle screen
 ;-----------------------------------------------------------------------------
-_keyread:
-    jp      key_read_ascii
+_xkeyread:
+    call    key_read_ascii
+    cp      ' '
+    ret     nz
+.enter
+    ld      a,13
+    ret
 
 ;-----------------------------------------------------------------------------
 ; INLIN enhancement stubs
@@ -986,6 +997,37 @@ sys_swap_mem:
     dec     bc
     jp      sys_swap_mem
 
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+; Call Graphics subsystem subroutine
+; - Maps Auxilarry ROM into Bank 3
+; - Executes routine, passing all registers except AF' and IX
+; - Restores Bank 3 and returns all registers exoept AF'
+; Input: IY = Routine address
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+gfx_call:
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+; Call Auxilary ROM subroutine
+; - Maps Auxilarry ROM into Bank 3
+; - Executes routine, passing all registers except AF' and IX
+; - Restores Bank 3 and returns all registers exoept AF'
+; Input: IY = Routine address
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+aux_call:
+    call    page_map_auxrom
+    call    jump_iy
+    jp      page_restore_bank3
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+; Call Extended ROM subroutine
+; - Maps Extended ROM into Bank 3
+; - Executes routine, passing all registers except AF' and IX
+; - Restores Bank 3 and returns all registers exoept AF'
+; Input: IY = Routine address
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ext_call:
+    call    page_map_extrom
+    call    jump_iy
+    jp      page_restore_bank3
+
 
 
     free_rom_sys = $2F00 - $
@@ -1094,37 +1136,6 @@ _trap_error:
     call    page_set_plus
     jp      trap_error
 
-;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-; Call Graphics subsystem subroutine
-; - Maps Auxilarry ROM into Bank 3
-; - Executes routine, passing all registers except AF' and IX
-; - Restores Bank 3 and returns all registers exoept AF'
-; Input: IY = Routine address
-;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-gfx_call:
-;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-; Call Auxilary ROM subroutine
-; - Maps Auxilarry ROM into Bank 3
-; - Executes routine, passing all registers except AF' and IX
-; - Restores Bank 3 and returns all registers exoept AF'
-; Input: IY = Routine address
-;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-aux_call:
-    call    page_map_auxrom
-    call    jump_iy
-    jp      page_restore_bank3
-;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-; Call Extended ROM subroutine
-; - Maps Extended ROM into Bank 3
-; - Executes routine, passing all registers except AF' and IX
-; - Restores Bank 3 and returns all registers exoept AF'
-; Input: IY = Routine address
-;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-ext_call:
-    call    page_map_extrom
-    call    jump_iy
-    jp      page_restore_bank3
-
 aux_rom_call:
     call    page_set_aux
     call    jump_ix
@@ -1197,9 +1208,17 @@ _buffer_write_init:
     ret
 
 ;-----------------------------------------------------------------------------
+; SysROM File Name
+;-----------------------------------------------------------------------------
+
+    dc $2FEF-$+1,$FF
+    byte    "sysrom.bin"
+    dc $2FFF-$+1,$00
+
+;-----------------------------------------------------------------------------
 ; Pad first 4k
 ;-----------------------------------------------------------------------------
-    assert !($2FFF<$)   ; ROM full!
+    assert !($3000<>$)   ; ROM full!
     dc $3000-$,$76
 
 ;-----------------------------------------------------------------------------

@@ -806,6 +806,9 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>SET TRACK LOOP {ON|OFF}</strong> - Set loop status of active or paused track.<!--track--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
+        <strong>SET TRACK SPEED <em>hertz</em></strong> - Set tracker playback rate.<!--track--></li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
         <strong>SET SAVE ASC ON|OFF</strong> - Enable or disable forced saving of BASIC programs in ASCII format.<!--SETSAVE--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
@@ -926,6 +929,9 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>TRACKLOOP</strong> - Return -1 if tracker playback is set to loop, else 0.<!--track--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
+        <strong>TRACKSPEED</strong> - Return tracker playback speed in Hertz.<!--track--></li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
         <strong>TRACKSTATUS</strong> - Return -1 if track is playing, else 0.<!--track--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
@@ -980,7 +986,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>WORD$(<em>integer</em>)</strong> - Convert integer to unsigned two byte binary string.<!--convert--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>WRITE</strong> - <em>Not implemented.</em></li>
+        <strong>WRITE KEYS <em>string</em></strong> - Write string to auto-type buffer.</li>
     </ul>
   </body>
 </html>

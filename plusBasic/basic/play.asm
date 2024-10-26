@@ -102,7 +102,7 @@ ST_STOP_PT3:
     ret
 
 ;-----------------------------------------------------------------------------
-; PT3STATUS and PT3LOOP Functions
+; TRACKFAST, TRACKLOOP, TRACKSTATUS, and TRACKPEED Functions
 ; Returns -1 if PT3 is playing/looped/fast
 ;-----------------------------------------------------------------------------
 FN_PT3:
@@ -119,23 +119,28 @@ FN_PT3:
     jr      z,.retstat
     cp      STATK
     ld      l,b
+    jr      z,.retstat
+    cp      SPEEDTK
     jp      nz,SNERR
+    call    track_speed
+    jp      SNGFLT
 .retstat
     ld      a,l
     jp      float_signed_byte
 
-
 ;-----------------------------------------------------------------------------
 ; SET PT3 LOOP ON/OFF
 ;-----------------------------------------------------------------------------
-; SET PT3 LOOP ON: PRINT PT3LOOP
-; SET PT3 LOOP OFF: PRINT PT3LOOP
-; SET PT3 FAST ON: PRINT PT3FAST
-; SET PT3 FAST OFF: PRINT PT3FAST
+; SET TRACK LOOP ON: PRINT TRACkLOOP
+; SET TRACK LOOP OFF: PRINT TRACkLOOP
+; SET TRACK FAST ON: PRINT TRACkFAST
+; SET TRACK FAST OFF: PRINT TRACkFAST
 ST_SET_PT3:
     rst     CHRGET                ; Skip PT3
     rst     SYNCHR
     byte    XTOKEN
+    cp      SPEEDTK
+    jr      z,_pt3_speed
     ld      ix,pt3_setmode
     cp      FASTK
     jr      z,.set
@@ -145,8 +150,15 @@ ST_SET_PT3:
 .set
     call    get_on_off          ; A = $FF if ON, 0 if OFF
     ld      e,a                 ; For pt3_setmode
+    jr      call_ix
+call_ix:
     push    hl
     call    jump_ix
     pop     hl
     ret
-    
+_pt3_speed
+    call    skip_get_byte       ; A = Speed
+    ld      ix,pt3_setspeed
+    call    call_ix
+    jp      c,FCERR
+    ret

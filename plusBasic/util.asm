@@ -469,6 +469,20 @@ userint_disable:
 ;----------------------------------------------------------------------------
 ; Set Tracker Mode
 ;----------------------------------------------------------------------------
+track_speed:
+    ld      a,e      
+    or      a
+    ld      a,50
+    ret     z
+    ld      a,60
+    ret
+pt3_setspeed:
+    ld      e,$FF
+    cp      60
+    jr      z,pt3_setmode
+    inc     e
+    cp      50
+    jp      nz,ret_c
 pt3_setmode:
     ld      iy,pt3fast
     jr      _pt3call

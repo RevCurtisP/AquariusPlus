@@ -16,10 +16,12 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
   <body>
     <h1 id="plusbasic-release-history">plusBASIC Release History</h1>
     <ul>
+      <li>v0.23n (2024-10-21)
+<ul><li>Added statement <code>SET TRACK SPEED herz</code> and function <code>TRACKSPEED</code></li><li>Added Ctrl-U sets Unlimited Turbo while program is running</li><li>Copied JOY() assembly code to AuxROM routine <code>read_gamepad</code></li><li>Embedded SYSROM filename at $2FF0</li></ul></li>
       <li>v0.23m (2024-10-21)
 <ul><li>Implemented <code>PAUSE jiffies</code></li><li>Added <code>DEF USRINT</code>, <code>SET USRINT ON/OFF</code></li></ul></li>
       <li>v0.23l (2024-10-20)
-<ul><li>Added statement <code>SET SPEED</code> and function <code>GET SPEED</code></li></ul></li>
+<ul><li>Added statement <code>SET SPEED</code> and function <code>GETSPEED</code></li></ul></li>
       <li>v0.23k (2024-10-19)
 <ul><li>Breaking change
 <ul><li>Keyword <code>PT3</code> has been changed to <code>TRACK</code></li></ul></li><li><code>READ *var$</code> now parses quoted strings correctly.</li><li>DIM <code>var$(...)=</code> requires quoted strings unless string is empty</li></ul></li>

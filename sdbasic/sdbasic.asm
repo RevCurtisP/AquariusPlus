@@ -58,7 +58,8 @@ _reset:
     out     (IO_BANK1), a
     ld      a, 62
     out     (IO_BANK2), a
-    ; Booter sets BANK 3
+    ld      a, 19
+    out     (IO_BANK3), a
 
     ; Init video mode
     ld      a, 1

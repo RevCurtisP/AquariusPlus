@@ -1,9 +1,14 @@
 # plusBASIC Release History
+ - v0.23n (2024-10-21)
+   - Added statement `SET TRACK SPEED herz` and function `TRACKSPEED`
+   - Added Ctrl-U sets Unlimited Turbo while program is running
+   - Copied JOY() assembly code to AuxROM routine `read_gamepad`
+   - Embedded SYSROM filename at $2FF0
  - v0.23m (2024-10-21)
     - Implemented `PAUSE jiffies`
     - Added `DEF USRINT`, `SET USRINT ON/OFF`
  - v0.23l (2024-10-20)
-    - Added statement `SET SPEED` and function `GET SPEED`
+    - Added statement `SET SPEED` and function `GETSPEED`
  - v0.23k (2024-10-19)
     - Breaking change
       - Keyword `PT3` has been changed to `TRACK`

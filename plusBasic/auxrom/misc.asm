@@ -95,3 +95,66 @@ pause_jiffies:
     jr        nz,.wait0      
     dec       de                  ; Count down
     jr        .loop               ; and loop
+
+;-----------------------------------------------------------------------------
+; Read game controller
+; Input: A: Controler ID (0: Both, 1: Left, 2: Right)
+;           0: Botj
+; Output: A: Controller state with bits inverted
+; Clobbered: B, E
+;-----------------------------------------------------------------------------
+read_gamepad:
+    or      a
+    jr      nz, .joy01
+    ld      a, $03
+.joy01:
+    ld      e, a
+    ld      bc, $00F7
+    ld      a, $FF
+    bit     0, e
+    jr      z, .joy03
+    ld      a, $0e
+    out     (c), a
+    dec     c
+    ld      b, $FF
+.joy02:
+    in      a,(c)
+    djnz    .joy02
+    cp      $FF
+    jr      nz, .joy05
+.joy03:
+    bit     1,e
+    jr      z, .joy05
+    ld      bc, $00F7
+    ld      a, $0F
+    out     (c), a
+    dec     c
+    ld      b, $FF
+.joy04:
+    in      a, (c)
+    djnz    .joy04
+.joy05:
+    cpl
+    ret
+
+;-----------------------------------------------------------------------------
+; Read keys into buffer
+; Input: HL: Buffer address
+; Output: A,C: String length
+; Clobbered: A
+;-----------------------------------------------------------------------------
+read_keys:
+    ld      c,0
+.loop
+    call    INCHRH
+    ld      (hl),a
+    inc     hl
+    or      a
+    ret     z
+    inc     c
+    jr      nz,read_keys
+    xor     a
+    ld      (hl),a
+    ld      a,c
+    ret
+

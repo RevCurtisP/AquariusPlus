@@ -233,6 +233,7 @@ FN_IN:
 ; |  P16   |  D1,2    | .....11. |  F9  |   249   |  06  |     6   |
 ;-----------------------------------------------------------------------------
 FN_JOY:
+;; ToDo: Move controller read code to routine in aux_rom 
     rst     CHRGET                ; Skip Token and Eat Spaces
     cp      '$'                   
     push    af                    ; Stack = FnSfx, RtnAdr

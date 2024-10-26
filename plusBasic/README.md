@@ -305,6 +305,7 @@
  - [ ] **SET PALETTE _palette {INDEX _index_} TO _rgblist_** - Set palette entries.<!--SETPALETTE-->
  - [ ] **SET TRACK FAST {ON|OFF}** - Set tracker playback to 50Hz or 60Hz mode.<!--track-->
  - [ ] **SET TRACK LOOP {ON|OFF}** - Set loop status of active or paused track.<!--track-->
+ - [ ] **SET TRACK SPEED _hertz_** - Set tracker playback rate.<!--track-->
  - [ ] **SET SAVE ASC ON|OFF** - Enable or disable forced saving of BASIC programs in ASCII format.<!--SETSAVE-->
  - [ ] **SET SPEED _speed_** - Set turbo mode.<!--system--><!--system-->
  - [ ] **SET SPRITE _spritedef_ {ON|OFF} {POS _x_,_y_} {TILE _tilelist_} {PALETTE _palettelist_} {ATTR _attrlist_}** - Set sprite properties.<!--SETSPRITE-->
@@ -345,6 +346,7 @@
  - [ ] **TIMER = _long_** - Set and start jiffy timer.<!--TIMER-->
  - [ ] **TRACKFAST** - Return -1 if tracker playback is set to fast, else 0.<!--track-->
  - [ ] **TRACKLOOP** - Return -1 if tracker playback is set to loop, else 0.<!--track-->
+ - [ ] **TRACKSPEED** - Return tracker playback speed in Hertz.<!--track-->
  - [ ] **TRACKSTATUS** - Return -1 if track is playing, else 0.<!--track-->
  - [ ] **TRIM$(_string_{,_string_})** - Remove characters from both ends of string.<!--string-->
  - [ ] **TRIMDIR$(_filespec_)** - Remove path from filespec.<!--filesystem-->
@@ -363,4 +365,4 @@
  - [ ] **WAIT _port_,_xor_mask_{,_and_mask_}** - Pause until specifie bit pattern received from IO port.
  - [ ] **WORD(_string_{,_offset_})** - Convert two consecutive bytes in string to unsigned word.<!--convert-->
  - [ ] **WORD$(_integer_)** - Convert integer to unsigned two byte binary string.<!--convert-->
- - [ ] **WRITE** - _Not implemented._
+ - [ ] **WRITE KEYS _string_** - Write string to auto-type buffer.

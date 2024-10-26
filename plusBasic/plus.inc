@@ -230,7 +230,8 @@ FKEYBASE    equ BASBUF_BASE + FKEYDEFS
 ;         $0500-$07FF   ; Unused
 RUNARGS     equ $0800   ; RUN arguments (see run_args in args.asm)
 RUNARGEND   equ $09FF   ; End of RUN arguments
-;         $1000-$2FFF   ; Unused
+WRTKEYBUF   equ $1000   ; user autotype buffer
+;         $1100-$2FFF   ; Unused
 DEFCHRSET   equ $3000   ; Page Offset: Default Character Set Buffer
 ALTCHRSET   equ $3800   ; Page Offset: Custom Character Set Buffer
 CHRSETLEN   equ 2048    ; Size of character set ROM

@@ -20,7 +20,7 @@ STJUMPS:
     dw      $071C                 ;$83 DATA              
     dw      ST_INPUT              ;$84 INPUT             
     dw      $10CC                 ;$85 DIM               
-    dw      $08BE                 ;$86 READ              
+    dw      $08BE                 ;$86 READ
     dw      $0731                 ;$87 LET               
     dw      $06DC                 ;$88 GOTO              
     dw      $06BE                 ;$89 RUN               
@@ -138,7 +138,7 @@ STJUMPS:
     dw      ST_COLOR              ;$F5 COL
     dw      ST_SCREEN             ;$F6 SCREEN 
     dw      ST_SET                ;$F7 SET
-    dw      SNERR                 ;$F8 WRITE
+    dw      ST_WRITE              ;$F8 WRITE
     dw      ST_USE                ;$F9 USE
     dw      SNERR                 ;$FA OPEN
     dw      SNERR                 ;$FB CLOSE

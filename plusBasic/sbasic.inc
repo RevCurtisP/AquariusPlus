@@ -193,6 +193,7 @@ LETDO       equ $0736   ; Execute LET, bypassing PTRGET and SYNCHK '='
 INBUFC      equ $0768   ; Copy temporary string to string variable
 NTOERR      equ $0782   ; Execute ON ... GOTO
 INPUT       equ $0893   ; Execute INPUT
+READ        equ $08BE   ; Execute READ
 READC       equ $08C2   ; Continue READ after hook call
 FRMNUM:     equ $0972   ; Evaluate numeric expression
 CHKNUM:     equ $0975   ; Error if evaluated expression not a number
@@ -333,6 +334,7 @@ TTYSAV      equ $1E3E   ; Save Column and Position
 TTYCLR      equ $1E45   ; Clear screen (EXX before calling)
 SOUNDS      equ $1E64   ; Play frequency DEfor duration BC
 INCHRH      equ $1E7E   ; Read key from keyboard
+INCNTC      equ $1FC2   ; Check for Ctrl-C, called from NEWSTT
 JMPINI:     equ $1FE1   ; Power Up/Reset Routine: Jumped to from RST 0
 PRNTIT:     equ $1FF2   ; Print copyright message and return
 

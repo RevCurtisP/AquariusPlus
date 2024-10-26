@@ -14,8 +14,10 @@
 ;   Add -Daddkeyrows to support extended 64 key keyboard.
 ;   (Requires new key decode tables in Extended ROM).
 ;
-;   Add -Daqlus to include Aquarius+ plusBASIC Mods
+;   Add -Daqplus to include Aquarius+ plusBASIC Mods
 ;   This will also turn on noreskeys and addkeyrows
+;
+;   Add -Dsdbasic to include Aquarius+ SD-BASIC Mods
 ;
 ifdef aqplus                
 noreskeys   equ   1               ;; |

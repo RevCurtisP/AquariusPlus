@@ -28,7 +28,7 @@ GET_POS_INT
     jp      FRCINT                ; Address into DE and return
 
 ;-----------------------------------------------------------------------------
-; Parse to 23-bit integer in CDE
+; Parse a atring
 ;-----------------------------------------------------------------------------
 GET_STRING:
     call    FRMEVL                ; Parse a number
@@ -206,14 +206,26 @@ TOERR:
     ld      e,ERRTO
     jp      ERROR
 
+
+;-----------------------------------------------------------------------------
+; Parse string
+; Output: BC = StrLen
+;         DE = StrAdr
+;         HL = StrDsc
+; Clobbers: A
+; Returbs with TxtPtr on Stack
+;-----------------------------------------------------------------------------
+get_free_string:
+    call    GET_STRING
+    ex      (sp),hl               ; HL = RtnAdr, Stack = TxtPtr
+    push    hl                    ; Stack = RtnAdr, TxtPtr
+    jp      free_addr_len         ; Return HL = DE = StrAdr, BC = StrLen 
+
 ;-----------------------------------------------------------------------------
 ; Require extended token
 ; Input: C: Extended Token
 ; Output: A: Next Character
 ;-----------------------------------------------------------------------------
-get_pt3_tk:
-
-
 get_ptrtk:
     ld      c,PTRTK
 get_extoken:
@@ -460,12 +472,16 @@ get_byte_optional:
     pop   bc                      ; Restore BC
     ret
 
+skip_get_byte:
+    rst   CHRGET
+    jp    GETBYT
 
 ;-----------------------------------------------------------------------------
 ; Parse Byte between 0 - 1
 ; Output: A,E = Nybble
 ; Clobbers: A,BC
 ;-----------------------------------------------------------------------------
+;; ToDo: Make all these routines JR to a singlr JP NC,FCERR : RET
 get_byte2:
     call    GETBYT                ; get foreground color in e
     cp      2                     ; if > 15
