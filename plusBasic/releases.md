@@ -1,5 +1,5 @@
 # plusBASIC Release History
- - v0.23n (2024-10-21)
+ - v0.23n (2024-10-25)
    - Added statement `SET TRACK SPEED herz` and function `TRACKSPEED`
    - Added Ctrl-U sets Unlimited Turbo while program is running
    - Copied JOY() assembly code to AuxROM routine `read_gamepad`
