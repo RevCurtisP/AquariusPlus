@@ -1196,11 +1196,10 @@ FN_VER:
     call    CONINT                ; Convert argument to byte
     ld      ix,esp_get_version
     or      a
-    jr      z,.zero
+    jr      z,.zero               
     ld      ix,sys_ver_plusbasic
     cp      1
-    jr      z,.zero
-    ld      ix,sys_ver_s3basic
+    jp      nz,FCERR              
 .zero
     ex      (sp),hl               ; HL = StrFlg, Stack = TxtPtr, RtnAdr
     push    hl                    ; Stack = StrFlg, TxtPtr, RtnAdr

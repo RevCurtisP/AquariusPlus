@@ -23,7 +23,7 @@
     org     $2000
     jp      _reset          ; $2000 Called from main ROM at reset vector
     jp      _coldboot       ; $2003 Called from main ROM for cold boot
-    jp      _start_cart     ; $2006
+    jp      _start_cart     ; $2006 Deprecated
     jp      irq_handler     ; $2009 interrupt handler
     jp      _warm_boot      ; $200C Called from main ROM for warm boot
     jp      _xkeyread       ; $200F XINCHR Called from COLORS
@@ -32,6 +32,7 @@
     jp      _scroll_hook    ; $2018 SCROLX SCROLL extension - scroll color memory if SYSCTRL bit set
     jp      _start_screen   ; $201B RESETX Start-up screen extension
     jp      _line_edit      ; $201E Vector to test line editor
+    jp      _incntc_hook    ; $2021 INCNTX Patch to INCNTC
 
     dc $2030-$,$76
     
@@ -125,7 +126,7 @@ just_ret:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.23n"
+    db "v0.23o"
     db 0
 plus_len   equ   $ - plus_text
 
@@ -390,26 +391,29 @@ in_direct:
 ; Check for Control Keys before fetching next statement
 ; returns to NEWSTT
 ;-----------------------------------------------------------------------------
-_iscntc_hook:
-    inc     sp                    ; Discard CALL XCNTC return address
-    inc     sp
-    call    _check_ctrl_c         ; Check for Control-C
-    ret     z                     ; Return if no keypress
+_incntc_hook:
+    ld      a,(BASYSCTL)
+    and     BASBRKOFF             ; If BRK is off
+    ret     nz
+    call    INCHRH                ; A = Keystroke
+    or      a                     ; If no key pressed
+    ret     z                     ;   Return
+    cp      'C'-64                ; If Ctrl-C
+    jp      z,WRMCON              ;   Break
     cp      'D'-64                ; If Ctrl-D
     jr      z,set_turbo_off       ;   Disable Turbo Mode
     cp      'F'-64                ; If Ctrl-F
     jr      z,set_turbo_on        ;   Disable Turbo Mode
     cp      'U'-64                ; If Ctrl-F
     jr      z,set_turbo_unlmtd    ;   Disable Turbo Mode
-    jp      ISCNTS                ;   Back to INCNTC
+    cp      'S'-64                ; If Cttl-S
+    jr      z,_pause              ;   Wait for keystroke
+    ret                           
 
-_check_ctrl_c:    
-    ld      a,(BASYSCTL)
-    and     BASBRKOFF
-    jp      z,CNTCCN
+_pause:
     call    INCHRH
-    or      a
-    ret 
+    jr      z,_pause
+    ret
 
 set_turbo_unlmtd:
     ld      a,3
@@ -419,6 +423,9 @@ set_turbo_on:
     byte    $E6                   ; AND A,$AF
 set_turbo_off:
     xor   a
+    call  set_turbo_mode
+    ret
+    
 ;-----------------------------------------------------------------------------
 ; Enable/Disable Turbo mode
 ; Input: A: 0 = 3 Mhz, 1 = 7 Mhz, 2 = undefined, 3 = unlimited
@@ -498,41 +505,6 @@ sys_ver_plusbasic:
     ld      hl,plus_version       ; HL = VerAdr
     call    str_copy              ; Copy VerStr to StrBuf
     ex      de,hl                 ; HL = BufAdr
-    ret
-
-;-----------------------------------------------------------------------------
-; Return BASIC Version
-; Input: HL: String Buffer address
-; Output: BC: Version String Length
-; Clobbers: A,DE
-;-----------------------------------------------------------------------------
-sys_ver_s3basic:
-    push    hl                    ; Stack = BufAdr, RtnAdr
-    push    hl                    ; Stack = BufAdr, BufAdr, RtnAdr
-    ld      de,S3VER              ; DE = Version bytes
-    call    .str_byte             ; YY
-    call    .dash_byte            ; -MM
-    call    .dash_byte            ; -DD
-    ld      a,'r'
-    call    .prefix_byte          ; rREV
-    xor     a
-    ld      (hl),a                ; Terminate string
-    pop     de                    ; DE = BufAdr; Stack = BufAdr, RtnAdr           ; 
-    sbc     hl,bc                 ; HL = Length
-    ld      b,h 
-    ld      c,l                   ; BC = Length
-    pop     hl                    ; HL = BufAdr; Stack = RtnAdr
-    ret
-
-.dash_byte
-    ld      a,'-'
-.prefix_byte
-    ld      (hl),a                ;   Add dash to 
-    inc     hl
-.str_byte
-    ld      a,(de)                ;   Get BCD byte
-    call    byte_to_hex           ;   Convert BCD to ASCII
-    inc     de                    ;   Bump to next BCD byte
     ret
 
 ;-----------------------------------------------------------------------------
@@ -660,91 +632,7 @@ copy_char_ram:
 ; Cartridge start entry point - A hold scramble value
 ;-----------------------------------------------------------------------------
 _start_cart:
-
-    ; Map destination RAM in bank2
-    ld      a, RAM_BAS_3
-    out     (IO_BANK2), a
-
-    ; Copy ROM cartridge to RAM
-    ld      de, $8000
-    ld      hl, $C000
-    ld      bc, $4000
-    ldir
-
-descramble_rom:
-    ; Map RAM in bank3
-    ld      a, RAM_BAS_3
-    out     (IO_BANK3), a
-
-    ; Determine scramble value
-    xor     a
-    ld      hl, $E003
-    ld      b, 12
-.loop:
-    add     a, (hl)
-    inc     hl
-    add     a, b
-    dec     b
-    jr      nz, .loop
-    xor     (hl)
-    ld      b, a
-
-    cp      $00
-    jr      z,.exec_cart
-
-    ; Descramble ROM
-    ld      hl, $C000
-    ld      de, $4000
-.loop2:
-    ld      a, b
-    xor     (hl)
-    ld      (hl), a
-
-    inc     hl
-    dec     de
-    ld      a, d
-    or      e
-    jr      nz, .loop2
-
-.exec_cart:
-    ; Reinit banks
-    ld      a, RAM_BAS_1
-    out     (IO_BANK1), a
-    ld      a, RAM_BAS_2
-    out     (IO_BANK2), a
-
-ifdef coredump
-    ld      a,ROM_EXT_RO
-    out     (IO_BANK3),a
-    jp      RESET
-endif
-
-
-    ; Bank3 -> readonly
-    ld      a, RAM_BAS_3 | BANK_READONLY
-    out     (IO_BANK3), a
-
-    ; Turn off Interrupts, Reset Screen, and Remove Hook
-    di
-    xor     a
-    out     (IO_IRQMASK),a
-    out     (IO_KEYBUFF),a
-    inc     a
-    out     (IO_VCTRL)
-    ld      hl,NOHOOK
-    ld      (HOOK),hl
-
-    ; Reinit stack pointer
-    ld      sp, $38A0
-
-    ; Clear BASIC RAM
-    xor     a                     ; Fill with 0
-    ld      hl,$3900              ; From beginning of BASIC RAM
-    ld      bc,$C000-$3900        ; to end of BASIC RAM
-    call    sys_fill_mem          ; A = SCRMBL; Stack = RtnAdr
-
-    ; Start ROM
-    jp      XINIT
+    ret                           ; Carts are now run from S2 BASIC
 
 ;-----------------------------------------------------------------------------
 ; Enable VBLANK Interrupts
@@ -825,6 +713,10 @@ bas_read_to_buff:
 jump_ix:
     jp      (ix)                  ; Execute routine and return
 
+exec_page:
+    ex      af,af'
+    out     (IO_BANK3),a
+    ex      af,af'
 jump_iy:
     jp      (iy)
 
@@ -838,7 +730,6 @@ clear_default:
     ld      a,6                   ; default to black on cyan
 ;-----------------------------------------------------------------------------
 ; Clear Screen and init cursor
-; Input: A: Color Attributes
 ;-----------------------------------------------------------------------------
 clear_home:
 ;-----------------------------------------------------------------------------
@@ -1074,7 +965,7 @@ hook_table:                     ; ## caller   addr  performing function
     dw      oper_extension      ; 29 NOTSTV   099E  Evaluate Operator (S3 BASIC Only)
     dw      scan_label          ; 30 SCNLBL   2040  GOTO/GOSUB/LIST/RESTORE/RUN label
     dw      _ctrl_keys          ; 31 XFUNKY   2045  Evaluate extended function keys
-    dw      _iscntc_hook        ; 32 XCNTC    204A  Intercept check for Ctrl-C
+    dw      0                   ; 32          204A  Deprecated
     dw      main_ext            ; 33 XMAIN    204F  Save Line# Flag`in TEMP3
     dw      _stuffh_ext         ; 34 XSTUFF   2054  Check for additional tokens when stuffing
     dw      _check_topmem       ; 35 XCLEAR   204E  Verify TOPMEM is in Bank 2

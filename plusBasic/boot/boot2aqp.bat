@@ -1,0 +1,1 @@
+copy boot.bin %AquaPlus%\sdcard

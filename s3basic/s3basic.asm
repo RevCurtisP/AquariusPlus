@@ -144,10 +144,11 @@ SOUNDX  equ     $2012   ;; | Adjust SOUNDS delay counter in turbo mode
 TTYMOX  equ     $2015   ;; | TTYMOV extension
 SCROLX  equ     $2018   ;; | SCROLL extension
 RESETX  equ     $201B   ;; | Skip start screen, cold boot if ':' pressed
+INCNTX  equ     $2021   ;; | INCNTC patch
 ;;plusBASIC specific hooks
 SCNLBL  equ     $2030   ;; | Scan line label or line number
 XFUNKY  equ     $2035   ;; | Extended function key check
-XCNTC   equ     $203A   ;; | ISCNTC hook
+;       equ     $203A   ;; | Deprecated
 XMAIN   equ     $203F   ;; | Line Crunch Hook
 XSTUFF  equ     $2044   ;; | STUFFH hook
 XCLEAR  equ     $204E   ;; | Issue Error if TOPMEM too low
@@ -192,9 +193,7 @@ ifdef pluspatch
 else        
         jp      JMPINI            ;; \ Start Initialization
 endif
-;;RST 1 - Syntax Check
-
-S3VER:  byte    $24,$01,$01       ;;Revision Date 
+        byte    $82,$06,$22       ;;Revision Date 1982-06-22
         byte    $00               ;;Revision Number?
         nop                       ;;Pad out the RST routine
 ;;RST 1 - Syntax Check
@@ -4697,13 +4696,7 @@ CHARCG: push    hl                ;
         pop     hl                ;
         ret                       ;
 ;;Check for ^C and ^S
-ISCNTC: 
-ifdef aqplus
-;;Code change: Extended Control-Character check 
-        call    XCNTC
-else
-        call    CNTCCN            ;{M80} SEE IF ITS CONTROL-C
-endif
+ISCNTC: call    CNTCCN            ;{M80} SEE IF ITS CONTROL-C
         ret     z                 ;[M80] IF NONE, RETURN
 ISCNTS: ld      (CHARC),a         ;{M80} SAVE CHAR
         cp      $13               ;[M80] PAUSE? (^S)
@@ -5698,7 +5691,11 @@ INCNTC: push    hl                ;;Save text pointer
         add     hl,sp             ;
         ld      (SAVSTK),hl       ;;Save stack pointer less 2 entries
         pop     hl                ;;Restore text pointer
+ifdef aqplus
+        jp      INCNTX
+else
         jp      ISCNTC            ;;Check for Ctrl-C
+endif
 ;;Finish up Warm Start
 WRMFIN: ld      hl,(SAVSTK)       ;;Restore stack pointer
         ld      sp,hl             ;

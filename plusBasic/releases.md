@@ -1,4 +1,10 @@
 # plusBASIC Release History
+ - v0.23o (2024-10-27)
+    - SET BREAK OFF disables key checks between BASIC statements 
+    - Fixed Ctrl-D, Ctrl-F, Ctrl-U turbo mode selection
+    - plusBASIC now executes ROM images via boot.bin
+    - Set S3 BASIC internal revision date to same as S1/S2
+    - Removed sys_ver_s3basic and S3BASIC option from `VER()` and `VER()`
  - v0.23n (2024-10-25)
    - Added statement `SET TRACK SPEED herz` and function `TRACKSPEED`
    - Added Ctrl-U sets Unlimited Turbo while program is running

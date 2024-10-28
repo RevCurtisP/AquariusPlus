@@ -158,12 +158,25 @@ _close_pop_af:
     pop     af                    ; AF = Result; Stack = RtnAdr
     ret
 
+file_load_boot:
+    ld      a,BOOT_BUFR
+    ld      hl,_bootdesc
+file_load_page
+    ld      de, $C000
+    ld      bc, $4000
+    jp      xfile_load_paged
+
+_bootbin
+    byte    "/boot.bin"
+_bootdesc 
+    word    $ - _bootbin, _bootbin
+
 ;-----------------------------------------------------------------------------
 ; Load ROM file into page 35
 ;        HL: string descriptor address
 ;-----------------------------------------------------------------------------
 file_load_rom:
-    ld      a,RAM_BAS_3
+    ld      a,TMP_BUFFR
     ld      de, $C000
     ld      bc, $4000
     call    xfile_load_paged
@@ -176,7 +189,7 @@ file_load_rom:
     xor     a
     ret
 .copy
-    ld      a,RAM_BAS_3
+    ld      a,TMP_BUFFR
     call    page_map_bank1
     ld      hl, BANK1_BASE
     ld      de, BANK1_BASE+$2000

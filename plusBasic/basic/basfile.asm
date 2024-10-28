@@ -1101,11 +1101,21 @@ run_file:
     push    bc                    ; Return to RUNC
     call    load_basic_program
 
+; RUN /roms/bio.rom
+; RUN /roms/astro.rom
+; RUN /games/templeman/bcii/bc2-se.rom
 .load_rom:
     ld      iy,file_load_rom
     call    aux_call
     jp      m,_dos_error
-    jp      descramble_rom
+    ld      iy,file_load_boot
+    call    aux_call
+    jp      m,_pop_hl_doserror
+    ld      a,BOOT_BUFR
+    ex      af,af'
+    ld      a,TMP_BUFFR
+    ld      iy,$C003
+    jp      exec_page
 
 .load_core:
     call    string_addr_len
