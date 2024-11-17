@@ -144,7 +144,9 @@ SOUNDX  equ     $2012   ;; | Adjust SOUNDS delay counter in turbo mode
 TTYMOX  equ     $2015   ;; | TTYMOV extension
 SCROLX  equ     $2018   ;; | SCROLL extension
 RESETX  equ     $201B   ;; | Skip start screen, cold boot if ':' pressed
-INCNTX  equ     $2021   ;; | INCNTC patch
+INCNTX  equ     $2021   ;; | INCNTC control keys patch
+INLINX  equ     $2024   ;; | INLINC Ctrl-C patch
+INCHRX  equ     $2027   ;; | Wait for character, don't BREAK on Ctrl-C
 ;;plusBASIC specific hooks
 SCNLBL  equ     $2030   ;; | Scan line label or line number
 XFUNKY  equ     $2035   ;; | Extended function key check
@@ -193,9 +195,16 @@ ifdef pluspatch
 else        
         jp      JMPINI            ;; \ Start Initialization
 endif
-        byte    $82,$06,$22       ;;Revision Date 1982-06-22
-        byte    $00               ;;Revision Number?
-        nop                       ;;Pad out the RST routine
+        ;;This is used as the first 3 bytes of the BASIC ROM signature.
+BASSIG: byte    $82,$06,$22       ;;Revision Date 1982-06-22  
+        byte    11                ;;Revision Number?
+ifdef aqplus
+;;; Code Change: Aquarius+ only
+;;; 4th byte of signaure is '+' if plusBASIC, NUL if 8k/12k BASIC
+        byte    '+'               ;;
+else
+        nop                       ;;Pad out the RST routinebui
+endif
 ;;RST 1 - Syntax Check
 SYNCHK: ld      a,(hl)
         ex      (sp),hl
@@ -2533,7 +2542,12 @@ INLIN:  ld      hl,BUF            ;
         nop                                                                   ;       ld      (RUBSW),a
         nop
         nop
-INLINC: call    INCHR             ;[M80] GET A CHAR
+INLINC: 
+ifdef aqplus
+        call    INCHRX            ; | Bypasss Ctrl-C check
+else
+        call    INCHR             ;[M80] GET A CHAR
+endif
 INLNC1: ld      c,a               ;[M80] SAVE CURRENT CHAR IN [C]
 ifdef aqplus
 ;;;Code Change: Aquarius+ extended Ctrl-keys
@@ -2565,7 +2579,11 @@ NOTRUB: ld      a,c               ;[M80] GET BACK CURRENT CHAR
 CHKFUN: cp      7                 ;[M80] IS IT BOB ALBRECHT RINGING THE BELL
         jr      z,OUTBEL          ;[M80] FOR SCHOOL KIDS?
         cp      3                 ;[M80] CONTROL-C?
+ifdef aqplus
+        jp      z,INLINX
+else
         call    z,CRDO            ;[M80] TYPE CHAR, AND CRLFT
+endif
         scf                       ;[M80] RETURN WITH CARRY ON
         ret     z                 ;[M80] IF IT WAS CONTROL-C
         cp      13                ;

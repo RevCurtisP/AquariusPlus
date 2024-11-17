@@ -54,11 +54,11 @@ _reset:
     ; Initialize banking registers
     ld      a, 60 | BANK_OVERLAY | BANK_READONLY
     out     (IO_BANK0), a
-    ld      a, 61
+    ld      a, 57
     out     (IO_BANK1), a
-    ld      a, 62
+    ld      a, 58
     out     (IO_BANK2), a
-    ld      a, 19
+    ld      a, 59
     out     (IO_BANK3), a
 
     ; Init video mode
@@ -97,6 +97,8 @@ _reset:
 ; Character RAM initialization
 ;-----------------------------------------------------------------------------
 init_charram:
+    ret   ; Initialized by boot.bin
+    
     ; Save current bank 1/2
     in      a, (IO_BANK1)
     push    a
@@ -156,6 +158,7 @@ _coldboot:
     jr      .print_version
 
 .print_done:
+    call    CRDO
     ld      hl, .str_basic      ; Print ROM version
     call    STROUT
     call    CRDO
@@ -167,7 +170,7 @@ _coldboot:
     db $0D, $0A
     db "Aquarius+ System ",0
 .str_basic:
-    db " - SD-BASIC "
+    db "SD-BASIC "
 .ver_basic:
     db "v1.0",0
 

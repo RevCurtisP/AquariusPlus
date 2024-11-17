@@ -310,8 +310,8 @@
 			
     -	2000          	    org     $2000
    0+10	2000  C30920  	    jp      _reset          ; Called from main ROM at reset vector
-  10+10	2003  C37A20  	    jp      _coldboot       ; Called from main ROM for cold boot
-  20+10	2006  C3E620  	    jp      _start_cart
+  10+10	2003  C37F20  	    jp      _coldboot       ; Called from main ROM for cold boot
+  20+10	2006  C3EB20  	    jp      _start_cart
 			
 			;-----------------------------------------------------------------------------
 			; Reset vector
@@ -326,46 +326,47 @@
 			    ; Initialize banking registers
   40+7	200C  3EFC    	    ld      a, 60 | BANK_OVERLAY | BANK_READONLY
   47+11	200E  D3F0    	    out     (IO_BANK0), a
-  58+7	2010  3E3D    	    ld      a, 61
+  58+7	2010  3E39    	    ld      a, 57
   65+11	2012  D3F1    	    out     (IO_BANK1), a
-  76+7	2014  3E3E    	    ld      a, 62
+  76+7	2014  3E3A    	    ld      a, 58
   83+11	2016  D3F2    	    out     (IO_BANK2), a
-			    ; Booter sets BANK 3
+  94+7	2018  3E3B    	    ld      a, 59
+ 101+11	201A  D3F3    	    out     (IO_BANK3), a
 			
 			    ; Init video mode
-  94+7	2018  3E01    	    ld      a, 1
- 101+11	201A  D3E0    	    out     (IO_VCTRL), a
+ 112+7	201C  3E01    	    ld      a, 1
+ 119+11	201E  D3E0    	    out     (IO_VCTRL), a
 			
 			    ; Init palette 0
- 112+10	201C  213A20  	    ld      hl, .default_palette
- 122+7	201F  0EEA    	    ld      c, IO_VPALSEL
- 129+7	2021  0600    	    ld      b, 0
- 136+7	2023  1620    	    ld      d, 32
-    -	2025          	.palloop:
- 143+12	2025  ED41    	    out     (c), b
- 155+7	2027  7E      	    ld      a, (hl)
- 162+11	2028  D3EB    	    out     (IO_VPALDATA), a
- 173+6	202A  23      	    inc     hl
- 179+4	202B  04      	    inc     b
- 183+4	202C  15      	    dec     d
- 187+7+5	202D  20F6    	    jr      nz, .palloop
+ 130+10	2020  213E20  	    ld      hl, .default_palette
+ 140+7	2023  0EEA    	    ld      c, IO_VPALSEL
+ 147+7	2025  0600    	    ld      b, 0
+ 154+7	2027  1620    	    ld      d, 32
+    -	2029          	.palloop:
+ 161+12	2029  ED41    	    out     (c), b
+ 173+7	202B  7E      	    ld      a, (hl)
+ 180+11	202C  D3EB    	    out     (IO_VPALDATA), a
+ 191+6	202E  23      	    inc     hl
+ 197+4	202F  04      	    inc     b
+ 201+4	2030  15      	    dec     d
+ 205+7+5	2031  20F6    	    jr      nz, .palloop
 			
 			    ; Initialize character RAM
- 194+17	202F  CD5A20  	    call    init_charram
+ 212+17	2033  CD5E20  	    call    init_charram
 			
 			    ; Initialize ESP
- 211+7	2032  3E01    	    ld      a, ESPCMD_RESET
- 218+17	2034  CD0226  	    call    esp_cmd
+ 229+7	2036  3E01    	    ld      a, ESPCMD_RESET
+ 236+17	2038  CD0726  	    call    esp_cmd
 			
 			    ; Back to system ROM init
- 235+10	2037  C3E11F  	    jp      JMPINI
+ 253+10	203B  C3E11F  	    jp      JMPINI
 			
-    -	203A          	.default_palette:
-    -	203A  1101110F	    dw $111, $F11, $1F1, $FF1, $22E, $F1F, $3CC, $FFF
+    -	203E          	.default_palette:
+    -	203E  1101110F	    dw $111, $F11, $1F1, $FF1, $22E, $F1F, $3CC, $FFF
               F101F10F
               2E021F0F
               CC03FF0F
-    -	204A  CC0CBB03	    dw $CCC, $3BB, $C2C, $419, $FF7, $2D4, $B22, $333
+    -	204E  CC0CBB03	    dw $CCC, $3BB, $C2C, $419, $FF7, $2D4, $B22, $333
               2C0C1904
               F70FD402
               220B3303
@@ -373,241 +374,244 @@
 			;-----------------------------------------------------------------------------
 			; Character RAM initialization
 			;-----------------------------------------------------------------------------
-    -	205A          	init_charram:
+    -	205E          	init_charram:
+ 263+10	205E  C9      	    ret   ; Initialized by boot.bin
+			    
 			    ; Save current bank 1/2
- 245+11	205A  DBF1    	    in      a, (IO_BANK1)
- 256+11	205C  F5      	    push    a
- 267+11	205D  DBF2    	    in      a, (IO_BANK2)
- 278+11	205F  F5      	    push    a
+ 273+11	205F  DBF1    	    in      a, (IO_BANK1)
+ 284+11	2061  F5      	    push    a
+ 295+11	2062  DBF2    	    in      a, (IO_BANK2)
+ 306+11	2064  F5      	    push    a
 			
 			    ; Temporarily set up mappings for character RAM and character ROM
- 289+7	2060  3E15    	    ld      a, 21           ; Page 21: character RAM
- 296+11	2062  D3F1    	    out     (IO_BANK1), a
- 307+7	2064  3E3C    	    ld      a, 60           ; Page 60: Soft ROM
- 314+11	2066  D3F2    	    out     (IO_BANK2), a
+ 317+7	2065  3E15    	    ld      a, 21           ; Page 21: character RAM
+ 324+11	2067  D3F1    	    out     (IO_BANK1), a
+ 335+7	2069  3E3C    	    ld      a, 60           ; Page 60: Soft ROM
+ 342+11	206B  D3F2    	    out     (IO_BANK2), a
 			
 			    ; Copy character ROM to character RAM
- 325+10	2068  110040  	    ld      de, BANK1_BASE
- 335+10	206B  2100B0  	    ld      hl, BANK2_BASE + $3000
- 345+10	206E  010008  	    ld      bc, 2048
- 355+16+5	2071  EDB0    	    ldir
+ 353+10	206D  110040  	    ld      de, BANK1_BASE
+ 363+10	2070  2100B0  	    ld      hl, BANK2_BASE + $3000
+ 373+10	2073  010008  	    ld      bc, 2048
+ 383+16+5	2076  EDB0    	    ldir
 			
 			    ; Restore bank 1/2
- 371+10	2073  F1      	    pop     a
- 381+11	2074  D3F2    	    out     (IO_BANK2), a
- 392+10	2076  F1      	    pop     a
- 402+11	2077  D3F1    	    out     (IO_BANK1), a
- 413+10	2079  C9      	    ret
+ 399+10	2078  F1      	    pop     a
+ 409+11	2079  D3F2    	    out     (IO_BANK2), a
+ 420+10	207B  F1      	    pop     a
+ 430+11	207C  D3F1    	    out     (IO_BANK1), a
+ 441+10	207E  C9      	    ret
 			
 			;-----------------------------------------------------------------------------
 			; Cold boot entry point
 			;-----------------------------------------------------------------------------
-    -	207A          	_coldboot:
+    -	207F          	_coldboot:
 			    ; Set memory size
- 423+10	207A  21FFBE  	    ld      hl, BASIC_RAM_END   ; Top of public RAM
- 433+16	207D  22AD38  	    ld      (MEMSIZ), hl        ; MEMSIZ, Contains the highest RAM location
- 449+10	2080  1100FC  	    ld      de, -1024           ; Subtract 1k for strings space
- 459+11	2083  19      	    add     hl, de
- 470+16	2084  224B38  	    ld      (TOPMEM), hl        ; TOPMEM, Top location to be used for stack
- 486+10	2087  210039  	    ld      hl, BASTXT-1
- 496+10	208A  3600    	    ld      (hl), $00           ; NULL at start of BASIC program
- 506+6	208C  23      	    inc     hl
- 512+16	208D  224F38  	    ld      (TXTTAB), hl        ; Beginning of BASIC program text
- 528+17	2090  CDBE0B  	    call    SCRTCH              ; ST_NEW2 - NEW without syntax check
+ 451+10	207F  21FFBE  	    ld      hl, BASIC_RAM_END   ; Top of public RAM
+ 461+16	2082  22AD38  	    ld      (MEMSIZ), hl        ; MEMSIZ, Contains the highest RAM location
+ 477+10	2085  1100FC  	    ld      de, -1024           ; Subtract 1k for strings space
+ 487+11	2088  19      	    add     hl, de
+ 498+16	2089  224B38  	    ld      (TOPMEM), hl        ; TOPMEM, Top location to be used for stack
+ 514+10	208C  210039  	    ld      hl, BASTXT-1
+ 524+10	208F  3600    	    ld      (hl), $00           ; NULL at start of BASIC program
+ 534+6	2091  23      	    inc     hl
+ 540+16	2092  224F38  	    ld      (TXTTAB), hl        ; Beginning of BASIC program text
+ 556+17	2095  CDBE0B  	    call    SCRTCH              ; ST_NEW2 - NEW without syntax check
 			
 			    ; Install BASIC HOOK
- 545+10	2093  210421  	    ld      hl, hook_handler
- 555+16	2096  220638  	    ld      (HOOK), hl
+ 573+10	2098  210921  	    ld      hl, hook_handler
+ 583+16	209B  220638  	    ld      (HOOK), hl
 			
 			    ; Show our copyright message
- 571+17	2099  CDF21F  	    call    PRNTIT              ; Print copyright string in ROM
- 588+10	209C  21C120  	    ld      hl, .str_system     ; Print ROM version
- 598+17	209F  CD9D0E  	    call    STROUT
- 615+7	20A2  3E02    	    ld      a, ESPCMD_VERSION
- 622+17	20A4  CD0226  	    call    esp_cmd
-    -	20A7          	.print_version:
- 639+17	20A7  CD1526  	    call    esp_get_byte
- 656+4	20AA  B7      	    or      a
- 660+7+5	20AB  2805    	    jr      z, .print_done
- 667+17	20AD  CD721D  	    call    TTYCHR
- 684+12	20B0  18F5    	    jr      .print_version
+ 599+17	209E  CDF21F  	    call    PRNTIT              ; Print copyright string in ROM
+ 616+10	20A1  21C920  	    ld      hl, .str_system     ; Print ROM version
+ 626+17	20A4  CD9D0E  	    call    STROUT
+ 643+7	20A7  3E02    	    ld      a, ESPCMD_VERSION
+ 650+17	20A9  CD0726  	    call    esp_cmd
+    -	20AC          	.print_version:
+ 667+17	20AC  CD1A26  	    call    esp_get_byte
+ 684+4	20AF  B7      	    or      a
+ 688+7+5	20B0  2805    	    jr      z, .print_done
+ 695+17	20B2  CD721D  	    call    TTYCHR
+ 712+12	20B5  18F5    	    jr      .print_version
 			
-    -	20B2          	.print_done:
- 696+10	20B2  21D520  	    ld      hl, .str_basic      ; Print ROM version
- 706+17	20B5  CD9D0E  	    call    STROUT
- 723+17	20B8  CDEA19  	    call    CRDO
- 740+17	20BB  CDEA19  	    call    CRDO
+    -	20B7          	.print_done:
+ 724+17	20B7  CDEA19  	    call    CRDO
+ 741+10	20BA  21DD20  	    ld      hl, .str_basic      ; Print ROM version
+ 751+17	20BD  CD9D0E  	    call    STROUT
+ 768+17	20C0  CDEA19  	    call    CRDO
+ 785+17	20C3  CDEA19  	    call    CRDO
 			
- 757+10	20BE  C35301  	    jp      INITFF              ; Continue in ROM
+ 802+10	20C6  C35301  	    jp      INITFF              ; Continue in ROM
 			
-    -	20C1          	.str_system:
-    -	20C1  0D0A    	    db $0D, $0A
-    -	20C3  41717561	    db "Aquarius+ System ",0
+    -	20C9          	.str_system:
+    -	20C9  0D0A    	    db $0D, $0A
+    -	20CB  41717561	    db "Aquarius+ System ",0
               72697573
               2B205379
               7374656D
               2000
-    -	20D5          	.str_basic:
-    -	20D5  202D2053	    db " - SD-BASIC "
-              442D4241
-              53494320
-    -	20E1          	.ver_basic:
-    -	20E1  76312E30	    db "v1.0",0
+    -	20DD          	.str_basic:
+    -	20DD  53442D42	    db "SD-BASIC "
+              41534943
+              20
+    -	20E6          	.ver_basic:
+    -	20E6  76312E30	    db "v1.0",0
               00
 			
 			;-----------------------------------------------------------------------------
 			; Cartridge start entry point - A hold scramble value
 			;-----------------------------------------------------------------------------
-    -	20E6          	_start_cart:
- 767+7	20E6  FE00    	    cp      $00
- 774+10	20E8  C2EE20  	    jp      nz, .descramble
- 784+10	20EB  C310E0  	    jp      XINIT
+    -	20EB          	_start_cart:
+ 812+7	20EB  FE00    	    cp      $00
+ 819+10	20ED  C2F320  	    jp      nz, .descramble
+ 829+10	20F0  C310E0  	    jp      XINIT
 			
-    -	20EE          	.descramble:
+    -	20F3          	.descramble:
 			    ; Map destination RAM in bank2
- 794+7	20EE  3E3F    	    ld      a, 63
- 801+11	20F0  D3F2    	    out     (IO_BANK2), a
+ 839+7	20F3  3E3F    	    ld      a, 63
+ 846+11	20F5  D3F2    	    out     (IO_BANK2), a
 			
 			    ; Copy ROM cartridge to RAM
- 812+10	20F2  110080  	    ld      de, $8000
- 822+10	20F5  2100C0  	    ld      hl, $C000
- 832+10	20F8  010040  	    ld      bc, $4000
- 842+16+5	20FB  EDB0    	    ldir
+ 857+10	20F7  110080  	    ld      de, $8000
+ 867+10	20FA  2100C0  	    ld      hl, $C000
+ 877+10	20FD  010040  	    ld      bc, $4000
+ 887+16+5	2100  EDB0    	    ldir
 			
 			    ; Map RAM in bank3
- 858+7	20FD  3E3F    	    ld      a, 63
- 865+11	20FF  D3F3    	    out     (IO_BANK3), a
+ 903+7	2102  3E3F    	    ld      a, 63
+ 910+11	2104  D3F3    	    out     (IO_BANK3), a
 			
 			    ; Descramble and start ROM
- 876+10	2101  C30C29  	    jp      descramble_rom
+ 921+10	2106  C31129  	    jp      descramble_rom
 			
 			;-----------------------------------------------------------------------------
 			; Hook handler
 			;-----------------------------------------------------------------------------
-    -	2104          	hook_handler:
+    -	2109          	hook_handler:
 			    ; The hook index byte is stored after the RST $30 call. So SP currently
 			    ; points to this hook index byte. Retrieve the hook index byte into A
 			    ; and determine the correct return address.
- 886+19	2104  E3      	    ex      (sp), hl            ; Save HL and get address of byte after RST $30
- 905+11	2105  F5      	    push    af                  ; Save AF
- 916+7	2106  7E      	    ld      a, (hl)             ; A = byte (RST $30 parameter)
- 923+6	2107  23      	    inc     hl                  ; Skip over byte after RST $30
- 929+11	2108  E5      	    push    hl                  ; Push return address
+ 931+19	2109  E3      	    ex      (sp), hl            ; Save HL and get address of byte after RST $30
+ 950+11	210A  F5      	    push    af                  ; Save AF
+ 961+7	210B  7E      	    ld      a, (hl)             ; A = byte (RST $30 parameter)
+ 968+6	210C  23      	    inc     hl                  ; Skip over byte after RST $30
+ 974+11	210D  E5      	    push    hl                  ; Push return address
 			
 			    ; Find index in hook indexes table
- 940+10	2109  212621  	    ld      hl, _hook_idxs
- 950+11	210C  C5      	    push    bc
- 961+10	210D  010600  	    ld      bc, _hook_handlers - _hook_idxs + 1
- 971+16+5	2110  EDB1    	    cpir                        ; Find parameter in list
- 987+4	2112  79      	    ld      a, c                ; A = parameter number in list
- 991+10	2113  C1      	    pop     bc
+ 985+10	210E  212B21  	    ld      hl, _hook_idxs
+ 995+11	2111  C5      	    push    bc
+1006+10	2112  010600  	    ld      bc, _hook_handlers - _hook_idxs + 1
+1016+16+5	2115  EDB1    	    cpir                        ; Find parameter in list
+1032+4	2117  79      	    ld      a, c                ; A = parameter number in list
+1036+10	2118  C1      	    pop     bc
 			
 			    ; Call handler from hook handlers table
-1001+4	2114  87      	    add     a, a                ; A * 2 to index WORD size vectors
-1005+10	2115  212B21  	    ld      hl, _hook_handlers
-    -	2118          	do_jump:
-1015+4	2118  85      	    add     a, l
-1019+4	2119  6F      	    ld      l, a
-1023+4	211A  AF      	    xor     a
-1027+4	211B  8C      	    adc     a, h
-1031+4	211C  67      	    ld      h, a                ; HL += vector number
-1035+7	211D  7E      	    ld      a, (hl)
-1042+6	211E  23      	    inc     hl
-1048+7	211F  66      	    ld      h, (hl)             ; Get vector address
-1055+4	2120  6F      	    ld      l, a
-1059+4	2121  E9      	    jp      (hl)                ; And jump to it will return to hook_exit
+1046+4	2119  87      	    add     a, a                ; A * 2 to index WORD size vectors
+1050+10	211A  213021  	    ld      hl, _hook_handlers
+    -	211D          	do_jump:
+1060+4	211D  85      	    add     a, l
+1064+4	211E  6F      	    ld      l, a
+1068+4	211F  AF      	    xor     a
+1072+4	2120  8C      	    adc     a, h
+1076+4	2121  67      	    ld      h, a                ; HL += vector number
+1080+7	2122  7E      	    ld      a, (hl)
+1087+6	2123  23      	    inc     hl
+1093+7	2124  66      	    ld      h, (hl)             ; Get vector address
+1100+4	2125  6F      	    ld      l, a
+1104+4	2126  E9      	    jp      (hl)                ; And jump to it will return to hook_exit
 			
 			; End of hook handler
-    -	2122          	hook_exit:
-1063+10	2122  E1      	    pop     hl                  ; Get return address
-1073+10	2123  F1      	    pop     af                  ; Restore AF
-1083+19	2124  E3      	    ex      (sp), hl            ; Restore HL and set return address
-1102+10	2125  C9      	    ret                         ; Return to code after RST $30,xx
+    -	2127          	hook_exit:
+1108+10	2127  E1      	    pop     hl                  ; Get return address
+1118+10	2128  F1      	    pop     af                  ; Restore AF
+1128+19	2129  E3      	    ex      (sp), hl            ; Restore HL and set return address
+1147+10	212A  C9      	    ret                         ; Return to code after RST $30,xx
 			
 			; Hook indexes we're handling
 			; NOTE: order is reverse of hook handlers table!
-    -	2126          	_hook_idxs:  ; xx      index caller            @addr  performing function:
-    -	2126  18      	    db      24      ; 5   RUN                 $06BE  starting BASIC program
-    -	2127  17      	    db      23      ; 4   exec_next_statement $0658  interpreting next BASIC statement
-    -	2128  16      	    db      22      ; 3   token_to_keyword    $05A0  expanding token to keyword
-    -	2129  0A      	    db      10      ; 2   keyword_to_token    $0536  converting keyword to token
-    -	212A  1B      	    db      27      ; 1   FUNCTIONS           $0A5F  executing a function
+    -	212B          	_hook_idxs:  ; xx      index caller            @addr  performing function:
+    -	212B  18      	    db      24      ; 5   RUN                 $06BE  starting BASIC program
+    -	212C  17      	    db      23      ; 4   exec_next_statement $0658  interpreting next BASIC statement
+    -	212D  16      	    db      22      ; 3   token_to_keyword    $05A0  expanding token to keyword
+    -	212E  0A      	    db      10      ; 2   keyword_to_token    $0536  converting keyword to token
+    -	212F  1B      	    db      27      ; 1   FUNCTIONS           $0A5F  executing a function
 			
 			; Hook handler entry points
-    -	212B          	_hook_handlers:
-    -	212B  2221    	    dw      hook_exit           ; 0 parameter not found in list
-    -	212D  9221    	    dw      execute_function    ; 1 executing a function
-    -	212F  A621    	    dw      keyword_to_token    ; 2 converting keyword to token
-    -	2131  B921    	    dw      token_to_keyword    ; 3 expanding token to keyword
-    -	2133  CB21    	    dw      exec_next_statement ; 4 execute next BASIC statement
-    -	2135  E721    	    dw      run_cmd             ; 5 run program
+    -	2130          	_hook_handlers:
+    -	2130  2721    	    dw      hook_exit           ; 0 parameter not found in list
+    -	2132  9721    	    dw      execute_function    ; 1 executing a function
+    -	2134  AB21    	    dw      keyword_to_token    ; 2 converting keyword to token
+    -	2136  BE21    	    dw      token_to_keyword    ; 3 expanding token to keyword
+    -	2138  D021    	    dw      exec_next_statement ; 4 execute next BASIC statement
+    -	213A  EC21    	    dw      run_cmd             ; 5 run program
 			
 			;-----------------------------------------------------------------------------
 			; Our commands and functions
 			;-----------------------------------------------------------------------------
     -	00D4          	BTOKEN:     equ $D4             ; Our first token number
 			
-    -	2137          	TBLCMDS:
-    -	2137  C5      	    db $80 + 'E'
-    -	2138  444954  	    db "DIT"
-    -	213B  C3      	    db $80 + 'C'
-    -	213C  4C53    	    db "LS"
-    -	213E  CC      	    db $80 + 'L'
-    -	213F  4F434154	    db "OCATE"
+    -	213C          	TBLCMDS:
+    -	213C  C5      	    db $80 + 'E'
+    -	213D  444954  	    db "DIT"
+    -	2140  C3      	    db $80 + 'C'
+    -	2141  4C53    	    db "LS"
+    -	2143  CC      	    db $80 + 'L'
+    -	2144  4F434154	    db "OCATE"
               45
-    -	2144  CF      	    db $80 + 'O'
-    -	2145  5554    	    db "UT"
-    -	2147  D0      	    db $80 + 'P'
-    -	2148  5347    	    db "SG"
-    -	214A  C4      	    db $80 + 'D'
-    -	214B  45425547	    db "EBUG"
-    -	214F  C3      	    db $80 + 'C'
-    -	2150  414C4C  	    db "ALL"
-    -	2153  CC      	    db $80 + 'L'
-    -	2154  4F4144  	    db "OAD"
-    -	2157  D3      	    db $80 + 'S'
-    -	2158  415645  	    db "AVE"
-    -	215B  C4      	    db $80 + 'D'
-    -	215C  4952    	    db "IR"
-    -	215E  CD      	    db $80 + 'M'
-    -	215F  4B444952	    db "KDIR"
-    -	2163  C4      	    db $80 + 'D'
-    -	2164  454C    	    db "EL"
-    -	2166  C3      	    db $80 + 'C'
-    -	2167  44      	    db "D"
+    -	2149  CF      	    db $80 + 'O'
+    -	214A  5554    	    db "UT"
+    -	214C  D0      	    db $80 + 'P'
+    -	214D  5347    	    db "SG"
+    -	214F  C4      	    db $80 + 'D'
+    -	2150  45425547	    db "EBUG"
+    -	2154  C3      	    db $80 + 'C'
+    -	2155  414C4C  	    db "ALL"
+    -	2158  CC      	    db $80 + 'L'
+    -	2159  4F4144  	    db "OAD"
+    -	215C  D3      	    db $80 + 'S'
+    -	215D  415645  	    db "AVE"
+    -	2160  C4      	    db $80 + 'D'
+    -	2161  4952    	    db "IR"
+    -	2163  CD      	    db $80 + 'M'
+    -	2164  4B444952	    db "KDIR"
+    -	2168  C4      	    db $80 + 'D'
+    -	2169  454C    	    db "EL"
+    -	216B  C3      	    db $80 + 'C'
+    -	216C  44      	    db "D"
 			
 			    ; Functions
-    -	2168  C9      	    db $80 + 'I'
-    -	2169  4E      	    db "N"
-    -	216A  CA      	    db $80 + 'J'
-    -	216B  4F59    	    db "OY"
-    -	216D  C8      	    db $80 + 'H'
-    -	216E  455824  	    db "EX$"
-    -	2171  80      	    db $80             ; End of table marker
+    -	216D  C9      	    db $80 + 'I'
+    -	216E  4E      	    db "N"
+    -	216F  CA      	    db $80 + 'J'
+    -	2170  4F59    	    db "OY"
+    -	2172  C8      	    db $80 + 'H'
+    -	2173  455824  	    db "EX$"
+    -	2176  80      	    db $80             ; End of table marker
 			
-    -	2172          	TBLJMPS:
-    -	2172  0222    	    dw ST_reserved     ; Previously EDIT
-    -	2174  0322    	    dw ST_CLS
-    -	2176  1722    	    dw ST_LOCATE
-    -	2178  0722    	    dw ST_OUT
-    -	217A  5622    	    dw ST_PSG
-    -	217C  0222    	    dw ST_reserved     ; Previously DEBUG
-    -	217E  0F23    	    dw ST_CALL
-    -	2180  1723    	    dw ST_LOAD
-    -	2182  6623    	    dw ST_SAVE
-    -	2184  F123    	    dw ST_DIR
-    -	2186  E023    	    dw ST_MKDIR
-    -	2188  A123    	    dw ST_DEL          ; Previously KILL
-    -	218A  B223    	    dw ST_CD
-    -	218C          	TBLJEND:
+    -	2177          	TBLJMPS:
+    -	2177  0722    	    dw ST_reserved     ; Previously EDIT
+    -	2179  0822    	    dw ST_CLS
+    -	217B  1C22    	    dw ST_LOCATE
+    -	217D  0C22    	    dw ST_OUT
+    -	217F  5B22    	    dw ST_PSG
+    -	2181  0722    	    dw ST_reserved     ; Previously DEBUG
+    -	2183  1423    	    dw ST_CALL
+    -	2185  1C23    	    dw ST_LOAD
+    -	2187  6B23    	    dw ST_SAVE
+    -	2189  F623    	    dw ST_DIR
+    -	218B  E523    	    dw ST_MKDIR
+    -	218D  A623    	    dw ST_DEL          ; Previously KILL
+    -	218F  B723    	    dw ST_CD
+    -	2191          	TBLJEND:
 			
     -	000D          	BCOUNT: equ (TBLJEND - TBLJMPS) / 2     ; Number of commands
 			
-    -	218C          	TBLFNJP:
-    -	218C  7F22    	    dw      FN_IN
-    -	218E  9322    	    dw      FN_JOY
-    -	2190  D522    	    dw      FN_HEX
-    -	2192          	TBLFEND:
+    -	2191          	TBLFNJP:
+    -	2191  8422    	    dw      FN_IN
+    -	2193  9822    	    dw      FN_JOY
+    -	2195  DA22    	    dw      FN_HEX
+    -	2197          	TBLFEND:
 			
     -	0003          	FCOUNT: equ (TBLFEND - TBLFNJP) / 2  ; Number of functions
 			
@@ -619,40 +623,40 @@
 			;-----------------------------------------------------------------------------
 			; called from $0a5f by RST $30,$1b
 			;
-    -	2192          	execute_function:
-1112+10	2192  C1      	    pop     bc                  ; Get return address
-1122+10	2193  F1      	    pop     af
-1132+10	2194  E1      	    pop     hl
-1142+11	2195  C5      	    push    bc                  ; Push return address back on stack
-1153+7	2196  FE2F    	    cp      firstf - $B2        ; ($B2 = first system BASIC function token)
-1160+5+6	2198  D8      	    ret     c                   ; Return if function number below ours
-1165+7	2199  FE32    	    cp      lastf - $B2 + 1
-1172+5+6	219B  D0      	    ret     nc                  ; Return if function number above ours
-1177+7	219C  D62F    	    sub     firstf - $B2
-1184+4	219E  87      	    add     a, a                ; Index = A * 2
-1188+11	219F  E5      	    push    hl
-1199+10	21A0  218C21  	    ld      hl, TBLFNJP         ; Function address table
-1209+10	21A3  C31821  	    jp      do_jump             ; JP to our function
+    -	2197          	execute_function:
+1157+10	2197  C1      	    pop     bc                  ; Get return address
+1167+10	2198  F1      	    pop     af
+1177+10	2199  E1      	    pop     hl
+1187+11	219A  C5      	    push    bc                  ; Push return address back on stack
+1198+7	219B  FE2F    	    cp      firstf - $B2        ; ($B2 = first system BASIC function token)
+1205+5+6	219D  D8      	    ret     c                   ; Return if function number below ours
+1210+7	219E  FE32    	    cp      lastf - $B2 + 1
+1217+5+6	21A0  D0      	    ret     nc                  ; Return if function number above ours
+1222+7	21A1  D62F    	    sub     firstf - $B2
+1229+4	21A3  87      	    add     a, a                ; Index = A * 2
+1233+11	21A4  E5      	    push    hl
+1244+10	21A5  219121  	    ld      hl, TBLFNJP         ; Function address table
+1254+10	21A8  C31D21  	    jp      do_jump             ; JP to our function
 			
 			;-----------------------------------------------------------------------------
 			; Convert keyword to token - hook 10
 			;-----------------------------------------------------------------------------
-    -	21A6          	keyword_to_token:
-1219+4	21A6  78      	    ld      a, b               ; A = current index
+    -	21AB          	keyword_to_token:
+1264+4	21AB  78      	    ld      a, b               ; A = current index
 			
-1223+7	21A7  FECB    	    cp      $CB                ; If < $CB then keyword was found in BASIC table
-1230+10	21A9  C22221  	    jp      nz, hook_exit       ;    so return
+1268+7	21AC  FECB    	    cp      $CB                ; If < $CB then keyword was found in BASIC table
+1275+10	21AE  C22721  	    jp      nz, hook_exit       ;    so return
 			
-1240+10	21AC  C1      	    pop     bc                 ; Get return address from stack
-1250+10	21AD  F1      	    pop     af                 ; Restore AF
-1260+10	21AE  E1      	    pop     hl                 ; Restore HL
-1270+11	21AF  C5      	    push    bc                 ; Put return address back onto stack
+1285+10	21B1  C1      	    pop     bc                 ; Get return address from stack
+1295+10	21B2  F1      	    pop     af                 ; Restore AF
+1305+10	21B3  E1      	    pop     hl                 ; Restore HL
+1315+11	21B4  C5      	    push    bc                 ; Put return address back onto stack
 			
 			    ; Set our own keyword table and let BASIC code use that instead
-1281+4	21B0  EB      	    ex      de, hl             ; HL = Line buffer
-1285+10	21B1  113621  	    ld      de, TBLCMDS - 1    ; DE = our keyword table
-1295+7	21B4  06D3    	    ld      b, BTOKEN - 1      ; B = our first token
-1302+10	21B6  C3F904  	    jp      $04F9              ; Continue searching using our keyword table
+1326+4	21B5  EB      	    ex      de, hl             ; HL = Line buffer
+1330+10	21B6  113B21  	    ld      de, TBLCMDS - 1    ; DE = our keyword table
+1340+7	21B9  06D3    	    ld      b, BTOKEN - 1      ; B = our first token
+1347+10	21BB  C3F904  	    jp      $04F9              ; Continue searching using our keyword table
 			
 			;-----------------------------------------------------------------------------
 			; Convert token to keyword - hook 22
@@ -661,222 +665,222 @@
 			; our extra commands. If it one of our commands, we pass our command table
 			; to the ROM code.
 			;-----------------------------------------------------------------------------
-    -	21B9          	token_to_keyword:
-1312+10	21B9  D1      	    pop     de
-1322+10	21BA  F1      	    pop     af                  ; Restore AF (token)
-1332+10	21BB  E1      	    pop     hl                  ; Restore HL (BASIC text)
-1342+7	21BC  FED4    	    cp      BTOKEN              ; Is it one of our tokens?
-1349+7+5	21BE  3002    	    jr      nc, .expand_token   ; Yes, expand it
-1356+11	21C0  D5      	    push    de
-1367+10	21C1  C9      	    ret                         ; No, return to system for expansion
+    -	21BE          	token_to_keyword:
+1357+10	21BE  D1      	    pop     de
+1367+10	21BF  F1      	    pop     af                  ; Restore AF (token)
+1377+10	21C0  E1      	    pop     hl                  ; Restore HL (BASIC text)
+1387+7	21C1  FED4    	    cp      BTOKEN              ; Is it one of our tokens?
+1394+7+5	21C3  3002    	    jr      nc, .expand_token   ; Yes, expand it
+1401+11	21C5  D5      	    push    de
+1412+10	21C6  C9      	    ret                         ; No, return to system for expansion
 			
-    -	21C2          	.expand_token:
-1377+7	21C2  D6D3    	    sub     BTOKEN - 1
-1384+4	21C4  4F      	    ld      c, a                ; C = offset to AquBASIC command
-1388+10	21C5  113721  	    ld      de, TBLCMDS         ; DE = table of AquBASIC command names
-1398+10	21C8  C3A805  	    jp      RESSRC              ; Print keyword indexed by C
+    -	21C7          	.expand_token:
+1422+7	21C7  D6D3    	    sub     BTOKEN - 1
+1429+4	21C9  4F      	    ld      c, a                ; C = offset to AquBASIC command
+1433+10	21CA  113C21  	    ld      de, TBLCMDS         ; DE = table of AquBASIC command names
+1443+10	21CD  C3A805  	    jp      RESSRC              ; Print keyword indexed by C
 			
 			;-----------------------------------------------------------------------------
 			; exec_next_statement - hook 23
 			;-----------------------------------------------------------------------------
-    -	21CB          	exec_next_statement:
-1408+10	21CB  C1      	    pop     bc                  ; BC = return address
-1418+10	21CC  F1      	    pop     af                  ; AF = token, flags
-1428+10	21CD  E1      	    pop     hl                  ; HL = text
-1438+7+5	21CE  3002    	    jr      nc, .process        ; if NC then process BASIC statement
-1445+11	21D0  C5      	    push    bc
-1456+10	21D1  C9      	    ret                         ; else return to system
+    -	21D0          	exec_next_statement:
+1453+10	21D0  C1      	    pop     bc                  ; BC = return address
+1463+10	21D1  F1      	    pop     af                  ; AF = token, flags
+1473+10	21D2  E1      	    pop     hl                  ; HL = text
+1483+7+5	21D3  3002    	    jr      nc, .process        ; if NC then process BASIC statement
+1490+11	21D5  C5      	    push    bc
+1501+10	21D6  C9      	    ret                         ; else return to system
 			
-    -	21D2          	.process:
+    -	21D7          	.process:
 			    ; Check if the token is own of our own, otherwise give syntax error
-1466+7	21D2  D654    	    sub     (BTOKEN) - $80
-1473+10	21D4  DAC403  	    jp      c, SNERR           ; SN error if < our 1st BASIC command token
-1483+7	21D7  FE0D    	    cp      BCOUNT              ; Count number of commands
-1490+10	21D9  D2C403  	    jp      nc, SNERR          ; SN error if > out last BASIC command token
+1511+7	21D7  D654    	    sub     (BTOKEN) - $80
+1518+10	21D9  DAC403  	    jp      c, SNERR           ; SN error if < our 1st BASIC command token
+1528+7	21DC  FE0D    	    cp      BCOUNT              ; Count number of commands
+1535+10	21DE  D2C403  	    jp      nc, SNERR          ; SN error if > out last BASIC command token
 			
 			    ; Execute handler 
-1500+4	21DC  07      	    rlca                        ; A*2 indexing WORDs
-1504+4	21DD  4F      	    ld      c, a
-1508+7	21DE  0600    	    ld      b, $00              ; BC = index
-1515+4	21E0  EB      	    ex      de, hl
-1519+10	21E1  217221  	    ld      hl, TBLJMPS         ; HL = our command jump table
-1529+10	21E4  C36506  	    jp      $0665               ; Continue with exec_next_statement
+1545+4	21E1  07      	    rlca                        ; A*2 indexing WORDs
+1549+4	21E2  4F      	    ld      c, a
+1553+7	21E3  0600    	    ld      b, $00              ; BC = index
+1560+4	21E5  EB      	    ex      de, hl
+1564+10	21E6  217721  	    ld      hl, TBLJMPS         ; HL = our command jump table
+1574+10	21E9  C36506  	    jp      $0665               ; Continue with exec_next_statement
 			
 			;-----------------------------------------------------------------------------
 			; RUN command - hook 24
 			;-----------------------------------------------------------------------------
-    -	21E7          	run_cmd:
-1539+10	21E7  F1      	    pop     af                 ; Clean up stack
-1549+10	21E8  F1      	    pop     af                 ; Restore AF
-1559+10	21E9  E1      	    pop     hl                 ; Restore HL
-1569+10	21EA  CACB0B  	    jp      z, RUNC            ; If no argument then RUN from 1st line
+    -	21EC          	run_cmd:
+1584+10	21EC  F1      	    pop     af                 ; Clean up stack
+1594+10	21ED  F1      	    pop     af                 ; Restore AF
+1604+10	21EE  E1      	    pop     hl                 ; Restore HL
+1614+10	21EF  CACB0B  	    jp      z, RUNC            ; If no argument then RUN from 1st line
 			
-1579+11	21ED  E5      	    push    hl
-1590+17	21EE  CD8509  	    call    FRMEVL             ; Get argument type
-1607+10	21F1  E1      	    pop     hl
+1624+11	21F2  E5      	    push    hl
+1635+17	21F3  CD8509  	    call    FRMEVL             ; Get argument type
+1652+10	21F6  E1      	    pop     hl
 			
-1617+13	21F2  3AAB38  	    ld      a, (VALTYP)
-1630+4	21F5  3D      	    dec     a                  ; 0 = string
-1634+10	21F6  CAB828  	    jp      z, run_file
+1662+13	21F7  3AAB38  	    ld      a, (VALTYP)
+1675+4	21FA  3D      	    dec     a                  ; 0 = string
+1679+10	21FB  CABD28  	    jp      z, run_file
 			
 			    ; RUN with line number
-1644+17	21F9  CDCF0B  	    call    CLEARC             ; Init BASIC run environment
-1661+10	21FC  012C06  	    ld      bc, NEWSTT
-1671+10	21FF  C3DB06  	    jp      RUNC2              ; GOTO line number
+1689+17	21FE  CDCF0B  	    call    CLEARC             ; Init BASIC run environment
+1706+10	2201  012C06  	    ld      bc, NEWSTT
+1716+10	2204  C3DB06  	    jp      RUNC2              ; GOTO line number
 			
 			;-----------------------------------------------------------------------------
 			; Not implemented statement - do nothing
 			;-----------------------------------------------------------------------------
-    -	2202          	ST_reserved:
-1681+10	2202  C9      	    ret
+    -	2207          	ST_reserved:
+1726+10	2207  C9      	    ret
 			
 			;-----------------------------------------------------------------------------
 			; CLS statement
 			;-----------------------------------------------------------------------------
-    -	2203          	ST_CLS:
+    -	2208          	ST_CLS:
 			    ; Clear screen
-1691+7	2203  3E0B    	    ld      a, 11
-1698+11	2205  DF      	    OUTCHR
-1709+10	2206  C9      	    ret
+1736+7	2208  3E0B    	    ld      a, 11
+1743+11	220A  DF      	    OUTCHR
+1754+10	220B  C9      	    ret
 			
 			;-----------------------------------------------------------------------------
 			; OUT statement
 			; syntax: OUT port, data
 			;-----------------------------------------------------------------------------
-    -	2207          	ST_OUT:
-1719+17	2207  CD7209  	    call    FRMNUM              ; Get/evaluate port
-1736+17	220A  CD8206  	    call    FRCINT              ; Convert number to 16 bit integer (result in DE)
-1753+11	220D  D5      	    push    de                  ; Stored to be used in BC
+    -	220C          	ST_OUT:
+1764+17	220C  CD7209  	    call    FRMNUM              ; Get/evaluate port
+1781+17	220F  CD8206  	    call    FRCINT              ; Convert number to 16 bit integer (result in DE)
+1798+11	2212  D5      	    push    de                  ; Stored to be used in BC
 			
 			    ; Expect comma
-1764+11	220E  CF2C    	    SYNCHK  ","
+1809+11	2213  CF2C    	    SYNCHK  ","
 			
-1775+17	2210  CD540B  	    call    GETBYT              ; Get/evaluate data
-1792+10	2213  C1      	    pop     bc                  ; BC = port
-1802+12	2214  ED79    	    out     (c), a              ; Out data to port
-1814+10	2216  C9      	    ret
+1820+17	2215  CD540B  	    call    GETBYT              ; Get/evaluate data
+1837+10	2218  C1      	    pop     bc                  ; BC = port
+1847+12	2219  ED79    	    out     (c), a              ; Out data to port
+1859+10	221B  C9      	    ret
 			
 			;-----------------------------------------------------------------------------
 			; LOCATE statement
 			; Syntax: LOCATE col, row
 			;-----------------------------------------------------------------------------
-    -	2217          	ST_LOCATE:
-1824+17	2217  CD540B  	    call    GETBYT              ; Read number from command line (column). Stored in A and E
-1841+11	221A  F5      	    push    af                  ; Column store on stack for later use
-1852+4	221B  3D      	    dec     a
-1856+7	221C  FE26    	    cp      38                  ; Compare with 38 decimal (max cols on screen)
-1863+10	221E  D29706  	    jp      nc, FCERR           ; If higher then 38 goto FC error
+    -	221C          	ST_LOCATE:
+1869+17	221C  CD540B  	    call    GETBYT              ; Read number from command line (column). Stored in A and E
+1886+11	221F  F5      	    push    af                  ; Column store on stack for later use
+1897+4	2220  3D      	    dec     a
+1901+7	2221  FE26    	    cp      38                  ; Compare with 38 decimal (max cols on screen)
+1908+10	2223  D29706  	    jp      nc, FCERR           ; If higher then 38 goto FC error
 			
 			    ; Expect comma
-1873+11	2221  CF2C    	    SYNCHK  ','
+1918+11	2226  CF2C    	    SYNCHK  ','
 			
-1884+17	2223  CD540B  	    call    GETBYT              ; Read number from command line (row). Stored in A and E
-1901+7	2226  FE18    	    cp      $18                 ; Compare with 24 decimal (max rows on screen)
-1908+10	2228  D29706  	    jp      nc,FCERR            ; If higher then 24 goto FC error
+1929+17	2228  CD540B  	    call    GETBYT              ; Read number from command line (row). Stored in A and E
+1946+7	222B  FE18    	    cp      $18                 ; Compare with 24 decimal (max rows on screen)
+1953+10	222D  D29706  	    jp      nc,FCERR            ; If higher then 24 goto FC error
 			
-1918+4	222B  1C      	    inc     e
-1922+10	222C  F1      	    pop     af                  ; Restore column from store
-1932+4	222D  57      	    ld      d, a                ; Column in register D, row in register E
-1936+4	222E  EB      	    ex      de, hl              ; Switch DE with HL
-1940+17	222F  CD3422  	    call    .goto_hl            ; Cursor to screen location HL (H=col, L=row)
-1957+4	2232  EB      	    ex      de, hl
-1961+10	2233  C9      	    ret
+1963+4	2230  1C      	    inc     e
+1967+10	2231  F1      	    pop     af                  ; Restore column from store
+1977+4	2232  57      	    ld      d, a                ; Column in register D, row in register E
+1981+4	2233  EB      	    ex      de, hl              ; Switch DE with HL
+1985+17	2234  CD3922  	    call    .goto_hl            ; Cursor to screen location HL (H=col, L=row)
+2002+4	2237  EB      	    ex      de, hl
+2006+10	2238  C9      	    ret
 			
-    -	2234          	.goto_hl:
-1971+11	2234  F5      	    push    af
+    -	2239          	.goto_hl:
+2016+11	2239  F5      	    push    af
 			
 			    ; Restore character behind cursor
-1982+11	2235  E5      	    push    hl
-1993+4	2236  D9      	    exx
-1997+16	2237  2A0138  	    ld      hl, (CURRAM)        ; CHRPOS - address of cursor within matrix
-2013+13	223A  3A0D38  	    ld      a, (CURCHR)         ; BUFO - storage of the character behind the cursor
-2026+7	223D  77      	    ld      (hl), a             ; Put original character on screen
-2033+10	223E  E1      	    pop     hl
+2027+11	223A  E5      	    push    hl
+2038+4	223B  D9      	    exx
+2042+16	223C  2A0138  	    ld      hl, (CURRAM)        ; CHRPOS - address of cursor within matrix
+2058+13	223F  3A0D38  	    ld      a, (CURCHR)         ; BUFO - storage of the character behind the cursor
+2071+7	2242  77      	    ld      (hl), a             ; Put original character on screen
+2078+10	2243  E1      	    pop     hl
 			
 			    ; Calculate new cursor location
-2043+4	223F  7D      	    ld      a, l
-2047+4	2240  87      	    add     a, a
-2051+4	2241  87      	    add     a, a
-2055+4	2242  85      	    add     a, l
-2059+4	2243  EB      	    ex      de, hl
-2063+4	2244  5A      	    ld      e, d
-2067+7	2245  1600    	    ld      d, $00
-2074+4	2247  62      	    ld      h, d
-2078+4	2248  6F      	    ld      l, a
-2082+4	2249  7B      	    ld      a, e
-2086+4	224A  3D      	    dec     a
-2090+11	224B  29      	    add     hl, hl
-2101+11	224C  29      	    add     hl, hl
-2112+11	224D  29      	    add     hl, hl              ; HL is now 40 * rows
-2123+11	224E  19      	    add     hl, de              ; Added the columns
-2134+10	224F  110030  	    ld      de, SCREEN          ; Screen character-matrix (= 12288 dec)
-2144+11	2252  19      	    add     hl, de              ; Putting it all together
-2155+10	2253  C3E71D  	    jp      TTYFIS              ; Save cursor position and return
+2088+4	2244  7D      	    ld      a, l
+2092+4	2245  87      	    add     a, a
+2096+4	2246  87      	    add     a, a
+2100+4	2247  85      	    add     a, l
+2104+4	2248  EB      	    ex      de, hl
+2108+4	2249  5A      	    ld      e, d
+2112+7	224A  1600    	    ld      d, $00
+2119+4	224C  62      	    ld      h, d
+2123+4	224D  6F      	    ld      l, a
+2127+4	224E  7B      	    ld      a, e
+2131+4	224F  3D      	    dec     a
+2135+11	2250  29      	    add     hl, hl
+2146+11	2251  29      	    add     hl, hl
+2157+11	2252  29      	    add     hl, hl              ; HL is now 40 * rows
+2168+11	2253  19      	    add     hl, de              ; Added the columns
+2179+10	2254  110030  	    ld      de, SCREEN          ; Screen character-matrix (= 12288 dec)
+2189+11	2257  19      	    add     hl, de              ; Putting it all together
+2200+10	2258  C3E71D  	    jp      TTYFIS              ; Save cursor position and return
 			
 			;-----------------------------------------------------------------------------
 			; PSG statement
 			; syntax: PSG register, value [, ... ]
 			;-----------------------------------------------------------------------------
-    -	2256          	ST_PSG:
-2165+7	2256  FE00    	    cp      $00
-2172+10	2258  CAD603  	    jp      z, MOERR         ; MO error if no args
+    -	225B          	ST_PSG:
+2210+7	225B  FE00    	    cp      $00
+2217+10	225D  CAD603  	    jp      z, MOERR         ; MO error if no args
 			
-    -	225B          	.psgloop:
+    -	2260          	.psgloop:
 			    ; Get PSG register to write to
-2182+17	225B  CD540B  	    call    GETBYT           ; Get/evaluate register
-2199+7	225E  FE10    	    cp      16
-2206+7+5	2260  3010    	    jr      nc, .psg2
+2227+17	2260  CD540B  	    call    GETBYT           ; Get/evaluate register
+2244+7	2263  FE10    	    cp      16
+2251+7+5	2265  3010    	    jr      nc, .psg2
 			
-2213+11	2262  D3F7    	    out     (IO_PSG1ADDR), a ; Set the PSG register
+2258+11	2267  D3F7    	    out     (IO_PSG1ADDR), a ; Set the PSG register
 			
 			    ; Expect comma
-2224+11	2264  CF2C    	    SYNCHK  ','
+2269+11	2269  CF2C    	    SYNCHK  ','
 			
 			    ; Get value to write to PSG register
-2235+17	2266  CD540B  	    call    GETBYT           ; Get/evaluate value
-2252+11	2269  D3F6    	    out     (IO_PSG1DATA), a ; Send data to the selected PSG register
+2280+17	226B  CD540B  	    call    GETBYT           ; Get/evaluate value
+2297+11	226E  D3F6    	    out     (IO_PSG1DATA), a ; Send data to the selected PSG register
 			
-    -	226B          	.check_comma:
+    -	2270          	.check_comma:
 			    ; Check for a comma
-2263+7	226B  7E      	    ld      a, (hl)          ; Get next character on command line
-2270+7	226C  FE2C    	    cp      ','              ; Compare with ','
-2277+5+6	226E  C0      	    ret     nz               ; No comma = no more parameters -> return
+2308+7	2270  7E      	    ld      a, (hl)          ; Get next character on command line
+2315+7	2271  FE2C    	    cp      ','              ; Compare with ','
+2322+5+6	2273  C0      	    ret     nz               ; No comma = no more parameters -> return
 			
-2282+6	226F  23      	    inc     hl               ; next character on command line
-2288+12	2270  18E9    	    jr      .psgloop         ; parse next register & value
+2327+6	2274  23      	    inc     hl               ; next character on command line
+2333+12	2275  18E9    	    jr      .psgloop         ; parse next register & value
 			
-    -	2272          	.psg2:
-2300+7	2272  D610    	    sub     16
-2307+11	2274  D3F9    	    out     (IO_PSG2ADDR), a ; Set the PSG register
+    -	2277          	.psg2:
+2345+7	2277  D610    	    sub     16
+2352+11	2279  D3F9    	    out     (IO_PSG2ADDR), a ; Set the PSG register
 			
 			    ; Expect comma
-2318+11	2276  CF2C    	    SYNCHK  ','
+2363+11	227B  CF2C    	    SYNCHK  ','
 			
 			    ; Get value to write to PSG register
-2329+17	2278  CD540B  	    call    GETBYT           ; Get/evaluate value
-2346+11	227B  D3F8    	    out     (IO_PSG2DATA), a ; Send data to the selected PSG register
+2374+17	227D  CD540B  	    call    GETBYT           ; Get/evaluate value
+2391+11	2280  D3F8    	    out     (IO_PSG2DATA), a ; Send data to the selected PSG register
 			
-2357+12	227D  18EC    	    jr      .check_comma
+2402+12	2282  18EC    	    jr      .check_comma
 			
 			;-----------------------------------------------------------------------------
 			; IN() function
 			; syntax: var = IN(port)
 			;-----------------------------------------------------------------------------
-    -	227F          	FN_IN:
-2369+10	227F  E1      	    pop     hl
-2379+6	2280  23      	    inc     hl
+    -	2284          	FN_IN:
+2414+10	2284  E1      	    pop     hl
+2424+6	2285  23      	    inc     hl
 			
-2385+17	2281  CD370A  	    call    PARCHK           ; Read number from line - ending with a ')'
-2402+19	2284  E3      	    ex      (sp), hl
-2421+10	2285  11490A  	    ld      de, LABBCK       ; Return address
-2431+11	2288  D5      	    push    de               ; On stack
-2442+17	2289  CD8206  	    call    FRCINT           ; Evaluate formula pointed by HL, result in DE
-2459+4	228C  42      	    ld      b, d
-2463+4	228D  4B      	    ld      c, e             ; BC = port
+2430+17	2286  CD370A  	    call    PARCHK           ; Read number from line - ending with a ')'
+2447+19	2289  E3      	    ex      (sp), hl
+2466+10	228A  11490A  	    ld      de, LABBCK       ; Return address
+2476+11	228D  D5      	    push    de               ; On stack
+2487+17	228E  CD8206  	    call    FRCINT           ; Evaluate formula pointed by HL, result in DE
+2504+4	2291  42      	    ld      b, d
+2508+4	2292  4B      	    ld      c, e             ; BC = port
 			
 			    ; Read from port
-2467+12	228E  ED78    	    in      a, (c)           ; A = in(port)
-2479+10	2290  C3360B  	    jp      SNGFLT           ; Return with 8 bit input value in variable var
+2512+12	2293  ED78    	    in      a, (c)           ; A = in(port)
+2524+10	2295  C3360B  	    jp      SNGFLT           ; Return with 8 bit input value in variable var
 			
 			;-----------------------------------------------------------------------------
 			; JOY() function
@@ -885,98 +889,98 @@
 			;          - 1 will read left joystick only
 			;          - 2 will read right joystick only
 			;-----------------------------------------------------------------------------
-    -	2293          	FN_JOY:
-2489+10	2293  E1      	    pop     hl             ; Return address
-2499+6	2294  23      	    inc     hl             ; skip rst parameter
-2505+17	2295  CD370A  	    call    PARCHK         ; Read number from line - ending with a ')'
-2522+19	2298  E3      	    ex      (sp), hl
-2541+10	2299  11490A  	    ld      de, LABBCK     ; set return address
-2551+11	229C  D5      	    push    de
-2562+17	229D  CD8206  	    call    FRCINT         ; FRCINT - evalute formula pointed by HL result in DE
+    -	2298          	FN_JOY:
+2534+10	2298  E1      	    pop     hl             ; Return address
+2544+6	2299  23      	    inc     hl             ; skip rst parameter
+2550+17	229A  CD370A  	    call    PARCHK         ; Read number from line - ending with a ')'
+2567+19	229D  E3      	    ex      (sp), hl
+2586+10	229E  11490A  	    ld      de, LABBCK     ; set return address
+2596+11	22A1  D5      	    push    de
+2607+17	22A2  CD8206  	    call    FRCINT         ; FRCINT - evalute formula pointed by HL result in DE
 			
-2579+4	22A0  7B      	    ld      a, e
-2583+4	22A1  B7      	    or      a
-2587+7+5	22A2  2002    	    jr      nz, .joy01
-2594+7	22A4  3E03    	    ld      a, $03
+2624+4	22A5  7B      	    ld      a, e
+2628+4	22A6  B7      	    or      a
+2632+7+5	22A7  2002    	    jr      nz, .joy01
+2639+7	22A9  3E03    	    ld      a, $03
 			
-    -	22A6          	.joy01:
-2601+4	22A6  5F      	    ld      e, a
-2605+10	22A7  01F700  	    ld      bc, $00F7
-2615+7	22AA  3EFF    	    ld      a, $FF
-2622+8	22AC  CB43    	    bit     0, e
-2630+7+5	22AE  280F    	    jr      z, .joy03
-2637+7	22B0  3E0E    	    ld      a, $0e
-2644+12	22B2  ED79    	    out     (c), a
-2656+4	22B4  0D      	    dec     c
-2660+7	22B5  06FF    	    ld      b, $FF
+    -	22AB          	.joy01:
+2646+4	22AB  5F      	    ld      e, a
+2650+10	22AC  01F700  	    ld      bc, $00F7
+2660+7	22AF  3EFF    	    ld      a, $FF
+2667+8	22B1  CB43    	    bit     0, e
+2675+7+5	22B3  280F    	    jr      z, .joy03
+2682+7	22B5  3E0E    	    ld      a, $0e
+2689+12	22B7  ED79    	    out     (c), a
+2701+4	22B9  0D      	    dec     c
+2705+7	22BA  06FF    	    ld      b, $FF
 			
-    -	22B7          	.joy02:
-2667+12	22B7  ED78    	    in      a,(c)
-2679+8+5	22B9  10FC    	    djnz    .joy02
-2687+7	22BB  FEFF    	    cp      $FF
-2694+7+5	22BD  2012    	    jr      nz, .joy05
+    -	22BC          	.joy02:
+2712+12	22BC  ED78    	    in      a,(c)
+2724+8+5	22BE  10FC    	    djnz    .joy02
+2732+7	22C0  FEFF    	    cp      $FF
+2739+7+5	22C2  2012    	    jr      nz, .joy05
 			
-    -	22BF          	.joy03:
-2701+8	22BF  CB4B    	    bit     1,e
-2709+7+5	22C1  280E    	    jr      z, .joy05
-2716+10	22C3  01F700  	    ld      bc, $00F7
-2726+7	22C6  3E0F    	    ld      a, $0F
-2733+12	22C8  ED79    	    out     (c), a
-2745+4	22CA  0D      	    dec     c
-2749+7	22CB  06FF    	    ld      b, $FF
+    -	22C4          	.joy03:
+2746+8	22C4  CB4B    	    bit     1,e
+2754+7+5	22C6  280E    	    jr      z, .joy05
+2761+10	22C8  01F700  	    ld      bc, $00F7
+2771+7	22CB  3E0F    	    ld      a, $0F
+2778+12	22CD  ED79    	    out     (c), a
+2790+4	22CF  0D      	    dec     c
+2794+7	22D0  06FF    	    ld      b, $FF
 			
-    -	22CD          	.joy04:
-2756+12	22CD  ED78    	    in      a, (c)
-2768+8+5	22CF  10FC    	    djnz    .joy04
+    -	22D2          	.joy04:
+2801+12	22D2  ED78    	    in      a, (c)
+2813+8+5	22D4  10FC    	    djnz    .joy04
 			
-    -	22D1          	.joy05:
-2776+4	22D1  2F      	    cpl
-2780+10	22D2  C3360B  	    jp      SNGFLT
+    -	22D6          	.joy05:
+2821+4	22D6  2F      	    cpl
+2825+10	22D7  C3360B  	    jp      SNGFLT
 			
 			;-----------------------------------------------------------------------------
 			; HEX$() function
 			; eg. A$=HEX$(B)
 			;-----------------------------------------------------------------------------
-    -	22D5          	FN_HEX:
-2790+10	22D5  E1      	    pop     hl
-2800+6	22D6  23      	    inc     hl
-2806+17	22D7  CD370A  	    call    PARCHK          ; Evaluate parameter in brackets
-2823+19	22DA  E3      	    ex      (sp), hl
-2842+10	22DB  11490A  	    ld      de, LABBCK      ; Return address
-2852+11	22DE  D5      	    push    de              ; On stack
-2863+17	22DF  CD8206  	    call    FRCINT          ; Evaluate formula @HL, result in DE
-2880+10	22E2  21E938  	    ld      hl, FPSTR       ; HL = temp string
-2890+4	22E5  7A      	    ld      a, d
-2894+4	22E6  B7      	    or      a               ; > zero ?
-2898+7+5	22E7  2804    	    jr      z, .lower_byte
-2905+4	22E9  7A      	    ld      a, d
-2909+17	22EA  CDF922  	    call    .hexbyte        ; Yes, convert byte in D to hex string
-    -	22ED          	.lower_byte:
-2926+4	22ED  7B      	    ld      a, e
-2930+17	22EE  CDF922  	    call    .hexbyte        ; Convert byte in E to hex string
-2947+10	22F1  3600    	    ld      (hl), 0         ; Null-terminate string
-2957+10	22F3  21E938  	    ld      hl, FPSTR
-    -	22F6          	.create_string:
-2967+10	22F6  C32F0E  	    jp      $0E2F           ; Create BASIC string
+    -	22DA          	FN_HEX:
+2835+10	22DA  E1      	    pop     hl
+2845+6	22DB  23      	    inc     hl
+2851+17	22DC  CD370A  	    call    PARCHK          ; Evaluate parameter in brackets
+2868+19	22DF  E3      	    ex      (sp), hl
+2887+10	22E0  11490A  	    ld      de, LABBCK      ; Return address
+2897+11	22E3  D5      	    push    de              ; On stack
+2908+17	22E4  CD8206  	    call    FRCINT          ; Evaluate formula @HL, result in DE
+2925+10	22E7  21E938  	    ld      hl, FPSTR       ; HL = temp string
+2935+4	22EA  7A      	    ld      a, d
+2939+4	22EB  B7      	    or      a               ; > zero ?
+2943+7+5	22EC  2804    	    jr      z, .lower_byte
+2950+4	22EE  7A      	    ld      a, d
+2954+17	22EF  CDFE22  	    call    .hexbyte        ; Yes, convert byte in D to hex string
+    -	22F2          	.lower_byte:
+2971+4	22F2  7B      	    ld      a, e
+2975+17	22F3  CDFE22  	    call    .hexbyte        ; Convert byte in E to hex string
+2992+10	22F6  3600    	    ld      (hl), 0         ; Null-terminate string
+3002+10	22F8  21E938  	    ld      hl, FPSTR
+    -	22FB          	.create_string:
+3012+10	22FB  C32F0E  	    jp      $0E2F           ; Create BASIC string
 			
-    -	22F9          	.hexbyte:
-2977+4	22F9  47      	    ld      b, a
-2981+4	22FA  1F      	    rra
-2985+4	22FB  1F      	    rra
-2989+4	22FC  1F      	    rra
-2993+4	22FD  1F      	    rra
-2997+17	22FE  CD0223  	    call    .hex
-3014+4	2301  78      	    ld      a, b
-    -	2302          	.hex:
-3018+7	2302  E60F    	    and     $0F
-3025+7	2304  FE0A    	    cp      10
-3032+7+5	2306  3802    	    jr      c, .chr
-3039+7	2308  C607    	    add     7
-    -	230A          	.chr:
-3046+7	230A  C630    	    add     '0'
-3053+7	230C  77      	    ld      (hl), a
-3060+6	230D  23      	    inc     hl
-3066+10	230E  C9      	    ret
+    -	22FE          	.hexbyte:
+3022+4	22FE  47      	    ld      b, a
+3026+4	22FF  1F      	    rra
+3030+4	2300  1F      	    rra
+3034+4	2301  1F      	    rra
+3038+4	2302  1F      	    rra
+3042+17	2303  CD0723  	    call    .hex
+3059+4	2306  78      	    ld      a, b
+    -	2307          	.hex:
+3063+7	2307  E60F    	    and     $0F
+3070+7	2309  FE0A    	    cp      10
+3077+7+5	230B  3802    	    jr      c, .chr
+3084+7	230D  C607    	    add     7
+    -	230F          	.chr:
+3091+7	230F  C630    	    add     '0'
+3098+7	2311  77      	    ld      (hl), a
+3105+6	2312  23      	    inc     hl
+3111+10	2313  C9      	    ret
 			
 			;-----------------------------------------------------------------------------
 			; ST_CALL
@@ -988,11 +992,11 @@
 			; on entry to user code, HL = text after address
 			; on exit from user code, HL should point to end of statement
 			;-----------------------------------------------------------------------------
-    -	230F          	ST_CALL:
-3076+17	230F  CD7209  	    call    FRMNUM           ; Get number from BASIC text
-3093+17	2312  CD8206  	    call    FRCINT           ; Convert to 16 bit integer
-3110+11	2315  D5      	    push    de
-3121+10	2316  C9      	    ret                      ; Jump to user code, HL = BASIC text pointer
+    -	2314          	ST_CALL:
+3121+17	2314  CD7209  	    call    FRMNUM           ; Get number from BASIC text
+3138+17	2317  CD8206  	    call    FRCINT           ; Convert to 16 bit integer
+3155+11	231A  D5      	    push    de
+3166+10	231B  C9      	    ret                      ; Jump to user code, HL = BASIC text pointer
 			
 			;-----------------------------------------------------------------------------
 			; DOS commands
@@ -1010,64 +1014,64 @@
 			; LOAD "filename",12345  Load file as raw binary to address 12345
 			; LOAD "filename",*a     Load data into numeric array a
 			;-----------------------------------------------------------------------------
-    -	2317          	ST_LOAD:
+    -	231C          	ST_LOAD:
 			    ; Close any open files
-3131+17	2317  CDFB26  	    call    esp_close_all
+3176+17	231C  CD0027  	    call    esp_close_all
 			
 			    ; Get string parameter with path
-3148+17	231A  CDC726  	    call    get_string_parameter
+3193+17	231F  CDCC26  	    call    get_string_parameter
 			
 			    ; Check for second parameter
-3165+17	231D  CD9A27  	    call    get_arg
-3182+7	2320  FE2C    	    cp      ','
-3189+10	2322  C20628  	    jp      nz, load_basic_program  ; No parameter -> load as basic program
-3199+17	2325  CD9927  	    call    get_next
-3216+7	2328  FEAA    	    cp      $AA                     ; Token for '*'
-3223+7+5	232A  280D    	    jr      z, .array               ; Array parameter -> load as array
+3210+17	2322  CD9F27  	    call    get_arg
+3227+7	2325  FE2C    	    cp      ','
+3234+10	2327  C20B28  	    jp      nz, load_basic_program  ; No parameter -> load as basic program
+3244+17	232A  CD9E27  	    call    get_next
+3261+7	232D  FEAA    	    cp      $AA                     ; Token for '*'
+3268+7+5	232F  280D    	    jr      z, .array               ; Array parameter -> load as array
 			
 			    ; Load as binary to address
-3230+17	232C  CD7209  	    call    FRMNUM                  ; Get number
-3247+17	232F  CD8206  	    call    FRCINT                  ; Convert to 16 bit integer
-3264+20	2332  ED53FCBF	    ld      (BINSTART), de
-3284+10	2336  C3C627  	    jp      load_binary
+3275+17	2331  CD7209  	    call    FRMNUM                  ; Get number
+3292+17	2334  CD8206  	    call    FRCINT                  ; Convert to 16 bit integer
+3309+20	2337  ED53FCBF	    ld      (BINSTART), de
+3329+10	233B  C3CB27  	    jp      load_binary
 			
 			    ; Load into array
-    -	2339          	.array:
-3294+17	2339  CD3F23  	    call    get_array_argument
-3311+10	233C  C3D827  	    jp      load_caq_array
+    -	233E          	.array:
+3339+17	233E  CD4423  	    call    get_array_argument
+3356+10	2341  C3DD27  	    jp      load_caq_array
 			
 			;-----------------------------------------------------------------------------
 			; Get array argument
 			;-----------------------------------------------------------------------------
-    -	233F          	get_array_argument:
+    -	2344          	get_array_argument:
 			    ; Skip '*' token
-3321+6	233F  23      	    inc     hl
+3366+6	2344  23      	    inc     hl
 			
 			    ; Get pointer to array variable
-3327+7	2340  3E01    	    ld      a, 1
-3334+13	2342  32CB38  	    ld      (SUBFLG), a         ; Set array flag
-3347+17	2345  CDD110  	    call    PTRGET              ; Get array (out: BC = pointer to number of dimensions, DE = next array entry)
-3364+13	2348  32CB38  	    ld      (SUBFLG), a         ; Clear array flag
-3377+10	234B  C29706  	    jp      nz, FCERR           ; FC Error if array not found
-3387+17	234E  CD7509  	    call    CHKNUM              ; TM error if not numeric
+3372+7	2345  3E01    	    ld      a, 1
+3379+13	2347  32CB38  	    ld      (SUBFLG), a         ; Set array flag
+3392+17	234A  CDD110  	    call    PTRGET              ; Get array (out: BC = pointer to number of dimensions, DE = next array entry)
+3409+13	234D  32CB38  	    ld      (SUBFLG), a         ; Clear array flag
+3422+10	2350  C29706  	    jp      nz, FCERR           ; FC Error if array not found
+3432+17	2353  CD7509  	    call    CHKNUM              ; TM error if not numeric
 			
 			    ; Get start address and length of array
-3404+11	2351  E5      	    push    hl                  ; Push BASIC text pointer
-3415+4	2352  60      	    ld      h, b
-3419+4	2353  69      	    ld      l, c                ; HL = address
-3423+7	2354  4E      	    ld      c, (hl)
-3430+7	2355  0600    	    ld      b, 0                ; BC = index
-3437+11	2357  09      	    add     hl, bc
-3448+11	2358  09      	    add     hl, bc
-3459+6	2359  23      	    inc     hl                  ; HL = array data
-3465+16	235A  22FCBF  	    ld      (BINSTART), hl
-3481+6	235D  1B      	    dec     de
-3487+6	235E  1B      	    dec     de                  ; Subtract array header to get data length
-3493+6	235F  1B      	    dec     de
-3499+20	2360  ED53FEBF	    ld      (BINLEN), de
-3519+10	2364  E1      	    pop     hl                  ; Pop text pointer
+3449+11	2356  E5      	    push    hl                  ; Push BASIC text pointer
+3460+4	2357  60      	    ld      h, b
+3464+4	2358  69      	    ld      l, c                ; HL = address
+3468+7	2359  4E      	    ld      c, (hl)
+3475+7	235A  0600    	    ld      b, 0                ; BC = index
+3482+11	235C  09      	    add     hl, bc
+3493+11	235D  09      	    add     hl, bc
+3504+6	235E  23      	    inc     hl                  ; HL = array data
+3510+16	235F  22FCBF  	    ld      (BINSTART), hl
+3526+6	2362  1B      	    dec     de
+3532+6	2363  1B      	    dec     de                  ; Subtract array header to get data length
+3538+6	2364  1B      	    dec     de
+3544+20	2365  ED53FEBF	    ld      (BINLEN), de
+3564+10	2369  E1      	    pop     hl                  ; Pop text pointer
 			
-3529+10	2365  C9      	    ret
+3574+10	236A  C9      	    ret
 			
 			;-----------------------------------------------------------------------------
 			; SAVE
@@ -1076,64 +1080,64 @@
 			; SAVE "filename",addr,len    Save binary data
 			; SAVE "filename",*a          Save numeric array a
 			;-----------------------------------------------------------------------------
-    -	2366          	ST_SAVE:
+    -	236B          	ST_SAVE:
 			    ; Close any open files
-3539+17	2366  CDFB26  	    call    esp_close_all
+3584+17	236B  CD0027  	    call    esp_close_all
 			
 			    ; Get string parameter with path
-3556+17	2369  CDC726  	    call    get_string_parameter
+3601+17	236E  CDCC26  	    call    get_string_parameter
 			
 			    ; Check for second parameter
-3573+17	236C  CD9A27  	    call    get_arg
-3590+7	236F  FE2C    	    cp      ','
-3597+10	2371  C24328  	    jp      nz, save_basic_program
-3607+17	2374  CD9927  	    call    get_next
-3624+7	2377  FEAA    	    cp      $AA                     ; Token for '*'
-3631+7+5	2379  2820    	    jr      z, .array               ; Array parameter -> save array
+3618+17	2371  CD9F27  	    call    get_arg
+3635+7	2374  FE2C    	    cp      ','
+3642+10	2376  C24828  	    jp      nz, save_basic_program
+3652+17	2379  CD9E27  	    call    get_next
+3669+7	237C  FEAA    	    cp      $AA                     ; Token for '*'
+3676+7+5	237E  2820    	    jr      z, .array               ; Array parameter -> save array
 			
 			    ; Save binary data
 			    
 			    ; Get first parameter: address
-3638+17	237B  CD7209  	    call    FRMNUM                  ; Get number
-3655+17	237E  CD8206  	    call    FRCINT                  ; Convert to 16 bit integer
-3672+20	2381  ED53FCBF	    ld      (BINSTART), de
+3683+17	2380  CD7209  	    call    FRMNUM                  ; Get number
+3700+17	2383  CD8206  	    call    FRCINT                  ; Convert to 16 bit integer
+3717+20	2386  ED53FCBF	    ld      (BINSTART), de
 			
 			    ; Expect comma
-3692+17	2385  CD9A27  	    call    get_arg
-3709+7	2388  FE2C    	    cp      ','
-3716+10	238A  C2D603  	    jp      nz, MOERR
-3726+6	238D  23      	    inc     hl
+3737+17	238A  CD9F27  	    call    get_arg
+3754+7	238D  FE2C    	    cp      ','
+3761+10	238F  C2D603  	    jp      nz, MOERR
+3771+6	2392  23      	    inc     hl
 			
 			    ; Get second parameter: length
-3732+17	238E  CD7209  	    call    FRMNUM                  ; Get number
-3749+17	2391  CD8206  	    call    FRCINT                  ; Convert to 16 bit integer
-3766+20	2394  ED53FEBF	    ld      (BINLEN), de
-3786+10	2398  C3A528  	    jp      save_binary
+3777+17	2393  CD7209  	    call    FRMNUM                  ; Get number
+3794+17	2396  CD8206  	    call    FRCINT                  ; Convert to 16 bit integer
+3811+20	2399  ED53FEBF	    ld      (BINLEN), de
+3831+10	239D  C3AA28  	    jp      save_binary
 			
 			    ; Save array
-    -	239B          	.array:
-3796+17	239B  CD3F23  	    call    get_array_argument
-3813+10	239E  C37A28  	    jp      save_caq_array
+    -	23A0          	.array:
+3841+17	23A0  CD4423  	    call    get_array_argument
+3858+10	23A3  C37F28  	    jp      save_caq_array
 			
 			;-----------------------------------------------------------------------------
 			; DEL - Delete file/directory
 			;-----------------------------------------------------------------------------
-    -	23A1          	ST_DEL:
+    -	23A6          	ST_DEL:
 			    ; Get string parameter
-3823+17	23A1  CDC726  	    call    get_string_parameter
+3868+17	23A6  CDCC26  	    call    get_string_parameter
 			
 			    ; Save BASIC text pointer
-3840+11	23A4  E5      	    push    hl
+3885+11	23A9  E5      	    push    hl
 			
 			    ; Issue ESP command
-3851+7	23A5  3E19    	    ld      a, ESPCMD_DELETE
-3858+17	23A7  CD0226  	    call    esp_cmd
-3875+17	23AA  CDE626  	    call    esp_send_pathbuf
-3892+17	23AD  CDF326  	    call    esp_get_result
+3896+7	23AA  3E19    	    ld      a, ESPCMD_DELETE
+3903+17	23AC  CD0726  	    call    esp_cmd
+3920+17	23AF  CDEB26  	    call    esp_send_pathbuf
+3937+17	23B2  CDF826  	    call    esp_get_result
 			
 			    ; Restore BASIC text pointer
-3909+10	23B0  E1      	    pop     hl
-3919+10	23B1  C9      	    ret
+3954+10	23B5  E1      	    pop     hl
+3964+10	23B6  C9      	    ret
 			
 			;-----------------------------------------------------------------------------
 			; CD - Change directory
@@ -1141,72 +1145,72 @@
 			; No argument -> Show current directory
 			; With argument -> Change current directory
 			;-----------------------------------------------------------------------------
-    -	23B2          	ST_CD:
+    -	23B7          	ST_CD:
 			    ; Push BASIC text pointer
-3929+11	23B2  E5      	    push    hl
+3974+11	23B7  E5      	    push    hl
 			
 			    ; Argument given?
-3940+4	23B3  B7      	    or      a
-3944+7+5	23B4  2018    	    jr      nz, .change_dir     ; Yes
+3985+4	23B8  B7      	    or      a
+3989+7+5	23B9  2018    	    jr      nz, .change_dir     ; Yes
 			
 			    ; -- No argument -> show current path ------------------------------------
-    -	23B6          	.show_path:
-3951+7	23B6  3E1E    	    ld      a, ESPCMD_GETCWD
-3958+17	23B8  CD0226  	    call    esp_cmd
-3975+17	23BB  CDF326  	    call    esp_get_result
+    -	23BB          	.show_path:
+3996+7	23BB  3E1E    	    ld      a, ESPCMD_GETCWD
+4003+17	23BD  CD0726  	    call    esp_cmd
+4020+17	23C0  CDF826  	    call    esp_get_result
 			
 			    ; Print current working directory
-    -	23BE          	.print_cwd:
-3992+17	23BE  CD1526  	    call    esp_get_byte
-4009+4	23C1  B7      	    or      a
-4013+7+5	23C2  2805    	    jr      z, .print_done
-4020+17	23C4  CD721D  	    call    TTYCHR
-4037+12	23C7  18F5    	    jr      .print_cwd
-    -	23C9          	.print_done:
-4049+17	23C9  CDEA19  	    call    CRDO
+    -	23C3          	.print_cwd:
+4037+17	23C3  CD1A26  	    call    esp_get_byte
+4054+4	23C6  B7      	    or      a
+4058+7+5	23C7  2805    	    jr      z, .print_done
+4065+17	23C9  CD721D  	    call    TTYCHR
+4082+12	23CC  18F5    	    jr      .print_cwd
+    -	23CE          	.print_done:
+4094+17	23CE  CDEA19  	    call    CRDO
 			
-    -	23CC          	.done:
+    -	23D1          	.done:
 			    ; Restore BASIC text pointer
-4066+10	23CC  E1      	    pop     hl
-4076+10	23CD  C9      	    ret
+4111+10	23D1  E1      	    pop     hl
+4121+10	23D2  C9      	    ret
 			
 			    ; -- Argument given -> change directory ----------------------------------
-    -	23CE          	.change_dir:
+    -	23D3          	.change_dir:
 			    ; Restore BASIC text pointer
-4086+10	23CE  E1      	    pop     hl
+4131+10	23D3  E1      	    pop     hl
 			
 			    ; Get string parameter
-4096+17	23CF  CDC726  	    call    get_string_parameter
+4141+17	23D4  CDCC26  	    call    get_string_parameter
 			
 			    ; Save BASIC text pointer
-4113+11	23D2  E5      	    push    hl
+4158+11	23D7  E5      	    push    hl
 			
 			    ; Issue ESP command
-4124+7	23D3  3E1C    	    ld      a, ESPCMD_CHDIR
-4131+17	23D5  CD0226  	    call    esp_cmd
-4148+17	23D8  CDE626  	    call    esp_send_pathbuf
-4165+17	23DB  CDF326  	    call    esp_get_result
-4182+12	23DE  18EC    	    jr      .done
+4169+7	23D8  3E1C    	    ld      a, ESPCMD_CHDIR
+4176+17	23DA  CD0726  	    call    esp_cmd
+4193+17	23DD  CDEB26  	    call    esp_send_pathbuf
+4210+17	23E0  CDF826  	    call    esp_get_result
+4227+12	23E3  18EC    	    jr      .done
 			
 			;-----------------------------------------------------------------------------
 			; MKDIR - Create directory
 			;-----------------------------------------------------------------------------
-    -	23E0          	ST_MKDIR:
+    -	23E5          	ST_MKDIR:
 			    ; Get string parameter
-4194+17	23E0  CDC726  	    call    get_string_parameter
+4239+17	23E5  CDCC26  	    call    get_string_parameter
 			
 			    ; Save BASIC text pointer
-4211+11	23E3  E5      	    push    hl
+4256+11	23E8  E5      	    push    hl
 			
 			    ; Issue ESP command
-4222+7	23E4  3E1B    	    ld      a, ESPCMD_MKDIR
-4229+17	23E6  CD0226  	    call    esp_cmd
-4246+17	23E9  CDE626  	    call    esp_send_pathbuf
-4263+17	23EC  CDF326  	    call    esp_get_result
+4267+7	23E9  3E1B    	    ld      a, ESPCMD_MKDIR
+4274+17	23EB  CD0726  	    call    esp_cmd
+4291+17	23EE  CDEB26  	    call    esp_send_pathbuf
+4308+17	23F1  CDF826  	    call    esp_get_result
 			
 			    ; Restore BASIC text pointer
-4280+10	23EF  E1      	    pop     hl
-4290+10	23F0  C9      	    ret
+4325+10	23F4  E1      	    pop     hl
+4335+10	23F5  C9      	    ret
 			
 			;-----------------------------------------------------------------------------
 			; DIR - Directory listing
@@ -1214,326 +1218,326 @@
 			; No argument -> List current directory
 			; With argument -> List given path
 			;-----------------------------------------------------------------------------
-    -	23F1          	ST_DIR:
+    -	23F6          	ST_DIR:
     -	3852          	    .tmp0: equ FILNAM+1
     -	3853          	    .tmp1: equ FILNAM+2
     -	3854          	    .tmp2: equ FILNAM+3
     -	3855          	    .tmp3: equ FILNAM+4
 			
 			    ; Preserve BASIC text pointer
-4300+11	23F1  E5      	    push    hl
+4345+11	23F6  E5      	    push    hl
 			
 			    ; Argument given?
-4311+4	23F2  B7      	    or      a
-4315+7+5	23F3  2009    	    jr      nz, .witharg     ; Yes
+4356+4	23F7  B7      	    or      a
+4360+7+5	23F8  2009    	    jr      nz, .witharg     ; Yes
 			
-4322+4	23F5  AF      	    xor     a
-4326+13	23F6  3200BF  	    ld      (PATHLEN), a
-4339+13	23F9  3201BF  	    ld      (PATHBUF), a
-4352+12	23FC  1805    	    jr      .esp_command
+4367+4	23FA  AF      	    xor     a
+4371+13	23FB  3200BF  	    ld      (PATHLEN), a
+4384+13	23FE  3201BF  	    ld      (PATHBUF), a
+4397+12	2401  1805    	    jr      .esp_command
 			
-    -	23FE          	.witharg:
-4364+10	23FE  E1      	    pop     hl                  ; Pop BASIC text pointer
-4374+17	23FF  CDC726  	    call    get_string_parameter
-4391+11	2402  E5      	    push    hl
+    -	2403          	.witharg:
+4409+10	2403  E1      	    pop     hl                  ; Pop BASIC text pointer
+4419+17	2404  CDCC26  	    call    get_string_parameter
+4436+11	2407  E5      	    push    hl
 			
-    -	2403          	.esp_command:
-4402+17	2403  CDFB26  	    call    esp_close_all
+    -	2408          	.esp_command:
+4447+17	2408  CD0027  	    call    esp_close_all
 			
 			    ; Issue ESP command
-4419+7	2406  3E16    	    ld      a, ESPCMD_OPENDIR
-4426+17	2408  CD0226  	    call    esp_cmd
-4443+17	240B  CDE626  	    call    esp_send_pathbuf
-4460+17	240E  CDF326  	    call    esp_get_result
+4464+7	240B  3E16    	    ld      a, ESPCMD_OPENDIR
+4471+17	240D  CD0726  	    call    esp_cmd
+4488+17	2410  CDEB26  	    call    esp_send_pathbuf
+4505+17	2413  CDF826  	    call    esp_get_result
 			
 			    ; Set initial number of lines per page
-4477+7	2411  3E18    	    ld      a, 24
-4484+13	2413  320838  	    ld      (CNTOFL), a
+4522+7	2416  3E18    	    ld      a, 24
+4529+13	2418  320838  	    ld      (CNTOFL), a
 			
-    -	2416          	.next_entry:
+    -	241B          	.next_entry:
 			    ; Read entry
-4497+7	2416  3E18    	    ld      a, ESPCMD_READDIR
-4504+17	2418  CD0226  	    call    esp_cmd
-4521+4	241B  AF      	    xor     a
-4525+17	241C  CD1E26  	    call    esp_send_byte
-4542+17	241F  CD1526  	    call    esp_get_byte
+4542+7	241B  3E18    	    ld      a, ESPCMD_READDIR
+4549+17	241D  CD0726  	    call    esp_cmd
+4566+4	2420  AF      	    xor     a
+4570+17	2421  CD2326  	    call    esp_send_byte
+4587+17	2424  CD1A26  	    call    esp_get_byte
 			
-4559+7	2422  FEFC    	    cp      ERR_EOF
-4566+10	2424  CA5825  	    jp      z, .done
-4576+4	2427  B7      	    or      a
-4580+10	2428  F22F24  	    jp      p, .ok2
-4590+10	242B  E1      	    pop     hl              ; Restore BASIC text pointer
-4600+10	242C  C36A25  	    jp      esp_error
+4604+7	2427  FEFC    	    cp      ERR_EOF
+4611+10	2429  CA5D25  	    jp      z, .done
+4621+4	242C  B7      	    or      a
+4625+10	242D  F23424  	    jp      p, .ok2
+4635+10	2430  E1      	    pop     hl              ; Restore BASIC text pointer
+4645+10	2431  C36F25  	    jp      esp_error
 			
-    -	242F          	.ok2:
+    -	2434          	.ok2:
 			    ;-- Date -----------------------------------------------------------------
-4610+17	242F  CD1526  	    call    esp_get_byte
-4627+13	2432  325238  	    ld      (.tmp0), a
-4640+17	2435  CD1526  	    call    esp_get_byte
-4657+13	2438  325338  	    ld      (.tmp1), a
+4655+17	2434  CD1A26  	    call    esp_get_byte
+4672+13	2437  325238  	    ld      (.tmp0), a
+4685+17	243A  CD1A26  	    call    esp_get_byte
+4702+13	243D  325338  	    ld      (.tmp1), a
 			
 			    ; Extract year
-4670+8	243B  CB3F    	    srl     a
-4678+7	243D  C650    	    add     80
-4685+17	243F  CD2926  	    call    out_number_2digits
+4715+8	2440  CB3F    	    srl     a
+4723+7	2442  C650    	    add     80
+4730+17	2444  CD2E26  	    call    out_number_2digits
 			
-4702+7	2442  3E2D    	    ld      a, '-'
-4709+17	2444  CD721D  	    call    TTYCHR
+4747+7	2447  3E2D    	    ld      a, '-'
+4754+17	2449  CD721D  	    call    TTYCHR
 			
 			    ; Extract month
-4726+13	2447  3A5338  	    ld      a, (.tmp1)
-4739+4	244A  1F      	    rra                     ; Lowest bit in carry
-4743+13	244B  3A5238  	    ld      a, (.tmp0)
-4756+4	244E  1F      	    rra
-4760+8	244F  CB3F    	    srl     a
-4768+8	2451  CB3F    	    srl     a
-4776+8	2453  CB3F    	    srl     a
-4784+8	2455  CB3F    	    srl     a
-4792+17	2457  CD2926  	    call    out_number_2digits
+4771+13	244C  3A5338  	    ld      a, (.tmp1)
+4784+4	244F  1F      	    rra                     ; Lowest bit in carry
+4788+13	2450  3A5238  	    ld      a, (.tmp0)
+4801+4	2453  1F      	    rra
+4805+8	2454  CB3F    	    srl     a
+4813+8	2456  CB3F    	    srl     a
+4821+8	2458  CB3F    	    srl     a
+4829+8	245A  CB3F    	    srl     a
+4837+17	245C  CD2E26  	    call    out_number_2digits
 			
-4809+7	245A  3E2D    	    ld      a, '-'
-4816+17	245C  CD721D  	    call    TTYCHR
+4854+7	245F  3E2D    	    ld      a, '-'
+4861+17	2461  CD721D  	    call    TTYCHR
 			
 			    ; Extract day
-4833+13	245F  3A5238  	    ld      a, (.tmp0)
-4846+7	2462  E61F    	    and     $1F
-4853+17	2464  CD2926  	    call    out_number_2digits
+4878+13	2464  3A5238  	    ld      a, (.tmp0)
+4891+7	2467  E61F    	    and     $1F
+4898+17	2469  CD2E26  	    call    out_number_2digits
 			
-4870+7	2467  3E20    	    ld      a, ' '
-4877+17	2469  CD721D  	    call    TTYCHR
+4915+7	246C  3E20    	    ld      a, ' '
+4922+17	246E  CD721D  	    call    TTYCHR
 			
 			    ;-- Time -----------------------------------------------------------------
 			    ; Get time (hhhhhmmm mmmsssss)
-4894+17	246C  CD1526  	    call    esp_get_byte
-4911+13	246F  325238  	    ld      (.tmp0), a
-4924+17	2472  CD1526  	    call    esp_get_byte
-4941+13	2475  325338  	    ld      (.tmp1), a
+4939+17	2471  CD1A26  	    call    esp_get_byte
+4956+13	2474  325238  	    ld      (.tmp0), a
+4969+17	2477  CD1A26  	    call    esp_get_byte
+4986+13	247A  325338  	    ld      (.tmp1), a
 			
 			    ; Hours
-4954+8	2478  CB3F    	    srl     a
-4962+8	247A  CB3F    	    srl     a
-4970+8	247C  CB3F    	    srl     a
-4978+17	247E  CD2926  	    call    out_number_2digits
+4999+8	247D  CB3F    	    srl     a
+5007+8	247F  CB3F    	    srl     a
+5015+8	2481  CB3F    	    srl     a
+5023+17	2483  CD2E26  	    call    out_number_2digits
 			
-4995+7	2481  3E3A    	    ld      a, ':'
-5002+17	2483  CD721D  	    call    TTYCHR
+5040+7	2486  3E3A    	    ld      a, ':'
+5047+17	2488  CD721D  	    call    TTYCHR
 			
 			    ; Minutes
-5019+13	2486  3A5338  	    ld      a, (.tmp1)
-5032+7	2489  E607    	    and     $07
-5039+4	248B  4F      	    ld      c, a
-5043+13	248C  3A5238  	    ld      a, (.tmp0)
-5056+8	248F  CB39    	    srl     c
-5064+4	2491  1F      	    rra
-5068+8	2492  CB39    	    srl     c
-5076+4	2494  1F      	    rra
-5080+8	2495  CB39    	    srl     c
-5088+4	2497  1F      	    rra
-5092+8	2498  CB39    	    srl     c
-5100+4	249A  1F      	    rra
-5104+8	249B  CB39    	    srl     c
-5112+4	249D  1F      	    rra
-5116+17	249E  CD2926  	    call    out_number_2digits
+5064+13	248B  3A5338  	    ld      a, (.tmp1)
+5077+7	248E  E607    	    and     $07
+5084+4	2490  4F      	    ld      c, a
+5088+13	2491  3A5238  	    ld      a, (.tmp0)
+5101+8	2494  CB39    	    srl     c
+5109+4	2496  1F      	    rra
+5113+8	2497  CB39    	    srl     c
+5121+4	2499  1F      	    rra
+5125+8	249A  CB39    	    srl     c
+5133+4	249C  1F      	    rra
+5137+8	249D  CB39    	    srl     c
+5145+4	249F  1F      	    rra
+5149+8	24A0  CB39    	    srl     c
+5157+4	24A2  1F      	    rra
+5161+17	24A3  CD2E26  	    call    out_number_2digits
 			
 			    ;-- Attributes -----------------------------------------------------------
-5133+17	24A1  CD1526  	    call    esp_get_byte
-5150+8	24A4  CB47    	    bit     0, a
-5158+7+5	24A6  2814    	    jr      z, .no_dir
+5178+17	24A6  CD1A26  	    call    esp_get_byte
+5195+8	24A9  CB47    	    bit     0, a
+5203+7+5	24AB  2814    	    jr      z, .no_dir
 			
 			    ;-- Directory ------------------------------------------------------------
-5165+10	24A8  215125  	    ld      hl, .str_dir
-5175+17	24AB  CD9D0E  	    call    STROUT
+5210+10	24AD  215625  	    ld      hl, .str_dir
+5220+17	24B0  CD9D0E  	    call    STROUT
 			
 			    ; Skip length bytes
-5192+17	24AE  CD1526  	    call    esp_get_byte
-5209+17	24B1  CD1526  	    call    esp_get_byte
-5226+17	24B4  CD1526  	    call    esp_get_byte
-5243+17	24B7  CD1526  	    call    esp_get_byte
+5237+17	24B3  CD1A26  	    call    esp_get_byte
+5254+17	24B6  CD1A26  	    call    esp_get_byte
+5271+17	24B9  CD1A26  	    call    esp_get_byte
+5288+17	24BC  CD1A26  	    call    esp_get_byte
 			
-5260+12	24BA  187F    	    jr      .get_filename
+5305+12	24BF  187F    	    jr      .get_filename
 			
 			    ;-- Regular file: file size ----------------------------------------------
-    -	24BC          	.no_dir:
+    -	24C1          	.no_dir:
 			    ; aaaaaaaa bbbbbbbb cccccccc dddddddd
 			
-5272+17	24BC  CD1526  	    call    esp_get_byte
-5289+13	24BF  325238  	    ld      (.tmp0), a
-5302+17	24C2  CD1526  	    call    esp_get_byte
-5319+13	24C5  325338  	    ld      (.tmp1), a
-5332+17	24C8  CD1526  	    call    esp_get_byte
-5349+13	24CB  325438  	    ld      (.tmp2), a
-5362+17	24CE  CD1526  	    call    esp_get_byte
-5379+13	24D1  325538  	    ld      (.tmp3), a
+5317+17	24C1  CD1A26  	    call    esp_get_byte
+5334+13	24C4  325238  	    ld      (.tmp0), a
+5347+17	24C7  CD1A26  	    call    esp_get_byte
+5364+13	24CA  325338  	    ld      (.tmp1), a
+5377+17	24CD  CD1A26  	    call    esp_get_byte
+5394+13	24D0  325438  	    ld      (.tmp2), a
+5407+17	24D3  CD1A26  	    call    esp_get_byte
+5424+13	24D6  325538  	    ld      (.tmp3), a
 			
 			    ; Megabytes range?
-5392+4	24D4  B7      	    or      a
-5396+7+5	24D5  2042    	    jr      nz, .mb
-5403+13	24D7  3A5438  	    ld      a, (.tmp2)
-5416+7	24DA  E6F0    	    and     $F0
-5423+7+5	24DC  203B    	    jr      nz, .mb
+5437+4	24D9  B7      	    or      a
+5441+7+5	24DA  2042    	    jr      nz, .mb
+5448+13	24DC  3A5438  	    ld      a, (.tmp2)
+5461+7	24DF  E6F0    	    and     $F0
+5468+7+5	24E1  203B    	    jr      nz, .mb
 			
 			    ; Kilobytes range?
-5430+13	24DE  3A5438  	    ld      a, (.tmp2)
-5443+4	24E1  B7      	    or      a
-5447+7+5	24E2  2019    	    jr      nz, .kb
-5454+13	24E4  3A5338  	    ld      a, (.tmp1)
-5467+7	24E7  E6FC    	    and     $FC
-5474+7+5	24E9  2012    	    jr      nz, .kb
+5475+13	24E3  3A5438  	    ld      a, (.tmp2)
+5488+4	24E6  B7      	    or      a
+5492+7+5	24E7  2019    	    jr      nz, .kb
+5499+13	24E9  3A5338  	    ld      a, (.tmp1)
+5512+7	24EC  E6FC    	    and     $FC
+5519+7+5	24EE  2012    	    jr      nz, .kb
 			
 			    ; Bytes range (aaaaaaaa bbbbbbbb ccccccCC DDDDDDDD)
-    -	24EB          	.bytes:
-5481+13	24EB  3A5338  	    ld      a, (.tmp1)
-5494+4	24EE  67      	    ld      h, a
-5498+13	24EF  3A5238  	    ld      a, (.tmp0)
-5511+4	24F2  6F      	    ld      l, a
-5515+17	24F3  CD4826  	    call    out_number_4digits
-5532+7	24F6  3E42    	    ld      a, 'B'
-5539+17	24F8  CD721D  	    call    TTYCHR
-5556+12	24FB  183E    	    jr      .get_filename
+    -	24F0          	.bytes:
+5526+13	24F0  3A5338  	    ld      a, (.tmp1)
+5539+4	24F3  67      	    ld      h, a
+5543+13	24F4  3A5238  	    ld      a, (.tmp0)
+5556+4	24F7  6F      	    ld      l, a
+5560+17	24F8  CD4D26  	    call    out_number_4digits
+5577+7	24FB  3E42    	    ld      a, 'B'
+5584+17	24FD  CD721D  	    call    TTYCHR
+5601+12	2500  183E    	    jr      .get_filename
 			
 			    ; Kilobytes range: aaaaaaaa bbbbBBBB CCCCCCcc dddddddd
-    -	24FD          	.kb:
-5568+13	24FD  3A5438  	    ld      a, (.tmp2)
-5581+7	2500  E60F    	    and     a, $0F
-5588+4	2502  67      	    ld      h, a
-5592+13	2503  3A5338  	    ld      a, (.tmp1)
-5605+4	2506  6F      	    ld      l, a
-5609+8	2507  CB3C    	    srl     h
-5617+8	2509  CB1D    	    rr      l
-5625+8	250B  CB3C    	    srl     h
-5633+8	250D  CB1D    	    rr      l
-5641+17	250F  CD4826  	    call    out_number_4digits
-5658+7	2512  3E4B    	    ld      a, 'K'
-5665+17	2514  CD721D  	    call    TTYCHR
-5682+12	2517  1822    	    jr      .get_filename
+    -	2502          	.kb:
+5613+13	2502  3A5438  	    ld      a, (.tmp2)
+5626+7	2505  E60F    	    and     a, $0F
+5633+4	2507  67      	    ld      h, a
+5637+13	2508  3A5338  	    ld      a, (.tmp1)
+5650+4	250B  6F      	    ld      l, a
+5654+8	250C  CB3C    	    srl     h
+5662+8	250E  CB1D    	    rr      l
+5670+8	2510  CB3C    	    srl     h
+5678+8	2512  CB1D    	    rr      l
+5686+17	2514  CD4D26  	    call    out_number_4digits
+5703+7	2517  3E4B    	    ld      a, 'K'
+5710+17	2519  CD721D  	    call    TTYCHR
+5727+12	251C  1822    	    jr      .get_filename
 			
 			    ; Megabytes range: AAAAAAAA BBBBbbbb cccccccc dddddddd
-    -	2519          	.mb:
-5694+13	2519  3A5538  	    ld      a, (.tmp3)
-5707+4	251C  67      	    ld      h, a
-5711+13	251D  3A5438  	    ld      a, (.tmp2)
-5724+4	2520  6F      	    ld      l, a
-5728+8	2521  CB3C    	    srl     h
-5736+8	2523  CB1D    	    rr      l
-5744+8	2525  CB3C    	    srl     h
-5752+8	2527  CB1D    	    rr      l
-5760+8	2529  CB3C    	    srl     h
-5768+8	252B  CB1D    	    rr      l
-5776+8	252D  CB3C    	    srl     h
-5784+8	252F  CB1D    	    rr      l
-5792+17	2531  CD4826  	    call    out_number_4digits
-5809+7	2534  3E4D    	    ld      a, 'M'
-5816+17	2536  CD721D  	    call    TTYCHR
-5833+12	2539  1800    	    jr      .get_filename
+    -	251E          	.mb:
+5739+13	251E  3A5538  	    ld      a, (.tmp3)
+5752+4	2521  67      	    ld      h, a
+5756+13	2522  3A5438  	    ld      a, (.tmp2)
+5769+4	2525  6F      	    ld      l, a
+5773+8	2526  CB3C    	    srl     h
+5781+8	2528  CB1D    	    rr      l
+5789+8	252A  CB3C    	    srl     h
+5797+8	252C  CB1D    	    rr      l
+5805+8	252E  CB3C    	    srl     h
+5813+8	2530  CB1D    	    rr      l
+5821+8	2532  CB3C    	    srl     h
+5829+8	2534  CB1D    	    rr      l
+5837+17	2536  CD4D26  	    call    out_number_4digits
+5854+7	2539  3E4D    	    ld      a, 'M'
+5861+17	253B  CD721D  	    call    TTYCHR
+5878+12	253E  1800    	    jr      .get_filename
 			
 			    ;-- Filename -------------------------------------------------------------
-    -	253B          	.get_filename:
-5845+7	253B  3E20    	    ld      a, ' '
-5852+17	253D  CD721D  	    call    TTYCHR
+    -	2540          	.get_filename:
+5890+7	2540  3E20    	    ld      a, ' '
+5897+17	2542  CD721D  	    call    TTYCHR
 			
-    -	2540          	.filename:
-5869+17	2540  CD1526  	    call    esp_get_byte
-5886+4	2543  B7      	    or      a
-5890+7+5	2544  2805    	    jr      z, .name_done
-5897+17	2546  CD721D  	    call    TTYCHR
-5914+12	2549  18F5    	    jr      .filename
+    -	2545          	.filename:
+5914+17	2545  CD1A26  	    call    esp_get_byte
+5931+4	2548  B7      	    or      a
+5935+7+5	2549  2805    	    jr      z, .name_done
+5942+17	254B  CD721D  	    call    TTYCHR
+5959+12	254E  18F5    	    jr      .filename
 			
-    -	254B          	.name_done:
-5926+17	254B  CDEA19  	    call    CRDO
-5943+10	254E  C31624  	    jp      .next_entry
+    -	2550          	.name_done:
+5971+17	2550  CDEA19  	    call    CRDO
+5988+10	2553  C31B24  	    jp      .next_entry
 			
-    -	2551  203C4449	.str_dir: db " <DIR>",0
+    -	2556  203C4449	.str_dir: db " <DIR>",0
               523E00
 			
-    -	2558          	.done:
+    -	255D          	.done:
 			    ; Close directory
-5953+7	2558  3E17    	    ld      a, ESPCMD_CLOSEDIR
-5960+17	255A  CD0226  	    call    esp_cmd
-5977+4	255D  AF      	    xor     a
-5981+17	255E  CD1E26  	    call    esp_send_byte
-5998+17	2561  CD1526  	    call    esp_get_byte
-6015+4	2564  B7      	    or      a
-6019+10	2565  FA6A25  	    jp      m, esp_error
+5998+7	255D  3E17    	    ld      a, ESPCMD_CLOSEDIR
+6005+17	255F  CD0726  	    call    esp_cmd
+6022+4	2562  AF      	    xor     a
+6026+17	2563  CD2326  	    call    esp_send_byte
+6043+17	2566  CD1A26  	    call    esp_get_byte
+6060+4	2569  B7      	    or      a
+6064+10	256A  FA6F25  	    jp      m, esp_error
 			
-6029+10	2568  E1      	    pop     hl      ; Restore BASIC text pointer
-6039+10	2569  C9      	    ret
+6074+10	256D  E1      	    pop     hl      ; Restore BASIC text pointer
+6084+10	256E  C9      	    ret
 			
 			;-----------------------------------------------------------------------------
 			; esp_error
 			;-----------------------------------------------------------------------------
-    -	256A          	esp_error:
-6049+8	256A  ED44    	    neg
-6057+4	256C  3D      	    dec     a
-6061+7	256D  FE08    	    cp      -ERR_NOT_EMPTY
-6068+7+5	256F  3802    	    jr      c, .ok
-6075+7	2571  3E05    	    ld      a, -ERR_OTHER - 1
+    -	256F          	esp_error:
+6094+8	256F  ED44    	    neg
+6102+4	2571  3D      	    dec     a
+6106+7	2572  FE08    	    cp      -ERR_NOT_EMPTY
+6113+7+5	2574  3802    	    jr      c, .ok
+6120+7	2576  3E05    	    ld      a, -ERR_OTHER - 1
 			
-    -	2573          	.ok:
-6082+10	2573  218725  	    ld      hl, .error_msgs
-6092+4	2576  87      	    add     a,a
-6096+4	2577  85      	    add     l
-6100+4	2578  6F      	    ld      l, a
-6104+4	2579  7C      	    ld      a, h
-6108+7	257A  CE00    	    adc     a, 0
-6115+4	257C  67      	    ld      h, a
-6119+7	257D  7E      	    ld      a, (hl)
-6126+6	257E  23      	    inc     hl
-6132+7	257F  66      	    ld      h, (hl)
-6139+4	2580  6F      	    ld      l, a
+    -	2578          	.ok:
+6127+10	2578  218C25  	    ld      hl, .error_msgs
+6137+4	257B  87      	    add     a,a
+6141+4	257C  85      	    add     l
+6145+4	257D  6F      	    ld      l, a
+6149+4	257E  7C      	    ld      a, h
+6153+7	257F  CE00    	    adc     a, 0
+6160+4	2581  67      	    ld      h, a
+6164+7	2582  7E      	    ld      a, (hl)
+6171+6	2583  23      	    inc     hl
+6177+7	2584  66      	    ld      h, (hl)
+6184+4	2585  6F      	    ld      l, a
 			
 			    ; Print error message
-6143+7	2581  3E3F    	    ld      a, '?'
-6150+11	2583  DF      	    OUTCHR
-6161+10	2584  C3F403  	    jp      ERRFN1
+6188+7	2586  3E3F    	    ld      a, '?'
+6195+11	2588  DF      	    OUTCHR
+6206+10	2589  C3F403  	    jp      ERRFN1
 			
-    -	2587          	.error_msgs:
-    -	2587  9725    	    dw .msg_err_not_found     ; -1: File / directory not found
-    -	2589  A125    	    dw .msg_err_too_many_open ; -2: Too many open files / directories
-    -	258B  AF25    	    dw .msg_err_param         ; -3: Invalid parameter
-    -	258D  BD25    	    dw .msg_err_eof           ; -4: End of file / directory
-    -	258F  C125    	    dw .msg_err_exists        ; -5: File already exists
-    -	2591  D025    	    dw .msg_err_other         ; -6: Other error
-    -	2593  DE25    	    dw .msg_err_no_disk       ; -7: No disk
-    -	2595  E625    	    dw .msg_err_not_empty     ; -8: Not empty
+    -	258C          	.error_msgs:
+    -	258C  9C25    	    dw .msg_err_not_found     ; -1: File / directory not found
+    -	258E  A625    	    dw .msg_err_too_many_open ; -2: Too many open files / directories
+    -	2590  B425    	    dw .msg_err_param         ; -3: Invalid parameter
+    -	2592  C225    	    dw .msg_err_eof           ; -4: End of file / directory
+    -	2594  C625    	    dw .msg_err_exists        ; -5: File already exists
+    -	2596  D525    	    dw .msg_err_other         ; -6: Other error
+    -	2598  E325    	    dw .msg_err_no_disk       ; -7: No disk
+    -	259A  EB25    	    dw .msg_err_not_empty     ; -8: Not empty
 			
-    -	2597  4E6F7420	.msg_err_not_found:     db "Not found",0
+    -	259C  4E6F7420	.msg_err_not_found:     db "Not found",0
               666F756E
               6400
-    -	25A1  546F6F20	.msg_err_too_many_open: db "Too many open",0
+    -	25A6  546F6F20	.msg_err_too_many_open: db "Too many open",0
               6D616E79
               206F7065
               6E00
-    -	25AF  496E7661	.msg_err_param:         db "Invalid param",0
+    -	25B4  496E7661	.msg_err_param:         db "Invalid param",0
               6C696420
               70617261
               6D00
-    -	25BD  454F4600	.msg_err_eof:           db "EOF",0
-    -	25C1  416C7265	.msg_err_exists:        db "Already exists",0
+    -	25C2  454F4600	.msg_err_eof:           db "EOF",0
+    -	25C6  416C7265	.msg_err_exists:        db "Already exists",0
               61647920
               65786973
               747300
-    -	25D0  556E6B6E	.msg_err_other:         db "Unknown error",0
+    -	25D5  556E6B6E	.msg_err_other:         db "Unknown error",0
               6F776E20
               6572726F
               7200
-    -	25DE  4E6F2064	.msg_err_no_disk:       db "No disk",0
+    -	25E3  4E6F2064	.msg_err_no_disk:       db "No disk",0
               69736B00
-    -	25E6  4E6F7420	.msg_err_not_empty:     db "Not empty",0
+    -	25EB  4E6F7420	.msg_err_not_empty:     db "Not empty",0
               656D7074
               7900
 			
 			;-----------------------------------------------------------------------------
 			; Bad file error
 			;-----------------------------------------------------------------------------
-    -	25F0          	err_bad_file:
-6171+10	25F0  21F925  	    ld      hl, .msg_bad_file
+    -	25F5          	err_bad_file:
+6216+10	25F5  21FE25  	    ld      hl, .msg_bad_file
 			
 			    ; Print error message
-6181+7	25F3  3E3F    	    ld      a, '?'
-6188+11	25F5  DF      	    OUTCHR
-6199+10	25F6  C3F403  	    jp      ERRFN1
+6226+7	25F8  3E3F    	    ld      a, '?'
+6233+11	25FA  DF      	    OUTCHR
+6244+10	25FB  C3F403  	    jp      ERRFN1
 			
-    -	25F9  42616420	.msg_bad_file:       db "Bad file",0
+    -	25FE  42616420	.msg_bad_file:       db "Bad file",0
               66696C65
               00
 			
@@ -1541,118 +1545,118 @@
 			;-----------------------------------------------------------------------------
 			; Issue command to ESP
 			;-----------------------------------------------------------------------------
-    -	2602          	esp_cmd:
-6209+11	2602  F5      	    push    a
+    -	2607          	esp_cmd:
+6254+11	2607  F5      	    push    a
 			
 			    ; Drain RX FIFO
-    -	2603          	.drain:
-6220+11	2603  DBF4    	    in      a, (IO_ESPCTRL)
-6231+7	2605  E601    	    and     a, 1
-6238+7+5	2607  2804    	    jr      z, .done
-6245+11	2609  DBF5    	    in      a, (IO_ESPDATA)
-6256+12	260B  18F6    	    jr      .drain
-    -	260D          	.done:
+    -	2608          	.drain:
+6265+11	2608  DBF4    	    in      a, (IO_ESPCTRL)
+6276+7	260A  E601    	    and     a, 1
+6283+7+5	260C  2804    	    jr      z, .done
+6290+11	260E  DBF5    	    in      a, (IO_ESPDATA)
+6301+12	2610  18F6    	    jr      .drain
+    -	2612          	.done:
 			
 			    ; Issue start of command
-6268+7	260D  3E80    	    ld      a, $80
-6275+11	260F  D3F4    	    out     (IO_ESPCTRL), a
+6313+7	2612  3E80    	    ld      a, $80
+6320+11	2614  D3F4    	    out     (IO_ESPCTRL), a
 			
 			    ; Issue command
-6286+10	2611  F1      	    pop     a
-6296+10	2612  C31E26  	    jp      esp_send_byte
+6331+10	2616  F1      	    pop     a
+6341+10	2617  C32326  	    jp      esp_send_byte
 			
 			;-----------------------------------------------------------------------------
 			; Wait for data from ESP
 			;-----------------------------------------------------------------------------
-    -	2615          	esp_get_byte:
-    -	2615          	.wait:
-6306+11	2615  DBF4    	    in      a, (IO_ESPCTRL)
-6317+7	2617  E601    	    and     a, 1
-6324+7+5	2619  28FA    	    jr      z, .wait
-6331+11	261B  DBF5    	    in      a, (IO_ESPDATA)
-6342+10	261D  C9      	    ret
+    -	261A          	esp_get_byte:
+    -	261A          	.wait:
+6351+11	261A  DBF4    	    in      a, (IO_ESPCTRL)
+6362+7	261C  E601    	    and     a, 1
+6369+7+5	261E  28FA    	    jr      z, .wait
+6376+11	2620  DBF5    	    in      a, (IO_ESPDATA)
+6387+10	2622  C9      	    ret
 			
 			;-----------------------------------------------------------------------------
 			; Write data to ESP
 			;-----------------------------------------------------------------------------
-    -	261E          	esp_send_byte:
-6352+11	261E  F5      	    push    a
+    -	2623          	esp_send_byte:
+6397+11	2623  F5      	    push    a
 			
-    -	261F          	.wait:
-6363+11	261F  DBF4    	    in      a, (IO_ESPCTRL)
-6374+7	2621  E602    	    and     a, 2
-6381+7+5	2623  20FA    	    jr      nz, .wait
+    -	2624          	.wait:
+6408+11	2624  DBF4    	    in      a, (IO_ESPCTRL)
+6419+7	2626  E602    	    and     a, 2
+6426+7+5	2628  20FA    	    jr      nz, .wait
 			
-6388+10	2625  F1      	    pop     a
-6398+11	2626  D3F5    	    out     (IO_ESPDATA), a
-6409+10	2628  C9      	    ret
+6433+10	262A  F1      	    pop     a
+6443+11	262B  D3F5    	    out     (IO_ESPDATA), a
+6454+10	262D  C9      	    ret
 			
 			;-----------------------------------------------------------------------------
 			; Output 2 number digit in A
 			;-----------------------------------------------------------------------------
-    -	2629          	out_number_2digits:
-6419+7	2629  FE64    	    cp      100
-6426+7+5	262B  3804    	    jr      c, .l0
-6433+7	262D  D664    	    sub     a, 100
-6440+12	262F  18F8    	    jr      out_number_2digits
-    -	2631          	.l0:
-6452+7	2631  0E00    	    ld      c, 0
-    -	2633          	.l1:
-6459+4	2633  0C      	    inc     c
-6463+7	2634  D60A    	    sub     a, 10
-6470+7+5	2636  30FB    	    jr      nc, .l1
-6477+7	2638  C60A    	    add     a, 10
-6484+11	263A  F5      	    push    a
+    -	262E          	out_number_2digits:
+6464+7	262E  FE64    	    cp      100
+6471+7+5	2630  3804    	    jr      c, .l0
+6478+7	2632  D664    	    sub     a, 100
+6485+12	2634  18F8    	    jr      out_number_2digits
+    -	2636          	.l0:
+6497+7	2636  0E00    	    ld      c, 0
+    -	2638          	.l1:
+6504+4	2638  0C      	    inc     c
+6508+7	2639  D60A    	    sub     a, 10
+6515+7+5	263B  30FB    	    jr      nc, .l1
+6522+7	263D  C60A    	    add     a, 10
+6529+11	263F  F5      	    push    a
 			
-6495+4	263B  79      	    ld      a, c
-6499+7	263C  C62F    	    add     '0'-1
-6506+17	263E  CD721D  	    call    TTYCHR
-6523+10	2641  F1      	    pop     a
-6533+7	2642  C630    	    add     '0'
-6540+17	2644  CD721D  	    call    TTYCHR
-6557+10	2647  C9      	    ret
+6540+4	2640  79      	    ld      a, c
+6544+7	2641  C62F    	    add     '0'-1
+6551+17	2643  CD721D  	    call    TTYCHR
+6568+10	2646  F1      	    pop     a
+6578+7	2647  C630    	    add     '0'
+6585+17	2649  CD721D  	    call    TTYCHR
+6602+10	264C  C9      	    ret
 			
 			;-----------------------------------------------------------------------------
 			; Output 4 number digit in HL
 			;-----------------------------------------------------------------------------
-    -	2648          	out_number_4digits:
-6567+7	2648  1601    	    ld      d, 1
+    -	264D          	out_number_4digits:
+6612+7	264D  1601    	    ld      d, 1
 			
-6574+10	264A  01F0D8  	    ld      bc, -10000
-6584+17	264D  CD6526  	    call    .num1
-6601+10	2650  0118FC  	    ld      bc, -1000
-6611+17	2653  CD6526  	    call    .num1
-6628+10	2656  019CFF  	    ld      bc, -100
-6638+17	2659  CD6526  	    call    .num1
-6655+7	265C  0EF6    	    ld      c, -10
-6662+17	265E  CD6526  	    call    .num1
+6619+10	264F  01F0D8  	    ld      bc, -10000
+6629+17	2652  CD6A26  	    call    .num1
+6646+10	2655  0118FC  	    ld      bc, -1000
+6656+17	2658  CD6A26  	    call    .num1
+6673+10	265B  019CFF  	    ld      bc, -100
+6683+17	265E  CD6A26  	    call    .num1
+6700+7	2661  0EF6    	    ld      c, -10
+6707+17	2663  CD6A26  	    call    .num1
 			
-6679+7	2661  1600    	    ld      d, 0
-6686+7	2663  0EFF    	    ld      c, -1
-    -	2665          	.num1:
-6693+7	2665  3EFF    	    ld      a, -1
-    -	2667          	.num2:
-6700+4	2667  3C      	    inc     a
-6704+11	2668  09      	    add     hl, bc
-6715+7+5	2669  38FC    	    jr      c, .num2
-6722+15	266B  ED42    	    sbc     hl, bc
+6724+7	2666  1600    	    ld      d, 0
+6731+7	2668  0EFF    	    ld      c, -1
+    -	266A          	.num1:
+6738+7	266A  3EFF    	    ld      a, -1
+    -	266C          	.num2:
+6745+4	266C  3C      	    inc     a
+6749+11	266D  09      	    add     hl, bc
+6760+7+5	266E  38FC    	    jr      c, .num2
+6767+15	2670  ED42    	    sbc     hl, bc
 			
-6737+4	266D  B7      	    or      a
-6741+7+5	266E  2808    	    jr      z, .zero
+6782+4	2672  B7      	    or      a
+6786+7+5	2673  2808    	    jr      z, .zero
 			
-6748+7	2670  1600    	    ld      d, 0
+6793+7	2675  1600    	    ld      d, 0
 			
-    -	2672          	.normal:
-6755+7	2672  C630    	    add     '0'
-6762+17	2674  CD721D  	    call    TTYCHR
-6779+10	2677  C9      	    ret
+    -	2677          	.normal:
+6800+7	2677  C630    	    add     '0'
+6807+17	2679  CD721D  	    call    TTYCHR
+6824+10	267C  C9      	    ret
 			
-    -	2678          	.zero:
-6789+8	2678  CB42    	    bit     0, d
-6797+7+5	267A  28F6    	    jr      z, .normal
-6804+7	267C  3E20    	    ld      a, ' '
-6811+17	267E  CD721D  	    call    TTYCHR
-6828+10	2681  C9      	    ret
+    -	267D          	.zero:
+6834+8	267D  CB42    	    bit     0, d
+6842+7+5	267F  28F6    	    jr      z, .normal
+6849+7	2681  3E20    	    ld      a, ' '
+6856+17	2683  CD721D  	    call    TTYCHR
+6873+10	2686  C9      	    ret
 			
 			;-----------------------------------------------------------------------------
 			; Initialize BASIC Program
@@ -1660,162 +1664,162 @@
 			; Resets variables, arrays, string space etc.
 			; Updates nextline pointers to match location of BASIC program in RAM
 			;-----------------------------------------------------------------------------
-    -	2682          	init_basic_program:
+    -	2687          	init_basic_program:
 			    ; Set next statement to start of program
-6838+16	2682  2A4F38  	    ld      hl, (TXTTAB)
-6854+6	2685  2B      	    dec     hl
-6860+16	2686  22CE38  	    ld      (SAVTXT), hl
+6883+16	2687  2A4F38  	    ld      hl, (TXTTAB)
+6899+6	268A  2B      	    dec     hl
+6905+16	268B  22CE38  	    ld      (SAVTXT), hl
 			
 			    ; Set DATPTR to start of program
-6876+16	2689  22DC38  	    ld      (DATPTR), hl
+6921+16	268E  22DC38  	    ld      (DATPTR), hl
 			
 			    ; Clear string space
-6892+16	268C  2AAD38  	    ld      hl, (MEMSIZ)
-6908+16	268F  22C138  	    ld      (FRETOP), hl
+6937+16	2691  2AAD38  	    ld      hl, (MEMSIZ)
+6953+16	2694  22C138  	    ld      (FRETOP), hl
 			
 			    ; Clear simple variables
-6924+16	2692  2AD638  	    ld      hl, (VARTAB)
-6940+16	2695  22D838  	    ld      (ARYTAB), hl
+6969+16	2697  2AD638  	    ld      hl, (VARTAB)
+6985+16	269A  22D838  	    ld      (ARYTAB), hl
 			
 			    ; Clear array table
-6956+16	2698  22DA38  	    ld      (STREND), hl
+7001+16	269D  22DA38  	    ld      (STREND), hl
 			
 			    ; Clear string buffer
-6972+10	269B  21B138  	    ld      hl, TEMPPT + 2
-6982+16	269E  22AF38  	    ld      (TEMPPT), hl
+7017+10	26A0  21B138  	    ld      hl, TEMPPT + 2
+7027+16	26A3  22AF38  	    ld      (TEMPPT), hl
 			
 			    ; Set CONTinue position to 0
-6998+4	26A1  AF      	    xor     a
-7002+4	26A2  6F      	    ld      l, a
-7006+4	26A3  67      	    ld      h, a
-7010+16	26A4  22D438  	    ld      (OLDTXT), hl
+7043+4	26A6  AF      	    xor     a
+7047+4	26A7  6F      	    ld      l, a
+7051+4	26A8  67      	    ld      h, a
+7055+16	26A9  22D438  	    ld      (OLDTXT), hl
 			
 			    ; Clear locator flag
-7026+13	26A7  32CB38  	    ld      (SUBFLG), a
+7071+13	26AC  32CB38  	    ld      (SUBFLG), a
 			
 			    ; Clear array pointer???
-7039+16	26AA  22DE38  	    ld      (VARNAM), hl
+7084+16	26AF  22DE38  	    ld      (VARNAM), hl
 			
 			    ; Fix up next line addresses in loaded BASIC program
-    -	26AD          	.link_lines:
-7055+20	26AD  ED5B4F38	    ld      de, (TXTTAB)        ; DE = start of BASIC program
-    -	26B1          	.next_line:
-7075+4	26B1  62      	    ld      h, d
-7079+4	26B2  6B      	    ld      l, e                ; HL = DE
-7083+7	26B3  7E      	    ld      a, (hl)
-7090+6	26B4  23      	    inc     hl                  ; Test nextline address
-7096+7	26B5  B6      	    or      (hl)
-7103+7+5	26B6  280E    	    jr      z, .init_done       ; If $0000 then done
-7110+6	26B8  23      	    inc     hl
-7116+6	26B9  23      	    inc     hl                  ; Skip line number
-7122+6	26BA  23      	    inc     hl
-7128+4	26BB  AF      	    xor     a                   ; End of line = $00
-    -	26BC          	.find_eol:
-7132+7	26BC  BE      	    cp      (hl)                ; Search for end of line
-7139+6	26BD  23      	    inc     hl
-7145+7+5	26BE  20FC    	    jr      nz, .find_eol
-7152+4	26C0  EB      	    ex      de, hl              ; HL = current line, DE = next line
-7156+7	26C1  73      	    ld      (hl), e
-7163+6	26C2  23      	    inc     hl                  ; Set address of next line
-7169+7	26C3  72      	    ld      (hl), d
-7176+12	26C4  18EB    	    jr      .next_line
-    -	26C6          	.init_done:
-7188+10	26C6  C9      	    ret
+    -	26B2          	.link_lines:
+7100+20	26B2  ED5B4F38	    ld      de, (TXTTAB)        ; DE = start of BASIC program
+    -	26B6          	.next_line:
+7120+4	26B6  62      	    ld      h, d
+7124+4	26B7  6B      	    ld      l, e                ; HL = DE
+7128+7	26B8  7E      	    ld      a, (hl)
+7135+6	26B9  23      	    inc     hl                  ; Test nextline address
+7141+7	26BA  B6      	    or      (hl)
+7148+7+5	26BB  280E    	    jr      z, .init_done       ; If $0000 then done
+7155+6	26BD  23      	    inc     hl
+7161+6	26BE  23      	    inc     hl                  ; Skip line number
+7167+6	26BF  23      	    inc     hl
+7173+4	26C0  AF      	    xor     a                   ; End of line = $00
+    -	26C1          	.find_eol:
+7177+7	26C1  BE      	    cp      (hl)                ; Search for end of line
+7184+6	26C2  23      	    inc     hl
+7190+7+5	26C3  20FC    	    jr      nz, .find_eol
+7197+4	26C5  EB      	    ex      de, hl              ; HL = current line, DE = next line
+7201+7	26C6  73      	    ld      (hl), e
+7208+6	26C7  23      	    inc     hl                  ; Set address of next line
+7214+7	26C8  72      	    ld      (hl), d
+7221+12	26C9  18EB    	    jr      .next_line
+    -	26CB          	.init_done:
+7233+10	26CB  C9      	    ret
 			
 			;-----------------------------------------------------------------------------
 			; Get string parameter and store it in PATHLEN/PATHBUF
 			;-----------------------------------------------------------------------------
-    -	26C7          	get_string_parameter:
+    -	26CC          	get_string_parameter:
 			    ; Evaluate expression
-7198+17	26C7  CD8509  	    call    FRMEVL
+7243+17	26CC  CD8509  	    call    FRMEVL
 			
 			    ; Save BASIC text pointer
-7215+11	26CA  E5      	    push    hl
+7260+11	26CF  E5      	    push    hl
 			
 			    ; Get string length (this will check for string type)
-7226+17	26CB  CDF70F  	    call    LEN1
+7271+17	26D0  CDF70F  	    call    LEN1
 			
 			    ; Save length
-7243+13	26CE  3200BF  	    ld      (PATHLEN), a
+7288+13	26D3  3200BF  	    ld      (PATHLEN), a
 			
 			    ; Get string pointer into HL
-7256+6	26D1  23      	    inc     hl
-7262+6	26D2  23      	    inc     hl
-7268+7	26D3  46      	    ld      b, (hl)
-7275+6	26D4  23      	    inc     hl
-7281+7	26D5  66      	    ld      h, (hl)
-7288+4	26D6  68      	    ld      l, b
+7301+6	26D6  23      	    inc     hl
+7307+6	26D7  23      	    inc     hl
+7313+7	26D8  46      	    ld      b, (hl)
+7320+6	26D9  23      	    inc     hl
+7326+7	26DA  66      	    ld      h, (hl)
+7333+4	26DB  68      	    ld      l, b
 			
 			    ; Copy string to PATHBUF
-7292+10	26D7  1101BF  	    ld      de, PATHBUF
-7302+7	26DA  0600    	    ld      b, 0
-7309+4	26DC  4F      	    ld      c, a
-7313+4	26DD  B7      	    or      a
-7317+7+5	26DE  2802    	    jr      z, .copy_done
-7324+16+5	26E0  EDB0    	    ldir
-    -	26E2          	.copy_done:
+7337+10	26DC  1101BF  	    ld      de, PATHBUF
+7347+7	26DF  0600    	    ld      b, 0
+7354+4	26E1  4F      	    ld      c, a
+7358+4	26E2  B7      	    or      a
+7362+7+5	26E3  2802    	    jr      z, .copy_done
+7369+16+5	26E5  EDB0    	    ldir
+    -	26E7          	.copy_done:
 			
 			    ; Zero-terminate string
-7340+4	26E2  AF      	    xor     a
-7344+7	26E3  12      	    ld      (de), a
+7385+4	26E7  AF      	    xor     a
+7389+7	26E8  12      	    ld      (de), a
 			
 			    ; Restore BASIC text pointer
-7351+10	26E4  E1      	    pop     hl
-7361+10	26E5  C9      	    ret
+7396+10	26E9  E1      	    pop     hl
+7406+10	26EA  C9      	    ret
 			
 			;-----------------------------------------------------------------------------
 			; Send PATHBUF including zero termination to ESPDATA
 			;-----------------------------------------------------------------------------
-    -	26E6          	esp_send_pathbuf:
-7371+10	26E6  2101BF  	    ld      hl, PATHBUF
-7381+7	26E9  1600    	    ld      d, 0
-7388+13	26EB  3A00BF  	    ld      a, (PATHLEN)
-7401+4	26EE  3C      	    inc     a               ; Include zero termination
-7405+4	26EF  5F      	    ld      e, a
-7409+10	26F0  C34E27  	    jp      esp_send_bytes
+    -	26EB          	esp_send_pathbuf:
+7416+10	26EB  2101BF  	    ld      hl, PATHBUF
+7426+7	26EE  1600    	    ld      d, 0
+7433+13	26F0  3A00BF  	    ld      a, (PATHLEN)
+7446+4	26F3  3C      	    inc     a               ; Include zero termination
+7450+4	26F4  5F      	    ld      e, a
+7454+10	26F5  C35327  	    jp      esp_send_bytes
 			
 			;-----------------------------------------------------------------------------
 			; Get first result byte, and jump to error handler if it was an error
 			;-----------------------------------------------------------------------------
-    -	26F3          	esp_get_result:
-7419+17	26F3  CD1526  	    call    esp_get_byte
-7436+4	26F6  B7      	    or      a
-7440+10	26F7  FA6A25  	    jp      m, esp_error
-7450+10	26FA  C9      	    ret
+    -	26F8          	esp_get_result:
+7464+17	26F8  CD1A26  	    call    esp_get_byte
+7481+4	26FB  B7      	    or      a
+7485+10	26FC  FA6F25  	    jp      m, esp_error
+7495+10	26FF  C9      	    ret
 			
 			;-----------------------------------------------------------------------------
 			; Close any open file/directory descriptor
 			;
 			; Clobbered registers: A
 			;-----------------------------------------------------------------------------
-    -	26FB          	esp_close_all:
-7460+7	26FB  3E1F    	    ld      a, ESPCMD_CLOSEALL
-7467+17	26FD  CD0226  	    call    esp_cmd
-7484+10	2700  C3F326  	    jp      esp_get_result
+    -	2700          	esp_close_all:
+7505+7	2700  3E1F    	    ld      a, ESPCMD_CLOSEALL
+7512+17	2702  CD0726  	    call    esp_cmd
+7529+10	2705  C3F826  	    jp      esp_get_result
 			
 			;-----------------------------------------------------------------------------
 			; Open file in PATHBUF
 			;
 			; Clobbered registers: A, HL, DE
 			;-----------------------------------------------------------------------------
-    -	2703          	esp_open:
-7494+7	2703  3E10    	    ld      a, ESPCMD_OPEN
-7501+17	2705  CD0226  	    call    esp_cmd
-7518+7	2708  3E00    	    ld      a, FO_RDONLY
-7525+17	270A  CD1E26  	    call    esp_send_byte
-7542+17	270D  CDE626  	    call    esp_send_pathbuf
-7559+10	2710  C3F326  	    jp      esp_get_result
+    -	2708          	esp_open:
+7539+7	2708  3E10    	    ld      a, ESPCMD_OPEN
+7546+17	270A  CD0726  	    call    esp_cmd
+7563+7	270D  3E00    	    ld      a, FO_RDONLY
+7570+17	270F  CD2326  	    call    esp_send_byte
+7587+17	2712  CDEB26  	    call    esp_send_pathbuf
+7604+10	2715  C3F826  	    jp      esp_get_result
 			
 			;-----------------------------------------------------------------------------
 			; Create file in PATHBUF
 			;-----------------------------------------------------------------------------
-    -	2713          	esp_create:
-7569+7	2713  3E10    	    ld      a, ESPCMD_OPEN
-7576+17	2715  CD0226  	    call    esp_cmd
-7593+7	2718  3E19    	    ld      a, FO_WRONLY | FO_CREATE | FO_TRUNC
-7600+17	271A  CD1E26  	    call    esp_send_byte
-7617+17	271D  CDE626  	    call    esp_send_pathbuf
-7634+10	2720  C3F326  	    jp      esp_get_result
+    -	2718          	esp_create:
+7614+7	2718  3E10    	    ld      a, ESPCMD_OPEN
+7621+17	271A  CD0726  	    call    esp_cmd
+7638+7	271D  3E19    	    ld      a, FO_WRONLY | FO_CREATE | FO_TRUNC
+7645+17	271F  CD2326  	    call    esp_send_byte
+7662+17	2722  CDEB26  	    call    esp_send_pathbuf
+7679+10	2725  C3F826  	    jp      esp_get_result
 			
 			;-----------------------------------------------------------------------------
 			; Read bytes
@@ -1826,46 +1830,46 @@
 			;
 			; Clobbered registers: A, HL, DE
 			;-----------------------------------------------------------------------------
-    -	2723          	esp_read_bytes:
-7644+7	2723  3E12    	    ld      a, ESPCMD_READ
-7651+17	2725  CD0226  	    call    esp_cmd
+    -	2728          	esp_read_bytes:
+7689+7	2728  3E12    	    ld      a, ESPCMD_READ
+7696+17	272A  CD0726  	    call    esp_cmd
 			
 			    ; Send file descriptor
-7668+4	2728  AF      	    xor     a
-7672+17	2729  CD1E26  	    call    esp_send_byte
+7713+4	272D  AF      	    xor     a
+7717+17	272E  CD2326  	    call    esp_send_byte
 			
 			    ; Send read size
-7689+4	272C  7B      	    ld      a, e
-7693+17	272D  CD1E26  	    call    esp_send_byte
-7710+4	2730  7A      	    ld      a, d
-7714+17	2731  CD1E26  	    call    esp_send_byte
+7734+4	2731  7B      	    ld      a, e
+7738+17	2732  CD2326  	    call    esp_send_byte
+7755+4	2735  7A      	    ld      a, d
+7759+17	2736  CD2326  	    call    esp_send_byte
 			
 			    ; Get result
-7731+17	2734  CDF326  	    call    esp_get_result
+7776+17	2739  CDF826  	    call    esp_get_result
 			
 			    ; Get number of bytes actual read
-7748+17	2737  CD1526  	    call    esp_get_byte
-7765+4	273A  5F      	    ld      e, a
-7769+17	273B  CD1526  	    call    esp_get_byte
-7786+4	273E  57      	    ld      d, a
+7793+17	273C  CD1A26  	    call    esp_get_byte
+7810+4	273F  5F      	    ld      e, a
+7814+17	2740  CD1A26  	    call    esp_get_byte
+7831+4	2743  57      	    ld      d, a
 			
-7790+11	273F  D5      	    push    de
+7835+11	2744  D5      	    push    de
 			
-    -	2740          	.loop:
+    -	2745          	.loop:
 			    ; Done reading? (DE=0)
-7801+4	2740  7A      	    ld      a, d
-7805+4	2741  B3      	    or      a, e
-7809+7+5	2742  2808    	    jr      z, .done
+7846+4	2745  7A      	    ld      a, d
+7850+4	2746  B3      	    or      a, e
+7854+7+5	2747  2808    	    jr      z, .done
 			
-7816+17	2744  CD1526  	    call    esp_get_byte
-7833+7	2747  77      	    ld      (hl), a
-7840+6	2748  23      	    inc     hl
-7846+6	2749  1B      	    dec     de
-7852+12	274A  18F4    	    jr      .loop
+7861+17	2749  CD1A26  	    call    esp_get_byte
+7878+7	274C  77      	    ld      (hl), a
+7885+6	274D  23      	    inc     hl
+7891+6	274E  1B      	    dec     de
+7897+12	274F  18F4    	    jr      .loop
 			
-    -	274C          	.done:
-7864+10	274C  D1      	    pop     de
-7874+10	274D  C9      	    ret
+    -	2751          	.done:
+7909+10	2751  D1      	    pop     de
+7919+10	2752  C9      	    ret
 			
 			;-----------------------------------------------------------------------------
 			; Send bytes
@@ -1874,24 +1878,24 @@
 			; Output: HL: next address
 			;         DE: number of bytes actually written
 			;-----------------------------------------------------------------------------
-    -	274E          	esp_send_bytes:
-7884+11	274E  D5      	    push    de
+    -	2753          	esp_send_bytes:
+7929+11	2753  D5      	    push    de
 			
-    -	274F          	.loop:
+    -	2754          	.loop:
 			    ; Done sending? (DE=0)
-7895+4	274F  7A      	    ld      a, d
-7899+4	2750  B3      	    or      a, e
-7903+7+5	2751  2808    	    jr      z, .done
+7940+4	2754  7A      	    ld      a, d
+7944+4	2755  B3      	    or      a, e
+7948+7+5	2756  2808    	    jr      z, .done
 			
-7910+7	2753  7E      	    ld      a, (hl)
-7917+17	2754  CD1E26  	    call    esp_send_byte
-7934+6	2757  23      	    inc     hl
-7940+6	2758  1B      	    dec     de
-7946+12	2759  18F4    	    jr      .loop
+7955+7	2758  7E      	    ld      a, (hl)
+7962+17	2759  CD2326  	    call    esp_send_byte
+7979+6	275C  23      	    inc     hl
+7985+6	275D  1B      	    dec     de
+7991+12	275E  18F4    	    jr      .loop
 			
-    -	275B          	.done:
-7958+10	275B  D1      	    pop     de
-7968+10	275C  C9      	    ret
+    -	2760          	.done:
+8003+10	2760  D1      	    pop     de
+8013+10	2761  C9      	    ret
 			
 			;-----------------------------------------------------------------------------
 			; Write bytes
@@ -1902,33 +1906,33 @@
 			;
 			; Clobbered registers: A, HL, DE
 			;-----------------------------------------------------------------------------
-    -	275D          	esp_write_bytes:
-7978+7	275D  3E13    	    ld      a, ESPCMD_WRITE
-7985+17	275F  CD0226  	    call    esp_cmd
+    -	2762          	esp_write_bytes:
+8023+7	2762  3E13    	    ld      a, ESPCMD_WRITE
+8030+17	2764  CD0726  	    call    esp_cmd
 			
 			    ; Send file descriptor
-8002+4	2762  AF      	    xor     a
-8006+17	2763  CD1E26  	    call    esp_send_byte
+8047+4	2767  AF      	    xor     a
+8051+17	2768  CD2326  	    call    esp_send_byte
 			
 			    ; Send write size
-8023+4	2766  7B      	    ld      a, e
-8027+17	2767  CD1E26  	    call    esp_send_byte
-8044+4	276A  7A      	    ld      a, d
-8048+17	276B  CD1E26  	    call    esp_send_byte
+8068+4	276B  7B      	    ld      a, e
+8072+17	276C  CD2326  	    call    esp_send_byte
+8089+4	276F  7A      	    ld      a, d
+8093+17	2770  CD2326  	    call    esp_send_byte
 			
 			    ; Send bytes
-8065+17	276E  CD4E27  	    call    esp_send_bytes
+8110+17	2773  CD5327  	    call    esp_send_bytes
 			
 			    ; Get result
-8082+17	2771  CDF326  	    call    esp_get_result
+8127+17	2776  CDF826  	    call    esp_get_result
 			
 			    ; Get number of bytes actual written
-8099+17	2774  CD1526  	    call    esp_get_byte
-8116+4	2777  5F      	    ld      e, a
-8120+17	2778  CD1526  	    call    esp_get_byte
-8137+4	277B  57      	    ld      d, a
+8144+17	2779  CD1A26  	    call    esp_get_byte
+8161+4	277C  5F      	    ld      e, a
+8165+17	277D  CD1A26  	    call    esp_get_byte
+8182+4	2780  57      	    ld      d, a
 			
-8141+10	277C  C9      	    ret
+8186+10	2781  C9      	    ret
 			
 			;-----------------------------------------------------------------------------
 			; Seek
@@ -1936,26 +1940,26 @@
 			;
 			; Clobbered registers: A, DE
 			;-----------------------------------------------------------------------------
-    -	277D          	esp_seek:
-8151+7	277D  3E14    	    ld      a, ESPCMD_SEEK
-8158+17	277F  CD0226  	    call    esp_cmd
+    -	2782          	esp_seek:
+8196+7	2782  3E14    	    ld      a, ESPCMD_SEEK
+8203+17	2784  CD0726  	    call    esp_cmd
 			
 			    ; Send file descriptor
-8175+4	2782  AF      	    xor     a
-8179+17	2783  CD1E26  	    call    esp_send_byte
+8220+4	2787  AF      	    xor     a
+8224+17	2788  CD2326  	    call    esp_send_byte
 			
 			    ; Send offset
-8196+4	2786  7B      	    ld      a, e
-8200+17	2787  CD1E26  	    call    esp_send_byte
-8217+4	278A  7A      	    ld      a, d
-8221+17	278B  CD1E26  	    call    esp_send_byte
-8238+4	278E  AF      	    xor     a
-8242+17	278F  CD1E26  	    call    esp_send_byte
-8259+17	2792  CD1E26  	    call    esp_send_byte
+8241+4	278B  7B      	    ld      a, e
+8245+17	278C  CD2326  	    call    esp_send_byte
+8262+4	278F  7A      	    ld      a, d
+8266+17	2790  CD2326  	    call    esp_send_byte
+8283+4	2793  AF      	    xor     a
+8287+17	2794  CD2326  	    call    esp_send_byte
+8304+17	2797  CD2326  	    call    esp_send_byte
 			
 			    ; Get result
-8276+17	2795  CDF326  	    call    esp_get_result
-8293+10	2798  C9      	    ret
+8321+17	279A  CDF826  	    call    esp_get_result
+8338+10	279D  C9      	    ret
 			
 			;-----------------------------------------------------------------------------
 			; Get next character, skipping spaces
@@ -1963,146 +1967,146 @@
 			; out: NZ, A = next non-space char, HL = address of char in text
 			;      Z,  A = 0, HL = end of text
 			;-----------------------------------------------------------------------------
-    -	2799          	get_next:                   ; Starting at next location
-8303+6	2799  23      	    inc     hl
-    -	279A          	get_arg:                    ; Starting at current location
-8309+7	279A  7E      	    ld      a, (hl)
-8316+4	279B  B7      	    or      a
-8320+5+6	279C  C8      	    ret     z               ; Return Z if NULL
-8325+7	279D  FE20    	    cp      ' '
-8332+5+6	279F  C0      	    ret     nz              ; Return NZ if not SPACE
-8337+12	27A0  18F7    	    jr      get_next
+    -	279E          	get_next:                   ; Starting at next location
+8348+6	279E  23      	    inc     hl
+    -	279F          	get_arg:                    ; Starting at current location
+8354+7	279F  7E      	    ld      a, (hl)
+8361+4	27A0  B7      	    or      a
+8365+5+6	27A1  C8      	    ret     z               ; Return Z if NULL
+8370+7	27A2  FE20    	    cp      ' '
+8377+5+6	27A4  C0      	    ret     nz              ; Return NZ if not SPACE
+8382+12	27A5  18F7    	    jr      get_next
 			
 			;-----------------------------------------------------------------------------
 			; Check for sync sequence (12x$FF, 1x$00)
 			;-----------------------------------------------------------------------------
-    -	27A2          	check_sync_bytes:
+    -	27A7          	check_sync_bytes:
 			    ; Read 13 bytes into TMPBUF
-8349+10	27A2  110D00  	    ld      de, 13
-8359+10	27A5  21ECBF  	    ld      hl, TMPBUF
-8369+17	27A8  CD2327  	    call    esp_read_bytes
-8386+4	27AB  7B      	    ld      a, e
-8390+7	27AC  FE0D    	    cp      13
-8397+10	27AE  C2F025  	    jp      nz, err_bad_file
+8394+10	27A7  110D00  	    ld      de, 13
+8404+10	27AA  21ECBF  	    ld      hl, TMPBUF
+8414+17	27AD  CD2827  	    call    esp_read_bytes
+8431+4	27B0  7B      	    ld      a, e
+8435+7	27B1  FE0D    	    cp      13
+8442+10	27B3  C2F525  	    jp      nz, err_bad_file
 			
 			    ; Check for 12x$FF
-8407+7	27B1  0E0C    	    ld      c, 12
-8414+10	27B3  21ECBF  	    ld      hl, TMPBUF
-    -	27B6          	.loop:
-8424+7	27B6  7E      	    ld      a, (hl)
-8431+7	27B7  FEFF    	    cp      $FF
-8438+10	27B9  C2F025  	    jp      nz, err_bad_file
-8448+6	27BC  23      	    inc     hl
-8454+4	27BD  0D      	    dec     c
-8458+7+5	27BE  20F6    	    jr      nz, .loop
+8452+7	27B6  0E0C    	    ld      c, 12
+8459+10	27B8  21ECBF  	    ld      hl, TMPBUF
+    -	27BB          	.loop:
+8469+7	27BB  7E      	    ld      a, (hl)
+8476+7	27BC  FEFF    	    cp      $FF
+8483+10	27BE  C2F525  	    jp      nz, err_bad_file
+8493+6	27C1  23      	    inc     hl
+8499+4	27C2  0D      	    dec     c
+8503+7+5	27C3  20F6    	    jr      nz, .loop
 			
 			    ; Check for $00
-8465+7	27C0  7E      	    ld      a, (hl)
-8472+4	27C1  B7      	    or      a
-8476+10	27C2  C2F025  	    jp      nz, err_bad_file
-8486+10	27C5  C9      	    ret
+8510+7	27C5  7E      	    ld      a, (hl)
+8517+4	27C6  B7      	    or      a
+8521+10	27C7  C2F525  	    jp      nz, err_bad_file
+8531+10	27CA  C9      	    ret
 			
 			;-----------------------------------------------------------------------------
 			; Load binary data in PATHBUF into BINSTART;
 			;
 			; Clobbered registers: A, DE
 			;-----------------------------------------------------------------------------
-    -	27C6          	load_binary:
-8496+11	27C6  E5      	    push    hl
+    -	27CB          	load_binary:
+8541+11	27CB  E5      	    push    hl
 			
 			    ; Load file into memory
-8507+17	27C7  CD0327  	    call    esp_open
-8524+16	27CA  2AFCBF  	    ld      hl, (BINSTART)
-8540+10	27CD  11FFFF  	    ld      de, $FFFF
-8550+17	27D0  CD2327  	    call    esp_read_bytes
-8567+17	27D3  CDFB26  	    call    esp_close_all
+8552+17	27CC  CD0827  	    call    esp_open
+8569+16	27CF  2AFCBF  	    ld      hl, (BINSTART)
+8585+10	27D2  11FFFF  	    ld      de, $FFFF
+8595+17	27D5  CD2827  	    call    esp_read_bytes
+8612+17	27D8  CD0027  	    call    esp_close_all
 			
-8584+10	27D6  E1      	    pop     hl
-8594+10	27D7  C9      	    ret
+8629+10	27DB  E1      	    pop     hl
+8639+10	27DC  C9      	    ret
 			
 			;-----------------------------------------------------------------------------
 			; Load CAQ array file in PATHBUF into BINSTART (BINLEN length)
 			;-----------------------------------------------------------------------------
-    -	27D8          	load_caq_array:
-8604+11	27D8  E5      	    push    hl
+    -	27DD          	load_caq_array:
+8649+11	27DD  E5      	    push    hl
 			
 			    ; Open file
-8615+17	27D9  CD0327  	    call    esp_open
+8660+17	27DE  CD0827  	    call    esp_open
 			
 			    ; Check CAQ header
-8632+17	27DC  CDA227  	    call    check_sync_bytes    ; Sync bytes
-8649+10	27DF  110600  	    ld      de, 6               ; Check that filename is '######'
-8659+10	27E2  21ECBF  	    ld      hl, TMPBUF
-8669+17	27E5  CD2327  	    call    esp_read_bytes
-8686+7	27E8  0E06    	    ld      c, 6
-8693+10	27EA  21ECBF  	    ld      hl, TMPBUF
-    -	27ED          	.loop:
-8703+7	27ED  7E      	    ld      a, (hl)
-8710+7	27EE  FE23    	    cp      '#'
-8717+10	27F0  C2F025  	    jp      nz, err_bad_file
-8727+6	27F3  23      	    inc     hl
-8733+4	27F4  0D      	    dec     c
-8737+7+5	27F5  20F6    	    jr      nz, .loop
+8677+17	27E1  CDA727  	    call    check_sync_bytes    ; Sync bytes
+8694+10	27E4  110600  	    ld      de, 6               ; Check that filename is '######'
+8704+10	27E7  21ECBF  	    ld      hl, TMPBUF
+8714+17	27EA  CD2827  	    call    esp_read_bytes
+8731+7	27ED  0E06    	    ld      c, 6
+8738+10	27EF  21ECBF  	    ld      hl, TMPBUF
+    -	27F2          	.loop:
+8748+7	27F2  7E      	    ld      a, (hl)
+8755+7	27F3  FE23    	    cp      '#'
+8762+10	27F5  C2F525  	    jp      nz, err_bad_file
+8772+6	27F8  23      	    inc     hl
+8778+4	27F9  0D      	    dec     c
+8782+7+5	27FA  20F6    	    jr      nz, .loop
 			
 			    ; Load data into array
-8744+16	27F7  2AFCBF  	    ld      hl, (BINSTART)
-8760+20	27FA  ED5BFEBF	    ld      de, (BINLEN)
-8780+17	27FE  CD2327  	    call    esp_read_bytes
+8789+16	27FC  2AFCBF  	    ld      hl, (BINSTART)
+8805+20	27FF  ED5BFEBF	    ld      de, (BINLEN)
+8825+17	2803  CD2827  	    call    esp_read_bytes
 			
 			    ; Close file
-8797+17	2801  CDFB26  	    call    esp_close_all
+8842+17	2806  CD0027  	    call    esp_close_all
 			
-8814+10	2804  E1      	    pop     hl
-8824+10	2805  C9      	    ret
+8859+10	2809  E1      	    pop     hl
+8869+10	280A  C9      	    ret
 			
 			;-----------------------------------------------------------------------------
 			; Load CAQ/BAS file in PATHBUF
 			;-----------------------------------------------------------------------------
-    -	2806          	load_basic_program:
-8834+11	2806  E5      	    push    hl
+    -	280B          	load_basic_program:
+8879+11	280B  E5      	    push    hl
 			
 			    ; Open file
-8845+17	2807  CD0327  	    call    esp_open            
+8890+17	280C  CD0827  	    call    esp_open            
 			
 			    ; Check CAQ header
-8862+17	280A  CDA227  	    call    check_sync_bytes    ; Sync bytes
-8879+10	280D  110600  	    ld      de, 6               ; Skip filename
-8889+10	2810  21ECBF  	    ld      hl, TMPBUF
-8899+17	2813  CD2327  	    call    esp_read_bytes
-8916+17	2816  CDA227  	    call    check_sync_bytes    ; Sync bytes
+8907+17	280F  CDA727  	    call    check_sync_bytes    ; Sync bytes
+8924+10	2812  110600  	    ld      de, 6               ; Skip filename
+8934+10	2815  21ECBF  	    ld      hl, TMPBUF
+8944+17	2818  CD2827  	    call    esp_read_bytes
+8961+17	281B  CDA727  	    call    check_sync_bytes    ; Sync bytes
 			    
 			    ; Load actual program
-8933+16	2819  2A4F38  	    ld      hl, (TXTTAB)
-8949+10	281C  11FFFF  	    ld      de, $FFFF
-8959+17	281F  CD2327  	    call    esp_read_bytes
+8978+16	281E  2A4F38  	    ld      hl, (TXTTAB)
+8994+10	2821  11FFFF  	    ld      de, $FFFF
+9004+17	2824  CD2827  	    call    esp_read_bytes
 			
 			    ; Close file
-8976+17	2822  CDFB26  	    call    esp_close_all
+9021+17	2827  CD0027  	    call    esp_close_all
 			
 			    ; Back up to last line of BASIC program
-    -	2825          	.loop:
-8993+6	2825  2B      	    dec     hl
-8999+4	2826  AF      	    xor     a
-9003+7	2827  BE      	    cp      (hl)
-9010+7+5	2828  28FB    	    jr      z, .loop
-9017+6	282A  23      	    inc     hl
+    -	282A          	.loop:
+9038+6	282A  2B      	    dec     hl
+9044+4	282B  AF      	    xor     a
+9048+7	282C  BE      	    cp      (hl)
+9055+7+5	282D  28FB    	    jr      z, .loop
+9062+6	282F  23      	    inc     hl
 			
 			    ; Skip past 3 zeros at end of BASIC program
-9023+6	282B  23      	    inc     hl
-9029+6	282C  23      	    inc     hl
-9035+6	282D  23      	    inc     hl
+9068+6	2830  23      	    inc     hl
+9074+6	2831  23      	    inc     hl
+9080+6	2832  23      	    inc     hl
 			
 			    ; Set end of BASIC program
-9041+16	282E  22D638  	    ld      (VARTAB), hl
+9086+16	2833  22D638  	    ld      (VARTAB), hl
 			
 			    ; Initialize BASIC program
-9057+17	2831  CD8226  	    call    init_basic_program
+9102+17	2836  CD8726  	    call    init_basic_program
 			
-9074+10	2834  E1      	    pop     hl
-9084+10	2835  C9      	    ret
+9119+10	2839  E1      	    pop     hl
+9129+10	283A  C9      	    ret
 			
-    -	2836          	sync_bytes:
-    -	2836  FFFFFFFF	    db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$00
+    -	283B          	sync_bytes:
+    -	283B  FFFFFFFF	    db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$00
               FFFFFFFF
               FFFFFFFF
               00
@@ -2110,214 +2114,214 @@
 			;-----------------------------------------------------------------------------
 			; Save basic program
 			;-----------------------------------------------------------------------------
-    -	2843          	save_basic_program:
-9094+11	2843  E5      	    push    hl
+    -	2848          	save_basic_program:
+9139+11	2848  E5      	    push    hl
 			
 			    ; Create file
-9105+17	2844  CD1327  	    call    esp_create
+9150+17	2849  CD1827  	    call    esp_create
 			
 			    ; Write CAQ header
-9122+10	2847  213628  	    ld      hl, sync_bytes      ; Sync bytes
-9132+10	284A  110D00  	    ld      de, 13
-9142+17	284D  CD5D27  	    call    esp_write_bytes
-9159+10	2850  217428  	    ld      hl, .caq_filename   ; Filename
-9169+10	2853  110600  	    ld      de, 6
-9179+17	2856  CD5D27  	    call    esp_write_bytes
-9196+10	2859  213628  	    ld      hl, sync_bytes      ; Sync bytes
-9206+10	285C  110D00  	    ld      de, 13
-9216+17	285F  CD5D27  	    call    esp_write_bytes
+9167+10	284C  213B28  	    ld      hl, sync_bytes      ; Sync bytes
+9177+10	284F  110D00  	    ld      de, 13
+9187+17	2852  CD6227  	    call    esp_write_bytes
+9204+10	2855  217928  	    ld      hl, .caq_filename   ; Filename
+9214+10	2858  110600  	    ld      de, 6
+9224+17	285B  CD6227  	    call    esp_write_bytes
+9241+10	285E  213B28  	    ld      hl, sync_bytes      ; Sync bytes
+9251+10	2861  110D00  	    ld      de, 13
+9261+17	2864  CD6227  	    call    esp_write_bytes
 			
 			    ; Write BASIC data
-9233+20	2862  ED5B4F38	    ld      de, (TXTTAB)            ; DE = start of BASIC program
-9253+16	2866  2AD638  	    ld      hl, (VARTAB)            ; HL = end of BASIC program
-9269+15	2869  ED52    	    sbc     hl, de
-9284+4	286B  EB      	    ex      de, hl                  ; HL = start, DE = length of BASIC program
-9288+17	286C  CD5D27  	    call    esp_write_bytes
+9278+20	2867  ED5B4F38	    ld      de, (TXTTAB)            ; DE = start of BASIC program
+9298+16	286B  2AD638  	    ld      hl, (VARTAB)            ; HL = end of BASIC program
+9314+15	286E  ED52    	    sbc     hl, de
+9329+4	2870  EB      	    ex      de, hl                  ; HL = start, DE = length of BASIC program
+9333+17	2871  CD6227  	    call    esp_write_bytes
 			
 			    ; Close file
-9305+17	286F  CDFB26  	    call    esp_close_all
+9350+17	2874  CD0027  	    call    esp_close_all
 			
-9322+10	2872  E1      	    pop     hl
-9332+10	2873  C9      	    ret
+9367+10	2877  E1      	    pop     hl
+9377+10	2878  C9      	    ret
 			
-    -	2874  42415350	.caq_filename: db "BASPRG"
+    -	2879  42415350	.caq_filename: db "BASPRG"
               5247
 			
 			;-----------------------------------------------------------------------------
 			; Save array
 			;-----------------------------------------------------------------------------
-    -	287A          	save_caq_array:
-9342+11	287A  E5      	    push    hl
+    -	287F          	save_caq_array:
+9387+11	287F  E5      	    push    hl
 			
 			    ; Create file
-9353+17	287B  CD1327  	    call    esp_create
+9398+17	2880  CD1827  	    call    esp_create
 			
 			    ; Write CAQ header
-9370+10	287E  213628  	    ld      hl, sync_bytes      ; Sync bytes
-9380+10	2881  110D00  	    ld      de, 13
-9390+17	2884  CD5D27  	    call    esp_write_bytes
-9407+10	2887  219F28  	    ld      hl, .array_filename ; Filename
-9417+10	288A  110600  	    ld      de, 6
-9427+17	288D  CD5D27  	    call    esp_write_bytes
+9415+10	2883  213B28  	    ld      hl, sync_bytes      ; Sync bytes
+9425+10	2886  110D00  	    ld      de, 13
+9435+17	2889  CD6227  	    call    esp_write_bytes
+9452+10	288C  21A428  	    ld      hl, .array_filename ; Filename
+9462+10	288F  110600  	    ld      de, 6
+9472+17	2892  CD6227  	    call    esp_write_bytes
 			
 			    ; Write array data
-9444+16	2890  2AFCBF  	    ld      hl, (BINSTART)
-9460+20	2893  ED5BFEBF	    ld      de, (BINLEN)
-9480+17	2897  CD5D27  	    call    esp_write_bytes
+9489+16	2895  2AFCBF  	    ld      hl, (BINSTART)
+9505+20	2898  ED5BFEBF	    ld      de, (BINLEN)
+9525+17	289C  CD6227  	    call    esp_write_bytes
 			
 			    ; Close file
-9497+17	289A  CDFB26  	    call    esp_close_all
+9542+17	289F  CD0027  	    call    esp_close_all
 			
-9514+10	289D  E1      	    pop     hl
-9524+10	289E  C9      	    ret
+9559+10	28A2  E1      	    pop     hl
+9569+10	28A3  C9      	    ret
 			
-    -	289F  23232323	.array_filename: db "######"
+    -	28A4  23232323	.array_filename: db "######"
               2323
 			
 			;-----------------------------------------------------------------------------
 			; Save binary
 			;-----------------------------------------------------------------------------
-    -	28A5          	save_binary:
-9534+11	28A5  E5      	    push    hl
+    -	28AA          	save_binary:
+9579+11	28AA  E5      	    push    hl
 			
 			    ; Create file
-9545+17	28A6  CD1327  	    call    esp_create
+9590+17	28AB  CD1827  	    call    esp_create
 			
 			    ; Write binary data
-9562+16	28A9  2AFCBF  	    ld      hl, (BINSTART)
-9578+20	28AC  ED5BFEBF	    ld      de, (BINLEN)
-9598+17	28B0  CD5D27  	    call    esp_write_bytes
+9607+16	28AE  2AFCBF  	    ld      hl, (BINSTART)
+9623+20	28B1  ED5BFEBF	    ld      de, (BINLEN)
+9643+17	28B5  CD6227  	    call    esp_write_bytes
 			
 			    ; Close file
-9615+17	28B3  CDFB26  	    call    esp_close_all
+9660+17	28B8  CD0027  	    call    esp_close_all
 			
-9632+10	28B6  E1      	    pop     hl
-9642+10	28B7  C9      	    ret
+9677+10	28BB  E1      	    pop     hl
+9687+10	28BC  C9      	    ret
 			
 			;-----------------------------------------------------------------------------
 			; Run file
 			;-----------------------------------------------------------------------------
-    -	28B8          	run_file:
+    -	28BD          	run_file:
 			    ; Close any open files
-9652+17	28B8  CDFB26  	    call    esp_close_all
+9697+17	28BD  CD0027  	    call    esp_close_all
 			
 			    ; Get string parameter with path
-9669+17	28BB  CDC726  	    call    get_string_parameter
+9714+17	28C0  CDCC26  	    call    get_string_parameter
 			
 			    ; Check for .ROM extension
-9686+13	28BE  3A00BF  	    ld      a, (PATHLEN)
-9699+7	28C1  FE05    	    cp      a, 5
-9706+7+5	28C3  380D    	    jr      c, .load_basic      ; Too short to have ROM extension
-9713+7	28C5  D603    	    sub     a, 3
-9720+7	28C7  16BF    	    ld      d, PATHBUF >> 8
-9727+4	28C9  5F      	    ld      e, a
-9731+10	28CA  21E428  	    ld      hl, .romext
-9741+17	28CD  CDD828  	    call    .cmp
-9758+7+5	28D0  2817    	    jr      z, load_rom
+9731+13	28C3  3A00BF  	    ld      a, (PATHLEN)
+9744+7	28C6  FE05    	    cp      a, 5
+9751+7+5	28C8  380D    	    jr      c, .load_basic      ; Too short to have ROM extension
+9758+7	28CA  D603    	    sub     a, 3
+9765+7	28CC  16BF    	    ld      d, PATHBUF >> 8
+9772+4	28CE  5F      	    ld      e, a
+9776+10	28CF  21E928  	    ld      hl, .romext
+9786+17	28D2  CDDD28  	    call    .cmp
+9803+7+5	28D5  2817    	    jr      z, load_rom
 			
-    -	28D2          	.load_basic:
-9765+17	28D2  CD0628  	    call    load_basic_program
-9782+10	28D5  C3CB0B  	    jp      RUNC
+    -	28D7          	.load_basic:
+9810+17	28D7  CD0B28  	    call    load_basic_program
+9827+10	28DA  C3CB0B  	    jp      RUNC
 			
-    -	28D8          	.cmp:
-9792+7	28D8  1A      	    ld      a, (de)         ; Get char from string 2
-9799+17	28D9  CD3B29  	    call    to_upper
-9816+6	28DC  13      	    inc     de
-9822+7	28DD  BE      	    cp      (hl)            ; Compare to char in string 1
-9829+6	28DE  23      	    inc     hl
-9835+5+6	28DF  C0      	    ret     nz              ; Return NZ if not equal
-9840+4	28E0  B7      	    or      a
-9844+7+5	28E1  20F5    	    jr      nz, .cmp        ; Loop until end of strings
-9851+10	28E3  C9      	    ret                     ; Return Z
+    -	28DD          	.cmp:
+9837+7	28DD  1A      	    ld      a, (de)         ; Get char from string 2
+9844+17	28DE  CD4029  	    call    to_upper
+9861+6	28E1  13      	    inc     de
+9867+7	28E2  BE      	    cp      (hl)            ; Compare to char in string 1
+9874+6	28E3  23      	    inc     hl
+9880+5+6	28E4  C0      	    ret     nz              ; Return NZ if not equal
+9885+4	28E5  B7      	    or      a
+9889+7+5	28E6  20F5    	    jr      nz, .cmp        ; Loop until end of strings
+9896+10	28E8  C9      	    ret                     ; Return Z
 			
-    -	28E4  2E524F4D	.romext: db ".ROM",0
+    -	28E9  2E524F4D	.romext: db ".ROM",0
               00
 			
 			;-----------------------------------------------------------------------------
 			; Load ROM file
 			;-----------------------------------------------------------------------------
-    -	28E9          	load_rom:
+    -	28EE          	load_rom:
 			    ; Open file
-9861+17	28E9  CD0327  	    call    esp_open
+9906+17	28EE  CD0827  	    call    esp_open
 			
 			    ; Map RAM in bank3
-9878+7	28EC  3E23    	    ld      a, 35
-9885+11	28EE  D3F3    	    out     (IO_BANK3), a
+9923+7	28F1  3E23    	    ld      a, 35
+9930+11	28F3  D3F3    	    out     (IO_BANK3), a
 			
 			    ; Load file
-9896+10	28F0  2100C0  	    ld      hl, $C000
-9906+10	28F3  110040  	    ld      de, $4000
-9916+17	28F6  CD2327  	    call    esp_read_bytes
+9941+10	28F5  2100C0  	    ld      hl, $C000
+9951+10	28F8  110040  	    ld      de, $4000
+9961+17	28FB  CD2827  	    call    esp_read_bytes
 			
 			    ; Check length
-9933+4	28F9  7A      	    ld      a, d
-9937+7	28FA  FE20    	    cp      $20         ; 8KB ROM?
-9944+7+5	28FC  200B    	    jr      nz, .ok
+9978+4	28FE  7A      	    ld      a, d
+9982+7	28FF  FE20    	    cp      $20         ; 8KB ROM?
+9989+7+5	2901  200B    	    jr      nz, .ok
 			
 			    ; 8KB ROM, duplicate data to second 8KB area
-9951+10	28FE  2100C0  	    ld      hl, $C000
-9961+10	2901  1100E0  	    ld      de, $E000
-9971+10	2904  010020  	    ld      bc, $2000
-9981+16+5	2907  EDB0    	    ldir
-    -	2909          	.ok:
-9997+17	2909  CDFB26  	    call    esp_close_all
+9996+10	2903  2100C0  	    ld      hl, $C000
+10006+10	2906  1100E0  	    ld      de, $E000
+10016+10	2909  010020  	    ld      bc, $2000
+10026+16+5	290C  EDB0    	    ldir
+    -	290E          	.ok:
+10042+17	290E  CD0027  	    call    esp_close_all
 			
-    -	290C          	descramble_rom:
+    -	2911          	descramble_rom:
 			    ; Determine scramble value
-10014+4	290C  AF      	    xor     a
-10018+10	290D  2103E0  	    ld      hl, $E003
-10028+7	2910  060C    	    ld      b, 12
-    -	2912          	.loop:
-10035+7	2912  86      	    add     a, (hl)
-10042+6	2913  23      	    inc     hl
-10048+4	2914  80      	    add     a, b
-10052+4	2915  05      	    dec     b
-10056+7+5	2916  20FA    	    jr      nz, .loop
-10063+7	2918  AE      	    xor     (hl)
-10070+4	2919  47      	    ld      b, a
+10059+4	2911  AF      	    xor     a
+10063+10	2912  2103E0  	    ld      hl, $E003
+10073+7	2915  060C    	    ld      b, 12
+    -	2917          	.loop:
+10080+7	2917  86      	    add     a, (hl)
+10087+6	2918  23      	    inc     hl
+10093+4	2919  80      	    add     a, b
+10097+4	291A  05      	    dec     b
+10101+7+5	291B  20FA    	    jr      nz, .loop
+10108+7	291D  AE      	    xor     (hl)
+10115+4	291E  47      	    ld      b, a
 			
 			    ; Descramble ROM
-10074+10	291A  2100C0  	    ld      hl, $C000
-10084+10	291D  110040  	    ld      de, $4000
-    -	2920          	.loop2:
-10094+4	2920  78      	    ld      a, b
-10098+7	2921  AE      	    xor     (hl)
-10105+7	2922  77      	    ld      (hl), a
+10119+10	291F  2100C0  	    ld      hl, $C000
+10129+10	2922  110040  	    ld      de, $4000
+    -	2925          	.loop2:
+10139+4	2925  78      	    ld      a, b
+10143+7	2926  AE      	    xor     (hl)
+10150+7	2927  77      	    ld      (hl), a
 			
-10112+6	2923  23      	    inc     hl
-10118+6	2924  1B      	    dec     de
-10124+4	2925  7A      	    ld      a, d
-10128+4	2926  B3      	    or      e
-10132+7+5	2927  20F7    	    jr      nz, .loop2
+10157+6	2928  23      	    inc     hl
+10163+6	2929  1B      	    dec     de
+10169+4	292A  7A      	    ld      a, d
+10173+4	292B  B3      	    or      e
+10177+7+5	292C  20F7    	    jr      nz, .loop2
 			
 			    ; Reinit banks
-10139+7	2929  3E21    	    ld      a, 33
-10146+11	292B  D3F1    	    out     (IO_BANK1), a
-10157+7	292D  3E22    	    ld      a, 34
-10164+11	292F  D3F2    	    out     (IO_BANK2), a
+10184+7	292E  3E21    	    ld      a, 33
+10191+11	2930  D3F1    	    out     (IO_BANK1), a
+10202+7	2932  3E22    	    ld      a, 34
+10209+11	2934  D3F2    	    out     (IO_BANK2), a
 			
 			    ; Bank3 -> readonly
-10175+7	2931  3EA3    	    ld      a, 35 | BANK_READONLY
-10182+11	2933  D3F3    	    out     (IO_BANK3), a
+10220+7	2936  3EA3    	    ld      a, 35 | BANK_READONLY
+10227+11	2938  D3F3    	    out     (IO_BANK3), a
 			
 			    ; Reinit stack pointer
-10193+10	2935  31A038  	    ld      sp, $38A0
+10238+10	293A  31A038  	    ld      sp, $38A0
 			
 			    ; Start ROM
-10203+10	2938  C310E0  	    jp      $E010
+10248+10	293D  C310E0  	    jp      $E010
 **** sdbasic.asm ****
 			
 			;-----------------------------------------------------------------------------
 			; Convert lower-case to upper-case
 			; in-out; A = char
 			;-----------------------------------------------------------------------------
-    -	293B          	to_upper:
-10213+7	293B  FE61    	    cp      'a'             ; >='a'?
-10220+5+6	293D  D8      	    ret     c
-10225+7	293E  FE7B    	    cp      'z'+1           ; <='z'?
-10232+5+6	2940  D0      	    ret     nc
-10237+7	2941  D620    	    sub     $20             ; a-z -> A-Z
-10244+10	2943  C9      	    ret
+    -	2940          	to_upper:
+10258+7	2940  FE61    	    cp      'a'             ; >='a'?
+10265+5+6	2942  D8      	    ret     c
+10270+7	2943  FE7B    	    cp      'z'+1           ; <='z'?
+10277+5+6	2945  D0      	    ret     nc
+10282+7	2946  D620    	    sub     $20             ; a-z -> A-Z
+10289+10	2948  C9      	    ret
 			
 			;-----------------------------------------------------------------------------
 			; Print value in A as hex value
@@ -2354,7 +2358,7 @@
 			; Fill with $FF to start of Key Decode Tables
 			;-----------------------------------------------------------------------------
     -	0001          	    assert !($2EFF<$)   ; ROM full!
-    -	2944 ..2EFF FF	    dc $2EFF-$+1,$FF
+    -	2949 ..2EFF FF	    dc $2EFF-$+1,$FF
 			
 			;-----------------------------------------------------------------------------
 			; Keyboard Decode Tables for S3 BASIC with Extended Keyboard Support
@@ -2467,95 +2471,95 @@ Statistics:
 
 Symbol Table:
 
-.array$29       2339      9017
-.array$31       239B      9115
-.array_filename$62 289F      10399
-.bytes$35       24EB      9451
-.caq_filename$61 2874      10356
-.change_dir$33  23CE      9166
-.check_comma$24 226B      8811
-.chr$27         230A      8970
-.cmp$64         28D8      10456
-.copy_done$44   26E2      9954
-.create_string$27 22F6      8950
-.default_palette$1 203A      8250
-.descramble$4   20EE      8430
-.done$33        23CC      9164
-.done$35        2558      9560
-.done$38        260D      9741
-.done$50        274C      10060
-.done$51        275B      10075
-.drain$38       2603      9731
-.error_msgs$36  2587      9607
-.esp_command$35 2403      9219
-.expand_token$17 21C2      8642
-.filename$35    2540      9536
-.find_eol$43    26BC      9916
-.get_filename$35 253B      9531
-.goto_hl$23     2234      8756
-.hex$27         2302      8962
-.hexbyte$27     22F9      8953
-.init_done$43   26C6      9926
-.joy01$26       22A6      8870
-.joy02$26       22B7      8887
-.joy03$26       22BF      8895
-.joy04$26       22CD      8909
-.joy05$26       22D1      8913
-.kb$35          24FD      9469
-.l0$41          2631      9777
-.l1$41          2633      9779
-.link_lines$43  26AD      9901
-.load_basic$64  28D2      10450
-.loop$50        2740      10048
-.loop$51        274F      10063
-.loop$56        27B6      10166
-.loop$58        27ED      10221
-.loop$59        2825      10277
-.loop$66        2912      10514
-.loop2$66       2920      10528
-.lower_byte$27  22ED      8941
-.mb$35          2519      9497
-.msg_bad_file$37 25F9      9721
-.msg_err_eof$36 25BD      9661
-.msg_err_exists$36 25C1      9665
-.msg_err_no_disk$36 25DE      9694
-.msg_err_not_empty$36 25E6      9702
-.msg_err_not_found$36 2597      9623
-.msg_err_other$36 25D0      9680
-.msg_err_param$36 25AF      9647
-.msg_err_too_many_open$36 25A1      9633
-.name_done$35   254B      9547
-.next_entry$35  2416      9238
-.next_line$43   26B1      9905
-.no_dir$35      24BC      9404
-.normal$42      2672      9842
-.num1$42        2665      9829
-.num2$42        2667      9831
-.ok$36          2573      9587
-.ok$65          2909      10505
-.ok2$35         242F      9263
-.palloop$1      2025      8229
-.print_cwd$33   23BE      9150
-.print_done$3   20B2      8370
-.print_done$33  23C9      9161
-.print_version$3 20A7      8359
-.process$18     21D2      8658
-.psg2$24        2272      8818
-.psgloop$24     225B      8795
-.romext$64      28E4      10468
-.show_path$33   23B6      9142
-.str_basic$3    20D5      8405
-.str_dir$35     2551      9553
-.str_system$3   20C1      8385
+.array$29       233E      9022
+.array$31       23A0      9120
+.array_filename$62 28A4      10404
+.bytes$35       24F0      9456
+.caq_filename$61 2879      10361
+.change_dir$33  23D3      9171
+.check_comma$24 2270      8816
+.chr$27         230F      8975
+.cmp$64         28DD      10461
+.copy_done$44   26E7      9959
+.create_string$27 22FB      8955
+.default_palette$1 203E      8254
+.descramble$4   20F3      8435
+.done$33        23D1      9169
+.done$35        255D      9565
+.done$38        2612      9746
+.done$50        2751      10065
+.done$51        2760      10080
+.drain$38       2608      9736
+.error_msgs$36  258C      9612
+.esp_command$35 2408      9224
+.expand_token$17 21C7      8647
+.filename$35    2545      9541
+.find_eol$43    26C1      9921
+.get_filename$35 2540      9536
+.goto_hl$23     2239      8761
+.hex$27         2307      8967
+.hexbyte$27     22FE      8958
+.init_done$43   26CB      9931
+.joy01$26       22AB      8875
+.joy02$26       22BC      8892
+.joy03$26       22C4      8900
+.joy04$26       22D2      8914
+.joy05$26       22D6      8918
+.kb$35          2502      9474
+.l0$41          2636      9782
+.l1$41          2638      9784
+.link_lines$43  26B2      9906
+.load_basic$64  28D7      10455
+.loop$50        2745      10053
+.loop$51        2754      10068
+.loop$56        27BB      10171
+.loop$58        27F2      10226
+.loop$59        282A      10282
+.loop$66        2917      10519
+.loop2$66       2925      10533
+.lower_byte$27  22F2      8946
+.mb$35          251E      9502
+.msg_bad_file$37 25FE      9726
+.msg_err_eof$36 25C2      9666
+.msg_err_exists$36 25C6      9670
+.msg_err_no_disk$36 25E3      9699
+.msg_err_not_empty$36 25EB      9707
+.msg_err_not_found$36 259C      9628
+.msg_err_other$36 25D5      9685
+.msg_err_param$36 25B4      9652
+.msg_err_too_many_open$36 25A6      9638
+.name_done$35   2550      9552
+.next_entry$35  241B      9243
+.next_line$43   26B6      9910
+.no_dir$35      24C1      9409
+.normal$42      2677      9847
+.num1$42        266A      9834
+.num2$42        266C      9836
+.ok$36          2578      9592
+.ok$65          290E      10510
+.ok2$35         2434      9268
+.palloop$1      2029      8233
+.print_cwd$33   23C3      9155
+.print_done$3   20B7      8375
+.print_done$33  23CE      9166
+.print_version$3 20AC      8364
+.process$18     21D7      8663
+.psg2$24        2277      8823
+.psgloop$24     2260      8800
+.romext$64      28E9      10473
+.show_path$33   23BB      9147
+.str_basic$3    20DD      8413
+.str_dir$35     2556      9558
+.str_system$3   20C9      8393
 .tmp0$35       =3852      14418
 .tmp1$35       =3853      14419
 .tmp2$35       =3854      14420
 .tmp3$35       =3855      14421
-.ver_basic$3    20E1      8417
-.wait$39        2615      9749
-.wait$40        261F      9759
-.witharg$35     23FE      9214
-.zero$42        2678      9848
+.ver_basic$3    20E6      8422
+.wait$39        261A      9754
+.wait$40        2624      9764
+.witharg$35     2403      9219
+.zero$42        267D      9853
 ARYTAB         =38D8      14552
 BANK0_BASE     =00        0
 BANK1_BASE     =4000      16384
@@ -2632,9 +2636,9 @@ FDIVG          =381B      14363
 FILNAF         =3857      14423
 FILNAM         =3851      14417
 FLGINP         =38CD      14541
-FN_HEX          22D5      8917
-FN_IN           227F      8831
-FN_JOY          2293      8851
+FN_HEX          22DA      8922
+FN_IN           2284      8836
+FN_JOY          2298      8856
 FO_ACCMODE     =03        3
 FO_APPEND      =04        4
 FO_CREATE      =08        8
@@ -2728,24 +2732,24 @@ SNGFLT         = B36      2870
 STKINI         = BE5      3045
 STREND         =38DA      14554
 STROUT         = E9D      3741
-ST_CALL         230F      8975
-ST_CD           23B2      9138
-ST_CLS          2203      8707
-ST_DEL          23A1      9121
-ST_DIR          23F1      9201
-ST_LOAD         2317      8983
-ST_LOCATE       2217      8727
-ST_MKDIR        23E0      9184
-ST_OUT          2207      8711
-ST_PSG          2256      8790
-ST_SAVE         2366      9062
-ST_reserved     2202      8706
+ST_CALL         2314      8980
+ST_CD           23B7      9143
+ST_CLS          2208      8712
+ST_DEL          23A6      9126
+ST_DIR          23F6      9206
+ST_LOAD         231C      8988
+ST_LOCATE       221C      8732
+ST_MKDIR        23E5      9189
+ST_OUT          220C      8716
+ST_PSG          225B      8795
+ST_SAVE         236B      9067
+ST_reserved     2207      8711
 SUBFLG         =38CB      14539
-TBLCMDS         2137      8503
-TBLFEND         2192      8594
-TBLFNJP         218C      8588
-TBLJEND         218C      8588
-TBLJMPS         2172      8562
+TBLCMDS         213C      8508
+TBLFEND         2197      8599
+TBLFNJP         2191      8593
+TBLJEND         2191      8593
+TBLJMPS         2177      8567
 TEMP8          =38C5      14533
 TEMPPT         =38AF      14511
 TEMPST         =38B1      14513
@@ -2773,53 +2777,53 @@ VCTRL_TEXT_EN  =01        1
 VCTRL_TEXT_PRIO=10        16
 WRMCON         =1A40      6720
 XINIT          =E010      57360
-_coldboot$sdbasic.asm 207A      8314
-_hook_handlers$sdbasic.asm 212B      8491
-_hook_idxs$sdbasic.asm 2126      8486
+_coldboot$sdbasic.asm 207F      8319
+_hook_handlers$sdbasic.asm 2130      8496
+_hook_idxs$sdbasic.asm 212B      8491
 _reset$sdbasic.asm 2009      8201
-_start_cart$sdbasic.asm 20E6      8422
-check_sync_bytes 27A2      10146
-descramble_rom  290C      10508
-do_jump         2118      8472
-err_bad_file    25F0      9712
-esp_close_all   26FB      9979
-esp_cmd         2602      9730
-esp_create      2713      10003
-esp_error       256A      9578
-esp_get_byte    2615      9749
-esp_get_result  26F3      9971
-esp_open        2703      9987
-esp_read_bytes  2723      10019
-esp_seek        277D      10109
-esp_send_byte   261E      9758
-esp_send_bytes  274E      10062
-esp_send_pathbuf 26E6      9958
-esp_write_bytes 275D      10077
-exec_next_statement 21CB      8651
-execute_function 2192      8594
+_start_cart$sdbasic.asm 20EB      8427
+check_sync_bytes 27A7      10151
+descramble_rom  2911      10513
+do_jump         211D      8477
+err_bad_file    25F5      9717
+esp_close_all   2700      9984
+esp_cmd         2607      9735
+esp_create      2718      10008
+esp_error       256F      9583
+esp_get_byte    261A      9754
+esp_get_result  26F8      9976
+esp_open        2708      9992
+esp_read_bytes  2728      10024
+esp_seek        2782      10114
+esp_send_byte   2623      9763
+esp_send_bytes  2753      10067
+esp_send_pathbuf 26EB      9963
+esp_write_bytes 2762      10082
+exec_next_statement 21D0      8656
+execute_function 2197      8599
 firstf         =E1        225
-get_arg         279A      10138
-get_array_argument 233F      9023
-get_next        2799      10137
-get_string_parameter 26C7      9927
-hook_exit       2122      8482
-hook_handler    2104      8452
-init_basic_program 2682      9858
-init_charram    205A      8282
+get_arg         279F      10143
+get_array_argument 2344      9028
+get_next        279E      10142
+get_string_parameter 26CC      9932
+hook_exit       2127      8487
+hook_handler    2109      8457
+init_basic_program 2687      9863
+init_charram    205E      8286
 key_tables      2F00      12032
-keyword_to_token 21A6      8614
+keyword_to_token 21AB      8619
 lastf          =E3        227
-load_basic_program 2806      10246
-load_binary     27C6      10182
-load_caq_array  27D8      10200
-load_rom        28E9      10473
-out_number_2digits 2629      9769
-out_number_4digits 2648      9800
-run_cmd         21E7      8679
-run_file        28B8      10424
-save_basic_program 2843      10307
-save_binary     28A5      10405
-save_caq_array  287A      10362
-sync_bytes      2836      10294
-to_upper        293B      10555
-token_to_keyword 21B9      8633
+load_basic_program 280B      10251
+load_binary     27CB      10187
+load_caq_array  27DD      10205
+load_rom        28EE      10478
+out_number_2digits 262E      9774
+out_number_4digits 264D      9805
+run_cmd         21EC      8684
+run_file        28BD      10429
+save_basic_program 2848      10312
+save_binary     28AA      10410
+save_caq_array  287F      10367
+sync_bytes      283B      10299
+to_upper        2940      10560
+token_to_keyword 21BE      8638
