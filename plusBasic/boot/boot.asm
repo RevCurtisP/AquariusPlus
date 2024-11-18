@@ -146,8 +146,20 @@ endif
     dec     b
     jr      nz,.2
     xor     (hl)
-    jp      z,.descramble_done
+    jp      nz,.descramble_cart
+    
+    ; Copy unencrypted cartridge to RAM
+    ld      hl,$8000
+    ld      de,$4000
+    ld      bc,$4000
+    ldir
 
+    ld      a,PAGE_CART_NONSCRAM
+    ld      (bank3_page),a
+
+    jr      .descramble_done
+
+.descramble_cart:
     ; Descramble ROM with XOR value in A
     ld      b,a
     ld      a,PAGE_CART_NONSCRAM
@@ -170,7 +182,7 @@ endif
     ld      bc,16
     ldir
 
-.descramble_done:
+.descramble_done
 
     ld      a,(bank3_page)
     or      BANK_READONLY
