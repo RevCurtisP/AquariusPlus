@@ -50,6 +50,12 @@ VCTRL_MODE_BM       equ (2<<1)
 VCTRL_SPR_EN        equ (1<<3)
 VCTRL_TEXT_PRIO     equ (1<<4)
 
+SYSCTRL_DISXREG     equ (1<<0)  ; Disable regs $E0-$F5, $F8-$F9
+SYSCTRL_DISPSGS     equ (1<<1)  ; Disable PSGs
+SYSCTRL_ENTURBO     equ (1<<2)  ;
+SYSCTRL_UNTURBO     equ (1<<3)  ; Unlimited turbo speed
+SYSCTRL_WRMBOOT     equ (1<<7)  ; W1:Reset system R0:Cold-boot R1:Warm-boot
+
 ;-----------------------------------------------------------------------------
 ; Other definitions
 ;-----------------------------------------------------------------------------
