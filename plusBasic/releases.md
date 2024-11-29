@@ -1,9 +1,11 @@
 # plusBASIC Release History
+ - v0.23q (2024-11-29)
+    - Removed `SGNINT()`, added `INT(string$)` and `INT(string$,offset)`
  - v0.23p (2024-11-28)
-    - SET BREAK OFF causes Ctrl-C to not BREAK out of INPUT
-    - Syntax OUT! port,byte allows writing to protected I/O ports
+    - `SET BREAK OFF` causes Ctrl-C to not BREAK out of INPUT
+    - Syntax `OUT! port,byt`e allows writing to protected I/O ports
     - boot.bin modified to identify and execute alternnate BASIC ROMs
-    - Implemented SGNINT() function
+    - Implemented `SGNINT()` function
  - v0.23o (2024-10-27)
     - SET BREAK OFF disables key checks between BASIC statements 
     - Fixed Ctrl-D, Ctrl-F, Ctrl-U turbo mode selection

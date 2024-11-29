@@ -169,6 +169,7 @@
  - [ ] **INDEX(\*_array_,_string_)** - Search for string in element of array
  - [ ] **INMEM({@_page_,}_address_,_string_)** - Search for string in memory.
  - [ ] **INT(_expression_)** - Return expression rounded down to nearest integer.<!--math-->
+ - [ ] **INT(_string_{,_offset_})** - Convert two consecutive bytes in string to signed integer.<!--convert-->
  - [ ] **INKEY** - Return ASCII code of most recently pressed key.<!--KEY-->
  - [ ] **INKEY$** - Return most recently pressed key as string.<!--KEY-->
  - [ ] **INPUT {_stringliteral_;}_var_{,...}** - Prompt for keyboard input and assigns entries to variables.<!--input-->
@@ -319,8 +320,6 @@
  - [ ] **SET TILEMAP OFFSET _x_,_y_** - Scroll tilemap to specified position.<!--SETTILEMAP-->
  - [ ] **SET USRINT ON|OFF** - Enable disable user interrupt.<!--system-->
  - [ ] **SGN(_expression_)** - Return signum of expression.<!--math-->
- - [ ] **SGNINT(float)** - Convert floating point number to signed integer.<!--convert-->
- - [ ] **SGNINT(_string_{,_offset_})** - Convert two consecutive bytes in string to signed integer.<!--convert-->
  - [ ] **SIN(_float_)** - Return sine of argument.<!--math-->
  - [ ] **SOUND (_duration_,_frequency_)** - Generate a tone through the television speaker.
  - [ ] **SPLIT _string_ INTO \*_array$_ DEL _delimiter_** - Split delimited string into string array elements.

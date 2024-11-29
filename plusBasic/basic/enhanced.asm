@@ -267,6 +267,20 @@ ST_INPUT:
     ret
 
 ;-----------------------------------------------------------------------------
+; Enhanced INT function
+; INT(string$)
+; INT(string$, offset)
+;-----------------------------------------------------------------------------
+;; ToDo: Finish and add to dispatch table
+FN_INT:
+    call    skip_frmprn_getype    ; Skip INT, Eequire '(', and evaluate argument 
+    ld      iy,float_signed_int   ; If string, set conversion routine
+    jp      z,word_str            ;   and jump into WORD()
+    SYNCHK  ')'                   ; Else require ')'
+    call    push_hl_labbck        ;   Stack = LABBCK, TxtPtr, RtnAdr
+    jp      INT                   ; Perform standard INT()
+
+;-----------------------------------------------------------------------------
 ; Enhanced POKE
 ; syntax: POKE address, byte
 ;         POKE address, string$
@@ -649,34 +663,6 @@ ST_RESTORE:
     jp      z,ST_RESTORE_SCREEN
     call    CHRGT3                ; Set digit and terminator flags
     jp      RESTOR
-
-;-----------------------------------------------------------------------------
-; SGNINT(string$)
-; SGNINT(string$, offset)
-;-----------------------------------------------------------------------------
-;; ToDo: Finish and add to dispatch table
-FN_SGN:
-    inc     hl                    ; Check character directly after SGN Token
-    ld      a,(hl)                ; (don't skip spaces)
-    cp      INTTK                  
-    jr      nz,ABORT_FN
-    rst     CHRGET                ; Skip INT
-    call    frmprn_getype
-    jr      nz,sgnint
-    ld      iy,float_signed_int
-    jp      word_str
-    
-ABORT_FN:
-    dec     hl                    ; Back up to Function Token
-    ld      a,(hl)                ; Re-Read Token
-    sub     ONEFUN                ; Convert to Offset
-    jp      HOOK27+1              ; Continue with Standard Function Code
-
-sgnint:
-    SYNCHK  ')'                   ; Require )
-    call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
-    call    FRCINT                ; DE = ArgVal
-    jp      float_signed_int      ; Return as floated signed integer
 
 ;-----------------------------------------------------------------------------
 ; Enhanced STOP statement stub

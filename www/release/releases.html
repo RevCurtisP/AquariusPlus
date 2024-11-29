@@ -16,6 +16,10 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
   <body>
     <h1 id="plusbasic-release-history">plusBASIC Release History</h1>
     <ul>
+      <li>v0.23q (2024-11-29)
+<ul><li>Removed <code>SGNINT()</code>, added <code>INT(string$)</code> and <code>INT(string$,offset)</code></li></ul></li>
+      <li>v0.23p (2024-11-28)
+<ul><li><code>SET BREAK OFF</code> causes Ctrl-C to not BREAK out of INPUT</li><li>Syntax <code>OUT! port,byt</code>e allows writing to protected I/O ports</li><li>boot.bin modified to identify and execute alternnate BASIC ROMs</li><li>Implemented <code>SGNINT()</code> function</li></ul></li>
       <li>v0.23o (2024-10-27)
 <ul><li>SET BREAK OFF disables key checks between BASIC statements</li><li>Fixed Ctrl-D, Ctrl-F, Ctrl-U turbo mode selection</li><li>plusBASIC now executes ROM images via boot.bin</li><li>Set S3 BASIC internal revision date to same as S1/S2</li><li>Removed sys_ver_s3basic and S3BASIC option from <code>VER()</code> and <code>VER()</code></li></ul></li>
       <li>v0.23n (2024-10-25)

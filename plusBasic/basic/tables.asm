@@ -154,8 +154,8 @@ STJUMPS:
 ;----------------------------------------------------------------------------
 FNJUMPS:
 ; Standard BASIC Functions
-    dw      FN_SGN                ;$B2 SGN     
-    dw      HOOK27+1              ;$B3 INT     
+    dw      HOOK27+1              ;$B2 SGN     
+    dw      FN_INT                ;$B3 INT     
     dw      HOOK27+1              ;$B4 ABS     
     dw      HOOK27+1              ;$B5 USR  
     dw      FN_FRE                ;$B6 FRE     

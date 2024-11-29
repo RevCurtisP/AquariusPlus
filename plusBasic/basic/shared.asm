@@ -3,6 +3,17 @@
 ;====================================================================
 
 ;-----------------------------------------------------------------------------
+; Abort extended function Code
+; HL should point to character immediately after function token
+;-----------------------------------------------------------------------------
+ABORT_FN:
+    dec     hl                    ; Back up to Function Token
+    ld      a,(hl)                ; Re-Read Token
+    sub     ONEFUN                ; Convert to Offset
+    jp      HOOK27+1              ; Continue with Standard Function Code
+
+
+;-----------------------------------------------------------------------------
 ; Parse to 23-bit integer in CDE
 ;-----------------------------------------------------------------------------
 GET_LONG:
