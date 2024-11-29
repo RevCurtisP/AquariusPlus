@@ -33,45 +33,49 @@
     jp      _start_screen   ; $201B RESETX Start-up screen extension
     jp      _line_edit      ; $201E Vector to test line editor
     jp      _incntc_hook    ; $2021 INCNTX Patch to INCNTC
+    jp      _input_ctrl_c   ; $2924 INPUTC Handle Ctrl-C in INPUT
+    jp      _wait_key       ; $2927 INCHRX
+    jp      _main_ctrl_c    ; $202A MAINCC Handle Ctrl-c in MAIN
+    jp      _finish_input   ; $202D  FININX C/R in INPUT patch
 
     dc $2030-$,$76
-    
+
     rst     HOOKDO                ; $2030 SCNLBL scan_label: Scan line label or line number
-    byte    30                    ; 
-    jp      SCNLIN                
-      
+    byte    30                    ;
+    jp      SCNLIN
+
     rst     HOOKDO                ; $2035 XFUNKY _ctrl_keys: Evaluate extended function keys
-    byte    31                    ;        
+    byte    31                    ;
     jp      CHKFUN                ;
 
     rst     HOOKDO                ; $203A XCNTC  _iscntc_hook: Intercept Ctrl-C check
-    byte    32      
-    jp      CNTCCN                
-      
+    byte    32
+    jp      CNTCCN
+
     rst     HOOKDO                ; $203F XMAIN  _main_ext: Save Line# Flag in TEMP3
-    byte    33      
-    jp      SCNLIN                
-      
+    byte    33
+    jp      SCNLIN
+
     rst     HOOKDO                ; $2044 XSTUFF _stuffh_ext: Check for additional tokens when stuffing
-    byte    34      
+    byte    34
     cp      DATATK-':'            ; If not DATA
     jp      nz,NODATT             ;    Check for REM
     jp      COLIS                 ; Set up for DATA
-    
+
     rst     HOOKDO                ; $204E XCLEAR _check_topmem: Verify TOPMEM is in Bank 2
-    byte    35    
+    byte    35
     ld      (TOPMEM),hl           ; Set up new top of stack
     ret                           ; Continue clears
 
     rst     HOOKDO                ; $2054 XPTRGT ptrget_hook: Allow _Alphanumunder sftar var name
-    byte    36    
+    byte    36
     rst     CHRGET                ; Get next character
     jp      c,ISSEC               ; If digit, save it and eat rest of digits
     jp      CHKLET                ; Else check for letter
 
     rst     HOOKDO                ; $205D SKPLBL  skip_label: Skip label at beginning of line (SKPLBL)
-    byte    37    
-    ld      (CURLIN),hl           ; Set CURLIN to curent line#    
+    byte    37
+    ld      (CURLIN),hl           ; Set CURLIN to curent line#
     jp      GONCON                ; Keep going to GONE
 
     rst     HOOKDO                ; $2065 SKPLOG  skip_on_label: Skip label in ON GOTO
@@ -89,12 +93,12 @@
     jp      GONEX                 ; Else evauate token
 
     call    PTRGET                ; $207A IFVARX - String Variable extension
-    rst     HOOKDO                
+    rst     HOOKDO
     byte    41
     jp      RETVAR                ; Carry on
 
     call    PTRGET                ; $2082 LETEXT - LET extension
-    rst     HOOKDO                
+    rst     HOOKDO
     byte    42
     jp      LETEQ                 ; Continue at '=' after variable name
 
@@ -114,9 +118,9 @@ read_cont:
     byte    45
     jp      FIN
 
-    rst     HOOKDO                ; $20A0 CLEARX - CLEARC extension 
+    rst     HOOKDO                ; $20A0 CLEARX - CLEARC extension
     byte    46
-clear_cont: 
+clear_cont:
     ld      hl,(VARTAB)
     jp      CLEARV
 
@@ -126,7 +130,7 @@ just_ret:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.23o"
+    db "v0.23p"
     db 0
 plus_len   equ   $ - plus_text
 
@@ -141,7 +145,7 @@ auto_desc
 
 
 
-; Null string descriptor  
+; Null string descriptor
 null_desc:
     word    0,null_desc
 
@@ -155,7 +159,7 @@ null_desc:
 
 ;-----------------------------------------------------------------------------
 ; Reset vector
-; 
+;
 ; CAUTION: stack isn't available at this point, so don't use any instruction
 ;          that uses the stack.
 ;-----------------------------------------------------------------------------5
@@ -195,7 +199,7 @@ init_banks:
     call    key_set_keymode
 
     ; Initialize Bank 3
-    ld      a, ROM_CART                 ; Cartridge Port
+    ld      a, ROM_EXT_RO          ; Soft Cartridge
     out     (IO_BANK3), a
 
     ; Back to system ROM init
@@ -251,7 +255,7 @@ irq_handler:
     push    de                    ; Stack = DE, BC, AF
     push    hl                    ; Stack = HL, DE, BC, AF
     exx
-    push    bc                    ; Stack = BC', 
+    push    bc                    ; Stack = BC',
     push    de                    ; Stack = DE', BC'
     push    hl                    ; Stack = HL', DE', BC'
     push    ix
@@ -269,11 +273,11 @@ irq_handler:
 
     pop     iy
     pop     ix
-    pop     hl                    
+    pop     hl
     pop     de
     pop     bc
     exx
-    pop     hl                    
+    pop     hl
     pop     de
     pop     bc
     pop     af
@@ -288,10 +292,10 @@ irq_handler:
     reti
 
 _timer:
-    ex      af,af'      
+    ex      af,af'
     call    timer_tick
     ex      af,af'
-    ret     
+    ret
 
 _user_irq:
     push    af
@@ -338,7 +342,7 @@ pt3call:
 ;-----------------------------------------------------------------------------
 _check_topmem:
     push    hl                    ; Stack = StrBottom, RtnAdr
-    ld      bc,-512               ; 
+    ld      bc,-512               ;
     add     hl,bc                 ; HL = StrBottom - 512
     ld      de,$8000+1024         ; Leave 1024 bytes for stack
     rst     COMPAR                ; If new TOPMEM < Minimum
@@ -354,7 +358,7 @@ _check_topmem:
 ;-----------------------------------------------------------------------------
 _start_screen:
     call    key_read_ascii        ; See if key pressed
-    cp      13                    ; If colon 
+    cp      13                    ; If colon
     jp      z,COLDST              ;   Straight to cold start
     ld      de,SCREEN+417         ; DE = Screen location for "BASIC"
     jp      RESETC
@@ -366,11 +370,11 @@ _start_screen:
 ; On entry: A,C = character typed, B = input buffer character count
 ;-----------------------------------------------------------------------------
 _ctrl_keys:
-    cp      ' '                   ; 
+    cp      ' '                   ;
     jr      c,.is_ctrl            ; If >= ' ' and and < DEL
-    cp      $7F                     
+    cp      $7F
     jp      c,GOODCH              ;    Stuff in Input Buffer
-.is_ctrl    
+.is_ctrl
     call    page_set_aux
     jp      s3_ctrl_keys
 
@@ -386,6 +390,30 @@ in_direct:
     and     b
     cp      $FE
     ret
+
+_wait_key:
+    call    _read_key
+    or       a
+    jr       z,_wait_key
+    ret
+
+_input_ctrl_c:
+    ld      a,(BASYSCTL)
+    and     BASBRKOFF               ; If BRK is on
+    jp      z,STPEND                ;   Break out of program
+    ld      a,3
+    ld      (IEND_KEY),a
+    push    bc                      ; Stack = TxtPtr, RtnAdr
+    jp      DATAH                   ; Skip to end of INPUT statement
+
+_main_ctrl_c:
+    jp      c,STPEND
+    rst     CHRGET
+    jp      MAIN1
+
+_finish_input:
+    ld      (IEND_KEY),a
+    jp      FININL
 
 ;-----------------------------------------------------------------------------
 ; Check for Control Keys before fetching next statement
@@ -408,7 +436,7 @@ _incntc_hook:
     jr      z,set_turbo_unlmtd    ;   Disable Turbo Mode
     cp      'S'-64                ; If Cttl-S
     jr      z,_pause              ;   Wait for keystroke
-    ret                           
+    ret
 
 _pause:
     call    INCHRH
@@ -425,7 +453,7 @@ set_turbo_off:
     xor   a
     call  set_turbo_mode
     ret
-    
+
 ;-----------------------------------------------------------------------------
 ; Enable/Disable Turbo mode
 ; Input: A: 0 = 3 Mhz, 1 = 7 Mhz, 2 = undefined, 3 = unlimited
@@ -437,9 +465,9 @@ set_turbo_off:
 ;-----------------------------------------------------------------------------
 set_turbo_mode:
     cp      4                     ; If A > 4
-    ccf     
+    ccf
     ret     c                     ;   Return Carry Set
-    cp      2                     ; or A = 2              
+    cp      2                     ; or A = 2
     jr      z,ret_c               ;   Return Carry Set
 .turbo
     rla
@@ -448,7 +476,7 @@ set_turbo_mode:
     push    bc
     ld      b,a                   ;   and copy to B
     in      a,(IO_SYSCTRL)        ; Read SYSCTRL
-    and     ~SYSCTRL_TURBO        ;   mask out Fast Mode bit
+    and     ~SYSCTRL_TURBO & 127  ;   mask out Fast Mode bit
     or      b                     ;   and copy the new Fast Mode bit in
     out     (IO_SYSCTRL),a        ; Write back to SYSCTRL
     pop     bc
@@ -461,7 +489,7 @@ get_turbo_mode:
 ret_c:
     scf
     ret
-    
+
 ;-----------------------------------------------------------------------------
 ; Enable/Disable Ctrl-C Break
 ; Input: A = Bit 5 set for Disabled, reset for Enabled
@@ -488,11 +516,11 @@ _sounds_hook:
     add     hl,de                 ; HL = DE + DE
     ex      de,hl                 ; DE = HL
 .not_turbo
-    ; Normal: 1102 Hz [3.579545 MHz / (149 + 3100) cycles] - Divisor 3249 
+    ; Normal: 1102 Hz [3.579545 MHz / (149 + 3100) cycles] - Divisor 3249
     ; New Turbo: 1105 Hz [7.157090 Mhz / (149 + 6324) cycles] - Divisor 6473
     ; Old Turbo: 1127 Hz [7.157090 Mhz / (149 + 6200) cycles] - Divisor 6349
-    ; Unmodified: 2203 Hz  [7.157090 Mhz / (149 + 3100) cycles] - Divisor 3249 
-    jp      SOUNDS                ; Total wavelength: 148 + DE * 62 cycles 
+    ; Unmodified: 2203 Hz  [7.157090 Mhz / (149 + 3100) cycles] - Divisor 3249
+    jp      SOUNDS                ; Total wavelength: 148 + DE * 62 cycles
 
 ;-----------------------------------------------------------------------------
 ; Return BASIC Version
@@ -561,8 +589,8 @@ select_chrset:
 .alt
     ld      hl,ALTCHRSET          ;   Copy Custom Character Set
 .copy
-    ld      a,BAS_BUFFR           
-    jr      copy_char_ram         
+    ld      a,BAS_BUFFR
+    jr      copy_char_ram
 
 ;-----------------------------------------------------------------------------
 ; Character ROM buffers initialization
@@ -653,7 +681,7 @@ set_vblank_irq:
     ld      a,(IRQACTIVE)
     or      b
     ld      (IRQACTIVE),a
-    ret     
+    ret
 
 ;-----------------------------------------------------------------------------
 ; Disable a VBLANK Interrupt
@@ -667,7 +695,7 @@ clear_vblank_irq:
     ld      a,(IRQACTIVE)
     and     c
     ld      (IRQACTIVE),a
-    ret     
+    ret
 
 ;-----------------------------------------------------------------------------
 ; Read key for BASIC color cycle screen
@@ -722,7 +750,7 @@ jump_iy:
 
 do_cls:
     ld      a,(BASYSCTL)
-    rla     
+    rla
     jr      nc,clear_default
     ld      a,(SCOLOR)
     jr      clear_home
@@ -775,7 +803,7 @@ _ttymove_hook:
     ld      hl,(CURRAM)
     ld      a,(HOOK+1)
     cp      $2F                   ; If plusBASIC not hooked
-    jp      nz,TTYMOP             
+    jp      nz,TTYMOP
     ld      a,(BASYSCTL)          ; or color PRINT not enabled
     rla                           ;   Continue normally
     jp      nc,TTYMOP             ; Else
@@ -795,18 +823,18 @@ _scroll_hook:
     ld      bc,920                ;   Move 23 * 40 bytes
     ld      de,COLOR+40           ;   To Row 1 Column 0
     ld      hl,COLOR+80           ;   From Row 2 Column 1
-    ldir                          ; 
-    ld      a,(SCOLOR)  
+    ldir                          ;
+    ld      a,(SCOLOR)
     ld      b,40                  ;   Loop 40 Times
     ld      hl,COLOR+961          ;   Starting at Row 23, Column 0
-.loop:        
+.loop:
     ld      (hl),a                ;   Put Space
     inc     hl                    ;   Next Column
     djnz    .loop                 ;   Do it again
 .nocolor
     pop     af
     jp      SCROLL
-    
+
 ;-----------------------------------------------------------------------------
 ; 80 column screen driver
 ;-----------------------------------------------------------------------------
@@ -922,7 +950,7 @@ ext_call:
 
 
     free_rom_sys = $2F00 - $
- 
+
 ; ------------------------------------------------------------------------------
 ;  Hook Jump Table
 ; ------------------------------------------------------------------------------
@@ -969,12 +997,12 @@ hook_table:                     ; ## caller   addr  performing function
     dw      main_ext            ; 33 XMAIN    204F  Save Line# Flag`in TEMP3
     dw      _stuffh_ext         ; 34 XSTUFF   2054  Check for additional tokens when stuffing
     dw      _check_topmem       ; 35 XCLEAR   204E  Verify TOPMEM is in Bank 2
-    dw      ptrget_hook         ; 36 XPTRGT   2054  Allow _Alphanumunder sftar var name Check for pressed 
-    dw      skip_label          ; 37 SKPLBL   205D  Skip label at beginning of line (SKPLBL) Check for pressed 
-    dw      skip_on_label       ; 38 SKPLOG   2065  Skip label in ON GOTO Check for pressed 
-    dw      _string_ext         ; 39 STRNGX   206A  Don't capitalize letters between single quotes (STRNGX) Check for pressed 
+    dw      ptrget_hook         ; 36 XPTRGT   2054  Allow _Alphanumunder sftar var name Check for pressed
+    dw      skip_label          ; 37 SKPLBL   205D  Skip label at beginning of line (SKPLBL) Check for pressed
+    dw      skip_on_label       ; 38 SKPLOG   2065  Skip label in ON GOTO Check for pressed
+    dw      _string_ext         ; 39 STRNGX   206A  Don't capitalize letters between single quotes (STRNGX) Check for pressed
     dw      _check_comment      ; 40 CHKCMT   2027  Check for ' and treat as REM
-    dw      isvar_extension     ; 41 ISVAR    0A4E  Parse variable and put value in FACLO                
+    dw      isvar_extension     ; 41 ISVAR    0A4E  Parse variable and put value in FACLO
     dw      let_extension       ; 42 LET      0731  Extensions to the LET command
     dw      dim_extension       ; 43 DIM      10CC  Extensions to the LET command
     dw      read_extension      ; 44 READ     08BE  Extensions to the LET command
@@ -1060,7 +1088,7 @@ clear_extension:
     jp      clear_cont
 
 ;-----------------------------------------------------------------------------
-; Internal routines to write to BASIC buffers 
+; Internal routines to write to BASIC buffers
 ;-----------------------------------------------------------------------------
 buffer_write_byte:
     call    _buffer_write_init
@@ -1094,8 +1122,8 @@ _buffer_write_init:
     ex      af,af'                ; A = WritePg, A' = OldPg
     out     (IO_BANK3),a          ; Map WritePg into Bank 3
     ld      a,d                   ; Coerce Address
-    or      $C0                   
-    ld      d,a                   
+    or      $C0
+    ld      d,a
     ret
 
 ;-----------------------------------------------------------------------------
@@ -1113,7 +1141,7 @@ _buffer_write_init:
     dc $3000-$,$76
 
 ;-----------------------------------------------------------------------------
-; Pad hidden 2k 
+; Pad hidden 2k
 ;-----------------------------------------------------------------------------
     free_rom_hid = $3800 - $
     assert !($37FF<$)   ; ROM full!
@@ -1198,7 +1226,7 @@ _buffer_write_init:
 
     free_rom_aux = $10000 - $
 
-    dc $10000-$,$76              
+    dc $10000-$,$76
 
     end
 

@@ -319,6 +319,8 @@
  - [ ] **SET TILEMAP OFFSET _x_,_y_** - Scroll tilemap to specified position.<!--SETTILEMAP-->
  - [ ] **SET USRINT ON|OFF** - Enable disable user interrupt.<!--system-->
  - [ ] **SGN(_expression_)** - Return signum of expression.<!--math-->
+ - [ ] **SGNINT(float)** - Convert floating point number to signed integer.<!--convert-->
+ - [ ] **SGNINT(_string_{,_offset_})** - Convert two consecutive bytes in string to signed integer.<!--convert-->
  - [ ] **SIN(_float_)** - Return sine of argument.<!--math-->
  - [ ] **SOUND (_duration_,_frequency_)** - Generate a tone through the television speaker.
  - [ ] **SPLIT _string_ INTO \*_array$_ DEL _delimiter_** - Split delimited string into string array elements.
@@ -363,6 +365,6 @@
  - [ ] **VER(_expression_)** - Return System or plusBASIC version as integer.
  - [ ] **VER$(_expression_)** - Return System or plusBASIC version as printable string.
  - [ ] **WAIT _port_,_xor_mask_{,_and_mask_}** - Pause until specifie bit pattern received from IO port.
- - [ ] **WORD(_string_{,_offset_})** - Convert two consecutive bytes in string to unsigned word.<!--convert-->
+ - [ ] **WORD(_string_{,_offset_})** - Convert two consecutive bytes in string to unsigned integer.<!--convert-->
  - [ ] **WORD$(_integer_)** - Convert integer to unsigned two byte binary string.<!--convert-->
  - [ ] **WRITE KEYS _string_** - Write string to auto-type buffer.

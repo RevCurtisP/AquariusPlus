@@ -145,8 +145,10 @@ TTYMOX  equ     $2015   ;; | TTYMOV extension
 SCROLX  equ     $2018   ;; | SCROLL extension
 RESETX  equ     $201B   ;; | Skip start screen, cold boot if ':' pressed
 INCNTX  equ     $2021   ;; | INCNTC control keys patch
-INLINX  equ     $2024   ;; | INLINC Ctrl-C patch
+INPUTC  equ     $2024   ;; | INPUT Ctrl-C patch
 INCHRX  equ     $2027   ;; | Wait for character, don't BREAK on Ctrl-C
+MAINCC  equ     $202A   ;; | Handle Ctrl-C in direct mode
+FININX  equ     $202D   ;; | Finish INPUT
 ;;plusBASIC specific hooks
 SCNLBL  equ     $2030   ;; | Scan line label or line number
 XFUNKY  equ     $2035   ;; | Extended function key check
@@ -864,15 +866,19 @@ HOOK2:  byte    2                 ;
         xor     a                 ;
         ld      (CNTOFL),a        ;[M80] FORCE OUTPUT
         call    CRDONZ            ;[M80] IF NOT ALREADY AT LEFT, SEND CRLF
-        ld      hl,REDDY          ;[M80] "OK" CRLF CRLF
+GETLIN: ld      hl,REDDY          ;[M80] "OK" CRLF CRLF
         call    STROUT            ;
                                   ;
 MAIN:   ld      hl,$FFFF          ;
         ld      (CURLIN),hl       ;[M80] SETUP CURLIN FOR DIRECT MODE
         call    INLIN             ;[M80] GET A LINE FROM TTY
+if aqplus
+        jp      MAINCC            ; | If Ctrl-C, do BREAK
+else
         jr      c,MAIN            ;[M80] IGNORE ^C S
         rst     CHRGET            ;[M80] GET THE FIRST
-        inc     a                 ;[M80] SEE IF 0 SAVING THE CARRY FLAG
+endif
+MAIN1:  inc     a                 ;[M80] SEE IF 0 SAVING THE CARRY FLAG
         dec     a                 ;
         jr      z,MAIN            ;[M80] IF SO, A BLANK LINE WAS INPUT
         push    af                ;[M80] SAVE STATUS INDICATOR FOR 1ST CHARACTER
@@ -1675,13 +1681,17 @@ HOOK26: byte    26                ;
         call    STRLTI            ;[M65] LITERALIZE THE STRING IN TEXT
         rst     SYNCHK            ;
         byte    ';'               ;[M80] MUST END WITH SEMICOLON
-        push    hl                ;[M80] REMEMBER WHERE IT ENDED
+        push    hl                ;[M80] REMEMBER WHERE IT ENDED              
         call    STRPRT            ;[M80] PRINT IT OUT
         byte    $3E               ;;[LD A,] over next instruction
 NOTQTI: push    hl                ;{M80} SAVE TEXT POINTER
         call    QINLIN            ;[M65] TYPE "?" AND INPUT A LINE OF TEXT.
         pop     bc                ;{M80} GET BACK THE TEXT POINTER
+if aqplus
+        jp      c,INPUTC          ;;Handle Ctrl-C
+else
         jp      c,STPEND          ;{M80} IF CONTROL-C, STOP
+endif
         inc     hl                ;
         ld      a,(hl)            ;
         or      a                 ;
@@ -2579,15 +2589,15 @@ NOTRUB: ld      a,c               ;[M80] GET BACK CURRENT CHAR
 CHKFUN: cp      7                 ;[M80] IS IT BOB ALBRECHT RINGING THE BELL
         jr      z,OUTBEL          ;[M80] FOR SCHOOL KIDS?
         cp      3                 ;[M80] CONTROL-C?
-ifdef aqplus
-        jp      z,INLINX
-else
         call    z,CRDO            ;[M80] TYPE CHAR, AND CRLFT
-endif
         scf                       ;[M80] RETURN WITH CARRY ON
         ret     z                 ;[M80] IF IT WAS CONTROL-C
         cp      13                ;
+ifdef aqplus
+        jp      z,FININX
+else
         jp      z,FININL          ;[M80] IS IT A CARRIAGE RETURN?
+endif
         cp      21                ;[M80] ;LINE DELETE? (CONTROL-U)
         jp      z,INLINU          ;[M80] GO DO IT
         nop                       ;;;Orphan Code: Move this down to reuse - 5 bytes

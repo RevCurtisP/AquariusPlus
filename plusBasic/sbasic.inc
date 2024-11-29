@@ -125,12 +125,12 @@ INTRPT      equ $38     ; 7 (S3BASIC) Execute Interrupt Routine
 S3VER       equ $0003   ; S3 Version in BCD: YY,MM,DD,Rev
 JUMPIX      equ $0034   ; Jump to address in IX
 NOHOOK      equ $003B   ; Default Hook routine
-RESET:      equ $0089   ; Display start up screen 
+RESET:      equ $0089   ; Display start up screen
 RESETC:     equ $008C   ; RESET alternate entry point
 COLDST      equ $00FD   ; Do cold start
 CLDCON      equ $0138   ; Finish S3BASIC cold boot
 HEDING      equ $015F   ; Microsoft copyright message
-INITFF:     equ $0153   ; Initialize I/O Port 255 
+INITFF:     equ $0153   ; Initialize I/O Port 255
 REDDY       equ $036E   ; Text "Ok"
 FNDFOR      equ $039F   ; Find FOR/GOSUB entry on stack
 SNERR:      equ $03C4   ; Syntax error
@@ -145,10 +145,11 @@ ERROR:      equ $03DB   ; Process error code, E = code (offset to 2 char error n
 ERRCRD      equ $03E0   ; Print Error Message and Return to Immediate Mode
 ERRPRT      equ $03EA   ; Print Error pointed to by HL and Return to Immediate Mode
 ERRFNE      equ $03F1   ; Print "Error in " + line number and Return to Immediate Mode
-ERRFN1:     equ $03F4   ; Print String in HL + " in " + line number, Return to Immediate mode 
+ERRFN1:     equ $03F4   ; Print String in HL + " in " + line number, Return to Immediate mode
 STPRDY      equ $0401   ; For LIST command stopping
 READY:      equ $0402   ; Enter direct mode
-MAIN        equ $0414   ; Immediate Mode loop     
+MAIN        equ $0414   ; Immediate Mode loop
+MAIN1       equ $0420   ; Continue MAIN after initial CHRGET
 DEL         equ $044B   ; Delete BASIC line
 LINKIT      equ $0487   ; Link Line with starting address minus 1 in HL
 CHEAD       equ $0489   ; Link Lines with starting address in DE
@@ -185,6 +186,7 @@ RUNC2:      equ $06DB
 GOTO        equ $06DC   ; Execute GOTO statement
 GOTOLN      equ $06DF   ; GOTO line# in DE
 USERR       equ $06F3   ; Undefined line error
+DATAH       equ $071B   ; Pop text pointer and skip to end of statement
 DATA        equ $071C   ; Execute DATA statement
 REM         equ $071E   ; Execute REM statement
 LET         equ $0731   ; Execute LET statement
@@ -209,7 +211,7 @@ PARCHK:     equ $0A37   ; Evaluate expression in` brackets
 LABBCK:     equ $0A49   ; Return numeric value from function
 ISVAR       equ $0A4E   ; Get variable value or string pointer
 RETVAR      equ $0A51   ; Put value of variable pointed to by DE in FACLO
-GIVFLT      equ $0B1C   ; Float HL - DE   
+GIVFLT      equ $0B1C   ; Float HL - DE
 GIVINT      equ $0B21   ; Float Integer MSB=[A], LSB=[C]
 FLOATD      equ $0B23   ; Float Integer MSB=[A], LSB=[D]
 SNGFLT:     equ $0B36   ; Float byte in A
@@ -228,6 +230,7 @@ STKINI:     equ $0BE5   ; Initialize stack
 RESTOR      equ $0C05   ; RESTORE statement
 BGNRST      equ $0C19   ; Finish up RESTORE
 STOP        equ $0C1F   ; STOP statement
+STPEND      equ $0C26   ; Print "Break" and enter direct mode
 ISLETC:     equ $0CC6   ; Test for a letter
 CLRCON      equ $0D04   ; Continue CLEARS after setting top of stack
 NOTRUB      equ $0DA3   ; Continue Ctrl-key check
@@ -244,7 +247,7 @@ STRADI      equ $0E56   ; Build string descriptor at HL
 STRADX      equ $0E59   ; Entry point into STRADI
 STRLIT      equ $0E5F   ; Build descriptor for string litersl
 STRLTI      equ $0E60   ; Do STRLIT, without decrementing HL
-STRLT3      equ $0E62   ; Do STRLTI with delimiter in B 
+STRLT3      equ $0E62   ; Do STRLTI with delimiter in B
 STRLT2      equ $0E63   ; Do STRLTI with delimiters in B and C
 STRNEX      equ $0E79   ; Return string with address HL, length C
 STRNEL      equ $0E7A   ; Return string with address DE, length C
@@ -263,7 +266,7 @@ FRETM2      equ $0FCC   ; Free up temporary in FACLO
 FRETMP      equ $0FCD   ; Free up temporary
 FRETMS      equ $0FE4   ; Free up temporary descriptor
 LEN1:       equ $0FF7   ; Get string length (in: (FPREG) = string block, out: HL = string block, A = length)
-ASC2        equ $1006   ; Return DE = Pointer to String Text, A=First Character 
+ASC2        equ $1006   ; Return DE = Pointer to String Text, A=First Character
 CHR         equ $1013   ; CHR$ Function
 FINBCK      equ $101D   ; Return a String
 DIMNXT      equ $10CA   ; Require comma and DIM an array
@@ -303,8 +306,9 @@ POLYX       equ $1837   ; Polynomial evaluator
 PI2         equ $1953   ; Constant: PI / 2
 OUTDO       equ $198A   ; Output a Character
 OUTCON      equ $198C   ; Output a Character, bypassing hook
+FININL      equ $19E5   ; Terminate input buffer amd print C/R
 CRDO:       equ $19EA   ; Print CR+LF
-BUFCIN      equ $1A02   ; Return A as string from function 
+BUFCIN      equ $1A02   ; Return A as string from function
 NULRT       equ $1A0B   ; Return null string
 STRSET      equ $1A0E   ; Put HL in FACLO and 1 in VALTYP
 CHARCG      equ $1A18   ; Get saved keypress, check for Ctrl-C
@@ -354,7 +358,7 @@ INPUTK      equ $84     ; INPUT
 DIMTK       equ $85     ; DIM
 GOTOTK      equ $88     ; GOTO
 RUNTK       equ $89     ; RUN
-RESTK       equ $8B     ; RESTORE    
+RESTK       equ $8B     ; RESTORE
 GOSUTK      equ $8C     ; GOSUB
 RETTK       equ $8D     ; RETURN
 ONTK        equ $90     ; ON
@@ -368,7 +372,7 @@ MINUTK      equ $A9     ; -
 MULTK       equ $AA     ; *
 EXPTK       equ $AC     ; ^
 ORTK        equ $AE     ; OR
-EQUATK      equ $B0     ; = 
+EQUATK      equ $B0     ; =
 LESSTK      equ $B1     ; <
 ONEFUN      equ $B2     ; First Function Token
 INTTK       equ $B3     ; INT
@@ -411,25 +415,25 @@ HOOK29      = $09A3
 
 ;-----------------------------------------------------------------------------
 ; plusBASIC RAM Memory Map
-;  12288 =============================         
+;  12288 =============================
 ;                Screen RAM
-;  14336 =============================         
+;  14336 =============================
 ;             System Variables
-; TXTTAB =============================         
+; TXTTAB =============================
 ;              BASIC Program
 ; VARTAB -----------------------------
 ;             Simple Variables
 ; ARYTAB -----------------------------
-;             Array Variables 
+;             Array Variables
 ; STREND -----------------------------
-;             Unused BASIC RAM  
+;             Unused BASIC RAM
 ; STKSAV -----------------------------
-;                  Stack                       
+;                  Stack
 ; TOPMEM =============================
 ;           Enhanced Input Buffer
 ;        -----------------------------
 ;           String Building Buffer
-; STRSPC =============================         
+; STRSPC =============================
 ;            String Space in use
 ; FRETOP -----------------------------    Set by first operand of CLEAR
 ;            Unused String Space

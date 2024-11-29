@@ -1055,7 +1055,7 @@ run_file:
     ; Check for .ROM extension
     ld      a, c                  ; A = String Length
     cp      a, 5                  ; If less than 5
-    jr      c, .check_header      ; Too short to have ROM extension
+    jr      c, .load_basic        ; Too short to have ROM extension
     sub     a, 4                  ; Position of last four characters of String
     ld      c, a
     push    hl                    ; Save String Descriptor
@@ -1077,29 +1077,12 @@ run_file:
     pop     hl
     jr      z,.load_core
 
-.check_header
-    ld      (FBUFFR),hl           ; FBUFFR = FilSpcDsc
-    call    ferr_flag_on          ; 
-    call    _open_read
-    ld      de,FBUFFR+2
-    ld      bc,10
-    call    esp_read_bytes        ; B = First byte of file
-    jp      m,_dos_error          ; Check for error
-    ld      a,l                   ; A = FilDsc
-    ld      iy,dos_close
-    call    aux_call              ; Close file
-    ld      de,FBUFFR+2
-    ld      hl,.aqxsig            ; HL = "AQPLUSEXEC"
-    ld      b,10
-    call    string_cmp_upper
-    ld      hl,(FBUFFR)
-    jp      z,run_aqx_program
-
 .load_basic:
     pop     bc                    ; Discard Text Pointer
     ld      bc,run_c
     push    bc                    ; Return to RUNC
     call    load_basic_program
+
 
 ; RUN /roms/bio.rom
 ; RUN /roms/astro.rom
@@ -1110,10 +1093,13 @@ run_file:
     jp      m,_dos_error
     ld      iy,file_load_boot
     call    aux_call
-    jp      m,_pop_hl_doserror
+    jp      m,_pop_hl_doserror    ; A will be 0
+    xor     a
+    push    af
     ld      a,BOOT_BUFR
     ex      af,af'
     ld      a,TMP_BUFFR
+    pop     hl                    ; HL = ColdBt
     ld      iy,$C003
     jp      exec_page
 
@@ -1131,6 +1117,8 @@ run_file:
 ;Keep 
 .aqxsig
     byte    "AQPLUSEXEC"
+.basromsig
+    byte    $82,$06,$22,11,0
 
 _lookup_file:
     push    hl                    ; Stack = StrDsc, RtnAdr

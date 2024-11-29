@@ -51,6 +51,8 @@ s3_ctrl_keys:
 .notrepeat:
     cp      'P'-'K'               ; If not ^N through ^P
     jr      c,.charset
+
+
 .notrub
     pop     bc                    ;   Restore character count
     jp      NOTRUB                ;   Continue standard Ctrl-key check

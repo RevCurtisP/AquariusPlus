@@ -188,6 +188,7 @@ file_load_rom:
     jr      z,.copy
     xor     a
     ret
+    
 .copy
     ld      a,TMP_BUFFR
     call    page_map_bank1
@@ -195,7 +196,6 @@ file_load_rom:
     ld      de, BANK1_BASE+$2000
     ld      bc, $2000
     ldir
-    xor     a
     jp      page_restore_bank1
 
 ;-----------------------------------------------------------------------------

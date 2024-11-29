@@ -120,6 +120,28 @@ float_signed_int:
     pop     hl
     ret
 
+
+check_bang:
+    ld      b,'!'
+    byte    $11                   ; LD DE, over LD B,
+check_star:
+    ld      b,'*'
+;-----------------------------------------------------------------------------
+; Read character at (HL) into A and compare with B
+; Increments HL if match
+; Exits with AF on stack
+; Clobbers: DE
+;-----------------------------------------------------------------------------
+check_char:
+    pop     ix
+    ld      a,(hl)
+    cp      b
+    push    af
+    jr      nz,.return
+    inc     hl
+.return
+    jp      (ix)
+
 get_star_array: 
     call    CHRGT2                ; Reget character
     jp      z,MOERR               ; If terminator, MO Error

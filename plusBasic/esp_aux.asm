@@ -11,26 +11,26 @@
 espx_get_datetime:
     ld      a,ESPCMD_DATETIME     ; Issue DATETIME command
     call    esp_cmd
-    xor     a     
+    xor     a
     call    esp_send_byte         ; Response Type ($00)
-    call    esp_get_result 
-    ret     m                     
-    jp      espx_read_to_buff      
+    call    esp_get_result
+    ret     m
+    jp      espx_read_to_buff
 
 ;-----------------------------------------------------------------------------
 ; espx_get_gamectrl - Read date and time into string buffer
-; Input: A: controller index 
+; Input: A: controller index
 ;       DE: buffer address
-; Output: A: result code 
+; Output: A: result code
 ;        BC: number of bytes read
 ;        DE: buffer address
 ; Result: 0: success
 ;        -1: ERR_NOT_FOUND
-; Buffer: 0  (Signed) Left stick X 
-;         1  ( Signed )  Left stick Y 
+; Buffer: 0  (Signed) Left stick X
+;         1  ( Signed )  Left stick Y
 ;         2  ( Signed )  Right stick X
 ;         3  ( Signed )  Right stick Y
-;         4  (Unsigned)  Left trigger 
+;         4  (Unsigned)  Left trigger
 ;         5  (Unsigned)  Right trigger
 ;        6-7 (L-Endian)  Button Status
 ;             0  A
@@ -50,6 +50,7 @@ espx_get_datetime:
 ;            14  D-pad right
 ;            15  Share (Xbox Series S/X controller only)
 ;-----------------------------------------------------------------------------
+get_gamectrl:                     ; For hump_aux table entry
 espx_get_gamectrl:
     or      a
     jr      nz,ret_err_not_found
@@ -59,8 +60,8 @@ espx_get_gamectrl:
     call    esp_cmd
     pop     af                    ; A = CtlIdx; Stack = RtnAdr
     call    esp_send_byte         ; Response Type ($00)
-    call    esp_get_result 
-    ret     m                     
+    call    esp_get_result
+    ret     m
     push    de
     ld      bc,8
     call    esp_get_bytes
@@ -71,12 +72,12 @@ ret_err_not_found:
     ld      a,ERR_NOT_FOUND
     or      a
     ret
-    
+
 ;-----------------------------------------------------------------------------
 ; esp_get_mouse - Read date and time into string buffer
 ; Output:  A: 0 if succesful, else error code
 ;         BC: X-position
-;          E: Button State      
+;          E: Button State
 ;          D: Y-position
 ;          L: Wheel delta
 ;-----------------------------------------------------------------------------
@@ -109,13 +110,13 @@ espn_get_mouse:
 ;-----------------------------------------------------------------------------
 espx_read_line:
     push    af
-    ld      a,ESPCMD_READLINE     
+    ld      a,ESPCMD_READLINE
     call    esp_cmd
     pop     af
     push    af                    ; Stack = FilDsc, RtnAdr
     call    esp_send_byte         ; Send file descriptor
     call    esp_send_bc           ; Send maximum line length
-    call    esp_get_result 
+    call    esp_get_result
     pop     de                    ; D = FilDsc; Stack = RtnAdr
     ret     m                     ; Return if error
     push    hl                    ; Stack = BufAdr, RtnAdr
@@ -137,7 +138,7 @@ espx_read_line:
 ;-----------------------------------------------------------------------------
 ; esp_read_to_buff - Read bytes from ESP to string buffer
 ; Input: HL: Address of String Buffer
-; Output: E: String Length, 
+; Output: E: String Length,
 ;        DE: Address of Terminator
 ;        HL: Buffer Address
 ; Clobbers: B
@@ -157,7 +158,7 @@ espx_read_buff:
     or      a
     jr      z,.done               ; Return if end of String
     inc     de
-    djnz    .loop     
+    djnz    .loop
 .done
     ex      de,hl                 ; HL = Terminator Address, DE = Buffer Address
     sbc     hl,de                 ; HL = Length
@@ -167,7 +168,7 @@ espx_read_buff:
 
 ;-----------------------------------------------------------------------------
 ; esp_set_keymode - Set keyboard buffer mode
-;  Input: A: Buffer Mode (KB_ENABLE | KB_SCANCODE | KB_REPEAT) 
+;  Input: A: Buffer Mode (KB_ENABLE | KB_SCANCODE | KB_REPEAT)
 ; Output: A: 0 if succesful, else error code
 ;-----------------------------------------------------------------------------
 espx_set_keymode:
@@ -175,7 +176,7 @@ espx_set_keymode:
     ld      a,ESPCMD_KEYMODE     ; Issue KEYMODE command
     call    esp_cmd
     pop     a
-    call    esp_send_byte        ; Keyboard buffer mode 
+    call    esp_send_byte        ; Keyboard buffer mode
     call    esp_get_byte         ; Get result
     or      a
     jp      page_restore_bank3
@@ -200,7 +201,7 @@ espx_write_repbyte:
     call    esp_send_bc
 
     ; Send bytes
-    
+
 .loop:
     ; Done sending? (BC=0)
     ld      a, b
@@ -214,7 +215,7 @@ espx_write_repbyte:
 
 .done:
     ; Get result
-    call    esp_get_result 
+    call    esp_get_result
     ret     m
 
     ; Get number of bytes actual written
