@@ -164,22 +164,25 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>COPY</strong> - Copy text screen to serial printer.<!--COPY--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>COPY *<em>array</em> TO *array</strong> - <em>Not implemented.</em><!--COPY--></li>
+        <strong>COPY *<em>array</em> TO *array</strong> - Copy contents of one numeric array to another.<!--COPY--></li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>COPY *<em>array</em> TO �!_ext_addr_�|�{@<em>page</em>,}_address_� </strong> - Copy numeric array contents to memory.<!--COPY--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>COPY �!_ext_addr_�|�{@<em>page</em>,}_address_�,<em>length</em> TO �!_ext_addr_�|�{@<em>page</em>,}_address_� </strong> - Copy bytes from one section of memory to another.<!--COPY--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>COPY �!_ext_addr_�|�@<em>page</em>,_address_�,<em>length</em> TO SCREEN </strong> - Copy bytes from one section of memory to another.<!--COPY--></li>
+        <strong>COPY �!_ext_addr_�|�{@<em>page</em>,}_address_�{,<em>length(=</em>} TO *<em>array</em></strong> - Copy memory to array contents.</li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>COPY �!_ext_addr_�|�@<em>page</em>,_address_� TO SCREEN {CHR|ATTR}</strong> - Copy paged memory to screen.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>COPY FILE <em>filespec</em> TO <em>filespec</em></strong> - Copy file.<!--COPY--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>COPY SCREEN {CHR|ATTR} TO �!_ext_addr_�|�@<em>page</em>,_address_� </strong> - Copy screen to paged memory.</li>
-      <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>COPY �!_ext_addr_�|�@<em>page</em>,_address_� TO SCREEN {CHR|ATTR}</strong> - Copy paged memory to screen.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>COS(<em>float</em>)</strong> - Return cosine of argument.<!--math--></li>
@@ -218,7 +221,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>DEF PALETTELIST <em>strvar</em>=<em>palette</em>,...</strong> - Create a string list of palette numbers.<!--DEFPALETTE--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>DEF RGBLIST <em>strvar</em>=<em>r</em>,<em>g</em>,<em>b</em>;...</strong> - Create a string list of RGB values.<!--DEFRGB--></li>
+        <strong>DEF RGBLIST <em>strvar</em>=<em>r</em>,<em>g</em>,<em>b</em>|<em>rgbstr</em>;...</strong> - Create a string list of RGB values.<!--DEFRGB--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>DEF SPRITE <em>strvar</em>= <em>spritle</em>, <em>x-offset</em>, y-offset;...</strong> - Create a sprite definition.<!--DEFSPRITE--></li>
@@ -578,7 +581,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>OUT <em>port</em>,<em>byte</em>|<em>string</em>{,...}{;...}</strong> - Write to a Z80 port.<!--OUT--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>PAD$(string,length{,char})</strong> - Pad string on left or right.<!--PAD--></li>
+        <strong>PAD$(<em>string</em>|<em>number</em>,<em>length</em>{,<em>char</em>})</strong> - Pad string on left or right with optional fill character.<!--PAD--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>PAUSE</strong> - Halt program execution until key is pressed.<!--PAUSE--></li>
@@ -704,10 +707,10 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>RETURN {<em>expression</em>{,...}}</strong> - Resume program execution after GOSUB, optionally returning results.<!--flow--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" checked="checked" />
-        <strong>RGB(<em>r</em>,<em>g</em>,<em>b</em>)</strong> - Return integer representing a single palette entry.<!--RGB--></li>
+        <strong>RGB(<em>r</em>,<em>g</em>,<em>b</em>|<em>rgbstr</em>)</strong> - Return integer representing a single palette entry.<!--RGB--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" checked="checked" />
-        <strong>RGB$(<em>r</em>,<em>g</em>,<em>b</em>)</strong> - Return string representing a single palette entry.<!--RGB--></li>
+        <strong>RGB$(<em>r</em>,<em>g</em>,<em>b</em>|<em>rgbstr</em>)</strong> - Return string representing a single palette entry.<!--RGB--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>RIGHT$(<em>string</em>,<em>len</em>)</strong> - Return the last up to <em>byte</em> characters of string.<!--string--></li>

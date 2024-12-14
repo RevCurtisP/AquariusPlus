@@ -167,7 +167,7 @@ file_load_page
     jp      xfile_load_paged
 
 _bootbin
-    byte    "/boot.bin"
+    byte    "esp:boot.bin"
 _bootdesc 
     word    $ - _bootbin, _bootbin
 

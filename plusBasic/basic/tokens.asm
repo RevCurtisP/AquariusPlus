@@ -118,9 +118,12 @@ EXTCMDS:
     db $80 + 'U',"PR"             ; $AF
     db $80 + 'L',"WR"             ; $B0
     db $80 + 'S',"PEED"           ; $B1
+    db $80 + 'L',"ONG"            ; $B2
+    db $80 + 'F',"LOAT"           ; $B3
+    
     db $80                        ; End of table marker
 
-EXTOKEN = $B2                     ; Last Token + 1
+EXTOKEN = $B4                     ; Last Token + 1
 
 ;-----------------------------------------------------------------------------
 ; plusBASIC tokens

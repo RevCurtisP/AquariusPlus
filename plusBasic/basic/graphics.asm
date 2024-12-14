@@ -1327,6 +1327,7 @@ FN_GETSPRITE:
 
 ;-----------------------------------------------------------------------------
 ; RGB$(r,g,b)
+; RGB$("RGB")
 ;-----------------------------------------------------------------------------
 FN_RGB:
     inc     hl                    ; Skip RGB
@@ -1356,22 +1357,49 @@ FN_RGB:
 
 ; Parse RGB triplet, returns DE = RGB integer
 _get_rgb:
-    call    get_byte16            ; Get Red
-    push    af                    ; Stack = Red, RtnAdr
+    call    frmeval_getype        ; Parse first argument
+    jr      z,.rgb_string         ; If numberic
+    call    con_byte16            ;   Convert to Red
+    push    af                    ;   Stack = Red, RtnAdr
     SYNCHK  ','
-    call    get_byte16            ; Get Green
-    push    af                    ; Stack = Green, Red, RtnAdr
+    call    get_byte16            ;   Get Green
+    push    af                    ;   Stack = Green, Red, RtnAdr
     SYNCHK  ','
-    call    get_byte16            ; E = Blue
-    pop     af                    ; A = Green; Stack = Red, RtnAdr
-    and     $0F                   ; Shift Green to high nybble
+    call    get_byte16            ;   E = Blue
+.make_rgb
+    pop     af                    ;   A = Green; Stack = Red, RtnAdr
+    and     $0F                   ;   Shift Green to high nybble
     rla
     rla
     rla
     rla
-    or      e                     ; A = Green + Blue
-    pop     de                    ; D = Red; Stack = RtnAdr
-    ld      e,a                   ; E = Green + Blue
+    or      e                     ;   A = Green + Blue
+    pop     de                    ;   D = Red; Stack = RtnAdr
+    ld      e,a                   ;   E = Green + Blue
+    ret                           ; Else
+.rgb_string    
+    push    hl                    ;   Stack = TxtPtr, RtnAdr
+    call    free_addr_len         ;   DE = StrAdr, BC = StrLen
+    pop     hl                    ;   HL = TxtPtr, Stack = RtnAdr
+    ld      a,c
+    cp      3                     ;   If StrLen <> 3
+    jp      nz,FCERR              ;     Error out
+    call    .get_nybble           ;   A = Red
+    push    af                    ;   Stack = Red, RtnAdr
+    call    .get_nybble           ;   A = Greeb
+    push    af                    ;   Stack = Green, Red, RtnAdr
+    call    .get_nybble           ;   A = Blue
+    ld      e,a                   ;   E = Blue
+    jr      .make_rgb             ;   Build and return RGB
+.get_nybble
+    ld      a,(de)                ;   A = Color Component
+    inc     de
+rra4a:
+    rra
+    rra
+    rra
+    rra
+    and     $0F
     ret
 
 test_gs_init:

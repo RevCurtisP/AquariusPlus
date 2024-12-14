@@ -135,7 +135,9 @@ _trim_arg:
 _pad_arg:
     SYNCHK  '$'                   ;
     call    FRMPRN                ; Evaluate argument after (
-    call    CHKSTR                ; Error if not string
+    call    GETYPE                ; If numeric
+    call    nz,facc_to_string     ;   Convert to string
+.not_num:
     ld      de,(FACLO)            ; DE = ArgDsc
     ld      a,(hl)                ; A = Next character
     ret

@@ -1,6 +1,13 @@
 # plusBASIC Release History
+ - v0.23r (2024-12-14)
+    - Added `PAD$(number,...)` where number is converted to string before padding
+    - `DEF RGBLIST`, `RGB()`, and `RGB$()` now accept 3 byte binary string of 8-bit R,G,B values
+    - Added `LEN(*array)` which returns length in bytes of data portion of array.
+    - Added `COPY *array TO ...`, `COPY ... TO *array`, and `COPY *array TO *array`
+    - ROM load routine executes `esp:boot.bin` instead of `/boot/bin`
  - v0.23q (2024-11-29)
     - Removed `SGNINT()`, added `INT(string$)` and `INT(string$,offset)`
+    - `RGB()`, `RGB$()`, and `DEF RGBLIST` now accept 8-bit RGB binary string operands
  - v0.23p (2024-11-28)
     - `SET BREAK OFF` causes Ctrl-C to not BREAK out of INPUT
     - Syntax `OUT! port,byt`e allows writing to protected I/O ports

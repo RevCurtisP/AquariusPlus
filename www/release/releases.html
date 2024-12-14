@@ -16,8 +16,10 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
   <body>
     <h1 id="plusbasic-release-history">plusBASIC Release History</h1>
     <ul>
+      <li>v0.23r (2024-12-14)
+<ul><li>Added <code>PAD$(number,...)</code> where number is converted to string before padding</li><li><code>DEF RGBLIST</code>, <code>RGB()</code>, and <code>RGB$()</code> now accept 3 byte binary string of 8-bit R,G,B values</li><li>Added <code>LEN(*array)</code> which returns length in bytes of data portion of array.</li><li>Added <code>COPY *array TO ...</code>, <code>COPY ... TO *array</code>, and <code>COPY *array TO *array</code></li><li>ROM load routine executes <code>esp:boot.bin</code> instead of <code>/boot/bin</code></li></ul></li>
       <li>v0.23q (2024-11-29)
-<ul><li>Removed <code>SGNINT()</code>, added <code>INT(string$)</code> and <code>INT(string$,offset)</code></li></ul></li>
+<ul><li>Removed <code>SGNINT()</code>, added <code>INT(string$)</code> and <code>INT(string$,offset)</code></li><li><code>RGB()</code>, <code>RGB$()</code>, and <code>DEF RGBLIST</code> now accept 8-bit RGB binary string operands</li></ul></li>
       <li>v0.23p (2024-11-28)
 <ul><li><code>SET BREAK OFF</code> causes Ctrl-C to not BREAK out of INPUT</li><li>Syntax <code>OUT! port,byt</code>e allows writing to protected I/O ports</li><li>boot.bin modified to identify and execute alternnate BASIC ROMs</li><li>Implemented <code>SGNINT()</code> function</li></ul></li>
       <li>v0.23o (2024-10-27)

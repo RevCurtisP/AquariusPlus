@@ -6,7 +6,7 @@
 135 LOAD "http://aquarius.plus/release/"+S$,@32,0
 140 PRINT "Writing /%%..." % (S$)
 145 SAVE "/sysrom.bin",@32,0,49152
-150 PRINT "Press Ctrl-Esc to restart Aquarius+"
+150 PRINT "Press Shift-Ctrl-Esc to restart Aquarius+"
 160 END
 200 _error
 210 M$="in line %%" % (ERRLINE)
@@ -16,3 +16,4 @@
 250 END
 300 _badv
 310 PRINT "This utility requires plusBASIC %% or higher" % (V$)
+dir

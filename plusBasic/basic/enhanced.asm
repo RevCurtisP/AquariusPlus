@@ -66,6 +66,15 @@ ST_COPY:
     jp      z,ST_COPY_FILE
     cp      SCRNTK
     jp      z,ST_COPY_SCREEN
+    cp      MULTK
+    jr      nz,.not_sary          ; If *
+    call    skip_star_array       ;   DE = SrcAdr, BC = SrcLen
+    push    de                    ;   Stack = SrcAdr
+    or      a                     ;   PgFlag = NoPage
+    push    af                    ;   Stack = SrcPgFlg, SrcAdr
+    push    bc                    ;   Stack = Len, SrcPgFlg, SrcAdr
+    jr      .do_to_arg            ;   Evaluate TO clause and copy
+.not_sary
     cp      '!'
     jr      nz,.not_ext           ; If !
     call    get_ext_addr          ;   AF = PgFlg, DE = Addr
@@ -86,14 +95,27 @@ ST_COPY:
     push    af                    ; Stack = SrcPgFlg, SrcAdr
     ld      a,(hl)
     cp      TOTK
-    jr      z,.copy_page_addr_to
+    jp      z,.copy_page_addr_to
     SYNCHK  ','                   ; Require Comma
     call    GETINT                ; DE = Len
     push    de                    ; Stack = Len, SrcPgFlg, SrcAdr
+.do_to_arg
     rst     SYNCHR
     byte    TOTK
+    cp      MULTK
+    jr      nz,.not_dary          ; If *
+    call    skip_star_array       ;   DE = DstAdr, BC = AryLen
+    inc     bc                    ;   Bump Arylen for compare
+    ex      (sp),hl               ;   HL = Len, Stack = TxtPtr, SrcPgFlg, SrcAdr
+    call    compare_hl_bc         ;   If Len > AryLen (HL >= BC)
+    jp      nc,BRERR              ;     Bad range error
+    ex      (sp),hl               ;   HL = TxtPtr, Stack = Len, SrcPgFlg, SrcAdr
+    or      a                     ;   DstPgFlg = NoPage
+    jr      .dary_done
+.not_dary
     call    get_page_addr         ; A = DstPgFlg, DE = DstAdr
-    push    af                    ; Save AF
+.dary_done
+    push    af                    ; Stack = DstPgFlg, Len, SrcPgFlg, SrcAdr
     ld      a,(hl)                ; Get character after DstAdr
     cp      XTOKEN                ; If Extended Token Prefix
     jr      nz,.not_xtoken
@@ -102,7 +124,7 @@ ST_COPY:
     rst     SYNCHR                ;
     byte    FASTK                 ;   SNERR if not FAST
 .not_xtoken
-    pop     af                    ; Restore AF
+    pop     af                    ; AR = DstPgFlg; Stack = Len, SrcPgFlg, SrcAdr
     ex      af,af'                ; AF' = DstPgFlg
     pop     bc                    ; BC = Len; Stack = SrcPgFlg, SrcAdr
     pop     af                    ; AF = SrcPgFlg, Stack = SrcAdr
@@ -164,14 +186,22 @@ ST_COPY:
 
 .copy_page_addr_to
     rst     CHRGET                ; Skip TO
+    cp      MULTK                 ; If *
+    jr      z,.copy_to_array      ;   Parse array and copy to it
     ld      ix,copy_to_screen
     rst     SYNCHR
     byte    SCRNTK                ;   Only TO SCREEN allowed right now
 .do_page_addr_to
     pop     af                    ; AF = SrcPgFlg; Stack = SrcAdr, RtnAdr
     pop     de                    ; DE = SrcAdr; Stack = SrcAdr, RtnAdr
-    jp      nc,MOERR              ; If no page, Missing operand error
+    jp      nc,MOERR              ; If NoPage, Missing operand error
     jp      (ix)
+
+.copy_to_array
+    call    skip_star_array       ; DE = DstAdr, BC = Len
+    push    bc                    ; Stack = Len, Stack = SrcPgFlg, SrcAdr
+    or      a                     ; DstPgFlg = NoPage
+    jp      .dary_done            ; Check for FAST and ro copy
 
 .page2page:
     rst     CHRGET          ; Skip TO
@@ -271,7 +301,6 @@ ST_INPUT:
 ; INT(string$)
 ; INT(string$, offset)
 ;-----------------------------------------------------------------------------
-;; ToDo: Finish and add to dispatch table
 FN_INT:
     call    skip_frmprn_getype    ; Skip INT, Eequire '(', and evaluate argument 
     ld      iy,float_signed_int   ; If string, set conversion routine
@@ -279,6 +308,23 @@ FN_INT:
     SYNCHK  ')'                   ; Else require ')'
     call    push_hl_labbck        ;   Stack = LABBCK, TxtPtr, RtnAdr
     jp      INT                   ; Perform standard INT()
+
+;-----------------------------------------------------------------------------
+; Enhanced LEN function
+; LEN(*array)
+;-----------------------------------------------------------------------------
+FN_LEN:
+    ld      d,h
+    ld      e,l                   ; Save pointer to function token
+    rst     CHRGET                ; Skip LEN
+    SYNCHK  '('                   ; Require (
+    cp      MULTK                 ; If no *
+    jp      nz,EX_ABORT_FN        ;   Do normal LEN
+    call    skip_star_array       ; BC = DatLen
+    call    CHKNUM
+    SYNCHK  ')'
+    call    push_hl_labbck        ;   Stack = LABBCK, TxtPtr, RtnAdr
+    jp      FLOAT_BC
 
 ;-----------------------------------------------------------------------------
 ; Enhanced POKE

@@ -91,12 +91,13 @@
  - [ ] **COMPARE (_filespec_,_filespec_)** - _Not implemented._<!--COMPARE-->
  - [ ] **CONT** - Resume program execution after STOP, Ctrl-C/Escape, or error.<!--flow-->
  - [ ] **COPY** - Copy text screen to serial printer.<!--COPY-->
- - [ ] **COPY \*_array_ TO \*array** - _Not implemented._<!--COPY-->
+ - [ ] **COPY \*_array_ TO \*array** - Copy contents of one numeric array to another.<!--COPY-->
+ - [ ] **COPY \*_array_ TO «!_ext_addr_»|«{@_page_,}_address_» {FAST}** - Copy numeric array contents to memory.<!--COPY-->
  - [ ] **COPY «!_ext_addr_»|«{@_page_,}_address_»,_length_ TO «!_ext_addr_»|«{@_page_,}_address_» {FAST}** - Copy bytes from one section of memory to another.<!--COPY-->
- - [ ] **COPY «!_ext_addr_»|«@_page_,_address_»,_length_ TO SCREEN {FAST}** - Copy bytes from one section of memory to another.<!--COPY-->
+ - [ ] **COPY «!_ext_addr_»|«{@_page_,}_address_»{,_length(=_} TO \*_array_** - Copy memory to array contents.
+ - [ ] **COPY «!_ext_addr_»|«@_page_,_address_» TO SCREEN {CHR|ATTR}** - Copy paged memory to screen.
  - [ ] **COPY FILE _filespec_ TO _filespec_** - Copy file.<!--COPY-->
  - [ ] **COPY SCREEN {CHR|ATTR} TO «!_ext_addr_»|«@_page_,_address_» {FAST}** - Copy screen to paged memory.
- - [ ] **COPY «!_ext_addr_»|«@_page_,_address_» TO SCREEN {CHR|ATTR}** - Copy paged memory to screen.
  - [ ] **COS(_float_)** - Return cosine of argument.<!--math-->
  - [ ] **CSAVE _filename_|\*_array_** - Save program or array data to cassette.
  - [ ] **DATA _literal_{,...}** - Define data for `READ` statement.<!--DATA-->
@@ -109,7 +110,7 @@
  - [ ] **DEF FN _var_(_var_) = _expression_** - Define user-defined function.
  - [ ] **DEF INTLIST _strvar_=_integer_,...** - Create a string list of integers.<!--DEFINT-->
  - [ ] **DEF PALETTELIST _strvar_=_palette_,...** - Create a string list of palette numbers.<!--DEFPALETTE-->
- - [ ] **DEF RGBLIST _strvar_=_r_,_g_,_b_;...** - Create a string list of RGB values.<!--DEFRGB-->
+ - [ ] **DEF RGBLIST _strvar_=_r_,_g_,_b_|_rgbstr_;...** - Create a string list of RGB values.<!--DEFRGB-->
  - [ ] **DEF SPRITE _strvar_= _spritle_, _x-offset_, y-offset;...** - Create a sprite definition.<!--DEFSPRITE-->
  - [ ] **DEF SPRITE _strvar_= [_spritle_,...],...** - Create a sprite definition.<!--DEFSPRITE-->
  - [ ] **DEF TILELIST _strvar_=_tileno_,...** - Create a string list of tile indexes.<!--DEFTILE-->
@@ -229,7 +230,7 @@
  - [ ] **ON ERROR GOTO _lineref_** - Enable or disable error trapping.<!--ON-->
  - [ ] **OPEN** - _Not implemented._
  - [ ] **OUT _port_,_byte_|_string_{,...}{;...}** - Write to a Z80 port.<!--OUT-->
- - [ ] **PAD$(string,length{,char})** - Pad string on left or right.<!--PAD-->
+ - [ ] **PAD$(_string_|_number_,_length_{,_char_})** - Pad string on left or right with optional fill character.<!--PAD-->
  - [ ] **PAUSE** - Halt program execution until key is pressed.<!--PAUSE-->
  - [ ] **PAUSE _jiffies_** - _Not implemented._<!--PAUSE-->
  - [ ] **PAUSE TRACK** - Pause currently playing track.<!--track-->
@@ -271,8 +272,8 @@
  - [ ] **RESTORE BITMAP|TILEMAP** - _Not implemented._
  - [ ] **RESTORE SCREEN** - Copy respective screen buffer to current text screen.
  - [ ] **RETURN {_expression_{,...}}** - Resume program execution after GOSUB, optionally returning results.<!--flow-->
- - [x] **RGB(_r_,_g_,_b_)** - Return integer representing a single palette entry.<!--RGB-->
- - [x] **RGB$(_r_,_g_,_b_)** - Return string representing a single palette entry.<!--RGB-->
+ - [x] **RGB(_r_,_g_,_b_|_rgbstr_)** - Return integer representing a single palette entry.<!--RGB-->
+ - [x] **RGB$(_r_,_g_,_b_|_rgbstr_)** - Return string representing a single palette entry.<!--RGB-->
  - [ ] **RIGHT$(_string_,_len_)** - Return the last up to _byte_ characters of string.<!--string-->
  - [ ] **RND(_integer_)** - Return new or previous psuedo-random number or seeds the random number generator.<!--math-->
  - [ ] **RUN {_lineref_}** - Start program execution at first or specified line.<!--run-->

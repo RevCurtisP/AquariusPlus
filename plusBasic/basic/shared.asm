@@ -2,6 +2,14 @@
 ; Shared BASIC Statement and Function Subroutines
 ;====================================================================
 
+
+;-----------------------------------------------------------------------------
+; Abort extended function Code
+; DE should point to function token
+;-----------------------------------------------------------------------------
+EX_ABORT_FN:
+    ex      de,hl                 ; TxtPtr = DE
+    byte    $3E                   ; LD A, over DEC HL
 ;-----------------------------------------------------------------------------
 ; Abort extended function Code
 ; HL should point to character immediately after function token
@@ -11,7 +19,6 @@ ABORT_FN:
     ld      a,(hl)                ; Re-Read Token
     sub     ONEFUN                ; Convert to Offset
     jp      HOOK27+1              ; Continue with Standard Function Code
-
 
 ;-----------------------------------------------------------------------------
 ; Parse to 23-bit integer in CDE
@@ -131,7 +138,6 @@ float_signed_int:
     pop     hl
     ret
 
-
 check_bang:
     ld      b,'!'
     byte    $11                   ; LD DE, over LD B,
@@ -152,6 +158,34 @@ check_char:
     inc     hl
 .return
     jp      (ix)
+
+
+;-----------------------------------------------------------------------------
+; Compare HL to BC
+; If HL = BD, Z flag is set 
+; If HL <> BC, Z flag is reset
+; If HL < BC, C flag is set
+; If HL >= BC , C flag is reset
+;-----------------------------------------------------------------------------
+compare_hl_bc:
+    ld      a,h
+    sub     b
+    ret     nz
+    ld      a,l
+    sub     c
+    ret
+
+;-----------------------------------------------------------------------------
+; Convert Number in FACC to temporary String
+;-----------------------------------------------------------------------------
+facc_to_string:
+    push    hl                    ;   Stack = TxtPtr, RtnAdr
+    call    FOUT                  ;   Convert to String
+    call    STRLIT
+frefac_pophrt:
+    call    FREFAC
+    pop     hl                    ;   HL = TxtPtr; Stack = RtnAdr
+    ret
 
 get_star_array: 
     call    CHRGT2                ; Reget character
@@ -301,6 +335,10 @@ get_comma_int:
 skip_get_int:
     rst     CHRGET
     jp      GETINT
+
+frmeval_getype:
+  call    FRMEVL
+  jp      GETYPE
 
 ;-----------------------------------------------------------------------------
 ; Skip character, require (, return expression type
@@ -534,6 +572,11 @@ get_byte4:
     jp      nc,FCERR              ;   FC Error
     ret
 
+
+con_byte16:
+    call    CONINT
+    jr      _check_byte_16
+    
 get_comma_byte16:
     call    get_comma             ; MO error if no comma
 ;-----------------------------------------------------------------------------
@@ -543,6 +586,7 @@ get_comma_byte16:
 ;-----------------------------------------------------------------------------
 get_byte16:
     call    GETBYT                ; get foreground color in e
+_check_byte_16:
     cp      16                    ; if > 15
     jp      nc,FCERR              ;   FC Error
     or      a                     ; set flags
