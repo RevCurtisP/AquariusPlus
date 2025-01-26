@@ -70,7 +70,8 @@
  - [ ] **ATTR(_fgcolor_,_bgcolor_)** - Build color attribute byte.
  - [ ] **ATTR$(_fgcolor_,_bgcolor_,_count_)** - Build color attributes string.
  - [ ] **BIN$()** - _Not implemented_
- - [ ] **BIT(_integer_,_bit#_)** - Return status of bit in integer.
+ - [ ] **BIT(_long_,_bit#_)** - Return status of bit in 23 bit number.
+ - [ ] **BIT(_string_,_bit#_)** - Return status of bit in binary string.
  - [x] **BYTE(_string_{,_pos_})** - Return signed byte value of specified character in _string_.<!--convert-->
  - [ ] **CALL _address_ {ARGS _hl_,_de_,_bc_,_a_}** - Executes machine language routine at address, optionally passing arguments into the associated registers.<!--CALL-->
  - [ ] **CALL MODULE** - _Proposed enhancement._
@@ -198,8 +199,9 @@
  - [ ] **LOAD _filespec_,\*_array_** - Load binary file data into numeric or string array.<!--LOAD-->
  - [ ] **LOAD _filespec_,\*_array_,ASC** - Load multi-line ASCII file into string array.<!--LOAD-->
  - [ ] **LOAD _filespec_,^_string_** - Load up to 255 characters of file into string variable.<!--LOAD-->
- - [ ] **LOAD BITMAP _filespec_** - Load bitmap screen file into Video RAM.
+ - [ ] **LOAD BITMAP _filespec_** - Load bitmap file into Video RAM.
  - [ ] **LOAD CHRSET _filespec_** - Load character set into alternate character buffer.<!--CHRSET-->
+ - [ ] **LOAD COLORMAP _filespec_** - Load 1bpp color map file into Video RAM.
  - [ ] **LOAD DIR \{_filespec_,}\*_array_** - Load disk directory filenames into string array.
  - [ ] **LOAD DIR \{_filespec_,}}\*_array_,ASC** - Load formatted disk directory into string array.
  - [ ] **LOAD DIR \{_filespec_,}\*_array_**,BIN - Load binary disk directory into string array.

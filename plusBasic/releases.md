@@ -1,10 +1,11 @@
 # plusBASIC Release History
- - v0.23s (2024-12-??)
+ - v0.23s (2025-01-26)
     - Implemented `UPR()`, `UPR$()`, `LWR()`, `LWR$()`, `UPRKEY`, `UPRKEY$`, `LWRKEY`, `LWRKEY$`
+    - Implemented `BIT(string,bit#)`
     - Added `LONG()`, `LONG$()`, `FLOAT()`, `FLOAT$()`
     - `INKEY`. `INKEY$`, `GETKEY`, `GETKEY$` now respect `SET BREAK OFF`
     - Fixed errors in `TRIMDIR$` and `TRIMEXT$`
-    - Changed GETKEY code to call new routine get_key instead of CHARCG
+    - Fixed bug in `RGB()` and `RGB$()` with string argument
  - v0.23r (2024-12-14)
     - Added `PAD$(number,...)` where number is converted to string before padding
     - `DEF RGBLIST`, `RGB()`, and `RGB$()` now accept 3 byte binary string of 8-bit R,G,B values
@@ -114,7 +115,7 @@
       - `SAVE filespec$,TOK` to `SAVE filespec$,BIN`.
     - New statements and functions
       - `APPEND filespec$,^var$`
-      - `BIT(val,bit#)`
+      - `BIT(long,bit#)`
       - `COPY SCREEN TO @page,address`
       - `FILL COLORMAP`
       - `JOY$()` 

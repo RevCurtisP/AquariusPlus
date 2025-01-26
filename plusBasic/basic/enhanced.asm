@@ -335,6 +335,8 @@ FN_LEN:
 ;         POKE extaddr, byte
 ;         POKE extaddr, string$
 ;-----------------------------------------------------------------------------
+;; ToDo: POKE SCREEN (col,row),byte
+;;       POKE SCREEN (col,row),string$
 ST_POKE:
     cp      SCRNTK
     jr      z,.pokescreen

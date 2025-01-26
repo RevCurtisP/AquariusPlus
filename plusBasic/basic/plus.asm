@@ -1082,6 +1082,7 @@ ST_PUT:
 ; SET Statement stub
 ;-----------------------------------------------------------------------------
 ; ToDo: SET BIT var,bit#
+; ToDo: SET CURSOR ON/OFF
 ; ToDo: SET MOUSE ON/OFF/TILE (mouse.asm)
 ST_SET:
     cp      BITTK                 ; $EB

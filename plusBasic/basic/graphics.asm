@@ -1331,8 +1331,7 @@ FN_GETSPRITE:
 ; RGB$(r,g,b)
 ; RGB$("RGB")
 ;-----------------------------------------------------------------------------
-;; ToDo: Fix bug with string argument
-;;       Add unit tests
+;; ToDo: Add unit tests
 FN_RGB:
     inc     hl                    ; Skip RGB
     ld      a,(hl)
@@ -1398,13 +1397,7 @@ _get_rgb:
 .get_nybble
     ld      a,(de)                ;   A = Color Component
     inc     de
-rra4a:
-    rra
-    rra
-    rra
-    rra
-    and     $0F
-    ret
+    jp      cvt_hex               ; Convert Hex digit to nybble and return
 
 test_gs_init:
     push    hl
