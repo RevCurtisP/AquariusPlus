@@ -2,14 +2,18 @@
 
 120 GOSUB _init
 
+200 GOSUB _title:ARGS "Tile and Sprite BASIC Errors"
+
+250 GOSUB _title:ARGS "PALETTE"
 252 GOSUB _pseterr:ARGS -1,5
 254 GOSUB _pseterr:ARGS  4,5
 257 goto _psetdone
 258 _pseterr:GETARGS PN,QE:QA$="SET PALETTE %% TO R$" % (PN):ON ERROR GOTO _yes_err:SET PALETTE PN TO R$:GOTO _no_err
 259 _psetdone:
 
-350 GOSUB _tseterr:ARGS  -1,T$(1),5
-352 GOSUB _tseterr:ARGS 512,T$(2),5
+350 GOSUB _title:ARGS "SET TILE"
+352 GOSUB _tseterr:ARGS  -1,T$(1),5
+354 GOSUB _tseterr:ARGS 512,T$(2),5
 357 GOTO _tsetdone
 358 _tseterr:GETARGS TN,TS$,QE:QA$="SET TILE %% TO $`%%`" % (TN,HEX$(TS$)):ON ERROR GOTO _yes_err:SET TILE TN TO TS$:GOTO _no_err
 359 _tsetdone:

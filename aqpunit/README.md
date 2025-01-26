@@ -6,6 +6,7 @@ Run the .baq file to run the associated tests.
 
 | Program | Tests              |
 | :------ | :----------------  |
+| bt.baq  | BIT                |
 | cp.baq  | COPY and COMPARE   |
 | pp.baq  | POKE and PEEK      |
 | sb.baq  | String Slicing     |
@@ -19,6 +20,9 @@ Run the .baq file to run the associated tests.
 
 ## Test Details
 
+- bit.baq 
+  - BIT(_long_,_bitno_)
+  - BIT(_string_,_bitno_)
 - cp.baq 
   - COPY _fromaddr_,_count_ TO _toaddr_
   - COMPARE(_fromaddr_,_toaddr_,_count_)

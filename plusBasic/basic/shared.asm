@@ -117,7 +117,10 @@ float_signed_byte:
     pop     hl
     ret
 
-FLOAT_B
+FLOAT_E:
+    ld      a,e
+    byte    $11                   ; LD DE, over LD A,
+FLOAT_B:
     ld      a,b
 float_byte:
     push    hl
@@ -138,6 +141,19 @@ float_signed_int:
     pop     hl
     ret
 
+return_float:
+    xor     a
+    ld      (VALTYP),a
+    jp      MOVFR
+
+skip_check_dollar:
+    inc     hl
+check_dollar:
+    ld      b,'$'                   
+    byte    $11                   ; LD DE, over LD B,
+check_xtoken:
+    ld      b,XTOKEN
+    byte    $11                   ; LD DE, over LD B,
 check_bang:
     ld      b,'!'
     byte    $11                   ; LD DE, over LD B,
@@ -245,6 +261,10 @@ UDERR:
     ld      e,ERRUD
     jp      ERROR
 
+; Returns C = Character
+get_char_parens:
+    SYNCHK  '('
+    call    get_char
 ;-----------------------------------------------------------------------------
 ; Require Close Paren on Function
 ;-----------------------------------------------------------------------------
@@ -336,9 +356,14 @@ skip_get_int:
     rst     CHRGET
     jp      GETINT
 
+parchk_getype:
+    call    PARCHK
+    jr      _getype
+    
 frmeval_getype:
-  call    FRMEVL
-  jp      GETYPE
+    call    FRMEVL
+_getype:    
+    jp      GETYPE
 
 ;-----------------------------------------------------------------------------
 ; Skip character, require (, return expression type
@@ -649,6 +674,7 @@ get_char:
     call    GETYPE
     jr      z,.string             ; If numeric
     call    CONINT                ;   Convert to byte
+    ld      c,a
     ret                           ; Else
 .string
     push    hl                    ; Stack = TxtPtr, RtnAdr

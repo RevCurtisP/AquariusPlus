@@ -341,3 +341,29 @@ string_pad:
     inc     hl
     dec     bc                    ; Decrement BC
     jr      .loop
+
+;-----------------------------------------------------------------------------
+; Convert string to uppercase or lowercase
+;  Input: BC: String Length
+;         DE: String buffer to write to
+;         HL: String to uppercase
+; Clobbered: A, BC, DE, HL
+;-----------------------------------------------------------------------------
+uprlwr_string:
+    jr      nz,string_lowercase
+string_uppercase:
+    ld      ix,uppercase_char
+    jr      _do_case
+string_lowercase:
+    ld      ix,lowercase_char
+_do_case:
+    ld      a,b
+    or      c
+    ret     z
+    ld      a,(hl)
+    inc     hl
+    call    jump_ix
+    ld      (de),a
+    inc     de
+    dec     bc
+    jr      _do_case

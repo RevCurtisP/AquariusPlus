@@ -227,11 +227,13 @@ SCRNVBASE   equ $0000   ; Screen variable buffers (see screen.inc)
 GFXVBASE    equ $0100   ; GFX SysVar Base, 256 byte aligned (see gfxvars.asm)
 FKEYDEFS    equ $0200   ; Function Key Definitions (32 bytes each)
 FKEYBASE    equ BASBUF_BASE + FKEYDEFS
-;         $0500-$07FF   ; Unused
+LPRFILSPC   equ $0500   ; LPRINT File Spec (32 byte)
+;         $0520-$07FF   ; Unused
 RUNARGS     equ $0800   ; RUN arguments (see run_args in args.asm)
-RUNARGEND   equ $09FF   ; End of RUN arguments
-WRTKEYBUF   equ $1000   ; user autotype buffer
-;         $1100-$2FFF   ; Unused
+RUNARGEND   equ $08FF   ; End of RUN arguments
+RUN_PATH    equ $0900   ; Search path for RUN programs
+WRTKEYBUF   equ $0A00   ; user autotype buffer
+;         $0B00-$2FFF   ; Unused
 DEFCHRSET   equ $3000   ; Page Offset: Default Character Set Buffer
 ALTCHRSET   equ $3800   ; Page Offset: Custom Character Set Buffer
 CHRSETLEN   equ 2048    ; Size of character set ROM

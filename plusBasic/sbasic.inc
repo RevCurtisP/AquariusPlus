@@ -241,6 +241,7 @@ STR         equ $0E29   ; Execute STR$ function
 TIMSTR      equ $0E2F   ; Create tempory string from null-terminated string
 TIMSTF      equ $0E32   ; Return parsed temporary string
 STRCPY      equ $0E39   ; Create copy of string
+STRIN1      equ $0E4E   ; Reserve space for 1 character string and create descriptor
 STRINI      equ $0E50   ; Reserve space for new string and create descriptor
 STRAD2      equ $0E53   ; Build string descriptor in DSCTMP
 STRADI      equ $0E56   ; Build string descriptor at HL
@@ -268,6 +269,8 @@ FRETMS      equ $0FE4   ; Free up temporary descriptor
 LEN1:       equ $0FF7   ; Get string length (in: (FPREG) = string block, out: HL = string block, A = length)
 ASC2        equ $1006   ; Return DE = Pointer to String Text, A=First Character
 CHR         equ $1013   ; CHR$ Function
+SETCHR      equ $1016   ; Set temp string to character in FACC and return
+SETSTR      equ $1019   ; Set temp string to character E and return
 FINBCK      equ $101D   ; Return a String
 DIMNXT      equ $10CA   ; Require comma and DIM an array
 PTRGET:     equ $10D1   ; Get variable (out: BC = addr, DE = len)
@@ -277,6 +280,8 @@ CHKLET      equ $10E4   ; Continue PTRGET at check for letter
 ISSEC       equ $10E9   ; Continue PTRGET at skip non-letter
 NOSEC       equ $10F2   ; Continue PTRGET at check for '$'
 SKIPDS      equ $10FD   ; Continue PTRGET at skip of '$'
+VARFND      equ $111F   ; Search for Variable Table for Variable with name in B,C
+LOPFND      equ $1126   ; Search for Variable starting at (HL) and ending at (DE)
 BSERR       equ $11CD   ; Bad subscript error
 FSUBS       equ $1258   ; Subtract: FACC = (HL) - FACCs
 FSUB        equ $125E   ; Subtract: FACC = BCDE - FACC
@@ -288,8 +293,10 @@ FDIV        equ $142F   ; Divide: FACC = BCDE / FACC
 FLOAT       equ $14F6   ; Float signed number in A
 FLOATR      equ $14FB   ; Float signed number in B,A,D,E
 NEG         equ $150B   ; Negate number in FACC
-MOVFM       equ $1520   ; MOVE NUMBER FROM MEMORY [(HL)] TO FAC
+MOVFM       equ $1520   ; Move number from (HL) TO FACC
 MOVFR       equ $1523   ; Move B,C,D,E to FACC
+MOVRF       equ $152E   ; Move FACC to B,C,D,E
+MOVRM       equ $1531   ; Move number from FACC to (HL) 
 MOVMF       equ $153A   ; MOVE NUMBER FROM FAC TO MEMORY [(HL)]
 MOVE        equ $153D   ; Copy 4 bytes from (DE) to (HL)
 MOVE1       equ $153F   ; Copy B bytes from (DE) to (HL)
@@ -362,6 +369,7 @@ RESTK       equ $8B     ; RESTORE
 GOSUTK      equ $8C     ; GOSUB
 RETTK       equ $8D     ; RETURN
 ONTK        equ $90     ; ON
+LPRINTK     equ $91     ; LPRINT
 DEFTK       equ $93     ; DEF
 LISTTK      equ $97     ; LIST
 CLRTK       equ $99     ; CLEAR

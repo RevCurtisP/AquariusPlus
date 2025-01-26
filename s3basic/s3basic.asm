@@ -144,6 +144,7 @@ SOUNDX  equ     $2012   ;; | Adjust SOUNDS delay counter in turbo mode
 TTYMOX  equ     $2015   ;; | TTYMOV extension
 SCROLX  equ     $2018   ;; | SCROLL extension
 RESETX  equ     $201B   ;; | Skip start screen, cold boot if ':' pressed
+XINKEY  equ     $201E   ;  | Read keyboard, check ctrl-c if BREAK is OFF
 INCNTX  equ     $2021   ;; | INCNTC control keys patch
 INPUTC  equ     $2024   ;; | INPUT Ctrl-C patch
 INCHRX  equ     $2027   ;; | Wait for character, don't BREAK on Ctrl-C
@@ -872,7 +873,7 @@ GETLIN: ld      hl,REDDY          ;[M80] "OK" CRLF CRLF
 MAIN:   ld      hl,$FFFF          ;
         ld      (CURLIN),hl       ;[M80] SETUP CURLIN FOR DIRECT MODE
         call    INLIN             ;[M80] GET A LINE FROM TTY
-if aqplus
+ifdef aqplus
         jp      MAINCC            ; | If Ctrl-C, do BREAK
 else
         jr      c,MAIN            ;[M80] IGNORE ^C S
@@ -1687,7 +1688,7 @@ HOOK26: byte    26                ;
 NOTQTI: push    hl                ;{M80} SAVE TEXT POINTER
         call    QINLIN            ;[M65] TYPE "?" AND INPUT A LINE OF TEXT.
         pop     bc                ;{M80} GET BACK THE TEXT POINTER
-if aqplus
+ifdef aqplus
         jp      c,INPUTC          ;;Handle Ctrl-C
 else
         jp      c,STPEND          ;{M80} IF CONTROL-C, STOP
@@ -3015,7 +3016,7 @@ ASC2:   call    LEN1              ;[M80] SET UP ORIGINAL STR
         ret                       ;
 ;;CHR$ Function
 CHR:    call    STRIN1            ;[M80] GET STRING IN DSCTMP
-        call    CONINT            ;[M80] GET INTEGER IN RANGE
+SETCHR: call    CONINT            ;[M80] GET INTEGER IN RANGE
 SETSTR: ld      hl,(DSCTMP+2)     ;[M80] GET ADDR OF STR
         ld      (hl),e            ;[M80] SAVE ASCII BYTE
 FINBCK: pop     bc                ;[M80] RETURN TO HIGHER LEVEL & SKIP THE CHKNUM CALL
@@ -4702,7 +4703,11 @@ CRCONT: ret                       ;
 ;;The INKEY$ function
 INKEY:  rst     CHRGET            ;
         push    hl                ;[M80] SAVE THE TEXT POINTER
+ifdef aqplus
+        call    XINKEY            ;; plusBASIC in_key routine
+else
         call    CHARCG            ;[M80] GET CHARC AND CLEAR IF SET
+endif
         jr      z,NULRT           ;{M80} NO CHAR, RETURN NULL STRING
 BUFCIN: push    af                ;Jump here to Return A as a string
         call    STRIN1            ;[M80] MAKE ONE CHAR STRING

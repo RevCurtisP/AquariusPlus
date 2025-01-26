@@ -15,6 +15,16 @@ discard_ret:
     ret
 
 ;-----------------------------------------------------------------------------
+; Search variable table, create variable if not found
+;     Input: BC: Variable name as stored in variable table 
+;    Output: DE: Address of variable contents in variable table
+; Clobbered: AF
+;-----------------------------------------------------------------------------
+find_var:
+    push    hl
+    jp      VARFND
+
+;-----------------------------------------------------------------------------
 ; Get Line Buffer Address
 ; Output: HL: String Buffer Address
 ;         BC: Buffer Length minus 1
@@ -86,6 +96,8 @@ mult_a_de:
     djnz    .loop
     ret
 
+uprlwr_char:
+    jr      z,uppercase_char
 ;-----------------------------------------------------------------------------
 ; Convert character to lowercase
 ;  Input: A: Character
@@ -96,7 +108,7 @@ lowercase_char:
     ret     c                     ;;If >= 'a'
     cp      '['                   ;;
     ret     nc                    ;;and less than <'{'
-    or      $A0                   ;;Clear Bit 5
+    or      $20                   ;;Clear Bit 5
     ret                           ;;
 
 ;-----------------------------------------------------------------------------
@@ -331,6 +343,19 @@ shift_hl_left:
     rl      h
     djnz    shift_hl_left
     ret
+
+;-----------------------------------------------------------------------------
+; Shift HL Right
+;   Input: B = Shift Count
+;  Output: B = 0
+; Changes: HL
+;-----------------------------------------------------------------------------
+shift_hl_right:
+    sra     h
+    rr      l
+    djnz    shift_hl_right
+    ret
+
 
 ;-----------------------------------------------------------------------------
 ; Push HL and Return Null String

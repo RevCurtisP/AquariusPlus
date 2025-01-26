@@ -1,4 +1,10 @@
 # plusBASIC Release History
+ - v0.23s (2024-12-??)
+    - Implemented `UPR()`, `UPR$()`, `LWR()`, `LWR$()`, `UPRKEY`, `UPRKEY$`, `LWRKEY`, `LWRKEY$`
+    - Added `LONG()`, `LONG$()`, `FLOAT()`, `FLOAT$()`
+    - `INKEY`. `INKEY$`, `GETKEY`, `GETKEY$` now respect `SET BREAK OFF`
+    - Fixed errors in `TRIMDIR$` and `TRIMEXT$`
+    - Changed GETKEY code to call new routine get_key instead of CHARCG
  - v0.23r (2024-12-14)
     - Added `PAD$(number,...)` where number is converted to string before padding
     - `DEF RGBLIST`, `RGB()`, and `RGB$()` now accept 3 byte binary string of 8-bit R,G,B values
@@ -10,8 +16,8 @@
     - `RGB()`, `RGB$()`, and `DEF RGBLIST` now accept 8-bit RGB binary string operands
  - v0.23p (2024-11-28)
     - `SET BREAK OFF` causes Ctrl-C to not BREAK out of INPUT
-    - Syntax `OUT! port,byt`e allows writing to protected I/O ports
-    - boot.bin modified to identify and execute alternnate BASIC ROMs
+    - Syntax `OUT! port,byte` allows writing to protected I/O ports
+    - boot.bin modified to identify and execute alternate BASIC ROMs
     - Implemented `SGNINT()` function
  - v0.23o (2024-10-27)
     - SET BREAK OFF disables key checks between BASIC statements 

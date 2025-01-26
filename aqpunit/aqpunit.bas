@@ -19,7 +19,7 @@
 902 DIM QR(2),QR$(2):QC=LEN(QG$):SET SPEED 3:SCREEN 3:QZ=FRE("")
 904 IF FRE(2)=$BFF6 THEN QX=-1:QG=PEEK($BFF7):QF=-PEEK($BFFE):QU=PEEK($BFFF):IF QU=0 THEN CLS
 906 IF QU=2 THEN QF$=TRIMEXT$(ARGS$(0)):QF$="out/"+QF$+".out":SAVE QF$,^QZ$
-908 GOSUB _outscreen:ARGS "Running Tests":QR$(0)="Fail: ":QR$(1)="Pass: ":RETURN
+908 GOSUB _outscreen:ARGS "Running Tests":QQ$=CHR$(34):QR$(0)="Fail: ":QR$(1)="Pass: ":RETURN
 
 910 _title:GETARGS QT$:GOSUB _outnewline:GOSUB _output:ARGS "Testing "+QT$
 912 IF QU<>0 THEN GOTO _outstring
@@ -50,8 +50,9 @@
 964 PRINT QU$;:QL=QL+1:RETURN
 966 _outprinter:LPRINT QU$;:RETURN
 
-970 _quotes:FOR QI=1 TO LEN(QA$):IF QA$[QI]="`" THEN QA$[QI TO QI]=CHR$(34)
-974 NEXT:RETURN
+970 _quotes:FOR QI=1 TO LEN(QA$):QC$=QA$[QI]:IF QC$="`" THEN QA$[QI]=QQ$
+972 IF QQ THEN PRINT QI;" ";QC$;" ";QA$
+974 NEXT:QQ=0:RETURN
 
 976 _nlscreen:QU$="":GOSUB _outstring
 977 _outscreen:GETARGS QU$:GOTO _outstring

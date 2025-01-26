@@ -296,7 +296,7 @@ _file_trim:
     pop     iy                    ; IY = TrmRtn; Stack = RtnAdr
     push    hl                    ; Stack = TxtPtr, RtnAdr
     call    FRETMS                ; Free temporary but not string space
-    call    string_addr_len       ; DE = StrAdr, BC = StrLen
+    call    faclo_addr_len        ; DE = StrAdr, BC = StrLen
     call    aux_call              ; DE = ExtAdr, A = ExtLen
     jr      nz,.ret_str
     ld      de,REDDY-1
@@ -1037,6 +1037,8 @@ run_c:
 ;-----------------------------------------------------------------------------
 ; Run file
 ;-----------------------------------------------------------------------------
+;; ToDo: Enable and debug lookup file
+
 run_file:
     ; Close any open files
     call    esp_close_all
@@ -1179,10 +1181,12 @@ _lookup_file:
 ;-----------------------------------------------------------------------------
 ; APPEND
 ;
-; APPEND "filename",addr,len              Append binary data
-; ToDo: APPEND "filename",@page,addr,len  Append paged binary data
-; ToDo: APPEND "filename",*a              Append numeric array a
-; APPEND "filename",^a$                   Append string array a
+; ToDo: APPEND "filename"{,ASC|CAQ|TOK)       Append paged binary data
+; APPEND "filename",addr,len                  Append binary data
+; ToDo: APPEND "filename",@page,addr,len      Append paged binary data
+; ToDo: APPEND "filename",!extaddr,addr,len   Append paged binary data
+; ToDo: APPEND "filename",*a                  Append numeric array a
+; APPEND "filename",^a$                       Append string array a
 ;-----------------------------------------------------------------------------
 ST_APPEND:
     call    chrget_strdesc_arg    ; Get FileSpec pointer in HL
@@ -1714,11 +1718,13 @@ get_string_direct:
     call    _clear_errflag        ; Set BASIC error to 0
     ld      a,(hl)                ; A = First character of argument
     cp      '"'                   ;
+    
     jr      z,get_string_arg      ; If not a quote
     dec     hl                    ;   Back up text pointer for STRLT2
     ld      b,' '                 ;   Delimiters are space
     ld      d,':'                 ;   and colon
     call    STRLT2                ;   Build temp string from literal
+    xor     a                     ;   Quoted = False
     jr      _proc_string_arg      ;   and process it
 
 ;-----------------------------------------------------------------------------
@@ -1731,15 +1737,18 @@ get_string_direct:
 ;         Text Pointer on Stack
 ;-----------------------------------------------------------------------------
 get_string_arg:
+    or      $FF                   ; Quoted = True
     call    FRMEVL                ; Get Path
 _proc_string_arg:
     pop     IX                    ; IX = RtnAdr
-    push    hl                    ; Text Pointer on stack
+    push    hl                    ; Stack = TxtPtr
+    push    af                    ; Stack = Quoted, TxtPtr
     call    FRESTR                ; HL = StrDsc
     call    string_addr_len       ; BC = StrLen, DE = StrAdr
     xor     a
     cp      c
     jp      z,FCERR
+    pop     af                    ; A = Quoted; Stack = TxtPtr
     jp      (IX)                  ; Fast Return
 
 ;-----------------------------------------------------------------------------

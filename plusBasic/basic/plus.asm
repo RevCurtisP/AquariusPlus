@@ -27,12 +27,11 @@ _attr_byte:
 ;-----------------------------------------------------------------------------
 ; BIT(expr,bit#)
 ;-----------------------------------------------------------------------------
-; ToDo: Allow expr to be a string
 ; ? BIT(1,0)
-; ? BIT("@",4)
+; ? BIT("@",6)
 FN_BIT:
     call    skip_frmprn_getype    ; A = Type
-    jr      z,_bit_string         ; If string, Type mismatch error (for now)
+    jr      z,_bit_string
     call    FRC_LONG              ; BCDE = LngInt
     push    bc
     push    de                    ; Stack = LngInt, RtnAdr
@@ -41,14 +40,27 @@ FN_BIT:
     ld      a,e                   ; A = BitNo
     pop     de
     pop     bc                    ; BCDE = LngInt, Stack = RtnAdr
-    call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
     ld      iy,bool_checkbit_long
+    call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
 auxcall_floatsbyte:
     call    aux_call              ; Get bit value
     jp      c,FCERR               ; If invalid bit#, Illegal quantity error
     jp      float_signed_byte     ; Else return it
 _bit_string:
-    jp      GSERR
+    ld      de,(FACLO)            ; DE = StrDsc
+    push    de                    ; Stack = StrDsc, RtnAdr
+    call    get_comma_int         ; DE = BitNo
+    SYNCHK  ')'
+    pop     bc                    ; BC = StrDsc; Stack = RtnAdr
+    call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
+    push    de                    ; Stack = BitNo, LABBCK, TxtPtr, RtnAdr
+    ld      h,b
+    ld      l,c                   ; HL = StrDsc
+    call    free_hl_addr_len      ; BC = StrLen, DE = StrAdr
+    pop     hl                    ; HL = BitNo; Stack = LABBCK, TxtPtr, RtnAdr
+    ld      iy,bool_checkbit_string
+    jr      auxcall_floatsbyte
+    
 
 ;-----------------------------------------------------------------------------
 ; BYTE(string)
@@ -135,9 +147,7 @@ FN_GET:
 FN_GETKEY:
     rst     CHRGET                ; Skip KEY
     push    hl
-.loop
-    call    CHARCG                ; Wait for keypress
-    jr      z,.loop
+    call    get_key               ; Wait for keypress
     pop     hl
     ld      e,a                   ; Save ASCII Code
     ld      a,(hl)                ; Get character after KEY
@@ -246,6 +256,97 @@ FN_INDEX:
     ld      iy,string_search_array
     jp      aux_call
 
+
+;-----------------------------------------------------------------------------
+; FLOAT(string)
+; FLOAT(string,offset)
+; FLOAT$(long)
+;-----------------------------------------------------------------------------
+FN_FLOAT:
+    inc     hl                    ; Check character directly after ASC Token
+    ld      a,(hl)                ; (don't skip spaces)
+    cp      '$'                   
+    ld      bc,MOVRF
+    jp      z,str_float           ;   Go do it
+    ld      bc,return_float
+    jp      float_str
+
+;-----------------------------------------------------------------------------
+; LONG(string)
+; LONG(string,offset)
+; LONG$(long)
+;-----------------------------------------------------------------------------
+FN_LONG:
+    inc     hl                    ; Check character directly after ASC Token
+    ld      a,(hl)                ; (don't skip spaces)
+    cp      '$'                   
+    jr      z,str_long            ;   Go do it
+    ld      bc,FLOAT_CDE
+float_str:
+    push    bc
+    call    FRMPRN          
+    call    CHKSTR
+    pop     bc
+    ld      de,(FACLO)
+    push    de                    ; Stack = StrDsc, RtnAdr
+    push    bc                    ; Stack = FltJmp, RtnAdr
+    ld      de,1                  ; BinPos = 1
+    ld      a,(hl)
+    cp      ','
+    jr      nz,_first_long
+    rst     CHRGET                ; Skip Comma
+    call    GETBYT                ; DE = BinPos
+    or      a
+    jp      z,FCERR
+_first_long:    
+    SYNCHK  ')'
+    pop     iy                    ; IY = FltJmp; Stack = StrDsc, RtnAdr
+    ex      (sp),hl               ; HL = StrDsc; Stack = TxtPtr, RtnAdr                
+    ld      bc,LABBCK
+    push    bc                    ; Stack = LABCK, TxtPtr, RtnAdr
+    push    de                    ; Stack = BinPos, LABBCK, TxtPtr, RtnAdr
+    call    free_hl_addr_len      ; DE = StrAdr, BC = StrLen
+    pop     hl                    ; HL = BinPos; Stack = LABBCK, TxtPtr. RtnAdr
+    ld      a,c
+    sub     3                     ; A = StrLen - 3
+    cp      l                     ; If BinPos > StrLen-3
+    jp      c,FCERR               ;   Illegal quantity
+    dec     hl                    ; Adjust BinPos for add
+    add     hl,de                 ; HL = WrdAdr
+    ld      e,(hl)                
+    inc     hl
+    ld      d,(hl)                ; DE = WrdVal
+    inc     hl
+    ld      c,(hl)                ; DE = WrdVal
+    inc     hl
+    ld      b,(hl)                ; DE = WrdVal
+    jp      (iy)                  ; Float it
+
+str_long:
+    ld      bc,FRC_LONG
+str_float:
+    rst     CHRGET                ; Skip $
+    push    bc
+    call    PARCHK                
+    pop     iy
+    push    hl                    ; Stack = TxtPtr. RtnAdr
+    call    jump_iy               ; BCDE = ArgVal
+    push    de
+    push    bc                    ; Stack = ArgVal, TxtPtr, RtnAdr
+    ld      a,4
+    call    STRINI                ; Allocate 2 byte string
+    pop     bc
+    pop     de                    ; DE = ArgVal; Stack = TxtPtr. RtnAdr
+    ld      hl,(DSCTMP+2)         ; HL = StrAdr
+    ld      (hl),e                ; Write ArgVal to string
+    inc     hl
+    ld      (hl),d                
+    inc     hl
+    ld      (hl),c                
+    inc     hl
+    ld      (hl),b                
+    jp      PUTNEW                ; and return it
+
 ;-----------------------------------------------------------------------------
 ; LOOP statements stub
 ;-----------------------------------------------------------------------------
@@ -261,11 +362,87 @@ ST_LOOP:
 ; UPR(), UPR$(), LWR(), LWR$
 ;-----------------------------------------------------------------------------
 FN_UPR:
-
 FN_LWR:
-    jp      GSERR
+    ld      a,(hl)                ; Reget Token
+    cp      UPRTK                 ; Set Z it UPRTK, NZ if LWRTK
+    push    af                    ; Stack = UprFlg, RtnAdr
+    inc     hl                    ; Skip UPR/LWR
+    call    check_xtoken
+    pop     af
+    jr      z,.extended
+    call    check_dollar          ; Stack = StrFlg, UprFlg, RtnAdr
+    pop     af                    ; F = StrFlg, Stack = UprFlg, RtnAdr
+    jr      z,.do_string          ; If UPR() or LWR()
+    call    get_char_parens       ;   C = Character
+    pop     af                    ;   F = UprFlg; Stack = RtnAdr
+    call    push_hl_labbck        ;   Stack = LABBCK, TxtPtr, RtnAdr
+.ret_char
+    ld      a,c                   ;   A = Operand
+    call    uprlwr_char           ;   Convert character
+    jp      float_byte            ;   and return it
+.do_string
+    call    parchk_getype       
+    pop     bc                    ; F = UprFlg; Stack = RtnAdr
+    push    hl                    ; Stack = TxtPtr
+    push    hl                    ; Stack = DmyRtn, TxtPtr
+    push    bc                    ; Stack = UprFlg, DmyRtn, TxtPtr, RtnAdr
+    jp      z,.string
+    call    STRIN1
+    call    CONINT                ; E     = Character
+.ret_string
+    pop     af                    ; F = UprFlg; Stack = DmyRtn, TxtPtr, RtnAdr
+    ld      a,e                   ; A = Character 
+    call    uprlwr_char           ;   Convert character
+    ld      e,a
+    jp      SETSTR
 
-
+.string
+    call    faclo_addr_len        ; BC = ArgLen, DE = ArgAdr, HL = ArgDsc
+    jp      z,pop_null_string     ; If StrLen = 0  Return Null String
+    pop     af                    ; F = UprFlg; Stack = DmyRtn, TxtPtr, RtnAdr
+    push    hl                    ; Stack = ArgDsc, DmyRtn, TxtPtr
+    push    de                    ; Stack = ArgAdr, ArgDsc, DmyRtn, TxtPtr
+    push    bc                    ; Stack = ArgLen, ArgAdr, ArgDsc, DmyRtn, TxtPtr
+    push    af                    ; Stack = UprFlg, ArgLen, ArgAdr, ArgDsc, DmyRtn, TxtPtr
+    ld      a,c                   ; A = StrLen
+    call    STRINI                ; DE = NewAdr
+    pop     af                    ; F = UprFlg; Stack = ArgLen, ArgAdr, ArgDsc, DmyRtn, TxtPtr
+    pop     bc                    ; BC = ArgLen; Stack = ArgAdr, ArgDsc, DmyRtn, TxtPtr
+    pop     hl                    ; HL = ArgAdr; Stack = ArgDsc, DmyRtn, TxtPtr
+    ld      iy,uprlwr_string
+    call    aux_call               ; Convert the string
+    pop     de                    ; DE = ArgDsc; Stack = DmyRtn, TxtPtr
+    call    FRETMP                ; Free ArgStr
+    jp      FINBCK                ; Return Result String
+ 
+; 10 IF K=UPRKEY:ON -(K=0) GOTO 10:? K: GOTO 10
+ 
+.extended
+    rst     SYNCHR                
+    byte    KEYTK                 ; Require KEY
+    call    check_dollar          ; Stack = StrFlg, UprFlg, RtnAdr
+    pop     bc                    ; C = StrFlg; Stack = UprFlg, RtnAdr
+    pop     af                    ; F = UprFlg; Stack = RtnAdr
+    call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
+    push    af                    ; Stack = UprFlg, LABBCK, TxtPtr, RtnAdr
+    push    bc                    ; Stack = StrFlg, UprFlg, LABBCK, TxtPtr, RtnAdr
+.loop
+    call    CHARCG                ; Get Keypress
+    jr      z,.loop
+    ld      c,a
+    pop     af                    ; A = StrFlg; Stack = UprFlg, LABBCK, TxtPtr, RtnAdr
+    jr      z,.key_str            ; If returning number
+    pop     af                    ;   A = UprFlg; Stack = LABBCK, TxtPtr, RtnAdr
+    jr      .ret_char             ;   Convert C, float and return
+.key_str
+    ld      a,c                   ; A = KeyChr
+    or      a                     ; If no key
+    jp      z,pop_null_string     ;   Pop UprFlg and return ""
+    push    bc                    ; Stack = KeyChr, UprFlg, LABBCK, TxtPtr, RtnAdr
+    call    STRIN1
+    pop     de                    ; E = KeyChr; Stack = UprFlg, LABBCK, TxtPtr, RtnAdr
+    jr      .ret_string
+ 
 ;-----------------------------------------------------------------------------
 ; MOUSEB - Returns mouse buttons
 ; MOUSEW - Returns mouse wheel delta
@@ -326,9 +503,9 @@ FN_MOUSE:
 FN_INKEY:
     rst     CHRGET                ; Skip KEY Token
     push    hl                    ; Do the function stuff
-    ld  bc,LABBCK
+    ld      bc,LABBCK
     push    bc
-    call    CHARCG                ; Get Keypress
+    call    in_key                ; Get Keypress
     jp      SNGFLT                ; and Float it
 
 ;-----------------------------------------------------------------------------
@@ -1228,7 +1405,6 @@ FN_WORD:
     ld      a,(hl)                ; (don't skip spaces)
     cp      '$'                   
     jr       z,str_word           
-
     call    frmprn_getype
     jp      nz,word_int
     ld      iy,FLOAT_DE

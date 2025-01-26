@@ -1326,9 +1326,13 @@ FN_GETSPRITE:
     jp      FINBCK                ; Return String
 
 ;-----------------------------------------------------------------------------
+; RGB(r,g,b)
+; RGB("RGB")
 ; RGB$(r,g,b)
 ; RGB$("RGB")
 ;-----------------------------------------------------------------------------
+;; ToDo: Fix bug with string argument
+;;       Add unit tests
 FN_RGB:
     inc     hl                    ; Skip RGB
     ld      a,(hl)

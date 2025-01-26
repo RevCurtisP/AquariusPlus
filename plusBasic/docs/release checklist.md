@@ -5,11 +5,6 @@
   - LOAD/RUN ASCII BASIC programs
   - SAVE "x1":SAVE "x2":SAVE "x3": DEL x1: DEL x2 x3:DIR x*
   - 
-  - RUN "esp:settings
-  - RUN ROM images  
-  -   RUN /roms/minidiag.rom
-  - RUN /aqds/aqds.aqx
-  - CD /CPM:RUN gocpm.aqx
   - PLAY SAMPLE
     - CD /sounds:RUN bigben.baq
   - plusBASIC demos
@@ -27,14 +22,27 @@
     - RUN tf.baq
     - RUN tr.baq
     - RUN ts.baq
-  - PLAY PT3
-    - LOAD PT3 "/music/songs1/chuta.pt3"
-    - PRINT PT3STATUS
-    - PAUSE PT3
-    - PRINT PT3STATUS
-    - RESUME PT3
-    - STOP PT3
-    - PLAY PT3 "/music/songs1/dance.pt3"
-    - PRINT PT3LOOP
-    - LOOP PT3 "/music/songs1/dontstop.pt3"
-    - PRINT PT3LOOP
+  - PLAY TRACK
+    - LOAD TRACK "/music/songs1/chuta.TRACK"
+    - PRINT TRACKSTATUS
+    - PAUSE TRACK
+    - PRINT TRACKSTATUS
+    - RESUME TRACK
+    - STOP TRACK
+    - PLAY TRACK "/music/songs1/dance.TRACK"
+    - PRINT TRACKLOOP
+    - LOOP TRACK "/music/songs1/dontstop.TRACK"
+    - PRINT TRACKLOOP
+
+  - RUN Alternate sysroms
+    - RUN /system/sysrom/s1basic.rom
+    - RUN /system/sysrom/s2basic.rom
+    - RUN /system/sysrom/s3basic.rom
+    - RUN /system/sysrom/sdbasic.rom
+    - RUN /system/sysrom/exbasic.rom
+  - RUN Cartridge images  
+  -   RUN /roms/minidiag.rom
+  - Run Core file
+    - RUN /aqds/aqds.aqx
+  - RUN CP/M
+  - CD /CPM:RUN gocpm.aqx

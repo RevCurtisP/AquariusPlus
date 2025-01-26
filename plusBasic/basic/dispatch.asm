@@ -110,9 +110,14 @@ extended_function:
     dec     a                   ; $AE MAX
     jp      z,GSERR
     dec     a                   ; $AF UPR
-    jp      z,GSERR
+    jp      z,FN_UPR
     dec     a                   ; $B0 LWR
-    jp      z,GSERR
+    jp      z,FN_LWR
+    dec     a                   ; $B1 SPEED
+    dec     a                   ; $B2 LOMG
+    jp      z,FN_LONG
+    dec     a                   ; $B3 FLOAT
+    jp      z,FN_FLOAT
     jp      SNERR
 
 ; ------------------------------------------------------------------------------

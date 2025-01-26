@@ -46,15 +46,15 @@ bool_checkbit_string:
     ld      a,l
     and     $07                   ; A = ChrBit
     push    af                    ; Stack = ChrBit, RtnAdr
-    ld      b,5
-    call    shift_hl_left         ; H = ChrPos
-    ld      a,h
-    cp      c                     ; If ChrPos > StrLen
-    ret     c                     ;   Return Carry Set
-    ld      l,a
+    ld      b,3
+    call    shift_hl_right        ; H = ChrPos
+    ld      a,l
+    cp      c                     ; If ChrPos+1 > StrLen
+    ccf
+    jp      c,POPHRT              ;   Return Carry Set
     ld      h,0
     add     hl,de                 ; HL = ChrAdr
-    pop     bc                    ; B = ChrBit
+    pop     bc                    ; B = ChrBit; Stack = RtnAdr
     inc     b                     ; Bump BitNo for Loop
     ld      a,(hl)                ; A = StrChr
 .loop

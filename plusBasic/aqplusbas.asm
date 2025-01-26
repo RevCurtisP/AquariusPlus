@@ -14,29 +14,29 @@
 
 ; To assemble:
 ;   zmac --zmac  -I basic -I gfx -o aqplusbas.cim -o aqplusbas.lst aqplusbas.asm
-
+  
     include "sbasic.inc"
     include "plus.inc"
     include "screen.inc"
 
 ;Internal Jump Table: S3BASIC interface
     org     $2000
-    jp      _reset          ; $2000 Called from main ROM at reset vector
-    jp      _coldboot       ; $2003 Called from main ROM for cold boot
-    jp      _start_cart     ; $2006 Deprecated
-    jp      irq_handler     ; $2009 interrupt handler
+    jp      _reset          ; $2000 XPLUS  Called from main ROM at reset vector
+    jp      _coldboot       ; $2003 XCOLD  Called from main ROM for cold boot
+    jp      just_ret        ; $2006 XCART  Dummy entry matching jump table entry in SD-BASIC
+    jp      irq_handler     ; $2009 XINTR  Interrupt handler
     jp      _warm_boot      ; $200C Called from main ROM for warm boot
     jp      _xkeyread       ; $200F XINCHR Called from COLORS
     jp      _sounds_hook    ; $2012 SOUNDX Adjust SOUNDS for turbo mode
     jp      _ttymove_hook   ; $2015 TTYMOX TTYMOV extension - set screen colors if SYSCTRL bit set
     jp      _scroll_hook    ; $2018 SCROLX SCROLL extension - scroll color memory if SYSCTRL bit set
     jp      _start_screen   ; $201B RESETX Start-up screen extension
-    jp      _line_edit      ; $201E Vector to test line editor
+    jp      in_key          ; $201E XINKEY Read key and check Ctrl-C if BREAK is ON
     jp      _incntc_hook    ; $2021 INCNTX Patch to INCNTC
-    jp      _input_ctrl_c   ; $2924 INPUTC Handle Ctrl-C in INPUT
-    jp      _wait_key       ; $2927 INCHRX
+    jp      _input_ctrl_c   ; $2024 INPUTC Handle Ctrl-C in INPUT
+    jp      _wait_key       ; $2027 INCHRX Wait for character, don't BREAK on Ctrl-C
     jp      _main_ctrl_c    ; $202A MAINCC Handle Ctrl-c in MAIN
-    jp      _finish_input   ; $202D  FININX C/R in INPUT patch
+    jp      _finish_input   ; $202D FININX C/R in INPUT patch
 
     dc $2030-$,$76
 
@@ -130,7 +130,7 @@ just_ret:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.23r"
+    db "v0.23s"
     db 0
 plus_len   equ   $ - plus_text
 
@@ -400,7 +400,7 @@ _wait_key:
 _input_ctrl_c:
     ld      a,(BASYSCTL)
     and     BASBRKOFF               ; If BRK is on
-    jp      z,STPEND                ;   Break out of program
+    jp      nz,_read_key            ;   Break out of program
     ld      a,3
     ld      (IEND_KEY),a
     push    bc                      ; Stack = TxtPtr, RtnAdr
@@ -423,7 +423,7 @@ _incntc_hook:
     ld      a,(BASYSCTL)
     and     BASBRKOFF             ; If BRK is off
     ret     nz
-    call    INCHRH                ; A = Keystroke
+    call    _read_key             ; A = Keystroke
     or      a                     ; If no key pressed
     ret     z                     ;   Return
     cp      'C'-64                ; If Ctrl-C
@@ -439,7 +439,7 @@ _incntc_hook:
     ret
 
 _pause:
-    call    INCHRH
+    call    _read_key
     jr      z,_pause
     ret
 
@@ -657,12 +657,6 @@ copy_char_ram:
     jp      page_fast_copy_sys    ; Copy It
 
 ;-----------------------------------------------------------------------------
-; Cartridge start entry point - A hold scramble value
-;-----------------------------------------------------------------------------
-_start_cart:
-    ret                           ; Carts are now run from S2 BASIC
-
-;-----------------------------------------------------------------------------
 ; Enable VBLANK Interrupts
 ; Input: B: IRQ Routine Bit(s)
 ; Clobbers: A
@@ -863,6 +857,22 @@ _scroll_hook:
 ; Utility routines
 ;-----------------------------------------------------------------------------
     include "util.asm"
+
+
+get_key:
+    call    in_key
+    jr      z,get_key
+    ret
+    
+in_key:
+    ld      a,(BASYSCTL)          ; If BRK is off
+    and     BASBRKOFF             ;   Read key and return
+    jr      nz,_read_key          ; Else
+    call    _read_key             ;   Read Key
+    cp      3                     ;   If Ctrl-C
+    jp      z,WRMCON              ;     Break out of program
+    or      a                     ;   Else set flags and return
+    ret
 
 ;-----------------------------------------------------------------------------
 ; Hook 18 - INCHRC (Get character from keyboard)

@@ -225,7 +225,9 @@ xtokens = {
     0xAE: "MAX",
     0xAF: "UPR",
     0xB0: "LWR",
-    0xB1: "SPEED"
+    0xB1: "SPEED",
+    0xB2: "LONG",
+    0xB3: "FLOAT"
 }
 
 with open(args.input, "rb") as f:

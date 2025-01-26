@@ -56,6 +56,9 @@ for line in md_in.readlines():
     kword = ""
     if line[:5] == " - **":
         l = line[5:]
+        b = l.find(" .. ")
+        e = l.find(" .. ", b+4)
+        if b and e: l = l[:b] + "--" + l[e+4:]
         m = re.search(r"^(.+?)[(_*{&=«\\]",l)
         if m: kword = m.group(1)
         i = kword.find("ON|OFF")
@@ -83,6 +86,11 @@ for line in md_in.readlines():
         b = wiki.find(" **")+3
         e = wiki.find("** ")
         wiki = wiki[:b] + "[" + wiki[b:e] + "](" + link + ")" + wiki[e:]
+        wiki = wiki.replace(" __ ", " ")
+        wiki = wiki.replace(" .. ", " ")
+
+    line = line.replace(" __ ", " ")
+    line = line.replace(" .. ", " ")
 
     md_out.write(line + "\n")
     wiki_out.write(wiki + "\n")

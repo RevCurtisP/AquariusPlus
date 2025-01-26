@@ -1,4 +1,5 @@
 100 REM Run unit tests
+105 SET SPEED 3
 110 CLEAR 4096,$BFF6:POKE $BFF8,STRING$(8,0)
 111 '$BFF7 - Run Continuous
 112 '$BFF8 - Total Passed
@@ -15,7 +16,7 @@
 140 PRINT "Stop on Failure? (Y/N) ";
 142 K=GETKEY:F=0:IF K='Y' OR K='y' THEN F=1
 144 PRINT CHR$(K):POKE $BFFE,F:'Save Fail Flag
-150 I$="cp"
+150 I$="bt"
 152 INPUT "Start with test? (Enter=Default)";I$
 154 P$=I$+".baq"
 

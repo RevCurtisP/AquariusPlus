@@ -12,7 +12,7 @@
 ;-----------------------------------------------------------------------------
 file_get_ext:
     ld      l,'.'                 ; Delimiter
-_chop_filespec
+_chop_filespec:
     ex      de,hl                 ; HL = SpcAdr; E = Delim
     add     hl,bc                 ; HL = SpcEnd + 1
     ld      b,c                   ; B = Counter
@@ -45,13 +45,7 @@ _chop_filespec
 ; Clobbered: HL
 ;-----------------------------------------------------------------------------
 file_trim_dir:
-    push    de                    ; Stack = StrAdr, RtnAdr
-    push    bc                    ; Stack = StrLen, StrAdr, RtnAdr
-    push    de                    ; Stack = StrAdr, StrLen, StrAdr, RtnAdr
-    ld      l,'/'                 ; Delimiter
-    call    _chop_filespec        ; DE = NamAdr, A,BC = NamLen
-    pop     hl                    ; HL = StrAdr; Stack = StrLen, StrAdr, RtnAdr
-    rst     COMPAR                ;
+    call    _chop_dir
     jr      z,.no_dir             ; If NamAdr <> StrAdr
     ld      a,c
     or      a
@@ -73,13 +67,7 @@ file_trim_dir:
 ; Clobbered: HL
 ;-----------------------------------------------------------------------------
 file_get_dir:
-    push    de                    ; Stack = StrAdr, RtnAdr
-    push    bc                    ; Stack = StrLen, StrAdr, RtnAdr
-    push    de                    ; Stack = StrAdr, StrLen, StrAdr, RtnAdr
-    ld      l,'/'                 ; Delimiter
-    call    _chop_filespec        ; DE = NamAdr, A,BC = NamLen
-    pop     hl                    ; HL = StrAdr; Stack = StrLen, StrAdr, RtnAdr
-    rst     COMPAR                ;
+    call    _chop_dir
     jr      z,.no_dir             ; If NamAdr <> StrAdr
     pop     hl                    ; HL = OldLen; Stack = StrAdr, RtnAdr
     dec     bc
@@ -93,6 +81,19 @@ pop2hlr_aux:
     pop     hl                    ; Stack = RtnAdr
     ret
 
+_chop_dir:
+    pop     ix                    ; IX = RtnAdr
+    ld      a,c                   ; A = StrLen
+    or      a                     ; If null string
+    ret     z                     ;   Return
+    push    de                    ; Stack = StrAdr, RtnAdr
+    push    bc                    ; Stack = StrLen, StrAdr, RtnAdr
+    push    de                    ; Stack = StrAdr, StrLen, StrAdr, RtnAdr
+    ld      l,'/'                 ; Delimiter
+    call    _chop_filespec        ; DE = NamAdr, A,BC = NamLen
+    pop     hl                    ; HL = StrAdr; Stack = StrLen, StrAdr, RtnAdr
+    rst     COMPAR                ;
+    jp      (ix)                  ; Return
 ;-----------------------------------------------------------------------------
 ; Return filespec without extension
 ; Input: BC: filespec length
