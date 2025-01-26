@@ -1,4 +1,4 @@
-100 REM Program Description
+100 REM Bitwise Statements and Functions
 110 QG$="cp"
 130 GOSUB _init
 

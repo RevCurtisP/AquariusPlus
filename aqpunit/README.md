@@ -8,8 +8,13 @@ Run the .baq file to run the associated tests.
 | :------ | :----------------  |
 | bt.baq  | BIT                |
 | cp.baq  | COPY and COMPARE   |
+| cs.baq  | COPY SCREEN        |
+| dr.baq  | DIM and READ       |
+| gr.baq  | Misc, Graphics     |
 | pp.baq  | POKE and PEEK      |
+| ps.baq  | POKE/POKE SCREEN   |
 | sb.baq  | String Slicing     |
+| sg.baq  | **Incomplete**     |
 | sj.baq  | SPLIT and JOIN     |
 | sl.baq  | SAVE and LOAD      |
 | ss.baq  | SAVE/LOAD SCREEN   |
@@ -17,10 +22,11 @@ Run the .baq file to run the associated tests.
 | tf.baq  | FILL TILE          |
 | tr.baq  | TRIM functions     |
 | ts.baq  | Tiles and Sprites  |
+| tx.baq  | Tile/Sprite Errors |
 
 ## Test Details
 
-- bit.baq 
+- bt.baq 
   - BIT(_long_,_bitno_)
   - BIT(_string_,_bitno_)
 - cp.baq 
@@ -31,6 +37,26 @@ Run the .baq file to run the associated tests.
   - COPY @_frompage_,_fromaddr_,_count_ TO _toaddr_
   - COMPARE(@_frompage_,_fromaddr_,_toaddr_,_count_)
   - COPY @_frompage_,_fromaddr_,_count_ TO @_topage_,_toaddr_
+- cs.baq 
+  - COPY SCREEN TO @_page_,_offset_
+  - COPY @_page_,_offset_ TO SCREEN
+  - COPY SCREEN CHR TO @_page_,_offset_
+  - COPY @_page_,_offset_ TO SCREEN CHR
+  - COPY SCREEN ATTR TO @_page_,_offset_
+  - COPY @_page_,_offset_ TO SCREEN ATTR
+- dr.baq
+  - DIM _var_, _var_$
+  - DIM _array_()_, _array_$()
+  - DIM _array_() = _list_
+  - DIM _array_$() = _list_
+  - READ _var_, _var_$
+  - READ \*_array_
+  - READ \*_array_$
+- gr.baq 
+  - RGB(_red_,_green_,_blue_)
+  - RGB$(_red_,_green_,_blue_)
+  - RGB("RGB")
+  - RGB$("RGB")
 - pp.baq
   - POKE _addr_,_byte_
   - POKE _addr,_string_
@@ -60,6 +86,8 @@ Run the .baq file to run the associated tests.
   - PEEKSCREEN$(_addr_,_len_)
   - PEEKCOLOR(_addr_)
   - PEEKCOLOR$(_addr_,_len_)
+- sg.baq
+  - FILL SCREEN CHR _char_
 - sl.baq
   - SAVE/LOAD binary
   - SAVE/LOAD paged
@@ -77,12 +105,24 @@ Run the .baq file to run the associated tests.
   - SAVE/LOAD PALETTE
   - **_ToDo:_**
     - LOAD TILESET
-
 - tf.baq
   - DEF RGBLIST _var_$ = _r_,_g_,_b_; ...
   - SET PALETTE _palette_ TO _rgb_list_
   - SET TILE _tile_index_ TO _tile_data_
   - FILL TILEMAP TILE _tile_index_ ATTR _attr_list_ PALETTE _palette_
+- tr.baq
+  - TRIM$(_string_)
+  - TRIM$(_string_,_string_)
+  - TRIML$(_string_)
+  - TRIML$(_string_,_string_)
+  - TRIMR$(_string_)
+  - TRIMR$(_string_,_string_)
+  - PAD$(_string_,_byte_)
+  - PAD$(_string_,_byte_,_char_)
+  - FILEEXT$(_filespec_)
+  - FILEDIR$(_filespec_)
+  - TRIMDIR$(_filespec_)
+  - TRIMEXT$(_filespec_)
 - ts.baq
   - DEF ATTRLIST _var_$ = _attr_, ...
   - DEF PALETTELIST  _var_$ = _palette_, ...
@@ -109,3 +149,6 @@ Run the .baq file to run the associated tests.
     - **ToDo: Add tests**
   - TILEOFFSET
   - TILEOFFSET(_gfxmode_)
+- tx.baq
+  - SET PALETTE _palette_ TO _rgb_list_
+  - SET TILE _tile_index_ TO _tile_data_

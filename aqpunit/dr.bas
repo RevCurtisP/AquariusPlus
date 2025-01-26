@@ -1,5 +1,5 @@
 100 REM DIM and READ
-110 QG$="ps"
+110 QG$="gr"
 130 GOSUB _init
 
 200 GOSUB _title:ARGS "DIM Arrays"
@@ -22,9 +22,9 @@
 
 300 GOSUB _title:ARGS "DIM Simple Variables"
 302 GOSUB _output:ARGS LIST$(NEXT)
-304 DIM A,S
+304 DIM A,S$
 306 GOSUB _assert:ARGS "VARPTR(A)<DEEK($38D8)"
-308 GOSUB _assert:ARGS "VARPTR(S)<DEEK($38D8)"
+308 GOSUB _assert:ARGS "VARPTR(S$)<DEEK($38D8)"
 
 320 'GOSUB _title:ARGS "DIM Simple Variables Errors"
 322 'GOSUB _output:ARGS LIST$(NEXT):QE=27:ON ERROR GOTO _yes_err
