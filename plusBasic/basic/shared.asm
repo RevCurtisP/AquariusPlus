@@ -175,6 +175,16 @@ check_char:
 .return
     jp      (ix)
 
+;-----------------------------------------------------------------------------
+; Return absolute value of A in A
+;-----------------------------------------------------------------------------
+abs_de_byte:
+    ld      a,d
+    or      a
+    LD      a,e
+    ret     p
+    neg         
+    ret
 
 ;-----------------------------------------------------------------------------
 ; Compare HL to BC
@@ -195,12 +205,13 @@ compare_hl_bc:
 ; Convert Number in FACC to temporary String
 ;-----------------------------------------------------------------------------
 facc_to_string:
-    push    hl                    ;   Stack = TxtPtr, RtnAdr
-    call    FOUT                  ;   Convert to String
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    call    FOUT                  ; Convert to String
     call    STRLIT
 frefac_pophrt:
-    call    FREFAC
-    pop     hl                    ;   HL = TxtPtr; Stack = RtnAdr
+    call    FREFAC                ; HL = StrDsc
+    ex      de,hl                 ; DE = StrDsc
+    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     ret
 
 get_star_array: 
@@ -293,7 +304,6 @@ TOERR:
     ld      e,ERRTO
     jp      ERROR
 
-
 ;-----------------------------------------------------------------------------
 ; Parse string
 ; Output: BC = StrLen
@@ -340,7 +350,10 @@ get_comma:
 ;-----------------------------------------------------------------------------
 get_comma_byte:
     call    get_comma
-    jp      GETBYT
+get_byte:
+    call    GETBYT                ; A, E = Byte
+    or      a                     ; Set Flags
+    ret
 
 ;-----------------------------------------------------------------------------
 ; Require comma, then parse integer
@@ -354,7 +367,10 @@ get_comma_int:
 ;-----------------------------------------------------------------------------
 skip_get_int:
     rst     CHRGET
-    jp      GETINT
+    call    GETINT
+    ld      a,d
+    or      e
+    ret
 
 parchk_getype:
     call    PARCHK
@@ -662,7 +678,6 @@ get_char_optional:
     cp      ','                   ; If not comma
     ld      a,c                   ;   
     ret     nz                    ;   Return default character
-skip_get_char:
     rst     CHRGET                ; Skip character before expression
 ;-----------------------------------------------------------------------------
 ; Parse Character as byte or string
@@ -858,6 +873,32 @@ scan_rect:
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     ret
 
+; ------------------------------------------------------------------------------
+; Scan literal string and put Descriptor in FACC
+; ------------------------------------------------------------------------------
+str_literal:
+    cp      '"'                   ; Require Opening Quote
+    jp      nz,FCERR
+    inc     hl                    ; HL = StrAdr
+    ld      (FACLO+2),hl          ; Store in StrDsc
+    ld      bc,0                  ; BC = StrLen
+.loop
+    ld      a,(hl)                
+    inc     hl
+    or      a
+    jr      z,.done               ; If not end of statement
+    cp      '"'                   ; or Closing Quote
+    jr      z,.done
+    inc     bc
+    jr      .loop
+.done    
+    ld      a,b
+    or      a                     ; If StrLen > 255
+    jp      nz,FCERR              ;   Error
+    or      c                     ; If StrLen = 0
+    jp      z,FCERR               ;   Error
+    ld      (FACLO),bc            ; Srore in StrDsc
+    ret
 
 ;-----------------------------------------------------------------------------
 ; Create temporary string from string buffer

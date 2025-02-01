@@ -127,6 +127,7 @@
  - [ ] **DOKE {«!_ext_addr_»|«@_page_,_address_»,_integer_{;...}** - Write one or more integers to memory.<!--POKE-->
  - [ ] **DRAW _command_string_** - _Not implemented._
  - [ ] **DRAW TEXT (_col_,_row)_),_string_** - _Not implemented._
+ - [ ] **DUMP VARS "_filespec_"** - Dump system and BASIC variables to YAML file.
  - [ ] **EDIT {_lineref_}** - _Not implemented._
  - [ ] **END** - Terminate program execution.<!--flow-->
  - [ ] **ENDKEY** - Return key used to exit enhanced INPUT.
@@ -242,7 +243,7 @@
  - [ ] **ON ERROR GOTO _lineref_** - Enable or disable error trapping.<!--ON-->
  - [ ] **OPEN** - _Not implemented._
  - [ ] **OUT _port_,_byte_|_string_{,...}{;...}** - Write to a Z80 port.<!--OUT-->
- - [ ] **PAD$(_string_|_number_,_length_{,_char_})** - Pad string on left or right with optional fill character.<!--PAD-->
+ - [ ] **PAD$(_string_,_length_{,_char_})** - Pad string on left or right with optional fill character.<!--PAD-->
  - [ ] **PAUSE** - Halt program execution until key is pressed.<!--PAUSE-->
  - [ ] **PAUSE _jiffies_** - Pauses program execution for the specified amount of time.<!--PAUSE-->
  - [ ] **PAUSE TRACK** - Pause currently playing track.<!--track-->

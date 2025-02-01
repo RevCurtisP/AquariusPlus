@@ -121,10 +121,11 @@ EXTCMDS:
     db $80 + 'L',"ONG"            ; $B2
     db $80 + 'F',"LOAT"           ; $B3
     db $80 + 'P',"ATH"            ; $B4
+    db $80 + 'D',"UMP"            ; $B5
     
     db $80                        ; End of table marker
 
-EXTOKEN = $B5                     ; Last Token + 1
+EXTOKEN = $B6                     ; Last Token + 1
 
 ;-----------------------------------------------------------------------------
 ; plusBASIC tokens
@@ -196,6 +197,7 @@ BYTETK    equ     $A5
 CAQTK     equ     $A6
 MEMTK     equ     $A7
 JOINTK    equ     $A8
+WAITK     equ     $A9
 CURTK     equ     $AA
 HEXTK     equ     $AB
 BINTK     equ     $AC
@@ -204,9 +206,11 @@ MAXTK     equ     $AE
 UPRTK     equ     $AF
 LWRTK     equ     $B0
 SPEEDTK   equ     $B1
+LONGTK    equ     $B2
+FLOATK    equ     $B3
+PATHTK    equ     $B4
+DUMPTK    equ     $B5
 
-;-----------------------------------------------------------------------------
-; Convert keyword to token - hook 10
 ;-----------------------------------------------------------------------------
 keyword_to_token:
     ld      a,b                   ; A = current index

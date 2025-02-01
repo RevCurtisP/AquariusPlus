@@ -116,6 +116,29 @@ FN_DEC:
     jp      eval_hex        ; Convert the Text
     
 ;-----------------------------------------------------------------------------
+; DUMP Variable and Array Table to File
+;-----------------------------------------------------------------------------
+ST_DUMP:
+    rst     CHRGET                ; Skip DUMP
+    rst     SYNCHR                ; Require VARS
+    byte    XTOKEN
+    rst     SYNCHR
+    byte    VARTK
+    SYNCHK  'S'
+    jp      z,MOERR
+    call    str_literal
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    call    get_strbuf_addr       
+    ex      de,hl                 ; DE = StrBuf
+    ld      hl,FACLO              ; HL = FilNam
+    ld      iy,dump_vars
+    call    aux_call              ; Do the dump
+    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
+    ret
+
+
+
+;-----------------------------------------------------------------------------
 ; GET functions stub
 ;-----------------------------------------------------------------------------
 FN_GET:

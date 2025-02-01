@@ -5,11 +5,12 @@
 ;-----------------------------------------------------------------------------
 ; PAD$ function
 ;-----------------------------------------------------------------------------
+;; ToDo: Debug PAD$() overwriting string variable text
 ; ? "<";PAD$("xyz",9);">"
 ; ? "<";PAD$("xyz",-10);">"
 ; ? "<";PAD$("xyz",1);">"
 ; ? "<";PAD$("xyz",-2);">"
-; ? "<";PAD$("xyz",0);">"
+; ? "<";PAD$("xyz",0);">" 
 ; ? "<";PAD$("xyz",9,"!");">"
 ; ? "<";PAD$("xyz",-10,"@");">"
 ; ? "<";PAD$("xyz",5,0);">"
@@ -18,32 +19,37 @@ FN_PAD:
     inc     hl                    ; Skip PAD
     call    _pad_arg              ; DE = ArgDsc
     push    de                    ; Stack = ArgDsc, RtnAdr
-    call    get_comma_int         ; DE = PadLen
+    call    get_comma_int         ; A, E = PadLen
     push    de                    ; Stack = PadLen, ArgDsc, RtnAdr
+    push    af                    ; Stack = LenFlg, PadLen, ArgDsc, RtnAdr
     ld      c,' '                 ; PadChr = Space
     call    get_char_optional     ; C = PadChr
     SYNCHK  ')'                   ; Require end paren
-    ld      a,c                   ; A = PadChr
-    pop     bc                    ; BC = PadLen; Stack = ArgDsc, RtnAdr
+    pop     af                    ; F = LenFlg; Stack = PadLen, ArgDsc, RtnAdr
+    pop     de                    ; DE = PadLen; Stack = ArgDsc, RtnAdr
     ex      (sp),hl               ; HL = ArgDsc; Stack = TxtPtr, RtnAdr
+    jr      z,.nullstring         ; If PadLen = 0, return null string
     push    hl                    ; Stack = ArgDsc, TxtPtr, RtnAdr
-    push    bc                    ; Stack = PadLen, ArgDsc, RtnAdr
-    push    af                    ; Stack = PadChr, PadLen, ArgDsc, RtnAdr
-    call    FRETM2                ; Free ArgTmp
-    call    get_strbuf_addr       ; HL = StrBuf
-    ex      de,hl                 ; DE = StrBuf
-    pop     af                    ; A = PadChr; Stack = PadLen, ArgDsc, RtnAdr
+    push    de                    ; Stack = PadLen, ArgDsc, TxtPtr, RtnAdr
+    push    bc                    ; Stack = PadChr, PadLen, ArgDsc, TxtPtr, RtnAdr
+    push    de                    ; Stack = PadLen, PadChr. PadLen, ArgDsc, TxtPtr, RtnAdr
+    ex      de,hl                 ; DE = ArgDsc
+    call    FRETMS
+    pop     de                    ; DE = Padlen, Stack = PadChr, PadLen, ArgDsc, TxtPtr, RtnAdr
+    call    abs_de_byte           ; A = ABS(PadLen)
+    call    STRINI                ; DE = ResAdr
+    pop     bc                    ; C = PadChr; Stack = PadLen, ArgDsc, RtnAdr
+    ld      a,c                   ; A = PadChr
     pop     bc                    ; BC = PadLen; Stack = ArgDsc, TxtPtr, RtnAdr
     pop     hl                    ; HL = ArgDsc; Stack = TxtPtr, RtnAdr
     ld      iy,string_pad
-    call    aux_call              ; BC = PadLen
-    ld      a,c                   ; A = PadLen
-    or      a                     ; If PadLen = 0
-    jp      z,NULRT               ;   Return ""
-    call    strbuf_temp_str       ; HL = TmpDsc
-    call    FRETMP
+    call    aux_call              
     jp      PUTNEW
-
+.nullstring
+    ex      de,hl                 ; DE = ArgDsc
+    call    FRETMP                ; Free argument string
+    jp      NULRT                 ; Return null string
+    
 ;-----------------------------------------------------------------------------
 ; TRIM functions stub
 ;-----------------------------------------------------------------------------
@@ -135,9 +141,9 @@ _trim_arg:
 _pad_arg:
     SYNCHK  '$'                   ;
     call    FRMPRN                ; Evaluate argument after (
-    call    GETYPE                ; If numeric
-    call    nz,facc_to_string     ;   Convert to string
-.not_num:
+    call    CHKSTR
+;    call    GETYPE                ; If numeric
+;    call    nz,facc_to_string     ;   Convert to string
     ld      de,(FACLO)            ; DE = ArgDsc
     ld      a,(hl)                ; A = Next character
     ret

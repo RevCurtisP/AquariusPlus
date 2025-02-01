@@ -1,4 +1,4 @@
-;=====================================================================================
+  ;=====================================================================================
 ; Aquarius+ System ROM and plusBASIC
 ;=====================================================================================
 ; By Curtis F Kaylor and Frank van den Hoef
@@ -130,7 +130,7 @@ just_ret:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.23s"
+    db "v0.23t"
     db 0
 plus_len   equ   $ - plus_text
 
@@ -1214,6 +1214,7 @@ _buffer_write_init:
     include "jump_gfx.asm"      ; Graphics routines jump tables
     include "basbuf.asm"        ; Basic buffer read/write routines
     include "color.asm"         ; Color palette module
+    include "debug.asm"         ; Debugging routines
     include "dos.asm"           ; DOS routines
     include "esp_aux.asm"       ; ESP routines in auxiliary ROM
     include "fileaux.asm"       ; BASIC File auxilarry routines

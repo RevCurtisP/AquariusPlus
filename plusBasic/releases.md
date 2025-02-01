@@ -1,4 +1,6 @@
 # plusBASIC Release History
+ - v0.23t (2025-02-01)
+    - Added DUMP VARS
  - v0.23s (2025-01-26)
     - Implemented `UPR()`, `UPR$()`, `LWR()`, `LWR$()`, `UPRKEY`, `UPRKEY$`, `LWRKEY`, `LWRKEY$`
     - Implemented `BIT(string,bit#)`

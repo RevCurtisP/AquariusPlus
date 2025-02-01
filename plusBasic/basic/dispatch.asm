@@ -72,6 +72,8 @@ extended_statement:
     jp      z,ST_JOIN
     dec     a                   ; $A9 WAIT
     jp      z,ST_WAIT
+    sub     DUMPTK-WAITK        ; $B5 DUMP
+    jp      z,ST_DUMP
     jp      SNERR 
    
 extended_function:
