@@ -152,7 +152,8 @@ MAINCC  equ     $202A   ;; | Handle Ctrl-C in direct mode
 FININX  equ     $202D   ;; | Finish INPUT
 ;;plusBASIC specific hooks
 SCNLBL  equ     $2030   ;; | Scan line label or line number
-XFUNKY  equ     $2035   ;; | Extended function key check
+TTYFIX  equ     $2033   ;; | TTYFIN Extension
+XFUNKY  equ     $2036   ;; | Extended function key check
 ;       equ     $203A   ;; | Deprecated
 XMAIN   equ     $203F   ;; | Line Crunch Hook
 XSTUFF  equ     $2044   ;; | STUFFH hook
@@ -5322,8 +5323,12 @@ NOBS:   ld      (hl),' '          ;;Erase Character at Position
 TTYFIS: call    TTYSAV            ;;Save Column and Position
 TTYFIN: ld      hl,(CURRAM)       ;
         ld      a,(hl)            ;;Get character at position
+ifdef aqplus
+        jp      TTYFIX
+else        
         ld      (CURCHR),a        ;;Save character under cursor
-        ld      (hl),$7F          ;Display Cursor
+endif
+TTYFID: ld      (hl),$7F          ;Display Cursor
 TTYXPR: exx                       ;Restore [BC], [DE] and [HL]
         pop     af                ;Restore [AF]
         ret

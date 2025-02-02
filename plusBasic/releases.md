@@ -1,4 +1,9 @@
 # plusBASIC Release History
+ - v0.23u (2025-02-02)
+    - Fixed PAD$() overwriting string variables
+    - Added `PRINT @()`, `SET CURSOR ON/OFF`, `GETCURSOR`
+    - Added `SET BORDER CHR/COLOR`, `RESET BORDER`
+    - Added `GETBORDERCHR`, `GETBORDERCHR$`, `GETBORDERCOLOR`, `GETBORDERCOLOR$`
  - v0.23t (2025-02-01)
     - Added DUMP VARS
  - v0.23s (2025-01-26)

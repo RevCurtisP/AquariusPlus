@@ -2,7 +2,6 @@
 ; Statements and Functions from Aquarius Extended BASIC
 ;====================================================================
 
-
 ;-----------------------------------------------------------------------------
 ; CLEAR statement extension (Hook 11)
 ; CLEAR *array
@@ -16,9 +15,9 @@ clear_hook:
     jp      z,ST_CLEAR_BITMAP
     cp      MULTK                 ; 
     jr      z,ST_CLEAR_ARRAY
-    cp      XTOKEN
-    jp      nz,HOOK11+1           ; Continue with CLEAR
-    rst     CHRGET                ; Skip XTOKEN
+    cp      XTOKEN                ; If not extended token
+    jp      nz,HOOK11+1           ;   Continue with CLEAR
+    inc     hl                    ; Skip XTOKEN
 _clear_cursor
     ld      iy,screen_clear_cursor
     rst     SYNCHR
@@ -52,6 +51,20 @@ clear_array:
     pop     de                    ; DE = AryAdr; Stack = AryAdr, TxtPtr, RtnAdr
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     ret
+
+
+print_hook:
+    cp      '@'       
+    jr      nz,.not_at            ; If '@'
+    rst     CHRGET                ;   Skip '@'
+    SYNCHK  '('                   ;   Require open paren
+    call    ST_LOCATE             ;    Do LOCATE
+    SYNCHK  ')'                   ;   Rwquire close paren
+    jr      .done
+.not_at:
+    call    CHRGT2
+.done
+    jp      HOOK6+1
 
 
 ;-----------------------------------------------------------------------------

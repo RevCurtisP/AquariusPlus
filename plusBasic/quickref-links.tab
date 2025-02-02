@@ -1,4 +1,5 @@
 ASC         BASIC-ASC-Function
+border      BASIC-Border-Statements-and-Functions
 CALL        BASIC-CALL-Statement
 chrset      BASIC-CHRSET-and-CHRDEF-Statements
 CLEAR       BASIC-CLEAR-Statement
@@ -11,7 +12,6 @@ DATETIME    BASIC-DATE-and-TIME-Functions
 DEFATTR     BASIC-DEF-ATTRLIST-Statement
 DEFINT      BASIC-DEF-INTLIST-Statement
 DEFPALETTE  BASIC-DEF-PALETTELIST-Statement
-DEFRGB      BASIC-DEF-RGBLIST-Statement
 DEFSPRITE   BASIC-DEF-SPRITE-Statement
 DEFTILE     BASIC-DEF-TILELIST-Statement
 DIM         BASIC-DIM-Statement
@@ -40,6 +40,7 @@ mouse       BASIC-MOUSE-Functions
 ON          BASIC-ON-Statement
 OUT         BASIC-OUT-Statement
 PAD         BASIC-PAD-Function
+palette     BASIC-Palette-Statements-and-Functions
 PAUSE       BASIC-PAUSE-Statement
 pixel       BASIC-Bloxel-and-Pixel-Functions
 PLAYSAMPLE  BASIC-PLAY-SAMPLE-Statement
@@ -52,15 +53,12 @@ PUTTILE     BASIC-PUT-TILEMAP-Statement
 READ        BASIC-READ-Statement
 REM         BASIC-REM-Statement
 RESTORE     BASIC-RESTORE-Statement
-RGB         BASIC-RGB-Functions
 RUN         BASIC-RUN-Command
 SAVE        BASIC-SAVE-and-APPEND-Statements
 SAVEPALETTE BASIC-SAVE-PALETTE-Statement
 screen      BASIC-Screen-Statements-and-Functions
-SETCOLOR    BASIC-SET-COLOR-Statement
 SETFAST     BASIC-SET-FAST-Statement
 SETFNKEY    BASIC-SET-FNKEY-Statement
-SETPALETTE  BASIC-SET-PALETTE-Statement
 SETSAVE     BASIC-SET-SAVE-Statement
 SETSPRITE   BASIC-SETSPRITE-Statement
 SETTILE     BASIC-SET-TILE-Statement

@@ -126,6 +126,33 @@ _set_text_page:
     pop     af
     ret
 
+
+; Output: DE = Offset
+; Clobbered: BC
+_border_offset:
+    ld      c,IO_VCTRL
+    in      b,(c)
+    bit     5,b
+    jr      nz,.remapped          ; If Border not remapped
+    ld      de,0                   ;   Return 0
+    ret                           ; Else              
+.remapped
+    ld      de,1023
+    bit     6,b                   ;   If 40-column mode
+    ret     z                     ;     Return 1024
+    ld      de,2047               ;   Else
+    ret                           ;     Return 2047
+
+; Input A: Character
+; Clobbered: A,BC,DE,HL
+set_border_color:
+    call    _border_offset
+    jr      color_write_byte
+
+; Input A: Character
+; Clobbered: A,BC,DE,HL
+get_border_color:
+    call    _border_offset
 ;-----------------------------------------------------------------------------
 ; Read byte from Color RAM
 ; Input: DE: Address Offset
@@ -166,6 +193,16 @@ _color_byte:
     ret
 
 
+; Input A: Character
+; Clobbered: A,BC,DE,HL
+set_border_chr:
+    call    _border_offset
+    jr      screen_write_byte
+
+; Input A: Character
+; Clobbered: A,BC,DE,HL
+get_border_chr:
+    call    _border_offset
 ;-----------------------------------------------------------------------------
 ; Read byte from screen
 ; Input: DE: Address Offset

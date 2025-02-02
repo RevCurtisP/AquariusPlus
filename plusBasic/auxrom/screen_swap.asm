@@ -90,11 +90,12 @@ init_screen_vars:
     ld      (hl),a                ; IO_VCTRL = 0
     inc     hl
 
-    ld      a,DFLTATTRS           ; SCOLOR - Defaults
-    ld      (hl),a                ; IO_VCTRL = 0
+    ld      a,DFLTATTRS           ; Default Screen Colors
+    ld      (hl),a                ; SCOLORS = Default
     inc     hl
 
-    inc     hl                    ; Unused
+    ld      (hl),a                ; SCREENCTL = 0
+    inc     hl                    
     ret
 
 ; Loop 5 times then fall into .init_palette to do the 6th
@@ -331,7 +332,9 @@ screen_restore_vars:
     inc     hl
     ld      (SCOLOR),a
 
+    ld      a,(hl)                ; Offset $7
     inc     hl                    ; Next buffer
+    ld      (SCREENCTL),a
 
     pop     af                    ; A = BASCRNCTL Stack = RtnAdr
     and     BASCHRSET             ; A = BASCHRSET
@@ -364,7 +367,9 @@ screen_stash_vars:
     inc     hl
     ld      a,(SCOLOR)
     ld      (hl),a                ; Offset $6
-    inc     hl                    ; Offset $7
+    inc     hl                    
+    ld      a,(SCREENCTL)
+    ld      (hl),a                ; Offset $7
     inc     hl                    ; Next buffer
     ret
 

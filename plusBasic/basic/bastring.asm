@@ -15,6 +15,7 @@
 ; ? "<";PAD$("xyz",-10,"@");">"
 ; ? "<";PAD$("xyz",5,0);">"
 ; ? "<";PAD$("xyz",-6,0);">"
+; F$="123":G$=PAD$("ABCD",3):PRINT F$,G$
 FN_PAD:
     inc     hl                    ; Skip PAD
     call    _pad_arg              ; DE = ArgDsc

@@ -260,7 +260,9 @@ xtokens = {
     0xB2: "LONG",
     0xB3: "FLOAT",
     0xB4: "PATH",
-    0xB5: "DUMP"
+    0xB5: "DUMP",
+    0xB6: "BORDER",
+    0xB7: "CHECK"
 }
 
 def error(idx, message):

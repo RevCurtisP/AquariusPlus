@@ -37,16 +37,12 @@
     jp      _wait_key       ; $2027 INCHRX Wait for character, don't BREAK on Ctrl-C
     jp      _main_ctrl_c    ; $202A MAINCC Handle Ctrl-c in MAIN
     jp      _finish_input   ; $202D FININX C/R in INPUT patch
+    jp      scan_label      ; $2030 SCNLBL Scan line label or line number
+    jp      _tty_finish     ; $2033 TTYFIN Display cursor
+    jp      _ctrl_keys      ; $2036 XFUNKY _Evaluate extended function keys
 
-    dc $2030-$,$76
+    dc $203A-$,$76
 
-    rst     HOOKDO                ; $2030 SCNLBL scan_label: Scan line label or line number
-    byte    30                    ;
-    jp      SCNLIN
-
-    rst     HOOKDO                ; $2035 XFUNKY _ctrl_keys: Evaluate extended function keys
-    byte    31                    ;
-    jp      CHKFUN                ;
 
     rst     HOOKDO                ; $203A XCNTC  _iscntc_hook: Intercept Ctrl-C check
     byte    32
@@ -130,7 +126,7 @@ just_ret:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.23t"
+    db "v0.23u"
     db 0
 plus_len   equ   $ - plus_text
 
@@ -743,13 +739,7 @@ jump_iy:
     jp      (iy)
 
 do_cls:
-    ld      a,(BASYSCTL)
-    rla
-    jr      nc,clear_default
-    ld      a,(SCOLOR)
-    jr      clear_home
-clear_default:
-    ld      a,6                   ; default to black on cyan
+    call    get_cls_colors
 ;-----------------------------------------------------------------------------
 ; Clear Screen and init cursor
 ;-----------------------------------------------------------------------------
@@ -772,6 +762,14 @@ _init_cursor
     ld      (TTYPOS),a            ; column 0
     ret
 
+get_cls_colors:
+    ld      a,(BASYSCTL)
+    rla
+    ld      a,(SCOLOR)
+    ret     c
+    ld      a,(CLSCLR)            ; default to black on cyan
+    ret
+    
 clear_screen:
     ld      c,IO_VCTRL
     in      b,(c)
@@ -926,6 +924,16 @@ sys_swap_mem:
     dec     bc
     jp      sys_swap_mem
 
+;-----------------------------------------------------------------------------
+; TTYFIN hook
+;-----------------------------------------------------------------------------
+_tty_finish:
+    ld      (CURCHR),a            ; Save character under cursor
+    ld      a,(SCREENCTL)
+    and     CRSR_OFF
+    jp      z,TTYFID
+    jp      TTYXPR
+
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ; Call Graphics subsystem subroutine
 ; - Maps Auxilarry ROM into Bank 3
@@ -977,7 +985,7 @@ hook_table:                     ; ## caller   addr  performing function
     dw      HOOK3+1             ;  3 EDENT    0428  Save Tokenized Line
     dw      HOOK4+1             ;  4 FINI     0480  Finish Adding/Removing Line or Loading Program
     dw      linker_hook         ;  5 LINKER   0485  Update BASIC Program Line Links
-    dw      HOOK6+1             ;  6 PRINT    07BC  Execute PRINT Statement
+    dw      print_hook          ;  6 PRINT    07BC  Execute PRINT Statement
     dw      HOOK7+1             ;  7 FINPRT   0866  End of PRINT Statement
     dw      HOOK8+1             ;  8 TRMNOK   0880  Improperly Formatted INPUT or DATA handler
     dw      eval_extension      ;  9 EVAL     09FD  Evaluate Number or String
@@ -1001,9 +1009,9 @@ hook_table:                     ; ## caller   addr  performing function
     dw      execute_function    ; 27 ISFUN    0A5F  Executing a Function
     dw      HOOK28+1            ; 28 DATBK    08F1  Doing a READ from DATA
     dw      oper_extension      ; 29 NOTSTV   099E  Evaluate Operator (S3 BASIC Only)
-    dw      scan_label          ; 30 SCNLBL   2040  GOTO/GOSUB/LIST/RESTORE/RUN label
+    dw      0                   ; 30                Depracated
     dw      _ctrl_keys          ; 31 XFUNKY   2045  Evaluate extended function keys
-    dw      0                   ; 32          204A  Deprecated
+    dw      0                   ; 32                Deprecated
     dw      main_ext            ; 33 XMAIN    204F  Save Line# Flag`in TEMP3
     dw      _stuffh_ext         ; 34 XSTUFF   2054  Check for additional tokens when stuffing
     dw      _check_topmem       ; 35 XCLEAR   204E  Verify TOPMEM is in Bank 2
@@ -1183,6 +1191,7 @@ _buffer_write_init:
     include "evalext.asm"       ; EVAL extension - hook 9
     include "extended.asm"      ; Statements and functions from Aquarius Extended BASIC
     include "basfile.asm"       ; Disk and File I/O statements and functions
+    include "bascreen.asm"      ; Text Screen statements and functions
     include "bastring.asm"      ; String handling statements and functions
     include "graphics.asm"      ; Graphics statements and functions
     include "hooks.asm"         ; Extended BASIC hooks

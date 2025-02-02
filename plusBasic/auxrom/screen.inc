@@ -28,7 +28,7 @@ BUFSCRN40 equ $00   ; TTYPOS
             ; $04   ; BASYSCTL flags
             ; $05   ; IO_VCTRL
             ; $06   ; SCOLOR
-            ; $07   ; Unused
+            ; $07   ; SCREENCTL
 
 BUFSCRN41 equ $08   ; TTYPOS
             ; $09   ; CURCHR
@@ -36,7 +36,7 @@ BUFSCRN41 equ $08   ; TTYPOS
             ; $0C   ; BASYSCTL flags
             ; $0D   ; IO_VCTRL
             ; $0E   ; SCOLOR
-            ; $0F   ; Unused
+            ; $0F   ; SCREENCTL
   
 BUFSCRN80 equ $10   ; TTYPOS
             ; $11   ; CURCHR
@@ -44,7 +44,7 @@ BUFSCRN80 equ $10   ; TTYPOS
             ; $14   ; BASYSCTL flags
             ; $15   ; IO_VCTRL
             ; $16   ; SCOLOR
-            ; $17   ; Unused
+            ; $17   ; SCREENCTL
 
 BUFSVARS  equ $18   ; TTYPOS 
             ; $19   ; CURCHR
@@ -52,7 +52,7 @@ BUFSVARS  equ $18   ; TTYPOS
             ; $1C   ; BASYSCTL flags
             ; $1D   ; IO_VCTRL
             ; $1E   ; SCOLOR
-            ; $1F   ; Unused
+            ; $1F   ; SCREENCTL
 
 ; Variable buffers for STASH, SWAP, and RESTORE
 SWPSCRN40 equ $20   ; TTYPOS
@@ -61,7 +61,7 @@ SWPSCRN40 equ $20   ; TTYPOS
             ; $24   ; BASYSCTL flags
             ; $25   ; IO_VCTRL
             ; $26   ; SCOLOR
-            ; $27   ; Unused
+            ; $27   ; SCREENCTL
                
 SWPSCRN41 equ $28   ; TTYPOS
             ; $29   ; CURCHR
@@ -69,7 +69,7 @@ SWPSCRN41 equ $28   ; TTYPOS
             ; $2C   ; BASYSCTL flags
             ; $2D   ; IO_VCTRL
             ; $2E   ; SCOLOR
-            ; $2F   ; Unused
+            ; $2F   ; SCREENCTL
 
 SWPSCRN80 equ $30   ; TTYPOS
             ; $31   ; CURCHR
@@ -77,7 +77,7 @@ SWPSCRN80 equ $30   ; TTYPOS
             ; $34   ; BASYSCTL flags
             ; $35   ; IO_VCTRL
             ; $36   ; SCOLOR
-            ; $37   ; Unused
+            ; $37   ; SCREENCTL
                
 SWPSVARS  equ $38   ; TTYPOS
             ; $39   ; CURCHR
@@ -85,7 +85,7 @@ SWPSVARS  equ $38   ; TTYPOS
             ; $3C   ; BASYSCTL flags
             ; $3D   ; IO_VCTRL
             ; $3E   ; SCOLOR
-            ; $3F   ; Unused
+            ; $3F   ; SCREENCTL
 
 ; Pallete Buffers     VarBuf
 BUFPALT40 equ $40  ; $00

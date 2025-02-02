@@ -266,6 +266,9 @@ _float_de:
 ;-----------------------------------------------------------------------------
 ; 10 INPUT (20,15),1,3,INT I
 ST_INPUT:
+    push    af
+    call    set_cursor_on
+    pop     af
     cp      '('                   ; If not INPUT (...
     jp      nz,INPUT              ;   Do regular INPUT
     call    SCAND                 ; C = Col, E = Row

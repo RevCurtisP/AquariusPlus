@@ -112,7 +112,7 @@
  - [ ] **DEF FN _var_(_var_) = _expression_** - Define user-defined function.
  - [ ] **DEF INTLIST _strvar_=_integer_,...** - Create a string list of integers.<!--DEFINT-->
  - [ ] **DEF PALETTELIST _strvar_=_palette_,...** - Create a string list of palette numbers.<!--DEFPALETTE-->
- - [ ] **DEF RGBLIST _strvar_=_r_,_g_,_b_|_rgbstr_;...** - Create a string list of RGB values.<!--DEFRGB-->
+ - [ ] **DEF RGBLIST _strvar_=_r_,_g_,_b_|_rgbstr_;...** - Create a string list of RGB values.<!--palette-->
  - [ ] **DEF SPRITE _strvar_= _spritle_, _x-offset_, y-offset;...** - Create a sprite definition.<!--DEFSPRITE-->
  - [ ] **DEF SPRITE _strvar_= [_spritle_,...],...** - Create a sprite definition.<!--DEFSPRITE-->
  - [ ] **DEF TILELIST _strvar_=_tileno_,...** - Create a string list of tile indexes.<!--DEFTILE-->
@@ -157,8 +157,13 @@
  - [ ] **GET SCREEN COLORS (_x_,y_)-(_x_,_y_) \*_array_|^_strvar_** - Copy text screen clip to array or string variable.<!--GETSCREEN-->
  - [ ] **GET TILEMAP (_x_,y_)-(_x_,_y_) \*_array_|^_strvar_** - Copy tilemap clip to array or string variable.<!--GETTILE-->
  - [ ] **GETCHRDEF$(_ascii_code_)** - Return character definition.<!--CHRSET-->
+ - [ ] **GETBORDERCHR** - Return screen border character.<!-->border-->
+ - [ ] **GETBORDERCHR$** - Return screen border character as string.<!-->border-->
+ - [ ] **GETBORDERCOLOR** - Return screen border colors.<!-->border-->
+ - [ ] **GETBORDERCOLOR$** - Return screen border colors as string.<!-->border-->
  - [ ] **GETCHRSET** - Return character set currently in use.<!--CHRSET-->
  - [ ] **GETCOLOR** - Return screen printing colors.
+ - [ ] **GETCURSOR** - Return cursor display mode.
  - [ ] **GETKEY** - Wait for key and return ASCII code.<!--key-->
  - [ ] **GETKEY$**  - Wait for key and return as string.<!--key-->
  - [ ] **GETPALETTE$(_palette_)** - Return palette contents.<!--GETPALETTE-->
@@ -263,7 +268,7 @@
  - [ ] **POSX** - Return 1bpp bitmap last x-position.<!--pixel-->
  - [ ] **POSY** - Return 1bpp bitmap last y-position.<!--pixel-->
  - [ ] **PRESET (_x_,_y_)** - Erase bloxel or pixel.<!--pixel-->
- - [ ] **PRINT __ TAB(_integer_)|SPC(_integer_)|_expression_|;|,{...}** - Display data on screen.<!--print-->
+ - [ ] **PRINT __ {@(_x_,_y_)} TAB(_integer_)|SPC(_integer_)|_expression_|;|,{...}** - Display data on screen.<!--print-->
  - [ ] **PSG _register_,_byte_{,...}** - Write bytes to PSG register
  - [ ] **PSG _register_,_byte_{;...}** - Not implemented
  - [ ] **PSET (_x_,_y_)** - Draw bloxel or pixel.<!--pixel-->
@@ -279,14 +284,15 @@
  - [ ] **RESUME TRACK** - Resume playing paused track.<!--track-->
  - [ ] **RESET \*_array_** - Set all array elements to 0 or empty string and collect garbage if string array.
  - [ ] **RESET BIT** - _Not implemented_
+ - [ ] **RESET BORDER** - Set border character and colors to default values.<!-->border-->
  - [ ] **RESET PALETTE _palette_** - Reset palette to default RGB values.
  - [ ] **RESET SCREEN** - Reset current text screen to default settings.
  - [ ] **RESTORE {_lineref_}** - Reset READ/DATA pointer to beginning of program or specified line.<!--RESTORE-->
  - [ ] **RESTORE BITMAP|TILEMAP** - _Not implemented._
  - [ ] **RESTORE SCREEN** - Copy respective screen buffer to current text screen.
  - [ ] **RETURN {_expression_{,...}}** - Resume program execution after GOSUB, optionally returning results.<!--flow-->
- - [x] **RGB(_r_,_g_,_b_|_rgbstr_)** - Return integer representing a single palette entry.<!--RGB-->
- - [x] **RGB$(_r_,_g_,_b_|_rgbstr_)** - Return string representing a single palette entry.<!--RGB-->
+ - [x] **RGB(_r_,_g_,_b_|_rgbstr_)** - Return integer representing a single palette entry.<!--palette-->
+ - [x] **RGB$(_r_,_g_,_b_|_rgbstr_)** - Return string representing a single palette entry.<!--palette-->
  - [x] **RIGHT$(_string_,_len_)** - Return the last up to _byte_ characters of string.<!--string-->
  - [x] **RND(_integer_)** - Return new or previous psuedo-random number or seeds the random number generator.<!--math-->
  - [ ] **RUN {_lineref_}** - Start program execution at first or specified line.<!--run-->
@@ -302,22 +308,23 @@
  - [ ] **SAVE SCREEN _filespec_** - Save text screen to file.
  - [ ] **SAVE SCREEN ATTR _filespec_** - _Not implemented_
  - [ ] **SAVE SCREEN CHR _filespec_** - _Not implemented_
- - [ ] **SAVE TILEMAP _filespec_** - _Save tile map to file.
+ - [ ] **SAVE TILEMAP _filespec_** - Save tile map to file.
  - [ ] **SAVE TILESET _tileno_,_tilecount_,_filespec_** - Save tile definitions to disk.
  - [ ] **SCREEN {_text_mode_},{_gfx_mode_},{_sprites_},{_priority_},{_remap_}** - Set screen mode.<!--screen-->
  - [ ] **SCROLL BITMAP** - Not implemented.
  - [ ] **SCROLL SCREEN** - Not implemented.
  - [ ] **SET BIT** - _Not implemented_
+ - [ ] **SET BORDER {CHR _char_} {COLOR _fgcolor_,_bgcolor_}** - Enable color printing mode.<!--border-->
  - [ ] **SET BREAK ON|OFF** - Enable or disable control-c checking.<!--system-->
  - [ ] **SET CHRDEF _ascii_code_,_string_** - Redefine character.<!--chrset-->
- - [ ] **SET COLOR _fgcolor_,_bgcolor_** - Enable color printing mode.<!--SETCOLOR-->
- - [ ] **SET COLOR OFF** - Disable color printing mode.<!--SETCOLOR-->
- - [ ] **SET CURSOR ON|OFF** - _Not implemented_.
+ - [ ] **SET COLOR _fgcolor_,_bgcolor_** - Enable color printing mode.<!--screen-->
+ - [ ] **SET COLOR OFF** - Disable color printing mode.<!--screen-->
+ - [ ] **SET CURSOR ON|OFF** - Enable or disable cursor display.
  - [ ] **SET FAST ON|OFF** - Enable or disable turbo mode.<!--SETFAST-->
  - [ ] **SET FILE ERROR ON|OFF** - Enable or disable file operations generating BASIC errors.
  - [ ] **SET FNKEY _key_ TO _string_** - Set auto-typed text when function key is pressed.<!--SETFNKY-->
  - [ ] **SET KEY _mode_** - Set alternate keyboard port mode.
- - [ ] **SET PALETTE _palette {INDEX _index_} TO _rgblist_** - Set palette entries.<!--SETPALETTE-->
+ - [ ] **SET PALETTE _palette {INDEX _index_} TO _rgblist_** - Set palette entries.<!--palette-->
  - [ ] **SET TRACK FAST {ON|OFF}** - Set tracker playback to 50Hz or 60Hz mode.<!--track-->
  - [ ] **SET TRACK LOOP {ON|OFF}** - Set loop status of active or paused track.<!--track-->
  - [ ] **SET TRACK SPEED _hertz_** - Set tracker playback rate.<!--track-->

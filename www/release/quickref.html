@@ -225,7 +225,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>DEF PALETTELIST <em>strvar</em>=<em>palette</em>,...</strong> - Create a string list of palette numbers.<!--DEFPALETTE--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>DEF RGBLIST <em>strvar</em>=<em>r</em>,<em>g</em>,<em>b</em>|<em>rgbstr</em>;...</strong> - Create a string list of RGB values.<!--DEFRGB--></li>
+        <strong>DEF RGBLIST <em>strvar</em>=<em>r</em>,<em>g</em>,<em>b</em>|<em>rgbstr</em>;...</strong> - Create a string list of RGB values.<!--palette--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>DEF SPRITE <em>strvar</em>= <em>spritle</em>, <em>x-offset</em>, y-offset;...</strong> - Create a sprite definition.<!--DEFSPRITE--></li>
@@ -360,10 +360,25 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>GETCHRDEF$(<em>ascii_code</em>)</strong> - Return character definition.<!--CHRSET--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
+        <strong>GETBORDERCHR</strong> - Return screen border character.&lt;!--&gt;border--&gt;</li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>GETBORDERCHR$</strong> - Return screen border character as string.&lt;!--&gt;border--&gt;</li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>GETBORDERCOLOR</strong> - Return screen border colors.&lt;!--&gt;border--&gt;</li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>GETBORDERCOLOR$</strong> - Return screen border colors as string.&lt;!--&gt;border--&gt;</li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
         <strong>GETCHRSET</strong> - Return character set currently in use.<!--CHRSET--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>GETCOLOR</strong> - Return screen printing colors.</li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>GETCURSOR</strong> - Return cursor display mode.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>GETKEY</strong> - Wait for key and return ASCII code.<!--key--></li>
@@ -678,7 +693,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>PRESET (<em>x</em>,<em>y</em>)</strong> - Erase bloxel or pixel.<!--pixel--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>PRINT __ TAB(<em>integer</em>)|SPC(<em>integer</em>)|<em>expression</em>|;|,</strong> - Display data on screen.<!--print--></li>
+        <strong>PRINT __ {@(<em>x</em>,<em>y</em>)} TAB(<em>integer</em>)|SPC(<em>integer</em>)|<em>expression</em>|;|,</strong> - Display data on screen.<!--print--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>PSG <em>register</em>,<em>byte</em>{,...}</strong> - Write bytes to PSG register</li>
@@ -726,6 +741,9 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>RESET BIT</strong> - <em>Not implemented</em></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
+        <strong>RESET BORDER</strong> - Set border character and colors to default values.&lt;!--&gt;border--&gt;</li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
         <strong>RESET PALETTE <em>palette</em></strong> - Reset palette to default RGB values.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
@@ -744,10 +762,10 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>RETURN {<em>expression</em>{,...}}</strong> - Resume program execution after GOSUB, optionally returning results.<!--flow--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" checked="checked" />
-        <strong>RGB(<em>r</em>,<em>g</em>,<em>b</em>|<em>rgbstr</em>)</strong> - Return integer representing a single palette entry.<!--RGB--></li>
+        <strong>RGB(<em>r</em>,<em>g</em>,<em>b</em>|<em>rgbstr</em>)</strong> - Return integer representing a single palette entry.<!--palette--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" checked="checked" />
-        <strong>RGB$(<em>r</em>,<em>g</em>,<em>b</em>|<em>rgbstr</em>)</strong> - Return string representing a single palette entry.<!--RGB--></li>
+        <strong>RGB$(<em>r</em>,<em>g</em>,<em>b</em>|<em>rgbstr</em>)</strong> - Return string representing a single palette entry.<!--palette--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" checked="checked" />
         <strong>RIGHT$(<em>string</em>,<em>len</em>)</strong> - Return the last up to <em>byte</em> characters of string.<!--string--></li>
@@ -795,7 +813,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>SAVE SCREEN CHR <em>filespec</em></strong> - <em>Not implemented</em></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>SAVE TILEMAP <em>filespec</em></strong> - _Save tile map to file.</li>
+        <strong>SAVE TILEMAP <em>filespec</em></strong> - Save tile map to file.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>SAVE TILESET <em>tileno</em>,<em>tilecount</em>,<em>filespec</em></strong> - Save tile definitions to disk.</li>
@@ -813,19 +831,22 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>SET BIT</strong> - <em>Not implemented</em></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
+        <strong>SET BORDER  {COLOR <em>fgcolor</em>,<em>bgcolor</em>}</strong> - Enable color printing mode.<!--border--></li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
         <strong>SET BREAK ON|OFF</strong> - Enable or disable control-c checking.<!--system--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>SET CHRDEF <em>ascii_code</em>,<em>string</em></strong> - Redefine character.<!--chrset--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>SET COLOR <em>fgcolor</em>,<em>bgcolor</em></strong> - Enable color printing mode.<!--SETCOLOR--></li>
+        <strong>SET COLOR <em>fgcolor</em>,<em>bgcolor</em></strong> - Enable color printing mode.<!--screen--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>SET COLOR OFF</strong> - Disable color printing mode.<!--SETCOLOR--></li>
+        <strong>SET COLOR OFF</strong> - Disable color printing mode.<!--screen--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>SET CURSOR ON|OFF</strong> - <em>Not implemented</em>.</li>
+        <strong>SET CURSOR ON|OFF</strong> - Enable or disable cursor display.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>SET FAST ON|OFF</strong> - Enable or disable turbo mode.<!--SETFAST--></li>
@@ -840,7 +861,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>SET KEY <em>mode</em></strong> - Set alternate keyboard port mode.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>SET PALETTE _palette  TO <em>rgblist</em></strong> - Set palette entries.<!--SETPALETTE--></li>
+        <strong>SET PALETTE _palette  TO <em>rgblist</em></strong> - Set palette entries.<!--palette--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>SET TRACK FAST {ON|OFF}</strong> - Set tracker playback to 50Hz or 60Hz mode.<!--track--></li>

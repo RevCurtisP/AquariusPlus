@@ -136,8 +136,6 @@ ST_DUMP:
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     ret
 
-
-
 ;-----------------------------------------------------------------------------
 ; GET functions stub
 ;-----------------------------------------------------------------------------
@@ -161,6 +159,10 @@ FN_GET:
     jr      z,FN_GETKEY
     cp      SPEEDTK
     jr      z,FN_GETSPEED
+    cp      CURTK
+    jr      z,FN_GETCURSOR
+    cp      BORDTK
+    jp      z,FN_GETBORDER
     jp      SNERR
 
 ;-----------------------------------------------------------------------------
@@ -192,6 +194,11 @@ FN_GETSPEED:
 push_hl_labbck_floata:
     call    push_hl_labbck
     jp      SNGFLT
+
+FN_GETCURSOR:
+    call    require_sor           
+    call    get_cursor_mode
+    jr      push_hl_labbck_floata
 
 ;----------------------------------------------------------------------------
 ; Search for string in memory
@@ -1105,7 +1112,7 @@ ST_PUT:
 ; SET Statement stub
 ;-----------------------------------------------------------------------------
 ; ToDo: SET BIT var,bit#
-; ToDo: SET CURSOR ON/OFF
+; ToDo: SET BORDER CHR char COLOR fg,bg
 ; ToDo: SET MOUSE ON/OFF/TILE (mouse.asm)
 ST_SET:
     cp      BITTK                 ; $EB
@@ -1139,8 +1146,12 @@ ST_SET:
     jp      z,ST_SET_PT3
     cp      BRKTK                 ; $9A
     jr      z,ST_SET_BREAK
+    cp      CURTK                 ; $AA
+    jr      z,ST_SET_CURSOR
     cp      SPEEDTK               ; $B1
     jr      z,ST_SET_SPEED
+    cp      BORDTK                ; $B6
+    jp      z,ST_SET_BORDER
     jp      SNERR
 
 ;-----------------------------------------------------------------------------
@@ -1211,6 +1222,7 @@ ST_SET_KEY:
 ST_SET_SPEED:
     call    skip_get_byte4         ; 
     jr      _turbo_mode
+
 ;-----------------------------------------------------------------------------
 ; Set Fast Mode
 ; Syntax: SET FAST ON/OFF
@@ -1224,7 +1236,22 @@ _turbo_mode:
     ret
 
 ;-----------------------------------------------------------------------------
-; Set Fast Mode
+; Set Cursor Display Mode
+;-----------------------------------------------------------------------------
+ST_SET_CURSOR
+    call    require_sor
+    call    check_on_off          ; A = $FF if ON, $00 if OFF
+    jp      set_cursor_mode
+
+require_sor:
+    rst     CHRGET                ; Skip CUR
+    SYNCHK  'S'                  
+    rst     SYNCHR                ; Require SOR
+    byte    ORTK
+    ret
+    
+;-----------------------------------------------------------------------------
+; Set File Error generation
 ; Syntax: SET FILE ERROR ON/OFF
 ;-----------------------------------------------------------------------------
 ; SET FILE ERROR OFF:? PEEK($3830)
@@ -1339,6 +1366,8 @@ ST_RESET:
     byte    XTOKEN
     cp      PALETK
     jp      z,ST_RESET_PALETTE
+    cp      BORDTK
+    jp      z,ST_RESET_BORDER
     jp      SNERR
 
 ;-----------------------------------------------------------------------------

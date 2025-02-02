@@ -269,7 +269,14 @@ string_pad:
     jp      c,.padleft            ; If BC >0
     push    bc                    ;   Stack = PadLen, RtnAdr
     push    de                    ;   Stack = BufAdr, PadLen, RtnAdr
-    call    .padcount             ;   A = PadCnt, BC = StrLen, DE = StrAdr, HL = PadCnt
+    call    .padcount             ;   BC = StrLen, DE = StrAdr, HL = PadCnt
+    jr      nc,.no_truncr         ;   If PadLen < StrLen
+    pop     hl                    ;     HL = BufAdr; Stack = PadLen, RtnAdr
+    pop     bc                    ;     StrLen = PadLen
+    push    bc                    ;     Stack = PadLen, RtnAdr
+    push    hl                    ;     Stack = BufAdr, PadLen, RtnAdr
+    ld      hl,0                  ;     PadCnt = 0
+.no_truncr
     ex      (sp),hl               ;   HL = BufAdr; Stack = PadCnt, PadLen, RtnAdr
     push    hl                    ;   Stack = BufAdr, PadCnt, PadLen, RtnAdr
     ex      de,hl                 ;   HL = StrAdr, DE = BufAdr
@@ -292,7 +299,7 @@ string_pad:
     push    bc                    ;   Stack = PadLen, RtnAdr
     push    de                    ;   Stack = BufAdr, PadLen, RtnAdr
     call    .padcount             ;   A = PadCnt, BC = StrLen, DE = StrAdr, HL = PadCnt
-    jr      nc,.no_trunc          ;   If StrLen > PadLen
+    jr      nc,.no_truncl          ;   If StrLen > PadLen
     add     hl,bc                 ;     HL = PadLen
     push    hl                    ;     Stack = PadLen, BufAdr, PadLen, RtnAdr
     ex      de,hl                 ;     HL = StrAdr, DE = PadLen
@@ -301,7 +308,7 @@ string_pad:
     pop     bc                    ;     BC = PadLen; Stack = BufAdr, PadLen, RtnAdr
     pop     de                    ;     DE = BufAdr; Stack = PadLen, RtnAdr
     jr      .copy                 ;   Else
-.no_trunc
+.no_truncl
     ex      de,hl                 ;     HL = StrAdr, DE = PadCnt
     ex      (sp),hl               ;     HL = BufPtr; Stack = StrAdr, PadLen, RtnAdr
     push    bc                    ;     Stack = StrLen, StrAdr, PadLen, RtnAdr
@@ -327,6 +334,7 @@ string_pad:
     or      a                     ; Clear carry
     sbc     hl,bc                 ; HL = PadLen - StrLen
     ret
+    
 ; In: HL = BufPtr, BC = PadLen; Out HL = BufPtr
 .pad_it
     ld      e,a                   ; E = PadChr

@@ -18,11 +18,8 @@ ST_CLEAR_BITMAP:
     byte    MAPTK
     ld      b,0
     call    nz,_color_args
-    push    hl                    ; Stack = TxtPtr, RtnAdr
     ld      iy,bitmap_clear_screen
-    call    aux_call              ; Do clear screem
-    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
-    ret
+    jp      aux_call_preserve_hl
 
 ;-----------------------------------------------------------------------------
 ; FILL BITMAP [BYTE byte] [COLOR foreground,background]
@@ -108,8 +105,9 @@ FN_COLOR:
     rst     CHRGET                ; Skip COL
     rst     SYNCHR
     byte    ORTK                  ; Require OR
-    call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
     ld      iy,bitmap_read_color  
+aux_call_sngflt:
+    call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
     call    aux_call              ; A = Color
     jp      SNGFLT
 

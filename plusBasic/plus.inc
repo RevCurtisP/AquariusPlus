@@ -102,7 +102,8 @@ EXT_FLAGS   equ $3830   ; Extended BASIC flags
 MOUSEWDLT   equ $3831   ; Accumulated change in mouse delta
 BAS_FDESC   equ $3832   ; ESP file descriptor to close on Error or Ctrl-C
 IEND_KEY    equ $3833   ; Key pressed to end input
-;         $3834-$3835   ; unused (2 bytes)
+SCREENCTL   equ $3834   ; Text Screen flags
+;               $3835   ; unused (1 byte)
 ; Temporary variables used within statement code.
 ; FILESTAT statement
 FILESIZE    equ $3838   ; File Size (32-bits $3838-$383B)
@@ -250,6 +251,10 @@ BASCRNCLR   equ $80     ; BASYSCTL: PRINT updates Color RAM
 ; Screen Control Bitmask
 BASCRNCTL   equ BASCHRSET + BASCRNCLR
 BASCRNMSK   equ $FF - BASCRNCTL
+; Screen printing control flags
+;; ToDo: Move BASCRNCLR bit here
+CRSR_OFF    equ $40     ; SCREENCTL: Display cursor (1 = No)
+
 ; Bitmap graphics mode: see gfx.asm for details
 GFXM_TEXT   equ $00     ; EXT_FLAGS: 40 colum mode (bloxels) 
 GFXM_WIDE   equ $01     ; EXT_FLAGS: 80 colum mode (bloxels) 

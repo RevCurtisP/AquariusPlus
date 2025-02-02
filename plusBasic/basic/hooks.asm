@@ -15,9 +15,36 @@ direct_mode:
     and     KB_REPEAT
     or      KB_ENABLE | KB_ASCII
     call    key_set_keymode       ; Turn on keybuffer, ASCII mode, no repeat
+    call    set_cursor_on
     call    ferr_flag_on
     call    close_bas_fdesc       ; Clean up after aborted file commnds
     jp      HOOK2+1            
+
+set_cursor_on:
+    ld      a,$FF
+set_cursor_mode:    
+    xor     $FF                   ; 0 = On, $FF = Off
+    and     CRSR_OFF
+    ld      b,a
+    ld      a,$7F
+    jr      z,.disp_cursor
+    ld      a,(CURCHR)
+.disp_cursor
+    ld      de,(CURRAM)
+    ld      (de),a
+    ld      a,(SCREENCTL)
+    and     $FF-CRSR_OFF
+    or      b
+    ld      (SCREENCTL),a
+    ret
+    
+get_cursor_mode:
+    ld      a,(SCREENCTL)
+    and     CRSR_OFF
+    ld      a,$FF
+    ret     z
+    cpl
+    ret
 
 ferr_flag_on:
     ld      a,FERR_FLAG

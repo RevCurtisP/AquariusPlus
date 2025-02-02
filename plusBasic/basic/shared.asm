@@ -667,6 +667,19 @@ get_byte200:
     jp      nc,FCERR              ;   FC Error
     ret
 
+
+;-----------------------------------------------------------------------------
+; Parse CHR character
+; Output: A,C = Character ASCII value
+; Clobbers: B,DE
+;-----------------------------------------------------------------------------
+parse_char:
+    rst     SYNCHR
+    byte    XTOKEN
+    rst     SYNCHR
+    byte    CHRTK
+    jr      get_char
+
 ;-----------------------------------------------------------------------------
 ; Parse Optional Character after comma as byte or string
 ;  Input: C = Default character
@@ -678,6 +691,7 @@ get_char_optional:
     cp      ','                   ; If not comma
     ld      a,c                   ;   
     ret     nz                    ;   Return default character
+skip_get_char:
     rst     CHRGET                ; Skip character before expression
 ;-----------------------------------------------------------------------------
 ; Parse Character as byte or string

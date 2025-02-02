@@ -338,11 +338,14 @@ TTYCH:      equ $1D74   ; Print character, bypassing Hook 19
 TTYCHP      equ $1D75   ; Enter TTYCH after PUSH AF
 TTYOUT:     equ $1D94   ; Print character in A
 TTYFIS:     equ $1DE7   ; Finish up TTYOUT
+TTYFID      equ $1DF1   ; TTYFIN - Display cursor
+TTYXPR      equ $1DF3   ; TTYFIN - Restore registers and return
 SCROLL      equ $1DFE   ; Scroll screen up one line
 TTYMOV      equ $1E1F   ; Move Cursor one character to the right
 TTYMOP      equ $1E22   ; Enter TTYMOV after LD HL,(CURRAM)
 TTYSAV      equ $1E3E   ; Save Column and Position
 TTYCLR      equ $1E45   ; Clear screen (EXX before calling)
+CLSCLR      equ $1E4D   ; Default clear screen colors
 SOUNDS      equ $1E64   ; Play frequency DEfor duration BC
 INCHRH      equ $1E7E   ; Read key from keyboard
 INCNTC      equ $1FC2   ; Check for Ctrl-C, called from NEWSTT
@@ -388,6 +391,7 @@ USRTK       equ $B5     ; USR
 POSTK       equ $B8     ; POS
 LENTK       equ $C2     ; LEN
 ASCTK       equ $C5     ; ASC
+CHRSTK      EQU $C6     ; CHR$
 
 ;Adddress of Byte following Hook RST
 HOOK0       = $03DF
