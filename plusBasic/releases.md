@@ -1,4 +1,6 @@
 # plusBASIC Release History
+ - v0.24a (2025-02-09)
+    -Fixed display of plusBASIC version on boot screen.
  - v0.24 (2025-02-09)
     - Color cycle screen skipped if `/system/plusbasic/_skipsplash` exists
     - `DEF ATTRLIST` now allows string operands.
