@@ -111,7 +111,7 @@
     - Implemented COPY @page,address TO SCREEN
     - Fixed ARGS always returning 0,ARGS$() crashing system.
     - Fixed DIR returning wrong file size
- - v0.23a (2023-08-26)
+ - v0.23a (2024-08-26)
     - Fixed LOAD BITMAP incorrectly loading 9192 byte legacy bitmaps.
     - Fixed unit test for legacy bitmaps
  - v0.23 (2024-08-25)
@@ -338,48 +338,62 @@
    - Added cartridge diagnostic mode assembly option
  - v0.20h (2024-01-02)
    - Fixed 8k carts not working
- - v0.20g (2024-12-30)
+ - v0.20g (2023-12-30)
    - `FILL SCREEN`, `GET SCREEN`, `PUT SCREEN` now work in both 40 column and 80 column mode
- - v0.20f (2024-12-30)
+ - v0.20f (2023-12-30)
    - Added optional comma between end-coordinate and fill character in `FILL SCREEN`
- - v0.20e (2024-12-29)
+ - v0.20e (2023-12-29)
    - Added `KEY()` function
- - v0.20d (2024-12-29)
+ - v0.20d (2023-12-29)
    - Added `DEC()` function, fixed `esp_get_version`/`VER(0)`/`VER$(0)`
- - v0.20c (2024-12-23)
+ - v0.20c (2023-12-23)
    - Refactored (and hopefully fixed) cartridge boot code
- - v0.20b (2024-12-17)
+ - v0.20b (2023-12-17)
    - Fixed bug in init_charram
- - v0.20a (2024-12-17)
+ - v0.20a (2023-12-17)
     - Clear BASIC RAM before starting cart. Add IRQ and hook disable, screen reset to hardware cart startup
- - v0.20u (2024-12-14)
+ - v0.20u (2023-12-14)
     - Fixed GETPALETTE$, modded file_load_pt3 to stop any running pt3play process
- - v0.19t (2024-12-13)
+ - v0.19t (2023-12-13)
     - Replaced RESET PT3 with STOP PT3, added PAUSE PT3 and RESUME PT3
- - v0.19s (2024-12-12)
+ - v0.19s (2023-12-12)
     - Fixed CLS when SET COLOR is active
- - v0.19r (2024-12-12)
+ - v0.19r (2023-12-12)
     - Fixed PLAY PT3 and RESET PT3
- - v0.19q (2024-12-13)
+ - v0.19q (2023-12-13)
     - PLAY PT3 fixes
- - v0.19p (2024-12-11)
+ - v0.19p (2023-12-11)
     - implemented PT3 PLAY
- - v0.19n (2024-12-08)
+ - v0.19n (2023-12-08)
     - Added LOAD PALLETE, SAVE PALETTE, RESET PALETTE and RESET SCREEN
- - v0.19m (2024-12-08)
+ - v0.19m (2023-12-08)
     - Fixed routine screen_pos_addr which had broken GET SCREEN and PUT SCREEN
     - Implemented LOAD PT3 statement
- - v0.19j (2024-12-04)
+ - v0.19j (2023-12-04)
     - Fixed printing to screen after SET COLOR
- - v0.19i (2024-12-03)
+ - v0.19i (2023-12-03)
     - Converted plusBASIC patches to hooks to increase cartridge compatibility
- - v0.19h (2024-12-02)
+ - v0.19h (2023-12-02)
     - Fixed ?Syntax error when RUNning ROM
- - v0.19g (2024-12-01)
+ - v0.19g (2023-12-01)
     - Added SET SAVE ASC ON/OFF, preset DAC to $80 to eliminate click at begining of first sample
- - v0.19f (2024-11-29)
+ - v0.19f (2023-11-29)
     - Fixed bank 1 not restored after, clicking in play_sample
- - v0.19e (2024-11-28)
+ - v0.19e (2023-11-28)
     - Moved Extended BASIC hook routines into Bank 1 ROM
- - v0.19d (2024-11-27) 
+ - v0.19d (2023-11-27) 
     - Moved dos and fileio modules into Aux ROM
+ - v0.19c (2023-11-26) 
+    - Consolidated 256-byte aligned tables into tables.asm
+    - Fixed Disk I/O error when trying to LOAD/RUN esp:settings
+ - v0.19b (2023-11-26) 
+    - DIR now shows 0B instead of B for zero length files.
+ - v0.19a (2023-11-26) 
+    - Added /r and /t escape sequences
+ - v0.19 (2023-11-25) 
+    - Added backslash escaped strings
+ - v0.18y (2023-11-24) 
+    - LOAD and RUN now autodect CAQ vs ASCII when loading BASIC programs. Removed ,ASC option from LOAD.
+ - v0.18x (2023-11-24) 
+    - Added SAVE file$,ASC
+    
