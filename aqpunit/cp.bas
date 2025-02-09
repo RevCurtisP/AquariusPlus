@@ -79,12 +79,12 @@
 504 GOSUB _copytp_err:ARGS $8000,256,22,0,5
 506 GOSUB _copytp_err:ARGS $8000,256,31,0,5
 
-508 FOR P=50 TO 64:GOSUB _copytp_err:ARGS $8000,16,P,16,5:NEXT P
+508 FOR P=48 TO 64:GOSUB _copytp_err:ARGS $8000,16,P,16,5:NEXT P
 
 518 GOSUB _title:ARGS "Rollover Overflow Errors"
 520 GOSUB _copytp_err:ARGS $8000,256,20,$3FFE,6
 522 GOSUB _copytp_err:ARGS $8000,256,21,$3FFE,6
-524 GOSUB _copytp_err:ARGS $8000,256,49,$3FFE,6
+524 GOSUB _copytp_err:ARGS $8000,256,47,$3FFE,6
 
 
 

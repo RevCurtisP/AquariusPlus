@@ -10,11 +10,11 @@ Run the .baq file to run the associated tests.
 | cp.baq  | COPY and COMPARE   |
 | cs.baq  | COPY SCREEN        |
 | dr.baq  | DIM and READ       |
-| gr.baq  | Misc, Graphics     |
+| gr.baq  | Misc. Graphics     |
 | pp.baq  | POKE and PEEK      |
 | ps.baq  | POKE/POKE SCREEN   |
 | sb.baq  | String Slicing     |
-| sg.baq  | **Incomplete**     |
+| sg.baq  | Screen Graphics    |
 | sj.baq  | SPLIT and JOIN     |
 | sl.baq  | SAVE and LOAD      |
 | ss.baq  | SAVE/LOAD SCREEN   |
@@ -86,6 +86,10 @@ Run the .baq file to run the associated tests.
   - PEEKSCREEN$(_addr_,_len_)
   - PEEKCOLOR(_addr_)
   - PEEKCOLOR$(_addr_,_len_)
+- sb.baq
+    _string_\[_index_\]
+    _string_\[_index_ TO _index_\]
+    MID$(_strvar_,_pos_,_len_)=_string_
 - sg.baq
   - FILL SCREEN CHR _char_
 - sl.baq

@@ -37,7 +37,7 @@
 348 GOSUB _assert:ARGS "PEEKCOLOR(MX)=$A0"
 
 400 QE=5
-402 GOSUB _pokes_err:ARGS 1,-1,5
+402 GOSUB _pokes_err:ARGS 1,-257,5
 404 GOSUB _pokes_err:ARGS 1,256,5
 406 GOSUB _pokes_err:ARGS -1,64,5
 408 GOSUB _pokes_err:ARGS MX+1,64,5

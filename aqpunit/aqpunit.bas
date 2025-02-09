@@ -12,6 +12,7 @@
 896 IF QC=0 THEN PRINT "Unit Tests Complete":END
 897 IF QG THEN RUN QG$+".baq"
 898 _theend:GOSUB _nlscreen:ARGS "F3=Run Again, F4=Run Next":END
+899 _failend:GOSUB _nlscreen:ARGS "Test failed":goto _theend
 
 
 900 _init:
@@ -30,7 +31,7 @@
 922 ON ERROR GOTO 926:QV=-EVAL(QA$):ON ERROR GOTO 0
 924 GOSUB _output:ARGS QR$(QV)+QA$:QR(QV)=QR(QV)+1:GOTO _failcheck
 926 GOSUB _output:ARGS ERR$+" error in "+QA$:RESUME:ON ERROR GOTO 0:QR(2)=QR(2)+1
-928 _failcheck: ON -(QF AND QV-1) GOTO _theend:RETURN
+928 _failcheck: ON -(QF AND QV-1) GOTO _failend:RETURN
 
 940 _assert_err:GETARGS QA$,QE:GOSUB _quotes
 942 ON ERROR GOTO _yes_err:QV=EVAL(QA$)

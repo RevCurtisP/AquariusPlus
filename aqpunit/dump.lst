@@ -1,0 +1,274 @@
+		; Variable Dumper
+		
+		; To assemble:
+		; zmac -o dump.cim -o dump.lst dump.asm
+		
+		; Print string length and address instead of text
+0001          	STRADDR = 1
+		
+0018          	OUTCHR      equ $18     ; 3 Output character
+0020          	COMPAR      equ $20     ; 4 Compare HL with DE
+0B36          	SNGFLT      equ $0B36   ; Store variable 8 bit (out: B = value)
+141A          	POPHRT      equ $141A   ; Pop HL and return
+1520          	MOVFM       equ $1520   ; MOVE NUMBER FROM MEMORY [(HL)] TO FAC
+15C8          	POPART      equ $15C8   ; Pop AF and return
+1680          	FOUT        equ $1680   ; Convert float in FAC to text
+198A          	OUTDO       equ $198A   ; Output a Character
+19EA          	CRDO        equ $19EA   ; Print CR+LF
+		
+210C          	str_print   equ $210C   ; Print null-terminated string
+210F          	str_printi  equ $210F   ; Print inline null terminated string
+		
+3808          	CNTOFL      equ $3808   ; Line Counter
+38AA          	DIMFLG      equ $38AA   ; Using this to hold the number of dimensions
+38AB          	VALTYP      equ $38AB   ; THE TYPE INDICATOR 0=NUMERIC 1=STRING
+38D6          	VARTAB      equ $38D6   ; POINTER TO START OF SIMPLE VARIABLE SPACE. UPDATED WHENEVER
+38D8          	ARYTAB      equ $38D8   ; POINTER TO BEGINNING OF ARRAY TABLE. INCREMENTED BY 6 WHENEVER
+38DA          	STREND      equ $38DA   ; END OF STORAGE IN USE. INCREASED WHENEVER A NEW ARRAY
+38DE          	VARNAM:     equ $38DE   ; Variable Name
+38E8          	FBUFFR      equ $38E8   ; BUFFER FOR FOUT
+		
+38F6          	dim_base    equ $38F6   ; (RESHO) Dimension list base address
+		;           equ $38F8   ; (RESLO) Dimension index numbers
+		
+C1A3          	strbuf_addr equ $C1A3   ; Get string buffer address
+C1A9          	FLOAT_DE    equ $C1A9   ; Convert BC to unsigned float in FACC
+		
+		
+B000          	    .org    $B000
+		    
+B000  3E17    	    ld      a,23                  ; Set line count to 23
+B002  320838  	    ld      (CNTOFL),a            ;
+		    
+B005  E5      	    push    hl                    ; Stack = TxtPtr, RtnAdr
+B006  2AD638  	    ld      hl,(VARTAB)           ; Start of variables
+		    
+B009  CD11B0  	    call    variables
+B00C  CD2BB0  	    call    arrays
+B00F  E1      	    pop     hl
+B010  C9      	    ret
+		    
+B011          	variables:
+B011  CDEA19  	    call    CRDO                  ; NewLine
+B014  ED5BD838	    ld      de,(ARYTAB)           
+B018  E7      	    rst     COMPAR                ; If DatPtr >= ARYTAB
+B019  D0      	    ret     nc                    ;   Get out
+B01A  CD75B0  	    call    _out_varname
+B01D  FA26B0  	    jp      m,.string             ; If float
+B020  CD94B0  	    call    _out_eq_float         ;   Print it
+B023  C311B0  	    jp      variables               ; Else
+B026          	.string
+B026  CDA6B0  	    call    _out_eq_string
+B029  18E6    	    jr      variables             ;   Do next variable
+		
+B02B          	arrays:
+B02B  ED5BDA38	    ld      de,(STREND)           
+B02F  E7      	    rst     COMPAR                ; If HL >= DE
+B030  D0      	    ret     nc                    ;   Get out
+B031  CD75B0  	    call    _out_varname          ; Print variable name
+B034  17      	    rla                           ; Carry = StrFlg
+B035  3E00    	    ld      a,0
+B037  17      	    rla                           ; A = StrFlg
+B038  32AB38  	    ld      (VALTYP),a            ; VALTYP = StrFlg
+B03B  23      	    inc     hl                    ; Skip array data size
+B03C  23      	    inc     hl
+B03D  CD8AB0  	    call    _out_equals
+B040  7E      	    ld      a,(hl)                ; A = Number of dimensions
+B041  23      	    inc     hl
+B042  32AA38  	    ld      (DIMFLG),a            ; DIMFLG = NumDim
+B045  22F638  	    ld      (dim_base),hl         ; Start of dimension list
+B048  CD4DB0  	    call    _walk_array
+B04B  18DE    	    jr      arrays
+		
+		; Assuming one dimension for now
+B04D          	_walk_array
+B04D  3E5B    	    ld      a,'['                 ; Open bracket
+B04F  DF      	    rst     OUTCHR
+B050  4E      	    ld      c,(hl)
+B051  23      	    inc     hl
+B052  46      	    ld      b,(hl)                ; BC = IdxCnt
+B053  23      	    inc     hl
+B054          	.dimloop
+B054  C5      	    push    bc                    ; Stack = IdxCnt, RtnAdr
+B055  3AAB38  	    ld      a,(VALTYP)
+B058  3D      	    dec     a
+B059  CA61B0  	    jp      z,.string             ; If float
+B05C  CD97B0  	    call    _out_float            ;   Print it
+B05F  1803    	    jr      .next                 ; Else
+B061          	.string
+B061  CDA9B0  	    call    _out_string           ;   Print string
+B064          	.next
+B064  C1      	    pop     bc                    ; BC = IdxCnt; Stack = RtnAdr
+B065  0B      	    dec     bc                    ; Countdown
+B066  78      	    ld      a,b
+B067  B1      	    or      c                     
+B068  2805    	    jr      z,.done               ; If not zero
+B06A  3E2C    	    ld      a,','                 ;   Print comma
+B06C  DF      	    rst     OUTCHR
+B06D  18E5    	    jr      .dimloop              ;   and do next element
+B06F          	.done
+B06F  3E5D    	    ld      a,']'                 ; Close bracket
+B071  DF      	    rst     OUTCHR                
+B072  C3EA19  	    jp      CRDO                  ; Newline
+		
+B075          	_out_varname:
+B075  56      	    ld      d,(hl)                ; HL = VarAdr
+B076  23      	    inc     hl
+B077  5E      	    ld      e,(hl)                ; DE = VarNam  
+B078  23      	    inc     hl                    ; HL = VarDat
+B079          	_out_varname_de:
+B079  7A      	    ld      a,d                   ; A = 1st character
+B07A  DF      	    rst     OUTCHR                ; Print it
+B07B  7B      	    ld      a,e                   ; A = 2nd character
+B07C  B7      	    or      a                     ; Set flags
+B07D  F5      	    push    af                    ; Stack = StrFlg, RtnAdr
+B07E  E67F    	    and     $7F                   ; Strip string flag
+B080  C41800  	    call    nz,OUTCHR
+B083  F1      	    pop     af                    ; AF = StrFlg; Stack = RtnAdr
+B084  F5      	    push    af                    ; Stack = StrFlg, RtnAdr
+B085  FCE6B0  	    call    m,_out_dollar         ; If string, print $
+B088          	_pop_af_ret:
+B088  F1      	    pop     af                    ; AF = StrFlg; Stack = RtnAdr
+B089  C9      	    ret
+		    
+B08A          	_out_equals:
+B08A  CD90B0  	    call    _out_space
+B08D  3E3D    	    ld      a,'='
+B08F  DF      	    rst     OUTCHR
+B090          	_out_space:
+B090  3E20    	    ld      a,' '
+B092  DF      	    rst     OUTCHR
+B093  C9      	    ret
+		
+		; Print float pointed to by StrDsc at (HL)
+B094          	_out_eq_float:
+B094  CD8AB0  	    call    _out_equals
+B097          	_out_float:
+B097  CD2015  	    call    MOVFM                 ; Copy float from [HL] to FACC
+B09A          	_out_facc:
+B09A  E5      	    push    hl
+B09B  CD8016  	    call    FOUT                  ; Convert FACC to string in FBUFFR
+B09E  21E938  	    ld      hl, FBUFFR+1
+B0A1  CD0C21  	    call    str_print
+B0A4  E1      	    pop     hl
+B0A5  C9      	    ret
+		
+		; Print string pointed to by StrDsc at (HL)
+B0A6          	_out_eq_string:
+B0A6  CD8AB0  	    call    _out_equals
+B0A9          	_out_string:
+B0A9  46      	    ld      b,(hl)                ; B = StrLen
+B0AA  23      	    inc     hl
+B0AB  23      	    inc     hl                    ; Unused byte
+B0AC  5E      	    ld      e,(hl)                ; 
+B0AD  23      	    inc     hl
+B0AE  56      	    ld      d,(hl)                ; DE = StrAdr
+B0AF  23      	    inc     hl
+B0B0          	_print_str:    
+0001          	ifdef STRADDR
+B0B0  E5      	    push    hl
+B0B1  D5      	    push    de
+B0B2  CD0F21  	    call    str_printi
+B0B5  284C656E	    byte    "(Len:",0
+      3A00
+B0BB  78      	    ld      a,b
+B0BC  CD360B  	    call    SNGFLT
+B0BF  CD9AB0  	    call    _out_facc
+B0C2  CD0F21  	    call    str_printi
+B0C5  2C204164	    byte    ", Address: $",0
+      64726573
+      733A2024
+      00
+B0D2  3E01    	    ld      a,1
+B0D4  32AB38  	    ld      (VALTYP),a            ; Reset VALTYPE to string
+B0D7  D1      	    pop     de
+B0D8  E1      	    pop     hl
+B0D9  7A      	    ld      a,d
+B0DA  CDEBB0  	    call    out_hex
+B0DD  7B      	    ld      a,e
+B0DE  CDEBB0  	    call    out_hex
+B0E1  3E29    	    ld      a,')'
+B0E3  C38A19  	    jp      OUTDO
+		else
+		endif
+B0E6          	_out_dollar:
+B0E6  3E24    	    ld      a,'$'
+B0E8  C38A19  	    jp      OUTDO
+		
+		
+B0EB          	out_hex:
+B0EB  F5      	    push    af                    
+B0EC  1F      	    rra
+B0ED  1F      	    rra
+B0EE  1F      	    rra
+B0EF  1F      	    rra
+B0F0  CDF4B0  	    call    .hex
+B0F3  F1      	    pop     af
+B0F4          	.hex:
+B0F4  E60F    	    and     $0F
+B0F6  FE0A    	    cp      10
+B0F8  3802    	    jr      c, .chr
+B0FA  C607    	    add     7
+B0FC          	.chr:
+B0FC  C630    	    add     '0'
+B0FE  C38A19  	    jp      OUTDO
+
+
+
+Statistics:
+
+     4	passes
+     0	jr promotions
+    46	symbols
+   257	bytes
+
+
+
+Symbol Table:
+
+.chr$16         B0FC      45308
+.dimloop$3      B054      45140
+.done$3         B06F      45167
+.hex$16         B0F4      45300
+.next$3         B064      45156
+.string$1       B026      45094
+.string$3       B061      45153
+ARYTAB         =38D8      14552
+CNTOFL         =3808      14344
+COMPAR         =20        32
+CRDO           =19EA      6634
+DIMFLG         =38AA      14506
+FBUFFR         =38E8      14568
+FLOAT_DE       =C1A9      49577
+FOUT           =1680      5760
+MOVFM          =1520      5408
+OUTCHR         =18        24
+OUTDO          =198A      6538
+POPART         =15C8      5576
+POPHRT         =141A      5146
+SNGFLT         = B36      2870
+STRADDR        =01        1
+STREND         =38DA      14554
+VALTYP         =38AB      14507
+VARNAM         =38DE      14558
+VARTAB         =38D6      14550
+_out_dollar$dump.asm B0E6      45286
+_out_eq_float$dump.asm B094      45204
+_out_eq_string$dump.asm B0A6      45222
+_out_equals$dump.asm B08A      45194
+_out_facc$dump.asm B09A      45210
+_out_float$dump.asm B097      45207
+_out_space$dump.asm B090      45200
+_out_string$dump.asm B0A9      45225
+_out_varname$dump.asm B075      45173
+_out_varname_de$dump.asm B079      45177
+_pop_af_ret$dump.asm B088      45192
+_print_str$dump.asm B0B0      45232
+_walk_array$dump.asm B04D      45133
+arrays          B02B      45099
+dim_base       =38F6      14582
+out_hex         B0EB      45291
+str_print      =210C      8460
+str_printi     =210F      8463
+strbuf_addr    =C1A3      49571
+variables       B011      45073
