@@ -154,7 +154,7 @@ FININX  equ     $202D   ;; | Finish INPUT
 SCNLBL  equ     $2030   ;; | Scan line label or line number
 TTYFIX  equ     $2033   ;; | TTYFIN Extension
 XFUNKY  equ     $2036   ;; | Extended function key check
-;       equ     $203A   ;; | Deprecated
+THENHK  equ     $2039   ;; | Scan for ELSE after IF THEN
 XMAIN   equ     $203F   ;; | Line Crunch Hook
 XSTUFF  equ     $2044   ;; | STUFFH hook
 XCLEAR  equ     $204E   ;; | Issue Error if TOPMEM too low
@@ -266,7 +266,12 @@ INIT:   ld      sp,TMPSTK         ;[M80] SET UP TEMP STACK
         ld      hl,$2FFF          ;
         ld      (INSYNC),hl       ;
 ;;Check for Catridge ROM at $E010
+ifdef aqplus
+;; Code change: Don't check for legacy cart - handled by boot.bin
+        jp      RESETX
+else
 CRTCHK: ld      de,XINIT+1        ;
+endif
         ld      hl,CRTSIG-1       ;
 CRTCH1: dec     de                ;
         dec     de                ;
@@ -298,12 +303,8 @@ endif
 CRTSIG: byte    "+7$$3,",0        ;;$A000 Cartridge Signature
 ;;Display Startup Screen
 RESET:
-ifdef aqplus
-        jp      RESETX
-else
         ld      de,SCREEN+417     ;;Display "BASIC"
-endif
-RESETC: ld      hl,BASICT         ;;at line 10, column 17
+        ld      hl,BASICT         ;;at line 10, column 17
         ld      bc,STARTT-BASICT  ;
         ldir                      ;
         ld      de,SCREEN+528     ;;Display Start Message
@@ -1558,7 +1559,12 @@ IFGOTO: cp      GOTOTK            ;[M80] ALLOW "GOTO" AS WELL
         dec     hl                ;
 OKGOTO: call    CHKNUM            ;[M65] 0=FALSE. ALL OTHERS TRUE
         rst     FSIGN             ;
-        jp      z,REM             ;[M65] SKIP REST OF STATEMENT
+ifdef aqplus
+;; Code Change: Scan for ELSE or EOL
+        jp      z,THENHK          ; | Scan for ELSE
+else        
+        jp      z,REM             ; \ [M65] SKIP REST OF STATEMENT
+endif
         rst     CHRGET            ;[M80] PICK UP THE FIRST LINE # CHARACTER
         jp      c,GOTO            ;[M80] DO A "GOTO"
         jp      GONE3             ;[M80] EXECUTE STATEMENT, NOT GOTO
