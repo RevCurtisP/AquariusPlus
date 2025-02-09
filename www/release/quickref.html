@@ -16,10 +16,6 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
   <body>
     <h1 id="plusbasic-quick-reference-guide">plusBASIC Quick Reference Guide</h1>
     <!-- Do not edit this page. Contents are copied from file quickref_wiki.md which is generated from README.md-->
-    <!-- ToDo: 
-  Move ASC, ASC$, CHR$, HEX$, add BYTE$, DEC, WORD, WORD$ to page BASIC-Conversion-Functions
-  Move IN, IN$, OUT, add DEF USR, GETSPEED, PAUSE, SET FASTSET, WAIT to BASIC-System-Statements-and-Functions
--->
     <h2 id="literals">Literals</h2>
     <ul>
       <li>
@@ -189,7 +185,9 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>COPY SCREEN {CHR|ATTR} TO �!_ext_addr_�|�@<em>page</em>,_address_� </strong> - Copy screen to paged memory.</li>
-      <li>[z] <strong>COS(<em>float</em>)</strong> - Return cosine of argument.<!--math--></li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" checked="checked" />
+        <strong>COS(<em>float</em>)</strong> - Return cosine of argument.<!--math--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>CSAVE <em>filename</em>|*<em>array</em></strong> - Save program or array data to cassette.</li>
@@ -210,22 +208,22 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>DEEK(�!_ext_addr_�|�@<em>page</em>,_address_�)</strong> - Read integer from memory.<!--PEEK--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>DEF ATTRLIST <em>strvar</em>=<em>attr</em>,...</strong> - Create a string list of sprite and/or tile attributes.<!--DEFATTR--></li>
+        <strong>DEF ATTRLIST <em>strvar</em>=<em>attr</em>,...</strong> - Create a string list of sprite and/or tile attributes.<!--defstrlist--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>DEF BYTELIST <em>strvar</em>=<em>byte</em>,...</strong> - Create a string list of bytes.</li>
+        <strong>DEF BYTELIST <em>strvar</em>=<em>byte</em>,...</strong> - Create a string list of bytes.<!--defstrlist--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>DEF FN <em>var</em>(<em>var</em>) = <em>expression</em></strong> - Define user-defined function.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>DEF INTLIST <em>strvar</em>=<em>integer</em>,...</strong> - Create a string list of integers.<!--DEFINT--></li>
+        <strong>DEF INTLIST <em>strvar</em>=<em>integer</em>,...</strong> - Create a string list of integers.<!--defstrlist--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>DEF PALETTELIST <em>strvar</em>=<em>palette</em>,...</strong> - Create a string list of palette numbers.<!--DEFPALETTE--></li>
+        <strong>DEF PALETTELIST <em>strvar</em>=<em>palette</em>,...</strong> - Create a string list of palette numbers.<!--defstrlist--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>DEF RGBLIST <em>strvar</em>=<em>r</em>,<em>g</em>,<em>b</em>|<em>rgbstr</em>;...</strong> - Create a string list of RGB values.<!--palette--></li>
+        <strong>DEF RGBLIST <em>strvar</em>=<em>r</em>,<em>g</em>,<em>b</em>|<em>rgbstr</em>;...</strong> - Create a string list of RGB values.<!--defstrlist--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>DEF SPRITE <em>strvar</em>= <em>spritle</em>, <em>x-offset</em>, y-offset;...</strong> - Create a sprite definition.<!--DEFSPRITE--></li>
@@ -234,7 +232,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>DEF SPRITE <em>strvar</em>= [<em>spritle</em>,...],...</strong> - Create a sprite definition.<!--DEFSPRITE--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>DEF TILELIST <em>strvar</em>=<em>tileno</em>,...</strong> - Create a string list of tile indexes.<!--DEFTILE--></li>
+        <strong>DEF TILELIST <em>strvar</em>=<em>tileno</em>,...</strong> - Create a string list of tile indexes.<!--defstrlist--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>DEF USR=<em>address</em></strong> - Set USR() machine language routine address.<!--system--></li>
@@ -360,16 +358,16 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>GETCHRDEF$(<em>ascii_code</em>)</strong> - Return character definition.<!--CHRSET--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>GETBORDERCHR</strong> - Return screen border character.&lt;!--&gt;border--&gt;</li>
+        <strong>GETBORDERCHR</strong> - Return screen border character.<!--border--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>GETBORDERCHR$</strong> - Return screen border character as string.&lt;!--&gt;border--&gt;</li>
+        <strong>GETBORDERCHR$</strong> - Return screen border character as string.<!--border--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>GETBORDERCOLOR</strong> - Return screen border colors.&lt;!--&gt;border--&gt;</li>
+        <strong>GETBORDERCOLOR</strong> - Return screen border colors.<!--border--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>GETBORDERCOLOR$</strong> - Return screen border colors as string.&lt;!--&gt;border--&gt;</li>
+        <strong>GETBORDERCOLOR$</strong> - Return screen border colors as string.<!--border--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>GETCHRSET</strong> - Return character set currently in use.<!--CHRSET--></li>
@@ -741,10 +739,10 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>RESET BIT</strong> - <em>Not implemented</em></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>RESET BORDER</strong> - Set border character and colors to default values.&lt;!--&gt;border--&gt;</li>
+        <strong>RESET BORDER</strong> - Set border character and colors to default values.<!--border--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>RESET PALETTE <em>palette</em></strong> - Reset palette to default RGB values.</li>
+        <strong>RESET PALETTE <em>palette</em></strong> - Reset palette to default RGB values.<!--palette--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>RESET SCREEN</strong> - Reset current text screen to default settings.</li>
@@ -861,7 +859,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>SET KEY <em>mode</em></strong> - Set alternate keyboard port mode.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>SET PALETTE _palette  TO <em>rgblist</em></strong> - Set palette entries.<!--palette--></li>
+        <strong>SET PALETTE <em>palette</em>  TO <em>rgblist</em></strong> - Set palette entries.<!--palette--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>SET TRACK FAST {ON|OFF}</strong> - Set tracker playback to 50Hz or 60Hz mode.<!--track--></li>
