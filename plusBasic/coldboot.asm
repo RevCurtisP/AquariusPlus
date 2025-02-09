@@ -95,17 +95,7 @@ print_copyright:
     inc     b
     jr      .print_version
 .print_done:
-    ld      a,38-plus_len         ; Print spaces to right justify +BASIC text
-    sub     b
-    jr      nc,.space_it
     call    CRDO
-    jr      .print_basic
-.space_it
-    ld      b,a
-    ld      a,' '
-.space_loop
-    call    TTYCHR
-    djnz    .space_loop
 .print_basic
     ld      hl,plus_text
     call    print_c_string
