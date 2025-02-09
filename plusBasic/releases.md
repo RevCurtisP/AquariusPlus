@@ -1,5 +1,5 @@
 # plusBASIC Release History
- - v0.23v (2025-02-09)
+ - v0.24 (2025-02-09)
     - Color cycle screen skipped if `/system/plusbasic/_skipsplash` exists
     - `DEF ATTRLIST` now allows string operands.
     - Changed all internal graphic kernel calls to use gfx_call instead of aux_call
