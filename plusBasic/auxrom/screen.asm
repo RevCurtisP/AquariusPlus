@@ -145,13 +145,13 @@ _border_offset:
 
 ; Input A: Character
 ; Clobbered: A,BC,DE,HL
-set_border_color:
+border_set_color:
     call    _border_offset
     jr      color_write_byte
 
 ; Input A: Character
 ; Clobbered: A,BC,DE,HL
-get_border_color:
+border_get_color:
     call    _border_offset
 ;-----------------------------------------------------------------------------
 ; Read byte from Color RAM

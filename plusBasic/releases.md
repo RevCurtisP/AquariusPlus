@@ -1,4 +1,11 @@
 # plusBASIC Release History
+ - v0.23v (2025-02-09)
+    - Color cycle screen skipped if `/system/plusbasic/_skipsplash` exists
+    - `DEF ATTRLIST` now allows string operands.
+    - Changed all internal graphic kernel calls to use gfx_call instead of aux_call
+    - Moved ST_SPLIT core code into `basicaux.asm`
+    - Added tests to aqpunit/sg.bas and linked into test chain
+    - Changed aqpunit/sx.bas to match plusBASIC last user page change.
  - v0.23u (2025-02-02)
     - Fixed PAD$() overwriting string variables
     - Added `PRINT @()`, `SET CURSOR ON/OFF`, `GETCURSOR`

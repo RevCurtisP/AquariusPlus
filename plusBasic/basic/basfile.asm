@@ -1805,7 +1805,7 @@ tile_offset:
     ld      a,(EXT_FLAGS)
 tile_offset_a:
     and     3
-    ld      bc,320
+    ld      bc,288
     sub     a,2
     ret     z
     ld      bc,500

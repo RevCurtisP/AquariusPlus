@@ -1,11 +1,6 @@
 # plusBASIC Quick Reference Guide
 <!-- Do not edit this page. Contents are copied from file quickref_wiki.md which is generated from README.md-->
 
-<!-- ToDo: 
-  Move ASC, ASC$, CHR$, HEX$, add BYTE$, DEC, WORD, WORD$ to page BASIC-Conversion-Functions
-  Move IN, IN$, OUT, add DEF USR, GETSPEED, PAUSE, SET FASTSET, WAIT to BASIC-System-Statements-and-Functions
--->
-
 ## Literals
   - _Numeric literals_ evaluate to floating point or integer numbers.
     - [x] **{_+_|_-_}{_digit_...|{_digit_}{_._}{_digit_...}}{_E_{_+_|_-_}_digit_...}** - A floating point decimal number.
@@ -100,22 +95,22 @@
  - [ ] **COPY «!_ext_addr_»|«@_page_,_address_» TO SCREEN {CHR|ATTR}** - Copy paged memory to screen.
  - [ ] **COPY FILE _filespec_ TO _filespec_** - Copy file.<!--variable-->
  - [ ] **COPY SCREEN {CHR|ATTR} TO «!_ext_addr_»|«@_page_,_address_» {FAST}** - Copy screen to paged memory.
- - [z] **COS(_float_)** - Return cosine of argument.<!--math-->
+ - [x] **COS(_float_)** - Return cosine of argument.<!--math-->
  - [ ] **CSAVE _filename_|\*_array_** - Save program or array data to cassette.
  - [ ] **DATA _literal_{,...}** - Define data for `READ` statement.<!--DATA-->
  - [ ] **DATE$** - Return the current date.<!--DATETIME-->
  - [ ] **DATETIME$** - Return the current date and time.<!--DATETIME-->
  - [x] **DEC(_hexstring_)** - Convert hexadecimal string to integer.
  - [ ] **DEEK(«!_ext_addr_»|«@_page_,_address_»)** - Read integer from memory.<!--PEEK-->
- - [ ] **DEF ATTRLIST _strvar_=_attr_,...** - Create a string list of sprite and/or tile attributes.<!--DEFATTR-->
- - [ ] **DEF BYTELIST _strvar_=_byte_,...** - Create a string list of bytes.
+ - [ ] **DEF ATTRLIST _strvar_=_attr_,...** - Create a string list of sprite and/or tile attributes.<!--defstrlist-->
+ - [ ] **DEF BYTELIST _strvar_=_byte_,...** - Create a string list of bytes.<!--defstrlist-->
  - [ ] **DEF FN _var_(_var_) = _expression_** - Define user-defined function.
- - [ ] **DEF INTLIST _strvar_=_integer_,...** - Create a string list of integers.<!--DEFINT-->
- - [ ] **DEF PALETTELIST _strvar_=_palette_,...** - Create a string list of palette numbers.<!--DEFPALETTE-->
- - [ ] **DEF RGBLIST _strvar_=_r_,_g_,_b_|_rgbstr_;...** - Create a string list of RGB values.<!--palette-->
+ - [ ] **DEF INTLIST _strvar_=_integer_,...** - Create a string list of integers.<!--defstrlist-->
+ - [ ] **DEF PALETTELIST _strvar_=_palette_,...** - Create a string list of palette numbers.<!--defstrlist-->
+ - [ ] **DEF RGBLIST _strvar_=_r_,_g_,_b_|_rgbstr_;...** - Create a string list of RGB values.<!--defstrlist-->
  - [ ] **DEF SPRITE _strvar_= _spritle_, _x-offset_, y-offset;...** - Create a sprite definition.<!--DEFSPRITE-->
  - [ ] **DEF SPRITE _strvar_= [_spritle_,...],...** - Create a sprite definition.<!--DEFSPRITE-->
- - [ ] **DEF TILELIST _strvar_=_tileno_,...** - Create a string list of tile indexes.<!--DEFTILE-->
+ - [ ] **DEF TILELIST _strvar_=_tileno_,...** - Create a string list of tile indexes.<!--defstrlist-->
  - [ ] **DEF USR=_address_** - Set USR() machine language routine address.<!--system-->
  - [ ] **DEF USRINT=_address_** - Set user interupt machine language routine address.<!--system-->
  - [ ] **DEL _filespec_** - Delete file or directory.<!--filesystem-->
@@ -157,10 +152,10 @@
  - [ ] **GET SCREEN COLORS (_x_,y_)-(_x_,_y_) \*_array_|^_strvar_** - Copy text screen clip to array or string variable.<!--GETSCREEN-->
  - [ ] **GET TILEMAP (_x_,y_)-(_x_,_y_) \*_array_|^_strvar_** - Copy tilemap clip to array or string variable.<!--GETTILE-->
  - [ ] **GETCHRDEF$(_ascii_code_)** - Return character definition.<!--CHRSET-->
- - [ ] **GETBORDERCHR** - Return screen border character.<!-->border-->
- - [ ] **GETBORDERCHR$** - Return screen border character as string.<!-->border-->
- - [ ] **GETBORDERCOLOR** - Return screen border colors.<!-->border-->
- - [ ] **GETBORDERCOLOR$** - Return screen border colors as string.<!-->border-->
+ - [ ] **GETBORDERCHR** - Return screen border character.<!--border-->
+ - [ ] **GETBORDERCHR$** - Return screen border character as string.<!--border-->
+ - [ ] **GETBORDERCOLOR** - Return screen border colors.<!--border-->
+ - [ ] **GETBORDERCOLOR$** - Return screen border colors as string.<!--border-->
  - [ ] **GETCHRSET** - Return character set currently in use.<!--CHRSET-->
  - [ ] **GETCOLOR** - Return screen printing colors.
  - [ ] **GETCURSOR** - Return cursor display mode.
@@ -284,8 +279,8 @@
  - [ ] **RESUME TRACK** - Resume playing paused track.<!--track-->
  - [ ] **RESET \*_array_** - Set all array elements to 0 or empty string and collect garbage if string array.
  - [ ] **RESET BIT** - _Not implemented_
- - [ ] **RESET BORDER** - Set border character and colors to default values.<!-->border-->
- - [ ] **RESET PALETTE _palette_** - Reset palette to default RGB values.
+ - [ ] **RESET BORDER** - Set border character and colors to default values.<!--border-->
+ - [ ] **RESET PALETTE _palette_** - Reset palette to default RGB values.<!--palette-->
  - [ ] **RESET SCREEN** - Reset current text screen to default settings.
  - [ ] **RESTORE {_lineref_}** - Reset READ/DATA pointer to beginning of program or specified line.<!--RESTORE-->
  - [ ] **RESTORE BITMAP|TILEMAP** - _Not implemented._
@@ -324,7 +319,7 @@
  - [ ] **SET FILE ERROR ON|OFF** - Enable or disable file operations generating BASIC errors.
  - [ ] **SET FNKEY _key_ TO _string_** - Set auto-typed text when function key is pressed.<!--SETFNKY-->
  - [ ] **SET KEY _mode_** - Set alternate keyboard port mode.
- - [ ] **SET PALETTE _palette {INDEX _index_} TO _rgblist_** - Set palette entries.<!--palette-->
+ - [ ] **SET PALETTE _palette_ {INDEX _index_} TO _rgblist_** - Set palette entries.<!--palette-->
  - [ ] **SET TRACK FAST {ON|OFF}** - Set tracker playback to 50Hz or 60Hz mode.<!--track-->
  - [ ] **SET TRACK LOOP {ON|OFF}** - Set loop status of active or paused track.<!--track-->
  - [ ] **SET TRACK SPEED _hertz_** - Set tracker playback rate.<!--track-->

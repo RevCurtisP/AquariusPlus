@@ -126,6 +126,7 @@ ttychr_hook:
 ;-----------------------------------------------------------------------------
 ; Hook 30 - Check for label at beginning of line, then search for it's line
 ;-----------------------------------------------------------------------------
+;; Proposed: GOTO/GOSUB ( expression )
 scan_label:
     dec     hl                    ; Back up in case of space
     rst     CHRGET                ; Reget current character

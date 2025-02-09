@@ -2,7 +2,7 @@
 ; Cold boot initialialization code
 ;=============================================================================
 do_coldboot:
-
+      
     ; Fill BASIC RAM with 0
     xor     a                   ; Fill with 0
     ld      hl,$3900            ; From beginning of BASIC RAM
@@ -29,11 +29,11 @@ do_coldboot:
     ld      (BASYSCTL),a
 
     ld      iy,init_screen_buffers
-    call    aux_call
+    call    gfx_call
     ld      iy,init_screen_vars
-    call    aux_call
+    call    gfx_call
     ld      iy,bitmap_init_vars
-    call    aux_call
+    call    gfx_call
 
     ld      d,$10                 ; Row 5 = Shift
     call    _modkey_check         ; If shift held down
@@ -70,6 +70,9 @@ do_coldboot:
 
     call    print_copyright
     call    check_autoexec        ; Check for autoexec file
+
+    xor     a
+    out     (IO_SYSCTRL),a        ; Disable unlimited turbo mode
 
     jp      INITFF
 

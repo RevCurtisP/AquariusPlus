@@ -36,10 +36,10 @@ _or_a_ret:
 ;-----------------------------------------------------------------------------
 file_load_bitmap:
     ld      iy,bitmap_read_tmpbfr
-_load_read_tmpbuffr:
+_load_read_gfx:
     call    file_load_tmpbuffr
     ret     m                     ; Return if Error
-    jp      (iy)
+    jp      gfx_call
 
 ;-----------------------------------------------------------------------------
 ; Load bitmap image
@@ -50,7 +50,7 @@ _load_read_tmpbuffr:
 ;-----------------------------------------------------------------------------
 file_load_color:
     ld      iy,color_read_tmpbfr
-    jr      _load_read_tmpbuffr
+    jr      _load_read_gfx
 
 ;-----------------------------------------------------------------------------
 ; Load bitmap image
@@ -61,7 +61,7 @@ file_load_color:
 ;-----------------------------------------------------------------------------
 file_load_colormap:
     ld      iy,colormap_read_tmpbfr
-    jr      _load_read_tmpbuffr
+    jr      _load_read_gfx
 
 ;-----------------------------------------------------------------------------
 ; Load file into character RAM buffer
@@ -208,7 +208,7 @@ file_load_rom:
 ; ToDo: Allow loading to a screen buffer
 file_load_screen:
     ld      iy,screen_read_tmpbfr
-    jp      _load_read_tmpbuffr
+    jp      _load_read_gfx
 
 ;-----------------------------------------------------------------------------
 ; Load file into TMP_BUFFR
@@ -308,7 +308,9 @@ file_load_palette:
     jp      c,discard_ret         ;   Return overflow
     ex      de,hl                 ; DE = StrBuf, L = PalNum
     xor     a
-    jp      palette_set           ; Write out palette and return
+_palette_set:
+    ld      iy,palette_set           ; Write out palette and return
+    jp      gfx_call
 
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ; Resource: Palette
@@ -376,7 +378,7 @@ _load_palette_asc:
     ld      c,l                   ; BC = BinLen
     pop     hl                    ; L = PalNum; Stack = RtnAdr
     xor     a                     ; Palette entry 0
-    jp      palette_set           ; Write palette and return
+    jp      _palette_set          ; Write palette and return
 .badline
     pop     hl                    ; HL = LinBuf; Stack = PalNum, RtnAdr
     pop     hl                    ; HL = PalNum; Stack = RtnAdr
@@ -417,7 +419,7 @@ file_load_strbuf:
 ;-----------------------------------------------------------------------------
 file_load_tilemap:
     ld      iy,tilemap_read_tmpbfr
-    jp      _load_read_tmpbuffr
+    jp      _load_read_gfx
 
 ;-----------------------------------------------------------------------------
 ; Load tileset into Video RAM
@@ -433,7 +435,8 @@ file_load_tileset:
     call    file_load_tmpbuffr
     pop     de                    ; DE = TileNo; Stack = RtnAdr
     ret     m                     ; Return if Error
-    jp      tileset_read_tmpbfr
+    ld      iy,tileset_read_tmpbfr
+    jp      gfx_call
 
 ; Input: DE: Tile#; OutputL Tile Address; Clobbers: BC, DE
 tile_address:

@@ -2,8 +2,6 @@
 ;; ToDo: Add screen_aux routines as they are moved in from screen.asm
 ;; Comment all routines
 
-    dc $C100-$,$76
-
 _jump_table:
 
 ; gfxbitmap.asm <<Bitmap Graphics>>
@@ -127,5 +125,12 @@ _jump_table:
     jp      just_ret
     jp      just_ret
 ; sprite_aux.asm
+    jp      sprite_define
+    jp      sprite_get_attrs
+   
+    jp      spritle_get_attrs
+    jp      spritle_set_pos
+    jp      spritle_get_pos
     
 _end_jump_table:
+

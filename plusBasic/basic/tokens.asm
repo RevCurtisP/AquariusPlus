@@ -149,6 +149,7 @@ DATETK    equ     $E5
 ERRTK     equ     $E9
 STRNTK    equ     $EA
 BITTK     equ     $EB
+ELSETK    equ     $EF
 LINETK    equ     $D0
 SAVETK    equ     $DC
 TILETK    equ     $F0

@@ -10,6 +10,7 @@ COPY        BASIC-COPY-Statement
 DATA        BASIC-DATA-Statement
 DATETIME    BASIC-DATE-and-TIME-Functions
 DEFATTR     BASIC-DEF-ATTRLIST-Statement
+defstrlist  BASIC-Stringlist-Statements
 DEFINT      BASIC-DEF-INTLIST-Statement
 DEFPALETTE  BASIC-DEF-PALETTELIST-Statement
 DEFSPRITE   BASIC-DEF-SPRITE-Statement

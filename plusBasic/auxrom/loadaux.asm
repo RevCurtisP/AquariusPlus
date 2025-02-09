@@ -64,7 +64,7 @@ aux_load_str_array:
     ex      af,af'                ; A' = FilDsc
     pop     de                    ; DE = StrAdr; Stack = AryPtr, AryLen, FilDsc, RtnAdr
     pop     hl                    ; HL = AryPtr; Stack = AryLen, FilDsc, RtnAdr
-    call    _write_bcde2hl        ; Write string descriptor
+    call    aux_bcde2hl           ; Write string descriptor
     pop     bc                    ; BC = AryLen; Stack = FilDsc, RtnAdr
     dec     bc
     dec     bc
@@ -133,7 +133,7 @@ _asc_array:
     pop     de                    ; DE = StrAdr; Stack = AryPtr, AryCnt, FilDsc, ArySiz, AryAdr, FilDsc, RtnAdr
 .empty
     pop     hl                    ; HL = AryPtr; Stack = AryCnt, FilDsc, ArySiz, AryAdr, FilDsc, RtnAdr
-    call    _write_bcde2hl        ; Write string descriptor
+    call    aux_bcde2hl           ; Write string descriptor
     pop     bc                    ; BC = AryCnt; Stack = FilDsc, ArySiz, AryAdr, FilDsc, RtnAdr
     dec     bc                    ; Decrement AryCnt
     ld      a,b
@@ -172,7 +172,7 @@ _asc_array:
     pop     de                    ; DE = StrAdr; Stack = FltLen, AryAdr, FilDsc, RtnAdr
     pop     bc                    ; BC = FltLen; Stack = AryAdr, FilDsc, RtnAdr
     pop     hl                    ; HL = AryAdr; Stack = FilDsc, RtnAdr
-    call    _write_bcde2hl        ; Write string descriptor
+    call    aux_bcde2hl           ; Write string descriptor
     xor     a                     ; Return no error
     jr      _load_array_done
 ; Stack = AryPtr, AryCnt, FilDsc, ArySiz, AryAdr, FilDsc, RtnAdr
@@ -313,7 +313,7 @@ _badfile:
     or      a
     ret
 
-_write_bcde2hl:
+aux_bcde2hl:
     ld      (hl),c
     inc     hl
     ld      (hl),b                ; Write StrLen to array entry

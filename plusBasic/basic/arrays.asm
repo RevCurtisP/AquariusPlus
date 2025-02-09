@@ -1,3 +1,5 @@
+marrays:
+
 ;-----------------------------------------------------------------------------
 ; DIM(x...)=literal,...
 ;-----------------------------------------------------------------------------
@@ -168,3 +170,4 @@ _array_read:
     SYNCHK  ','                   ; Else require comma
     jr      _array_read           ;   and get next item
 
+    msize_arrays = $ - marrays

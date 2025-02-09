@@ -87,43 +87,27 @@ FN_GETCHRDEF:
     rst     CHRGET                ; Skip DEF
     SYNCHK  '$'                   ; Require '$'
     SYNCHK  '('                   ; Require (
-    call    get_char              ; C = ChrASC
-    ex      af,af'                ; A' = ChrASC
+    call    get_char              ; A = ChrASC
+    ld      b,a                   ; B = ChrASC
     SYNCHK  ')'                   ; Require )
     push    hl                    ; Stack = TxtPtr, RtnAdr  
-    ld      a,8                   ; A = BufLen
-    call    STRINI                ; DE = BufAdr
-    ex      af,af'                ; A = ChrASC
-    ld      bc,8                  ; BC = BufLen
-    ld      l,0                   ; L = ChrSet
-    ld      iy,gfx_get_char_def
-    call    aux_call
+    ld      iy,bas_getchrdef
+    call    gfx_call
     jp      PUTNEW
-
+    
 ;-----------------------------------------------------------------------------
 ; GETCHRSET - Return Corrent Character Set
 ;-----------------------------------------------------------------------------
-; PRINT GETCHRSET
+; USE CHRSET 1:PRINT GETCHRSET
+; USE CHRSET 0:PRINT GETCHRSET
 FN_GETCHRSET:
     rst     CHRGET                ; Skip SET
     push    hl                    ; Stack = TxtPtr, RtnAdr
     ld      hl,LABBCK           
     push    hl                    ; Stack = LABBCK, TxtPtr, RtnAdr
-    call    ext_get_chrset
+    ld      iy,bas_get_chrset
+    call    gfx_call
     jp      FLOAT                 ; Float an return result
-; Return current character set in A
-ext_get_chrset:
-    ld      a,(BASYSCTL)          
-    ld      b,a
-    and     BASCHRMOD
-    ld      a,-1
-    ret     nz
-    ld      a,b
-    and     BASCHRSET             ; A = 0 if default character Set
-    ret     z
-    ld      a,1                   ;   A = 1
-    ret
-
 
 ;-----------------------------------------------------------------------------
 ; GETCOLOR function
@@ -172,7 +156,7 @@ ST_RESET_PALETTE:
     rst     CHRGET                ; Skip PALETTE
     call    get_byte4             ; A = palette#
     ld      iy,palette_reset
-    jp      aux_call_preserve_hl
+    jp      gfx_call_preserve_hl
 
 ;-----------------------------------------------------------------------------
 ; SET PALETTE statement
@@ -214,7 +198,7 @@ ST_SETPALETTE:
     ld      l,h                   ; L = PltOfs
     scf                           ; Palette already shifted
     ld      iy,palette_set        ; Set the entry (increments C)
-    call    aux_call
+    call    gfx_call
     jp      c,OVERR               ; Error if Overflow
     pop     hl                    ; HL = TxtPtr
     ret
@@ -231,7 +215,7 @@ FN_SCREEN:
     ld      bc,LABBCK
     push    bc                    ; Stack = LABBCK, TxtPtr, RtnAdr
     ld      iy,screen_status
-    call    aux_call              ; A = Screen status    
+    call    gfx_call              ; A = Screen status    
     jp      SNGFLT                ; Float it and return
 
 ;-----------------------------------------------------------------------------
@@ -245,13 +229,14 @@ ST_SCREEN:
     call    get_byte_optional     ; A = [text]
     jr      c,.no_text            ; If specified
     ld      iy,screen_switch      
-    call    aux_call_preserve_hl
+    call    gfx_call_preserve_hl
 .no_text
     in      a,(IO_VCTRL)
     ld      c,a                   ; C = Current VCTRL
 
     call    get_byte_optional     ; Do Graphics
-    call    nc,.do_gfx_mode
+    ld      iy,bas_do_gfx_mode
+    call    nc,gfx_call
 
     call    get_byte_optional     ; Do Sprites
     ld      b,VCTRL_SPR_EN
@@ -271,13 +256,6 @@ ST_SCREEN:
     ld      iy,bitmap_set_mode_nobuff
     jp      aux_call              ; Set EXT_FLAGS and return
 
-.do_gfx_mode
-    cp      4
-    jp      nc,FCERR              ; Error if > 3
-    add     a,a                   ; Shift 1 bit left
-    ld      b,a                   ; B = Gfx Mode
-    ld      a,~6                  ; A = Mask
-    jr      .do_bit
 .update_bit
     ld      a,b                   ; A = Option bit
     jr      nz,.not_zero          ; If operand is zero
@@ -335,7 +313,7 @@ copy_to_screen:
 _copy_screen
     pop     af                    ; A = PgFlg; Stack = ScrSfx, RtnAdr
     pop     bc                    ; B = ScrSfx; Stack = RtnAdr
-    jr      aux_call_preserve_hl
+    jr      gfx_call_preserve_hl
 
 ;-----------------------------------------------------------------------------
 ; COPY TO SCREEN - Copy Screen RAM to paged memory
@@ -352,9 +330,9 @@ ST_RESET_SCREEN:
     rst     CHRGET                ; Skip SCREEN
 _reset_screen:
     ld      iy,screen_reset
-aux_call_preserve_hl:
+gfx_call_preserve_hl:
     push    hl
-aux_call_popret:
+gfx_call_popret:
     call    aux_call
     pop     hl
     ret
@@ -382,7 +360,7 @@ _swapcall_pophrt:
     rst     CHRGET                ; Skip SCREEN
     push    hl                    ; Stack = TxtPtr, RtnAdr
     ld      hl,SWPSCRN40          ; Stash to Swap Buffers
-    jp      aux_call_popret              
+    jp      gfx_call_popret              
 
 ;-----------------------------------------------------------------------------
 ; SET TILE Statement
@@ -406,7 +384,7 @@ ST_SET_TILE:
 _set_tile:
     pop     hl                    ; HL = Tile#; Stack = TxtPtr, RtnAdr
     ld      iy,tile_set
-    call    aux_call
+    call    gfx_call
     jp      c,OVERR               ; Error if Overflow
     pop     hl                    ; HL = TxtPtr
     ret
@@ -435,7 +413,7 @@ _set_tile_ext:
     ld      c,e                   ; BC = Colors
     ex      de,hl                 ; DE = StrBuf, HL = Colors
     ld      iy,tile_from_chrrom   ; Build tile in String Buffer
-    call    aux_call              ; DE = StrBuf, BC = DatLen
+    call    gfx_call              ; DE = StrBuf, BC = DatLen
     jr      _set_tile             ; Write the tile
 
 ;-----------------------------------------------------------------------------
@@ -458,7 +436,7 @@ ST_FILL_COLORMAP:
     push    hl                    ; Stack = TxtPtr, RtnAdr
     ld      l,a                   ; L = Colors
     ld      iy,colormap_fill
-    jp      aux_call_fc_popret
+    jp      gfx_call_fc_popret
     ret
 
 ;-----------------------------------------------------------------------------
@@ -468,7 +446,7 @@ ST_FILL_COLORMAP:
 ; FILL SCREEN (10,5)-(20,15) CHR '*' COLOR 7,0
 ST_FILL_SCREEN:
     ld      iy,screen_size
-    call    aux_call              ; Default to entire screen
+    call    gfx_call              ; Default to entire screen
     rst     CHRGET                ; Skip SCREEN
     cp      '('                   ; If open paren
     call    z,scan_rect           ;   B = BgnCol, C = EndCol, D = BgnRow, E= EndRow
@@ -490,7 +468,7 @@ ST_FILL_SCREEN:
     ld      h,0                   ;   H = Fill Text
     ld      l,a                   ;   L = Fill Byte
     ld      iy,screen_fill
-    call    aux_call              ;   Do the fill
+    call    gfx_call              ;   Do the fill
     pop     hl                    ;   HL = TxtPtr; Stack = Cols, Rows, RtnAdr
     call    CHRGT2                ;   Reget next character
     jr      nz,.notx              ;   If terminator
@@ -505,7 +483,7 @@ ST_FILL_SCREEN:
     ld      h,-1                  ;   H = Fill Text
     ld      l,a                   ;   L = Fill Byte
     ld      iy,screen_fill
-    jp      aux_call_fc_popret
+    jp      gfx_call_fc_popret
 
 ;-----------------------------------------------------------------------------
 ; FILL TILEMAP TILE tile# ATTR attrs PALETTE palette#
@@ -531,12 +509,12 @@ ST_FILL_TILE:
     push    bc                    ; Stack = Cols, Rows, RtnAdr
     call    _get_tile_props       ; BC = Props, DE = Tile #
     ld      iy,tile_combine_props
-    call    aux_call              ; DE = TilPrp
+    call    gfx_call              ; DE = TilPrp
     pop     bc                    ; BC = Cols; Stack = Rows, RtnAdr
     ex      (sp),hl               ; HL = Rows; Stack = TxtPtr, RtnAdr
     ex      de,hl                 ; DE = Rows, HL = TilPrp
     ld      iy,tilemap_fill
-    jp      aux_call_fc_popret
+    jp      gfx_call_fc_popret
 
 ;-----------------------------------------------------------------------------
 ; GET SCREEN (col,row)-(col,row) *arrayvar
@@ -590,7 +568,7 @@ _parse_get_string:
     push    hl                    ; Stack = TxtPtr, RtnAdr
     push    iy
     ld      iy,gfx_rect_size
-    call    aux_call              ; HL = Rectangle size
+    call    gfx_call              ; HL = Rectangle size
     pop     iy
     inc     hl
     add     hl,hl                 ; HL = HL * 2 + 2
@@ -681,7 +659,7 @@ _get_put:
     ex      (sp),hl               ; HL = Row; Stack = TxtPtr, RtnAdr
     ex      de,hl                 ; E = Row, HL = AryAdr
     ld      a,(XTEMP0+1)          ; A = Mode (GET/PUT SCREEN)
-    jp      aux_call_fc_popret
+    jp      gfx_call_fc_popret
 
 
 ;-----------------------------------------------------------------------------
@@ -722,8 +700,8 @@ ST_SET_TILEMAP:
     ex      (sp),hl               ;   L = Row; Stack = TxtPtr, RtnAdr
     ex      de,hl                 ;   E = Row, HL = TilDef
     ld      iy,tilemap_set_tile
-aux_call_fc_popret:
-    call    aux_call              ;   Write tile to tilemap
+gfx_call_fc_popret:
+    call    gfx_call              ;   Write tile to tilemap
     jp      c,FCERR               ;   Error if invalid coordinates
     pop     hl                    ;   HL = TxtPtr; Stack = RtnAdr
     ret
@@ -768,7 +746,7 @@ _tilemap_offset:
     call    GETBYT                ; E = Y-position
     pop     bc                    ; BC = X-position, Stack = RtnAdr
     ld      iy,tilemap_set_offset ; Set Offset and return
-    jp      aux_call
+    jp      gfx_call
 
 ;-----------------------------------------------------------------------------
 ; TILE functions stub
@@ -788,11 +766,12 @@ FN_TILE:
 ;-----------------------------------------------------------------------------
 FN_TILEOFFSET:
     cp      '('
-    jr      nz,.offset0
+    jr      z,.param
+    call    tile_offset
+    jr      push_labbck_floatbc
+.param    
     call    PARCHK                ; Parse argument
     call    CONINT
-    byte    $16                   ; LD D, over XOR A
-.offset0
     xor     a                     ; Default to 0
     call    tile_offset_a         ; BC = Offset
     jr      push_labbck_floatbc
@@ -807,7 +786,7 @@ FN_TILEMAP:
     push    af                    ; Stack = 'X'/'Y', RtnAdr
     rst     CHRGET                ; Skip X/Y
     ld      iy,tilemap_get_offset
-    call    aux_call              ; BC = X-Offset, DE = Y-Offset
+    call    gfx_call              ; BC = X-Offset, DE = Y-Offset
     pop     af                    ; A = 'X'/'Y', Stack = RtnAdr
     cp      'Y'                   ; If not TILEMAPY
     jr      z,push_labbck_floatde
@@ -827,7 +806,7 @@ _tilemap_xy:
     call    SCAND                 ; Parse column and row
     call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
     ld      iy,tilemap_get_tile
-    call    aux_call              ; BC = tile# + properties
+    call    gfx_call              ; BC = tile# + properties
     jp      c,FCERR               ; Carry set = bad args
     jp      FLOAT_BC              ; Return BC
 
@@ -840,12 +819,16 @@ _tilemap_xy:
 ;   Bit 2 = Vertical Flip
 ;   Bit 1 = Horizontal Flip
 ;-----------------------------------------------------------------------------
+; DEF ATTRLIST A1$=2,4,6,8,64:PRINT HEX$(A1$)
+; DEF ATTRLIST A2$="H","V","HV","D","P":PRINT HEX$(A2$)
+; DEF ATTRLIST E$="B"
 ST_DEF_ATTR:
     rst     CHRGET                ; Skip ATTR/BYTE
     call    _setupdef             ; DatLen, BufAdr, VarPtr
 .loop
-    call    GETBYT                ; E = Attribute
-    and     $7E                   ; Strip Index MSB
+    call    FRMEVL                
+    call    gfx_call_inline       ; A = Attributes
+    word    bas_parse_attr        
     call    _write_byte_strbuf    ; Write it to string buffer
     call    CHRGT2                ; Reget next character
     jr      z,_finish_def         ; If not end of statement
@@ -996,7 +979,7 @@ FN_GETTILE:
     SYNCHK  '('
     call    get_int512            ; DE = Tile#
     ld      iy,tile_get
-    jr      _get_aux
+    jr      _get_gfx
 
 ;-----------------------------------------------------------------------------
 ; GETPALETTE Function
@@ -1009,7 +992,7 @@ FN_GETPALETTE:
     SYNCHK  '('
     ld      iy,palette_get
     call    GETBYT                ; E = Palette#
-_get_aux
+_get_gfx
     SYNCHK  ')'
     push    hl                    ; Stack = TxtPtr
     push    hl                    ; Stack = DummyAdr, TxtPtr
@@ -1019,8 +1002,8 @@ _get_aux
     ld      bc,32                 ; BC = StrLen
     pop     hl                    ; HL = Palette#; Stack = DummyAdr, TxtPtr
     ld      a,l
-aux_call_finbck:
-    call    aux_call
+gfx_call_finbck:
+    call    gfx_call
     ld      a,1
     ld      (VALTYP),a            ; Set Type to String
     jp      FINBCK                ; Return String
@@ -1144,7 +1127,7 @@ _def_sprite_string:
     pop     af                    ; Stack = BufPtr, VarPtr, RtnAdr
     ex      (sp),hl               ; HL = BufAdr; Stack = VarPtr, RtnAdr
     ld      iy,sprite_define
-    call    aux_call              ; A = BufLen
+    call    gfx_call              ; A = BufLen
     call    strbuf_temp_str       ; HL = StrDsc
     push    hl                    ; Stack = StrDsc, VarPtr, TxtPtr
     jp      INBUFC                ; Copy Temporary to Variable and return    
@@ -1155,7 +1138,7 @@ _def_sprite_string:
 ; SET SPRITE sprite$ TO proplist$
 ; SET SPRITE * OFF|CLEAR
 ; Attributes: Priority (64), Double-Height (8), Vertical Flip (4), Horizontal Flip (2)
-; ToDo: SET SPRITE spritle# ...
+; ToDo: SET SPRITE # spritle ...
 ;-----------------------------------------------------------------------------
 ST_SET_SPRITE:
     rst     CHRGET                ; Skip SPRITES
@@ -1219,9 +1202,10 @@ ST_SET_SPRITE:
 
     pop     hl                    ; HL = TxtPtr; Stack = JmpOfs, SprAdr, RtnAdr
     pop     ix                    ; IX = JmpOfs; Stack = SprAdr, RtnAdr
-.do_gfx:
+.do_gfx
     ex      (sp),hl               ; HL = SprAdr; Stack = TxtPtr, RtnAdr
     call    jump_ix               ; HL = SprAdr; Stack = TxtPtr, RtnAdr
+.done_gfx
     jp      nz,FCERR
     ex      (sp),hl               ; HL = TxtPtr; Stack = SprAdr, RtnAdr
     call    CHRGT2                ; If not Terminator
@@ -1301,28 +1285,11 @@ ST_SET_SPRITE:
 FN_GETSPRITE:
     rst     CHRGET                ; Skip SPRITE token
     SYNCHK  '$'
-    call    PARCHK                ; Get Arg in Parentheses
-    call    CHKSTR                ; Error if not a sting
+    call    PARCHK                ; FACLO = Arg
     push    hl                    ; Stack = TxtPtr, RtnAdr
     push    hl                    ; Stack = DummyAdr, TxtPtr, RtnAdr
-    ld      hl,(FACLO)            ; HL = SprPtr
-    call    string_addr_len       ; BC = SprLen, DE = SprAdr
-    push    de                    ; Stack = SprAdr, DummyAdr, TxtPtr, RtnAdr
-    ld      a,(de)                ; A = SptlCnt
-    ld      d,a
-    add     a                     ; x 2
-    add     a                     ; x 4
-    add     d                     ; x 5
-    jp      c,LSERR               ; Error if too long
-    call    STRINI                ; Create BufStr; HL = BufDsc, DE = BufAdr
-    call    string_addr_len       ; BC = BufLen, DE = BufAdr
-    ex      (sp),hl               ; HL = SprAdr; Stack = BufDsc, DummyAdr, TxtPtr, RtnAdr
-    call    sprite_get_attrs
-    jp      nz,OVERR              ; Sprite and Buffer Size Mismtch
-    ld      a,1
-    ld      (VALTYP),a            ; Set Type to String
-    call    FRETM2
-    pop     hl                    ; HL = BufDsc; Stack = DummyAdr, TxtPtr, RtnAdr
+    ld      iy,bas_getsprite      ; Init string and fill with sprite attrs
+    call    gfx_call              ; HL = StrDsc
     jp      FINBCK                ; Return String
 
 ;-----------------------------------------------------------------------------
@@ -1343,6 +1310,7 @@ FN_RGB:
     SYNCHK  ')'                   ; Require Close Paren
     pop     af                    ; A = '$'; Stack = RrnAdr
     push    hl                    ; Stack = TxtPtr, RtnAdr
+
     jr      z,.string             ; If not RGB$()
     ld      bc,LABBCK             
     push    bc                    ;   Push return address for FLOAT_DE
@@ -1402,7 +1370,7 @@ _get_rgb:
 test_gs_init:
     push    hl
     ld      iy,get_set_init
-    call    aux_call
+    call    gfx_call
     ld      a,0
     rla                           ; A = Carry
     ld      (BMPMODE),a           ; BMPMODE = Result

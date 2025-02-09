@@ -1,4 +1,4 @@
-  ;=====================================================================================
+;=====================================================================================
 ; Aquarius+ System ROM and plusBASIC
 ;=====================================================================================
 ; By Curtis F Kaylor and Frank van den Hoef
@@ -30,7 +30,7 @@
     jp      _sounds_hook    ; $2012 SOUNDX Adjust SOUNDS for turbo mode
     jp      _ttymove_hook   ; $2015 TTYMOX TTYMOV extension - set screen colors if SYSCTRL bit set
     jp      _scroll_hook    ; $2018 SCROLX SCROLL extension - scroll color memory if SYSCTRL bit set
-    jp      _start_screen   ; $201B RESETX Start-up screen extension
+    jp      _check_cart     ; $201B RESETX Start-up screen extension
     jp      in_key          ; $201E XINKEY Read key and check Ctrl-C if BREAK is ON
     jp      _incntc_hook    ; $2021 INCNTX Patch to INCNTC
     jp      _input_ctrl_c   ; $2024 INPUTC Handle Ctrl-C in INPUT
@@ -40,13 +40,9 @@
     jp      scan_label      ; $2030 SCNLBL Scan line label or line number
     jp      _tty_finish     ; $2033 TTYFIN Display cursor
     jp      _ctrl_keys      ; $2036 XFUNKY _Evaluate extended function keys
+    jp      then_hook       ; $2039 THENHK *Not Implemented* Check for ELSE after IF ... THEN
 
-    dc $203A-$,$76
-
-
-    rst     HOOKDO                ; $203A XCNTC  _iscntc_hook: Intercept Ctrl-C check
-    byte    32
-    jp      CNTCCN
+    dc $203F-$,$76
 
     rst     HOOKDO                ; $203F XMAIN  _main_ext: Save Line# Flag in TEMP3
     byte    33
@@ -126,7 +122,7 @@ just_ret:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.23u"
+    db "v0.23v"
     db 0
 plus_len   equ   $ - plus_text
 
@@ -218,6 +214,8 @@ _warm_boot:
 ; Executed on RESET if no cartridge detected
 ;-----------------------------------------------------------------------------
 _coldboot:
+    ld      a,SYSCTRL_TURBO     ; Enable unlimited turbo mode
+    out     (IO_SYSCTRL),a      ; Disabled at the end of do_coldboot
 
 ; Fill BASIC Buffers Page with zeroes from 0 to $2FFF
 ; leaving custom character set buffer untouched
@@ -349,16 +347,24 @@ _check_topmem:
     ret                           ;   and Return
 
 ;-----------------------------------------------------------------------------
-; Skip start screen and cold boot if : was pressed
+; Check for Aquarius+ cartridge and color cycle skip file
 ; Called from RESET
 ;-----------------------------------------------------------------------------
-_start_screen:
-    call    key_read_ascii        ; See if key pressed
-    cp      13                    ; If colon
-    jp      z,COLDST              ;   Straight to cold start
-    ld      de,SCREEN+417         ; DE = Screen location for "BASIC"
-    jp      RESETC
+_check_cart:
+    ; Check for Aquarius+ specific cartridge goes here
 
+_start_screen:
+    ld      hl,.skipsplash_desc
+    ld      de,BUF
+    call    aux_call_inline
+    word    dos_stat
+    jp      z,COLDST
+    jp      RESET 
+
+.skipsplash_name
+    byte    "/system/plusbasic/_skipsplash"
+.skipsplash_desc
+    word    .skipsplash_desc-.skipsplash_name, .skipsplash_name
 
 ;-----------------------------------------------------------------------------
 ; Extended line editor function keys
@@ -594,8 +600,8 @@ select_chrset:
 init_chrsets:
 ; Copy standard character set into buffer
     ld      hl,.defdesc
-    ld      iy,file_load_defchrs
-    call    aux_call
+    call    aux_call_inline
+    word    file_load_defchrs
     ld      hl,.altdesc
     ld      iy,file_load_altchrs
     jp      aux_call
@@ -941,7 +947,25 @@ _tty_finish:
 ; - Restores Bank 3 and returns all registers exoept AF'
 ; Input: IY = Routine address
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+gfx_kernel_call:
+    inc     iy                    ; Index into gfx jump_table
+    inc     iy
+    jr      aux_call
+
+gfx_call_inline:
+    ex      af,af'
+    ex      (sp),hl               ; HL = RtnAdr
+    ld      a,(hl)
+    ld      iyl,a
+    inc     hl
+    ld      a,(hl)
+    ld      iyh,a
+    inc     hl
+    ex      (sp),hl               ; Stack = RtnAdr
+    ex      af,af'
 gfx_call:
+    jr      aux_call
+
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ; Call Auxilary ROM subroutine
 ; - Maps Auxilarry ROM into Bank 3
@@ -949,10 +973,24 @@ gfx_call:
 ; - Restores Bank 3 and returns all registers exoept AF'
 ; Input: IY = Routine address
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+aux_call_inline:
+    ex      af,af'
+    ex      (sp),hl               ; HL = RtnAdr
+    ld      a,(hl)
+    ld      iyl,a
+    inc     hl
+    ld      a,(hl)
+    ld      iyh,a
+    inc     hl
+    ex      (sp),hl               ; Stack = RtnAdr
+    ex      af,af'
 aux_call:
     call    page_map_auxrom
     call    jump_iy
     jp      page_restore_bank3
+
+
+
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ; Call Extended ROM subroutine
 ; - Maps Extended ROM into Bank 3
@@ -1217,12 +1255,21 @@ _buffer_write_init:
 ; Auxiliary ROM Routines
 ;-----------------------------------------------------------------------------
 
-    phase   $C000     ;Assemble in ROM Page 1 which will be in Bank 3
-
+    phase   $C000               ;Assemble in ROM Page 1 which will be in Bank 3
     include "jump_aux.asm"      ; Auxiliary routines jump tables
+    assert !($C1FF<$)           ; ROM full!
+    dc $C200-$,$76
+    dephase
+
+    phase   $C000               ;Assemble in ROM Page 1 which will be in Bank 3
     include "jump_gfx.asm"      ; Graphics routines jump tables
+    assert !($C2FF<$)           ; ROM full!
+    dc $C200-$,$76
+    dephase
+
+    phase   $C400
+
     include "basbuf.asm"        ; Basic buffer read/write routines
-    include "color.asm"         ; Color palette module
     include "debug.asm"         ; Debugging routines
     include "dos.asm"           ; DOS routines
     include "esp_aux.asm"       ; ESP routines in auxiliary ROM
@@ -1231,17 +1278,23 @@ _buffer_write_init:
     include "fileload.asm"      ; File LOAD I/O routines
     include "filesave.asm"      ; File SAVE I/O routines
     include "filestr.asm"       ; File related string assembly routines
-    include "gfx.asm"           ; Main graphics module
-    include "gfxbitmap.asm"     ; Bitmap graphics routines
-    include "gfxvars.asm"       ; Graphics sysvars and lookup tables
     include "loadaux.asm"       ; BASIC file operations auxiliary code
     include "misc.asm"          ; Miscellaneous subroutines
     include "s3hooks.asm"       ; S3 BASIC direct mode hooks
+
+    include "string.asm"        ; String manipulation routines
+
+;; Grsphics routines
+    include "gfxvars.asm"       ; Graphics sysvars and lookup tables
+    include "gfx.asm"           ; Main graphics module
+    include "basicaux.asm"      ; BASIC graphics.asm subcalls
+    include "basicgfx.asm"      ; BASIC graphics.asm subcalls
+    include "color.asm"         ; Color palette module
+    include "gfxbitmap.asm"     ; Bitmap graphics routines
     include "screen.asm"        ; Text screen graphics subroutines
-    include "screen_gfx.asm"    ; Screen graphics routines
+    include "screen_gfx.asm"    ; Screen graphics routines    
     include "screen_swap.asm"   ; Screen buffering routines
     include "sprite_aux.asm"    ; Sprite graphics module
-    include "string.asm"        ; String manipulation routines
     include "tile.asm"          ; Tile graphics module
 
     free_rom_aux = $10000 - $

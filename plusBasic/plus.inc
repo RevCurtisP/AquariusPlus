@@ -21,7 +21,7 @@ BANK_OVERLAY:   equ $40     ; RAM overlay
 ROM_SYS_PG      equ 60      ; Main System ROM, mapped into Bank 0 with overlay from $3000-$3FFF
 ROM_EXT_PG      equ 61      ; plusBASIC extended ROM, mapped into Bank 3 
 ROM_AUX_PG      equ 62      ; plusBASIC auxillary ROM, mapped into Bank 3 as needed
-ROM_CRT_PG      equ 63      ; If a cartrige is present, it is copied here unencrypted, then executed
+ROM_CRT_PG      equ 63      ; Legacy cartridge image
 
 ROM_SYS_OV      equ 60 | BANK_READONLY | BANK_OVERLAY
 ROM_EXT_RO      equ 61 | BANK_READONLY 
@@ -38,6 +38,8 @@ RAM_BAS_1       equ 57      ; RAM for BASIC mapped into Bank 1
 RAM_BAS_2       equ 58      ; RAM for BASIC mapped into Bank 2
 RAM_BAS_3       equ 59      ; RAM for Bank 3 (unused by BASIC)
 
+;                   48      ; Reesrved
+PLUS_CART       equ 49      ; Aquarius+ cartridge image
 TMP_BUFFR       equ 50      ; Transient data buffer 
 BOOT_BUFR       equ 51      ; Boot ROM work area
 SCR_BUFFR       equ 52      ; Screen Buffers
@@ -46,7 +48,7 @@ BAS_BUFFR       equ 54      ; plusBASIC extended system variables and buffers, m
 PT3_BUFFR       equ 55      ; PT3 Player Buffer
     
 USER_RAM        equ 32      ; First page of User RAM
-USER_END        equ 49      ; Last page of User RAM
+USER_END        equ 47      ; Last page of User RAM
 
 RAM_END_PG      equ 63      ; Last page of RAM
 

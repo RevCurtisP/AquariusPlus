@@ -681,6 +681,15 @@ parse_char:
     jr      get_char
 
 ;-----------------------------------------------------------------------------
+; Parse DEL character
+; Output: A,C = Character ASCII value
+; Clobbers: B,DE
+parse_delimiter:
+    rst     SYNCHR                ; Require DEL
+    byte    DELTK
+    jr      get_char
+
+;-----------------------------------------------------------------------------
 ; Parse Optional Character after comma as byte or string
 ;  Input: C = Default character
 ; Output: A,C = Character ASCII value

@@ -23,8 +23,9 @@ Text:
     -
   - 
     -
+  - _[Error name](plusBASIC-Error-Messages)_ results if error-condition.
 
-***Examples:***
+<details><summary>Examples</summary>
 
 ` single line of code `
 > Explanation
@@ -35,6 +36,8 @@ lines of
 code
 ```
 > Explanation
+
+</details>
 
 ***
 _plusBASIC enhancement_

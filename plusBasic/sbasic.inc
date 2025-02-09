@@ -169,6 +169,7 @@ LISPRT      equ $0598   ; Detokenize and print BASIC line
 RESSRC:     equ $05A8   ; Search keyword list
 NEWSTT:     equ $062C   ; Execute next statement
 GONE        equ $064B   ; Execute statement
+GONE3       equ $0650   ; Execute Statemnt from THEN
 GONEX       equ $0656   ; Evaluate statement token
 CHRGTR      equ $066B   ; CALLable CHRGET
 CHRGT2      equ $066C   ; Get Current Character and Set Flags

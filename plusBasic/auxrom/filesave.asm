@@ -110,7 +110,8 @@ _get_palette:
     call    get_strbuf_addr       ; HL = StrBuf
     ex      de,hl                 ; DE = StrBuf
     ld      bc,32                 ; Read 16 palette entries
-    jp      palette_get           ; Read palette into string buffer
+    ld      iy,palette_get           ; Read palette into string buffer
+    jp      gfx_call
 
 ;-----------------------------------------------------------------------------
 ; Save Pallete
@@ -169,7 +170,8 @@ file_save_string:
 ; ToDo: Allow saving from a screen buffer
 file_save_screen:
     push    hl                    ; Stack = StrDsc, RtnAdr
-    call    screen_write_tmpbfr   ; BC = SavLen
+    ld      iy,screen_write_tmpbfr
+    call    gfx_call              ; BC = SavLen
     pop     hl                    ; HL = StrDsc; Stack = RtnAdr
 file_save_tmpbuffr:
     ld      de,0                  ; DE = SavAdr
@@ -206,7 +208,8 @@ file_save_tilemap:
 file_save_tileset:
     push    hl                    ; Stack = StrDsc, RtnAdr
     push    bc                    ; Stack = TilCnt, StrDsc, RtnAdr
-    call    tile_address          ; HL = TilAdr
+    ld      iy,tile_address
+    call    gfx_call              ; HL = TilAdr
     pop     de                    ; DE = TilCnt; Stack = StrDsc, RtnAdr
     jp      c,POPHRT              ; If TileNo > 511 Return Carry Set
     push    hl                    ; Stack = TilAdr, StrDsc, RtnAdr

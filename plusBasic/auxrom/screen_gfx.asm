@@ -38,7 +38,7 @@ _invert_color:
     set     7,a                   
     out     (IO_VCTRL),a          ;   Select Color RAM pyage
     ex      af,af'
-    call    swap_nybbles_de       ;   Swap nybbles
+    call    __swap_nybbles_de      ;   Swap nybbles
     ex      af,af'
     res     7,a                   ;   
     out     (IO_VCTRL),a          ;   Select screen RAM age
@@ -46,7 +46,7 @@ _invert_color:
     ret
 .toggle40                         ; Else
     set     2,d                   ;   DE = ColrAdr
-    call    swap_nybbles_de       ;   Swap nybbles
+    call    __swap_nybbles_de       ;   Swap nybbles
     pop     af
     ret
 
@@ -55,16 +55,16 @@ _invert_color:
 ; DE = Address
 ; Clobbered: A
 ;-----------------------------------------------------------------------------
-swap_nybbles_de:
+__swap_nybbles_de:
     ld      a,(de)                ; 
-    call    swap_nybbles
+    call    _swap_nybbles
     ld      (de),a                  
     ret
 
 ;-----------------------------------------------------------------------------
 ; Swap high and low nybbles in A
 ;-----------------------------------------------------------------------------
-swap_nybbles:
+_swap_nybbles:
     or      a                     ; 0 abcd efgh
     rla                           ; a bcde fgh0
     adc     0                     ; 0 bcde fgha

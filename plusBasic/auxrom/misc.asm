@@ -158,3 +158,47 @@ read_keys:
     ld      a,c
     ret
 
+;-----------------------------------------------------------------------------
+; Scan for ELSE
+;  Input: HL = TxtPtr (pointing at character after THEN)
+; Output: Terminating 0 byte or Character after ELSE
+;  Flags: As set by CHRGET
+;-----------------------------------------------------------------------------
+scan_else:
+    ld      a,(hl)                ; A = Current character
+    or      a                     ; If null terminator
+    ret     z                     ;   Return Z set
+    cp      a,ELSETK              ; If ELSE
+    jp      z,CHRGTR              ;   Return next character with flags set
+    cp      '"'                   ; If quote
+    jr      z,.skip_string        ;   Skip to end of literal string
+    cp      92                    ; If backslash
+    jr      z,.skip_escaped       ;   Skip to end of escaped string
+.next
+    inc     hl
+    jr      scan_else
+
+.skip_string
+    inc     (hl)
+    ld      a,(hl)                ; A = Next Character
+    or      a                     ; If null terminator
+    ret     z                     ;   Return Z set
+    cp      '"'                   ; If quote
+    jr      z,.next               ;   Skip it and continue
+   
+.skip_escaped
+    inc     (hl)
+    ld      a,(hl)                ; A = Next Character
+    or      a                     ; If null terminator
+    ret     z                     ;   Return Z set
+    cp      92                    
+    jr      z,.not_escape         ; If backslash
+    inc     (hl)
+    ld      a,(hl)                ;   Get following character
+    or      a                     ;   If null terminator
+    ret     z                     ;     Return Z set
+    jr      .skip_escaped         ;   Else skip and check next 
+.not_escape
+    cp      '"'                   ; Else If quote
+    jr      z,.next               ;   Skip and continue
+    jr      .skip_escaped         ; Else skip and check next

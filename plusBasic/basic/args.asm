@@ -181,8 +181,8 @@ FN_ARGS:
     push    hl                    ;   Stack = TxtPtr, RtnAdr
     ld      bc,LABBCK
     push    bc                    ;   Stack = LABBCK, TxtPtr,RtnAdr
-    ld      iy,runarg_count
-    call    aux_call              ; BC = ArgCnt
+    call    aux_call_inline       ; BC = ArgCnt
+    word    runarg_count
     jp      FLOAT_BC              ;   Return ArgCnt
 .get_arg
     rst     CHRGET                ; Skip $
@@ -192,7 +192,7 @@ FN_ARGS:
     call    get_strbuf_addr       ; HL = StrBuf
     ld      b,d
     ld      c,e                   ; BC = Argum
-    ld      iy,runarg_get
-    call    aux_call              ; BC = ArgCnt
+    call    aux_call_inline       ; BC = ArgCnt
+    word    runarg_get
     jp      c,FCERR
     jp      return_strbuf         ; and return it

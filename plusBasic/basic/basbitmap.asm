@@ -19,7 +19,7 @@ ST_CLEAR_BITMAP:
     ld      b,0
     call    nz,_color_args
     ld      iy,bitmap_clear_screen
-    jp      aux_call_preserve_hl
+    jp      gfx_call_preserve_hl
 
 ;-----------------------------------------------------------------------------
 ; FILL BITMAP [BYTE byte] [COLOR foreground,background]
@@ -46,7 +46,7 @@ ST_FILL_BITMAP:
     ld      b,a                   ;   B = FillByte
     push    hl                    ;   Stack = TxtPtr, RtnAdr
     ld      iy,bitmap_fill_byte
-    call    aux_call              ;   Do the fill
+    call    gfx_call              ;   Do the fill
     pop     hl                    ;   HL = TxtPtr; Stack = RtnAdr
     call    CHRGT2                ;   Reget next character
     ret     z                     ;   Return if end of statement
@@ -57,7 +57,7 @@ _fill_color:
     call    get_bitmap_mode
     push    hl                    ; Stack = TxtPtr, RtnAdr  
     ld      iy,bitmap_fill_color
-    call    aux_call              ; Do the fill
+    call    gfx_call              ; Do the fill
     jp      c,TOERR
     pop     hl                    ; HL = TxtPtr; Stack = NxtChr, RtnAdr
     ret
@@ -76,7 +76,7 @@ ST_COLOR:
     byte    ORTK                  ; Require OR
     call    _color_args
     ld      iy,bitmap_write_color
-    call    aux_call_preserve_hl
+    call    gfx_call_preserve_hl
     jp      no_more               ; Error if any more operands
 
 ; Output: B: Color(s)
@@ -106,9 +106,9 @@ FN_COLOR:
     rst     SYNCHR
     byte    ORTK                  ; Require OR
     ld      iy,bitmap_read_color  
-aux_call_sngflt:
+gfx_call_sngflt:
     call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
-    call    aux_call              ; A = Color
+    call    gfx_call              ; A = Color
     jp      SNGFLT
 
 ;-----------------------------------------------------------------------------
@@ -127,7 +127,7 @@ FN_POS:
     ex      af,af'
     push    af                    ; Stack = SfxChr, LABBCK, TxtPtr, RtnAdr
     ld      iy,bitmap_read_sysvars
-    call    aux_call              ; B = BmpClr, C = BmpY, DE = BmpX
+    call    gfx_call              ; B = BmpClr, C = BmpY, DE = BmpX
     pop     af                    ; A = SfxChr; Stack = LABBCK, TxtPtr, RtnAdr
     cp      'X'                   ; If POSX
     jp      z,FLOAT_DE            ;   Return X

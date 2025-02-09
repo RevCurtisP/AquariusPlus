@@ -315,7 +315,6 @@ _joy_string:
     pop     af                    ; C = CtlIdx
     ld      iy,espx_get_gamectrl
     call    aux_call              ; Read game controller status into buffer
-;    jp      m,dos_error           ; If result < 0, generate DOS Error
     jp      p,FINBCK              ; Pop LABBCK and do PUTNEW
     xor     a
     ld      (FACLO),a             ; Return null string

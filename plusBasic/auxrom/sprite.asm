@@ -2,12 +2,16 @@
 ; Spritle and Sprite Assembly Routines
 ;=============================================================================
 
+
 ; Sprite attributes
 SPR_ENABLE    equ   $80
 SPR_PRIORITY  equ   $40
 SPR_HEIGHT    equ   $08
 SPR_VFLIP     equ   $04
 SPR_HFLIP     equ   $02
+
+msprites = $
+
 
 ;-----------------------------------------------------------------------------
 ; Sprite Registers         76543210  76543210
@@ -270,77 +274,6 @@ spritle_set_tile:
 
 
 ;-----------------------------------------------------------------------------
-; Get sprite deta
-; Input:  BC: Buffer Length
-;         DE: Buffer Address
-;         HL: Sprite Address
-; Data Format: 5 byte entry for each spritle 
-;          X-position - +0
-;          Y-position - +2
-;          Attrs+Tile - +3
-;;-----------------------------------------------------------------------------
-sprite_get_attrs:
-    ld      a,(hl)                ; SptCnt
-    ld      b,a
-    add     a                     ; x 2     
-    add     a                     ; x 4
-    add     b                     ; x 5
-    cp      c                     ; If Buffer Size <> Spritle Count x 5
-    ret     nz                    ;   Return Error
-    ld      b,(hl)                ; B = SptCnt
-.loop    
-    inc     hl                    ; Skip SptCnt/Spritle#
-    inc     hl                    ; Skip Width/X-offset
-    inc     hl                    ; Skip Height/Y-offxet
-    ld      a,(hl)                ; A = Spritle#
-    push    bc                    ; Stack = SptCnt, RtnAdr
-    push    hl                    ; Stack = SprAdr, SprCnt, RtnAdr
-    push    de                    ; Stack = BufAdr, SprAdr, SprCnt, RtnAdr
-    call    spritle_get_attrs ; BC = X-position; DE = Y-position, HL = Tile+Attrs
-    ex      (sp),hl               ; HL = BufAdr; Stack = Tile+Attrs, SprAdr, SprCnt, RtnAdr
-    ld      (hl),c
-    inc     hl
-    ld      (hl),b                ; X-position into Buffer
-    inc     hl
-    ld      (hl),e                ; Y-position into Buffer                
-    inc     hl
-    pop     de                    ; DE = Tile+attrs; Stack = SprAdr, SprCnt, RtnAdr
-    ld      (hl),e                
-    inc     hl
-    ld      (hl),d                ; Tile+Addrs into Buffer                
-    inc     hl
-    ex      de,hl                 ; DE = BufAdr
-    pop     hl                    ; HL = SprAdr; Stack = SprCnt, RtnAdr
-    pop     bc                    ; BC = SprCnt; Stack = RtnAdr
-    djnz    .loop
-    xor     a                     ; Set Zero Flag - No Errors
-    ret
-
-;-----------------------------------------------------------------------------
-; Get spritle detaila
-; Input:  A: Spritle#
-; Output: BC: X-position
-;         DE: Y-position
-;         HL: Attrs+Tile#
-;-----------------------------------------------------------------------------
-spritle_get_attrs:
-    out   (IO_VSPRSEL),a          ; Select sprite
-    ex    af,af'
-    in    a,(IO_VSPRX_L)          ; BC = X-position
-    ld    c,a
-    in    a,(IO_VSPRX_H)  
-    ld    b,a
-    in    a,(IO_VSPRY)            ; DE = Y-position
-    ld    e,a
-    ld    d,0
-    in    a,(IO_VSPRIDX)          ; HL = Attrs+Tile#
-    ld    l,a
-    in    a,(IO_VSPRATTR)         ; HL = Attrs+Tile#
-    ld    h,a
-    ex    af,af'
-    ret
-
-;-----------------------------------------------------------------------------
 ; Clear all properties of a spritle
 ; Input: A: sprite #  0-63
 ; Clobbers: BC
@@ -459,40 +392,6 @@ sprite_set_pos:
     pop     hl                    ; HL = SprAdr; Stack = RtnAdr
     ret
 
-;-----------------------------------------------------------------------------
-; Set spritle position
-; Input: A: sprite #  0-63
-;       BC: X-position
-;       DE  Y-position 
-;-----------------------------------------------------------------------------
-spritle_set_pos:
-    out   (IO_VSPRSEL),a          ; Select sprite
-    ex    af,af'
-    ld    a,c
-    out   (IO_VSPRX_L),a          ; Set X-position
-    ld    a,b
-    out   (IO_VSPRX_H),a  
-    ld    a,e                       
-    out   (IO_VSPRY),a            ; Set Y-position
-    ex    af,af'
-    ret
 
-;-----------------------------------------------------------------------------
-; Get spritle position
-; Input: A: sprite #  0-63
-; Output: BC: X-position
-;         DE  Y-position 
-;-----------------------------------------------------------------------------
-spritle_get_pos:
-    out   (IO_VSPRSEL),a          ; Select sprite
-    ex    af,af'
-    in    a,(IO_VSPRX_L)          ; Get X-position
-    ld    c,a
-    in    a,(IO_VSPRX_H)  
-    ld    b,a
-    in    a,(IO_VSPRY)            ; Get Y-position
-    ld    e,a
-    ld    d,0
-    ex    af,af'
-    ret
 
+    msize_sprite = $ - msprites

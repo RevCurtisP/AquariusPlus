@@ -25,7 +25,13 @@ _clear_cursor
     SYNCHK  'S'                   
     rst     SYNCHR                ; Require CURSOR
     byte    ORTK
-    jp      aux_call_preserve_hl
+    jp      gfx_call_preserve_hl
+
+aux_call_preserve_hl:
+    push    hl
+aux_call_popret:
+    call    aux_call
+    pop     hl
 
 ST_CLEAR_ARRAY:
     call    get_star_array        ; DE = AryAdr, BC = AryLen 
@@ -52,7 +58,6 @@ clear_array:
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     ret
 
-
 print_hook:
     cp      '@'       
     jr      nz,.not_at            ; If '@'
@@ -66,6 +71,14 @@ print_hook:
 .done
     jp      HOOK6+1
 
+;; ToDo: Add ELSE to IF THEN
+; This routine is jumped to after a THEN if the expression is FALSE
+then_hook:
+    jp      REM
+    ld      iy,scan_else
+    call    aux_call              ; Scan else
+    ret     z                     ; If EOL, return to NEWSTT
+    jp      GONE3                 ; Else execute statement after ELSE
 
 ;-----------------------------------------------------------------------------
 ; ATN function
@@ -119,11 +132,10 @@ ST_CLS:
     rst     SYNCHR                
     byte    ORTK                  ; Require COLOR    
     ld      iy,screen_clear_color
-    jr      z,.auxcall
+    jp      z,gfx_call_preserve_hl
     ld      iy,screen_clear_color_a
     call    get_screen_colors
-.auxcall
-    jp      aux_call_preserve_hl
+    jp      gfx_call_preserve_hl
 
 ;-----------------------------------------------------------------------------
 ; DEF statement stub
