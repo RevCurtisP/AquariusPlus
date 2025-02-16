@@ -890,6 +890,7 @@ _save_tileset
 ; LOAD TILESET "/au/assets/tiles.tset"
 ; LOAD TILESET INDEX 128,"/au/assets/tiles.tset"
 ; LOAD TILESET OFFSET 1,"/au/assets/tiles.tset"
+;; Proposed LOAD TILESET OFFSET 1,"/au/assets/tiles.tset",RGB
 _load_tile:
     rst     CHRGET                ; Skip TILE
     cp      MAPTK
@@ -1571,6 +1572,7 @@ ST_SET_SAVE:
 ; Syntax: OPEN var TO filename$ FOR INPUT/OUTPUT
 ;-----------------------------------------------------------------------------
 ; ToDo: Add APPEND and RANDOM
+; OPEN F TO "1.txt" FOR INPUT
 
 ST_OPEN:
     call    PTRGET                ; DE = VarPtr
@@ -1602,48 +1604,6 @@ ST_OPEN:
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     ret
     
-
-;-----------------------------------------------------------------------------
-; Open File
-; Syntax: OPEN(filename$ FOR INPUT)
-;-----------------------------------------------------------------------------
-; A=OPEN("autokeys" FOR INPUT)
-; A=OPEN("autokeys" FOR OUTPUT)
-FN_OPEN:
-    call    esp_close_all         ; Only one file at a time, for now
-    rst     CHRGET                ; Skip OPEN Token
-    SYNCHK  '('                   ; `OPEN(filename$ `
-    call    get_strdesc_arg       ; HL = StrDsc; Stack = TxtPtr, RtnAdr
-    ex      (sp),hl               ; HL = TxtPtr; Stack = StrDsc, RtnAdr
-    rst     SYNCHR                ; `FOR`
-    byte    FORTK
-    jp      z,SNERR               ; Syntax error if end of statement
-    push    af                    ; Stack = IN/PUT, Stack = StrDsc, RtnAdr
-    cp      INPUTK
-    jr      nz,.notinput          ; If `INPUT`
-    rst     CHRGET                ;   Skip INPUT`
-    jr      .paren                ; else
-.notinput
-    rst     SYNCHR                ;   Require `OUTPUT`
-    byte    OUTTK
-    rst     SYNCHR
-    byte    PUTTK
-.paren
-    SYNCHK  ')'                   ; `)`
-    pop     af                    ; A = IN/OUT, StrDsc, RtnAdr
-    ex      (sp),hl               ; HL = StrDsc; Stack = TxtPtr, RtnAdr
-    ld      bc,LABBCK
-    push    bc                    ; Stack = LABBCK, TxtPtr, RtnAdr
-    cp      INPUTK                ; If INPUT
-    jr      nz,.notread
-    call    _open_read            ;   Open for Read
-    jr      .done                 ; Else
-.notread
-    call    _open_write           ;   Open for Write
-.done
-    jp      m,_dos_error
-    jp      SNGFLT
-
 _open_dir:
     ld      iy,dos_open_dir
     jr      _open_aux_call

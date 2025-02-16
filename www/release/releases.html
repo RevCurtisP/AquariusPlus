@@ -16,10 +16,12 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
   <body>
     <h1 id="plusbasic-release-history">plusBASIC Release History</h1>
     <ul>
+      <li>v0.24b (2025-??-??)
+<ul><li>Fixed <code>SET TILE TO CHR</code> statement</li><li>Added <code>SET TILE *array$</code></li><li>Added <code>DEF SPRITE def$=^var$</code>, unimplemented <code>DEF SPRITE def$=(w,h),s</code></li><li><code>SET SPRITE</code> generates <em>Empty string error</em> if spritedef = ""</li><li>Removed undocumented <code>OPEN()</code> function</li><li>Moved <em>GETYPE</em> into, added <em>FRMTYP</em>, <em>FRMPRS</em>, <em>FRMPRT</em>, <em>PARTYP</em>, <em>FRMSTR</em> to S3BASIC</li><li>Removed routines <em>parchk_getype</em>, <em>frmeval_getype</em>, <em>skip_frmprn_getype</em>, <em>skip_frmprn_getyp</em>, <em>frmprn_getype</em></li><li><code>parse_colors</code> generates <em>Missing Operand</em> error instead of <em>Syntax error</em></li><li>Added routines <em>get_strbuf_addr_no_bc</em>, <em>fretms_addr_len</em></li></ul></li>
       <li>v0.24a (2025-02-09)
--Fixed display of plusBASIC version on boot screen.</li>
+-Fixed display of plusBASIC version on boot screen</li>
       <li>v0.24 (2025-02-09)
-<ul><li>Color cycle screen skipped if <code>/system/plusbasic/_skipsplash</code> exists</li><li><code>DEF ATTRLIST</code> now allows string operands.</li><li>Changed all internal graphic kernel calls to use gfx_call instead of aux_call</li><li>Moved ST_SPLIT core code into <code>basicaux.asm</code></li><li>Added tests to aqpunit/sg.bas and linked into test chain</li><li>Changed aqpunit/sx.bas to match plusBASIC last user page change.</li></ul></li>
+<ul><li>Color cycle screen skipped if <code>/system/plusbasic/_skipsplash</code> exists</li><li><code>DEF ATTRLIST</code> now allows string operands.</li><li>Changed all internal graphic kernel calls to use gfx_call instead of aux_call</li><li>Moved ST_SPLIT core code into <code>basicaux.asm</code></li><li>Added tests to aqpunit/sg.bas and linked into test chain</li><li>Changed aqpunit/sx.bas to match plusBASIC last user page change</li></ul></li>
       <li>v0.23u (2025-02-02)
 <ul><li>Fixed PAD$() overwriting string variables</li><li>Added <code>PRINT @()</code>, <code>SET CURSOR ON/OFF</code>, <code>GETCURSOR</code></li><li>Added <code>SET BORDER CHR/COLOR</code>, <code>RESET BORDER</code></li><li>Added <code>GETBORDERCHR</code>, <code>GETBORDERCHR$</code>, <code>GETBORDERCOLOR</code>, <code>GETBORDERCOLOR$</code></li></ul></li>
       <li>v0.23t (2025-02-01)

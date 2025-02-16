@@ -1,4 +1,4 @@
-  ;-----------------------------------------------------------------------------
+    ;-----------------------------------------------------------------------------
 ; sbasic.inc
 ;
 ; This file contains locations of SBASIC3 systen variables and ROM calls
@@ -128,6 +128,13 @@ NOHOOK      equ $003B   ; Default Hook routine
 RESET:      equ $0089   ; Display start up screen
 RESETC:     equ $008C   ; RESET alternate entry point
 COLDST      equ $00FD   ; Do cold start
+FRMTYP      equ $0112   ; Evaluate formula and return type
+GETYPE      equ $0115   ; Return variable or expression
+FRMPRS      equ $011A   ; Skip character, evaluate formula after parenthesis, and return type
+FRMPRT      equ $011B   ; Evaluate formula after parenthesis and return type
+PARTYP      equ $0123   ; Evaluate formula and return type
+FRMSTR      equ $0125   ; Evaluate string formula
+
 CLDCON      equ $0138   ; Finish S3BASIC cold boot
 HEDING      equ $015F   ; Microsoft copyright message
 INITFF:     equ $0153   ; Initialize I/O Port 255

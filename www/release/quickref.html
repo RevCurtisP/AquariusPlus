@@ -226,10 +226,10 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>DEF RGBLIST <em>strvar</em>=<em>r</em>,<em>g</em>,<em>b</em>|<em>rgbstr</em>;...</strong> - Create a string list of RGB values.<!--defstrlist--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>DEF SPRITE <em>strvar</em>= <em>spritle</em>, <em>x-offset</em>, y-offset;...</strong> - Create a sprite definition.<!--DEFSPRITE--></li>
+        <strong>DEF SPRITE <em>strvar</em>= <em>spritle</em>, <em>x-offset</em>, y-offset;...</strong> - Create a sprite definition.<!--sprites--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>DEF SPRITE <em>strvar</em>= [<em>spritle</em>,...],...</strong> - Create a sprite definition.<!--DEFSPRITE--></li>
+        <strong>DEF SPRITE <em>strvar</em>=^<em>strvar</em></strong> - Create a sprite definition.<!--sprites--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>DEF TILELIST <em>strvar</em>=<em>tileno</em>,...</strong> - Create a string list of tile indexes.<!--defstrlist--></li>
@@ -319,7 +319,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>FILL COLORMAP (<em>x</em>,y_)-(<em>x</em>,<em>y</em>) COLOR <em>fgcolor</em>, <em>bgcolor</em></strong> - Fill rectangular section of 1bpp colormap.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>FILL SCREEN  {(<em>x</em>,y_)-(<em>x</em>,<em>y</em>)} <em>character</em></strong> - Fill screen with character and/or colors.<!--FILLSCREEN--></li>
+        <strong>FILL SCREEN  {(<em>x</em>,y_)-(<em>x</em>,<em>y</em>)} <em>char</em></strong> - Fill screen with character and/or colors.<!--FILLSCREEN--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>FILL SCREEN COLOR {(<em>x</em>,y_)-(<em>x</em>,<em>y</em>)} <em>fgcolor</em>,<em>bgcolor</em></strong> - Fill screen with character and/or colors.<!--FILLSCREEN--></li>
@@ -355,7 +355,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>GET TILEMAP (<em>x</em>,y_)-(<em>x</em>,<em>y</em>) *<em>array</em>|^<em>strvar</em></strong> - Copy tilemap clip to array or string variable.<!--GETTILE--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>GETCHRDEF$(<em>ascii_code</em>)</strong> - Return character definition.<!--CHRSET--></li>
+        <strong>GETCHRDEF$(<em>char</em>)</strong> - Return character definition.<!--CHRSET--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>GETBORDERCHR</strong> - Return screen border character.<!--border--></li>
@@ -391,7 +391,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>GETSPEED</strong> - Return current turbo setting.<!--system--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" checked="checked" />
-        <strong>GETSPRITE$(<em>spritedef</em>)</strong> - Return attributes of each spritle in the spritedef.<!--GETSPRITE--></li>
+        <strong>GETSPRITE$(<em>spritedef</em>)</strong> - Return attributes of each spritle in the spritedef.<!--sprites--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>GETTILE$(<em>tileno</em>)</strong> - Return tile pixels.<!--GETTILE--></li>
@@ -574,10 +574,10 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>LPRINT __ TAB(<em>integer</em>)|SPC(<em>integer</em>)|<em>expression</em>|;|,</strong> - Output data to printer.<!--print--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" checked="checked" />
-        <strong>LWR(<em>expression</em>)</strong> - Lowercases numeric ASCII code or ASCII code of first character of string</li>
+        <strong>LWR(<em>char</em>)</strong> - Lowercases numeric ASCII code or ASCII code of first character of string</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" checked="checked" />
-        <strong>LWR$(<em>expression</em>)</strong> - Lowercases argument string or argument ASCII code converted to string.</li>
+        <strong>LWR$(<em>string</em>|<em>byte</em>)</strong> - Lowercases argument string or argument ASCII code converted to string.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>LWRKEY</strong> - Wait for key and return lowercased ASCII code.</li>
@@ -835,7 +835,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>SET BREAK ON|OFF</strong> - Enable or disable control-c checking.<!--system--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>SET CHRDEF <em>ascii_code</em>,<em>string</em></strong> - Redefine character.<!--chrset--></li>
+        <strong>SET CHRDEF <em>char</em>,<em>string</em></strong> - Redefine character.<!--chrset--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>SET COLOR <em>fgcolor</em>,<em>bgcolor</em></strong> - Enable color printing mode.<!--screen--></li>
@@ -862,37 +862,31 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>SET PALETTE <em>palette</em>  TO <em>rgblist</em></strong> - Set palette entries.<!--palette--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>SET TRACK FAST {ON|OFF}</strong> - Set tracker playback to 50Hz or 60Hz mode.<!--track--></li>
-      <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>SET TRACK LOOP {ON|OFF}</strong> - Set loop status of active or paused track.<!--track--></li>
-      <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>SET TRACK SPEED <em>hertz</em></strong> - Set tracker playback rate.<!--track--></li>
-      <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
         <strong>SET SAVE ASC ON|OFF</strong> - Enable or disable forced saving of BASIC programs in ASCII format.<!--SETSAVE--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>SET SPEED <em>speed</em></strong> - Set turbo mode.<!--system--><!--system--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>SET SPRITE <em>spritedef</em> {ON|OFF} {POS <em>x</em>,<em>y</em>}   </strong> - Set sprite properties.<!--SETSPRITE--></li>
+        <strong>SET SPRITE <em>spritedef</em> {ON|OFF} {POS <em>x</em>,<em>y</em>}   </strong> - Set sprite properties.<!--sprites--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" checked="checked" />
-        <strong>SET SPRITE <em>spritedef</em> TILECLIP *<em>array</em>|^<em>strvar</em></strong> - Set sprite to tile indexes and properties in tilemap clip.<!--SETSPRITE--></li>
+        <strong>SET SPRITE <em>spritedef</em> TILECLIP *<em>array</em>|^<em>strvar</em></strong> - Set sprite to tile indexes and properties in tilemap clip.<!--sprites--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>SET SPRITE <em>spritedef</em> TO <em>proplist</em></strong> - Set sprite properties from combined properties list.<!--SETSPRITE--></li>
+        <strong>SET SPRITE <em>spritedef</em> TO <em>proplist</em></strong> - Set sprite properties from combined properties list.<!--sprites--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" checked="checked" />
-        <strong>SET SPRITE * OFF|CLEAR</strong> - Disable or clears all sprites.<!--SETSPRITE--></li>
+        <strong>SET SPRITE * OFF|CLEAR</strong> - Disable or clears all sprites.<!--sprites--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>SET TILE <em>tileno</em> TO <em>tiledata</em></strong> - Write tile definition Video RAM.<!--SETTILE--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>SET TILE <em>tileno</em> TO CHR <em>ascii_code</em>, <em>fg_color</em>, <em>bg_color</em></strong> - Convert character definition to tile data and write to Video RAM.</li>
+        <strong>SET TILE_ <em>tileno</em> TO CHR <em>char</em>, <em>fg_color</em>, <em>bg_color</em></strong> - Convert character definition to tile data and write to Video RAM.</li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>SET TILE *array$</strong> - Set multiple tiles from tile array.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>SET TILEMAP (<em>x</em>,<em>y</em>) TO TILE <em>tileno</em></strong> - Set tilemap cell to tile index, attributes, and palette.<!--SETTILEMAP--></li>
@@ -902,6 +896,15 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>SET TILEMAP OFFSET <em>x</em>,<em>y</em></strong> - Scroll tilemap to specified position.<!--SETTILEMAP--></li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>SET TRACK FAST {ON|OFF}</strong> - Set tracker playback to 50Hz or 60Hz mode.<!--track--></li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>SET TRACK LOOP {ON|OFF}</strong> - Set loop status of active or paused track.<!--track--></li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>SET TRACK SPEED <em>hertz</em></strong> - Set tracker playback rate.<!--track--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>SET USRINT ON|OFF</strong> - Enable disable user interrupt.<!--system--></li>
@@ -1018,10 +1021,10 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>TROFF</strong> - Disable line tracing.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" checked="checked" />
-        <strong>UPR(<em>expression</em>)</strong> - Uppercases numeric ASCII code or ASCII code of first character of string</li>
+        <strong>UPR(<em>char</em>)</strong> - Uppercases numeric ASCII code or ASCII code of first character of string</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" checked="checked" />
-        <strong>UPR$(<em>expression</em>)</strong> - Uppercases argument string or argument ASCII code converted to string.</li>
+        <strong>UPR$(<em>string</em>|<em>byte</em>)</strong> - Uppercases argument string or argument ASCII code converted to string.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>UPRKEY</strong> - Wait for key and return uppercased ASCII code.</li>

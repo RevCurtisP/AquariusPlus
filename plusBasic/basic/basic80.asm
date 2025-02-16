@@ -423,15 +423,6 @@ SPLP:   ld      (hl),a            ;SAVE CHAR
         jp      FINBCK            ;PUT TEMP DESC WHEN DONE
 
 ;----------------------------------------------------------------------------
-; Get Evaluated Formula Type
-; Output: Zero Set if String, Clear if Number
-; Clobbers: A
-;----------------------------------------------------------------------------
-GETYPE: ld      a,(VALTYP)        ;REPLACEMENT FOR "GETYPE" RST
-        dec     a               
-        ret
-
-;----------------------------------------------------------------------------
 ST_SWAP_VARS:  
         rst     CHRGET            ; Skip VAR
         SYNCHK  'S'

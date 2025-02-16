@@ -33,6 +33,13 @@ get_linbuf_addr:
     ld      hl,(TOPMEM)
     ret
 
+
+get_strbuf_addr_no_bc:
+    push    bc
+    Call    get_strbuf_addr
+    pop     bc
+    ret
+
 ;-----------------------------------------------------------------------------
 ; Get String Buffer Address
 ; Output: HL: String Buffer Address
@@ -162,6 +169,8 @@ free_hl_addr_len:
     call    FRETM2
     jr      string_addr_len
 
+fretms_addr_len:
+    call    FRETMS
 faclo_addr_len:
     ld      hl,(FACLO)
     jr      string_addr_len

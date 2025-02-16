@@ -372,24 +372,6 @@ skip_get_int:
     or      e
     ret
 
-parchk_getype:
-    call    PARCHK
-    jr      _getype
-    
-frmeval_getype:
-    call    FRMEVL
-_getype:    
-    jp      GETYPE
-
-;-----------------------------------------------------------------------------
-; Skip character, require (, return expression type
-;-----------------------------------------------------------------------------
-skip_frmprn_getype:
-  rst     CHRGET
-frmprn_getype:
-  call    FRMPRN
-  jp      GETYPE
-
 ;-----------------------------------------------------------------------------
 ; Parse C, X, or Y
 ; Output: E: 0 = C, 1 = X, 255 = Y
@@ -786,6 +768,8 @@ parse_color:
     byte    ORTK
     jp      get_byte16
 
+
+
 ; Parse COLOR fgcolor,bgcolor
 parse_colors:
     rst     SYNCHR                
@@ -794,7 +778,7 @@ parse_colors:
     byte    ORTK
     byte    $01                   ; LD BC over SYNCHK
 get_comma_colors:
-    SYNCHK  ','
+    call    get_comma             ; Missing opersand if comma
 ;-----------------------------------------------------------------------------
 ; Parse Foreground and Background Colors
 ; Output: A,DE = Combined coloe
@@ -806,11 +790,27 @@ get_screen_colors:
     sla     a                     ;
     sla     a                     ;
     sla     a                     ;
-    push    af                    ; Stack = FColor, Char, Cols, Rows, RtnAdr
+    push    af                    ; Stack = FColor, RtnAdr
     call    get_comma_byte16      ; Require comma
-    pop     bc                    ; D = FColor; Stack = Char, Cols, Rows, RtnAdr
+    pop     bc                    ; D = FColor; Stack = RtnAdr
     or      b                     ; A = Colors    
     ld      e,a                   ; DE = Colors
+    ret
+
+comma_colors_bc:
+    call    get_comma             ; Missing opersand if comma
+;-----------------------------------------------------------------------------
+; Parse Foreground and Background Colors
+; Output: B: Foreground color
+;       A,C: Background color
+; Clobbers: DE
+;-----------------------------------------------------------------------------
+get_screen_colors_bc:
+    call    get_byte16            ; A = FgColr
+    push    af                    ; Stack = FColor, RtnAdr
+    call    get_comma_byte16      ; A = BgColr
+    pop     bc                    ; B = FgColr
+    ld      c,a                   ; E = BgColr
     ret
 
 ;-----------------------------------------------------------------------------

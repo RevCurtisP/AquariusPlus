@@ -13,7 +13,6 @@ DEFATTR     BASIC-DEF-ATTRLIST-Statement
 defstrlist  BASIC-Stringlist-Statements
 DEFINT      BASIC-DEF-INTLIST-Statement
 DEFPALETTE  BASIC-DEF-PALETTELIST-Statement
-DEFSPRITE   BASIC-DEF-SPRITE-Statement
 DEFTILE     BASIC-DEF-TILELIST-Statement
 DIM         BASIC-DIM-Statement
 filesystem  BASIC-Filesystem-Statements-and-Functions
@@ -24,7 +23,6 @@ FNKEYS      BASIC-LOAD-FNKEYS-Statement
 GETSCREEN   BASIC-GETSCREEN-Statement
 GETTILE     BASIC-GETTILE-Statement
 GETPALETTE  BASIC-GETPALETTE$-Function
-GETSPRITE   BASIC-GETSPRITE$-Function
 GETTILE     BASIC-GETTILE$-Function
 HEX         BASIC-HEX-Function
 IN          BASIC-IN-Function
@@ -61,10 +59,10 @@ screen      BASIC-Screen-Statements-and-Functions
 SETFAST     BASIC-SET-FAST-Statement
 SETFNKEY    BASIC-SET-FNKEY-Statement
 SETSAVE     BASIC-SET-SAVE-Statement
-SETSPRITE   BASIC-SETSPRITE-Statement
 SETTILE     BASIC-SET-TILE-Statement
 SETTILEMAP  BASIC-SET-TILEMAP-Statement
 STRING      BASIC-STRING-Function
+sprites     BASIC-SPRITE-Statements-and-Functions
 string      BASIC-String-Functions
 system      BASIC-System-Statements-and-Functions
 tilemap     BASIC-TILEMAP-Functions

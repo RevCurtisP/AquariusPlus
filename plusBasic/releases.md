@@ -1,13 +1,23 @@
 # plusBASIC Release History
+ - v0.24b (2025-??-??)
+    - Fixed `SET TILE TO CHR` statement
+    - Added `SET TILE *array$`
+    - Added `DEF SPRITE def$=^var$`, unimplemented `DEF SPRITE def$=(w,h),s`
+    - `SET SPRITE` generates _Empty string error_ if spritedef = ""
+    - Removed undocumented `OPEN()` function
+    - Moved _GETYPE_ into, added _FRMTYP_, _FRMPRS_, _FRMPRT_, _PARTYP_, _FRMSTR_ to S3BASIC
+    - Removed routines _parchk_getype_, _frmeval_getype_, _skip_frmprn_getype_, _skip_frmprn_getyp_, _frmprn_getype_
+    - `parse_colors` generates _Missing Operand_ error instead of _Syntax error_
+    - Added routines _get_strbuf_addr_no_bc_, _fretms_addr_len_
  - v0.24a (2025-02-09)
-    -Fixed display of plusBASIC version on boot screen.
+    -Fixed display of plusBASIC version on boot screen
  - v0.24 (2025-02-09)
     - Color cycle screen skipped if `/system/plusbasic/_skipsplash` exists
     - `DEF ATTRLIST` now allows string operands.
     - Changed all internal graphic kernel calls to use gfx_call instead of aux_call
     - Moved ST_SPLIT core code into `basicaux.asm`
     - Added tests to aqpunit/sg.bas and linked into test chain
-    - Changed aqpunit/sx.bas to match plusBASIC last user page change.
+    - Changed aqpunit/sx.bas to match plusBASIC last user page change
  - v0.23u (2025-02-02)
     - Fixed PAD$() overwriting string variables
     - Added `PRINT @()`, `SET CURSOR ON/OFF`, `GETCURSOR`

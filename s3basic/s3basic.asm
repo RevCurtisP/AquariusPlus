@@ -370,11 +370,39 @@ ifdef pluspatch
 ;;; Code Change: Execute Aquarius+ Extended BASIC Cold Start
 ;;; On the Aquarius+ From MEMTST to before INITFF is unused                   Original Code
         jp      XCOLD             ;; | Do Extended BASIC Cold Start           010F  ld      hl,BASTXT+99
-                                  ;; |                                        0110  
-                                  ;; |                                        0111
+;; Evaluate Formula and Return Type
+MEMTST
+FRMTYP: call    FRMEVL            ;; Evaluate the formula                     0112  inc     hl    
+                                  ;; |                                        0113  ld      c,(hl)
+                                  ;; |                                        0114  ld      a,h   
+;; Get vsriable or formula type      |
+GETYPE: ld      a,(VALTYP)        ;; |                                        0115  or      l       
+                                  ;; |                                        0116  jr      z,MEMCHK
+        dec     a                 ;; |                                        0118  xor     c                 
+        ret                       ;; |                                        0119  ld      (hl),a
+;; Evaluate Formula after parenthesis and Return Type
+FRMPRS: rst     CHRGET            ;; |                                        011A  ld      b,(hl)
+FRMPRT: call    FRMPRN            ;; |                                        011B  cpl                
+                                  ;; |                                        011C  ld      (hl),a     
+                                  ;; |                                        011D  ld      a,(hl)     
+        jr      GETYPE            ;; |                                        011E  cpl           
+                                  ;; |                                        011F  ld      (hl),c
+;; Evaluate Formula in parenthesis and Return Type
+PARTYP: call    PARCHK            ;; |                                        0120  cp      b       
+                                  ;; |                                        0121  jr      z,MEMTST
+                                  ;; |                                        0122
+       jr       GETYPE            ;; |                                        0123  dec     hl           
+                                  ;; |                                        0124  ld      de,BASTXT+299
+;; Evaluate String Expression
+FRMSTR: call    FRMEVL            ;; |                                        0125
+                                  ;; |                                        0126
+                                  ;; |                                        0127  rst     COMPAR
+        jp      CHKSTR            ;; |                                        0128  jp      c,OMERR
+                                  ;; |                                        0129
+                                  ;; |                                        012A
+
 else                              ;;
-        ld      hl,BASTXT+99      ;; \ Set RAM Test starting address
-endif
+        ld      hl,BASTXT+399     ;; \ Set RAM Test starting address
 MEMTST: inc     hl                ;; \ Bump pointer
         ld      c,(hl)            ;; \ Save contents of location
         ld      a,h               ;  \ 
@@ -395,6 +423,7 @@ MEMCHK: dec     hl                ;; \ Back up to last good address
         ld      de,BASTXT+299     ;; \ 
         rst     COMPAR            ;; \ Is there enough RAM?
         jp      c,OMERR           ;; \ No, Out of Memory error
+endif
 ;;Set Top of memory               ;; \ 
         ld      de,$FFCE          ;; \ 
         ld      (MEMSIZ),hl       ;; \ Set MEMSIZ to last RAM location

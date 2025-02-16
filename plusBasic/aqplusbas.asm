@@ -119,13 +119,6 @@ clear_cont:
 just_ret:
     ret
 
-plus_text:
-    db "plusBASIC "
-plus_version:
-    db "v0.24a"
-    db 0
-plus_len   equ   $ - plus_text
-
 auto_cmd:
     db      'RUN "'
 auto_text
@@ -135,11 +128,19 @@ auto_len = $ - auto_text
 auto_desc
     dw      auto_len,auto_text
 
-
-
 ; Null string descriptor
 null_desc:
     word    0,null_desc
+
+; plusBASIC cold start messafe
+plus_text:
+    db "plusBASIC "
+plus_version:
+    db "v0.24b"
+    db 0
+plus_len   equ   $ - plus_text
+
+
 
 ; ROM Signature
     assert !($20F6<$)   ; Overflow into Kernel jump table

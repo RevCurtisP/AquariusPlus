@@ -13,4 +13,3 @@ for %%f in (??.bas) do (
   del %%~nf.$$$
 )
 echo Build complete
-

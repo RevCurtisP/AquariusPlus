@@ -30,7 +30,7 @@ _attr_byte:
 ; ? BIT(1,0)
 ; ? BIT("@",6)
 FN_BIT:
-    call    skip_frmprn_getype    ; A = Type
+    call    FRMPRS                ; A = Type
     jr      z,_bit_string
     call    FRC_LONG              ; BCDE = LngInt
     push    bc
@@ -411,8 +411,7 @@ FN_LWR:
     call    uprlwr_char           ;   Convert character
     jp      float_byte            ;   and return it
 .do_string
-    call    parchk_getype       
-    pop     bc                    ; F = UprFlg; Stack = RtnAdr
+    call    PARTYP                ; F = UprFlg; Stack = RtnAdr
     push    hl                    ; Stack = TxtPtr
     push    hl                    ; Stack = DmyRtn, TxtPtr
     push    bc                    ; Stack = UprFlg, DmyRtn, TxtPtr, RtnAdr
@@ -1376,7 +1375,7 @@ FN_WORD:
     ld      a,(hl)                ; (don't skip spaces)
     cp      '$'                   
     jr       z,str_word           
-    call    frmprn_getype
+    call    FRMPRS                ; A = Type
     jp      nz,word_int
     ld      iy,FLOAT_DE
 word_str:

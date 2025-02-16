@@ -364,13 +364,22 @@ _swapcall_pophrt:
 
 ;-----------------------------------------------------------------------------
 ; SET TILE Statement
-; SET TILE tile# TO tiledata$
-; SET TILE tile# TO CHR ascii_code, fg_color, bg_color
+; SET TILE tileno TO tiledata$
+; SET TILE tileno TO CHR ascii_code, fg_color, bg_color
 ;-----------------------------------------------------------------------------
+; SET TILE 0 TO STRING$(32,255)
+; H$="01020304050607080910111213141516":SET TILE 1 TO H$+H$
 ST_SET_TILE:
     rst     CHRGET                ; Skip TILE Token
     cp      MAPTK                 ; If TILEMAP
     jp      z,ST_SET_TILEMAP      ;   Go do that
+    cp      MULTK
+    jr      nz,.not_array
+    call    skip_star_array
+    push    hl
+    ld      iy,bas_set_tile_ary
+    jr      _gfx_tile_call
+.not_array
     call    get_int512            ; Get Tile#
     push    de                    ; Stack = Tile#, RtnAdr
     rst     SYNCHR                ; Require TO
@@ -381,39 +390,33 @@ ST_SET_TILE:
     ex      (sp),hl               ; HL = Tile#; Stack = TxtPtr, RtnAdr
     push    hl                    ; Stack = Tile#, TxtPtr, RtnAdr
     call    free_addr_len         ; DE = DataAddr, BC = Count
+    ld      iy,bas_set_tile_str
 _set_tile:
     pop     hl                    ; HL = Tile#; Stack = TxtPtr, RtnAdr
-    ld      iy,tile_set
+_gfx_tile_call:
     call    gfx_call
+_check_nz_c:    
+    jp      nz,FCERR              ; Error if bad HEX length
     jp      c,OVERR               ; Error if Overflow
     pop     hl                    ; HL = TxtPtr
     ret
 
-; SET TILE 1 TO CHR 64,1,0
-; SET TILE 2 TO CHR 32,0,9:? HEX$(T$)
-; SET TILE 3 TO CHR '.',$F,0:? HEX$(T$)
-; SET TILE 4 TO CHR '"',$A,1:? HEX$(T$)
+; SET TILE 1 TO CHR 64,1,:? HEX$(GETTILE$(1))
+; SET TILE 2 TO CHR 32,0,9:? HEX$(GETTILE$(2))
+; SET TILE 3 TO CHR '"',$A,1:? HEX$(GETTILE$(3))
+; SET TILE 4 TO CHR ".",$F,0:? HEX$(GETTILE$(4))
 _set_tile_ext:
-    rst     CHRGET                ; Skip XTOKEN
-    rst     SYNCHR
-    byte    CHRTK                 ; Require CHR
-    call    GETBYT                ; A = AscVal
+    call    parse_char            ; A = AscVal
     push    af                    ; Stack = AscVal, Tile#, RtnAdr
-    call    get_comma_byte        ; A = FgColr
-    push    af                    ; Stack = FgColr, AscVal, Tile#, RtnAdr
-    call    get_comma_byte        ; E = BgColr
-    pop     af                    ; A = FgColr; Stack = AscVal, Tile#, RtnAdr
-    ld      d,a                   ; D = FgColr
-    call    no_more               ; Error if another comma
+    call    comma_colors_bc       ; BC = Colors
     pop     af                    ; A = AscVal; Stack = Tile#, RtnAdr
     ex      (sp),hl               ; HL = Tile#; Stack = TxtPtr, RtnAdr
     push    hl                    ; Stack = Tile#, TxtPtr, RtnAdr
-    call    get_strbuf_addr       ; HL = StrBuf
-    ld      b,d
-    ld      c,e                   ; BC = Colors
+    call    get_strbuf_addr_no_bc ; HL = StrBuf
     ex      de,hl                 ; DE = StrBuf, HL = Colors
     ld      iy,tile_from_chrrom   ; Build tile in String Buffer
     call    gfx_call              ; DE = StrBuf, BC = DatLen
+    ld      iy,tile_set
     jr      _set_tile             ; Write the tile
 
 ;-----------------------------------------------------------------------------
@@ -525,7 +528,7 @@ ST_FILL_TILE:
 ST_GET_SCREEN:
     rst     CHRGET                ; Skip SCREEN
     call    screen_suffix         ; Check for CHR and ATTR
-    ld      (XTEMP0),bc           ; XTEMP1 = Mode
+    ld      (XTEMP0),bc           ; XTEMP = Mode
     call    scan_rect             ; B = BgnCol, C = EndCol, D = BgnRow, E = EndRow
     ld      iy,screen_get
     jr      _do_get
@@ -594,7 +597,7 @@ _parse_get_string:
 ST_PUT_SCREEN:
     rst     CHRGET                ; Skip SCREEN
     call    screen_suffix         ; B: 1 = CHR, 2 = ATTR, 3 = Neither
-    ld      (XTEMP0),bc           ; XTEMP1 = Mode
+    ld      (XTEMP0),bc           ; XTEMP0 = Mode
     call    SCAND                 ; C = Col, E = Row
     ld      iy,screen_put
     jr      _do_put
@@ -658,7 +661,7 @@ _get_put:
     pop     bc                    ; C = Col; Stack = Row, RtnAdr
     ex      (sp),hl               ; HL = Row; Stack = TxtPtr, RtnAdr
     ex      de,hl                 ; E = Row, HL = AryAdr
-    ld      a,(XTEMP0+1)          ; A = Mode (GET/PUT SCREEN)
+    ld      a,(XTEMP0)            ; A = Mode (GET/PUT SCREEN)
     jp      gfx_call_fc_popret
 
 
@@ -911,11 +914,13 @@ _defgotvar:
     call    get_strbuf_addr       ; HL = BufAdr
     pop     bc                    ; BC = RtnAdr; Stack = TxtPtr, VarAdr
     ex      (sp),hl               ; HL = TxtPtr; Stack = BufAdr, TxtPtr, VarAdr
-    xor     a                     ; DatLen = 0
-    push    af                    ; Stack = DatLen, BufAdr, VarPtr
+    ld      de,0
+    push    de
+;    xor     a                     ; DatLen = 0
+;    push    af                    ; Stack = DatLen, BufAdr, VarPtr
     push    bc                    ; Stack = RtnAdr, DatLen, BufAdr, VarPtr
-    rst     SYNCHR
-    byte    EQUATK                ; Require '='
+    rst     SYNCHR                ; Else
+    byte    EQUATK                ;   Require '='
     ret
 
 
@@ -1017,13 +1022,10 @@ gfx_call_finbck:
 ST_DEF_SPRITE:
     rst     CHRGET                ; Skip SPRITE
     call    _defnolist            ; Stack = DatLen, BufPtr, VarPtr, RtnAdr
-if 0
-    push    hl                    ; Stack = TxtPtr, DatLen, BufPtr, VarPtr; RtnAdr
-    call    FRMEVL
-    call    GETYPE
-    jp      z,_def_sprite_string
-    pop     hl
-endif
+    cp      '('
+    jr      z,_def_sprite_rect
+    cp      EXPTK
+    jr      z,_def_sprite_string
     xor     a                     ; A = SptlCnt (0)
     ld      b,a                   ; B = MaxYoffset (0)
     ld      c,a                   ; C = MaxXoffset (0)
@@ -1031,8 +1033,6 @@ endif
     call    _write_byte_strbuf    ; Write E to string buffer
     call    _write_bc_strbuf      ; Write BC to string buffer
     ld      a,(hl)
-    cp      '['                   ; If [ after =
-    jr      z,_def_sprite_rect    ;   Do rectangular definition
 .loop
     call    _get_byte             ; A,E = Spritle#
     call    _write_byte_strbuf    ; Write E to string buffer
@@ -1079,59 +1079,43 @@ _get_byte:
     pop     bc                    ; BC = MaxOfs
     ret
 
-; DEF SPRITE S$ = [0,1,2,3],[5,6,4,7],[3,2,1,0]
-; Here B and C are the current Y and X offset
+; DEF SPRITE var$ = (width,height),spritle#
+; Stack = DatLen, BufPtr, VarPtr, RtnAdr
 _def_sprite_rect:
-    xor     a 
-    ld      (XTEMP1),a            ; MaxXoffset = 0
-.gloop
-    rst     CHRGET                ; Skip [ or ,
-.loop
-    call    _get_byte             ; A,E = sprite#
-    call    _write_byte_strbuf    ; Write E to string buffer
-    call    _write_bc_strbuf      ; Write X,Y to string buffer
-    ld      a,c
-    add     8                     ; Add 8 to Xoffset
-    jp      c,FCERR               ; Error if > 255
-    ld      c,a
-    ld      a,(XTEMP1)            ; A = MaxXoffset
-    cp      c                     
-    jr      nc,.skipx             ; If Xoffset > MaxXoffset
-    ld      a,c
-    ld      (XTEMP1),a            ;   MaxXoffset = Xoffset
-.skipx
-    call    inc_xtemp0            ; Increment SptlCnt
-    ld      a,(hl)
-    cp      ','                   ; If comma
-    jr      z,.gloop              ;   Get next sprite in row
-    SYNCHK  ']'                   ; Else require close brace
-    jr      z,.done               ; If not end of statement
-    SYNCHK  ','                   ;   Require comma
-    SYNCHK  '['                   ;   And open brace
-    ld      a,b
-    add     8                     ;   Add 8 to Yoffset
-    jp      c,FCERR               ;   Error if > 255
-    ld      b,a
-    ld      c,0                   ;   Reset Xoffset to 0
-    jr      .loop                 ;     and get next sprite
-.done
-    ld      a,(XTEMP1)            
-    ld      c,a                   ; C = MaxXoffset
-    jr      _sprite_done
+    jp      GSERR
+    pop     bc                    ; BC = DatLen; Stack = BufPtr, VarPtr, RtnAdr
+    call    SCAND                 ; BC = SpCols, DE = SpRows
+    push    bc                    ; Stack = SpCols, BufPtr, VarPtr, RtnAdr
+    push    de                    ; Stack = SpRows, SprWid, BufPtr, VarPtr, RtnAdr
+    call    get_comma_byte        ; A = SptNum
+    pop     de                    ; EE = SpRows; Stack = SpCols, BufPtr, VarPtr, RtnAdr
+    pop     bc                    ; BC = SpCols; Stack = BufPtr, VarPtr, RtnAdr
+    ex      (sp),hl               ; HL = BufPtr; Stack = TxtPtr, VarPtr, RtnAdr
+    ld      iy,bas_rectsprite
+    jp      gfx_call
 
-;; DEF SPRITE S$ = $"010203"
-; Stack = TxtPtr, DatLen, BufPtr, VarPtr, RtnAdr
+; DEF SPRITE S$ = ^D$
+;; D$=ASC$("010000"+"020800"+"030008"+"040808")
+;; DEF SPRITE S$ = ^D$
+;; PRINT HEX$(S$)
 _def_sprite_string:
-    call    free_addr_len         ; DE = StrAdr, BC = StrLen
-    pop     hl                    ; HL = TxtPtr; Stack = DatLen, BufPtr, VarPtr, RtnAdr
-    pop     af                    ; Stack = BufPtr, VarPtr, RtnAdr
-    ex      (sp),hl               ; HL = BufAdr; Stack = VarPtr, RtnAdr
+; Stack = DatLen, BufPtr, VarPtr, RtnAdr
+    call    skip_get_stringvar    ; DE = ArgPtr
+    pop     bc                    ; Stack = BufPtr, VarPtr, RtnAdr
+    ex      (sp),hl               ; HL = BufPt;, Stack = TxtPtr, VarPtr, RtnAdr
+    push    hl                    ; Stack = BufPtr, TxtPtr, VarPtr, RtnAdr
+    ex      de,hl                 ; HL = ArgPtr
+    call    string_addr_len       ; DE = ArgAdr, BC = ArgLen
+    jp      z,ESERR               ; Empty string error if ArgLen = 0
+    pop     hl                    ; HL = BufPtr; Stack = TxtPtr, VarPtr, RtnAdr
     ld      iy,sprite_define
-    call    gfx_call              ; A = BufLen
-    call    strbuf_temp_str       ; HL = StrDsc
-    push    hl                    ; Stack = StrDsc, VarPtr, TxtPtr
-    jp      INBUFC                ; Copy Temporary to Variable and return    
-    
+    call    gfx_call              ; HL = BufPtr, BC = DatLen
+    jp      c,FCERR
+    ex      (sp),hl               ; HL = TxtPtr; Stack = BufPtr, VarPtr, RtnAdr
+    ld      b,c                   ; B = DatLen
+    push    bc                    ; Stack = DatLen, BufPtr, VarPtr, RtnAdr
+    jp      _finish_def
+
 ;-----------------------------------------------------------------------------
 ; SET SPRITE sprite$ [ON|OFF] [POS x,y] [TILE tilelist$] [PALETTE palettelist$] [ATTR attrlist$]
 ; SET SPRITE sprite$ TILECLIP tileclip$
@@ -1151,7 +1135,7 @@ ST_SET_SPRITE:
     call    string_addr_len       ; BC = SprLen, DE = SprAdr
     xor     a
     cp      c                     ; If Sprite not defined
-    jp      z,FCERR               ;   FC Error
+    jp      z,ESERR               ;   FC Error
     ex      de,hl                 ; DE = SprPtr, HL = SprAdr
     ex      (sp),hl               ; HL = TxtPtr; Stack = SprAdr, RtnAdr
     ld      a,(hl)                ; Get current character
@@ -1328,7 +1312,7 @@ FN_RGB:
 
 ; Parse RGB triplet, returns DE = RGB integer
 _get_rgb:
-    call    frmeval_getype        ; Parse first argument
+    call    FRMTYP                ; Parse first argument
     jr      z,.rgb_string         ; If numberic
     call    con_byte16            ;   Convert to Red
     push    af                    ;   Stack = Red, RtnAdr

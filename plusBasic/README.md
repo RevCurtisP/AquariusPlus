@@ -108,8 +108,8 @@
  - [ ] **DEF INTLIST _strvar_=_integer_,...** - Create a string list of integers.<!--defstrlist-->
  - [ ] **DEF PALETTELIST _strvar_=_palette_,...** - Create a string list of palette numbers.<!--defstrlist-->
  - [ ] **DEF RGBLIST _strvar_=_r_,_g_,_b_|_rgbstr_;...** - Create a string list of RGB values.<!--defstrlist-->
- - [ ] **DEF SPRITE _strvar_= _spritle_, _x-offset_, y-offset;...** - Create a sprite definition.<!--DEFSPRITE-->
- - [ ] **DEF SPRITE _strvar_= [_spritle_,...],...** - Create a sprite definition.<!--DEFSPRITE-->
+ - [ ] **DEF SPRITE _strvar_= _spritle_, _x-offset_, y-offset;...** - Create a sprite definition.<!--sprites-->
+ - [ ] **DEF SPRITE _strvar_=^_strvar_** - Create a sprite definition.<!--sprites-->
  - [ ] **DEF TILELIST _strvar_=_tileno_,...** - Create a string list of tile indexes.<!--defstrlist-->
  - [ ] **DEF USR=_address_** - Set USR() machine language routine address.<!--system-->
  - [ ] **DEF USRINT=_address_** - Set user interupt machine language routine address.<!--system-->
@@ -139,7 +139,7 @@
  - [ ] **FILL WORDS {@_page_},_address_,_oount_,_integer_** - Fill block of memory with integer.
  - [ ] **FILL BITMAP {BYTES _byte_} {COLOR _fgcolor_, _bgcolor_}** - Fill bitmap and/or colormap with byte and/or color(s).
  - [ ] **FILL COLORMAP (_x_,y_)-(_x_,_y_) COLOR _fgcolor_, _bgcolor_** - Fill rectangular section of 1bpp colormap.
- - [ ] **FILL SCREEN {CHR} {(_x_,y_)-(_x_,_y_)} _character_** - Fill screen with character and/or colors.<!--FILLSCREEN-->
+ - [ ] **FILL SCREEN {CHR} {(_x_,y_)-(_x_,_y_)} _char_** - Fill screen with character and/or colors.<!--FILLSCREEN-->
  - [ ] **FILL SCREEN COLOR {(_x_,y_)-(_x_,_y_)} _fgcolor_,_bgcolor_** - Fill screen with character and/or colors.<!--FILLSCREEN-->
  - [ ] **FILL TILEMAP {(_x_,y_)-(_x_,_y_)} TILE _tileno_ { ATTR _attrs_} { PALETTE _palette_}** - Fill tilemap with specified tile, attributes and palette.<!--FILLTILE-->
  - [ ] **FLOAT(_string_{,_offset_})** - Convert four consecutive bytes in string to float.<!--convert-->
@@ -151,7 +151,7 @@
  - [ ] **GET SCREEN CHRS (_x_,y_)-(_x_,_y_) \*_array_|^_strvar_** - Copy text screen clip to array or string variable.<!--GETSCREEN-->
  - [ ] **GET SCREEN COLORS (_x_,y_)-(_x_,_y_) \*_array_|^_strvar_** - Copy text screen clip to array or string variable.<!--GETSCREEN-->
  - [ ] **GET TILEMAP (_x_,y_)-(_x_,_y_) \*_array_|^_strvar_** - Copy tilemap clip to array or string variable.<!--GETTILE-->
- - [ ] **GETCHRDEF$(_ascii_code_)** - Return character definition.<!--CHRSET-->
+ - [ ] **GETCHRDEF$(_char_)** - Return character definition.<!--CHRSET-->
  - [ ] **GETBORDERCHR** - Return screen border character.<!--border-->
  - [ ] **GETBORDERCHR$** - Return screen border character as string.<!--border-->
  - [ ] **GETBORDERCOLOR** - Return screen border colors.<!--border-->
@@ -163,7 +163,7 @@
  - [ ] **GETKEY$**  - Wait for key and return as string.<!--key-->
  - [ ] **GETPALETTE$(_palette_)** - Return palette contents.<!--GETPALETTE-->
  - [ ] **GETSPEED** - Return current turbo setting.<!--system-->
- - [x] **GETSPRITE$(_spritedef_)** - Return attributes of each spritle in the spritedef.<!--GETSPRITE-->
+ - [x] **GETSPRITE$(_spritedef_)** - Return attributes of each spritle in the spritedef.<!--sprites-->
  - [ ] **GETTILE$(_tileno_)** - Return tile pixels.<!--GETTILE-->
  - [ ] **GOSUB _lineref_{:ARGS _expression_{,...} {RETURN _var_{,...}}** - Branch to subroutine with optional call and return arguments.<!--flow-->
  - [ ] **GOTO _lineref_** - Branch to line specified by line number or label.<!--flow-->
@@ -224,8 +224,8 @@
  - [ ] **LOOP TRACK {_filespec_}** - Play specified or previously loaded tracker file repeatedly.<!--track-->
  - [ ] **LPOS(_expression__)** - Return current column position of printer.
  - [ ] **LPRINT __ TAB(_integer_)|SPC(_integer_)|_expression_|;|,{...}** - Output data to printer.<!--print-->
- - [x] **LWR(_expression_)** - Lowercases numeric ASCII code or ASCII code of first character of string
- - [x] **LWR$(_expression_)** - Lowercases argument string or argument ASCII code converted to string.
+ - [x] **LWR(_char_)** - Lowercases numeric ASCII code or ASCII code of first character of string
+ - [x] **LWR$(_string_|_byte_)** - Lowercases argument string or argument ASCII code converted to string.
  - [ ] **LWRKEY** - Wait for key and return lowercased ASCII code.
  - [ ] **LWRKEY$**  - Wait for key and return as lowercased string.
  - [ ] **MENU** - _Not implemented._
@@ -311,7 +311,7 @@
  - [ ] **SET BIT** - _Not implemented_
  - [ ] **SET BORDER {CHR _char_} {COLOR _fgcolor_,_bgcolor_}** - Enable color printing mode.<!--border-->
  - [ ] **SET BREAK ON|OFF** - Enable or disable control-c checking.<!--system-->
- - [ ] **SET CHRDEF _ascii_code_,_string_** - Redefine character.<!--chrset-->
+ - [ ] **SET CHRDEF _char_,_string_** - Redefine character.<!--chrset-->
  - [ ] **SET COLOR _fgcolor_,_bgcolor_** - Enable color printing mode.<!--screen-->
  - [ ] **SET COLOR OFF** - Disable color printing mode.<!--screen-->
  - [ ] **SET CURSOR ON|OFF** - Enable or disable cursor display.
@@ -320,20 +320,21 @@
  - [ ] **SET FNKEY _key_ TO _string_** - Set auto-typed text when function key is pressed.<!--SETFNKY-->
  - [ ] **SET KEY _mode_** - Set alternate keyboard port mode.
  - [ ] **SET PALETTE _palette_ {INDEX _index_} TO _rgblist_** - Set palette entries.<!--palette-->
- - [ ] **SET TRACK FAST {ON|OFF}** - Set tracker playback to 50Hz or 60Hz mode.<!--track-->
- - [ ] **SET TRACK LOOP {ON|OFF}** - Set loop status of active or paused track.<!--track-->
- - [ ] **SET TRACK SPEED _hertz_** - Set tracker playback rate.<!--track-->
  - [ ] **SET SAVE ASC ON|OFF** - Enable or disable forced saving of BASIC programs in ASCII format.<!--SETSAVE-->
  - [ ] **SET SPEED _speed_** - Set turbo mode.<!--system--><!--system-->
- - [ ] **SET SPRITE _spritedef_ {ON|OFF} {POS _x_,_y_} {TILE _tilelist_} {PALETTE _palettelist_} {ATTR _attrlist_}** - Set sprite properties.<!--SETSPRITE-->
- - [x] **SET SPRITE _spritedef_ TILECLIP \*_array_|^_strvar_** - Set sprite to tile indexes and properties in tilemap clip.<!--SETSPRITE-->
- - [ ] **SET SPRITE _spritedef_ TO _proplist_** - Set sprite properties from combined properties list.<!--SETSPRITE-->
- - [x] **SET SPRITE \* OFF|CLEAR** - Disable or clears all sprites.<!--SETSPRITE-->
+ - [ ] **SET SPRITE _spritedef_ {ON|OFF} {POS _x_,_y_} {TILE _tilelist_} {PALETTE _palettelist_} {ATTR _attrlist_}** - Set sprite properties.<!--sprites-->
+ - [x] **SET SPRITE _spritedef_ TILECLIP \*_array_|^_strvar_** - Set sprite to tile indexes and properties in tilemap clip.<!--sprites-->
+ - [ ] **SET SPRITE _spritedef_ TO _proplist_** - Set sprite properties from combined properties list.<!--sprites-->
+ - [x] **SET SPRITE \* OFF|CLEAR** - Disable or clears all sprites.<!--sprites-->
  - [ ] **SET TILE _tileno_ TO _tiledata_** - Write tile definition Video RAM.<!--SETTILE-->
- - [ ] **SET TILE _tileno_ TO CHR _ascii_code_, _fg_color_, _bg_color_** - Convert character definition to tile data and write to Video RAM.
+ - [ ] **SET TILE_ _tileno_ TO CHR _char_, _fg_color_, _bg_color_** - Convert character definition to tile data and write to Video RAM.
+ - [ ] **SET TILE \*array$** - Set multiple tiles from tile array.
  - [ ] **SET TILEMAP (_x_,_y_) TO TILE _tileno_ {ATTR _attrs_} {PALETTE _palette_}** - Set tilemap cell to tile index, attributes, and palette.<!--SETTILEMAP-->
  - [ ] **SET TILEMAP (_x_,_y_) TO _integer_** - Set tilemap cell to integer represeting combined tile index, attributes, and palette.<!--SETTILEMAP-->
  - [ ] **SET TILEMAP OFFSET _x_,_y_** - Scroll tilemap to specified position.<!--SETTILEMAP-->
+ - [ ] **SET TRACK FAST {ON|OFF}** - Set tracker playback to 50Hz or 60Hz mode.<!--track-->
+ - [ ] **SET TRACK LOOP {ON|OFF}** - Set loop status of active or paused track.<!--track-->
+ - [ ] **SET TRACK SPEED _hertz_** - Set tracker playback rate.<!--track-->
  - [ ] **SET USRINT ON|OFF** - Enable disable user interrupt.<!--system-->
  - [x] **SGN(_expression_)** - Return signum of expression.<!--math-->
  - [x] **SIN(_float_)** - Return sine of argument.<!--math-->
@@ -372,8 +373,8 @@
  - [x] **TRIMR$(_string_{,_string_})** - Remove characters from right end of string.<!--string-->
  - [ ] **TRON** - Enable line tracing.
  - [ ] **TROFF** - Disable line tracing.
- - [x] **UPR(_expression_)** - Uppercases numeric ASCII code or ASCII code of first character of string
- - [x] **UPR$(_expression_)** - Uppercases argument string or argument ASCII code converted to string.
+ - [x] **UPR(_char_)** - Uppercases numeric ASCII code or ASCII code of first character of string
+ - [x] **UPR$(_string_|_byte_)** - Uppercases argument string or argument ASCII code converted to string.
  - [ ] **UPRKEY** - Wait for key and return uppercased ASCII code.
  - [ ] **UPRKEY$**  - Wait for key and return as uppercased string.
  - [ ] **USE CHRSET _0_|_1_|_filespec_** - Copy specified character set to character RAM.<!--CHRSET-->

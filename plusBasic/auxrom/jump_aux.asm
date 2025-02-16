@@ -47,8 +47,8 @@ _jump_table:
     jp      file_load_tilemap     ; Load tilemap
     jp      file_save_tilemap     ; Save tilemap
     jp      file_save_chrset      ;
-    jp      just_ret
-    jp      just_ret
+    jp      file_load_tileset     ; Load tiles
+    jp      file_save_tileset     ; Save tiles
     jp      file_read_dir         ; Read directory entry as ASCII string
     jp      just_ret
     jp      just_ret

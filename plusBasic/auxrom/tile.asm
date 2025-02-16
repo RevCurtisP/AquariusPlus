@@ -8,11 +8,16 @@
 ;        DE: Data address
 ;        HL: Tile #
 ; Clobbered: A,BC,DE,HL
+; Sets: NZ if BC <> 16 or 32
+;        C if data overflows Video RAM page
 ;-----------------------------------------------------------------------------
 tile_set:
     call      tile_addr_page      ; HL = TileAddr
     ex        de,hl               ; DE = TileAddr, HL = Dat
-    jp        page_write_bytes    ; Write data to tile
+    call      page_write_bytes    ; Write data to tile
+    ret       c
+    xor       a
+    ret
 
 ;-----------------------------------------------------------------------------
 ; Get tile data

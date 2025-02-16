@@ -140,7 +140,7 @@ STJUMPS:
     dw      ST_SET                ;$F7 SET
     dw      ST_WRITE              ;$F8 WRITE
     dw      ST_USE                ;$F9 USE
-    dw      SNERR                 ;$FA OPEN
+    dw      ST_OPEN               ;$FA OPEN
     dw      SNERR                 ;$FB CLOSE
     dw      SNERR                 ;$FC
     dw      SNERR                 ;$FD
@@ -227,7 +227,7 @@ FNJUMPS:
     dw      SNERR                 ;$F7 SET
     dw      SNERR                 ;$F8 WRITE
     dw      SNERR                 ;$F9 USE
-    dw      FN_OPEN               ;$FA OPEN
+    dw      SNERR                 ;$FA OPEN
     dw      SNERR                 ;$FB CLOSE
     dw      SNERR                 ;$FC
     dw      SNERR                 ;$FD
