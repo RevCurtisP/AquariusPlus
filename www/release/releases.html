@@ -16,7 +16,9 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
   <body>
     <h1 id="plusbasic-release-history">plusBASIC Release History</h1>
     <ul>
-      <li>v0.24b (2025-??-??)
+      <li>v0.24c (2025-02-17)
+<ul><li>Added <code>DEF SPRITE def$=(cols,rows),spritle</code></li><li>Fixed SET FNKEY rebooting when string is too long</li></ul></li>
+      <li>v0.24b (2025-02-16)
 <ul><li>Fixed <code>SET TILE TO CHR</code> statement</li><li>Added <code>SET TILE *array$</code></li><li>Added <code>DEF SPRITE def$=^var$</code>, unimplemented <code>DEF SPRITE def$=(w,h),s</code></li><li><code>SET SPRITE</code> generates <em>Empty string error</em> if spritedef = ""</li><li>Removed undocumented <code>OPEN()</code> function</li><li>Moved <em>GETYPE</em> into, added <em>FRMTYP</em>, <em>FRMPRS</em>, <em>FRMPRT</em>, <em>PARTYP</em>, <em>FRMSTR</em> to S3BASIC</li><li>Removed routines <em>parchk_getype</em>, <em>frmeval_getype</em>, <em>skip_frmprn_getype</em>, <em>skip_frmprn_getyp</em>, <em>frmprn_getype</em></li><li><code>parse_colors</code> generates <em>Missing Operand</em> error instead of <em>Syntax error</em></li><li>Added routines <em>get_strbuf_addr_no_bc</em>, <em>fretms_addr_len</em></li></ul></li>
       <li>v0.24a (2025-02-09)
 -Fixed display of plusBASIC version on boot screen</li>

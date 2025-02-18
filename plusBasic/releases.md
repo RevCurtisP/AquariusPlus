@@ -1,5 +1,8 @@
 # plusBASIC Release History
- - v0.24b (2025-??-??)
+ - v0.24c (2025-02-17)
+     - Added `DEF SPRITE def$=(cols,rows),spritle`
+     - Fixed SET FNKEY rebooting when string is too long
+ - v0.24b (2025-02-16)
     - Fixed `SET TILE TO CHR` statement
     - Added `SET TILE *array$`
     - Added `DEF SPRITE def$=^var$`, unimplemented `DEF SPRITE def$=(w,h),s`

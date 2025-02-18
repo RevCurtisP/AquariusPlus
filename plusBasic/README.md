@@ -108,7 +108,8 @@
  - [ ] **DEF INTLIST _strvar_=_integer_,...** - Create a string list of integers.<!--defstrlist-->
  - [ ] **DEF PALETTELIST _strvar_=_palette_,...** - Create a string list of palette numbers.<!--defstrlist-->
  - [ ] **DEF RGBLIST _strvar_=_r_,_g_,_b_|_rgbstr_;...** - Create a string list of RGB values.<!--defstrlist-->
- - [ ] **DEF SPRITE _strvar_= _spritle_, _x-offset_, y-offset;...** - Create a sprite definition.<!--sprites-->
+ - [ ] **DEF SPRITE _strvar_= _spritle_, _x-offset_, _y-offset_ ;...** - Create a sprite definition.<!--sprites-->
+ - [ ] **DEF SPRITE _strvar_= ( _cols_, _rows_ ) , _spritle_** - Create a sprite definition.<!--sprites-->
  - [ ] **DEF SPRITE _strvar_=^_strvar_** - Create a sprite definition.<!--sprites-->
  - [ ] **DEF TILELIST _strvar_=_tileno_,...** - Create a string list of tile indexes.<!--defstrlist-->
  - [ ] **DEF USR=_address_** - Set USR() machine language routine address.<!--system-->

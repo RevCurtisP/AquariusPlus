@@ -1211,7 +1211,7 @@ ST_SET_FNKEY:
     call    get_string_arg        ; BC = StrLen, DE = StrAdr; Stack = TxtPtr, FnkNum, RtnAdr
     ld      a,c
     cp      32                    ; If longer than 31
-    jp      nc,ERRLS              ;   String too long error
+    jp      nc,LSERR              ;   String too long error
     pop     hl                    ; HL = TxtPtr; Stack = FnkNum, RtnAdr
     ex      (sp),hl               ; H = FnkNum; Stack = TxtPtr, RtnAdr
     ld      a,h                   ; A = FnkNum

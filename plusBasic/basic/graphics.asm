@@ -1015,7 +1015,7 @@ gfx_call_finbck:
 
 ;-----------------------------------------------------------------------------
 ; DEF SPRITE sprite$ = spritle#, x-offset, y-offset; spritle#, x-offset, y-offset
-; DEF SPRITE sprite$ = [ spritle#, ... ] {; ...}
+; DEF SPRITE sprite$ = (rows,cols),spritle
 ; DEF SPRITE sprite$ = spritle_list$
 ; String Format: SprCount,TotWidth,TotHeigth,(SprNum,Xoffset,Yoffset)...
 ;-----------------------------------------------------------------------------
@@ -1081,8 +1081,8 @@ _get_byte:
 
 ; DEF SPRITE var$ = (width,height),spritle#
 ; Stack = DatLen, BufPtr, VarPtr, RtnAdr
+;; DEF SPRITE S$=(2,2),11:PRINT HEX$(S$)
 _def_sprite_rect:
-    jp      GSERR
     pop     bc                    ; BC = DatLen; Stack = BufPtr, VarPtr, RtnAdr
     call    SCAND                 ; BC = SpCols, DE = SpRows
     push    bc                    ; Stack = SpCols, BufPtr, VarPtr, RtnAdr
@@ -1091,8 +1091,13 @@ _def_sprite_rect:
     pop     de                    ; EE = SpRows; Stack = SpCols, BufPtr, VarPtr, RtnAdr
     pop     bc                    ; BC = SpCols; Stack = BufPtr, VarPtr, RtnAdr
     ex      (sp),hl               ; HL = BufPtr; Stack = TxtPtr, VarPtr, RtnAdr
-    ld      iy,bas_rectsprite
-    jp      gfx_call
+    ld      iy,sprite_defrect
+    call    gfx_call              ; C = DatLen, HL = BufPtr
+    jp      c,FCERR
+    ex      (sp),hl               ; HL = TxtPtr; Stack = BufPtr, VarPtr, RtnAdr
+    ld      b,c                   ; B = DatLen
+    push    bc                    ; Stack =  DatLen, BufPtr, VarPtr, RtnAdr
+    jp      _finish_def           ;
 
 ; DEF SPRITE S$ = ^D$
 ;; D$=ASC$("010000"+"020800"+"030008"+"040808")
