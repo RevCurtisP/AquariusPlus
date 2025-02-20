@@ -9,7 +9,7 @@ mspritex:
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ; sprite_define - Define Sprite
 ; Builds spritedef from spritle list
-; Spritedef must be three bytes longer thst spritlw list
+; Spritedef must be three bytes longer thst spritle list
 ; Input: BC: Spritle list length
 ;        DE: Spritle list address
 ;        HL: Spritdef address
@@ -287,5 +287,36 @@ spritle_get_attrs:
     ld    h,a
     ex    af,af'
     ret
+
+;-----------------------------------------------------------------------------
+; Rese6 spritle to system boot vakues
+; Clobbers: A,C
+;-----------------------------------------------------------------------------
+spritle_reset_all:
+    xor     a
+.loop
+    call  spritle_reset
+    inc     a
+    cp      64
+    jp      c,.loop
+    ret
+
+;-----------------------------------------------------------------------------
+; Rese6 spritle to system boot vakues
+; Input: A: sprite #  0-63
+; Clobbers: C
+;-----------------------------------------------------------------------------
+spritle_reset:
+    ld      c,IO_VSPRSEL
+    out     (c),a                 ; Select Spritle A
+    ex      af,af'
+    out     (IO_VSPRX_L),a        ; Reset X-position
+    out     (IO_VSPRX_H),a
+    out     (IO_VSPRY),a          ; Reset Y-Position
+    out     (IO_VSPRIDX),a        ; Reset tile index LSB
+    out     (IO_VSPRATTR),a       ; Rext tile MSB and properties
+    ex      af,af'
+    ret
+
 
     msize_sprite_aux = $ - mspritex

@@ -114,7 +114,25 @@ _load_chrset
     ld      a,BAS_BUFFR
     ld      bc,CHRSETLEN
     jp      file_load_buffer
-    
+
+;-----------------------------------------------------------------------------
+; Load PT3 player into paged memory
+;-----------------------------------------------------------------------------
+file_load_pt3play:
+    ld      a,PT3_BUFFR           ; Page
+    ld      l,0
+    call    xpage_fill_all_byte   ; Zero out buffer
+    ld      hl,.ptdesc            ;   Load from ESP
+.load_ptplay:
+    ld      a,PT3_BUFFR           ; Page
+    ld      bc,$4000              ; Load up to 16k
+    ld      de,PT3_BASE           ; Start address
+    jr      xfile_load_paged
+.ptplay:
+    byte    "esp:ptplay.bin"
+.ptdesc:
+    word    $-.ptplay,.ptplay
+   
 ;-----------------------------------------------------------------------------
 ; Load binary file into paged memory`
 ; Input: A: Page

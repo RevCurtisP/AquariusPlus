@@ -125,12 +125,18 @@ _jump_table:
     jp      just_ret
     jp      just_ret
 ; sprite_aux.asm
+; currently subject to change
+; in auxrom
     jp      sprite_define
+    jp      sprite_defrect
+    jp      sprite_set_attrs
     jp      sprite_get_attrs
-   
-    jp      spritle_get_attrs
     jp      spritle_set_pos
     jp      spritle_get_pos
+    jp      spritle_string_attrs
+    jp      spritle_reset
+    jp      spritle_reset_all
+; in extrom
     
 _end_jump_table:
 

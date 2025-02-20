@@ -175,7 +175,7 @@ spritle_set_palette:
     rla
     ld    c,a                     ; Put back in C
     in    a,(IO_VSPRATTR)         ; Get current attributes
-    and   $C7                     ; Keep attributes and tile index msb
+    and   ~$30                    ; Keep attributes and tile index msb
     or    c                       ; Set attribute bits
     out   (IO_VSPRATTR),a         ; and write back out
     exx
