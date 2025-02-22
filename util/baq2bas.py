@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 #-----------------------------------------------------------------------------
-# Copyright (C) 2022 Frank van den Hoef
-# Modifications (C) 2023 Curtis F Kaylor
+# Copyright (C) 2025 Frank van den Hoef and Curtis F Kaylor
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -28,7 +27,7 @@
 # Prerequisites: Python3 installed and executable defined in PATH
 #       Caveats: Byte code for line number cannot be greater than 0xFFF9
 #                KILL and DEL tokens resolve to DEL command (your text KILL command will become a DEL command)
-#         Usage: python3 bas2txt.py progname.bas progname.txt
+#         Usage: python3 baq2bas.py progname.baq progname.bas
 #
 #-----------------------------------------------------------------------------
 
