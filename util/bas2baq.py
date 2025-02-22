@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #-----------------------------------------------------------------------------
-# Copyright (C) 2022 Frank van den Hoef
+# Copyright (C) 2025 Frank van den Hoef and Curtis F Kaylor
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -26,9 +26,8 @@
 #
 # Prerequisites: Python3 installed and executable defined in PATH
 #       Caveats: Line numbers cannot be less than 0 or greater than 65529
-#                Characters per line should be 72 or less
 #                KILL and DEL commands resolve to same token code
-#         Usage: python3 txt2bas.py progname.txt progname.bas
+#         Usage: python3 bas2baq.py progname.bas progname.baq
 #
 #-----------------------------------------------------------------------------
 
@@ -43,12 +42,14 @@ parser = argparse.ArgumentParser(
     description="Convert text file to Aquarius BASIC .BAS file"
 )
 parser.add_argument("-p", action="store_true", help="Generate TOK file")
+parser.add_argument("-r", action="store_true", help="Remove remarks")
 parser.add_argument("input", type=str, help="Input file")
 parser.add_argument("output", type=str, nargs="?", help="Output file")
 
 args = parser.parse_args()
 
 tok = args.p
+delrems = args.r
 input_spec = args.input
 output_spec= args.output
 
@@ -310,6 +311,10 @@ for idx, line in enumerate(input_file.readlines()):
 
     buf = bytearray()
     buf += struct.pack("<H", linenr)
+    
+    tbuf = bytearray()
+    
+    wbuf = buf
 
     in_chr = False
     in_str = False
@@ -318,19 +323,38 @@ for idx, line in enumerate(input_file.readlines()):
     while len(line) > 0:
         upper = line.upper()
 
+
         if line[0] == '"' and not in_chr:
             in_str = not in_str
 
         if line[0] == "'" and not in_str:
+            if wbuf == tbuf:
+                wbuf = buf
+                line = ""
+                break
             in_chr = not in_chr
 
         if not (in_str or in_chr or in_rem) and line[0] != " ":
+            if delrems and line[0] == ":":
+                wbuf = tbuf
+                wbuf.append(line[0].encode()[0])
+                line = line[1:]
+                continue
             found = False
             for (token, keyword) in tokens.items():
                 if upper.startswith(keyword):
-                    buf.append(token)
-                    line = line[len(keyword) :]
                     found = True
+                    line = line[len(keyword) :]
+
+                    if wbuf == tbuf:
+                        wbuf = buf
+                        if keyword == "REM":
+                            line = ""
+                            break
+                        else:
+                            buf += tbuf
+
+                    wbuf.append(token)
 
                     if keyword in ["REM", "DATA"]:
                         in_rem = True
@@ -342,8 +366,8 @@ for idx, line in enumerate(input_file.readlines()):
 
             for (token, keyword) in xtokens.items():
                 if upper.startswith(keyword):
-                    buf.append(xprefix)
-                    buf.append(token)
+                    wbuf.append(xprefix)
+                    wbuf.append(token)
                     line = line[len(keyword) :]
                     found = True
                     break
@@ -351,12 +375,15 @@ for idx, line in enumerate(input_file.readlines()):
             if found:
                 continue
 
-            buf.append(upper[0].encode()[0])
+            wbuf.append(line[0].encode()[0])
 
         else:
-            buf.append(line[0].encode()[0])
+            wbuf.append(line[0].encode()[0])
         
         line = line[1:]
+
+    if wbuf == tbuf:
+        buf += tbuf
 
     buf.append(0)
 
@@ -365,6 +392,7 @@ for idx, line in enumerate(input_file.readlines()):
     last_linenr = linenr
 
     output_file.write(buf)
+
 
 output_file.write(struct.pack("<H", 0))
     
