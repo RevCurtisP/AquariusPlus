@@ -11,10 +11,10 @@
 122 K$=GETKEY$:IF K$<"1" OR K$>"2" THEN K$="0"
 124 PRINT K$:Q=VAL(K$):POKE $BFFF,Q:'Save Output Mode
 130 PRINT "Continous Run? (Y/N) ";
-132 K=GETKEY:P=0:IF K='Y' OR K='y' THEN F=1
+132 K=UPR(GETKEY):P=0:IF K='Y' THEN F=1
 134 PRINT CHR$(K):POKE $BFF7,F:'Continous Run
 140 PRINT "Stop on Failure? (Y/N) ";
-142 K=GETKEY:F=0:IF K='Y' OR K='y' THEN F=1
+142 K=UPR(GETKEY):F=0:IF K='Y' THEN F=1
 144 PRINT CHR$(K):POKE $BFFE,F:'Save Fail Flag
 150 I$="bt"
 152 INPUT "Start with test? (Enter=Default)";I$

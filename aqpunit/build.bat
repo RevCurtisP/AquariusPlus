@@ -7,8 +7,9 @@ for %%f in (??.bas) do (
   ) else (
     copy /B %%f+aqpunit.bas %%~nf.$$$ > nul
   )
-  python ..\util\bas2baq.py %%~nf.$$$ %%~nf.baq
+  python ..\util\bas2baq.py %1 %%~nf.$$$ %%~nf.baq
   if "%errorlevel%" neq "0" (goto:eof)
+  timeout 1 > nul
   move %%~nf.baq %aquaplus%\sdcard\au\ >nul
   del %%~nf.$$$
 )
