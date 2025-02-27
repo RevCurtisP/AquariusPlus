@@ -1,4 +1,11 @@
 # plusBASIC Release History
+ - v0.24d (2025-02-27)
+     - Added `INC var` and `DEC var`
+     - Fixed `ERASE *array`
+     - Added `String length` error
+     - Added `RESET SPRITE` with `Empty string` and `String length` errors
+     - Fixed `Syntax arror` on negative numbers after `DIM var()=`
+     - Moved `_get_rgb` core code and `sprite_set_pos` from Extended ROM to Auxiliary ROM
  - v0.24c (2025-02-17)
      - Added `DEF SPRITE def$=(cols,rows),spritle`
      - Fixed SET FNKEY rebooting when string is too long

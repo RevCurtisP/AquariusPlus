@@ -272,38 +272,6 @@ spritle_set_tile:
     ex      af,af'
     ret
 
-
-;-----------------------------------------------------------------------------
-; Clear all properties of a spritle
-; Input: A: sprite #  0-63
-; Clobbers: BC
-;-----------------------------------------------------------------------------
-spritle_clear:
-    out     (IO_VSPRSEL),a        ; Select sprite
-    ex      af,af'
-    xor     a
-    ld      c,$E5
-    ld      b,5
-.loop
-    out     (c),a
-    inc     c
-    djnz    .loop
-    ex      af,af'
-    ret
-
-;-----------------------------------------------------------------------------
-; Clear all properties of all spritles
-; Clobbers: A,BC
-;-----------------------------------------------------------------------------
-spritle_clear_all:
-    ld      a,63
-spritle_clear_a2z:
-    call    spritle_clear
-    dec     a
-    ret     m
-    jr      spritle_clear_a2z
-    ret
-
 ;-----------------------------------------------------------------------------
 ; Enable/disable sprite
 ; Input: A: 0 = Disable, else Enable
@@ -358,39 +326,6 @@ spritle_toggle_a2z:
     ret     m 
     jr      spritle_toggle_a2z
 
-;-----------------------------------------------------------------------------
-; Set sprite position
-; Input: BC: X-position
-;        DE  Y-position 
-;        HL: spritedef address
-; Clobbered: A, HL
-;-----------------------------------------------------------------------------
-sprite_set_pos:
-    ld      a,(hl)                ; A = spritle count
-    push    hl                    ; Stack = SprAdr, RtnAdr
-    inc     hl                    ; Skip width and height
-    inc     hl
-.loop  
-    ex      af,af'                
-    inc     hl                    ; 
-    ld      a,(hl)                ; Get spritle#
-    out     (IO_VSPRSEL),a        ; Select it
-    inc     hl                    ; 
-    ld      a,(hl)                ; Get X-offset LSB
-    add     c                     ; Add to X-position
-    out     (IO_VSPRX_L),a        ; and write it
-    ld      a,0                   ; Add carry to MSB
-    adc     b
-    out     (IO_VSPRX_H),a        ; and write it
-    inc     hl                    ; 
-    ld      a,(hl)                ; Get Y-offset LSB
-    add     e                     ; Add to Y-position
-    out     (IO_VSPRY),a          ; and write it
-    ex      af,af'
-    dec     a
-    jr      nz,.loop              ; 144 cycles per loop = 
-    pop     hl                    ; HL = SprAdr; Stack = RtnAdr
-    ret
 
 
 

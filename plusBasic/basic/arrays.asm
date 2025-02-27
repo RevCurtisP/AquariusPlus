@@ -122,7 +122,7 @@ _array_read:
     ld      a,(ARRAYTYP)
     or      a
     jr      z,.string             ; If numeric array
-    call    fin_extension         ;   Read number into FACC
+    call    fin_extokens          ;   Read number into FACC
     push    hl                    ;   Stack = TxtPtr, RtnAdr
     ld      hl,FACLO              ;   HL = FACC
     jr      .next                 ; Else

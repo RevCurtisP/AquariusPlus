@@ -134,7 +134,6 @@ FRMPRS      equ $011A   ; Skip character, evaluate formula after parenthesis, an
 FRMPRT      equ $011B   ; Evaluate formula after parenthesis and return type
 PARTYP      equ $0123   ; Evaluate formula and return type
 FRMSTR      equ $0125   ; Evaluate string formula
-
 CLDCON      equ $0138   ; Finish S3BASIC cold boot
 HEDING      equ $015F   ; Microsoft copyright message
 INITFF:     equ $0153   ; Initialize I/O Port 255
@@ -291,7 +290,8 @@ SKIPDS      equ $10FD   ; Continue PTRGET at skip of '$'
 VARFND      equ $111F   ; Search for Variable Table for Variable with name in B,C
 LOPFND      equ $1126   ; Search for Variable starting at (HL) and ending at (DE)
 BSERR       equ $11CD   ; Bad subscript error
-FSUBS       equ $1258   ; Subtract: FACC = (HL) - FACCs
+FADDS       equ $1253   ; Add: FACC = (HL) + FACC
+FSUBS       equ $1258   ; Subtract: FACC = (HL) - FACC
 FSUB        equ $125E   ; Subtract: FACC = BCDE - FACC
 FADD        equ $1261   ; Add: FACC = BCDE + FACC
 FONE        equ $135F   ; Floating point constant 1
@@ -312,7 +312,8 @@ QINT        equ $1586   ; Convert FAC to integer in C,D,E
 INT         equ $15B1   ; FACC = INT(FACC)
 POPART      equ $15C8   ; Pop AF and return
 FIN         equ $15E5   ; Parse floating point number
-FIN0        equ $15EE   ; Parse floating point number wihout leading + or -
+FIN0        equ $15EE   ; Back up and parse floating point number wihout leading + or -
+FIN1        equ $15EF   ; Parse floating point number wihout leading + or -
 LINPRT      equ $1675   ; Print Two Byte Number in HL as Decimal - Alters all Registers
 INT2STR:    equ $1679   ; Convert 16 bit integer in HL to text at FPSTR (starts with ' ')
 FOUT        equ $1680   ; Convert float in FAC to text

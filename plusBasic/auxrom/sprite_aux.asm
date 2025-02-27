@@ -288,8 +288,39 @@ spritle_get_attrs:
     ex    af,af'
     ret
 
+; Input C: DefLen, HL: DefAdr; Output: B: SptCnt; Clobbers: A
+_check_sprite_length:
+    ld      b,(hl)                ; B = SptCnt
+    ld      a,b                   ; A = SptCnt
+    add     a,a                   ; A = SptCnt * 2
+    add     b                     ; A = SptCnt * 3
+    add     3                     ; Add 3 for header
+    cp      c                     ; If equal to StrLen
+    ret     z                     ;   Return Carry clear
+    scf                           ; Else
+    ret                           ;   Return Carry set
+  
 ;-----------------------------------------------------------------------------
-; Rese6 spritle to system boot vakues
+; Reset spritles in spritedef to system boot vakues
+; Input: C: SprLen, DE: SprAdr
+; Clobbers: A,C
+;-----------------------------------------------------------------------------
+sprite_reset:
+    ex      de,hl                 ; HL = SprDef
+    call    _check_sprite_length  ; B = SptCnt
+    ret     c                     ; If bad length, return Carry set
+    inc     hl                    ; Skip SptCnt
+.loop
+    inc     hl                    ; Skip X-Offset
+    inc     hl                    ; Skip Y-Offset
+    ld      a,(hl)                ; A = SptNum
+    call    spritle_reset         ; Reset it
+    djnz    .loop                 ; Do the next one
+    or      a                     ; Return Carry clear
+    ret
+
+;-----------------------------------------------------------------------------
+; Reset spritle to system boot vakues
 ; Clobbers: A,C
 ;-----------------------------------------------------------------------------
 spritle_reset_all:
@@ -302,7 +333,7 @@ spritle_reset_all:
     ret
 
 ;-----------------------------------------------------------------------------
-; Rese6 spritle to system boot vakues
+; Reset spritle to system boot vakues
 ; Input: A: sprite #  0-63
 ; Clobbers: C
 ;-----------------------------------------------------------------------------
@@ -310,6 +341,7 @@ spritle_reset:
     ld      c,IO_VSPRSEL
     out     (c),a                 ; Select Spritle A
     ex      af,af'
+    xor     a                     ; A = 0
     out     (IO_VSPRX_L),a        ; Reset X-position
     out     (IO_VSPRX_H),a
     out     (IO_VSPRY),a          ; Reset Y-Position
@@ -318,5 +350,38 @@ spritle_reset:
     ex      af,af'
     ret
 
+;-----------------------------------------------------------------------------
+; Set sprite position
+; Input: BC: X-position
+;        DE  Y-position 
+;        HL: spritedef address
+; Clobbered: A, HL
+;-----------------------------------------------------------------------------
+sprite_set_pos:
+    ld      a,(hl)                ; A = spritle count
+    push    hl                    ; Stack = SprAdr, RtnAdr
+    inc     hl                    ; Skip width and height
+    inc     hl
+.loop  
+    ex      af,af'                
+    inc     hl                    ; 
+    ld      a,(hl)                ; Get spritle#
+    out     (IO_VSPRSEL),a        ; Select it
+    inc     hl                    ; 
+    ld      a,(hl)                ; Get X-offset LSB
+    add     c                     ; Add to X-position
+    out     (IO_VSPRX_L),a        ; and write it
+    ld      a,0                   ; Add carry to MSB
+    adc     b
+    out     (IO_VSPRX_H),a        ; and write it
+    inc     hl                    ; 
+    ld      a,(hl)                ; Get Y-offset LSB
+    add     e                     ; Add to Y-position
+    out     (IO_VSPRY),a          ; and write it
+    ex      af,af'
+    dec     a
+    jr      nz,.loop              ; 144 cycles per loop = 
+    pop     hl                    ; HL = SprAdr; Stack = RtnAdr
+    ret
 
     msize_sprite_aux = $ - mspritex

@@ -3691,7 +3691,7 @@ SHFTC:  ld      a,d               ;[M80] SHIFT NEXT BYTE RIGHT
         ld      b,a
         jr      SHFTR3            ;[M80] SEE IF WE ARE DONE
 ;[M80] CONSTANTS USED BY LOG
-FONE:   byte    $00,$00,$00,$81 ;1
+FONE:   byte    $00,$00,$00,$81    ;; 1.0
 LOGP:   byte    4                  ;[M80] HART 2524 COEFFICIENTS
         byte    $9A,$F7,$19,$83    ;[M80] 4.8114746
         byte    $24,$63,$43,$83    ;[M80] 6.105852

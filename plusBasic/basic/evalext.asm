@@ -44,6 +44,14 @@ eval_hex_str:
     push    hl                    ; Save Text Pointer
     jp      hex_to_asc            ; Convert to ASCII
 
+fin_extokens:
+    ld      a,(hl)
+    cp      MINUTK                ; Special token handling
+    push    af
+    jp      z,FIN1
+    cp      PLUSTK
+    jp      z,FIN1
+    pop     af
 fin_extension:
     ld      a,(hl)
     cp      '$'                   ; If not '$'

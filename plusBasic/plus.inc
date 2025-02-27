@@ -134,6 +134,11 @@ XTEMP1      equ $3837   ; Used by DEF SPRITE
 SPRTLNUM    equ $3838   ; Spritle number
 SPRTCOLS    equ $383A   ; Width in spritles
 SPRTROWS    equ $383C   ; Height in spritles
+; SET SPRITE
+SPARGLEN    equ $383C   ; Sprite argument string length
+SPARGVAL    equ $383E   ; Sprite argument value/string address
+SPARGTYP    equ $3840   ; Sprite argument type 
+
 ; enhance editor
 RIGHTCOL    equ $3838   ; Right bound (LINELEN-1)
 LEFTCOL     equ $3839   ; Left bound (1)

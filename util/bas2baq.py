@@ -312,78 +312,71 @@ for idx, line in enumerate(input_file.readlines()):
     buf = bytearray()
     buf += struct.pack("<H", linenr)
     
-    tbuf = bytearray()
-    
-    wbuf = buf
-
     in_chr = False
     in_str = False
     in_rem = False
+    
+    lastcln = 0
 
     while len(line) > 0:
         upper = line.upper()
 
+        if lastcln and line[0] == "'":
+            buf = buf[:lastcln]
+            line = ""
+            continue
 
         if line[0] == '"' and not in_chr:
             in_str = not in_str
 
         if line[0] == "'" and not in_str:
-            if wbuf == tbuf:
-                wbuf = buf
-                line = ""
-                break
             in_chr = not in_chr
 
         if not (in_str or in_chr or in_rem) and line[0] != " ":
-            if delrems and line[0] == ":":
-                wbuf = tbuf
-                wbuf.append(line[0].encode()[0])
-                line = line[1:]
-                continue
             found = False
             for (token, keyword) in tokens.items():
                 if upper.startswith(keyword):
-                    found = True
                     line = line[len(keyword) :]
-
-                    if wbuf == tbuf:
-                        wbuf = buf
-                        if keyword == "REM":
-                            line = ""
-                            break
-                        else:
-                            buf += tbuf
-
-                    wbuf.append(token)
-
+                    buf.append(token)
                     if keyword in ["REM", "DATA"]:
                         in_rem = True
-
+                    found = True
                     break
 
             if found:
+                if lastcln and buf[-1] == b"\x8e":
+                    buf = buf[:lastcln]
+                    line = ""
+                lastcln = 0
                 continue
 
             for (token, keyword) in xtokens.items():
                 if upper.startswith(keyword):
-                    wbuf.append(xprefix)
-                    wbuf.append(token)
+                    buf.append(xprefix)
+                    buf.append(token)
                     line = line[len(keyword) :]
                     found = True
                     break
 
             if found:
+                lastcln = 0
                 continue
 
-            wbuf.append(line[0].encode()[0])
+            if delrems and line[0] == ':' and len(buf)>2:
+                lastcln = len(buf)
+            else:
+                lastcln = 0
+
+            buf.append(upper[0].encode()[0])
 
         else:
-            wbuf.append(line[0].encode()[0])
-        
-        line = line[1:]
+            buf.append(line[0].encode()[0])
+            if line[0] != ' ':
+                lastcln = 0
 
-    if wbuf == tbuf:
-        buf += tbuf
+        line = line[1:]
+        
+        #print(buf, lastcln)
 
     buf.append(0)
 
@@ -401,3 +394,6 @@ if not tok:
     output_file.write(
         15 *  b"\x00"
     )
+
+input_file.close()
+output_file.close()

@@ -115,12 +115,12 @@ STJUMPS:
     dw      ST_MKDIR              ;$DE MKDIR
     dw      ST_DEL                ;$DF DEL    
     dw      ST_CD                 ;$E0 CD     
-    dw      SNERR                 ;$E1 IN
+    dw      ST_INC                ;$E1 IN
     dw      SNERR                 ;$E2 JOY
     dw      SNERR                 ;$E3 HEX
     dw      ST_RENAME             ;$E4 RENAME
     dw      SNERR                 ;$E5 DATE
-    dw      SNERR                 ;$E6 DEC
+    dw      ST_DEC                ;$E6 DEC
     dw      SNERR                 ;$E7 MOD
     dw      SNERR                 ;$E8 DEEK
     dw      SNERR                 ;$E9 ERR
@@ -322,6 +322,7 @@ err_codes:
         word    MSGIM
         word    MSGBR
         word    MSGES
+        word    MSGSL
 err_disk:
         word    MSGBDF
         word    MSGFNF

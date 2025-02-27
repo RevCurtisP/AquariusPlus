@@ -35,7 +35,8 @@ ERRTO   equ     $36   ; 28 Too many operands
 ERRIM   equ     $38   ; 29 Invalid mode
 ERRBR   equ     $3A   ; 30 Bad range
 ERRES   equ     $3C   ; 31 Empty string
-NONDSK  equ     $3E   ; 32 Last non disk error
+ERRSL   equ     $3E   ; 32 String length
+NONDSK  equ     $40   ; 33 Last non disk error
 ; Disk errors
 DSKERRS equ     $60   ; Start of Disk Errors
 ERRBDF  equ     $60   ; 49 Bad File
@@ -150,7 +151,8 @@ MSGTO:  byte    "Too many operands",0           ; 28
 MSGIM:  byte    "Invalid mode",0                ; 29
 MSGBR:  byte    "Bad range",0                   ; 30
 MSGES:  byte    "Empty string",0                ; 31
-        byte    0                               ; 32  Last non disk error                             
+MSGSL:  byte    "String length",0               ; 32
+        byte    0                               ; 33  Last non disk error                             
 
 ; File System Errors                            ;     ESP32 Error
 doserr_messages:

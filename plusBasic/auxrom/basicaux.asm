@@ -1,5 +1,62 @@
 ; Core routines for BASIC statements and functions
 
+
+; ------------------------------------------------------------------------------
+; ERASE statement core code
+; ------------------------------------------------------------------------------
+; On entry:
+aux_erase_array:
+        ld      h,b               ;[B,C]=START OF ARRAY TO ERASE
+        ld      l,c 
+        dec     bc                ;BACK UP TO THE FRONT
+        dec     bc                
+        dec     bc  
+        dec     bc  
+        add     hl,de             ;[H,L]=THE END OF THIS ARRAY ENTRY
+        ex      de,hl             ;[D,E]=END OF THIS ARRAY
+        ld      hl,(STREND)       ;[H,L]=LAST LOCATION TO MOVE UP
+ERSLOP: rst     COMPAR            ;SEE IF THE LAST LOCATION IS GOING TO BE MOVED
+        ld      a,(de)            ;DO THE MOVE
+        ld      (bc),a  
+        inc     de                ;UPDATE THE POINTERS
+        inc     bc  
+        jr      nz,ERSLOP         ;MOVE THE REST
+        dec     bc  
+        ld      h,b               ;SETUP THE NEW STORAGE END POINTER
+        ld      l,c 
+        ld      (STREND),hl 
+        ret
+
+; ------------------------------------------------------------------------------
+; Decrement variable
+; Input: DE: VarPtr
+;        HL: TxtPtr
+; ------------------------------------------------------------------------------
+bas_dec:
+    ld      ix,FSUBS              ; Operation = FACC = Arg - FACC
+    jr      _incdec               ; Go do it
+
+; ------------------------------------------------------------------------------
+; Increment variable
+; Input: DE: VarPtr
+;        HL: TxtPtr
+; ------------------------------------------------------------------------------
+bas_inc:
+    ld      ix,FADDS              ; Operation = FACC = Arg + FACC
+_incdec:
+    call    CHKNUM                ; Type mismatch error if not numeric
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    push    de                    ; Stack = VarPtr, TxtPtr, RtnAdr
+    push    de                    ; Stack = VarPtr, VarPtr, TxtPtr, RtnAdr
+    ld      hl,FONE               ; (HL) = 1.0
+    call    MOVFM                 ; FACC = 1/0
+    pop     hl                    ; HL = VarPtr; Stack = VarPtr, TxtPtr, RtnAdr
+    call    (jump_ix)             ; Do operation
+    pop     hl                    ; HL = VarPtr; Stack = TxtPtr, RtnAdr
+    call    MOVMF                 ; VarVal = FACC
+    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
+    ret
+
 ; ------------------------------------------------------------------------------
 ; Scan literal string and put Descriptor in FACC
 ; ------------------------------------------------------------------------------

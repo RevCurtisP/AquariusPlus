@@ -877,7 +877,6 @@ ST_DEF_INT:
 
 ;-----------------------------------------------------------------------------
 ; DEF RGBLIST R$ = r,g,b; r,g,b; ...
-; int is a integer between 0 and 65535
 ;-----------------------------------------------------------------------------
 ST_DEF_RGB:
     rst     CHRGET                ; Skip RGB
@@ -1121,10 +1120,44 @@ _def_sprite_string:
     push    bc                    ; Stack = DatLen, BufPtr, VarPtr, RtnAdr
     jp      _finish_def
 
+
 ;-----------------------------------------------------------------------------
-; SET SPRITE sprite$ [ON|OFF] [POS x,y] [TILE tilelist$] [PALETTE palettelist$] [ATTR attrlist$]
-; SET SPRITE sprite$ TILECLIP tileclip$
-; SET SPRITE sprite$ TO proplist$
+; RESET SPRITE spritedef$
+; RESET SPRITE #spritle
+; RESET SPRITE *
+;-----------------------------------------------------------------------------
+ST_RESET_SPRITE:
+    call    _parse_sprite_star
+    ld      iy,bas_reset_sprite
+    jp      gfx_call
+
+; Output: A: VALTYP, DE: SptNum or VarPtr
+_parse_sprite_star:
+    rst     CHRGET                ; Skip SPRITE
+    jp      z,MOERR
+    cp      MULTK                 ; If *
+    jr      nz,_parse_sprite_arg  ;   Use it as a special value type
+    ex      af,af'
+    rst     CHRGET                ;   Skip it
+    ex      af,af'
+    or      a                     ;   Set flags
+    ret                           ; Else
+_parse_sprite_arg:
+    cp      '#'  
+    jr      nz,.string            ; If #
+    call    GETBYT                ;   E = SptNum
+    jr      .valtype              ; Else
+.string
+    call    get_stringvar         ;   DE = VarPtr
+.valtype
+    ld      a,(VALTYP)
+    or      a
+    ret
+
+;-----------------------------------------------------------------------------
+; SET SPRITE spritedef$ [ON|OFF] [POS x,y] [TILE tilelist$] [PALETTE palettelist$] [ATTR attrlist$]
+; SET SPRITE spritedef$ TILECLIP tileclip$
+; SET SPRITE spritedef$ TO proplist$
 ; SET SPRITE * OFF|CLEAR
 ; Attributes: Priority (64), Double-Height (8), Vertical Flip (4), Horizontal Flip (2)
 ; ToDo: SET SPRITE # spritle ...
@@ -1219,7 +1252,7 @@ ST_SET_SPRITE:
     SYNCHK  ','                   ; Require Comma
     call    GETINT                ; DE = Y-pos
     pop     bc                    ; BC = X-pos; Stack = SprAdr, RtnAdr
-    ld      ix,sprite_set_pos     ; IX = jump address
+    ld      ix,_sprite_set_pos    ; IX = jump address
     jr      .do_gfx
 
 .all
@@ -1235,7 +1268,8 @@ ST_SET_SPRITE:
     jp      spritle_toggle_all    ; Disable all off and return
 .allreset
     rst     CHRGET                ; Skip CLEAR
-    jp      spritle_clear_all
+    ld      iy,spritle_reset_all
+    jp      gfx_call
 
 ; On entry: HL = TxtPtr; Stack = SprAdr, RtnAdr
 .tilex   
@@ -1262,6 +1296,10 @@ ST_SET_SPRITE:
     jp      nz,FCERR
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     ret
+
+_sprite_set_pos:
+    ld      iy,sprite_set_pos
+    jp      gfx_call
   
 ;-----------------------------------------------------------------------------
 ; GETSPRITE Attributes
@@ -1287,6 +1325,16 @@ FN_GETSPRITE:
 ; RGB$(r,g,b)
 ; RGB$("RGB")
 ;-----------------------------------------------------------------------------
+; PRINT RGB(1)
+; PRINT RGB(1,2)
+; PRINT RGB(1,2,3)
+; PRINT RGB(1,2,3,4)
+; PRINT RGB("")
+; PRINT RGB("12")
+; PRINT RGB("123")
+; PRINT RGB("1234")
+
+
 ;; ToDo: Add unit tests
 FN_RGB:
     inc     hl                    ; Skip RGB
@@ -1315,46 +1363,23 @@ FN_RGB:
     ld      (hl),d                ; Store MSB
     jp      PUTNEW                ; Set Pointer to StringDesc and return
 
+
 ; Parse RGB triplet, returns DE = RGB integer
 _get_rgb:
     call    FRMTYP                ; Parse first argument
-    jr      z,.rgb_string         ; If numberic
+    ld      iy,bas_rgb_string
+    jr      z,.dorgb              ; If numberic
     call    con_byte16            ;   Convert to Red
     push    af                    ;   Stack = Red, RtnAdr
-    SYNCHK  ','
-    call    get_byte16            ;   Get Green
+    call    get_comma_byte16      ;   Get Green
     push    af                    ;   Stack = Green, Red, RtnAdr
-    SYNCHK  ','
-    call    get_byte16            ;   E = Blue
-.make_rgb
-    pop     af                    ;   A = Green; Stack = Red, RtnAdr
-    and     $0F                   ;   Shift Green to high nybble
-    rla
-    rla
-    rla
-    rla
-    or      e                     ;   A = Green + Blue
-    pop     de                    ;   D = Red; Stack = RtnAdr
-    ld      e,a                   ;   E = Green + Blue
-    ret                           ; Else
-.rgb_string    
-    push    hl                    ;   Stack = TxtPtr, RtnAdr
-    call    free_addr_len         ;   DE = StrAdr, BC = StrLen
-    pop     hl                    ;   HL = TxtPtr, Stack = RtnAdr
-    ld      a,c
-    cp      3                     ;   If StrLen <> 3
-    jp      nz,FCERR              ;     Error out
-    call    .get_nybble           ;   A = Red
-    push    af                    ;   Stack = Red, RtnAdr
-    call    .get_nybble           ;   A = Greeb
-    push    af                    ;   Stack = Green, Red, RtnAdr
-    call    .get_nybble           ;   A = Blue
-    ld      e,a                   ;   E = Blue
-    jr      .make_rgb             ;   Build and return RGB
-.get_nybble
-    ld      a,(de)                ;   A = Color Component
-    inc     de
-    jp      cvt_hex               ; Convert Hex digit to nybble and return
+    call    get_comma_byte16      ;   E = Blue
+    call    no_more               ;   Check for too many operands
+    pop     af                    ;   A = Green
+    pop     bc                    ;   B = Red
+    ld      iy,bas_make_rgb
+.dorgb:
+    jp      gfx_call
 
 test_gs_init:
     push    hl

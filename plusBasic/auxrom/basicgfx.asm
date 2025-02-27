@@ -2,11 +2,60 @@
 ; BASIC Graphics Statement and Function Code in GFX ROM Bank
 ;====================================================================
 
-; Called from _def_sprite_rect
-; On Entry HL = TxtPtr; Stack = DatLen, BufPtr, VarPtr, RtnAdr
-bas_rectsprite:
-    
-    
+; Called from ST_RESET_SPRITE
+; On Entry A = ValTyp, DE: SptNum or VarPtr, HL = TxtPtr
+bas_reset_sprite:
+    jr      nz,.notbyte           ; If Numeric
+    ld      a,e                   ;   A = SptNum
+    cp      64                    ;   If > 63
+    jp      nc,FCERR              ;     Illegal Quantity error
+    jp      spritle_reset         ;   Reset spritle
+.notbyte
+    cp      MULTK                 ; If *
+    jp      z,spritle_reset_all   ;   Reset all spritles
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    ex      de,hl                 ; HL = VarPtr
+    call    string_addr_len       ; C = StrLen, DE = StrAdr
+    jp      z,aux_eserr           ; If StrLen = 0, Empty String Error
+    call    sprite_reset
+    jp      c,gfx_slerr
+    pop     hl
+    ret
+
+; Called from _get_rgb
+; Input: A: Green, B: Red, E:Blue
+bas_make_rgb:
+    and     $0F                   ; Shift Green to high nybble
+    rla
+    rla
+    rla
+    rla
+    or      e                     ; A = Green + Blue
+    ld      e,a                   ; E = Green + Blue
+    ld      d,b                   ; D = Red
+    ret
+bas_rgb_string:
+    push    hl                    ;   Stack = TxtPtr, RtnAdr
+    call    free_addr_len         ;   DE = StrAdr, A = StrLen
+    pop     hl                    ;   HL = TxtPtr, Stack = RtnAdr
+    jp      z,gfx_eserr           ;   If StrLen = 0
+    cp      3                     ;   If StrLen <> 3
+    jp      nz,gfx_slerr          ;     String length error
+    call    .get_nybble           ;   A = Red
+    push    af                    ;   Stack = Red, RtnAdr
+    call    .get_nybble           ;   A = Green
+    push    af                    ;   Stack = Green, Red, RtnAdr
+    call    .get_nybble           ;   A = Blue
+    ld      e,a                   ;   E = Blue
+    pop     af                    ;   A = Green
+    pop     bc                    ;   B = Red
+    jr      bas_make_rgb          ;   Build and return RGB
+.get_nybble
+    ld      a,(de)                ;   A = Color Component
+    inc     de
+    call    aux_cvt_hex           ; Convert Hex digit to nybble and return
+    jp      c,FCERR
+    ret
 
 ; Called from _def_sprite_string
 ; On Entry HL = TxtPtr; Stack = DatLen, BufPtr, VarPtr, RtnAdr
@@ -172,7 +221,7 @@ bas_set_tile_str:
     call    aux_call              ; BC = BinLen, HL = BinAdr
     ex      de,hl                 ; DE = BinAdr
     pop     hl                    ; HL = TilIdx; Stack = RtnAdr
-.settile    
+.settile
     call    tile_set
     ret     c                     ; Return Carry set if overflow
     xor     a                     ; Clear C, set Z flags
@@ -188,13 +237,13 @@ bas_set_tile_ary:
     or      c
     ret     z                     ; End of array, return Z
     ld      a,(hl)                ; A = StrLen
-    inc     hl                    
+    inc     hl
     inc     hl                    ; Skip unused byte
     ld      e,(hl)
-    inc     hl                    
+    inc     hl
     ld      d,(hl)                ; DE = StrAdr
-    inc     hl                    
-    or      a                     
+    inc     hl
+    or      a
     jr      z,.next               ; If StrLen <> 0
     cp      34                    ;   If StrLen <> 34
     ret     nz                    ;     Return NZ
@@ -216,4 +265,11 @@ bas_set_tile_ary:
     dec     bc
     dec     bc
     jr      .loop
-   
+
+
+gfx_eserr:
+    ld      e,ERRES
+    byte    $01                   ; LD BC over LD E
+gfx_slerr:
+    ld      e,ERRSL
+    jp      ERROR

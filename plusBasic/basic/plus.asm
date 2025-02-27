@@ -201,6 +201,25 @@ FN_GETCURSOR:
     jr      push_hl_labbck_floata
 
 ;----------------------------------------------------------------------------
+; Decrement variable 
+; INC A
+;----------------------------------------------------------------------------
+ST_DEC:
+    ld      iy,bas_dec
+    jr      _inc_dec
+
+;----------------------------------------------------------------------------
+; Increment variable 
+; INC A
+;----------------------------------------------------------------------------
+ST_INC:
+    SYNCHK  'C'                   ; Must be IN + C 
+    ld      iy,bas_inc
+_inc_dec
+    CALL    PTRGET
+    jp      aux_call
+
+;----------------------------------------------------------------------------
 ; Search for string in memory
 ; INMEM(address,string$)
 ; INMEM(@page,address,string$)
@@ -1241,6 +1260,8 @@ ST_SET_USR:
 ;-----------------------------------------------------------------------------
 ; PAUSE Statement 
 ;-----------------------------------------------------------------------------
+;; ToDo: make pause_jiffies return carry set if ctrl-c was pressed
+;;       and clear keybuffer if it was
 ST_PAUSE:
     jp      z,.tryin              ; If no argument, wait for key and return
     jp      p,.nottoken           ; If followed by token
@@ -1285,6 +1306,8 @@ ST_RESET:
     jp      z,ST_RESET_PALETTE
     cp      BORDTK
     jp      z,ST_RESET_BORDER
+    cp      SPRITK
+    jp      z,ST_RESET_SPRITE
     jp      SNERR
 
 ;-----------------------------------------------------------------------------

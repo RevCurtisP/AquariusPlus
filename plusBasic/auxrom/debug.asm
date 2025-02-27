@@ -68,13 +68,13 @@ _arrays:
     ld      a,0
     rla                           ; A = StrFlg
     ld      (VALTYP),a            ; VALTYP = StrFlg
-    inc     hl                    ; Skip array data size
     inc     hl
-;    call    _out_equals
+    inc     hl                    
     ld      a,(hl)                ; A = Number of dimensions
     inc     hl
     ld      (DIMFLG),a            ; DIMFLG = NumDim
-;    ld      (dim_base),hl         ; Start of dimension list
+    
+
     call    _walk_array
     jr      _arrays
 

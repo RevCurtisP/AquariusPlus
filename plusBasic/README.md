@@ -100,6 +100,7 @@
  - [ ] **DATA _literal_{,...}** - Define data for `READ` statement.<!--DATA-->
  - [ ] **DATE$** - Return the current date.<!--DATETIME-->
  - [ ] **DATETIME$** - Return the current date and time.<!--DATETIME-->
+ - [ ] **DEC _numvar_** - Decrement numeric variable.
  - [x] **DEC(_hexstring_)** - Convert hexadecimal string to integer.
  - [ ] **DEEK(«!_ext_addr_»|«@_page_,_address_»)** - Read integer from memory.<!--PEEK-->
  - [ ] **DEF ATTRLIST _strvar_=_attr_,...** - Create a string list of sprite and/or tile attributes.<!--defstrlist-->
@@ -173,6 +174,7 @@
  - [ ] **IF _expression_ GOTO _linefref_|THEN _lineno_|_statement_** - Branch to line or execute statements if expression evaluates to true.<!--flow-->
  - [ ] **IN(_port_)** - Read byte from Z80 I/O port.<!--system-->
  - [ ] **IN$(_port_,_length_)** - Read multiple bytes from Z80 I/O port.<!--system-->
+ - [ ] **INC _numvar_** - Increment numeric variable.
  - [ ] **INDEX(\*_array_,_string_)** - Search for string in element of array
  - [ ] **INMEM({@_page_,}_address_,_string_)** - Search for string in memory.
  - [x] **INT(_expression_)** - Return expression rounded down to nearest integer.<!--math-->
@@ -283,6 +285,7 @@
  - [ ] **RESET BORDER** - Set border character and colors to default values.<!--border-->
  - [ ] **RESET PALETTE _palette_** - Reset palette to default RGB values.<!--palette-->
  - [ ] **RESET SCREEN** - Reset current text screen to default settings.
+ - [ ] **RESET SPRITE _spritedef_|#_spritle_|\*** - Reset all spritle properties.<!--sprites-->
  - [ ] **RESTORE {_lineref_}** - Reset READ/DATA pointer to beginning of program or specified line.<!--RESTORE-->
  - [ ] **RESTORE BITMAP|TILEMAP** - _Not implemented._
  - [ ] **RESTORE SCREEN** - Copy respective screen buffer to current text screen.
