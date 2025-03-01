@@ -1,0 +1,11 @@
+# To run a system ROM, use the command
+# RUN /system/sysrom/romname.rom
+#
+s1basic.rom   S1 BASIC
+s2basic.rom   S2 BASIC
+exbasic.rom   Extended BASIC
+s3basic.rom   S3 BASIC
+s3-uk.rom     S3 BASIC UK Keyboard
+sdbasic.rom   SD-BASIC
+sd-uk.rom     SD-BASIC UK Keyboard
+sd-us.rom     SD-BASIC US Keyboard

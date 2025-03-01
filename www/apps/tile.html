@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Aquarius+ Tile Editor</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="palette.js"></script>
+  </head>
+  <body onload="Init()">
+    <div id="palette">
+    </div>
+    <div>
+      <table id="tile">
+        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      </table>
+    </div>
+  </body>
+</html>
+
+<script>
+  p = 0
+  t = document.getElementById("tile")
+  rows = t.rows
+  for (row of rows) {
+    cells = row.cells
+    for (cell of cells) {
+      cell.onclick = function () {PixelClick(this)}
+   }     
+  }
+  function PixelClick(cell) {
+    console.log(cell.style)
+    cell.style.backgroundColor = cbutton.style.backgroundColor
+  }
+  function CellNumber(cell) {
+    r = cell.parentNode.rowIndex
+    c = cell.cellIndex
+    return r * 8 + c
+  }
+
+  function Init() {
+    InitPalette()
+  }
+
+
+</script>

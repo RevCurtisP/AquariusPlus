@@ -1,0 +1,41 @@
+<?php 
+$body_text ='<p>To run a System ROM, use the command <pre>run "http://aquarius.plus/files/sysrom/romname.rom"</pre></p>';
+
+$agent = $_SERVER['HTTP_USER_AGENT'];
+$dirlist = scandir(".");
+
+if (substr($agent,0,5) == "ESP32" or $agent == "Aquarius+ emulator") {
+  foreach ($dirlist as $file) {
+    if (substr($file,0,1) == '.') continue;
+    if (substr($file,-5) == '.html') continue;
+    if (substr($file,-4) == '.php') continue;
+    $date = date("y-m-d H:i",filemtime($file));	
+    $size = sprintf("%5d", filesize($file));
+    $line = $date . " " . $size . " " . $file;
+    print chr(strlen($line)) . $line;
+  }
+} else { ?>
+<html>
+  <head>
+    <title>Aquarius+ Files</title>
+  </head>
+  <body>
+    <?php if ($body_text) print $body_text;?>
+    <table>
+      <tr><th>Filename</th><th>Size</th><th>Date</th></tr>
+    <?php
+      foreach ($dirlist as $file) {
+        if (substr($file,0,1) == '.') continue;
+        if (substr($file,-5) == '.html') continue;
+        if (substr($file,-4) == '.php') continue;
+        print "<tr>";
+        print "<td><a href=\"" . $file . "\">" . $file . "</a></td>";
+        print "<td>" . filesize($file) . "</td>";
+        print "<td>" . date ("F d Y H:i:s.", filemtime($file)) . "</td";
+        print "</tr>\n";
+      }
+    ?>
+    </table>
+  </body>
+</html>
+<?php } ?>

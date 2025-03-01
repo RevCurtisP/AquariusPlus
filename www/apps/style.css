@@ -1,0 +1,23 @@
+#palette {
+  max-width: fit-content;
+  margin-inline: auto;
+}
+
+.color {
+  border: solid 1px black;
+  height: 1.5em;
+  width: 4em;
+}
+
+#tile {
+  border-collapse: collapse;
+  margin: auto;
+}
+
+
+#tile td {
+  border: 1px solid black;
+  border-collapse: collapse;
+  height: 12px;
+  width: 12px;
+}
