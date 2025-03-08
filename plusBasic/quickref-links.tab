@@ -24,7 +24,6 @@ GETSCREEN   BASIC-GETSCREEN-Statement
 GETTILE     BASIC-GETTILE-Statement
 GETPALETTE  BASIC-GETPALETTE$-Function
 GETTILE     BASIC-GETTILE$-Function
-HEX         BASIC-HEX-Function
 IN          BASIC-IN-Function
 INPUT       BASIC-INPUT-Statement
 JOY         BASIC-JOY-Function

@@ -136,6 +136,9 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>CLEAR CURSOR</strong> - Temporarily remove cursor from screen.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
+        <strong>CLEAR KEYS</strong> - Clear keyboard and autotype buffers.</li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
         <strong>CLOAD {{?}<em>filename</em>}|*<em>array</em></strong> - Load or verify program or load array data from cassette.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
@@ -409,10 +412,10 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>GOTO <em>lineref</em></strong> - Branch to line specified by line number or label.<!--flow--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" checked="checked" />
-        <strong>HEX$(<em>number</em>)</strong> - Convert byte or integer into hexadecimal string.<!--HEX--></li>
+        <strong>HEX$(<em>number</em>)</strong> - Convert byte or integer into hexadecimal string.<!--convert--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" checked="checked" />
-        <strong>HEX$(<em>string</em>)</strong> - Convert ASCII string into hexadecimal string.<!--HEX--></li>
+        <strong>HEX$(<em>string</em>)</strong> - Convert ASCII string into hexadecimal string.<!--convert--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>IF <em>expression</em> GOTO <em>linefref</em>|THEN <em>lineno</em>|<em>statement</em></strong> - Branch to line or execute statements if expression evaluates to true.<!--flow--></li>
@@ -458,6 +461,18 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>JOY(<em>stick</em>)</strong> - Read one or both game controllers.<!--JOY--></li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>JOYB(<em>stick</em>)</strong> - Read game controller buttons.<!--JOY--></li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>JOYD(<em>stick</em>)</strong> - Read game controller d-pad.<!--JOY--></li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>JOYK(<em>joyval</em>)</strong> - Decode game controller buttons.<!--JOY--></li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>JOYP(<em>joyval</em>)</strong> - Decode game controller d-pad.<!--JOY--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>JOY$(<em>id</em>)</strong> - Read wireless game controller.<!--JOY--></li>
@@ -589,10 +604,10 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>LWR$(<em>string</em>|<em>byte</em>)</strong> - Lowercases argument string or argument ASCII code converted to string.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>LWRKEY</strong> - Wait for key and return lowercased ASCII code.</li>
+        <strong>LWRKEY</strong> - Return lowercased ASCII code of last key presed.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>LWRKEY$</strong>  - Wait for key and return as lowercased string.</li>
+        <strong>LWRKEY$</strong> - Return lowercased string containing last key pressed.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>MENU</strong> - <em>Not implemented.</em></li>
@@ -1039,10 +1054,10 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>UPR$(<em>string</em>|<em>byte</em>)</strong> - Uppercases argument string or argument ASCII code converted to string.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>UPRKEY</strong> - Wait for key and return uppercased ASCII code.</li>
+        <strong>UPRKEY</strong> - Return uppercased ASCII code of last key presed.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>UPRKEY$</strong>  - Wait for key and return as uppercased string.</li>
+        <strong>UPRKEY$</strong> - Return uppercased string containing last key pressed.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>USE CHRSET <em>0</em>|<em>1</em>|<em>filespec</em></strong> - Copy specified character set to character RAM.<!--CHRSET--></li>

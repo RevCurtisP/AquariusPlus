@@ -7,6 +7,7 @@
 ; CLEAR *array
 ; CLEAR BITMAP [fgcolor, bgcolor]
 ; CLEAR CURSOR
+; CLEAR KEYS
 ;-----------------------------------------------------------------------------
 ; CLEAR CURSOR:PAUSE
 ;; ToDo: CLEAR KEYS - Clear autotype and alt key buffer
@@ -19,13 +20,14 @@ clear_hook:
     cp      XTOKEN                ; If not extended token
     jp      nz,HOOK11+1           ;   Continue with CLEAR
     inc     hl                    ; Skip XTOKEN
-_clear_cursor
+    ld      a,(hl)
+.clear_keys
+    ld      iy,bas_clear_keys
+    cp      KEYTK
+    jp      z,aux_call
     ld      iy,screen_clear_cursor
-    rst     SYNCHR
-    byte    CURTK
-    SYNCHK  'S'                   
-    rst     SYNCHR                ; Require CURSOR
-    byte    ORTK
+.clear_cursor
+    call    require_cursor
     jp      gfx_call_preserve_hl
 
 aux_call_preserve_hl:
@@ -33,6 +35,7 @@ aux_call_preserve_hl:
 aux_call_popret:
     call    aux_call
     pop     hl
+    ret
 
 ST_CLEAR_ARRAY:
     call    get_star_array        ; DE = AryAdr, BC = AryLen 

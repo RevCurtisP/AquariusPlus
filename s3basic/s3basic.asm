@@ -15,7 +15,7 @@
 ;   (Requires new key decode tables in Extended ROM).
 ;
 ;   Add -Daqplus to include Aquarius+ plusBASIC Mods
-;   This will also turn on noreskeys and addkeyrows
+;   This will also turn on noreskeys
 ;
 ;   Add -Dsdbasic to include Aquarius+ SD-BASIC Mods
 ;
@@ -28,8 +28,11 @@ ifdef sdbasic
 pluspatch   equ   1               ;; |
 endif
 
+ifdef uskeys
+noreskeys   equ   1               ;; |
+endif
 
-ifdef pckeys
+ifdef ukkeys
 noreskeys   equ   1               ;; |
 endif
 
@@ -144,7 +147,7 @@ SOUNDX  equ     $2012   ;; | Adjust SOUNDS delay counter in turbo mode
 TTYMOX  equ     $2015   ;; | TTYMOV extension
 SCROLX  equ     $2018   ;; | SCROLL extension
 RESETX  equ     $201B   ;; | Skip start screen, cold boot if ':' pressed
-XINKEY  equ     $201E   ;  | Read keyboard, check ctrl-c if BREAK is OFF
+XINKEY  equ     $201E   ;  | Read buffered key and check for Ctrl-C
 INCNTX  equ     $2021   ;; | INCNTC control keys patch
 INPUTC  equ     $2024   ;; | INPUT Ctrl-C patch
 INCHRX  equ     $2027   ;; | Wait for character, don't BREAK on Ctrl-C
@@ -155,8 +158,11 @@ SCNLBL  equ     $2030   ;; | Scan line label or line number
 TTYFIX  equ     $2033   ;; | TTYFIN Extension
 XFUNKY  equ     $2036   ;; | Extended function key check
 THENHK  equ     $2039   ;; | Scan for ELSE after IF THEN
+;       equ     $203C   ;; | unuseed
 XMAIN   equ     $203F   ;; | Line Crunch Hook
-XSTUFF  equ     $2044   ;; | STUFFH hook
+XSTUFF  equ     $2042   ;; | STUFFH hook
+INCHRA  equ     $2045   ;; | Read alt keyboard port instead of matrix
+;       equ     $2048   ;; | unused
 XCLEAR  equ     $204E   ;; | Issue Error if TOPMEM too low
 XPTRGT  equ     $2054   ;; | PTRGET Hook
 SKPLBL  equ     $205D   ;; | Skip label at beginning of line (SKPLBL)
@@ -173,17 +179,10 @@ endif
 EXTBAS  equ     $2000   ;;Start of Extended Basic
 XSTART  equ     $2010   ;;Extended BASIC Startup Routine
 XINIT   equ     $E010   ;;ROM Cartridge Initialization Entry Point
-ifdef addkeyrows        
+ifdef addkeyrows
 ;;;Code Change: Address of Expanded Key Tables, stored in the last 256 bytes of Extended BASIC.                                                         
 KEYADR  equ     $2F00   ;; | Extended Key Tables Base Address minus 1
 endif                   
-
-ifdef aqplus
-XBANK0  equ     $F0     ;;Bank 0 ($0000-$3FFF) Page (0-63)
-XBANK1  equ     $F1     ;;Bank 1 ($4000-$7FFF) Page (0-63)
-XBANK2  equ     $F2     ;;Bank 1 ($8000-$BFFF) Page (0-63)
-XBANK3  equ     $F3     ;;Bank 1 ($C000-$FFFF) Page (0-63)
-endif
 
         org     $0000   ;;Starting Address of Standard BASIC
 
@@ -2606,7 +2605,6 @@ UDERR:  ld      e,ERRUD           ;;Undimensioned Array error                 ; 
         jp      ERROR                                                         ; 0D97
                                                                               ; 0D98
                                                                               ; 0D99  or      a
-                                                                              
 else
 ;;;Code Change: Remove ancient TTY Delete code
         jr      CHKFUN                                                        
@@ -4740,11 +4738,11 @@ CRCONT: ret                       ;
 INKEY:  rst     CHRGET            ;
         push    hl                ;[M80] SAVE THE TEXT POINTER
 ifdef aqplus
-        call    XINKEY            ;; plusBASIC in_key routine
+        call    XINKEY
 else
         call    CHARCG            ;[M80] GET CHARC AND CLEAR IF SET
 endif
-        jr      z,NULRT           ;{M80} NO CHAR, RETURN NULL STRING
+BUFCIZ: jr      z,NULRT           ;{M80} NO CHAR, RETURN NULL STRING
 BUFCIN: push    af                ;Jump here to Return A as a string
         call    STRIN1            ;[M80] MAKE ONE CHAR STRING
         pop     af                ;
@@ -5463,11 +5461,18 @@ SDELAL: ld      a,h               ;
         dec     hl                ;
         jr      SDELAL            ;;Decrement and loop
 ;;INCHRH, INCHRC, and INCHRI - Get Character from Keyboard
+ifdef aqplus
+INCHRH: nop
+HOOK18: nop
+INCHRC: nop
+INCHRI: jp      INCHRA
+else
 INCHRH: rst     HOOKDO
 HOOK18: byte    18
 ;;Check for keypress
 INCHRC: exx                       ;;Save Registers
 INCHRI: ld      hl,(RESPTR)
+endif
         ld      a,h
         or      a
         jr      z,KEYSCN
@@ -5478,9 +5483,9 @@ INCHRI: ld      hl,(RESPTR)
         cp      15                ;;Less than 15?
         jr      c,KEYFIN          ;;Yes, finish up
         ld      (hl),5            ;;Set debounce counter to 5
-        ex      de,hl             ;;Restore HL
-        inc     hl
-        ld      a,(hl)
+        ex      de,hl             ;; \ Restore HL
+        inc     hl                ;; \ 
+        ld      a,(hl)            ;; \ 
         ld      (RESPTR),hl
         or      a
 ifdef noreskeys
@@ -5495,7 +5500,7 @@ endif
 ifdef addkeyrows
 ;;;Code Change: Read extended 64 key Keyboard by also checking Rows 6 and 7
 ;;;Must be combined with "noreskeys" and requires a compatible Extended BASIC
-;;;Extended BASIC must contain replacement key tables and put the address in KEYVCT
+;;;Extended BASIC must contain replacement key tables at KEYADR
 ;;;
 ;;; Note: On Windows keyboards without the Context Menu key, try Shift-F10
 ;;;
@@ -5572,7 +5577,6 @@ NOKEYS: inc     hl                ;;Point to KCOUNT
         jr      z,SCNINC          ;;0? Increment KCOUNT and return
         inc     (hl)              ;
 KEYFIN: xor     a                 ;;Clear A                                   
-
         exx                       ;;Restore Registers
         ret                       ;                  
 SCNINC: inc     (hl)              ;;Increment KCOUNT
@@ -5670,53 +5674,14 @@ KEYRET: exx                       ;;Restore Registers
         ret
 ;;Key Lookup Tables - 46 bytes each
 ifdef altkeytab
-        include "keytabs.asm"          
+        include "keytabs.asm"
 else  ; altkeytab
-ifdef pckeys
-;; c  |  NUL left up down rt FS  RS   [   ]  GS  ESC 
-;; s  !   @   #   $   %   ^   &   *   (   )   _   +
-;;    1   2   3   4   5   6   7   8   9   0   -   =  
-;;
-;; c  DC1 ETB ENQ DC2 DC4 EM  NAK TAB SI  DLE DEL
-;; s   Q   W   E   R   T   Y   U   I   O   P   \
-;;     q   w   e   r   t   y   u   i   o   p  <-- RETURN
-;;
-;; c   SOH DC3 EOT ACK BEL BS  LF  VT  FF   ~   `
-;; s    A   S   D   F   G   H   J   K   L   :   "
-;;      a   s   d   f   g   h   j   k   l   ;   '
-;;
-;;       SUB CAN ETX SYN STX CO  CR   {   }  US
-;; c      Z   X   C   V   B   N   M   <   >   ?
-;; s SPC  z   x   c   v   b   n   m   ,   .   /
-;;         
-;;Unmodified Key Lookup Table
-KEYTAB: byte    '=',$08,$27,$0D,';','.' ; | Backspace, Return
-        byte    '-','/','0','p','l',',' ; | Apostrophe
-        byte    '9','o','k','m','n','j' ; |
-        byte    '8','i','7','u','h','b' ; |
-        byte    '6','y','g','v','c','f' ; |
-        byte    '5','t','4','r','d','x' ; |
-        byte    '3','e','s','z',' ','a' ; |
-        byte    '2','w','1','q'         ; |
-;;Shifted Key Lookup Table
-SHFTAB: byte    '+',$5C,$22,$0D,':','>' ; | Backslash, Quote, Return
-        byte    '_','?',')','P','L','<' ; | 
-        byte    '(','O','K','M','N','J' ; | 
-        byte    '*','I','&','U','H','B' ; | Apostrophe
-        byte    '^','Y','G','V','C','F' ; | 
-        byte    '%','T','$','R','D','X' ; | 
-        byte    '#','E','S','Z',' ','A' ; | 
-        byte    '@','W','!','Q'         ; | 
-;;Control Key Lookup Table
-CTLTAB: byte    $1B,$7F,'`',$0D,'~','}' ; | ESC DEL GS      NUL    
-        byte    $1D,$1F,']',$10,$0C,'{' ; | GS  US      DLE FF     
-        byte    '[',$0F,$0B,$0D,$0E,$0A ; |     SI  VT  CR  SO  LF   
-        byte    $1E,$09,$1C,$15,$08,$02 ; | RS  TAB FS NAK BS  SOH  
-        byte    $8E,$19,$07,$16,$03,$06 ; | rt  EM  BEL SYN ETX ACK  
-        byte    $9F,$14,$8F,$12,$04,$18 ; | dn  DC4 up  DC2 EOT CAN  
-        byte    $9E,$05,$13,$1A,' ',$01 ; | lft ENC DC3 SUB     SOH  
-        byte    $80,$17,'|',$11         ; | NUL ETB     DC1
-else  ;pckeys
+ifdef uskeys
+        include "keytab_us.asm"
+else
+ifdef ukkeys
+        include "keytab_uk.asm"
+else
 ;;Unmodified Key Lookup Table
 KEYTAB: byte    '=',$08,':',$0D,';','.' ; \ Backspace, Return
         byte    '-','/','0','p','l',',' ; \
@@ -5755,9 +5720,9 @@ else
         byte    $88,$84,$A5,$12,$86,$18 ; \ \ GOTO INPUT THEN ^R READ ^X
         byte    $8A,$85,$13,$9A,$C6,$9B ; \ \ IF DIM ^S CLOAD CHR$ CSAVE
         byte    $97,$8E,$89,$11         ; \ \ LIST REM RUN ^Q
-endif   ;noreskeys
-endif   ;pckeys
 endif   ;altkeytab
+endif   ;uskeys
+endif   ;noreskeys
 ;;Check for Ctrl-C, called from NEWSTT
 INCNTC: push    hl                ;;Save text pointer
         ld      hl,4              ;

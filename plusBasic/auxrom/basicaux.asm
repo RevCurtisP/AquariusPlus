@@ -1,11 +1,15 @@
 ; Core routines for BASIC statements and functions
 
+; ------------------------------------------------------------------------------
+; ------------------------------------------------------------------------------
+bas_bin_str:
+
 
 ; ------------------------------------------------------------------------------
 ; ERASE statement core code
 ; ------------------------------------------------------------------------------
 ; On entry:
-aux_erase_array:
+bas_erase_array:
         ld      h,b               ;[B,C]=START OF ARRAY TO ERASE
         ld      l,c 
         dec     bc                ;BACK UP TO THE FRONT
@@ -26,6 +30,16 @@ ERSLOP: rst     COMPAR            ;SEE IF THE LAST LOCATION IS GOING TO BE MOVED
         ld      l,c 
         ld      (STREND),hl 
         ret
+
+; Called from clear_hook in extended.asm
+; On entry, HL points to KEY token
+bas_clear_keys:
+        inc     hl                ; Skip KEY
+        SYNCHK  'S'               ; Require S
+        xor     a
+        ld      (RESPTR+1),a      ; Reset autotype
+        ld      (CHARC),a         ; Clear INKEY buffer
+        jp      key_clear_fifo    ; Clear keyboard buffer and return
 
 ; ------------------------------------------------------------------------------
 ; Decrement variable
@@ -86,8 +100,12 @@ aux_str_literal:
 
 aux_eserr:
     ld      e,ERRES
+    byte    $01                   ; LD BC over LD E
+aux_slerr:
+    ld      e,ERRSL
     jp      ERROR
 
+; *** Not called from anywhere, don't remember why it's here ***
 aux_set_array:
     rst     CHRGET                ; Skip =
     push    hl                    ; Stack = TxtPtr, RtnAdr
@@ -101,7 +119,7 @@ aux_set_array:
     ld      (ARRAYLEN),bc         ; BC = AryLen
     ld      a,(hl)                ; A = NumDims
     or      a                     ; If no dimensions
-    jp      z,_uderr              ;   Undimensioned array error
+    jp      z,UDERR               ;   Undimensioned array error
     inc     hl
     add     a,a                   ; A = NumDims * 2
     ld      b,0
@@ -121,13 +139,6 @@ aux_set_array:
     ld      e,ERRTO
     jp      z,ERROR               ; If comma, Too many operands error
     jp      SNERR                 ; Else syntax error
-
-
-;Undimensioned Array Error
-_uderr:
-    ld      e,ERRUD
-    jp      ERROR
-
 
 ; Populate array from comma separated text
 ; (ARRAYPTR) = Pointer into array data

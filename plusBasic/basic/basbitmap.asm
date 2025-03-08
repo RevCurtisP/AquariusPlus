@@ -199,6 +199,7 @@ ST_PRESET:
     ld      (hl),$A0              ; No, store base semigraphic
     jp      RSETCC
 
+;; ToDo: Move to GfxROM
 ; Convert PSET Coordinates to Screen Position and Character Mask
 scale_xy: 
     ex      (sp),hl               ; HL = RtnAdr; Stack = TxtPtr     BC=X Coordinate

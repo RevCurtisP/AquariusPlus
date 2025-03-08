@@ -78,6 +78,7 @@
  - [x] **CLEAR \*_array_{,...}** - Clear numeric or string array data.<!--CLEAR-->
  - [ ] **CLEAR BITMAP {_fgcolor_,_bgcolor_}** - Clear bitmap layer.
  - [ ] **CLEAR CURSOR** - Temporarily remove cursor from screen.
+ - [ ] **CLEAR KEYS** - Clear keyboard and autotype buffers.
  - [ ] **CLOAD {{?}_filename_}|\*_array_** - Load or verify program or load array data from cassette.
  - [ ] **CLOSE** - _Not implemented._
  - [ ] **CLS {_fgcolor_,_bgcolor_}** - Clear the text screen.<!--screen-->
@@ -169,8 +170,8 @@
  - [ ] **GETTILE$(_tileno_)** - Return tile pixels.<!--GETTILE-->
  - [ ] **GOSUB _lineref_{:ARGS _expression_{,...} {RETURN _var_{,...}}** - Branch to subroutine with optional call and return arguments.<!--flow-->
  - [ ] **GOTO _lineref_** - Branch to line specified by line number or label.<!--flow-->
- - [x] **HEX$(_number_)** - Convert byte or integer into hexadecimal string.<!--HEX-->
- - [x] **HEX$(_string_)** - Convert ASCII string into hexadecimal string.<!--HEX-->
+ - [x] **HEX$(_number_)** - Convert byte or integer into hexadecimal string.<!--convert-->
+ - [x] **HEX$(_string_)** - Convert ASCII string into hexadecimal string.<!--convert-->
  - [ ] **IF _expression_ GOTO _linefref_|THEN _lineno_|_statement_** - Branch to line or execute statements if expression evaluates to true.<!--flow-->
  - [ ] **IN(_port_)** - Read byte from Z80 I/O port.<!--system-->
  - [ ] **IN$(_port_,_length_)** - Read multiple bytes from Z80 I/O port.<!--system-->
@@ -186,6 +187,10 @@
  - [ ] **INSTR({_offset_,}_haystack_,_needle)** - Search for string _needle_ in string _haystack_.
  - [ ] **JOIN \*_array$_ INTO _string_ DEL _delimiter_** - Join string array elements into delimited string.
  - [ ] **JOY(_stick_)** - Read one or both game controllers.<!--JOY-->
+ - [ ] **JOYB(_stick_)** - Read game controller buttons.<!--JOY-->
+ - [ ] **JOYD(_stick_)** - Read game controller d-pad.<!--JOY-->
+ - [ ] **JOYK(_joyval_)** - Decode game controller buttons.<!--JOY-->
+ - [ ] **JOYP(_joyval_)** - Decode game controller d-pad.<!--JOY-->
  - [ ] **JOY$(_id_)** - Read wireless game controller.<!--JOY-->
  - [ ] **KEY({_keycode_|_string_})** - Check if key is currently pressed.<!--key-->
  - [x] **LEFT$(_string_,_len_)** - Return the first up to _len_ characters of string.<!--string-->
@@ -229,8 +234,8 @@
  - [ ] **LPRINT __ TAB(_integer_)|SPC(_integer_)|_expression_|;|,{...}** - Output data to printer.<!--print-->
  - [x] **LWR(_char_)** - Lowercases numeric ASCII code or ASCII code of first character of string
  - [x] **LWR$(_string_|_byte_)** - Lowercases argument string or argument ASCII code converted to string.
- - [ ] **LWRKEY** - Wait for key and return lowercased ASCII code.
- - [ ] **LWRKEY$**  - Wait for key and return as lowercased string.
+ - [ ] **LWRKEY** - Return lowercased ASCII code of last key presed.
+ - [ ] **LWRKEY$** - Return lowercased string containing last key pressed.
  - [ ] **MENU** - _Not implemented._
  - [x] **MID$(_string_,_start_{,_len_})** - Return first up to _len_ or all remaining characters starting at character _start_ of string.<!--string-->
  - [ ] **MID$(_strvar_,_start__{,_len_})=_string_** - Replace text in string variable.
@@ -379,8 +384,8 @@
  - [ ] **TROFF** - Disable line tracing.
  - [x] **UPR(_char_)** - Uppercases numeric ASCII code or ASCII code of first character of string
  - [x] **UPR$(_string_|_byte_)** - Uppercases argument string or argument ASCII code converted to string.
- - [ ] **UPRKEY** - Wait for key and return uppercased ASCII code.
- - [ ] **UPRKEY$**  - Wait for key and return as uppercased string.
+ - [ ] **UPRKEY** - Return uppercased ASCII code of last key presed.
+ - [ ] **UPRKEY$** - Return uppercased string containing last key pressed.
  - [ ] **USE CHRSET _0_|_1_|_filespec_** - Copy specified character set to character RAM.<!--CHRSET-->
  - [ ] **USE SCREEN {@_page_,}_text_mode_,_gfx_mode_** - _Not implemented._
  - [ ] **USR(_float_)** - Call user-defined machine language routine passing argument and returning result.<!--USR-->
