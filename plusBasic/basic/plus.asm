@@ -25,6 +25,22 @@ _attr_byte:
     jp      push_labbck_floatde
 
 ;-----------------------------------------------------------------------------
+; BIN$(long)
+;-----------------------------------------------------------------------------
+FN_BIN:
+    jp      GSERR
+    inc     hl                    ; Skip BIN
+    SYNCHK  '$'                   ; Require $
+    call    PARTYP                ; FACC = Arg
+    jp      z,TMERR               ; Type mismatch error if string
+    ld      a,(FAC)               ; A = Exponent
+    sub     128                   ; A = BinLen
+    jr      z,.zero_string
+    jr      c,.zero_string
+    
+.zero_string
+
+;-----------------------------------------------------------------------------
 ; BIT(expr,bit#)
 ;-----------------------------------------------------------------------------
 ; ? BIT(1,0)
@@ -163,6 +179,10 @@ FN_GET:
     jr      z,FN_GETCURSOR
     cp      BORDTK
     jp      z,FN_GETBORDER
+    cp      LWRTK
+    jp      z,FN_GETLWR
+    cp      UPRTK
+    jp      z,FN_GETUPR
     jp      SNERR
 
 ;-----------------------------------------------------------------------------
@@ -409,18 +429,26 @@ ST_LOOP:
 
 ;-----------------------------------------------------------------------------
 ; UPR(), UPR$(), LWR(), LWR$
+; GETUPR, GETUPR$, UPRKEY, UPRKEY$
 ;-----------------------------------------------------------------------------
+FN_GETUPR:
+FN_GETLWR:
+    jp      GSERR
+    cp      UPRTK                 ; Set Z it UPRTK, NZ if LWRTK
+    push    af                    ; Stack = UprFlg, RtnAdr
+    inc     hl                    ; Skip UPR/LWR
+    ld      ix,get_key
 FN_UPR:
 FN_LWR:
     ld      a,(hl)                ; Reget Token
     cp      UPRTK                 ; Set Z it UPRTK, NZ if LWRTK
     push    af                    ; Stack = UprFlg, RtnAdr
     inc     hl                    ; Skip UPR/LWR
-    call    check_xtoken
-    pop     af
-    jr      z,.extended
-    call    check_dollar          ; Stack = StrFlg, UprFlg, RtnAdr
-    pop     af                    ; F = StrFlg, Stack = UprFlg, RtnAdr
+    ld      a,(hl)                ; A = NxtChr
+    cp      (XTOKEN)              ; If Extended Token
+    ld      iy,in_key
+    jr      z,.extended           ;   Do UPRKEY, LWRKEY
+    cp      '$'                   ; 
     jr      z,.do_string          ; If UPR() or LWR()
     call    get_char_parens       ;   C = Character
     pop     af                    ;   F = UprFlg; Stack = RtnAdr
@@ -430,7 +458,9 @@ FN_LWR:
     call    uprlwr_char           ;   Convert character
     jp      float_byte            ;   and return it
 .do_string
-    call    PARTYP                ; F = UprFlg; Stack = RtnAdr
+    inc     hl                    ; Skip $
+    call    PARTYP                ; F = ValTyp
+    pop     bc                    ; B = UprType; Stack = RtnAdr
     push    hl                    ; Stack = TxtPtr
     push    hl                    ; Stack = DmyRtn, TxtPtr
     push    bc                    ; Stack = UprFlg, DmyRtn, TxtPtr, RtnAdr
@@ -443,7 +473,6 @@ FN_LWR:
     call    uprlwr_char           ;   Convert character
     ld      e,a
     jp      SETSTR
-
 .string
     call    faclo_addr_len        ; BC = ArgLen, DE = ArgAdr, HL = ArgDsc
     jp      z,pop_null_string     ; If StrLen = 0  Return Null String
@@ -465,7 +494,8 @@ FN_LWR:
  
 ; 10 IF K=UPRKEY:ON -(K=0) GOTO 10:? K: GOTO 10
  
-.extended
+.extended 
+    inc     hl
     rst     SYNCHR                
     byte    KEYTK                 ; Require KEY
     call    check_dollar          ; Stack = StrFlg, UprFlg, RtnAdr
@@ -474,9 +504,7 @@ FN_LWR:
     call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
     push    af                    ; Stack = UprFlg, LABBCK, TxtPtr, RtnAdr
     push    bc                    ; Stack = StrFlg, UprFlg, LABBCK, TxtPtr, RtnAdr
-.loop
-    call    CHARCG                ; Get Keypress
-    jr      z,.loop
+    call    jump_iy               ; Get Keypress
     ld      c,a
     pop     af                    ; A = StrFlg; Stack = UprFlg, LABBCK, TxtPtr, RtnAdr
     jr      z,.key_str            ; If returning number
@@ -1179,8 +1207,13 @@ ST_SET_CURSOR
     call    check_on_off          ; A = $FF if ON, $00 if OFF
     jp      set_cursor_mode
 
+
+require_cursor:
+    rst     SYNCHR
+    byte    CURTK
+    byte    $3E                   ; LD A, over INC HL
 require_sor:
-    rst     CHRGET                ; Skip CUR
+    inc     hl                    ; Skip CUR
     SYNCHK  'S'                  
     rst     SYNCHR                ; Require SOR
     byte    ORTK
@@ -1398,7 +1431,7 @@ FN_WORD:
     ld      a,(hl)                ; (don't skip spaces)
     cp      '$'                   
     jr       z,str_word           
-    call    FRMPRS                ; A = Type
+    call    FRMPRT                ; A = Type
     jp      nz,word_int
     ld      iy,FLOAT_DE
 word_str:
@@ -1474,6 +1507,6 @@ ST_WRITE_KEYS:
    rst      CHRGET                ; Skip KEY
    SYNCHK   'S'                   ; Require S
    call     get_free_string       ; DE = StrAdr, BC = StrLen
-   ld       a,' '                 ; Will be gobbled by Ctrl-C check
+   dec      de                    ; Backup to before start of string
    ld       iy,autokey_write_buffer
    jp       aux_call_popret       ; Write to auto-key buffer

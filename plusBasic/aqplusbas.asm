@@ -41,18 +41,14 @@
     jp      _tty_finish     ; $2033 TTYFIN Display cursor
     jp      _ctrl_keys      ; $2036 XFUNKY _Evaluate extended function keys
     jp      then_hook       ; $2039 THENHK *Not Implemented* Check for ELSE after IF ... THEN
+    jp      just_ret        ; $203C
+    jp      main_ext        ; $203F XMAIN  Save Line# Flag in TEMP3
+    jp      _stuffh_ext     ; $2042 XSTUFF Check for additional tokens when stuffing
+    jp      _read_key       ; $2045 INCHRA Read alt keyboard port instead of matrix
+    jp      just_ret        ; $2048 
+    jp      just_ret        ; $204B
 
-    dc $203F-$,$76
-
-    rst     HOOKDO                ; $203F XMAIN  _main_ext: Save Line# Flag in TEMP3
-    byte    33
-    jp      SCNLIN
-
-    rst     HOOKDO                ; $2044 XSTUFF _stuffh_ext: Check for additional tokens when stuffing
-    byte    34
-    cp      DATATK-':'            ; If not DATA
-    jp      nz,NODATT             ;    Check for REM
-    jp      COLIS                 ; Set up for DATA
+    dc $204E-$,$76
 
     rst     HOOKDO                ; $204E XCLEAR _check_topmem: Verify TOPMEM is in Bank 2
     byte    35
@@ -136,11 +132,9 @@ null_desc:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.24d"
+    db "v0.24e"
     db 0
 plus_len   equ   $ - plus_text
-
-
 
 ; ROM Signature
     assert !($20F6<$)   ; Overflow into Kernel jump table
@@ -425,36 +419,58 @@ _finish_input:
 _incntc_hook:
     ld      a,(BASYSCTL)
     and     BASBRKOFF             ; If BRK is off
-    ret     nz
-    call    _read_key             ; A = Keystroke
-    or      a                     ; If no key pressed
-    ret     z                     ;   Return
+    jr      nz,.drain_buf         ;   Drain buffer
+    ld      a,(CHARC)             ; A = BufKey
+    or      a                     ; If no key buffered
+    jr      z,_buffchr            ;   Buffer the next one
     cp      'C'-64                ; If Ctrl-C
     jp      z,WRMCON              ;   Break
     cp      'D'-64                ; If Ctrl-D
-    jr      z,set_turbo_off       ;   Disable Turbo Mode
+    ld      b,0
+    jr      z,.turbo              ;   Disable Turbo Mode
     cp      'F'-64                ; If Ctrl-F
-    jr      z,set_turbo_on        ;   Disable Turbo Mode
+    ld      b,1
+    jr      z,.turbo              ;   Enable Turbo Mode
     cp      'U'-64                ; If Ctrl-F
-    jr      z,set_turbo_unlmtd    ;   Disable Turbo Mode
+    ld      b,3
+    jr      z,.turbo              ;   Unlimited Turbo Mode
     cp      'S'-64                ; If Cttl-S
-    jr      z,_pause              ;   Wait for keystroke
+    jr      z,.pause              ;   Wait for keystroke
+.drain_buf:
+    ld      a,(KCOUNT)
+    dec     a
+    ld      (KCOUNT),a
+    jr      z,_buffchr
     ret
-
-_pause:
+.turbo
+    ld      a,b
+    call    set_turbo_mode
+    jr      _buffchr
+.pause:
     call    _read_key
-    jr      z,_pause
-    ret
-
-set_turbo_unlmtd:
-    ld      a,3
-    jr      set_turbo_mode
-set_turbo_on:
-    ld      a,1
-    byte    $E6                   ; AND A,$AF
-set_turbo_off:
-    xor   a
-    call  set_turbo_mode
+    jr      z,.pause
+    jr      _buffchr
+    
+;-----------------------------------------------------------------------------
+; Get buffered key
+; Called from INKEY$, INKEY, GETKEY, etc.
+;-----------------------------------------------------------------------------
+in_key:
+    ld      a,(CHARC)             ; Get buffered key
+    or      a
+    ld      c,a
+    jr      z,_buffchr            ; If not 0
+    ld      a,(BASYSCTL)
+    and     BASBRKOFF              
+    jr      nz,_buffchr           ; and BREAK is on
+    ld      a,c
+    cp      'C'-64                ; and Ctrl-C
+    jp      z,WRMCON              ;   Break   
+_buffchr:
+    call    _in_key               ; Read another key
+    ld      (CHARC),a             ; and buffer it
+    ld      a,c
+    or      a                     ; Return previously buffered key
     ret
 
 ;-----------------------------------------------------------------------------
@@ -818,20 +834,13 @@ get_key:
     jr      z,get_key
     ret
     
-in_key:
-    ld      a,(BASYSCTL)          ; If BRK is off
-    and     BASBRKOFF             ;   Read key and return
-    jr      nz,_read_key          ; Else
-    call    _read_key             ;   Read Key
-    cp      3                     ;   If Ctrl-C
-    jp      z,WRMCON              ;     Break out of program
-    or      a                     ;   Else set flags and return
-    ret
-
 ;-----------------------------------------------------------------------------
-; Hook 18 - INCHRC (Get character from keyboard)
+; INCHRA - INCHRH Replacement
 ;-----------------------------------------------------------------------------
 _read_key:
+    xor     a
+    ld      (CHARC),a
+_in_key:
     exx
 .autotype
     ld      hl,(RESPTR)
@@ -848,9 +857,8 @@ _read_key:
     inc     hl
     ld      a,(hl)
     ld      (RESPTR),hl
-    or      a
+     or      a
     jp      nz,.done
-    xor     a
     ld      (RESPTR+1),a
 .done
     out     (c),b
@@ -923,6 +931,9 @@ gfx_call:
 ; - Restores Bank 3 and returns all registers exoept AF'
 ; Input: IY = Routine address
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+aux_call_inret:
+    inc     sp                    ; Discard return address
+    inc     sp
 aux_call_inline:
     ex      af,af'
     ex      (sp),hl               ; HL = RtnAdr
@@ -991,17 +1002,17 @@ hook_table:                     ; ## caller   addr  performing function
     dw      HOOK21+1            ; 21 CSAVE    1C09  Save File to Tape
     dw      token_to_keyword    ; 22 LISPRT   0598  expanding a token
     dw      exec_next_statement ; 23 GONE2    064B  interpreting next BASIC statement
-    dw      run_cmd             ; 24 RUN      06BE  starting BASIC program
+    dw      run_cmd             ; 24 RUN      06BE  starting BASIC program
     dw      on_error            ; 25 ONGOTO   0780  ON statement
     dw      HOOK26+1            ; 26 INPUT    0893  Execute INPUT, bypassing Direct Mode check
     dw      execute_function    ; 27 ISFUN    0A5F  Executing a Function
     dw      HOOK28+1            ; 28 DATBK    08F1  Doing a READ from DATA
     dw      oper_extension      ; 29 NOTSTV   099E  Evaluate Operator (S3 BASIC Only)
-    dw      0                   ; 30                Depracated
+    dw      0                   ; 30                Deprecated
     dw      _ctrl_keys          ; 31 XFUNKY   2045  Evaluate extended function keys
     dw      0                   ; 32                Deprecated
-    dw      main_ext            ; 33 XMAIN    204F  Save Line# Flag`in TEMP3
-    dw      _stuffh_ext         ; 34 XSTUFF   2054  Check for additional tokens when stuffing
+    dw      0                   ; 33                Deprecated
+    dw      0                   ; 34                Deprecated
     dw      _check_topmem       ; 35 XCLEAR   204E  Verify TOPMEM is in Bank 2
     dw      ptrget_hook         ; 36 XPTRGT   2054  Allow _Alphanumunder sftar var name Check for pressed
     dw      skip_label          ; 37 SKPLBL   205D  Skip label at beginning of line (SKPLBL) Check for pressed
@@ -1041,9 +1052,6 @@ fast_hook_handler:
 ;-----------------------------------------------------------------------------
 ; S3 BASIC extensions routines in Auxiliary ROM Page
 ;-----------------------------------------------------------------------------
-
-_main_ext:
-    halt
 
 _next_statement:
     call    page_set_plus
@@ -1219,8 +1227,10 @@ _buffer_write_init:
 
     phase   $C400
 
+    include "auxtables.asm"     ; Lookup tables
     include "auxboot.asm"       ; Cold Boot code moved to AuxROM
     include "basbuf.asm"        ; Basic buffer read/write routines
+    include "basicaux.asm"      ; BASIC auxiliary
     include "debug.asm"         ; Debugging routines
     include "dos.asm"           ; DOS routines
     include "esp_aux.asm"       ; ESP routines in auxiliary ROM
@@ -1229,6 +1239,7 @@ _buffer_write_init:
     include "fileload.asm"      ; File LOAD I/O routines
     include "filesave.asm"      ; File SAVE I/O routines
     include "filestr.asm"       ; File related string assembly routines
+    include "joyaux.asm"        ; BASIC game controller auxiliary code
     include "loadaux.asm"       ; BASIC file operations auxiliary code
     include "misc.asm"          ; Miscellaneous subroutines
     include "s3hooks.asm"       ; S3 BASIC direct mode hooks
@@ -1238,7 +1249,6 @@ _buffer_write_init:
 ;; Grsphics routines
     include "gfxvars.asm"       ; Graphics sysvars and lookup tables
     include "gfx.asm"           ; Main graphics module
-    include "basicaux.asm"      ; BASIC graphics.asm subcalls
     include "basicgfx.asm"      ; BASIC graphics.asm subcalls
     include "color.asm"         ; Color palette module
     include "gfxbitmap.asm"     ; Bitmap graphics routines

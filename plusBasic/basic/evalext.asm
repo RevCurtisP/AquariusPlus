@@ -22,6 +22,8 @@ eval_extension:
     jp      z,eval_ascii
     cp      $5C                   ; Backslash
     jp      z,_escaped
+    cp      '%'
+    jp      z,eval_binary
     cp      ENDTK
     jp      z,eval_end
     cp      DIMTK
@@ -151,7 +153,7 @@ cvt_hex:
 
 pop_null_string:
     pop     bc
-    byte    $01                   ; LD BC, over PUSH BC
+    byte    $06                   ; LD B, over PUSH BC
 push_null_string:
     push    bc                    ; Put Dummy Return Address on Stack
 null_string:
@@ -172,6 +174,24 @@ eval_ascii:
     call    SNGFLT          ; Float it
     pop     hl
     ret
+
+;-------------------------------------------------------------------------
+; Evaluate binary numeric constant in the form of %xxxxxx
+;-------------------------------------------------------------------------
+eval_binary:
+    ld      de,0                  ; LngVal = 0
+    ld      c,0
+.loop
+    rst     CHRGET                ; A = Digit
+    jp      nc,FLOAT_CDE          ; If not a digit, float number and return
+    sub     '0'                   ; Convert digit to binary
+    sra     a                     ; Carry Set if 1, Clear if 0
+    jp      nz,FCERR              ; Illegal quantity error if Digit > 1
+    rl      e
+    rl      d
+    rl      c                     ; Roll bit into LngVal
+    jp      m,OVERR               ; Overflow error if more than 23 bits
+    jr      .loop
 
 ;-------------------------------------------------------------------------
 ; Evaluate backslash escaped string

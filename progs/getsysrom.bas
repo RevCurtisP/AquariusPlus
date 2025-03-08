@@ -16,4 +16,3 @@
 250 END
 300 _badv
 310 PRINT "This utility requires plusBASIC %% or higher" % (V$)
-dir

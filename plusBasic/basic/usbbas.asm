@@ -199,87 +199,68 @@ FN_IN:
     jp      z,FN_INMEM            ;
     jp      SNERR
 
-;-----------------------------------------------------------------------------
+;--------------------------------------------------------------------------------------------------------------------------------
 ; JOY() function
 ; syntax: var = JOY(stick)
 ;    stick - 0 will read left or right
 ;          - 1 will read left joystick only
 ;          - 2 will read right joystick only
 ;
-; |        | Data bus |  Binary  | Hex  | Decimal | JOY  |  JOY()  |
-; | Switch | grounded | 76543210 | code |  code   | Hex  | Decimal |
-; | ------ | -------- | -------- | ---- | ------- | ---- | ------- |
-; |  K1    |  D6      | .1...... |  BF  |   191   |  40  |    64   |
-; |  K2    |  D7,2    | 1....1.. |  7B  |   123   |  84  |   132   |    +------------------------+   +-----------------------+
-; |  K3    |  D7,5    | 1.1..... |  5F  |    95   |  A0  |   160   |    |                        |   |                       |
-; |  K4    |  D5      | ..1..... |  DF  |   223   |  20  |    32   |    |    [K1]  [K2]  [K3]    |   |  [ 64]  [132]  [160]  |
-; |  K5    |  D7,1    | 1.....1. |  7D  |   125   |  82  |   130   |    |                        |   |                       |
-; |  K6    |  D7,0    | 1......1 |  7E  |   126   |  81  |   129   |    |    [K4]  [K5]  [K6]    |   |  [ 32]  [130]  [129]  |
-; |  P1    |  D1      | ......1. |  FD  |   253   |  02  |     2   |    |                        |   |                       |
-; |  P2    |  D1,4    | ...1..1. |  ED  |   237   |  12  |    18   |    |                        |   |                       |
-; |  P3    |  D1,0,4  | ...1..11 |  EC  |   236   |  13  |    19   |    |      P12 P13 P14       |   |       12  4  20       |
-; |  P4    |  D1,0    | ......11 |  FC  |   252   |  03  |     3   |    |   P11      |     P15   |   |    28     |     22    |
-; |  P5    |  D0      | .......1 |  FE  |   254   |  01  |     1   |    |       \    |   /       |   |       \   |   /       |
-; |  P6    |  D0,4    | ...1...1 |  EE  |   238   |  11  |    17   |    |   P10  \   |  /  P16   |   |  24    \  |  /    6   |
-; |  P7    |  D3,0,4  | ...11..1 |  E6  |   230   |  19  |    25   |    |         \  | /         |   |         \ | /         |
-; |  P8    |  D3,0    | ....1..1 |  F6  |   246   |  09  |     9   |    |   P9 ------*------ P1  |   |  8 -------*------- 2  |
-; |  P9    |  D3      | ....1... |  F7  |   247   |  08  |     8   |    |          / |  \        |   |         / | \         |
-; |  P10   |  D3,4    | ...11... |  E7  |   231   |  18  |    24   |    |    P8   /  |   \  P2   |   |   9    /  |  \   18   |
-; |  P11   |  D3,2,4  | ...111.. |  E3  |   227   |  1C  |    28   |    |        /   |    \      |   |       /   |   \       |
-; |  P12   |  D3,2    | ....11.. |  F3  |   243   |  0C  |    12   |    |     P7     |      P3   |   |     25    |    19     |
-; |  P13   |  D2      | .....1.. |  FB  |   251   |  04  |     4   |    |        P6  P5  P4      |   |       17  1  3        |
-; |  P14   |  D2,4    | ...1.1.. |  EB  |   235   |  14  |    20   |    |                        |   |                       |
-; |  P15   |  D1,2,4  | ...1.11. |  E9  |   233   |  16  |    22   |    +------------------------+   +-----------------------+
-; |  P16   |  D1,2    | .....11. |  F9  |   249   |  06  |     6   |
-;-----------------------------------------------------------------------------
+; |        | Data bus |  Binary   | Hex  | Decimal | JOY  |  JOY()  |
+; | Switch | grounded | 765 43210 | code |  code   | Hex  | Decimal |
+; | ------ | -------- | --------- | ---- | ------- | ---- | ------- |
+; |  K1    |  D6      | .1. ..... |  BF  |   191   |  40  |    64   |
+; |  K2    |  D7,2    | 1.. ..1.. |  7B  |   123   |  84  |   132   |    +------------------------+   +-----------------------+
+; |  K3    |  D7,5    | 1.1 ..... |  5F  |    95   |  A0  |   160   |    |                        |   |                       |
+; |  K4    |  D5      | ..1 ..... |  DF  |   223   |  20  |    32   |    |    [K1]  [K2]  [K3]    |   |  [ 64]  [132]  [160]  |
+; |  K5    |  D7,1    | 1.. ...1. |  7D  |   125   |  82  |   130   |    |                        |   |                       |
+; |  K6    |  D7,0    | 1.. ....1 |  7E  |   126   |  81  |   129   |    |    [K4]  [K5]  [K6]    |   |  [ 32]  [130]  [129]  |
+; | ------ | -------- | --------- | ---- | ------- | ---- | ------- |    |                        |   |                       |
+; |  P1    |  D1      | ... ...1. |  FD  |   253   |  02  |     2   |    |                        |   |                       |
+; |  P2    |  D1,4    | ... 1..1. |  ED  |   237   |  12  |    18   |    |      P12 P13 P14       |   |       12  4  20       |
+; |  P3    |  D1,0,4  | ... 1..11 |  EC  |   236   |  13  |    19   |    |   P11      |     P15   |   |    28     |     22    |
+; |  P4    |  D1,0    | ... ...11 |  FC  |   252   |  03  |     3   |    |       \    |   /       |   |       \   |   /       |
+; |  P5    |  D0      | ... ....1 |  FE  |   254   |  01  |     1   |    |   P10  \   |  /  P16   |   |  24    \  |  /    6   |
+; |  P6    |  D0,4    | ... 1...1 |  EE  |   238   |  11  |    17   |    |         \  | /         |   |         \ | /         |
+; |  P7    |  D3,0,4  | ... 11..1 |  E6  |   230   |  19  |    25   |    |   P9 ------*------ P1  |   |  8 -------*------- 2  |
+; |  P8    |  D3,0    | ... .1..1 |  F6  |   246   |  09  |     9   |    |          / |  \        |   |         / | \         |
+; |  P9    |  D3      | ... .1... |  F7  |   247   |  08  |     8   |    |    P8   /  |   \  P2   |   |   9    /  |  \   18   |
+; |  P10   |  D3,4    | ... 11... |  E7  |   231   |  18  |    24   |    |        /   |    \      |   |       /   |   \       |
+; |  P11   |  D3,2,4  | ... 111.. |  E3  |   227   |  1C  |    28   |    |     P7     |      P3   |   |     25    |    19     |
+; |  P12   |  D3,2    | ... .11.. |  F3  |   243   |  0C  |    12   |    |        P6  P5  P4      |   |       17  1  3        |
+; |  P13   |  D2      | ... ..1.. |  FB  |   251   |  04  |     4   |    |                        |   |                       |
+; |  P14   |  D2,4    | ... 1.1.. |  EB  |   235   |  14  |    20   |    +------------------------+   +-----------------------+
+; |  P15   |  D1,2,4  | ... 1.11. |  E9  |   233   |  16  |    22   |    
+; |  P16   |  D1,2    | ... ..11. |  F9  |   249   |  06  |     6   |
+;--------------------------------------------------------------------------------------------------------------------------------
 FN_JOY:
-;; ToDo: Move controller read code to routine in aux_rom 
-    rst     CHRGET                ; Skip Token and Eat Spaces
-    cp      '$'                   
-    push    af                    ; Stack = FnSfx, RtnAdr
-    call    z,CHRGTR              ; If JOY$, skip $
-    call    PARCHK
-    pop     af                    ; A = FnSfx; Stack = RtnAdr
-    push    hl                    ; Stack = TxtPtr, RtnAdr
-    ld      bc,LABBCK
-    push    bc                    ; Stack = LABBCK, TxtPtr, RtnAdr
-    push    af                    ; Stack = FnSfx, LABBCK, TxtPtr, RtnAdr
-    call    CONINT                ; E = FnParm
-    pop     af                    ; A = FnSfx; Stack = LABBCK, TxtPtr, RtnAdr
-    ld      a, e                  ; A = FnParm
-    jr      z,_joy_string
-    or      a
-    jr      nz, .joy01
-    ld      a, $03
-.joy01:
-    ld      e, a
-    ld      bc, $00F7
-    ld      a, $FF
-    bit     0, e
-    jr      z, .joy03
-    ld      a, $0e
-    out     (c), a
-    dec     c
-    ld      b, $FF
-.joy02:
-    in      a,(c)
-    djnz    .joy02
-    cp      $FF
-    jr      nz, .joy05
-.joy03:
-    bit     1,e
-    jr      z, .joy05
-    ld      bc, $00F7
-    ld      a, $0F
-    out     (c), a
-    dec     c
-    ld      b, $FF
-.joy04:
-    in      a, (c)
-    djnz    .joy04
-.joy05:
-    cpl
-    jp      SNGFLT
+    ld      bc,0                  ; FnSfx1, FnSfx2 = None
+    call    .getsfx
+    jr      z,.arg                
+    ld      b,a                   ; B = FnSfx1
+    call    .getsfx
+    jr      z,.arg                
+    ld      c,a                   ; C = FnSfx2
+    inc     hl                    ; Skip FnSfx2
+.arg
+    push    bc                    ; Stack = FnSfxs, RtnAdr
+    call    PARCHK                ; Parse Argument
+    pop     bc                    ; A = FnSfx; Stack = RtnAdr
+    call    push_hl_labbck
+    call    aux_call_inline       ; A = PortVal 
+    word    bas_joy            ;
+    jr      c,_joy_string         ; If JOY$, go do it
+    jp      m,float_signed_byte
+    jp      SNGFLT                ; Float it
+
+.getsfx:
+    inc     hl                     
+    ld      a,(hl)                
+    cp      ' '   
+    ret     z
+    cp      '('
+    ret
+
 
 ;-----------------------------------------------------------------------------
 ; JOY$(stick) function
@@ -309,12 +290,8 @@ FN_JOY:
 ;           7  Share (Xbox Series S/X controller only)
 ;-----------------------------------------------------------------------------
 _joy_string:
-    push    af                    ; Stack = CtlIdx, LABBCK, TxtPtr, RtnAdr
-    ld      a,8                   ; A = BufLen
-    call    STRINI                ; HL = StrDsc, DE = StrAdr
-    pop     af                    ; C = CtlIdx
-    ld      iy,espx_get_gamectrl
-    call    aux_call              ; Read game controller status into buffer
+    call    aux_call_inline       ; Read controller status into temp string
+    word    bas_joy_string
     jp      p,FINBCK              ; Pop LABBCK and do PUTNEW
     xor     a
     ld      (FACLO),a             ; Return null string

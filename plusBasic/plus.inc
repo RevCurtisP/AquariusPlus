@@ -135,7 +135,6 @@ SPRTLNUM    equ $3838   ; Spritle number
 SPRTCOLS    equ $383A   ; Width in spritles
 SPRTROWS    equ $383C   ; Height in spritles
 ; SET SPRITE
-SPARGLEN    equ $383C   ; Sprite argument string length
 SPARGVAL    equ $383E   ; Sprite argument value/string address
 SPARGTYP    equ $3840   ; Sprite argument type 
 
@@ -217,6 +216,9 @@ SYSCTRL_TURBO   equ $0C     ; xxxx11xx  Clock Speed (3.88,7.16,Unlimited)
 
 IRQ_VBLANK      equ $01     ; VBLANK interrupt
 IRQ_VLINE       equ $02     ; Video LINE interrupt
+
+PSG_RIGHTCON    equ 14      ; Right Hand Controller
+PSG_LEFTCON     equ 15      ; Left Hand Controller
 
 ;-----------------------------------------------------------------------------
 ; BASIC Extended character ROM buffers

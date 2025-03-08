@@ -1706,8 +1706,8 @@ _proc_string_arg:
     call    FRESTR                ; HL = StrDsc
     call    string_addr_len       ; BC = StrLen, DE = StrAdr
     xor     a
-    cp      c
-    jp      z,FCERR
+    cp      c                     ; If StrLen = 0
+    jp      z,ESERR               ;   Empty string error
     pop     af                    ; A = Quoted; Stack = TxtPtr
     jp      (IX)                  ; Fast Return
 

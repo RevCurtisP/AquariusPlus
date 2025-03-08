@@ -124,7 +124,7 @@ _erase:
     call    get_star_array_pointer  ; BC = NumDim, DE = NxtAry
     push    hl
     call    aux_call_inline
-    word    aux_erase_array
+    word    bas_erase_array         ; Remove array from variable space
     pop     hl
     ld      a,(hl)            ;SEE IF MORE ERASURES NEEDED
     cp      ','               ;ADDITIONAL VARIABLES DELIMITED BY COMMA

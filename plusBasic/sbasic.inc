@@ -132,7 +132,7 @@ FRMTYP      equ $0112   ; Evaluate formula and return type
 GETYPE      equ $0115   ; Return variable or expression
 FRMPRS      equ $011A   ; Skip character, evaluate formula after parenthesis, and return type
 FRMPRT      equ $011B   ; Evaluate formula after parenthesis and return type
-PARTYP      equ $0123   ; Evaluate formula and return type
+PARTYP      equ $0120   ; Evaluate formula and return type
 FRMSTR      equ $0125   ; Evaluate string formula
 CLDCON      equ $0138   ; Finish S3BASIC cold boot
 HEDING      equ $015F   ; Microsoft copyright message

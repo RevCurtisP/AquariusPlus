@@ -307,7 +307,7 @@ ST_INPUT:
 ; INT(string$, offset)
 ;-----------------------------------------------------------------------------
 FN_INT:
-    call    FRMPRT                ; Skip INT, Eequire '(', and evaluate argument 
+    call    FRMPRS                ; Skip INT, Eequire '(', and evaluate argument 
     ld      iy,float_signed_int   ; If string, set conversion routine
     jp      z,word_str            ;   and jump into WORD()
     SYNCHK  ')'                   ; Else require ')'
