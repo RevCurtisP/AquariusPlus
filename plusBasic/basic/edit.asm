@@ -45,7 +45,8 @@ _do_input:
     ccf                           ; If Row > 25
     ret     c                     ;   Return Carry Set
     ex      de,hl                 ; HL = ColRow
-    call    move_cursor           ; Move to input point
+    call    aux_call_inline
+    word    move_cursor           ; Move to input point
     ld      de,(BUFADR)           ; DE = BufPtr
     ld      l,0                   ; L = CurLen
 _input_loop:

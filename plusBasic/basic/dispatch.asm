@@ -81,7 +81,10 @@ extended_function:
     ld      a,(hl)              ; Get Extended token
     sub     ATTRTK              ; $80 ATTR
     jp      z,FN_ATTR
-    sub     KEYTK-ATTRTK        ; $86 KEY
+    dec     a                   ; $81 PALETTE
+    dec     a                   ; $82 OFF
+    jp      z,FN_OFF
+    sub     KEYTK-OFFTK         ; $86 KEY
     jp      z,FN_KEY
     sub     ARGSTK-KEYTK        ; $8A ARGS
     jp      z,FN_ARGS

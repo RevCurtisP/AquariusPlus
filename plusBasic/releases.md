@@ -1,4 +1,8 @@
 # plusBASIC Release History
+ - v0.24f (2025-03-10)
+    - Added `OFFSET()`
+    - Moved `move_cursor` into AuxROM, split screen offset calculation code into `cursor_offset`.
+    - Moved `DATE`+`TIME`, `MOUSEx`, `JOIN`, and `SPLIT` core code into AuxROM.
  - v0.24e (2025-03-08)
     - Key read logic rewritten to mimic original INKEY$ logic
     - Added `CLEAR KEYS` statement, `%` binary numeric literals

@@ -303,6 +303,14 @@ _joy_string:
 ; Syntax: LOCATE col, row
 ;-----------------------------------------------------------------------------
 ST_LOCATE:
+    call    parse_screen_coord
+    ex      de, hl              ; Switch DE with HL
+    call    aux_call_inline
+    word    move_cursor         ; Cursor to screen location HL (H=col, L=row)
+    ex      de, hl
+    ret
+
+parse_screen_coord:
     call    GETBYT              ; Read number from command line (column). Stored in A and E
     push    af                  ; Column store on stack for later use
     dec     e
@@ -322,9 +330,6 @@ ST_LOCATE:
     inc     e
     pop     af                  ; Restore column from store
     ld      d, a                ; Column in register D, row in register E
-    ex      de, hl              ; Switch DE with HL
-    call    move_cursor         ; Cursor to screen location HL (H=col, L=row)
-    ex      de, hl
     ret
 
 ;-----------------------------------------------------------------------------

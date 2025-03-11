@@ -34,12 +34,33 @@ ERSLOP: rst     COMPAR            ;SEE IF THE LAST LOCATION IS GOING TO BE MOVED
 ; Called from clear_hook in extended.asm
 ; On entry, HL points to KEY token
 bas_clear_keys:
-        inc     hl                ; Skip KEY
-        SYNCHK  'S'               ; Require S
-        xor     a
-        ld      (RESPTR+1),a      ; Reset autotype
-        ld      (CHARC),a         ; Clear INKEY buffer
-        jp      key_clear_fifo    ; Clear keyboard buffer and return
+    inc     hl                ; Skip KEY
+    SYNCHK  'S'               ; Require S
+    xor     a
+    ld      (RESPTR+1),a      ; Reset autotype
+    ld      (CHARC),a         ; Clear INKEY buffer
+    jp      key_clear_fifo    ; Clear keyboard buffer and return
+
+; Called from ST_DATE
+bas_date:
+    ld      ix,esp_get_datetime   ; Read Date and Time into buffer
+    call    bas_read_to_buff      ; Set buffer address and call routine
+    inc     c                     ; 0 = DATETIME$, 1=DATE$
+    ret     z
+    ld      de,8
+    add     hl,de                 ; Start of Time substring
+    xor     a
+    ld      (hl),a                ; Terminate Date substring
+    sbc     hl,de                 ; Set HL back to Buffer address
+    ret
+
+; Called from ST_TIME
+bas_time:
+    ld      ix,esp_get_datetime   ; Read Date and Time into buffer
+    call    bas_read_to_buff      ; Set buffer address and call routine
+    ld      bc,8
+    add     hl,bc                 ; Start of Timr String
+    ret
 
 ; ------------------------------------------------------------------------------
 ; Decrement variable
@@ -69,6 +90,69 @@ _incdec:
     pop     hl                    ; HL = VarPtr; Stack = TxtPtr, RtnAdr
     call    MOVMF                 ; VarVal = FACC
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
+    ret
+
+; Called from FN_MOUSE
+; Input: H: SfxChr
+; Output: A: Result, Sign set if negative
+;         BC: Rsult if Carry set
+bas_mouse:
+    push    hl                    ; Stack = SfxChr, RtnAdr
+    call    espn_get_mouse        ; BC = xpos, D = buttons, E = ypos, L = wheel
+    jr      nz,.not_found
+    ld      a,(MOUSEWDLT)
+    add     l                     ; Accumulate mouse wheel delta
+    ld      (MOUSEWDLT),a
+    pop     af                    ; AF = SfxChr; Stack = RtnAdr
+    cp      'X'
+    jr      z,.xpos
+    cp      'Y'
+    jr      z,.ypos
+    cp      'B'
+    jr      z,.buttons
+    cp      'W'
+    jr      z,.wheel
+.snerr:
+    jp      SNERR
+.buttons
+    ld      a,d
+    byte    $06                   ; LD B, over next instruction
+.ypos:
+    ld      a,e
+    ret
+.not_found:
+    pop     af                    ; Stack = RtnAdr
+    ld      a,-1                  ; Return Not found
+    or      a                     ; Signed result
+    ret
+.xpos:
+    scf
+    ret
+.wheel
+    ld      a,(MOUSEWDLT)
+    ex      af,af'
+    xor     a
+    ld      (MOUSEWDLT),a
+    ex      af,af'
+.signed_byte
+    or      a                     ; Signed result
+    ret
+
+
+; Called from FN_OFF
+; On entry: C = Column, E = Row
+bas_offset:
+    ld      a,(LINLEN)
+    dec     a                   ; 
+    cp      c                   ; If LinLen - 1 < Column
+    jp      c,FCERR             ;   Illegal Quantity error
+    ld      a,24
+    cp      e                   ; If 24 < Row
+    jp      c,FCERR             ;   Illegal Quantity error
+    ld      d,c                 ; D = Column
+    ex      de,hl               ; H = Column, L = Row
+    call    cursor_offset       ; HL = Offset
+    ex      de,hl               ; DE = Offset
     ret
 
 ; ------------------------------------------------------------------------------
@@ -199,6 +283,66 @@ _array_reader:
     SYNCHK  ','                   ; Else require comma
     jr      _array_reader           ;   and get next item
 
+; Called from ST_JOIN
+bas_join:
+    call    get_strbuf_addr       ; HL = StrBuf
+    ld      (BUFADR),hl           ; BufAdr = StrBuf
+    ld      (BUFPTR),hl           ; BufPtr = StrBuf
+    ld      bc,0
+    ld      (BUFLEN),bc           ; BufLen = 0
+.loop
+    ld      hl,(ARRAYPTR)         ; HL = AryPtr
+    call    string_addr_len       ; DE = StrAdr, BC = StrLen
+    ex      de,hl                 ; HL = StrAdr
+    ld      de,(BUFPTR)           ; DE = BufPtr
+    ld      a,(BUFLEN)            ; A = Buflen
+    jr      z,.empty              ; If StrLen > 0
+    add     c                     ;   A = BufLen + StrLen + 1
+    inc     a                     ;   If A > 255
+    jp      c,LSERR               ;     String to long error
+    ldir                          ;   DE = NewPtr
+    dec     a
+.empty
+    inc     a
+    ld      (BUFLEN),a            ;   BufLen = A 
+    ld      a,(SPLITDEL)          ; A = DelChr
+    ld      (de),a                ; (NewPtr) = DelChr
+    inc     de                    ; Bump NewPtr
+    ld      (BUFPTR),de           ; DE = NewPtr
+    call    _skipone              ; If not last element
+    jr      nz,.loop              ;   Loop
+    ld      hl,(BUFPTR)
+    dec     hl                    ; Back up to last delimiter
+    ld      (hl),0                ; Terminate string
+    ld      a,(BUFLEN)            ; A = StrLen
+    dec     a                     ; Cut last delimiter
+    call    STRINI                ; HL = DscTmp, DE = DstAdr
+    push    hl                    ; Stack = DscTmp, TxtAdr, RtnAdr
+    ld      hl,(BUFADR)           ; HL = StrBuf
+    ld      bc,(BUFLEN)           ; BC = BufLen
+    ldir                          ; Copy Buffer to String Space
+    pop     hl                    ; HL = DscTmp; Stack = TxtAdr, RtnAdr
+    ld      de,(SPLITDSC)         ; DE = VarPtr
+aux_movvfm:
+    ld      bc,4                  ; Copy StrDsc to Variable
+    ldir
+    ret
+
+; Called from ST_SPLIT
+bas_split:
+    ld      hl,(SPLITDSC)         ; HL = SrcDsc
+    call    free_hl_addr_len      ; DE = SrcAdr, BC = SrcLen, HL = SrcDsc
+    jp      z,aux_split_fill      ; If null string, pop TxtPtr and return
+    push    bc                    ; Stack = SrcLen, TxtPtr, RtnAdr
+    call    get_strbuf_addr       ; HL = StrBuf
+    pop     bc                    ; BC = SrcLen; Stack = TxtPtr, RtnAdr
+    push    hl                    ; Stack = StrBuf, TxtPtr, RtnAdr
+    ex      de,hl                 ; DE = StrBuf, HL = SrcAdr
+    ldir                          ; Copy Source String to String Buffer
+    xor     a
+    ld      (de),a                ; Null terminate string
+    ld      (SPLITSEG),a          ; SPLITSEG = SegCnt
+    pop     hl                    ; HL = BufPtr; Stack = TxtPtr, RtnAdr
 ; Populate array from comma separated text
 ; Input: HL: BufPtr
 ; (SPLITDSC) = String descriptor of string to split
@@ -206,8 +350,6 @@ _array_reader:
 ; (ARRAYLEN) = Length of array data
 ; (SPLITDEL) = Delimiter to split on 
 ; (SPLITSEG) = String segment count
-
-; HL = TxtPtr (next literal to read)
 aux_split_array:
     call    _skipone              ; Skip first array element
 .loop
@@ -291,7 +433,7 @@ aux_split_fill:
 _skipone
     ld    de,(ARRAYPTR)
     ld    bc,(ARRAYLEN)
-_skipfirst
+bas_skipfirst
     inc   de
     inc   de
     inc   de

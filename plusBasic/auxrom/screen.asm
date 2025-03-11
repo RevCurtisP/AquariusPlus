@@ -1,6 +1,54 @@
 ;=============================================================================
-; Text Screen Assembly Routines
+; Text Screen Auxilliary ROM Routines
 ;=============================================================================
+
+; Input: D: Column, E: Row
+; Output: HL: Screen RAM address
+move_cursor:
+    push    af
+    ; Restore character behind cursor
+    push    hl
+    exx
+    ld      hl, (CURRAM)        ; CHRPOS - address of cursor within matrix
+    ld      a, (CURCHR)         ; BUFO - storage of the character behind the cursor
+    ld      (hl), a             ; Put original character on screen
+    pop     hl
+    call    cursor_offset
+    ld      de, SCREEN          ; Screen character-matrix (= 12288 dec)
+    add     hl, de              ; Putting it all together
+    ex      af,af'
+    jp      TTYFIS              ; Save cursor position and return
+
+
+; Input: H: Column, L: Row
+; Output: HL: Screen offset
+cursor_offset:
+    ; Get Video Mode
+    ld      a,(LINLEN)
+    cp      80                  ; Set Zero Flag if 80 columns
+    ex      af,af'
+    ; Calculate new cursor location
+    ld      a, l
+    add     a, a
+    add     a, a
+    add     a, l
+    ex      de, hl
+    ld      e, d
+    ld      d, $00
+    ld      h, d
+    ld      l, a
+    ld      a, e
+    dec     a
+    add     hl, hl
+    add     hl, hl
+    add     hl, hl              ; HL is now 40 * rows
+    ex      af,af'
+    jr      nz,.not80
+    add     hl, hl              ; HL is now 80 * rows
+.not80
+    add     hl, de              ; Added the columns
+    ret
+
 
 ;-----------------------------------------------------------------------------
 ; Fill Color RAM with current/default colors

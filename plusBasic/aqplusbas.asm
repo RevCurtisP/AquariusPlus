@@ -132,7 +132,7 @@ null_desc:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.24e"
+    db "v0.24f"
     db 0
 plus_len   equ   $ - plus_text
 

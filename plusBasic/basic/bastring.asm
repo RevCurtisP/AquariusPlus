@@ -121,8 +121,7 @@ trim_string:
     pop     hl                    ; HL = ArgDsc; Stack = TxtPtr, RetAdr
     push    af                    ; Stack = TrmLen, TxtPtr, RetAdr
     push    de                    ; Stack = TrmAdr, TrmLen, TxtPtr, RetAdr
-    call    FRETM2                ; HL = ArgDsc
-    call    string_addr_len       ; DE = ArgAdr, C = ArgLen
+    call    free_hl_addr_len      ; DE = ArgAdr, BC = ArgLen, HL = ArgDsc
     ex      de,hl                 ; HL = ArgAdr
     pop     de                    ; DE = TrmAdr; Stack = TrmLen, TxtPtr, RetAdr
     pop     af                    ; A = TrmLen; Stack = TxtPtr, RetAdr

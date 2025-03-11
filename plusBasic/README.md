@@ -249,6 +249,7 @@
  - [ ] **ON .. _integer_ .. GOSUB _lineref_,...** - `GOSUB` one of several line numbers based on _expression_.<!--ON-->
  - [ ] **ON .. _integer_ .. GOTO _lineref_,...** - `GOTO` one of several line numbers based on _expression_.<!--ON-->
  - [ ] **ON ERROR GOTO _lineref_** - Enable or disable error trapping.<!--ON-->
+ - [ ] **OFFSET(_column_,_row_)** - Return offset into Screen or Color RAM.<!--screen-->
  - [ ] **OPEN** - _Not implemented._
  - [ ] **OUT _port_,_byte_|_string_{,...}{;...}** - Write to a Z80 port.<!--OUT-->
  - [ ] **PAD$(_string_,_length_{,_char_})** - Pad string on left or right with optional fill character.<!--PAD-->
@@ -268,8 +269,8 @@
  - [ ] **POKE COLOR _address_,_byte_|_string_{;...}** - Write bytes and/or strings to color RAM.<!--POKESCREEN-->
  - [ ] **POKE SCREEN _address_,_byte_|_string_{;...}** - Write bytes and/or strings to screen RAM.<!--POKESCREEN-->
  - [ ] **POS(_expression__)** - Return current cursor column.
- - [ ] **POSX** - Return 1bpp bitmap last x-position.<!--pixel-->
- - [ ] **POSY** - Return 1bpp bitmap last y-position.<!--pixel-->
+ - [ ] **POSX** - Return last pixel or bloxel x-position.<!--pixel-->
+ - [ ] **POSY** - Return 1bpp pixel or bloxel y-position.<!--pixel-->
  - [ ] **PRESET (_x_,_y_)** - Erase bloxel or pixel.<!--pixel-->
  - [ ] **PRINT __ {@(_x_,_y_)} TAB(_integer_)|SPC(_integer_)|_expression_|;|,{...}** - Display data on screen.<!--print-->
  - [ ] **PSG _register_,_byte_{,...}** - Write bytes to PSG register

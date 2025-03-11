@@ -710,7 +710,6 @@ init_basic_program:
 
 ; Load file contents into array
 ; Stack: StrDsc, RtnAdr
-; free_rom_ext   = 2601
 load_array:
     call    skip_star_array    ;  A = NxtChr, DE = AryPtr, BC = AryLen
     ld      iy,aux_load_caq_array
@@ -1687,6 +1686,9 @@ get_string_direct:
     xor     a                     ;   Quoted = False
     jr      _proc_string_arg      ;   and process it
 
+get_to_string_arg:
+    rst     SYNCHR                
+    byte    TOTK                  ; Require TO
 ;-----------------------------------------------------------------------------
 ; Parse string at text pointer, return String Length and Text Address
 ;  Input: HL: Text Pointee
@@ -1703,8 +1705,7 @@ _proc_string_arg:
     pop     IX                    ; IX = RtnAdr
     push    hl                    ; Stack = TxtPtr
     push    af                    ; Stack = Quoted, TxtPtr
-    call    FRESTR                ; HL = StrDsc
-    call    string_addr_len       ; BC = StrLen, DE = StrAdr
+    call    free_addr_len         ; HL = StrDsc; BC = StrLen, DE = StrAdr
     xor     a
     cp      c                     ; If StrLen = 0
     jp      z,ESERR               ;   Empty string error

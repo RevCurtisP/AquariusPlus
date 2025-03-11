@@ -370,8 +370,7 @@ ST_POKE:
     push    hl                    ; Stack = TxtPtr, RtnAdr
     push    de                    ; Stack = DstAdr, TxtPtr, RtnAdr
     ex      af,af'
-    call    FRESTR                ; HL = StrDsc
-    call    string_addr_len       ; BC = StrLen, DE = StrAdr, HL = StrDsc
+    call    free_addr_len         ; BC = StrLen, DE = StrAdr, HL = StrDsc
     jr      z,.nullstring
     ex      de,hl                 ; HL = StrAdr
     pop     de                    ; DE = DstAdr; Stack = TxtPtr, RtnAdr
