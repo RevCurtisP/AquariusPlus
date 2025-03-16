@@ -102,8 +102,6 @@ pause_jiffies:
 ; Output: A, E: Controller state with bits inverted
 ; Clobbered: BC
 ;-----------------------------------------------------------------------------
-read_gamepad_e:
-    ld      a,e
 read_gamepad:
     or      a
     jr      nz, .joy01
@@ -140,27 +138,29 @@ read_gamepad:
     ret
 
 ;-----------------------------------------------------------------------------
-; Read game controller D-Pad
-; Input: A: Controller ID (0: Both, 1: Left, 2: Right)
+; Decode game controller D-Pad
+; Input: E: read_gamepad result
 ; Output: A: D-Pad direction (1 - 16), 0 if none
 ; Clobbered: BC, DE
 ;-----------------------------------------------------------------------------
-read_game_dpad_e:
-    ld     a,e
-read_game_dpad:
-    call    read_gamepad          ; A = ConVal
-decode_game_dpad_e:
-    ld      a,e
+decode_game_joystk:
+    ld      bc,joystk_table
+    ld      d,$0F
+    jr      _decode_dpad
 decode_game_dpad:
+    ld      bc,dpad_table
+    ld      d,$1F
+_decode_dpad:
+    ld      a,e
     or      a
     ret     z                     ; Return 0 if nothing pressed
     rla                           ; If Bit 7 set (Keys 2, 3, 5, or 6)
     jr      c,_retzero            ;   Return 0
     rra                           ; Put bits back
-    and     $1F                   ; Strip button bits
-    ld      d,high(dpad_table)
-    ld      e,a                   ; DE = TblIdx
-    ld      a,(de)                ; A = PadDir
+    and     d                     ; Isolate direction bits
+    add     c
+    ld      c,a                   ; BC = TblIdx
+    ld      a,(bc)                ; A = PadDir
 _retflags:
     or      a                     ; Set Flags
     ret
@@ -172,28 +172,16 @@ _retzero:
 ; Read game controller D-Pad
 ; Input: A: Controller ID (0: Both, 1: Left, 2: Right)
 ; Output: A: Button (1-6), 0 for none
-; Clobbered: BC, DE
+; Clobbered: B
 ;-----------------------------------------------------------------------------
-read_game_button_e:
-    ld     a,e
-read_game_button:
-    call    read_gamepad          ; A = ConVal
-decode_game_btn_e:
-    ld      a,e
 decode_game_button:
-    or      a
-    ret     z                     ; Return 0 if nothing pressed
-    push    hl                    ; Save HL
-    rla                           ; Bit7 = K1, Bit6 = K4, Carry = Other
-    jr      c,.lookup             ; If Buttons 1 or 4
-    ld      b,1
-    rla                           ;   Bit7 = K4, Carry = K1
-    jr      c,.ret_b              ;   
-    ld      b,4
-    rla                           ;   Bit7 = K4, Carry = K1
-    jr      c,.ret_b              ;   
+    ld      a,e                   ; A = JoyVal
+    and     $E0                   ; If no buttons pressed
+    ret     z                     ;   Return 0
+    jp      p,.lookup
+    ld      a,e
 .lookup
-    rra                           ; Put bits back
+    push    hl
     ld      b,6
     ld      hl,button_table
 .loop
@@ -206,11 +194,6 @@ decode_game_button:
     ld      a,b
     or      a
     ret
-
-
-
-
-    
 
 ;-----------------------------------------------------------------------------
 ; Read keys into buffer

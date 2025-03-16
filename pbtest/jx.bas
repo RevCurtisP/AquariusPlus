@@ -1,0 +1,24 @@
+100 REM Test Extended Joystick Functions
+110 SET CURSOR OFF
+120 CLS
+130 PRINT "JOY(0):"
+132 PRINT "JOYD(0):"
+134 PRINT "JOYJ(0):"
+136 PRINT "JOYK(0):"
+138 PRINT "JOYL(0):"
+140 PRINT "JOYP(0):"
+142 PRINT "JOYR(0):"
+144 PRINT "JOYU(0):"
+
+200 _main:
+220 J=JOY(0)
+230 PRINT @(9,0);HEX$(J);
+232 PRINT @(9,1);JOYD(-J);"  ";
+234 PRINT @(9,2);JOYJ(-J);"  ";
+236 PRINT @(9,3);JOYK(-J);"  ";
+238 PRINT @(9,4);JOYL(-J);"  ";
+240 PRINT @(9,5);JOYP(-J);"  ";
+242 PRINT @(9,6);JOYR(-J);"  ";
+244 PRINT @(9,7);JOYU(-J);"  ";
+
+290 GOTO _main

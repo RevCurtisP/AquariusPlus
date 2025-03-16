@@ -3,12 +3,14 @@
 ;====================================================================
 
 ;--------------------------------------------------------------------------------------------------------------------------------
-; JOY(idx)
-; JOYB(idx) - Read and return button
-; JOYD(idx) - Read and return direction
-; JOYK(joy) - Decode button
-; JOYP(joy) - Decode direction
-;; ToDo: JOYX() and JOYY() - X and Y offsets
+; JOY(Idx/-ArgVal)
+; JOYD() - Down (0/-1)
+; JOYJ() - Joystick direction (1-8)
+; JOYK() - Button mumber (1-6)
+; JOYL() - Left (0/-1)
+; JOYP() - Thumbpad direction (1-16)
+; JOYR() - Right (0/-1)
+; JOYU() - Up (0/-1)
 ; Extended Bluetooth Controller Functions
 ; JOYBA() - A button                  BIT(G$,48)
 ; JOYBB() - B button                  BIT(G$,49)
@@ -26,8 +28,6 @@
 ; JOYDL() - D-pad Left                BIT(G$,61)
 ; JOYDR() - D-pad Right               BIT(G$,62)
 ; JOYDU() - D-pad Up                  BIT(G$,59)
-; JOYDX() - D-pad X-Offet
-; JOYDY() - D-pad Y-Offset
 ; JOYLT() - Left Trigger              ASC(G$,5)
 ; JOYLX() - Left Stick X              BYTE(G$)
 ; JOYLY() - Left Stick Y              BYTE(G$,2)
@@ -42,7 +42,10 @@ bas_joy:
     or      a                     ; If JOY()
     jr      nz,.extended
     call    CONINT
-    jp      read_gamepad          ;   Return inverted port value
+    call    read_gamepad          ;
+    xor     a                     ;   Clear Carry and Sign
+    ld      a,e                   ;   Return inverted port value
+    ret
 .extended
     cp      '$'                   ; If JOY$
     scf                           ;   Return carry set
@@ -52,17 +55,52 @@ bas_joy:
     jr      nz,_joy_gamectrl      ; JOYx()
     ld      a,b                   ;   A = FnSfx1
     push    af                    ;   Stack = FnSfxs, LABBCK, TxtPtr, RtnAdr
-    call    CONINT                ;   E = CtlIdx
-    pop     af                    ;
-    cp      'D'                   ;   If JOYD
-    jp      z,read_game_dpad_e    ;     Read and return direction
-    cp      'B'                   ;   If JOYB
-    jp      z,read_game_button    ;     Read and return button
-    cp      'P'                   ;   If JOYP
-    jp      z,decode_game_dpad_e  ;     Decode direction
+    call    FRCINT                ;   DE = FnArg
+    ld      a,e
+    inc     d                     ;
+    jr      z,.negate             ;   If FnArg >= 0
+    dec     d
+    jp      nz,FCERR
+    call    read_gamepad          ;     A = ! PrtVal
+    byte    $16                   ;   Else (LD D, over NEG)
+.negate
+    neg                           ;     A = - FnArg
+.decode
+    ld      e,a                   ;   E = JoyVal
+    pop     af                    ;   A = FnSfx2
+    cp      'D'
+    ld      d,1
+    jr      z,.udlr
+    cp      'J'                   ;   If JOYJ
+    jp      z,decode_game_joystk  ;     Decode joystick direction
     cp      'K'                   ;   If JOYK
-    jp      z,decode_game_btn_e   ;     Decode button
+    jp      z,decode_game_button  ;     Decode button
+    cp      'L'
+    ld      d,8
+    jr      z,.udlr
+    cp      'P'                   ;   If JOYP
+    jp      z,decode_game_dpad    ;     Decode dpad direction
+    cp      'R'
+    ld      d,2
+    jr      z,.udlr
+    cp      'U'
+    ld      d,4
+    jr      z,.udlr
     jp      SNERR                 ;   Else Syntax error
+
+.udlr
+    ld      a,e
+    rla                           ; If Bit 7 set (Keys 2, 3, 5, or 6)
+    jr      c,_zero               ;   Return 0
+    rra                           ; Put bits back
+    and     d
+    ret     z
+    ld      a,-1
+    or      a
+    ret
+_zero:
+    xor     a
+    ret
 
 
 ; Game Controller String Offsets
@@ -76,8 +114,19 @@ _gc_butns  equ 6  ;(L-Endian) Button Status
 
 _joy_gamectrl:
     push    bc                    ; Stack = FnSfxs, RtnAdr
-    call    CHKSTR                ;
+    call    GETYPE
+    jr      z,.stringarg          ; If FnArg is numeric
+    call    CONINT                ;   Convert to byte
+    ld      de,FBUFFR
+    call    espx_get_gamectrl
+    ld      a,c
+    or      a
+    jr      nz,.decode
+    pop     bc
+    ret
+.stringarg
     call    faclo_addr_len        ; DE = StrAdr, BC = StrLen
+.decode
     ld      a,c                   ; A = StrLen
     or      a                     ; If StrLen = 0
     jp      z,aux_eserr           ;   Empty string error

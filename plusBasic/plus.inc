@@ -1,7 +1,7 @@
-    ;-----------------------------------------------------------------------------
-; regs.inc
+;-----------------------------------------------------------------------------
+; plus.inc
 ;
-; Aquarius+ I/O Registers and Memory Banks
+; plusBASIC System Variables, I/O Registers, and Memory Banks
 ;-----------------------------------------------------------------------------
 
 ;-----------------------------------------------------------------------------
@@ -126,8 +126,10 @@ ARRAYLEN    equ $383F   ; Array data length
 BMPMODE     equ $3837   ; Bitmap Mode 0=1bpp, 2=4bpp
 STARTCOL    equ $3838
 ENDCOL      equ $383A
+RECTWIDTH   equ $383A
 STARTROW    equ $383C
 ENDROW      equ $383E
+RECTHEIGHT  equ $383E
 ; DEF SPRITE
 XTEMP0      equ $3836   ; Used by DEF SPRITE
 XTEMP1      equ $3837   ; Used by DEF SPRITE
