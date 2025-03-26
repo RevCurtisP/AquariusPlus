@@ -132,7 +132,7 @@ null_desc:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.24g"
+    db "v0.24h"
     db 0
 plus_len   equ   $ - plus_text
 
@@ -663,7 +663,7 @@ clear_vblank_irq:
 ; Read key for BASIC color cycle screen
 ;-----------------------------------------------------------------------------
 _xkeyread:
-    call    key_read_ascii
+    call    key_read
     cp      ' '
     ret     nz
 .enter
@@ -819,21 +819,46 @@ _scroll_hook:
     include "paged.asm"
 
 ;-----------------------------------------------------------------------------
-; Alternate keyboard port routines
-;-----------------------------------------------------------------------------
-    include "keyread.asm"
-
-;-----------------------------------------------------------------------------
 ; Utility routines
 ;-----------------------------------------------------------------------------
     include "util.asm"
 
 
+;-----------------------------------------------------------------------------
+; Wait for Key Press
+;-----------------------------------------------------------------------------
 get_key:
     call    in_key
     jr      z,get_key
     ret
+
+;-----------------------------------------------------------------------------
+; Clear alternate keyboard port FIFO buffer
+; Cobbered: A
+;-----------------------------------------------------------------------------
+key_clear_fifo:
+    xor       a
+    out       (IO_KEYBUFF),a
+    ret
     
+;-----------------------------------------------------------------------------
+; Read  key from alternate keyboard port
+; Output: A: Key ASCII value or scsn code (0 = no key pressed)
+;-----------------------------------------------------------------------------
+key_read:
+    in        a,(IO_KEYBUFF)
+    or        a
+    ret
+
+;-----------------------------------------------------------------------------
+; Set keyboard mode
+;  Input: A: Mode (KB_ENABLE | KB_SCANCODE | KB_REPEAT) 
+; Output: A: 0 if succesful, else error code
+;-----------------------------------------------------------------------------
+key_set_keymode:
+    jp      esp_set_keymode
+
+
 ;-----------------------------------------------------------------------------
 ; INCHRA - INCHRH Replacement
 ;-----------------------------------------------------------------------------
@@ -866,7 +891,7 @@ _in_key:
     ret
 .readkey
     exx
-    jp      key_read_ascii    ; Read key from keyboard and return
+    jp      key_read              ; Read key from keyboard and return
 
 ;-----------------------------------------------------------------------------
 ; Input: BC: Byte Count

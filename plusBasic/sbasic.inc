@@ -148,6 +148,7 @@ OVERR:      equ $03D3   ; Overflow Error
 MOERR:      equ $03D6   ; Missing Operand error
 TMERR:      equ $03D9   ; Type mismatch error
 ERROR:      equ $03DB   ; Process error code, E = code (offset to 2 char error name)
+ERRINI      equ $03DD   ; Do ERROR. skipping hoook
 ERRCRD      equ $03E0   ; Print Error Message and Return to Immediate Mode
 ERRPRT      equ $03EA   ; Print Error pointed to by HL and Return to Immediate Mode
 ERRFNE      equ $03F1   ; Print "Error in " + line number and Return to Immediate Mode

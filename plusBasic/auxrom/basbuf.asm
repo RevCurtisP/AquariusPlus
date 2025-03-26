@@ -66,7 +66,7 @@ autokey_write_buffer:
     inc     de
     call    basbuf_write_bytes    ; C = 0 when done
 ;-----------------------------------------------------------------------------
-; Write word to BASIC buffer
+; Write byte to BASIC buffer
 ; Input: C = Byte
 ;        DE = Address
 ; Output: DE = Coerced address + 2

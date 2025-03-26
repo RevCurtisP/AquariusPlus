@@ -17,10 +17,10 @@ _jump_table:
     jp      sys_fill_mem          ; Fill main memory with byte
     jp      sys_swap_mem          ; Swap bytes
     jp      key_clear_fifo        ; Clear alternate keyboard buffer
-    jp      key_read_ascii        ; Read from alternate keyboard buffer
-    jp      key_read_scancode     ; Read scan code sequence from alternate keyboard buffer
+    jp      key_read              ; Read from alternate keyboard buffer
+    jp      just_ret              ; 
     jp      key_set_keymode       ; Set alternate keyboard buffer mode
-    jp      key_pressed           ; Check matrix for keypress
+    jp      just_ret              ; 
     jp      sys_ver_plusbasic     ; Get plusBASIC version string
     jp      sys_num_ver           ; Convert version string to 24-bit number
     

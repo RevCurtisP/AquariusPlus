@@ -263,7 +263,9 @@ xtokens = {
     0xB4: "PATH",
     0xB5: "DUMP",
     0xB6: "BORDER",
-    0xB7: "CHECK"
+    0xB7: "CHECK",
+    0xB8: "REPEAT",
+    0xB9: "UNTIL"
 }
 
 def error(idx, message):

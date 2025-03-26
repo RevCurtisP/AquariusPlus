@@ -80,5 +80,6 @@ _jump_table:
     jp      pause_jiffies
     jp      read_gamepad          ; Read gamepad(s)
     jp      get_gamectrl          ; Read full Xbox controller status
+    jp      key_pressed           ; Check key matrix for key press
     
 _end_jump_table:

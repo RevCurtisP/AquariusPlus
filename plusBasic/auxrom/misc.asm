@@ -67,6 +67,36 @@ bool_checkbit_string:
     ret
 
 ;-----------------------------------------------------------------------------
+; Set Bit in Long
+; Input: A: Bit# (0-23)
+;      CDE: Long
+; Flags: Carry set if A > 23
+;-----------------------------------------------------------------------------
+bool_setbit_long:
+    ld      b,0
+    ld      hl,0                  ; BHL = 1
+    or      a                     ; Clear Carry, set Zero flags
+.loop
+    jr      z,bool_or_long        ; If Not 0
+    sla     l
+    rl      h
+    rl      b                     ;   Move bit right
+    ret     c                     ;   Too far!
+    dec     a                     ;   Count down
+    jr      .loop                 ;   and Loop
+bool_or_long:
+    ld      a,c                   ; CDE = CDE | BHL
+    or      b
+    ld      c,a
+    ld      a,d
+    or      h
+    ld      d,a
+    ld      a,d
+    or      l
+    ld      d,a
+    ret
+
+;-----------------------------------------------------------------------------
 ; Pause program execution
 ; Input: A: Diaable Ctrl-C 
 ;       DE: Number of jiffies
@@ -193,6 +223,53 @@ decode_game_button:
     pop     hl                    ; Restore HL
     ld      a,b
     or      a
+    ret
+
+;-----------------------------------------------------------------------------
+; Check if key is pressed
+;  Input: A: Key matrix code
+; Output: A: -1 if pressed, else 0
+;-----------------------------------------------------------------------------
+key_pressed:
+    cp      $FF
+    jr      nz,.dokey
+    ld      bc,$FF                ; Select all keys
+    ld      c,IO_KEYBOARD
+    in      a,(c)                 ; Read key matrix
+    xor     c                     ; Reverse all bits
+    jr      .done
+.dokey
+    cp      64
+    ccf                           ; If KeyCode > 63
+    ret     c                     ;   Return Carry set
+    push    af                    ; Stack = KeyCode, RtnAdr
+    and     $07                   ; Isolate row number
+    call    _bitmask              ; Get row bitmask
+    ld      e,a                   ; E = RowMsk
+    pop     af                    ; A = KeyCode; Stack = RtnAdr
+    and     $38                   
+    rra                           ; Isolate column number
+    rra
+    rra       
+    call    _bitmask              ; Get column bitmask
+    cpl                           ; Invert it
+    ld      b,a                   ; B = ColMsk
+    ld      c,IO_KEYBOARD
+    in      a,(c)                 ; Read key matrix
+    cpl                           ; Invert result
+    and     e                     ; Isolate row bit
+.done
+    ret     z                     ; Return 0 if not set
+    or      -1                    ; Else return -1 with flags set
+    ret
+_bitmask
+    ld      b,a
+    inc     b
+    xor     a
+    ccf
+.loop
+    rla
+    djnz    .loop
     ret
 
 ;-----------------------------------------------------------------------------

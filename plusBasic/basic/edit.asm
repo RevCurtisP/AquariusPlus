@@ -50,9 +50,9 @@ _do_input:
     ld      de,(BUFADR)           ; DE = BufPtr
     ld      l,0                   ; L = CurLen
 _input_loop:
-    call    key_read_ascii        ; Get keypress
+    call    key_read              ; Get keypress
     jr      z,_input_loop         ; If no key, try again
-    cp      3                    ; If Ctrl-C
+    cp      3                     ; If Ctrl-C
     jr      z,_abort_input        ;   Abort
     cp      24                    ; If Ctrl-X
     jr      z,_abort_input        ;   Abort

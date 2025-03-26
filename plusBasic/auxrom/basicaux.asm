@@ -92,6 +92,39 @@ _incdec:
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     ret
 
+; Called from FN_KEY
+; Input: Arg Type
+bas_key:
+    jr      z,.string             ; If numeric
+    ld      hl,float_signed_byte
+    ld      a,-1
+    rst     FSIGN
+    call    p,CONINT              ;   A = Matrix code
+    call    key_pressed           ;   A = -1 if pressed
+    jp      c,FCERR               ;   Error if invalid keycode
+    ret                           ;   Return result
+.string
+    call    free_addr_len         ; DE = Address, BC - StrLen
+    jp      z,FCERR               ; Error if NULL string
+    ld      hl,SNGFLT
+    ld      b,c
+    ld      c,1
+.loop
+    ld      a,(de)
+    push    bc
+    push    de
+    call    key_pressed           ;   NZ if pressed
+    pop     de
+    pop     bc
+    ld      a,c
+    ret     nz
+    inc     c
+    inc     de
+    djnz    .loop
+    xor     a
+    ret
+
+
 ; Called from FN_MOUSE
 ; Input: H: SfxChr
 ; Output: A: Result, Sign set if negative
@@ -100,9 +133,7 @@ bas_mouse:
     push    hl                    ; Stack = SfxChr, RtnAdr
     call    espn_get_mouse        ; BC = xpos, D = buttons, E = ypos, L = wheel
     jr      nz,.not_found
-    ld      a,(MOUSEWDLT)
-    add     l                     ; Accumulate mouse wheel delta
-    ld      (MOUSEWDLT),a
+    call    .update_wdelt
     pop     af                    ; AF = SfxChr; Stack = RtnAdr
     cp      'X'
     jr      z,.xpos
@@ -129,16 +160,37 @@ bas_mouse:
     scf
     ret
 .wheel
-    ld      a,(MOUSEWDLT)
-    ex      af,af'
+    call    .read_wdelt           ; A = WheelDelt
+    push    af                    ; Stack = WheelDelt, RtnAdr
     xor     a
-    ld      (MOUSEWDLT),a
-    ex      af,af'
+    call    .write_wdelt
+    pop     af
 .signed_byte
     or      a                     ; Signed result
     ret
 
+.update_wdelt
+    push    bc
+    push    de
+    call    .read_wdelt
+    add     l                     ; Accumulate mouse wheel delta
+    call    .write_wdelt
+    pop     de
+    pop     bc
+    ret
 
+.read_wdelt
+    ld      de,MOUSEWDLT
+    call    basbuf_read_byte
+    ld      a,c                   ; C = WheelDelt
+    ret  
+
+.write_wdelt
+    dec     de                    ; DE = MOUSEWDLT
+    ld      c,a
+    jp      basbuf_write_byte
+
+      
 ; Called from FN_OFF
 ; On entry: C = Column, E = Row
 bas_offset:
@@ -153,6 +205,25 @@ bas_offset:
     ex      de,hl               ; H = Column, L = Row
     call    cursor_offset       ; HL = Offset
     ex      de,hl               ; DE = Offset
+    ret
+
+; Called from ST_SET_BIT
+; On entry: AF = VarTyp, BC = VarPtr, DE = BitNo
+bas_set_bit:
+    ld      ix,bool_setbit_long   ; Set the bit
+    jp      z,TMERR               ; No Strings (for now)
+    xor     a                     
+    or      d                     ; If BitNo > 255            
+    jp      nz,FCERR              ;   Illegal Quantity Error
+    ld      a,e                   ; A = BitNo
+    ld      h,b                   ; HL = VarPtr
+    ld      l,c                 
+    push    hl                    ; Stack = VarPtr, RtnAdr
+    push    af                    ; Stack = BitNo, VarPtr, RtnAdr
+    call    MOVFM                 ; FACC = (VarPtr)
+    call    FRC_LONG              ; CDE = Long
+    call    jump_ix
+    jp      c,FCERR
     ret
 
 ; ------------------------------------------------------------------------------

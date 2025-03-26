@@ -70,7 +70,7 @@ trap_error:
         ld      e,c               ; GET BACK ERROR CODE
         ld      a,(ERROR)         ; Get First Instruction of Error Routine
         cp      $F7               ; If it's RST HOOKDO (S3 BASIC)
-        jp      z,$03DD           ;   Clear Stack and Force Error
+        jp      z,ERRINI          ;   Clear Stack and Force Error
         jp      force_error       ; FORCE THE ERROR TO HAPPEN
 
 set_error:

@@ -101,17 +101,11 @@ ERRFLG      equ $382C   ; USED TO SAVE THE ERROR NUMBER SO EDIT CAN BE
 ONEFLG      equ $382D   ; ONEFLG=1 IF WERE ARE EXECUTING AN ERROR TRAP ROUTINE
 ONELIN      equ $382E   ; THE pointer to the LINE TO GOTO WHEN AN ERROR OCCURS
 EXT_FLAGS   equ $3830   ; Extended BASIC flags
-MOUSEWDLT   equ $3831   ; Accumulated change in mouse delta
-BAS_FDESC   equ $3832   ; ESP file descriptor to close on Error or Ctrl-C
-IEND_KEY    equ $3833   ; Key pressed to end input
-SCREENCTL   equ $3834   ; Text Screen flags
-;               $3835   ; unused (1 byte)
+BAS_FDESC   equ $3831   ; ESP file descriptor to close on Error or Ctrl-C
+IEND_KEY    equ $3832   ; Key pressed to end input
+SCREENCTL   equ $3833   ; Text Screen flags
+;               $3834   ; unused (2 bytes)
 ; Temporary variables used within statement code.
-; FILESTAT statement
-FILESIZE    equ $3838   ; File Size (32-bits $3838-$383B)
-FILEATTR    equ $383C   ; File Attribute
-FILEDATE    equ $383D   ; File Datestamp ($383D-$383E)
-FILETIME    equ $383F   ; File Timestamp ($383F-$3840)
 ; SPLIT statement
 SPLITDSC    equ $3838   ; String descriptor 
 SPLITTRM    equ $3838   ; Segment terminator  (overwrites LSB of SPLITDSC)
@@ -239,7 +233,8 @@ GFXVBASE    equ $0100   ; GFX SysVar Base, 256 byte aligned (see gfxvars.asm)
 FKEYDEFS    equ $0200   ; Function Key Definitions (32 bytes each)
 FKEYBASE    equ BASBUF_BASE + FKEYDEFS
 LPRFILSPC   equ $0500   ; LPRINT File Spec (32 byte)
-;         $0520-$07FF   ; Unused
+MOUSEWDLT   equ $0520   ; Accumulated change in mouse delta
+;         $0521-$07FF   ; Unused
 RUNARGS     equ $0800   ; RUN arguments (see run_args in args.asm)
 RUNARGEND   equ $08FF   ; End of RUN arguments
 RUN_PATH    equ $0900   ; Search path for RUN programs

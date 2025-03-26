@@ -255,6 +255,7 @@
  - [ ] **PAD$(_string_,_length_{,_char_})** - Pad string on left or right with optional fill character.<!--PAD-->
  - [ ] **PAUSE** - Halt program execution until key is pressed.<!--PAUSE-->
  - [ ] **PAUSE _jiffies_** - Pauses program execution for the specified amount of time.<!--PAUSE-->
+ - [ ] **PAUSE UNTIL _expression_** - Pauses program execution until _expression_ evaluates to true.<!--PAUSE-->
  - [ ] **PAUSE TRACK** - Pause currently playing track.<!--track-->
  - [ ] **PEEK(«!_ext_addr_»|«{@_page_,}_address_»)** - Read byte from memory.<!--PEEK-->
  - [ ] **PEEK$(«!_ext_addr_»|«{@_page_,}_address_»,_length_)** - Read string from memory.<!--PEEK-->

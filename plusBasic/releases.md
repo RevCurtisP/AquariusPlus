@@ -1,6 +1,13 @@
 # plusBASIC Release History
+ - v0.24h (2025-03-26)
+    - Moved `FN_KEY` and `FN_MOUSE` core code into auxiliary ROM
+    - Renamed kernel routine `key_read_ascii` to `key_read` and removed kernel routine stub `key_read_scan_code`
+    - Moved kernel routines `key_clear_fifo`, `key_read`, and `key_set_keymode` from _keyread.asm_ to _aqplusbas.asm_
+    - Moved kernel routine `key_pressed` from _keyread.asm_ to _auxrom/misc.asm_ and deleted file _keyread.asm_
+    - Modified `FN_KEY` to take string of keycodes instead of ASCII codes and return position in string of key pressed
+    - Added `REPEAT` and `UNTIL` tokens, `PAUSE UNTIL` statement, kernel routine `bool_setbit_long`
  - v0.24g (2025-03-16)
-    - Renamed and added `JOYx()` functions. Allowed controller id as argument to `JOYxx()` functionsd
+    - Renamed and added `JOYx()` functions. Allowed controller id as argument to `JOYxx()` functions
  - v0.24f (2025-03-10)
     - Added `OFFSET()`
     - Moved `move_cursor` into AuxROM, split screen offset calculation code into `cursor_offset`.
