@@ -27,7 +27,8 @@
 914 RETURN
 
 918 _adderror: QR(2)=QR(2)+1:GETARGS QA$:GOSUB _output:ARGS QA$:GOTO _failcheck
-920 _assert:GETARGS QA$:GOSUB _quotes
+920 _assert_nq:GETARGS QA$:GOTO 922
+921 _assert:GETARGS QA$:GOSUB _quotes
 922 ON ERROR GOTO 926:QV=-EVAL(QA$):ON ERROR GOTO 0
 924 GOSUB _output:ARGS QR$(QV)+QA$:QR(QV)=QR(QV)+1:GOTO _failcheck
 926 GOSUB _output:ARGS ERR$+" error in "+QA$:RESUME:ON ERROR GOTO 0:QR(2)=QR(2)+1

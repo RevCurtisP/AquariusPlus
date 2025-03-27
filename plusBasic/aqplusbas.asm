@@ -41,114 +41,29 @@
     jp      _tty_finish     ; $2033 TTYFIN Display cursor
     jp      _ctrl_keys      ; $2036 XFUNKY _Evaluate extended function keys
     jp      then_hook       ; $2039 THENHK *Not Implemented* Check for ELSE after IF ... THEN
-    jp      just_ret        ; $203C
+    jp      _trap_error     ; $203C XERROR Restore Stack, Display Error, and Stop Program
     jp      main_ext        ; $203F XMAIN  Save Line# Flag in TEMP3
     jp      _stuffh_ext     ; $2042 XSTUFF Check for additional tokens when stuffing
     jp      _read_key       ; $2045 INCHRA Read alt keyboard port instead of matrix
-    jp      just_ret        ; $2048 
-    jp      just_ret        ; $204B
-
-    dc $204E-$,$76
-
-    rst     HOOKDO                ; $204E XCLEAR _check_topmem: Verify TOPMEM is in Bank 2
-    byte    35
-    ld      (TOPMEM),hl           ; Set up new top of stack
-    ret                           ; Continue clears
-
-    rst     HOOKDO                ; $2054 XPTRGT ptrget_hook: Allow _Alphanumunder sftar var name
-    byte    36
-    rst     CHRGET                ; Get next character
-    jp      c,ISSEC               ; If digit, save it and eat rest of digits
-    jp      CHKLET                ; Else check for letter
-
-    rst     HOOKDO                ; $205D SKPLBL  skip_label: Skip label at beginning of line (SKPLBL)
-    byte    37
-    ld      (CURLIN),hl           ; Set CURLIN to curent line#
-    jp      GONCON                ; Keep going to GONE
-
-    rst     HOOKDO                ; $2065 SKPLOG  skip_on_label: Skip label in ON GOTO
-    byte    38
-    jp      LINGET
-
-    rst     HOOKDO                ; $206A STRNGX  _string_ext      Don't capitalize letters between single quotes (STRNGX)
-    byte    39
-    jp      z,STRNG               ; If A is '"', process string literal
-    jp      STRNGR                ; Else carry on
-
-    rst     HOOKDO                ; $2065 SKPLOG  skip_on_label: Skip label in ON GOTO
-    byte    40
-    jp      c,LET                 ; If not token, do LET
-    jp      GONEX                 ; Else evauate token
-
-    call    PTRGET                ; $207A IFVARX - String Variable extension
-    rst     HOOKDO
-    byte    41
-    jp      RETVAR                ; Carry on
-
-    call    PTRGET                ; $2082 LETEXT - LET extension
-    rst     HOOKDO
-    byte    42
-    jp      LETEQ                 ; Continue at '=' after variable name
-
-    rst     HOOKDO                ; $208A DIMEXT - Dim extension
-    byte    43
-    call    CHRGT2                ; Reget current character
-    ret     z                     ; If terminator, DIM statement is done
-    jp      DIMNXT                ; Else DIM the next array
-
-    rst     HOOKDO                ; $2093 READX - READ extension
-    byte    44
-read_cont:
-    ld      hl,(DATPTR)
-    jp      READC
-
-    rst     HOOKDO                ; $209B FINEXT - READ extension
-    byte    45
-    jp      FIN
-
-    rst     HOOKDO                ; $20A0 CLEARX - CLEARC extension
-    byte    46
-clear_cont:
-    ld      hl,(VARTAB)
-    jp      CLEARV
+    jp      _check_topmem   ; $2048 XCLEAR Verify TOPMEM is in Bank 2
+    jp      ptrget_hook     ; $204B XPTRGT Allow ~alphanumunder after var name
+    jp      skip_label      ; $204E SKPLBL Skip label at beginning of line
+    jp      skip_on_label   ; $2051 SKPLOG Skip label in ON GOTO
+    jp      _string_ext     ; $2054 STRNGX Don't capitalize letters between single quotes (STRNGX)
+    jp      _check_comment  ; $2057 CHKCMT Check for ' and treat as REM
+    jp      isvar_extension ; $205A ISVARX Variable evaluation extension - string splicing
+    jp      let_extension   ; $205D LETEXT Variable assignment extension - string splicing
+    jp      dim_extension   ; $2060 DIMEXT DIM extension - Populate array from list
+    jp      read_extension  ; $2063 REEADX READ extension - READ DATA into array
+    jp      fin_extension   ; $2066 FINEXT Extensions to FIN routine
+    jp      clear_extension ; $2069 CLEARX CLEAR extension - Close files
 
 just_ret:
     ret
 
-auto_cmd:
-    db      'RUN "'
-auto_text
-    db      "autoexec"
-auto_len = $ - auto_text
-    db      $0D
-auto_desc
-    dw      auto_len,auto_text
-
-; Null string descriptor
-null_desc:
-    word    0,null_desc
-
-; plusBASIC cold start messafe
-plus_text:
-    db "plusBASIC "
-plus_version:
-    db "v0.24h"
-    db 0
-plus_len   equ   $ - plus_text
-
-; ROM Signature
-    assert !($20F6<$)   ; Overflow into Kernel jump table
-    dc $20F7-$,$76
-    byte    "Aquarius+"
-
-; Start Kernel jump table at $2100
-    include "kernel.asm"
 
 ;-----------------------------------------------------------------------------
 ; Reset vector
-;
-; CAUTION: stack isn't available at this point, so don't use any instruction
-;          that uses the stack.
 ;-----------------------------------------------------------------------------5
 _reset:
     ; Disable interrupts and turbo mode
@@ -161,36 +76,8 @@ _reset:
 
     ; Set up temp stack in text line buffer
     ld      sp, $38A0
-
-init_banks:
-
-    ; Initialize Banks 1 to 3
-    ld      a,ROM_SYS_PG | BANK_OVERLAY | BANK_READONLY
-    out     (IO_BANK0), a
-    ld      a,RAM_BAS_1
-    out     (IO_BANK1), a
-    ld      a,RAM_BAS_2
-    out     (IO_BANK2), a
-
-    ; Call routines in Aux ROM
-    ld      a,ROM_AUX_RO
-    out     (IO_BANK3), a
-    call    screen_reset          ; Init video mode
-
-    ; Initialize ESP
-    ld      a, ESPCMD_RESET
-    call    esp_cmd
-
-    ; Turn on Keyboard Buffer
-    ld      a,KB_ENABLE | KB_ASCII
-    call    key_set_keymode
-
-    ; Initialize Bank 3
-    ld      a, ROM_EXT_RO          ; Soft Cartridge
-    out     (IO_BANK3), a
-
-    ; Back to system ROM init
-    jp      JMPINI
+    
+    jp      init_banks
 
 ;-----------------------------------------------------------------------------
 ; Intercept WRMCON call
@@ -225,6 +112,67 @@ _coldboot:
     call    file_load_pt3play
     call    page_set_plus
     jp      do_coldboot
+
+auto_cmd:
+    db      'RUN "'
+auto_text
+    db      "autoexec"
+auto_len = $ - auto_text
+    db      $0D
+auto_desc
+    dw      auto_len,auto_text
+
+; Null string descriptor
+null_desc:
+    word    0,null_desc
+
+; plusBASIC cold start messafe
+plus_text:
+    db "plusBASIC "
+plus_version:
+    db "v0.24h45"
+    db 0
+plus_len   equ   $ - plus_text
+
+; ROM Signature
+    assert !($20F6<$)   ; Overflow into Kernel jump table
+    dc $20F7-$,$76
+    byte    "Aquarius+"
+
+; Start Kernel jump table at $2100
+    include "kernel.asm"
+
+
+init_banks:
+
+    ; Initialize Banks 1 to 3
+    ld      a,ROM_SYS_PG | BANK_OVERLAY | BANK_READONLY
+    out     (IO_BANK0), a
+    ld      a,RAM_BAS_1
+    out     (IO_BANK1), a
+    ld      a,RAM_BAS_2
+    out     (IO_BANK2), a
+
+    ; Call routines in Aux ROM
+    ld      a,ROM_AUX_RO
+    out     (IO_BANK3), a
+    call    screen_reset          ; Init video mode
+
+    ; Initialize ESP
+    ld      a, ESPCMD_RESET
+    call    esp_cmd
+
+    ; Turn on Keyboard Buffer
+    ld      a,KB_ENABLE | KB_ASCII
+    call    key_set_keymode
+
+    ; Initialize Bank 3
+    ld      a, ROM_EXT_RO          ; Soft Cartridge
+    out     (IO_BANK3), a
+
+    ; Back to system ROM init
+    jp      JMPINI
+
 
 ;-----------------------------------------------------------------------------
 ; Default Interrupt Handler
@@ -972,6 +920,7 @@ aux_call_inline:
     ex      af,af'
 aux_call:
     call    page_map_auxrom
+_jumpiy:
     call    jump_iy
     jp      page_restore_bank3
 
@@ -986,16 +935,15 @@ aux_call:
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ext_call:
     call    page_map_extrom
-    call    jump_iy
-    jp      page_restore_bank3
-
-
+    jr      _jumpiy
 
     free_rom_sys = $2F00 - $
 
 ; ------------------------------------------------------------------------------
 ;  Hook Jump Table
 ; ------------------------------------------------------------------------------
+;;; ToDo: Put extended error jumps here after UDF hooks eliminated
+
 
     assert !($2EFF<$)   ; ROM full!
     dc $2F00-$,$76
@@ -1003,7 +951,7 @@ ext_call:
 ; BASIC Hook Jump Table
 ; 58 Bytes
 hook_table:                     ; ## caller   addr  performing function
-    dw      _trap_error         ;  0 ERROR    03DB  Initialize Stack, Display Error, and Stop Program
+    dw      0                   ;  0                Deprecated
     dw      force_error         ;  1 ERRCRD   03E0  Print Error Message
     dw      direct_mode         ;  2 READY    0402  BASIC command line (immediate mode)
     dw      HOOK3+1             ;  3 EDENT    0428  Save Tokenized Line
@@ -1033,23 +981,6 @@ hook_table:                     ; ## caller   addr  performing function
     dw      execute_function    ; 27 ISFUN    0A5F  Executing a Function
     dw      HOOK28+1            ; 28 DATBK    08F1  Doing a READ from DATA
     dw      oper_extension      ; 29 NOTSTV   099E  Evaluate Operator (S3 BASIC Only)
-    dw      0                   ; 30                Deprecated
-    dw      _ctrl_keys          ; 31 XFUNKY   2045  Evaluate extended function keys
-    dw      0                   ; 32                Deprecated
-    dw      0                   ; 33                Deprecated
-    dw      0                   ; 34                Deprecated
-    dw      _check_topmem       ; 35 XCLEAR   204E  Verify TOPMEM is in Bank 2
-    dw      ptrget_hook         ; 36 XPTRGT   2054  Allow _Alphanumunder sftar var name Check for pressed
-    dw      skip_label          ; 37 SKPLBL   205D  Skip label at beginning of line (SKPLBL) Check for pressed
-    dw      skip_on_label       ; 38 SKPLOG   2065  Skip label in ON GOTO Check for pressed
-    dw      _string_ext         ; 39 STRNGX   206A  Don't capitalize letters between single quotes (STRNGX) Check for pressed
-    dw      _check_comment      ; 40 CHKCMT   2027  Check for ' and treat as REM
-    dw      isvar_extension     ; 41 ISVAR    0A4E  Parse variable and put value in FACLO
-    dw      let_extension       ; 42 LET      0731  Extensions to the LET command
-    dw      dim_extension       ; 43 DIM      10CC  Extensions to the LET command
-    dw      read_extension      ; 44 READ     08BE  Extensions to the LET command
-    dw      fin_extension       ; 45 FINEXT   209B  Extensions to FIN routine
-    dw      clear_extension     ; 46 CLEARX   20A0  Extensions to FIN routine
 
 ; ------------------------------------------------------------------------------
 ;  Execute Hook Routine
@@ -1094,10 +1025,10 @@ _trap_error:
     call    page_set_plus
     jp      trap_error
 
-aux_rom_call:
-    call    page_set_aux
-    call    jump_ix
-    jp      page_set_plus
+;aux_rom_call:
+;    call    page_set_aux
+;    call    jump_ix
+;    jp      page_set_plus
 
 _string_ext:
     call    page_set_aux
@@ -1120,11 +1051,18 @@ _check_comment:
     rst     CHRGET                ; Skip '
     jp      REM                   ;   and do REM
 
+_dim_extension:
+    call    dim_extension         ; DIM extension - Populate array from list
+    call    CHRGT2                ; Reget current character
+    ret     z                     ; If terminator, DIM statement is done
+    jp      DIMNXT                ; Else DIM the next array
+
 clear_extension:
     call    esp_close_all         ; Close all files
     xor     a
     ld      (BAS_FDESC),a         ; Clear currently open file
-    jp      clear_cont
+    ld      hl,(VARTAB)
+    jp      CLEARV
 
 ;-----------------------------------------------------------------------------
 ; Internal routines to write to BASIC buffers

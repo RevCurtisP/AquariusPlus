@@ -1,4 +1,7 @@
 # plusBASIC Release History
+ - v0.24i (2025-03-27)
+    - Replaced UDF hooks 0, 35 through 45 with direct jumps
+    - Deleted deprecated routine `aux_rom_call`
  - v0.24h (2025-03-26)
     - Moved `FN_KEY` and `FN_MOUSE` core code into auxiliary ROM
     - Renamed kernel routine `key_read_ascii` to `key_read` and removed kernel routine stub `key_read_scan_code`

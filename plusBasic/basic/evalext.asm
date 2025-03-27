@@ -482,6 +482,7 @@ oper_stringsub:
 
 ; On Entry: DE = VarPtr, HL = TxtPtr
 let_extension:
+    call    PTRGET                ; Parse variable name
     call    GETYPE                ; If not string variable
     jp      nz,LETEQ              ;   Continue LET
     ld      a,(hl)
@@ -558,6 +559,7 @@ _no_copy:
 ; var$[p] evaluates to character p of var$
 ; var$[f TO t] evaluates to characters f through t of var$
 isvar_extension:
+    call    PTRGET                ; Parse variable name
     ld      a,(VALTYP)
     or      a                     ; If not string variable
     jp      z,RETVAR              ;   Return it

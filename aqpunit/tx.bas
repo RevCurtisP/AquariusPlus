@@ -1,5 +1,5 @@
 100 REM Test Tiles Sprite BASIC Errors
-
+110 QG$="vl"
 120 GOSUB _init
 
 200 GOSUB _title:ARGS "Tile and Sprite BASIC Errors"

@@ -35,9 +35,9 @@ do_coldboot:
     ld      iy,bitmap_init_vars
     call    gfx_call
 
-    ld      d,$10                 ; Row 5 = Shift
-    call    _modkey_check         ; If shift held down
-    jp      nz,CLDCON             ;   Boot into S3 BASIC  
+;    ld      d,$10                 ; Row 5 = Shift
+;    call    _modkey_check         ; If shift held down
+;    jp      nz,CLDCON             ;   Boot into S3 BASIC  
 
 ; Install BASIC HOOK
     ld      hl,fast_hook_handler

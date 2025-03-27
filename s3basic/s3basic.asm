@@ -158,23 +158,22 @@ SCNLBL  equ     $2030   ;; | Scan line label or line number
 TTYFIX  equ     $2033   ;; | TTYFIN Extension
 XFUNKY  equ     $2036   ;; | Extended function key check
 THENHK  equ     $2039   ;; | Scan for ELSE after IF THEN
-;       equ     $203C   ;; | unuseed
+XERROR  equ     $203C   ;; | Restore Stack, Display Error, and Stop Program
 XMAIN   equ     $203F   ;; | Line Crunch Hook
 XSTUFF  equ     $2042   ;; | STUFFH hook
 INCHRA  equ     $2045   ;; | Read alt keyboard port instead of matrix
-;       equ     $2048   ;; | unused
-XCLEAR  equ     $204E   ;; | Issue Error if TOPMEM too low
-XPTRGT  equ     $2054   ;; | PTRGET Hook
-SKPLBL  equ     $205D   ;; | Skip label at beginning of line (SKPLBL)
-SKPLOG  equ     $2065   ;; | Skip Label in ON GOTO/GOSUB
-STRNGX  equ     $206A   ;; | Don't capitalize letters between single quotes
-CHKCMT  equ     $2072   ;; | Check for ' and treat as REM
-ISVARX  equ     $207A   ;; | Variable evaluation extension
-LETEXT  equ     $2082   ;; | LET extension
-DIMEXT  equ     $208A   ;; | DIM extension
-READX   equ     $2093   ;; | READ extension
-FINEXT  equ     $209B   ;; | FIN extension 
-CLEARX  equ     $20A0   ;; | CLEAR extension
+XCLEAR  equ     $2048   ;; | Issue Error if TOPMEM too low
+XPTRGT  equ     $204B   ;; | PTRGET Hook
+SKPLBL  equ     $204E   ;; | Skip label at beginning of line
+SKPLOG  equ     $2051   ;; | Skip Label in ON GOTO/GOSUB
+STRNGX  equ     $2054   ;; | Don't capitalize letters between single quotes
+CHKCMT  equ     $2057   ;; | Check for ' and treat as REM
+ISVARX  equ     $205A   ;; | Variable evaluation extension
+LETEXT  equ     $205D   ;; | LET extension
+DIMEXT  equ     $2060   ;; | DIM extension
+READX   equ     $2063   ;; | READ extension
+FINEXT  equ     $2066   ;; | FIN extension 
+CLEARX  equ     $2069   ;; | CLEAR extension
 endif                   
 EXTBAS  equ     $2000   ;;Start of Extended Basic
 XSTART  equ     $2010   ;;Extended BASIC Startup Routine
@@ -444,7 +443,7 @@ EXTCHK: ld      a,(de)            ;; \ Get byte from signature
         dec     hl                ;; \ Move backward in Extended BASIC
         inc     de                ;; \ and forward in test signature
         jr      EXTCHK            ;; \ Compare next character
-
+;;; End AqPlus deprecated code
 ;;Initialize I/O Port 255
 INITFF: ld      a,r               ;;Read random number from Refresh Register
         rla                       ;;Rotate left
@@ -861,13 +860,21 @@ MOERR:  ld      e,ERRMO           ;;     Missing Operand
         byte    $01               ;[M80] "LD BC," OVER THE NEXT 2
 TMERR:  ld      e,ERRTM           ;[M80] TYPE MISMATCH ERROR
 
+ERROR:          
+ifdef aqplus        
+;;; Code change: Eliminate UDF Hook for Error Trapping
+        jp      XERROR            ;;Trap Error                                03DB  call    STKINI
+                                  ;;                                          03DC  
+                                  ;;                                          03DD  
+        rst     HOOKDO            ;;                                          03DE  rst     HOOKDO 
+        byte    0                 ;;                                          03DF  byte    0      
+else
 ;;; Code Change: Call HOOKDO before STKINI (instead of after), 
 ;;; allowing the Hook Routine to preserve STKSAV for ON ERROR GOTO            Original Code
-ERROR:  rst     HOOKDO            ;;call Hook Service Routine                 03DB  call    STKINI
+        rst     HOOKDO            ;;call Hook Service Routine                 03DB  call    STKINI
 HOOK0:  byte    0                 ;;                                          03DC  
 ERRINI: call    STKINI            ;;                                          03DD  
-                                  ;;                                          03DE  rst     HOOKDO   
-                                  ;;                                          03DF  byte    0        
+endif
 ERRCRD: call    CRDONZ            ;;
         ld      hl,ERRTAB         ;;
         rst     HOOKDO            ;;call Hook Service Routine

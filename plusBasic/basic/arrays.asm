@@ -72,7 +72,8 @@ read_extension:
     cp      MULTK                 
     jr      z,.read_array         ; If not *
     push    hl                    ;   Stack = TxtPtr, RtnAdr
-    jp      read_cont             ;   Continue normal read
+    ld      hl,(DATPTR)           ;   Reget DATA Pointer
+    jp      READC                 ;   and continue normal read
 .read_array
     xor     a
     ld      (ARRAYREQ),a          ; Unquoted strings allowed

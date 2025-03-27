@@ -23,6 +23,7 @@ Run the .baq file to run the associated tests.
 | tr.baq  | TRIM functions     |
 | ts.baq  | Tiles and Sprites  |
 | tx.baq  | Tile/Sprite Errors |
+| vl.baq  | Variables/Literals |
 
 ## Test Details
 
@@ -156,3 +157,6 @@ Run the .baq file to run the associated tests.
 - tx.baq
   - SET PALETTE _palette_ TO _rgb_list_
   - SET TILE _tile_index_ TO _tile_data_
+- vl.baq
+  - Extended variable names (tilde)
+  - Character literals (single quote)
