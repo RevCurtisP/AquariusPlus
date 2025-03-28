@@ -105,7 +105,6 @@ BAS_FDESC   equ $3831   ; ESP file descriptor to close on Error or Ctrl-C
 IEND_KEY    equ $3832   ; Key pressed to end input
 SCREENCTL   equ $3833   ; Text Screen flags
 ;               $3834   ; unused (2 bytes)
-; Temporary variables used within statement code.
 ; SPLIT statement
 SPLITDSC    equ $3838   ; String descriptor 
 SPLITTRM    equ $3838   ; Segment terminator  (overwrites LSB of SPLITDSC)

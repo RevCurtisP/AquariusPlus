@@ -142,7 +142,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>CLOAD {{?}<em>filename</em>}|*<em>array</em></strong> - Load or verify program or load array data from cassette.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>CLOSE</strong> - <em>Not implemented.</em></li>
+        <strong>CLOSE #<em>channel</em></strong> - Close file.<!--fileio--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>CLS {<em>fgcolor</em>,<em>bgcolor</em>}</strong> - Clear the text screen.<!--screen--></li>
@@ -652,7 +652,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>OFFSET(<em>column</em>,<em>row</em>)</strong> - Return offset into Screen or Color RAM.<!--screen--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>OPEN</strong> - <em>Not implemented.</em></li>
+        <strong>OPEN <em>var</em> TO <em>filespec</em> FOR INPUT|OUTPUT|APPEND</strong> - Open file.<!--fileio--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>OUT <em>port</em>,<em>byte</em>|<em>string</em>{,...}{;...}</strong> - Write to a Z80 port.<!--OUT--></li>
@@ -665,6 +665,9 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>PAUSE <em>jiffies</em></strong> - Pauses program execution for the specified amount of time.<!--PAUSE--></li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>PAUSE UNTIL <em>expression</em></strong> - Pauses program execution until <em>expression</em> evaluates to true.<!--PAUSE--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>PAUSE TRACK</strong> - Pause currently playing track.<!--track--></li>
@@ -746,6 +749,9 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>READ *<em>array</em>{,...}</strong> - Read values from DATA statements into an array.<!--READ--></li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>READ #<em>channel</em>,^<em>strvar</em>,<em>length</em>)</strong> - Read string from open file.<!--fileio--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>REM <em>text</em></strong> - Denotes comment.<!--REM--></li>
@@ -1093,7 +1099,10 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>WORD$(<em>integer</em>)</strong> - Convert integer to unsigned two byte binary string.<!--convert--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>WRITE KEYS <em>string</em></strong> - Write string to auto-type buffer.</li>
+        <strong>WRITE #<em>channel</em>,^<em>strvar</em></strong> - Write string to auto-type buffer.</li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>WRITE KEYS <em>string</em></strong> - Write string to open file.<!--fileio--></li>
     </ul>
   </body>
 </html>

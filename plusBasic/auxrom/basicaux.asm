@@ -685,3 +685,52 @@ FN_STRS:
     ldir                          ; Do copy
     ld      (ARRAYPTR),hl         ; ARRAYPTR = AryPtr
     ret
+
+; Called from ST_OPEN
+; On entry: HL = TxtPtr
+; Returns: IY = Dos open routine
+bas_open_mode:
+    rst     SYNCHR
+    byte    FORTK                 ; Require FOR
+    cp      INPUTK                ; If INPUT
+    inc     hl
+    ld      iy,dos_open_read      ;   Open for read
+    ret     z
+    cp      OUTTK                 
+    jr      nz,.not_output        ; If OUT
+    rst     SYNCHR                ;   Require PUT
+    byte    PUTTK
+    ld      iy,dos_open_write     ;   Open for write
+    ret
+.not_output
+    dec     hl                    ; Back up to token
+    rst     SYNCHR                ; Else
+    byte    XTOKEN                
+    rst     SYNCHR
+    byte    APNDTK                ; Require APPEND
+    ld      iy,dos_open_append    ;   Open for Append
+    ret
+
+; Called from read_file
+; On entry: A = RecLen, H = Channel 
+; Returns: HL = TmpDsc
+bas_read_string:
+    push    hl                    ; Stack = Channel, RtnAdr
+    call    STRINI                ; A = StrLen, HL = StrDsc, DE = StrAdr
+    ld      c,a
+    ld      b,0                   ; BC = StrLen
+    pop     af                    ; A = Channel
+    push    hl                    ; Stack = StrDsc, RtnAdr
+    call    esp_readc_bytes       
+    pop     hl                    ; HL = StrDsc; Stack = RtnAdr
+    ld      (hl),c                ; Write bytes read to StrDsc
+    ret
+    
+; Called from write_file
+; On entry: DE = StrDsc, H = FilDsc
+bas_write_string:
+    push    hl                    ; Stack = FilDsc, RtnAdr
+    ex      de,hl
+    call    string_addr_len       ; DE = StrAdr, BC = StrLen
+    pop     af                    ; A = FilDsc; Stack = RtnAdr
+    jp      esp_writec_bytes      ; Write and return

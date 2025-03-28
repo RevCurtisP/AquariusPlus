@@ -130,7 +130,7 @@ null_desc:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.24h45"
+    db "v0.24j"
     db 0
 plus_len   equ   $ - plus_text
 
@@ -476,18 +476,14 @@ sys_break_mode:
 ;-----------------------------------------------------------------------------
 _sounds_hook:
     in      a,(IO_SYSCTRL)
-    and     SYSCTRL_TURBO
-    jr      z,.not_turbo
-    ld      hl,2
-    add     hl,de
-    add     hl,de                 ; HL = DE + DE
-    ex      de,hl                 ; DE = HL
-.not_turbo
-    ; Normal: 1102 Hz [3.579545 MHz / (149 + 3100) cycles] - Divisor 3249
-    ; New Turbo: 1105 Hz [7.157090 Mhz / (149 + 6324) cycles] - Divisor 6473
-    ; Old Turbo: 1127 Hz [7.157090 Mhz / (149 + 6200) cycles] - Divisor 6349
-    ; Unmodified: 2203 Hz  [7.157090 Mhz / (149 + 3100) cycles] - Divisor 3249
-    jp      SOUNDS                ; Total wavelength: 148 + DE * 62 cycles
+    and     $7F                   ; Strip Reset bit
+    push    af                    ; Stack = SysCtrl, RtnAdr
+    and     ~SYSCTRL_TURBO
+    out     (IO_SYSCTRL),a
+    call    SOUNDS                
+    pop     af
+    out     (IO_SYSCTRL),a
+    ret
 
 ;-----------------------------------------------------------------------------
 ; Return BASIC Version
@@ -1162,7 +1158,6 @@ _buffer_write_init:
 
     ; Graphics modules
     include "sprite.asm"        ; Sprite graphics module
-    include "sound.asm"         ; Sound and Music
 
     assert !($FFFF<$)   ; ROM full!
 
@@ -1197,16 +1192,16 @@ _buffer_write_init:
     include "debug.asm"         ; Debugging routines
     include "dos.asm"           ; DOS routines
     include "esp_aux.asm"       ; ESP routines in auxiliary ROM
-    include "fileaux.asm"       ; BASIC File auxilarry routines
     include "fileio.asm"        ; Disk and File I/O assembly ronibuutines
     include "fileload.asm"      ; File LOAD I/O routines
+    include "filemisc.asm"       ; BASIC File auxilarry routines
     include "filesave.asm"      ; File SAVE I/O routines
     include "filestr.asm"       ; File related string assembly routines
     include "joyaux.asm"        ; BASIC game controller auxiliary code
     include "loadaux.asm"       ; BASIC file operations auxiliary code
     include "misc.asm"          ; Miscellaneous subroutines
     include "s3hooks.asm"       ; S3 BASIC direct mode hooks
-
+    include "sound.asm"         ; Sound and Music
     include "string.asm"        ; String manipulation routines
 
 ;; Grsphics routines

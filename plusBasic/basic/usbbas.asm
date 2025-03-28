@@ -165,7 +165,8 @@ FN_IN:
 .instring
     rst     CHRGET                ; Skip $
     call    FRMPRN                ; Evaluate formula following (
-    call    force_integer         ; DE = IOPort
+    call    CHKNUM
+    call    FRCINT                ; DE = IOPort
     push    de                    ; Stack = IOPort, RtnAdr
     call    get_comma_byte        ; DE = StrLen
     SYNCHK  ')'                   ; Require )

@@ -402,11 +402,14 @@ esp_send_bytes:
 ; Input:   A: page
 ;         DE: source address
 ;         BC: number of bytes to write
+;          L: file descriptor
 ; Output: BC: number of bytes actually written
-;
-; Clobbered registers: A,AF',DE,IX
+;         DE: next byte in bank
+; Clobbered registers: A,AF',IX
 ;-----------------------------------------------------------------------------
 esp_write_paged:
+    ld      l,0                   ; Default FilDsc to 0
+esp__write_paged:
     call    page_check_read       ; If illegal page       
     ret     z                     ;   Return error
     call    page_map_bank3        ; Map page into bank 3
@@ -416,7 +419,7 @@ esp_write_paged:
     call    esp_cmd
 
     ; Send file descriptor
-    xor     a
+    ld      a,l                   ; A = FilDsc
     call    esp_send_byte
 
     ; Send write size

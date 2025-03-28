@@ -81,5 +81,12 @@ _jump_table:
     jp      read_gamepad          ; Read gamepad(s)
     jp      get_gamectrl          ; Read full Xbox controller status
     jp      key_pressed           ; Check key matrix for key press
-    
+    jp      just_ret
+    jp      just_ret
+    jp      just_ret
+    jp      just_ret
+    jp      just_ret
+    jp      just_ret
+; sound.asm <<Sounds>>
+    jp      play_sample           ; Play digitized sound sample
 _end_jump_table:

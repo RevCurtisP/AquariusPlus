@@ -34,7 +34,8 @@ ST_PLAY_SAMPLE:
     call    require_page_addr     ; AF = PgFlg, DE = Addr
     push    hl                    ; Stack = TxtPtr, RtnAdr
     ex      de,hl                 ; HL = Address
-    call    play_sample           ; Play the sample
+    call    aux_call_inline
+    word    play_sample           ; Play the sample
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     ret
 

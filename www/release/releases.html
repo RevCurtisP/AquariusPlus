@@ -16,6 +16,11 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
   <body>
     <h1 id="plusbasic-release-history">plusBASIC Release History</h1>
     <ul>
+      <li>v0.24j (2025-03-28)
+<ul><li>SAVE routines no longer close all files</li><li>Fixed <code>OPEN</code>, <code>FILEATTR()</code>, <code>READ KEYS</code></li><li>Added <code>OPEN ... APPEND</code>, <code>CLOSE #channel</code>, <code>READ #channel,var$,length</code>, <code>WRITE #channel,^var$</code></li><li>Moved <code>play_sample</code> to auxiliary ROM, add <code>play_sample</code> to kernel jump table</li><li>Temporarily disable turbo mode during <code>Ctrl-G</code> beep and <code>PLAY SAMPLE</code></li><li>Replaced assembly routine <code>GET_STRING</code> with <code>FRMSTR</code>, added routine <code>PARSTR</code></li><li>Replaced calls to:
+<ul><li><code>FRMEVL</code>+<code>CHKSTR</code> with <code>FRMSTR</code></li><li><code>FRMPRN</code>+<code>GETYPE</code> with <code>FRMPRT</code></li><li><code>PARCHK</code>+<code>CHKSTR</code> with <code>PARSTR</code></li></ul></li><li>Renamed <em>fileaux.asm</em> to <em>filemisc.asm</em></li></ul></li>
+      <li>v0.24i (2025-03-27)
+<ul><li>Replaced UDF hooks 0, 35 through 45 with direct jumps</li><li>Deleted deprecated routine <code>aux_rom_call</code></li></ul></li>
       <li>v0.24h (2025-03-26)
 <ul><li>Moved <code>FN_KEY</code> and <code>FN_MOUSE</code> core code into auxiliary ROM</li><li>Renamed kernel routine <code>key_read_ascii</code> to <code>key_read</code> and removed kernel routine stub <code>key_read_scan_code</code></li><li>Moved kernel routines <code>key_clear_fifo</code>, <code>key_read</code>, and <code>key_set_keymode</code> from <em>keyread.asm</em> to <em>aqplusbas.asm</em></li><li>Moved kernel routine <code>key_pressed</code> from <em>keyread.asm</em> to <em>auxrom/misc.asm</em> and deleted file <em>keyread.asm</em></li><li>Modified <code>FN_KEY</code> to take string of keycodes instead of ASCII codes and return position in string of key pressed</li><li>Added <code>REPEAT</code> and <code>UNTIL</code> tokens, <code>PAUSE UNTIL</code> statement, kernel routine <code>bool_setbit_long</code></li></ul></li>
       <li>v0.24g (2025-03-16)

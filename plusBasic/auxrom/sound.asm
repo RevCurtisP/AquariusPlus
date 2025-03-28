@@ -14,8 +14,8 @@
 ;-----------------------------------------------------------------------------
 play_sample:
     ld      b,a                   ; B = SampPg    
-    in      a,(IO_BANK1)          ; A = CrntPg
-    push    af                    ; Stack = CrntPg, RtnAdr
+    in      a,(IO_BANK1)          ; A = OrigPg
+    push    af                    ; Stack = OrigPg, RtnAdr
     ld      a,b                   ; A = SampPg
     out     (IO_BANK1),a          ; Map SampPg into Bank 1
     ld      a,h                   ; Coerce start address in Bank 1
@@ -30,13 +30,18 @@ play_sample:
     inc     hl
     ld      c,(hl)                ; Rate index
     inc     hl
-    push    hl                    ; Stack = Length, RtnAdr
+    push    hl                    ; Stack = Length, OrigPg, RtnAdr
     ld      hl,_delay_table
     ld      b,0                   ; BC = Index
     add     hl,bc                 ; HL = Address in Table
     ld      c,(hl)                ; C = Delay value
-    pop     hl                    ; HL = Length; Stack = RtnAdr
+    pop     hl                    ; HL = Length; Stack = OrigPg, RtnAdr
     di                            ; Disable interrupts
+    in      a,(IO_SYSCTRL)
+    and     $7F                   ; Strip Reset bit
+    push    af                    ; Stack = SysCtrl, OrigPg, RtnAdr
+    and     ~SYSCTRL_TURBO
+    out     (IO_SYSCTRL),a
 ;-----------------------------------------------------------------------------
 ;  A: Page
 ;  C: Delay
@@ -76,6 +81,8 @@ play_sample:
 .done
     ld      a,128                 ; Avoid clicks
     out     (IO_PCMDAC),a
+    pop     af                    ; A = SysCtrl; Stack = OrigPg, RtnAdr
+    out     (IO_SYSCTRL),a
     pop     af                    ; A = OrigPg; Stack = RtnAdr
     out     (IO_BANK1),a          ; Restore original page
     ld      a,(IRQACTIVE)

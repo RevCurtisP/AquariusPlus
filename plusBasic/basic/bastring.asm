@@ -105,8 +105,7 @@ trim_string:
     jr      nz,.notcomma          ; If comma
     push    de                    ;   Stack = ArgDsc, TrmRtn, RetAdr
     rst     CHRGET                ;   Skip comma
-    call    FRMEVL                ;   Evaluate argument
-    call    CHKSTR                ;   Error if not string
+    call    FRMSTR                ;   Evaluate string argument
     ld      bc,(FACLO)            ;   BC = TrmDsc
     pop     de                    ;   DE = ArgDsc; Stack = TrmRtn, RetAdr
 .notcomma
@@ -134,7 +133,7 @@ trim_string:
     jp      STRNEX                ; Create temporary and return it
 
 
-; Evaluate $(str_ezpr
+; Evaluate $(str_expr
 ; Output: DE = ArgDsc, A = NxtChr
 _trim_arg:
     rst     CHRGET                ; Skip L/R

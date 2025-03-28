@@ -134,7 +134,8 @@ FRMPRS      equ $011A   ; Skip character, evaluate formula after parenthesis, an
 FRMPRT      equ $011B   ; Evaluate formula after parenthesis and return type
 PARTYP      equ $0120   ; Evaluate formula and return type
 FRMSTR      equ $0125   ; Evaluate string formula
-CLDCON      equ $0138   ; Finish S3BASIC cold boot
+PTRTYP      equ $012B   ; Get variable pointer and type
+PARSTR      equ $0130   ; Evaluate String in Parentheses
 HEDING      equ $015F   ; Microsoft copyright message
 INITFF:     equ $0153   ; Initialize I/O Port 255
 REDDY       equ $036E   ; Text "Ok"
@@ -223,7 +224,6 @@ GIVFLT      equ $0B1C   ; Float HL - DE
 GIVINT      equ $0B21   ; Float Integer MSB=[A], LSB=[C]
 FLOATD      equ $0B23   ; Float Integer MSB=[A], LSB=[D]
 SNGFLT:     equ $0B36   ; Float byte in A
-SNGFLB:     equ $0B36   ; Float byte in B
 ERRDIR      equ $0B45   ; Error if in direct mode
 GTBYTC      equ $0B53   ; Skip character, evaluate expression (integer 0-255)
 GETBYT:     equ $0B54   ; Evaluate numeric expression (integer 0-255)

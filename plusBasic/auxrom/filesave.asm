@@ -15,6 +15,7 @@
 ;-----------------------------------------------------------------------------
 file_append_binary:
     call    dos_open_append
+    ret     m
     jr      _write_binary
 
 ;-----------------------------------------------------------------------------
@@ -32,12 +33,9 @@ file_save_binary:
     call    dos_open_write
 _write_binary:
     ret     m
+    ld      l,a                   ; L = FilDsc
     call    esp_write_bytes
-    push    af
-    call    esp_close_all
-    pop     af
-    or      a
-    ret
+    jp      _close
 
 ;-----------------------------------------------------------------------------
 ; Save bitmap image
@@ -83,13 +81,15 @@ file_save_paged:
     push    af
     call    dos_open_write
     jp      m,discard_ret
-    pop     af
-    call    esp_write_paged
+    ld      l,a                   ; L = FilDsc
+    pop     af                    ; A = Page
+    call    esp__write_paged
+_close:
     push    af
-    call    esp_close_all
+    ld      a,l
+    call    dos_close
     pop     af
     ret
-
 
 _save_palette_asc:
     push    hl                    ; Stack = FilStd, RtnAdr

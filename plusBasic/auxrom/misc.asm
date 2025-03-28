@@ -275,11 +275,11 @@ _bitmask
 ;-----------------------------------------------------------------------------
 ; Read keys into buffer
 ; Input: HL: Buffer address
-; Output: A,C: String length
+; Output: BC: String length
 ; Clobbered: A
 ;-----------------------------------------------------------------------------
 read_keys:
-    ld      c,0
+    ld      bc,0
 .loop
     call    INCHRH
     ld      (hl),a
@@ -287,10 +287,9 @@ read_keys:
     or      a
     ret     z
     inc     c
-    jr      nz,read_keys
+    jr      nz,.loop
     xor     a
     ld      (hl),a
-    ld      a,c
     ret
 
 ;-----------------------------------------------------------------------------

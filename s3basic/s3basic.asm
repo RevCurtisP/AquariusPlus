@@ -366,7 +366,7 @@ COLDST: ld      hl,DEFALT         ;Set System Variable Default Values
         ld      (BASTXT-1),a      ;;Clear byte before start of basic program
 ifdef pluspatch
 ;;; Code Change: Execute Aquarius+ Extended BASIC Cold Start
-;;; On the Aquarius+ From MEMTST to before INITFF is unused                   Original Code
+;;; In plusBASIC and SD-BASIC from MEMTST to before INITFF is unused          Original Code
         jp      XCOLD             ;; | Do Extended BASIC Cold Start           010F  ld      hl,BASTXT+99
 ;; Evaluate Formula and Return Type
 MEMTST
@@ -389,16 +389,27 @@ FRMPRT: call    FRMPRN            ;; |                                        01
 PARTYP: call    PARCHK            ;; |                                        0120  cp      b       
                                   ;; |                                        0121  jr      z,MEMTST
                                   ;; |                                        0122
-       jr       GETYPE            ;; |                                        0123  dec     hl           
+        jr       GETYPE           ;; |                                        0123  dec     hl           
                                   ;; |                                        0124  ld      de,BASTXT+299
 ;; Evaluate String Expression
 FRMSTR: call    FRMEVL            ;; |                                        0125
                                   ;; |                                        0126
                                   ;; |                                        0127  rst     COMPAR
-        jp      CHKSTR            ;; |                                        0128  jp      c,OMERR
+_chkstr jp      CHKSTR            ;; |                                        0128  jp      c,OMERR
                                   ;; |                                        0129
                                   ;; |                                        012A
-
+;; Get Variable Pointer and Type
+PTRTYP: call    PTRGET            ;; |                                        012B  ld      de,$FFCE
+                                  ;; |                                        012C
+                                  ;; |                                        012D
+        jr      GETYPE            ;; |                                        012E  ld      (MEMSIZ),hl
+                                  ;; |                                        012F
+;; Evaluate String in Parentheses
+PARSTR: call    PARCHK            ;; |                                        0130                                         
+                                  ;; |                                        0131  add     hl,de
+                                  ;; |                                        0132  ld      (TOPMEM),hl
+        jr      _chkstr           ;; |                                        0133  
+                                  ;; |                                        0134
 else                              ;;
         ld      hl,BASTXT+399     ;; \ Set RAM Test starting address
 MEMTST: inc     hl                ;; \ Bump pointer
@@ -421,12 +432,12 @@ MEMCHK: dec     hl                ;; \ Back up to last good address
         ld      de,BASTXT+299     ;; \ 
         rst     COMPAR            ;; \ Is there enough RAM?
         jp      c,OMERR           ;; \ No, Out of Memory error
-endif
 ;;Set Top of memory               ;; \ 
         ld      de,$FFCE          ;; \ 
         ld      (MEMSIZ),hl       ;; \ Set MEMSIZ to last RAM location
         add     hl,de             ;; \ 
         ld      (TOPMEM),hl       ;; \ Set TOPMEM t0 MEMSIZ-50
+endif
         call    SCRTCH            ;; \ Perform NEW
 ; Continue Cold Boot if not booting into plusBASIC
 CLDCON: call    PRNTIT            ;; \ Print copyright message

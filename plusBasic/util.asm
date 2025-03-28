@@ -369,7 +369,7 @@ shift_hl_right:
 ;-----------------------------------------------------------------------------
 ; Push HL and Return Null String
 ;-----------------------------------------------------------------------------
-pop_ret_nullstr:
+;pop_ret_nullstr:
     push    hl
     jp      NULRT                 ; Pop HL abd return Null String
 

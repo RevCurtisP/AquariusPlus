@@ -141,7 +141,7 @@ STJUMPS:
     dw      ST_WRITE              ;$F8 WRITE
     dw      ST_USE                ;$F9 USE
     dw      ST_OPEN               ;$FA OPEN
-    dw      SNERR                 ;$FB CLOSE
+    dw      ST_CLOSE              ;$FB CLOSE
     dw      SNERR                 ;$FC
     dw      SNERR                 ;$FD
     dw      extended_statement    ;$FE

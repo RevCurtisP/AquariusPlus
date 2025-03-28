@@ -1,4 +1,4 @@
-;====================================================================
+  ;====================================================================
 ; File I/O Statements and Functions
 ;====================================================================
 
@@ -39,7 +39,7 @@ _dos_error:
     add     a,ERRFNF              ;   Add to start of DOS errors
 .badfile
     ld      e,a
-    call    esp_close_all
+    call    close_bas_fdesc
     ld      a,(EXT_FLAGS)
     and     FERR_FLAG
     jp      nz,ERROR
@@ -132,8 +132,7 @@ ST_COPY_FILE:
 
 _file_from_to:
     push    de                    ; Stack = CallAdr, RtnAdr
-    call    FRMEVL                ; Parse oldname
-    call    CHKSTR                ; Gotta be a string
+    call    FRMSTR                ; Parse oldname
     call    SYNCHR                ; Require TO token
     byte    TOTK
     push    hl                    ; Stack = TxtPtr, CallAdr, RtnAdr
@@ -203,10 +202,7 @@ FN_FILEDIR:
 ;-----------------------------------------------------------------------------
 ; ? FILELEN("1.palt")
 FN_FILELEN:
-    rst     CHRGET                ; Skip ATTR
-    call    PARCHK                ; Parse agument
-    call    CHKSTR                ; Error if not string
-    call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
+    call    pars_string_labbck    ; FACC = ArgDsc; Stack = LABBCK, TxtPtr, RtnAdr
     call    FRESTR                ; HL = StrDsc
     ld      iy,file_size
     call    _aux_call_doserror    ; Get FilSiz
@@ -217,14 +213,11 @@ FN_FILELEN:
 ;-----------------------------------------------------------------------------
 ; ? FILEATTR("1.palt")
 FN_FILEATTR:
-    rst     CHRGET                ; Skip ATTR
-    call    PARCHK                ; Parse agument
-    call    CHKSTR                ; Error if not string
-    call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
+    call    pars_string_labbck    ; FACC = ArgDsc; Stack = LABBCK, TxtPtr, RtnAdr
     call    FRESTR                ; HL = StrDsc
     ld      iy,file_attrs
     call    _aux_call_doserror    ; Get AtrByt
-    jp      SNGFLB                ; Float it and return
+    jp      FLOAT_B               ; Float it and return
 
 ;-----------------------------------------------------------------------------
 ; FILEDATETIME$(filespec$)
@@ -252,8 +245,7 @@ FN_FILESTATUS:
 _file_stat:
     push    af                    ; Stack = StrSiz, AuxRtn, RtnAdr
     SYNCHK  '$'                   ; Require $
-    call    PARCHK                ; Parse agument
-    call    CHKSTR                ; Error if not string
+    call    PARSTR                ; Parse string agument
     pop     a                     ; A = StrSiz; Stack = AuxRtn, RtnAdr
     pop     iy                    ; IY = AuxRtn; Stack = RtnAdr
     push    hl                    ; Stack = TxtPtr, RtnAdr
@@ -469,8 +461,7 @@ ST_LOAD:
 ; SET FILE ERROR OFF:LOAD "t/xxx.xxx",^L$:PRINT ERR
 ; SET FILE ERROR OFF:LOAD "t/stringtest.str",^L$:PRINT ERR
 _load_string:
-    rst     CHRGET                ; Skip ^
-    call    get_stringvar         ; DE = VarPtr
+    call    skip_get_stringvar    ; DE = VarPtr
     ex      (sp),hl               ; HL = NamDsc; Stack = TxtPtr, RtnAdr
     push    de                    ; Stack = VarPtr, TxtPtr, RtnAdr
     ld      iy,file_load_strbuf   ; Load file into StrBuf
@@ -546,7 +537,6 @@ _load_ascii:
 run_aqx_program:
     call    ferr_flag_on
     call    _open_read            ; A = FilDsc
-    
     ld      bc,16
     ld      de,FBUFFR
     call    esp_read_bytes        ; Read aqx header
@@ -633,7 +623,7 @@ load_basic_program:
     call    esp_read_bytes
 
     ; Close file
-    call    esp_close_all
+    call    close_bas_fdesc
 
     ; Back up to last line of BASIC program
     ex      de,hl                 ; HL = EndAdr
@@ -1406,7 +1396,7 @@ _save_ascii:
     pop     hl                    ;   HL = LinLnk; Stack = TxtPtr, RtnAdr
     jp      .loop
 .done
-    call    esp_close_all
+    call    close_bas_fdesc
     pop     hl
     ret
 
@@ -1447,7 +1437,7 @@ save_caq_program:
     call    esp_write_repbyte
 
     ; Close file
-    call    esp_close_all
+    call    close_bas_fdesc
 
     pop     hl
     ret
@@ -1484,7 +1474,7 @@ save_caq_array:
     call    esp_write_repbyte
 
 _close_pop_ret:
-    call    esp_close_all
+    call    close_bas_fdesc
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     ret
 
@@ -1516,9 +1506,6 @@ save_string_array:
     jr      z,_close_pop_ret
     push    de                    ; Stack = AryLen, TxtPtr, RtnAdr
     jr      .strloop
-
-
-
 
 ;-----------------------------------------------------------------------------
 ; Check for sync sequence (12x$FF, 1x$00)
@@ -1569,10 +1556,12 @@ ST_SET_SAVE:
 ;-----------------------------------------------------------------------------
 ; Open File
 ; Syntax: OPEN var TO filename$ FOR INPUT/OUTPUT
+; Channel is File Descriptor + 1
 ;-----------------------------------------------------------------------------
-; ToDo: Add APPEND and RANDOM
-; OPEN F TO "1.txt" FOR INPUT
-
+; ToDo: Add RANDOM
+; OPEN I TO "1.txt" FOR INPUT
+; OPEN W TO "2.txt" FOR OUTPUT
+; OPEN A TO "3.txt" FOR APPEND
 ST_OPEN:
     call    PTRGET                ; DE = VarPtr
     call    CHKNUM                ; Error if not numeric
@@ -1581,20 +1570,11 @@ ST_OPEN:
     byte    TOTK                  ; Require TO
     call    get_strdesc_arg       ; HL = StrDsc; Stack = TxtPtr, VarPtr, RtnAdr
     ex      (sp),hl               ; HL = TxtPtr; Stack = StrDsc, VarPtr, RtnAdr
-    rst     SYNCHR
-    byte    FORTK
-    ld      bc,.setvar
-    push    bc                    ; Stack = SETVAR, TxtPtr, VarPtr, RtnAdr
-    cp      INPUTK
-    jr      z,_open_read
-;   append
-;   random
-    rst     SYNCHR                ;   Require `OUTPUT`
-    byte    OUTTK
-    rst     SYNCHR
-    byte    PUTTK
-    jr      _open_write
-.setvar
+    call    aux_call_inline
+    word    bas_open_mode         ; IY = OpnRtn
+    ex      (sp),hl               ; HL = StrDsc; Stack = TxtPtr, VarPtr, RtnAdr
+    call    aux_call              ; Open the file
+    jp      m,_pop_hl_doserror
     inc     a                     ; A = FilChn
     call    SNGFLT                
     pop     hl                    ; HL = TxtPtr; Stack = VarPtr, RtnAdr
@@ -1602,22 +1582,23 @@ ST_OPEN:
     call    MOVMF
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     ret
-    
-_open_dir:
-    ld      iy,dos_open_dir
-    jr      _open_aux_call
-_open_write:
-    ld      iy,dos_open_write
-    jr      _open_aux_call
-_open_read:
-    ld      iy,dos_open_read
-_open_aux_call:
-    call    aux_call
-_open_error:
-    jp      m,dos_error
+
+;-----------------------------------------------------------------------------
+; Close File
+; Syntax: CLOSE #channel
+;-----------------------------------------------------------------------------
+ST_CLOSE:
+    call    _get_channel
+    ret     m
+    ld      iy,dos_close
+    jp      aux_call
+
+_get_channel:
+    SYNCHK  '#'                   
+    call    GETBYT                ; A = Channel
+    dec     a                     ;   Convert to FilDsc
     ret
-
-
+    
 ;-----------------------------------------------------------------------------
 ; Input full line
 ; Syntax: LINE INPUT# channel,var$
@@ -1661,6 +1642,64 @@ _clear_errflag:
     ld      (ERRFLG),a            ;   Set Error# to 0
 .skip
     jp      CHRGT2
+
+;-----------------------------------------------------------------------------
+; Read from File
+; Syntax: READ #channel,^var$,length
+;-----------------------------------------------------------------------------
+; OPEN I TO "1.txt" FOR INPUT
+; READ #I,^A$,15
+; PRINT A$
+read_file:
+    call    _get_channel
+    push    af                    ; Stack = Channel, RtnAdr
+    call    get_comma
+    cp      EXPTK
+    jr      z,_read_string
+    jp      SNERR
+;    ld      bc,bas_read_chunk
+;_rw_mem:
+;    push    bc                    ; Stack = AuxRtn, Channel, RtnAdr
+;    call    get_page_addr_len     ; A = Page, BC = Len, DE = Addr
+;    pop     iy                    ; IY = AusRtn; Stack = Channel, RtnAdr
+;    ex      (sp),hl               ; H = Channel; Stack = TxtPtr
+;    jp      aux_call_popret       ; Do READ/WRITE and return
+_read_string:
+    call    skip_get_stringvar
+    push    de                    ; Stack = VarPtr, Channel, RtnAdr
+    call    get_comma_byte        ; A = RecLen
+    pop     de                    ; DE = VarPtr, Stack = Channel, RtnAdr
+    ex      (sp),hl               ; H = Channel; Stack = TxtPtr, RtnAdr
+    push    de                    ; Stack = VarPtr, TxtPtr, RtnAdr
+    ld      iy,bas_read_string    
+_aux_call_inbufc:
+    call    aux_call              ; HL = TmpDsc
+_push_inbufc:
+    push    hl                    ; Stack = StrDsc, VarPtr, TxtPtr
+    jp      INBUFC                ; Copy Temporary to Variable and return
+
+;-----------------------------------------------------------------------------
+; Write to File
+; Syntax: WRITE #channel,var$
+;-----------------------------------------------------------------------------
+; OPEN W TO "2.txt" FOR OUTPUT
+; A$="Hello World!"
+; WRITE #W,^A$
+; CLOSE #W
+write_file:
+    call    _get_channel
+    push    af                    ; Stack = Channel, RtnAdr
+    call    get_comma
+    cp      EXPTK
+    jr      z,_write_string
+    jp      SNERR
+_write_string:
+    call    skip_get_stringvar    ; DE = VarPtr
+    ex      (sp),hl               ; H = Channel; Stack = TxtPtr, RtnAdr
+    ld      iy,bas_write_string
+    jp      aux_call_popret
+
+
 
 ;-----------------------------------------------------------------------------
 ; Parse literal string only in Direct Mode
@@ -1773,6 +1812,22 @@ tile_offset_a:
     dec     a
     ret     z
     ld      bc,128                  ; Tilemap mode
+    ret
+
+
+; Open File with error handling
+_open_write:
+    ld      iy,dos_open_write
+    jr      _open_aux_call
+_open_read:
+    ld      iy,dos_open_read
+_open_aux_call:
+    call    init_bas_fdesc
+    call    aux_call
+    jp      m,dos_error
+    inc     a
+    ld      (BAS_FDESC),a
+    dec     a
     ret
 
 ;-----------------------------------------------------------------------------

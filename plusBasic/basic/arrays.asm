@@ -69,8 +69,12 @@ dim_extension:
 ; 50 DATA F,G,H,I,J
 read_extension:
     pop     hl                    ; HL = TxtPtr, Stack = RtnAdr
+    cp      '#'                   ; If #
+    jp      z,read_file           ;   Read from File
     cp      MULTK                 
     jr      z,.read_array         ; If not *
+    cp      XTOKEN
+    jp      z,read_xtoken
     push    hl                    ;   Stack = TxtPtr, RtnAdr
     ld      hl,(DATPTR)           ;   Reget DATA Pointer
     jp      READC                 ;   and continue normal read

@@ -1,4 +1,16 @@
 # plusBASIC Release History
+ - v0.24j (2025-03-28)
+    - SAVE routines no longer close all files
+    - Fixed `OPEN`, `FILEATTR()`, `READ KEYS`
+    - Added `OPEN ... APPEND`, `CLOSE #channel`, `READ #channel,var$,length`, `WRITE #channel,^var$`
+    - Moved `play_sample` to auxiliary ROM, add `play_sample` to kernel jump table
+    - Temporarily disable turbo mode during `Ctrl-G` beep and `PLAY SAMPLE`
+    - Replaced assembly routine `GET_STRING` with `FRMSTR`, added routine `PARSTR`
+    - Replaced calls to:
+      - `FRMEVL`+`CHKSTR` with `FRMSTR`
+      - `FRMPRN`+`GETYPE` with `FRMPRT`
+      - `PARCHK`+`CHKSTR` with `PARSTR`
+    - Renamed _fileaux.asm_ to _filemisc.asm_
  - v0.24i (2025-03-27)
     - Replaced UDF hooks 0, 35 through 45 with direct jumps
     - Deleted deprecated routine `aux_rom_call`

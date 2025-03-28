@@ -50,20 +50,23 @@ basbuf_read_word:
 ; Clobbered: AF,AF',BC,HL
 ;-----------------------------------------------------------------------------
 basbuf_write_bytes:
+    ld      a,b
+    or      c
+    ret     z
     ld      a,BAS_BUFFR
     jp      buffer_write_bytes
 
 ;-----------------------------------------------------------------------------
 ; Write string to Autokey buffer
 ; Input: BC: String length
-;        E: String Address
+;        DE: String Address
 ; Clobbered: A,BC,DE,HL
 ;-----------------------------------------------------------------------------
 autokey_write_buffer:
-    ex      de,hl
+    ex      de,hl                 ; HL = StrAdr
     ld      de,BASBUF_BASE+WRTKEYBUF-1
     ld      (RESPTR),de           ; Set autokey address pointer to buffer.
-    inc     de
+    inc     de                    ; DE = BufAdr
     call    basbuf_write_bytes    ; C = 0 when done
 ;-----------------------------------------------------------------------------
 ; Write byte to BASIC buffer

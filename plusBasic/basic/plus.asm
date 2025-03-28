@@ -250,8 +250,7 @@ FN_INMEM:
     push    de                    ; Stack = MemAdr, RtnAdr
     push    af                    ; Stack = PgFlag, MemAdr, RtnAdr
     call    get_comma             ; Require comma
-    call    FRMEVL                ; Parse argument
-    call    CHKSTR                ; Error if not string
+    call    FRMSTR                ; Parse string argument
     SYNCHK  ')'                   ; Require )
     pop     af                    ; AF = PgFlag; Stack = MemAdr, RtnAdr
     ex      (sp),hl               ; HL = MemAdr; Stack = TxtPtr, RtnAdr
@@ -614,7 +613,7 @@ FN_OFF:
 ;-----------------------------------------------------------------------------
 ST_SPLIT:
     rst     CHRGET                ; Skip SPLIT
-    call    GET_STRING            ; Parse SrcStr
+    call    FRMSTR                ; Parse SrcStr
     ld      de,(FACLO)            ; DE = SrcDsc
     ld      (SPLITDSC),de         ; SPLITDSC = SrcDsc
     rst     SYNCHR
@@ -1347,8 +1346,10 @@ str_word:
 ; WRITE Statement stub
 ;-----------------------------------------------------------------------------
 ST_WRITE:
-   cp       XTOKEN
-   jp       nz,GSERR
+   cp       '#'
+   jp       z,write_file
+   rst      SYNCHR
+   byte     XTOKEN
    rst      CHRGET                ; Skip XTOKEN
    cp       KEYTK
    jr       z,ST_WRITE_KEYS
@@ -1359,10 +1360,10 @@ ST_WRITE:
 ; Syntax: WRITE KEYS string$
 ;-----------------------------------------------------------------------------
 ; WRITE KEYS \" ? 123\r"
+;; ToDo: Find out why first character gets eaten
 ST_WRITE_KEYS:
    rst      CHRGET                ; Skip KEY
    SYNCHK   'S'                   ; Require S
    call     get_free_string       ; DE = StrAdr, BC = StrLen
-   dec      de                    ; Backup to before start of string
    ld       iy,autokey_write_buffer
    jp       aux_call_popret       ; Write to auto-key buffer

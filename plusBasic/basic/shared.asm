@@ -46,13 +46,6 @@ GET_POS_INT
     jp      FRCINT                ; Address into DE and return
 
 ;-----------------------------------------------------------------------------
-; Parse a atring
-;-----------------------------------------------------------------------------
-GET_STRING:
-    call    FRMEVL                ; Parse a number
-    jp      CHKSTR
-
-;-----------------------------------------------------------------------------
 ; Convert C to an unsigned Floating Point number in FACC
 ;-----------------------------------------------------------------------------
 FLOAT_C:
@@ -295,7 +288,7 @@ close_paren:
 ;-----------------------------------------------------------------------------
 ; Force FACC to an integer
 ;-----------------------------------------------------------------------------
-force_integer:
+;force_integer:
     call    CHKNUM
     jp      FRCINT
 
@@ -319,7 +312,7 @@ TOERR:
 ; Returbs with TxtPtr on Stack
 ;-----------------------------------------------------------------------------
 get_free_string:
-    call    GET_STRING
+    call    FRMSTR
     ex      (sp),hl               ; HL = RtnAdr, Stack = TxtPtr
     push    hl                    ; Stack = RtnAdr, TxtPtr
     jp      free_addr_len         ; Return HL = DE = StrAdr, BC = StrLen 
@@ -850,8 +843,7 @@ skip_get_stringvar:
 ;-----------------------------------------------------------------------------
 get_stringvar:
     call    PTRGET            ; DE = Pointer to variable
-    call    GETYPE            ; If not a string
-    jp      nz,TMERR          ;   Type Mismatch error
+    call    CHKSTR            ; If not a string
     jp      CHRGT2            ; Reget Character and Return
 
 ; ------------------------------------------------------------------------------
@@ -864,6 +856,11 @@ inc_xtemp0:
     ld      (XTEMP0),a            ; XTEMP0 = SptlCnt
     ret
 
+pars_string_labbck:
+    rst     CHRGET                ; Skip token
+par_string_labbck:
+    call    PARSTR                ; Parse string agument
+    byte    $FE                   ; CP over INC HL
 ; ------------------------------------------------------------------------------
 ; Increment text pointer, push it then LABBCK
 ; ------------------------------------------------------------------------------
@@ -929,6 +926,8 @@ str_literal:
     ld      (FACLO),bc            ; Srore in StrDsc
     ret
 
+strbuf_temp_str_c:
+    ld      a,c
 ;-----------------------------------------------------------------------------
 ; Create temporary string from string buffer
 ;  Input: A = Buffer data length
@@ -939,7 +938,7 @@ str_literal:
 ;-----------------------------------------------------------------------------
 strbuf_temp_str:
     or      a                     ; If length = 0 
-    jp      z,pop_ret_nullstr     ;   Return null string           
+    jr      z,ret_nullstr         ;   Return null string           
     call    STRINI                ; Create temporary string
     ld      c,a                   ;   A = StrLen, HL = StrDsc, DE = StrAdr
     ld      b,0                   ; BC = StrLen
@@ -954,6 +953,12 @@ copy_strbuf:
     pop     bc                    ; BC = StrLen; Stack = StrAdr, StrDsc
     pop     de                    ; DE = StrAdr; Stack = StrDsc
     pop     hl                    ; HL = StrDsc
+    ret
+
+ret_nullstr:
+    ld      hl,null_desc
+    ld      de,null_desc
+    ld      bc,0
     ret
 
 write_bcde2hl:

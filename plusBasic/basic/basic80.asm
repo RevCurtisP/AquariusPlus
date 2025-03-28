@@ -138,8 +138,7 @@ _erase:
 ;; ? INSTR(2,"ABCABCABC","ABC")
 FN_INSTR:  
     rst     CHRGET                ; EAT FIRST CHAR
-    call    FRMPRN                ; EVALUATE FIRST ARG
-    call    GETYPE                ; SET ZERO IF ARG A STRING.                    
+    call    FRMPRT                ; EVALUATE FIRST ARG, SET ZERO IF ARG A STRING.                    
     ld      a,1                   ; IF SO, ASSUME, SEARCH STARTS AT FIRST CHAR   
     push    af                    ; Stack = Offset, RtnAdr
     jp      z,.was_string         ; If first arg is not string
@@ -149,8 +148,7 @@ FN_INSTR:
     jp      z,FCERR               ;   KILL HIM.                                                                
     push    af                    ;   Stack = Offset, RtnAdr
     SYNCHK  ','                   ;   EAT THE COMMA                                -                            
-    call    FRMEVL                ;   Evaluate needle                                                    
-    call    CHKSTR                ;   BLOW UP IF NOT STRING                                                   
+    call    FRMSTR                ;   Evaluate needle                                                    
 .was_string: 
     SYNCHK  ','                   ; EAT COMMA AFTER ARG                                                     
     push    hl                    ; Stack = TxtPtr, Offset, RtnAdr                                                   

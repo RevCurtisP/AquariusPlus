@@ -80,7 +80,7 @@
  - [ ] **CLEAR CURSOR** - Temporarily remove cursor from screen.
  - [ ] **CLEAR KEYS** - Clear keyboard and autotype buffers.
  - [ ] **CLOAD {{?}_filename_}|\*_array_** - Load or verify program or load array data from cassette.
- - [ ] **CLOSE** - _Not implemented._
+ - [ ] **CLOSE #_channel_** - Close file.<!--fileio-->
  - [ ] **CLS {_fgcolor_,_bgcolor_}** - Clear the text screen.<!--screen-->
  - [ ] **CLS COLOR** - Fill Color RAM with current or specified foreground and background colors.<!--screen-->
  - [ ] **COLOR _fgcolor_{,_bgcolor_}** - Set or get bitmap default color(s).<!--COLOR-->
@@ -250,7 +250,7 @@
  - [ ] **ON .. _integer_ .. GOTO _lineref_,...** - `GOTO` one of several line numbers based on _expression_.<!--ON-->
  - [ ] **ON ERROR GOTO _lineref_** - Enable or disable error trapping.<!--ON-->
  - [ ] **OFFSET(_column_,_row_)** - Return offset into Screen or Color RAM.<!--screen-->
- - [ ] **OPEN** - _Not implemented._
+ - [ ] **OPEN _var_ TO _filespec_ FOR INPUT|OUTPUT|APPEND** - Open file.<!--fileio-->
  - [ ] **OUT _port_,_byte_|_string_{,...}{;...}** - Write to a Z80 port.<!--OUT-->
  - [ ] **PAD$(_string_,_length_{,_char_})** - Pad string on left or right with optional fill character.<!--PAD-->
  - [ ] **PAUSE** - Halt program execution until key is pressed.<!--PAUSE-->
@@ -283,6 +283,7 @@
  - [ ] **PUT TILEMAP (_x_,y_) \*_array_|^_strvar_** - Copy clip from array or string variable to tilemap.<!--PUTTILE-->
  - [ ] **READ _var_{,...}** - Read values from DATA statements into variables.<!--READ-->
  - [ ] **READ \*_array_{,...}** - Read values from DATA statements into an array.<!--READ-->
+ - [ ] **READ #_channel_,^_strvar_,_length_)** - Read string from open file.<!--fileio-->
  - [ ] **REM _text_** - Denotes comment.<!--REM-->
  - [ ] **RENAME _filespec_ TO _filespec_** - Rename file or directory
  - [ ] **RESUME _lineref_** - Clear error condition and continues program execution at specified line
@@ -398,4 +399,5 @@
  - [ ] **WAIT _port_,_xor_mask_{,_and_mask_}** - Pause until specifie bit pattern received from IO port.<!--system-->
  - [x] **WORD(_string_{,_offset_})** - Convert two consecutive bytes in string to unsigned integer.<!--convert-->
  - [x] **WORD$(_integer_)** - Convert integer to unsigned two byte binary string.<!--convert-->
- - [ ] **WRITE KEYS _string_** - Write string to auto-type buffer.
+ - [ ] **WRITE #_channel_,^_strvar_** - Write string to auto-type buffer.
+ - [ ] **WRITE KEYS _string_** - Write string to open file.<!--fileio-->

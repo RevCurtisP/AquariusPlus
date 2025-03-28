@@ -14,9 +14,8 @@ FN_ASC:
     cp      '$'                   
     jr      nz,asc_chr            ; If ASC$
     rst     CHRGET                ;   Eat $ and Skip Spaces
-    call    PARCHK                ;   Parse Argument in Parentheses
+    call    PARSTR                ;   Parse String Argument in Parentheses
     push    hl                    ;   Save Text Pointer
-    call    CHKSTR                ;   TM Error if Not a String
     jp      hex_to_asc            ;   Convert to ASCII and return
 
 asc_chr:
@@ -24,7 +23,7 @@ asc_chr:
 sng_chr:
     push    iy                    ; Stack = FltJmp, RtnAdr
     SYNCHK  '('
-    call    GET_STRING
+    call    FRMSTR
     pop     bc                    ; BC = FltJmp; Stack = RtnAdr
     ld      de,(FACLO)
     push    de                    ; Stack = StrDsc, RtnAdr
@@ -684,26 +683,21 @@ parse_page_arg:
     or      a                     ; Clear Carry Flag
     ret
 
-;; ToDo: Move ST_READ into read_extension and jump to ST_READ_KEYS from there
-ST_READ:
-    cp      XTOKEN
-    jp      nz,READ
-    inc     hl
-    ld      a,(hl)
-    cp      KEYTK
-    jr      z,ST_READ_KEYS
-    jp      SNERR
-    
+
+; WRITE KEYS "123":READ KEYS K$:PRINT K$
+read_xtoken:
+    inc     hl                    ; Skip XTOKEN
+    rst     SYNCHR
+    byte    KEYTK                 ; Require KEY
 ST_READ_KEYS:
-    inc     (hl)                  ; Skip KEYTK
     SYNCHK  'S'                   ; Require S
     call    get_stringvar
     push    hl                    ; Stack = TxtPtr, RtnAdr
     push    de                    ; Stack = VarPtr, TxtPtr, RtnAdr
     call    get_strbuf_addr       ; HL = BufAdr, BC = BufLen
     call    aux_call_inline
-    word    read_keys
-    call    strbuf_temp_str       ; Copy Buffer to Temporary. Return HL = StrDsc
+    word    read_keys             ; C = StrLen
+    call    strbuf_temp_str_c     ; Copy Buffer to Temporary. Return HL = StrDsc
     push    hl                    ; Stack = StrDsc, VarPtr, TxtPtr, RtnAdr
     jp      INBUFC                ; Copy Temporary to Variable and return
 
