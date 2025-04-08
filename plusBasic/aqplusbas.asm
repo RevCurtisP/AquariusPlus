@@ -61,7 +61,6 @@
 just_ret:
     ret
 
-
 ;-----------------------------------------------------------------------------
 ; Reset vector
 ;-----------------------------------------------------------------------------5
@@ -130,7 +129,7 @@ null_desc:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.24j"
+    db "v0.24k"
     db 0
 plus_len   equ   $ - plus_text
 
@@ -874,7 +873,7 @@ _tty_finish:
 ; - Restores Bank 3 and returns all registers exoept AF'
 ; Input: IY = Routine address
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-gfx_kernel_call:
+gfx__call:
     inc     iy                    ; Index into gfx jump_table
     inc     iy
     jr      aux_call
@@ -920,8 +919,6 @@ _jumpiy:
     call    jump_iy
     jp      page_restore_bank3
 
-
-
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ; Call Extended ROM subroutine
 ; - Maps Extended ROM into Bank 3
@@ -934,6 +931,16 @@ ext_call:
     jr      _jumpiy
 
     free_rom_sys = $2F00 - $
+
+; Run M/L Executable
+run_exec:
+    call    page_set_plus         ; Put extended ROM back
+    call    SCRTCH                ; Do a New
+    ld      bc,READY              ; Return to Direct Mode
+    push    bc
+    ld      hl,(FILNAF)           ; HL = ExecAdr
+jump_hl:
+    jp      (hl)
 
 ; ------------------------------------------------------------------------------
 ;  Hook Jump Table
@@ -1192,9 +1199,11 @@ _buffer_write_init:
     include "debug.asm"         ; Debugging routines
     include "dos.asm"           ; DOS routines
     include "esp_aux.asm"       ; ESP routines in auxiliary ROM
+    include "fileaux.asm"       ; Disk and File I/O assembly ronibuutines
     include "fileio.asm"        ; Disk and File I/O assembly ronibuutines
     include "fileload.asm"      ; File LOAD I/O routines
-    include "filemisc.asm"       ; BASIC File auxilarry routines
+    include "filemisc.asm"      ; BASIC File auxilarry routines
+    include "fileplus.asm"      ; AQPLUS resource run/load routines
     include "filesave.asm"      ; File SAVE I/O routines
     include "filestr.asm"       ; File related string assembly routines
     include "joyaux.asm"        ; BASIC game controller auxiliary code

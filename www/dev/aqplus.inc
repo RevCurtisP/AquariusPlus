@@ -15,10 +15,10 @@ lowercase_char         equ $211E ; Convert character to uppercase
 sys_fill_mem           equ $2121 ; Fill main memory with byte
 sys_swap_mem           equ $2124 ; Swap bytes
 key_clear_fifo         equ $2127 ; Clear alternate keyboard buffer
-key_read_ascii         equ $212A ; Read from alternate keyboard buffer
-key_read_scancode      equ $212D ; Read scan code sequence from alternate keyboard buffer
+key_read               equ $212A ; Read from alternate keyboard buffer
 key_set_keymode        equ $2130 ; Set alternate keyboard buffer mode
-key_pressed            equ $2133 ; Check matrix for keypress
+sys_ver_plusbasic      equ $2136 ; Get plusBASIC version string
+sys_num_ver            equ $2139 ; Convert version string to 24-bit number
 
 ; ESP Interface
 esp_cmd                equ $213C ; Issue command
@@ -106,6 +106,12 @@ FLOAT_BC               equ $C206 ; Convert BC to unsigned float in FACC
 FLOAT_DE               equ $C209 ; Convert DE to unsigned float in FACC
 FLOAT_CDE              equ $C20C ; Convert CDE to unsigned float in FACC
 
+; *****************
+; * Auxiliary ROM *
+; * LD   IY,label *
+; * CALL aux_call *
+; *****************
+
 ; DOS
 dos_change_dir         equ $C000 ; Change Directory
 dos_close              equ $C003 ; Close file or directory
@@ -147,6 +153,8 @@ file_load_defchrs      equ $C06F ; Load file into default chrset buffer
 file_load_tilemap      equ $C072 ; Load tilemap
 file_save_tilemap      equ $C075 ; Save tilemap
 file_save_chrset       equ $C078 ;
+file_load_tileset      equ $C07B ; Load tiles
+file_save_tileset      equ $C07E ; Save tiles
 file_read_dir          equ $C081 ; Read directory entry as ASCII string
 
 ; String Operations
@@ -168,71 +176,91 @@ runarg_get             equ $C0BD
 
 ; Miscellaneous
 pause_jiffies          equ $C0CC 
-read_gamepad           equ $C0CF 
+read_gamepad           equ $C0CF ; Read gamepad(s)
+get_gamectrl           equ $C0D2 ; Read full Xbox controller status
+key_pressed            equ $C0D5 ; Check key matrix for key press
+
+; Sounds
+play_sample            equ $C0EA ; Play digitized sound sample
+
+; *****************
+; * Graphics ROM  *
+; * LD   IY,label *
+; * CALL gfx_call *
+; *****************
 
 ; Bitmap Graphics
-bitmap_init_vars       equ $C100 ; Initialize bitmap system variables
-bitmap_set_mode        equ $C103 ; Set bitmap mode system variable from video control register
-bitmap_read_sysvars    equ $C106 ; Read bitmap system variables
-bitmap_read_color      equ $C109 ; Get Bitmap Draw Colors
-bitmap_write_color     equ $C10C ; Set Bitmap Draw Colors
-bitmap_clear_screen    equ $C10F ; Clear Bitmap
-bitmap_fill_byte       equ $C112 ; Fill Bitmap with Byte
-bitmap_fill_color      equ $C115 ; Fill Bitmap Color RAM
-bitmap_line            equ $C118 ; [Future]
-bitmap_setpixel        equ $C12D ; Draw pixel
-bitmap_resetpixel      equ $C130 ; Erase pixel on 1 bpp bitmap screen
-bitmap_getpixel        equ $C133 ; Return pixel/bloxel at position
-bitmap_get             equ $C136 ; [future] Read Bitmap Screen Section into Buffer
-colormap_fill          equ $C145 ; Fill 1bpp Color Map Rectangle with Byte
+bitmap_init_vars       equ $C000 ; Initialize bitmap system variables
+bitmap_set_mode        equ $C003 ; Set bitmap mode system variable from video control register
+bitmap_read_sysvars    equ $C006 ; Read bitmap system variables
+bitmap_read_color      equ $C009 ; Get Bitmap Draw Colors
+bitmap_write_color     equ $C00C ; Set Bitmap Draw Colors
+bitmap_clear_screen    equ $C00F ; Clear Bitmap
+bitmap_fill_byte       equ $C012 ; Fill Bitmap with Byte
+bitmap_fill_color      equ $C015 ; Fill Bitmap Color RAM
+bitmap_line            equ $C018 ; [Future]
+bitmap_setpixel        equ $C02D ; Draw pixel
+bitmap_resetpixel      equ $C030 ; Erase pixel on 1 bpp bitmap screen
+bitmap_getpixel        equ $C033 ; Return pixel/bloxel at position
+bitmap_get             equ $C036 ; [future] Read Bitmap Screen Section into Buffer
+colormap_fill          equ $C045 ; Fill 1bpp Color Map Rectangle with Byte
 
 ; Palette and Colors
-palette_reset          equ $C154 ; Reset palette to default colors
-palette_set            equ $C157 ; palette_set
-palette_get            equ $C15A ; Get palette
-rgb_to_asc             equ $C160 ; Convert Binary RGB list to ASCII
-asc_to_rgb             equ $C163 ; Convert ASCII RRGGBB to binary GB0R
+palette_reset          equ $C054 ; Reset palette to default colors
+palette_set            equ $C057 ; palette_set
+palette_get            equ $C05A ; Get palette
+rgb_to_asc             equ $C060 ; Convert Binary RGB list to ASCII
+asc_to_rgb             equ $C063 ; Convert ASCII RRGGBB to binary GB0R
 
 ; Text Screen Read and Write
-screen_clear_color     equ $C178 ; Fill Color RAM with current/default colors
-screen_read_byte       equ $C184 ; Read byte from screen
-screen_write_byte      equ $C187 ; Write byte to screen
-screen_read_string     equ $C18A ; Read string from Screen RAM
-screen_write_string    equ $C18D ; Write string to Screen RAM
-screen_read_paged      equ $C196 
-screen_write_paged     equ $C199 
-screen_read_fast       equ $C19C 
-screen_write_fast      equ $C19F 
-oolor_read_byte        equ $C1A8 ; Read byte from Color RAM
-color_write_byte       equ $C1AB ; Write byte to Color RAM
-color_read_string      equ $C1AE ; Read string from Color RAM
-color_write_string     equ $C1B1 ; Write string to Color RAM
-screen_clear_cursor    equ $C1C0 ; Remove cursor from screen
-screen_invert_color    equ $C1C6 
-screen_invert_cursor   equ $C1C9 
-screen_get             equ $C1D2 ; Read Text Screen Section into Buffer
-screen_put             equ $C1D5 ; Write Text Screen Section from Buffer
-screen_fill            equ $C1D8 ; Fill Text or Color Screen Rectangle with Byte
+screen_clear_color     equ $C078 ; Fill Color RAM with current/default colors
+screen_read_byte       equ $C084 ; Read byte from screen
+screen_write_byte      equ $C087 ; Write byte to screen
+screen_read_string     equ $C08A ; Read string from Screen RAM
+screen_write_string    equ $C08D ; Write string to Screen RAM
+screen_read_paged      equ $C096 
+screen_write_paged     equ $C099 
+screen_read_fast       equ $C09C 
+screen_write_fast      equ $C09F 
+oolor_read_byte        equ $C0A8 ; Read byte from Color RAM
+color_write_byte       equ $C0AB ; Write byte to Color RAM
+color_read_string      equ $C0AE ; Read string from Color RAM
+color_write_string     equ $C0B1 ; Write string to Color RAM
+screen_clear_cursor    equ $C0C0 ; Remove cursor from screen
+screen_invert_color    equ $C0C6 
+screen_invert_cursor   equ $C0C9 
+screen_get             equ $C0D2 ; Read Text Screen Section into Buffer
+screen_put             equ $C0D5 ; Write Text Screen Section from Buffer
+screen_fill            equ $C0D8 ; Fill Text or Color Screen Rectangle with Byte
 
 ; Text Screen Switch and Swap
-init_screen_buffers    equ $C1E4 
-init_screen_vars       equ $C1E7 
-screen_reset           equ $C1F0 
-screen_status          equ $C1F3 
-screen_restore         equ $C1FC 
-screen_stash           equ $C1FF 
-screen_swap            equ $C202 
-screen_switch          equ $C205 
+init_screen_buffers    equ $C0E4 
+init_screen_vars       equ $C0E7 
+screen_reset           equ $C0F0 
+screen_status          equ $C0F3 
+screen_restore         equ $C0FC 
+screen_stash           equ $C0FF 
+screen_swap            equ $C102 
+screen_switch          equ $C105 
 
 ; Tilemap
-tile_set               equ $C20E 
-tile_get               equ $C211 
-tile_from_chrrom       equ $C214 
-tile_combine_props     equ $C217 
-tilemap_set_offset     equ $C220 
-tilemap_get_offset     equ $C223 
-tilemap_set_tile       equ $C226 
-tilemap_get_tile       equ $C229 
-tilemap_fill           equ $C22C 
-tilemap_get            equ $C22F 
-tilemap_put            equ $C232 
+tile_set               equ $C10E 
+tile_get               equ $C111 
+tile_from_chrrom       equ $C114 
+tile_combine_props     equ $C117 
+tilemap_set_offset     equ $C120 
+tilemap_get_offset     equ $C123 
+tilemap_set_tile       equ $C126 
+tilemap_get_tile       equ $C129 
+tilemap_fill           equ $C12C 
+tilemap_get            equ $C12F 
+tilemap_put            equ $C132 
+sprite_define          equ $C141 
+sprite_defrect         equ $C144 
+sprite_set_attrs       equ $C147 
+sprite_get_attrs       equ $C14A 
+spritle_set_pos        equ $C14D 
+spritle_get_pos        equ $C150 
+spritle_string_attrs   equ $C153 
+spritle_reset          equ $C156 
+spritle_reset_all      equ $C159 

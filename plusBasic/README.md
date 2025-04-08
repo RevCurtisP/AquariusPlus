@@ -1,4 +1,4 @@
-# plusBASIC Quick Reference Guide
+Quick Reference Guide
 <!-- Do not edit this page. Contents are copied from file quickref_wiki.md which is generated from README.md-->
 
 ## Literals
@@ -187,10 +187,6 @@
  - [ ] **INSTR({_offset_,}_haystack_,_needle)** - Search for string _needle_ in string _haystack_.
  - [ ] **JOIN \*_array$_ INTO _string_ DEL _delimiter_** - Join string array elements into delimited string.
  - [ ] **JOY(_stick_)** - Read one or both game controllers.<!--JOY-->
- - [ ] **JOYB(_stick_)** - Read game controller buttons.<!--JOY-->
- - [ ] **JOYD(_stick_)** - Read game controller d-pad.<!--JOY-->
- - [ ] **JOYK(_joyval_)** - Decode game controller buttons.<!--JOY-->
- - [ ] **JOYP(_joyval_)** - Decode game controller d-pad.<!--JOY-->
  - [ ] **JOY$(_id_)** - Read wireless game controller.<!--JOY-->
  - [ ] **KEY({_keycode_|_string_})** - Check if key is currently pressed.<!--key-->
  - [x] **LEFT$(_string_,_len_)** - Return the first up to _len_ characters of string.<!--string-->
@@ -208,9 +204,9 @@
  - [ ] **LOAD _filespec_,\*_array_** - Load binary file data into numeric or string array.<!--LOAD-->
  - [ ] **LOAD _filespec_,\*_array_,ASC** - Load multi-line ASCII file into string array.<!--LOAD-->
  - [ ] **LOAD _filespec_,^_string_** - Load up to 255 characters of file into string variable.<!--LOAD-->
- - [ ] **LOAD BITMAP _filespec_** - Load bitmap file into Video RAM.
+ - [ ] **LOAD BITMAP _filespec_** - Load bitmap file into Video RAM.<!--bmpfile-->
  - [ ] **LOAD CHRSET _filespec_** - Load character set into alternate character buffer.<!--CHRSET-->
- - [ ] **LOAD COLORMAP _filespec_** - Load 1bpp color map file into Video RAM.
+ - [ ] **LOAD COLORMAP _filespec_** - Load 1bpp color map file into Video RAM.<!--bmpfile-->
  - [ ] **LOAD DIR \{_filespec_,}\*_array_** - Load disk directory filenames into string array.
  - [ ] **LOAD DIR \{_filespec_,}}\*_array_,ASC** - Load formatted disk directory into string array.
  - [ ] **LOAD DIR \{_filespec_,}\*_array_**,BIN - Load binary disk directory into string array.
@@ -220,10 +216,10 @@
  - [ ] **LOAD SCREEN _filespec_** - Load text screen from file.
  - [ ] **LOAD SCREEN ATTR _filespec_** - Load text colors from file.
  - [ ] **LOAD SCREEN CHR _filespec_** - _Not implemented_
- - [ ] **LOAD TILEMAP _filespec_** - Load tile map into Video RAM.
- - [ ] **LOAD TILESET _filespec_** - Load tile definitions to Video RAM.
- - [ ] **LOAD TILESET INDEX _tileno_,_filespec_** - Load tile definitions relative to start of Video RAM.
- - [ ] **LOAD TILESET OFFSET _tileno_,_filespec_** - Load tile definitions relative to end of tilemap/bitmap.
+ - [ ] **LOAD TILEMAP _filespec_** - Load tile map into Video RAM.<!--tilefile-->
+ - [ ] **LOAD TILESET _filespec_** - Load tile definitions to Video RAM.<!--tilefile-->
+ - [ ] **LOAD TILESET INDEX _tileno_,_filespec_** - Load tile definitions relative to start of Video RAM.<!--tilefile-->
+ - [ ] **LOAD TILESET OFFSET _tileno_,_filespec_** - Load tile definitions relative to end of tilemap/bitmap.<!--tilefile-->
  - [ ] **LOAD TRACK _filespec_** - Load tracker file track into tracker player buffer.<!--track-->
  - [ ] **LOCATE _x_,_y_** - Move text cursor to specified position.<!--LOCATE-->
  - [x] **LOG(_float_)** - Return natural logarithm of argument.<!--math-->
@@ -308,15 +304,16 @@
  - [ ] **SAVE _filespec_,{@_page_,}_address_,_length_** - Save memory to binary file.<!--SAVE-->
  - [ ] **SAVE _filespec_,\*_array_** - Save numeric or string array data to file.<!--SAVE-->
  - [ ] **SAVE _filespec_,^_strvar_** - Save string to file.<!--SAVE-->
- - [ ] **SAVE BITMAP _filespec_** - Save bitmap screen data from Video RAM to file.
+ - [ ] **SAVE BITMAP _filespec_** - Save bitmap screen data from Video RAM to file.<!--bmpfile-->
  - [ ] **SAVE CHRSET _filespec_** - Save curent character set to file.<!--chrset-->
+ - [ ] **SAVE COLORMAP _filespec_** - Save 1bpp color map from Video RAM to file.<!--bmpfile-->
  - [ ] **SAVE FNKEYS _filespec_** - Save function key definitions to file.
  - [ ] **SAVE PALETTE _p_,_filespec_{,ASC}** - Save palette contents to file.<!--SAVEPALETTE-->
  - [ ] **SAVE SCREEN _filespec_** - Save text screen to file.
  - [ ] **SAVE SCREEN ATTR _filespec_** - _Not implemented_
  - [ ] **SAVE SCREEN CHR _filespec_** - _Not implemented_
- - [ ] **SAVE TILEMAP _filespec_** - Save tile map to file.
- - [ ] **SAVE TILESET _tileno_,_tilecount_,_filespec_** - Save tile definitions to disk.
+ - [ ] **SAVE TILEMAP _filespec_** - Save tile map to file.<!--tilefile-->
+ - [ ] **SAVE TILESET _tileno_,_tilecount_,_filespec_** - Save tile definitions to disk.<!--tilefile-->
  - [ ] **SCREEN {_text_mode_},{_gfx_mode_},{_sprites_},{_priority_},{_remap_}** - Set screen mode.<!--screen-->
  - [ ] **SCROLL BITMAP** - Not implemented.
  - [ ] **SCROLL SCREEN** - Not implemented.
@@ -399,5 +396,5 @@
  - [ ] **WAIT _port_,_xor_mask_{,_and_mask_}** - Pause until specifie bit pattern received from IO port.<!--system-->
  - [x] **WORD(_string_{,_offset_})** - Convert two consecutive bytes in string to unsigned integer.<!--convert-->
  - [x] **WORD$(_integer_)** - Convert integer to unsigned two byte binary string.<!--convert-->
- - [ ] **WRITE #_channel_,^_strvar_** - Write string to auto-type buffer.
- - [ ] **WRITE KEYS _string_** - Write string to open file.<!--fileio-->
+ - [ ] **WRITE #_channel_,^_strvar_** - Write string to open file.<!--fileio-->
+ - [ ] **WRITE KEYS _string_** - Write string to auto-type buffer.

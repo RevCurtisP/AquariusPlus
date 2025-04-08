@@ -895,7 +895,7 @@ _finish_def:
     pop     de                    ; Stack = VarPtr, RtnAdr
     ex      (sp),hl               ; HL = VarPtr; Stack = TxtPtr, RtnAdr
     push    hl                    ; Stack = VarPtr, TxtPtr, RtnAdr
-_assign_def_var:
+strbuf_to_strvar:
     call    strbuf_temp_str       ; Copy Buffer to Temporary. Return HL = StrDsc
     push    hl                    ; Stack = StrDsc, VarPtr, TxtPtr
     jp      INBUFC                ; Copy Temporary to Variable and return

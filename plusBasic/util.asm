@@ -153,10 +153,10 @@ print_c_string:
 ; Clobbered: A
 ;-----------------------------------------------------------------------------
 print_string_immd:
-    pop     hl                    ;; Get String Address off Stack
-    call    print_c_string        ;; Print the String
-jump_hl:
-    jp      (hl)                  ;; Fast Return
+    ex      (sp),hl
+    call    print_c_string
+    ex      (sp),hl
+    ret
 
 ;-----------------------------------------------------------------------------
 ; Free temporary string, then get string address and length

@@ -1,5 +1,7 @@
 ASC         BASIC-ASC-Function
 border      BASIC-Border-Statements-and-Functions
+bmpfile     BASIC-BITMAP-File-Statements
+tilefile    BASIC-Tile-File-Statements
 CALL        BASIC-CALL-Statement
 chrset      BASIC-CHRSET-and-CHRDEF-Statements
 CLEAR       BASIC-CLEAR-Statement

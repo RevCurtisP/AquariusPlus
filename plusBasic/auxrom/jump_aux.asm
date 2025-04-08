@@ -4,6 +4,12 @@
 ;;;ToDo: Add comments re: aux_call and update makeinc.py to parse them
 
 _jump_table:
+; .
+; *****************
+; * Auxiliary ROM *
+; * LD   IY,label *
+; * CALL aux_call *
+; *****************
 ; dos <<DOS>>
     jp      dos_change_dir        ; Change Directory
     jp      dos_close             ; Close file or directory

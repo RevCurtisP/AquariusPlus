@@ -43,6 +43,7 @@ _dos_error:
     ld      a,(EXT_FLAGS)
     and     FERR_FLAG
     jp      nz,ERROR
+_set_err:
     push    hl
     call    set_error
     pop     hl
@@ -56,6 +57,15 @@ _not_eof_error:
 _pop_pop_doserror:
     pop     hl                    ; Stack = TxtPtr
     jr      _pop_hl_doserror
+
+_pop_pop_read_error:
+    pop     hl
+    pop     hl
+_read_error:
+    cp      ERR_EOF
+    ld      e,ERRRPE
+    jr      z,_set_err
+    jr      _dos_error
 
 ;-----------------------------------------------------------------------------
 ; CD$ - Get Current Directory
@@ -525,66 +535,6 @@ _load_ascii:
     ld      e,a
     jp      ERROR                 ; Else issue BASIC error
 
-
-;-----------------------------------------------------------------------------
-; AQEX Header
-;  0 - 5    "AQPLUS"
-;  6 - 9    "EXEC"
-; 10 - 11   Load address
-; 11 - 13   Program Length
-; 14 - 15   Execute address
-;-----------------------------------------------------------------------------
-run_aqx_program:
-    call    ferr_flag_on
-    call    _open_read            ; A = FilDsc
-    ld      bc,16
-    ld      de,FBUFFR
-    call    esp_read_bytes        ; Read aqx header
-    ld      a,l
-    ex      af,af'                ; AF' = FilDsc
-    ld      a,16
-    cp      c                     ; If full header not read
-    jp      nz,.badfile           ;   Bad file error
-; Validate load address and length
-    ld      de,(FBUFFR+10)        ; DE = Load address
-    ld      bc,(FBUFFR+12)        ; BC = Program Length
-    ld      hl,$4000              
-    rst     COMPAR                ; If Load Address < $4000
-    jp      c,.badfile            ;   Bad file error
-    add     hl,bc                 ; 
-    ex      de,hl                 ; DE = PrgEnd
-    ld      hl,-512
-    add     hl,sp                 ; HL = StkPtr - 512
-    rst     COMPAR                ; If TopAdr < PrgEnd
-    jp      c,.badfile            ;   Bad file error
-; Load the executable
- ;   dec     de                    ; Back up to last byte of program
-    push    de                    ; Stack = EndAdr
-    ex      af,af'                ; AF = FilDsc
-    ld      de,(FBUFFR+10)        ; DE = Load Address
-    call    esp_read_bytes        ; DE = EndAdr
-    ld      a,l                   ; L = FilDsc
-    ld      iy,dos_close
-    call    aux_call              ; Close file
-    pop     hl                    ; HL = PrgEnd
-; Check execution address
-    rst     COMPAR                ; If EndAdr < PrgEnd
-    jp      c,.badfile            ;   Bad file error
-    ld      de,(FBUFFR+14)        ; DE = ExeAdr
-    rst     COMPAR                ; If ExeAdr >= PrgEnd
-    jp      c,.badfile            ;   Bad file error
-    ld      hl,(FBUFFR+10)        ; HL = BgnAdr
-    rst     COMPAR                ; If ExeAdr < BgnAdr
-    jp      c,.badfile            ;   Bad file error
-; Start the program    
-    ex      de,hl                 ; HL = ExeAdr
-    call    jump_hl
-    pop     hl
-    ret
-.badfile
-    call    _badfile
-    jp      _pop_hl_doserror    
-    
 ;-----------------------------------------------------------------------------
 ; Load CAQ/BAS file
 ; Input: HL: String descriptor address
@@ -889,7 +839,7 @@ _load_tile:
 _load_tileset:
     rst     SYNCHR
     byte    SETTK                 ;   Require SET
-    ld      de,0
+    ld      de,0                  ; Default TileNo to 0
     call    _index_offset
     jr      nz,.skip
     push    bc
@@ -1047,7 +997,7 @@ run_file:
     ; Check for .ROM extension
     ld      a, c                  ; A = String Length
     cp      a, 5                  ; If less than 5
-    jr      c, .load_basic        ; Too short to have ROM extension
+    jr      c, .run_prog          ; Too short to have ROM extension
     sub     a, 4                  ; Position of last four characters of String
     ld      c, a
     push    hl                    ; Save String Descriptor
@@ -1069,12 +1019,22 @@ run_file:
     pop     hl
     jr      z,.load_core
 
+.run_prog
+    push    hl                    ; Stack = StrDsc, TxtPtr, RtnAdr
+    ld      iy,aqplus_run
+    call    aux_call
+    jp      m,_pop_pop_doserror
+    call    esp_close_all
+    pop     hl
 .load_basic:
     pop     bc                    ; Discard Text Pointer
     ld      bc,run_c
     push    bc                    ; Return to RUNC
     call    load_basic_program
 
+.run_badfile
+    call    _badfile
+    jp      _pop_pop_doserror
 
 ; RUN /roms/bio.rom
 ; RUN /roms/astro.rom
@@ -1585,54 +1545,76 @@ ST_OPEN:
 
 ;-----------------------------------------------------------------------------
 ; Close File
-; Syntax: CLOSE #channel
+; CLOSE #channel
+; CLOSE *
 ;-----------------------------------------------------------------------------
 ST_CLOSE:
-    call    _get_channel
-    ret     m
-    ld      iy,dos_close
-    jp      aux_call
+    cp      EXPTK
+    jr      nz,.close_chan        ; If *
+    rst     CHRGET                ;   Skip it
+    jp      esp_close_all         ;   Close all files and return
+.close_chan
+    call    _get_channel          ; A = FilDsc
+    ret     z                     ; If FilDsc = 0, Retuen
+    dec     a 
+    ld      iy,aux_close_dir      ; If high bit set
+    jp      p,aux_call            ;   Close directory
+    ld      iy,dos_close          ; Else
+    jp      aux_call              ;   Close file
 
 _get_channel:
     SYNCHK  '#'                   
     call    GETBYT                ; A = Channel
-    dec     a                     ;   Convert to FilDsc
+    or      a                     ; Set flags
     ret
-    
+
+_get_chan_badfile:
+    call    _get_channel          ; A = Channel
+    dec     a                     ; A = FilSpc
+    ret     p                     ; Return if 0 < channel < 128
+    jp      m,BDFERR
+    pop     bc                    ; Discard return address
+    pop     bc                    ; Discard calle return address
+    call    _badfile              ; Bad File Error
+    jp      _dos_error            ; Error out
+
 ;-----------------------------------------------------------------------------
 ; Input full line
-; Syntax: LINE INPUT# channel,var$
+; LINE INPUT var$
+; LINE INPUT #channel,var$
 ;-----------------------------------------------------------------------------
-; A=OPEN("/t/test.txt" FOR INPUT)
-; LINE INPUT# 0, A$
+; OPEN A TO "1.txt" FOR INPUT
+; LINE INPUT #A,A$
 ; PRINT A$
-
+; 10 LINE INPUT A$
 ST_LINE_INPUT:
     rst     CHRGET                ; Skip INPUT
-    SYNCHK  '#'                   ; Require #
-    call    GETINT                ; Parse FilDsc
-    or      a                     ; If not 0
-    jp      nz,FCERR              ;   Error - For now
-    push    af                    ; Stack = FilDsc, RtnAdr
-    SYNCHK  ','                   ; Require comma
-    call    PTRGET                ; Get pointer to variable
-    call    GETYPE                ; If not string
-    jp      nz,TMERR              ;   Type mismatch error
-    pop     af                    ; A = FilDsc; Stack = TxtPtr
-    push    hl                    ; Stack = TxtPtr, RtnAdr
-    push    de                    ; Stack = VarPtr, TxtPtr, RtnAdr
-    ld      bc,256                ; Maximum bytes
-    ld      hl,(TOPMEM)
-    add     hl,bc                 ; Work buffer
+    cp      '#'
+    jr      nz,.notfile           ; If #
+    call    _get_chan_badfile     ;   A = FilDsc
+    push    af                    ;   Stack = FilDsc, CallAdr, RtnAdr
+    call    get_comma_stringvar   ;   DE = VarPtr
+    pop     af                    ;   A = FilDsc; Stack = RtnAdr
+    push    hl                    ;   Stack = TxtPtr, RtnAdr
+    push    de                    ;   Stack = VarPtr, TxtPtr, RtbAdr
+    call    clear_string_var      ;   Int StrVar to ""
+    call    get_strbuf_addr       ;   HL = BufAdr
     call    esp_read_line
-    jp      m,_dos_error
-    call    TIMSTR                ; Copy buffer into temporary string
-    call    FREFAC                ; HL = TmpDsc
-    ex      de,hl                 ; DE = TmpDsc
-    pop     hl                    ; HL = VarPtr; Stack = TxtPtr, RtnAdr
-    call    MOVE                  ; Copy descriptor to variable
-    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
-    ret
+    jp      m,_pop_pop_read_error ;   If Error, pop VarPtr, TxtPtr, and process
+    ld      a,c                   ;   A = StrLen
+    jp      strbuf_to_strvar      ;   Copy to string variable
+.notfile
+    jp      GSERR
+    call    ERRDIR
+    call    get_comma_stringvar   ;   DE = VarPtr
+    push    hl                    ;   Stack = TxtPtr, RtnAdr
+    push    de                    ;   Stack = VarPtr, TxtPtr, RtbAdr
+    call    INLIN                 ;   Input line
+    jp      c,pop2hl_ret          ;   Abort if Ctrl-C
+
+clear_string_var:
+    ld      hl,null_desc
+    jp      MOVVFM
 
 _clear_errflag:
     ld      a,(EXT_FLAGS)

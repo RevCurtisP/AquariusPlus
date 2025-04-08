@@ -1,4 +1,11 @@
 # plusBASIC Release History
+ - v0.24k (2025-04-07)
+    - Updated `AQPLUS` Resource file chunk header formet and AqExec example _asm/hello.asm_
+    - Implemented RUNing AqExec programs
+    - Refactored `LINE INPUT` code
+    - Fixed `PLAY SAMPLE` and ^G warm boot infinite loop
+    - `print_string_immd` now preserves HL
+    - Updated _makeinc.py_ and regenerated assembly include files
  - v0.24j (2025-03-28)
     - SAVE routines no longer close all files
     - Fixed `OPEN`, `FILEATTR()`, `READ KEYS`

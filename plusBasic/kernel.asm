@@ -5,7 +5,7 @@ _jump_table:
 ; <<System Routines>>
     jp      aux_call              ; Call routine in auxillary ROM
     jp      ext_call              ; Call routine in extended ROM
-    jp      gfx_kernel_call       ; Call graphics routine
+    jp      gfx__call             ; Call graphics routine
     jp      str_copy              ; Copy null-terminated string
     jp      str_length            ; Get null-terminated string length
     jp      print_c_string        ; Print null-terminated string

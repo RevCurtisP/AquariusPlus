@@ -241,6 +241,7 @@ STOP        equ $0C1F   ; STOP statement
 STPEND      equ $0C26   ; Print "Break" and enter direct mode
 ISLETC:     equ $0CC6   ; Test for a letter
 CLRCON      equ $0D04   ; Continue CLEARS after setting top of stack
+INLIN       equ $0D85   ; INPUT a line
 NOTRUB      equ $0DA3   ; Continue Ctrl-key check
 CHKFUN      equ $0DA4   ; Evaluate Ctrl-keys
 INLINC      equ $0D8E   ; Wait for and process direct mode keypress

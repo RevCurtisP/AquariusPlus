@@ -1,4 +1,4 @@
-\;====================================================================
+;====================================================================
 ; Shared BASIC Statement and Function Subroutines
 ;====================================================================
 
@@ -833,6 +833,10 @@ check_on_off:
     xor     a                     ;   Return 0 with flags set
     ret
 
+
+get_comma_stringvar:
+    call    get_comma
+    byte    $FE                   ; CP over RST
 skip_get_stringvar:
     rst     CHRGET
 ;-----------------------------------------------------------------------------

@@ -23,6 +23,8 @@ dos_close_all:
     call    esp_cmd
     jp      esp_get_result 
 
+aux_close_dir:
+    and     $7F
 ;------------------------------;-----------------------------------------------------------------------------
 ; Close directory pointed to by descriptor
 ; Input: A: file descriptor
@@ -91,6 +93,7 @@ dos_stat:
 send_stat_cmd:
     ld      a, ESPCMD_STAT        
     call    esp_cmd               ; Issue STAT command
+_send_strdesc:
     call    esp_send_strdesc      ; Send FilSpc 
     jp      esp_get_result        ; Return A = Result
     
@@ -117,7 +120,7 @@ dos_get_cwd:
 dos_open_dir:
     ld      a, ESPCMD_OPENDIR     ; Set ESP Command
     call    esp_cmd
-    jr      _send_strdesc
+    jr      _open
 
 ;-----------------------------------------------------------------------------
 ; Open file for append to string descriptor
@@ -165,9 +168,8 @@ dos_open:
     call    esp_cmd
     pop     af
     call    esp_send_byte
-_send_strdesc:
-    call    esp_send_strdesc
-    jp      esp_get_result 
+_open:
+    jr      _send_strdesc         ; Send NewDsc
 
 ;-----------------------------------------------------------------------------
 ; dos_read_dir - Read Directory entry

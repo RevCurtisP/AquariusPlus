@@ -208,6 +208,7 @@ VCTRL_TEXT_DIS  equ $FF - VCTRL_TEXT_EN
 SYSCTRL_XRG_DIS equ $01     ; xxxxxxx1  Disable registers $E0-$F5, $F8-$F9
 SYSCTRL_PSG_DIS equ $02     ; xxxxxx1x  Disable PSGs
 SYSCTRL_TURBO   equ $0C     ; xxxx11xx  Clock Speed (3.88,7.16,Unlimited)
+SYSCTRL_WBOOT   equ $80     ; 1xxxxxxx  Warn Boot Flag
 
 IRQ_VBLANK      equ $01     ; VBLANK interrupt
 IRQ_VLINE       equ $02     ; Video LINE interrupt
