@@ -174,6 +174,9 @@ DIMEXT  equ     $2060   ;; | DIM extension
 READX   equ     $2063   ;; | READ extension
 FINEXT  equ     $2066   ;; | FIN extension 
 CLEARX  equ     $2069   ;; | CLEAR extension
+OUTDOX  equ     $206C   ;; | OUTDO hook
+ATNHK   equ     $206F   ;; | ATN hook
+TTYCHX  equ     $2072   ;; | TTYCHR hook
 endif                   
 EXTBAS  equ     $2000   ;;Start of Extended Basic
 XSTART  equ     $2010   ;;Extended BASIC Startup Routine
@@ -265,15 +268,25 @@ INIT:   ld      sp,TMPSTK         ;[M80] SET UP TEMP STACK
         ld      (INSYNC),hl       ;
 ;;Check for Catridge ROM at $E010
 ifdef aqplus
-;; Code change: Don't check for legacy cart - handled by boot.bin
-        jp      RESETX
+;; Code change: Don't check for legacy cart - handled by boot.bin             Original Code
+        jp      RESETX            ; |                                         005C ld      de,XINIT+1
 else
-CRTCHK: ld      de,XINIT+1        ;
+CRTCHK: ld      de,XINIT+1        ; \
 endif
-        ld      hl,CRTSIG-1       ;
+ifdef aqplus
+;; Code change: Move code to make room for hook replacements                  Original Code
+TANX:   call    COS               ;                                           005F  ld      hl,CRTSIG-1
+                                  ;                                           0060
+                                  ;                                           0061
+CRTCH1: jp      FDIVT             ;                                           0062  dec     de
+                                  ;                                           0063  dec     de
+                                  ;                                           0064  inc     hl
+else
+        ld      hl,CRTSIG-1       
 CRTCH1: dec     de                ;
         dec     de                ;
         inc     hl                ;
+endif
         ld      a,(de)            ;
         rrca                      ;
         rrca                      ;
@@ -2065,7 +2078,7 @@ FINGO:  ld      bc,FUNDSP         ;[M80] FUNCTION DISPATCH TABLE
         inc     hl                ;
         ld      h,(hl)            ;
         ld      l,c               ;
-        jp      (hl)              ;[M80] GO PERFORM THE FUNCTION
+JUMPHL: jp      (hl)              ;[M80] GO PERFORM THE FUNCTION
 ;[M80] THE FOLOWING ROUTINE IS CALLED FROM FIN
 ;[M80] TO SCAN LEADING SIGNS FOR NUMBERS.
 MINPLS: dec     d                 ;[M80] SET SIGN OF EXPONENT FLAG
@@ -4679,15 +4692,32 @@ TAN:    call    PUSHF             ;[M80] SAVE ARG
         call    PUSHF             ;
         ex      de,hl             ;[M80] GET LO'S WHERE THEY BELONG
         call    MOVFR             ;
-        call    COS               ;
-        jp      FDIVT             ;
+ifdef aqplus
+        jp      TANX              ; |
+OUTDOH: jp      OUTDOX            ; |
+else
+        call    COS               ; \
+        jp      FDIVT             ; \
+endif
 ;ARCTANGENT FUNCTION
-ATN:    rst     HOOKDO            ;;execute hook routine 15 (ATN)
+ATN:    
+ifdef aqplus
+        nop
+        nop
+        jp      ATNHK
+else
+        rst     HOOKDO            ;;execute hook routine 15 (ATN)
 HOOK14: byte    14                ;;if not implemented
         jp      SNERR             ;;  generate SYNTAX error
+endif
 ;;Execute OUTCHR
-OUTDO:  rst     HOOKDO            ;;execute hook routine 13 (OUTDOX)
+OUTDO:
+ifdef aqplus
+        jr      OUTDOH
+else
+        rst     HOOKDO            ;;execute hook routine 13 (OUTDOX)
 HOOK13: byte    13                ;
+endif
 OUTCON: push    af                ;
         ld      a,(PRTFLG)        ;[M80] SEE IF WE WANT TO TALK TO LPT
         or      a                 ;[M80] TEST BITS
@@ -5300,11 +5330,21 @@ CLOADN: call    RDBYTE            ;;Get Byte
         xor     a                 ;;Return with Zero set
         ret
 TTYCHR: ;Print character to screen
+ifdef aqplus
+        nop
+        nop
+else
         rst     HOOKDO            ;;Call Extended BASIC Hook Routine
 HOOK19: byte    19                ;
-TTYCH:  push    af                ;;Save character
+endif
+TTYCH:  
+ifdef aqplus
+        jp      TTYCHX
+else
+        push    af                ;;Save character
         cp      10                ;[M80] LINE FEED?
-        jr      z,ISLF            ;
+endif
+TTYILF: jr      z,ISLF            ;
         ld      a,(TTYPOS)        ;
         or      a                 ;;At beginning of line?
         jr      nz,ISLF           ;;No, skip line counter check

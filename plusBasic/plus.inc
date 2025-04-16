@@ -137,8 +137,13 @@ SPARGTYP    equ $3840   ; Sprite argument type
 RIGHTCOL    equ $3838   ; Right bound (LINELEN-1)
 LEFTCOL     equ $3839   ; Left bound (1)
 BOTLINE     equ $383A
-TOPLINE     equ $283B
-LINEDELTA   equ $283C   ; LINELEN - RIGHTCOL + LEFTCOL
+TOPLINE     equ $383B
+LINEDELTA   equ $383C   ; LINELEN - RIGHTCOL + LEFTCOL
+
+; CALL ARGS
+SAVEHL      equ $383A
+SAVEDE      equ $383C
+SAVEBC      equ $383E
 
 ;-----------------------------------------------------------------------------
 ; Variables

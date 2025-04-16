@@ -14,7 +14,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         </style>
   </head>
   <body>
-    <h1 id="plusbasic-quick-reference-guide">plusBASIC Quick Reference Guide</h1>
+    <p>Quick Reference Guide</p>
     <!-- Do not edit this page. Contents are copied from file quickref_wiki.md which is generated from README.md-->
     <h2 id="literals">Literals</h2>
     <ul>
@@ -106,7 +106,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>BYTE(<em>string</em>{,<em>pos</em>})</strong> - Return signed byte value of specified character in <em>string</em>.<!--convert--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>CALL <em>address</em> {ARGS <em>hl</em>,<em>de</em>,<em>bc</em>,<em>a</em>}</strong> - Executes machine language routine at address, optionally passing arguments into the associated registers.<!--CALL--></li>
+        <strong>CALL �!_ext_addr_�|�{@<em>page</em>,}_address_� {ARGS <em>hl</em>,<em>de</em>,<em>bc</em>}</strong> - Executes machine language routine at address, optionally passing arguments into the associated registers.<!--CALL--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>CALL MODULE</strong> - <em>Proposed enhancement.</em></li>
@@ -463,18 +463,6 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>JOY(<em>stick</em>)</strong> - Read one or both game controllers.<!--JOY--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>JOYB(<em>stick</em>)</strong> - Read game controller buttons.<!--JOY--></li>
-      <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>JOYD(<em>stick</em>)</strong> - Read game controller d-pad.<!--JOY--></li>
-      <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>JOYK(<em>joyval</em>)</strong> - Decode game controller buttons.<!--JOY--></li>
-      <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>JOYP(<em>joyval</em>)</strong> - Decode game controller d-pad.<!--JOY--></li>
-      <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
         <strong>JOY$(<em>id</em>)</strong> - Read wireless game controller.<!--JOY--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
@@ -526,13 +514,13 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>LOAD <em>filespec</em>,^<em>string</em></strong> - Load up to 255 characters of file into string variable.<!--LOAD--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>LOAD BITMAP <em>filespec</em></strong> - Load bitmap file into Video RAM.</li>
+        <strong>LOAD BITMAP <em>filespec</em></strong> - Load bitmap file into Video RAM.<!--bmpfile--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>LOAD CHRSET <em>filespec</em></strong> - Load character set into alternate character buffer.<!--CHRSET--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>LOAD COLORMAP <em>filespec</em></strong> - Load 1bpp color map file into Video RAM.</li>
+        <strong>LOAD COLORMAP <em>filespec</em></strong> - Load 1bpp color map file into Video RAM.<!--bmpfile--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>LOAD DIR {<em>filespec</em>,}*<em>array</em></strong> - Load disk directory filenames into string array.</li>
@@ -562,16 +550,16 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>LOAD SCREEN CHR <em>filespec</em></strong> - <em>Not implemented</em></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>LOAD TILEMAP <em>filespec</em></strong> - Load tile map into Video RAM.</li>
+        <strong>LOAD TILEMAP <em>filespec</em></strong> - Load tile map into Video RAM.<!--tilefile--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>LOAD TILESET <em>filespec</em></strong> - Load tile definitions to Video RAM.</li>
+        <strong>LOAD TILESET <em>filespec</em></strong> - Load tile definitions to Video RAM.<!--tilefile--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>LOAD TILESET INDEX <em>tileno</em>,<em>filespec</em></strong> - Load tile definitions relative to start of Video RAM.</li>
+        <strong>LOAD TILESET INDEX <em>tileno</em>,<em>filespec</em></strong> - Load tile definitions relative to start of Video RAM.<!--tilefile--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>LOAD TILESET OFFSET <em>tileno</em>,<em>filespec</em></strong> - Load tile definitions relative to end of tilemap/bitmap.</li>
+        <strong>LOAD TILESET OFFSET <em>tileno</em>,<em>filespec</em></strong> - Load tile definitions relative to end of tilemap/bitmap.<!--tilefile--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>LOAD TRACK <em>filespec</em></strong> - Load tracker file track into tracker player buffer.<!--track--></li>
@@ -811,7 +799,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>RUN </strong> - Start program execution at first or specified line.<!--run--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>RUN <em>filespec</em></strong> - Load and runs specified program, cartridge image, or FPGA core.<!--run--></li>
+        <strong>RUN <em>filespec</em></strong> - Load a.0nd runs specified program, cartridge image, or FPGA core.<!--run--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>SAVE <em>filespec</em>{,ASC|CAQ|BIN}</strong> - Save BASIC program to CAQ or ASCII or raw tokenized file.<!--SAVE--></li>
@@ -826,10 +814,13 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>SAVE <em>filespec</em>,^<em>strvar</em></strong> - Save string to file.<!--SAVE--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>SAVE BITMAP <em>filespec</em></strong> - Save bitmap screen data from Video RAM to file.</li>
+        <strong>SAVE BITMAP <em>filespec</em></strong> - Save bitmap screen data from Video RAM to file.<!--bmpfile--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>SAVE CHRSET <em>filespec</em></strong> - Save curent character set to file.<!--chrset--></li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>SAVE COLORMAP <em>filespec</em></strong> - Save 1bpp color map from Video RAM to file.<!--bmpfile--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>SAVE FNKEYS <em>filespec</em></strong> - Save function key definitions to file.</li>
@@ -847,10 +838,10 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>SAVE SCREEN CHR <em>filespec</em></strong> - <em>Not implemented</em></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>SAVE TILEMAP <em>filespec</em></strong> - Save tile map to file.</li>
+        <strong>SAVE TILEMAP <em>filespec</em></strong> - Save tile map to file.<!--tilefile--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>SAVE TILESET <em>tileno</em>,<em>tilecount</em>,<em>filespec</em></strong> - Save tile definitions to disk.</li>
+        <strong>SAVE TILESET <em>tileno</em>,<em>tilecount</em>,<em>filespec</em></strong> - Save tile definitions to disk.<!--tilefile--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>SCREEN ,,,,</strong> - Set screen mode.<!--screen--></li>
@@ -1099,10 +1090,10 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>WORD$(<em>integer</em>)</strong> - Convert integer to unsigned two byte binary string.<!--convert--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>WRITE #<em>channel</em>,^<em>strvar</em></strong> - Write string to auto-type buffer.</li>
+        <strong>WRITE #<em>channel</em>,^<em>strvar</em></strong> - Write string to open file.<!--fileio--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>WRITE KEYS <em>string</em></strong> - Write string to open file.<!--fileio--></li>
+        <strong>WRITE KEYS <em>string</em></strong> - Write string to auto-type buffer.</li>
     </ul>
   </body>
 </html>

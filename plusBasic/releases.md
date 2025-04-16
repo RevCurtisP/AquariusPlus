@@ -1,4 +1,11 @@
 # plusBASIC Release History
+ - v0.24l (2025-04-15)
+    - Implemented AqExec load to and run from paged RAM 
+    - Added paged RAM destination to `CALL`
+    - Fixed `PUT SCREEN` generating _Illegal quantity error_
+    - Replaced UDF hook in `ATN` with direct jump
+    - Replaced UDF hooks in `OUTDO` and `TTYCHR`/`TTYCH` with direct jump. Moved hook code from AuxROM to SysROM
+    - Ensured that Extended ROM is paged in for direct jumps that replaced UDF hooks
  - v0.24k (2025-04-07)
     - Updated `AQPLUS` Resource file chunk header formet and AqExec example _asm/hello.asm_
     - Implemented RUNing AqExec programs

@@ -1126,7 +1126,7 @@ ST_SET_USR:
     jr      nz,.set_userint
     ld      hl,userint_disable
 .set_userint
-    call    jump_hl
+    call    JUMPHL
     pop     hl
     ret
 

@@ -93,37 +93,6 @@ init_bas_fdesc:
     ret
 
 ;-----------------------------------------------------------------------------
-; Hook 13 - OUTDO 
-;-----------------------------------------------------------------------------
-outdo_hook:
-  push    af                
-  ld      a,(BASYSCTL)            ; Get System Control Bits
-  rra                             ; Output to Buffer into Carry
-  jr      nc,.not_buffered        ; If bit set
-  jp      output_to_buffer        ;   Write to buffer 
-.not_buffered:
-  pop     af
-  jp      HOOK13+1
-
-
-;-----------------------------------------------------------------------------
-; Hook 19 - TTYCHR (Print Character to Screen)
-;-----------------------------------------------------------------------------
-ttychr_hook:
-    push    af
-    cp      11
-    jr      nz,.not_cls
-    ld      a,(BASYSCTL)
-    and     $FE
-    ld      (BASYSCTL),a
-.not_cls
-    in      a,(IO_VCTRL)
-    and     VCRTL_80COL_EN
-    jp      nz,ttychr80pop
-    pop     af
-    jp      TTYCH
-    
-;-----------------------------------------------------------------------------
 ; Hook 30 - Check for label at beginning of line, then search for it's line
 ;-----------------------------------------------------------------------------
 ;; Proposed: GOTO/GOSUB ( expression )
@@ -210,6 +179,17 @@ scan_label:
 ULERR:
     ld      e,ERRUL
     jp      force_error
+
+
+;-----------------------------------------------------------------------------
+; Extension to CLEAR command
+;-----------------------------------------------------------------------------
+clear_extension:
+    call    esp_close_all         ; Close all files
+    xor     a
+    ld      (BAS_FDESC),a         ; Clear currently open file
+    ld      hl,(VARTAB)
+    jp      CLEARV
 
 ;-----------------------------------------------------------------------------
 ; Hook 33: Save MAIN Line Number Flag

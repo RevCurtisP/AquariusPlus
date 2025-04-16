@@ -68,7 +68,7 @@ Quick Reference Guide
  - [ ] **BIT(_long_,_bit#_)** - Return status of bit in 23 bit number.
  - [ ] **BIT(_string_,_bit#_)** - Return status of bit in binary string.
  - [x] **BYTE(_string_{,_pos_})** - Return signed byte value of specified character in _string_.<!--convert-->
- - [ ] **CALL _address_ {ARGS _hl_,_de_,_bc_,_a_}** - Executes machine language routine at address, optionally passing arguments into the associated registers.<!--CALL-->
+ - [ ] **CALL «!_ext_addr_»|«{@_page_,}_address_» {ARGS _hl_,_de_,_bc_}** - Executes machine language routine at address, optionally passing arguments into the associated registers.<!--CALL-->
  - [ ] **CALL MODULE** - _Proposed enhancement._
  - [ ] **CD {_dirname_}** - Display current path or change directory.<!--filesystem-->
  - [ ] **CD$** - Return current path.<!--filesystem-->
@@ -299,7 +299,7 @@ Quick Reference Guide
  - [x] **RIGHT$(_string_,_len_)** - Return the last up to _byte_ characters of string.<!--string-->
  - [x] **RND(_integer_)** - Return new or previous psuedo-random number or seeds the random number generator.<!--math-->
  - [ ] **RUN {_lineref_}** - Start program execution at first or specified line.<!--run-->
- - [ ] **RUN _filespec_** - Load and runs specified program, cartridge image, or FPGA core.<!--run-->
+ - [ ] **RUN _filespec_** - Load a.0nd runs specified program, cartridge image, or FPGA core.<!--run-->
  - [ ] **SAVE _filespec_{,ASC|CAQ|BIN}** - Save BASIC program to CAQ or ASCII or raw tokenized file.<!--SAVE-->
  - [ ] **SAVE _filespec_,{@_page_,}_address_,_length_** - Save memory to binary file.<!--SAVE-->
  - [ ] **SAVE _filespec_,\*_array_** - Save numeric or string array data to file.<!--SAVE-->

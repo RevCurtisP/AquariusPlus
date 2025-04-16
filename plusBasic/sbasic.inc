@@ -220,6 +220,7 @@ PARCHK:     equ $0A37   ; Evaluate expression in` brackets
 LABBCK:     equ $0A49   ; Return numeric value from function
 ISVAR       equ $0A4E   ; Get variable value or string pointer
 RETVAR      equ $0A51   ; Put value of variable pointed to by DE in FACLO
+JUMPHL      equ $0A97   ; Jump to address in HL
 GIVFLT      equ $0B1C   ; Float HL - DE
 GIVINT      equ $0B21   ; Float Integer MSB=[A], LSB=[C]
 FLOATD      equ $0B23   ; Float Integer MSB=[A], LSB=[D]
@@ -346,6 +347,7 @@ GETINT      equ $1AD0   ; Parse an Integer
 COPY        equ $1B15   ; Execute COPY statement
 TTYCHR:     equ $1D72   ; Print character in A with pause/break at end of page
 TTYCH:      equ $1D74   ; Print character, bypassing Hook 19
+TTYILF      equ $1D77   ; Reentry point for ttychr_hook
 TTYCHP      equ $1D75   ; Enter TTYCH after PUSH AF
 TTYOUT:     equ $1D94   ; Print character in A
 TTYFIS:     equ $1DE7   ; Finish up TTYOUT

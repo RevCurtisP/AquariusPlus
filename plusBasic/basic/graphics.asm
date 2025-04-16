@@ -661,7 +661,7 @@ _get_put:
     pop     bc                    ; C = Col; Stack = Row, RtnAdr
     ex      (sp),hl               ; HL = Row; Stack = TxtPtr, RtnAdr
     ex      de,hl                 ; E = Row, HL = AryAdr
-    ld      a,(XTEMP0)            ; A = Mode (GET/PUT SCREEN)
+    ld      a,(XTEMP0+1)          ; A = Mode (GET/PUT SCREEN)
     jp      gfx_call_fc_popret
 
 

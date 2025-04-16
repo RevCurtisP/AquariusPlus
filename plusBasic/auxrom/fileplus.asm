@@ -59,18 +59,29 @@ aqplus_run_exec:
     ld      de,FILNAM
     ld      bc,4
     ldir                          ; (FILNAM) = ProgLen
-    ld      bc,16
-    add     hl,bc                 ; Skip RscName (Carry cleared)
-    ld      bc,4                  ; (FILNAM+4) = LoadAdr
-    ldir                          ; (FILNAM+6) = ExecAdr
+    ld      bc,16                 ; Skip RscName (Carry cleared)
+    add     hl,bc                 ; (FILNAM+4) = LoadAdr
+    ld      bc,5                  ; (FILNAM+6) = ExecAdr
+    ldir                          ; (FILNAM+8) = LoadPg
 ; Load Program
+    ld      ix,esp_read_bytes
+    ld      bc,$4000
+    ex      af,af'                ; A' = FilDsc
+    ld      a,(FILNAM+8)          ; A = Page
+    or      a
+    jr      z,.nopage
+    ld      ix,esp_read_paged
+    ld      bc,$C000
+.nopage
     ld      hl,(FILNAM+4)         ; HL = LoadAdr
     ld      bc,$4000
     sbc     hl,bc                 ; If LoadAdr < $4000
     jr      c,_badfile            ;   Bad file error
     ld      bc,(FILNAM)           ; BC = ProgLen
     ld      de,(FILNAM+4)         ; DE = LoadAdr
-    call    esp_read_bytes
+    ld      h,a                   ; H = Page
+    ex      af,af'                ; A = FilDsc
+    call    jump_ix
     ret     m
     ld      a,l
     call    dos_close
@@ -92,71 +103,3 @@ _badfile:
     ld      a,$FF-ERRBDF
     or      a
     ret
-
-
-
-;    ld      de,FBUFFR
-;    ld      bc,10
-;    call    esp_read_bytes        ; (FBUFFR) = RsrcLen
-;    ret     m
-;    ex      af,af'                ; A' = FilDsc
-;    ld      a,c
-;    cp      10                    ; If < 10 bytes read
-;    ret     c                     ;   Return Carry Set
-;    ld      hl,(_resource_len)    ; HL = RsrcLen
-;    ld      de,6
-;    sbc     hl,de
-;    ld      b,h                   ; BC = ProgLen
-;    ld      c,l
-;    ld      de,(_load_addr)
-;    call    esp_read_bytes        ; DE = EndAdr
-;    ld      a,l                   ; L = FilDsc
-;    call    dos_close             ; Close file
-;    ld      de,(_exec_addr)
-;    jp      run_exec
-;
-;
-;; Validate Load and Execute Adress
-;    ld      hl,(_resource_len)    ; HL = RsrcLen
-;    ld      de,6
-;    sbc     hl,de
-;    ld      b,h                   ; BC = ProgLen
-;    ld      c,l
-;    ld      hl,$4000              ; HL = MinAdr
-;    ld      de,(_load_addr)
-;    rst     COMPAR                ; If LoadAdr < MinAdr
-;    ret     c                     ;   Return Carry set
-;    add     hl,bc                 ; HL = PrgEnd
-;    rst     COMPAR
-;    ccf                           ; If ExecAdr >= PrgEnd
-;    ret     c                     ;   Return Carry Set
-;    ex      de,hl                 ; DE = PrgEnd
-;    ld      hl,-512
-;    add     hl,sp                 ; TopAdr = StkPtr - 512
-;    rst     COMPAR                ; If TopAdr < PrgEnd
-;    ret     c                     ;   Bad file error
-;; Load the executable
-;    push    de                    ; Stack = PrgEnd
-;    ex      af,af'                ; AF = FilDsc
-;    ld      de,(_load_addr)       ; DE = LoadAddr
-;    call    esp_read_bytes        ; DE = EndAdr
-;    ld      a,l                   ; L = FilDsc
-;    call    dos_close             ; Close file
-;    pop     hl                    ; HL = PrgEnd
-;; Check execution address
-;    rst     COMPAR                ; If EndAdr < PrgEnd
-;    jp      c,.badfile            ;   Bad file error
-;    ld      de,(FBUFFR+14)        ; DE = ExeAdr
-;    rst     COMPAR                ; If ExeAdr >= PrgEnd
-;    jp      c,.badfile            ;   Bad file error
-;    ld      hl,(FBUFFR+10)        ; HL = BgnAdr
-;    rst     COMPAR                ; If ExeAdr < BgnAdr
-;    jp      c,.badfile            ;   Bad file error
-;; Start the program    
-;    ex      de,hl                 ; HL = ExeAdr
-;    call    jump_hl
-;    pop     hl
-;    ret
-;.badfile
-
-

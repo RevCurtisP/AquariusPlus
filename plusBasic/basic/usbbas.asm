@@ -4,63 +4,56 @@
 
 
 ;-----------------------------------------------------------------------------
-; ST_CALL
-;
-; syntax: CALL address
-; address is signed integer, 0 to 32767   = $0000-$7FFF
-;                            -32768 to -1 = $8000-$FFFF
-;
+; Syntax: CALL address
 ; on entry to user code, HL = text after address
 ; on exit from user code, HL should point to end of statement
 ;-----------------------------------------------------------------------------
+; CALL $245D
+; CALL $210F ARGS $20C5
+
 ST_CALL:
-    call    GETINT                ; Convert to 16 bit integer
-    push    de                    ; Stack = CalAdr, RtnAdr
+    call    get_page_addr         ; A = Page, DE = Addr
+    push    de                    ; Stack = Addr, RtnAdr
+    push    af                    ; Stack =Page, Addr, RtnAdr 
     ld      a,(hl)
-    cp      XTOKEN                ; If no Extended token
-    ret     nz                    ;   Jump to user code, HL = BASIC text pointer
-    inc     hl
-    ld      a,(hl)                ; Get extended token
+    cp      XTOKEN                ; If Extended token
+    jr      nz,.call
+.xtoken
+    inc     hl                    ;   Skip XTOKEN
+    ld      a,(hl)                ;   Get extended token
     cp      ARGSTK
-    jr      z,.call_args          ; If not ARGS
-    dec     hl                    ;   Back up pointer
-    ret     z                     ;   and Jump to user code
+    dec     hl                    ;   TxtPtr to XTOKEN
+    jr      nz,.call              ;   If ARGS
+    inc     hl                    ;     TxtPtr to ARGS
+.args
+    call    skip_get_int
+    ld      (SAVEHL),de           ;     SAVEHL = Arg1
+    call    .comma_arg
+    ld      (SAVEDE),de           ;     SAVEDE = Arg2
+    call    .comma_arg
+    ld      (SAVEBC),de           ;     SAVEBC = Arg3
+    pop     af                    ;     A = Page; Stack = Addr, RtnAdr
+    pop     iy                    ;     IY = Addr; Stack = RtnAdr
+    push    hl                    ;     Stack = TxtPtr. RtnAdr
+    ld      hl,POPHRT
+    push    hl                    ;     Stack = POPHRT, TxtPtr, RtnAdr
+    push    iy                    ;     Stack = Addr, POPHRT, TxtPtr, RtnAdr
+    push    af                    ;     Stack = Page, Addr, POPHRT, TxtPtr, RtnAdr
+    ld      hl,(SAVEHL)           ;     HL = Arg1
+    ld      de,(SAVEDE)           ;     DE = Arg2
+    ld      bc,(SAVEBC)           ;     BC = Arg3
+.call
+    pop     af                    ; If no page specified
+    ret     nc                    ;   Jump to user code, HL = BASIC text pointer
+    pop     iy                    ; Else
+    jp      page_call             ;   Jump to address in page 
 
-.call_args
-    call    .get_arg              ; Stack = ArgHL, CalAdr, RtnAdr
-    jr      nz,.arg_hl
-    call    .get_arg              ; Stack = ArgDE, ArgHL, CalAdr, RtnAdr
-    jr      nz,.arg_de
-    call    .get_arg              ; Stack = ArgBC, ArgDE, ArgHL, CalAdr, RtnAdr
-    jr      nz,.arg_bc
-    call    .get_arg              ; Stack = ArgAF, ArgBC, ArgDE, ArgHL, CalAdr, RtnAdr
-.arg_af:
-    pop     de                    ; DE = ArgAF; Stack = ArgAF, ArgHL, ArgHL, CalAdr, RtnAdr
-    ld      a,e                   ; A = ArgA
-.arg_bc:
-    pop     bc                    ; BC = ArgBC; Stack = ArgDE, ArgHL, CalAdr, RtnAdr
-.arg_de:
-    pop     de                    ; DE = ArgDE; Stack = ArgHL, CalAdr, RtnAdr
-.arg_hl
-    exx
-    pop     hl                    ; HL' = ArgHL; Stack = CalAdr, RtnAdr
-    pop     ix                    ; IX = CalAdr; Stack = RtnAdr
-    push    hl                    ; Stack = ArgHL, RtnAdr
-    exx
-    ex      (sp),hl               ; HL = ArgHL; Stack = TxtPtr, RtnAdr
-    call    jumpix                ; Call the routine
-    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
-    ret
-
-.get_arg
-    rst     CHRGET                ; Skip comma
-    call    GETINT                ; Get Arg
-    pop     ix                    ; IX = RtnAdr
-    push    de                    ; Arg onto staclk
+.comma_arg
+    ld      de,0
     ld      a,(hl)
     cp      ','                   ; Check for comma
-    jp      (ix)                  ; and Return
-
+    ret     nz
+    jp      get_comma_int
 
 ;-----------------------------------------------------------------------------
 ; HEX$() function

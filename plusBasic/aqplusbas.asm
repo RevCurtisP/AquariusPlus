@@ -37,26 +37,29 @@
     jp      _wait_key       ; $2027 INCHRX Wait for character, don't BREAK on Ctrl-C
     jp      _main_ctrl_c    ; $202A MAINCC Handle Ctrl-c in MAIN
     jp      _finish_input   ; $202D FININX C/R in INPUT patch
-    jp      scan_label      ; $2030 SCNLBL Scan line label or line number
+    jp      _scan_label     ; $2030 SCNLBL Scan line label or line number
     jp      _tty_finish     ; $2033 TTYFIN Display cursor
     jp      _ctrl_keys      ; $2036 XFUNKY _Evaluate extended function keys
-    jp      then_hook       ; $2039 THENHK *Not Implemented* Check for ELSE after IF ... THEN
+    jp      _then_hook      ; $2039 THENHK *Not Implemented* Check for ELSE after IF ... THEN
     jp      _trap_error     ; $203C XERROR Restore Stack, Display Error, and Stop Program
-    jp      main_ext        ; $203F XMAIN  Save Line# Flag in TEMP3
+    jp      _main_ext       ; $203F XMAIN  Save Line# Flag in TEMP3
     jp      _stuffh_ext     ; $2042 XSTUFF Check for additional tokens when stuffing
     jp      _read_key       ; $2045 INCHRA Read alt keyboard port instead of matrix
     jp      _check_topmem   ; $2048 XCLEAR Verify TOPMEM is in Bank 2
-    jp      ptrget_hook     ; $204B XPTRGT Allow ~alphanumunder after var name
-    jp      skip_label      ; $204E SKPLBL Skip label at beginning of line
-    jp      skip_on_label   ; $2051 SKPLOG Skip label in ON GOTO
+    jp      _ptrget_hook    ; $204B XPTRGT Allow ~alphanumunder after var name
+    jp      _skip_label     ; $204E SKPLBL Skip label at beginning of line
+    jp      _skip_on_label  ; $2051 SKPLOG Skip label in ON GOTO
     jp      _string_ext     ; $2054 STRNGX Don't capitalize letters between single quotes (STRNGX)
     jp      _check_comment  ; $2057 CHKCMT Check for ' and treat as REM
-    jp      isvar_extension ; $205A ISVARX Variable evaluation extension - string splicing
-    jp      let_extension   ; $205D LETEXT Variable assignment extension - string splicing
+    jp      _isvar_ext      ; $205A ISVARX Variable evaluation extension - string splicing
+    jp      _let_ext        ; $205D LETEXT Variable assignment extension - string splicing
     jp      dim_extension   ; $2060 DIMEXT DIM extension - Populate array from list
-    jp      read_extension  ; $2063 REEADX READ extension - READ DATA into array
-    jp      fin_extension   ; $2066 FINEXT Extensions to FIN routine
-    jp      clear_extension ; $2069 CLEARX CLEAR extension - Close files
+    jp      _read_ext       ; $2063 REEADX READ extension - READ DATA into array
+    jp      _fin_ext        ; $2066 FINEXT Extensions to FIN routine
+    jp      _clear_ext      ; $2069 CLEARX CLEAR extension - Close files
+    jp      outdo_hook      ; $206C OUTDOX Redirect output to buffer
+    jp      _atn            ; $206F ATNHK  ATN hook
+    jp      ttychr_hook     ; $2072 TTYCHX TTYCHR 80 column extensuib
 
 just_ret:
     ret
@@ -129,7 +132,7 @@ null_desc:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.24k"
+    db "v0.24l"
     db 0
 plus_len   equ   $ - plus_text
 
@@ -930,18 +933,36 @@ ext_call:
     call    page_map_extrom
     jr      _jumpiy
 
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+; Call subroutine in page
+; - Maps Page into Bank 3
+; - Executes routine, passing all registers except AF' and IX
+; - Restores Bank 3 and returns all registers exoept AF'
+; Input: A = Page
+;       IY = Routine address
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+page_call:
+    call    page_map_bank3
+    ld      a,iyh
+    or      $C0                   ; Force address to Bank 3
+    ld      iyh,a
+    jr      _jumpiy
+
+
     free_rom_sys = $2F00 - $
 
 ; Run M/L Executable
 run_exec:
     call    page_set_plus         ; Put extended ROM back
     call    SCRTCH                ; Do a New
-    ld      bc,READY              ; Return to Direct Mode
+    ld      bc,READY                            ; Return to Direct Mode
     push    bc
-    ld      hl,(FILNAF)           ; HL = ExecAdr
-jump_hl:
-    jp      (hl)
-
+    ld      iy,(FILNAF)           ; IY = ExecAdr
+    ld      a,(FILNAF+2)          ; A = ExecPg
+    or      a                     ; If ExecPg <> 0
+    jp      nz,page_call          ;   Run in page
+    jp      (iy)                  ; Else jumop directly to it
+    
 ; ------------------------------------------------------------------------------
 ;  Hook Jump Table
 ; ------------------------------------------------------------------------------
@@ -967,13 +988,13 @@ hook_table:                     ; ## caller   addr  performing function
     dw      keyword_to_token    ; 10 NOTGOS   0536  Converting Keyword to Token
     dw      clear_hook          ; 11 CLEAR    0CCD  Execute CLEAR Statement
     dw      new_hook            ; 12 SCRTCH   0BBE  Execute NEW Statement
-    dw      outdo_hook          ; 13 OUTDO    198A  Execute OUTCHR
-    dw      FN_ATN              ; 14 ATN      1985  ATN() function
+    dw      0                   ; 13                Deprecated
+    dw      0                   ; 14                Deprecated
     dw      HOOK15+1            ; 15 DEF      0B3B  DEF statement
     dw      FN_FN               ; 16 FNDOER   0B40  FNxx() call
     dw      HOOK17+1            ; 17 LPTOUT   1AE8  Print Character to Printer
     dw      _read_key           ; 18 INCHRH   1E7E  Read Character from Keyboard
-    dw      ttychr_hook         ; 19 TTYCHR   1D72  Print Character to Screen
+    dw      0                   ; 19 TTYCHR         Deprecated
     dw      HOOK20+1            ; 20 CLOAD    1C2C  Load File from Tape
     dw      HOOK21+1            ; 21 CSAVE    1C09  Save File to Tape
     dw      token_to_keyword    ; 22 LISPRT   0598  expanding a token
@@ -1009,38 +1030,90 @@ fast_hook_handler:
     jp      (ix)
 
 ;-----------------------------------------------------------------------------
-; S3 BASIC extensions routines in Auxiliary ROM Page
+; S3 BASIC extensions routines in Extended ROM Page
 ;-----------------------------------------------------------------------------
+
+_atn:
+    call    page_set_plus
+    jp      FN_ATN
+
+_clear_ext:
+    call    page_set_plus
+    jp      clear_extension  
+
+_dim_ext:
+    call    page_set_plus
+    jp      dim_extension  
+
+_isvar_ext:
+    call    page_set_plus
+    jp      isvar_extension
+
+_let_ext:
+    call    page_set_plus
+    jp      let_extension
+
+_main_ext:
+    call    page_set_plus
+    jp      main_ext
+
+
+_read_ext:
+    call    page_set_plus
+    jp      read_extension 
+
+_fin_ext:
+    call    page_set_plus
+    jp      fin_extension  
 
 _next_statement:
     call    page_set_plus
     jp      exec_next_statement   ; Go do the Statement
 
+_ptrget_hook:
+    call    page_set_plus
+    jp      ptrget_hook
+
 _run_cmd:
     call    page_set_plus
     jp      run_cmd
 
-_stuffh_ext:
-    call    page_set_aux
-    jp      s3_stuffh_ext
+_scan_label
+    call    page_set_plus
+    jp      scan_label
+
+_skip_label:
+    call    page_set_plus
+    jp      skip_label
+
+_skip_on_label:
+    call    page_set_plus
+    jp      skip_on_label
 
 _trap_error:
     call    page_set_plus
     jp      trap_error
 
-;aux_rom_call:
-;    call    page_set_aux
-;    call    jump_ix
-;    jp      page_set_plus
+;-----------------------------------------------------------------------------
+; S3 BASIC extensions routines in Auxiliary ROM Page
+;-----------------------------------------------------------------------------
+;; ToDo: Move routines to ExtROM or wrap in aux_call
+
+_stuffh_ext:
+    call    page_set_aux
+    jp      s3_stuffh_ext
+
+_then_hook:
+    jp      REM
 
 _string_ext:
     call    page_set_aux
     jp      s3_string_ext
 
-aux_line_print:
-    call    page_set_plus         ; Map in Ext ROM
-    call    LINPRT                ; Print the line number
-    jp      page_set_aux          ; Remap Aux ROM and return
+;aux_line_print:
+;    call    page_set_plus         ; Map in Ext ROM
+;    call    LINPRT                ; Print the line number
+;    jp      page_set_aux          ; Remap Aux ROM and return
 
 ; 10 _label:PRINT "testing":'comment
 ; 20 'comment
@@ -1054,18 +1127,14 @@ _check_comment:
     rst     CHRGET                ; Skip '
     jp      REM                   ;   and do REM
 
-_dim_extension:
-    call    dim_extension         ; DIM extension - Populate array from list
-    call    CHRGT2                ; Reget current character
-    ret     z                     ; If terminator, DIM statement is done
-    jp      DIMNXT                ; Else DIM the next array
+;_dim_extension:
+;    call    dim_extension         ; DIM extension - Populate array from list
+;    call    CHRGT2                ; Reget current character
+;    ret     z                     ; If terminator, DIM statement is done
+;    jp      DIMNXT                ; Else DIM the next array
 
-clear_extension:
-    call    esp_close_all         ; Close all files
-    xor     a
-    ld      (BAS_FDESC),a         ; Clear currently open file
-    ld      hl,(VARTAB)
-    jp      CLEARV
+
+
 
 ;-----------------------------------------------------------------------------
 ; Internal routines to write to BASIC buffers

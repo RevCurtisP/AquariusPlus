@@ -244,3 +244,34 @@ set_linlen_a:
     ld      (LINLEN),a            ; Save it
     ret
 
+;-----------------------------------------------------------------------------
+; Hook 13 - OUTDO 
+;-----------------------------------------------------------------------------
+outdo_hook:
+  push    af                
+  ld      a,(BASYSCTL)            ; Get System Control Bits
+  rra                             ; Output to Buffer into Carry
+  jr      nc,.not_buffered        ; If bit set
+  jp      output_to_buffer        ;   Write to buffer 
+.not_buffered:
+  pop     af
+  jp      HOOK13+1
+
+;-----------------------------------------------------------------------------
+; Hook 19 - TTYCHR (Print Character to Screen)
+;-----------------------------------------------------------------------------
+ttychr_hook:
+    push    af
+    cp      11
+    jr      nz,.not_cls
+    ld      a,(BASYSCTL)
+    and     $FE
+    ld      (BASYSCTL),a
+.not_cls
+    in      a,(IO_VCTRL)
+    and     VCRTL_80COL_EN
+    jp      nz,ttychr80pop
+    pop     af
+    push    af                ;;Save character
+    cp      10                ;[M80] LINE FEED?
+    jp      TTYILF
