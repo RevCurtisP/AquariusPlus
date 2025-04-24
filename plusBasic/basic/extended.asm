@@ -13,9 +13,9 @@
 ;; ToDo: CLEAR KEYS - Clear autotype and alt key buffer
 clear_hook:
     jp      z,CLEARC              ; If no operands just CLEAR
-    cp      BITTK                 
+    cp      BITTK
     jp      z,ST_CLEAR_BITMAP
-    cp      MULTK                 ; 
+    cp      MULTK                 ;
     jr      z,ST_CLEAR_ARRAY
     cp      XTOKEN                ; If not extended token
     jp      nz,HOOK11+1           ;   Continue with CLEAR
@@ -38,7 +38,7 @@ aux_call_popret:
     ret
 
 ST_CLEAR_ARRAY:
-    call    get_star_array        ; DE = AryAdr, BC = AryLen 
+    call    get_star_array        ; DE = AryAdr, BC = AryLen
     call    clear_array
     ld      a,(hl)
     cp      ','
@@ -63,12 +63,12 @@ clear_array:
     ret
 
 print_hook:
-    cp      '@'       
+    cp      '@'
     jr      nz,.not_at            ; If '@'
     rst     CHRGET                ;   Skip '@'
-    SYNCHK  '('                   ;   Require open paren
+    SYNCHKC '('                   ;   Require open paren
     call    ST_LOCATE             ;    Do LOCATE
-    SYNCHK  ')'                   ;   Rwquire close paren
+    SYNCHKC ')'                   ;   Rwquire close paren
     jr      .done
 .not_at:
     call    CHRGT2
@@ -92,24 +92,24 @@ FN_ATN:
     call    m,PSHNEG              ; IF ARG IS NEGATIVE, USE:
     call    m,NEG                 ;     ARCTAN(X)=-ARCTAN(-X)
     ld      a,(FAC)               ; SEE IF FAC .GT. 1
-    cp      129               
-    jp      c,ATN2          
+    cp      129
+    jp      c,ATN2
 
     ld      bc,$8100              ; GET THE CONSTANT 1
-    ld      d,c                
+    ld      d,c
     ld      e,c                   ; COMPUTE RECIPROCAL TO USE THE IDENTITY:
     call    FDIV                  ;    ARCTAN(X)=PI/2-ARCTAN(1/X)
-    ld      hl,FSUBS              ; PUT FSUBS ON THE STACK SO WE WILL RETURN       
-    push    hl                    ;   TO IT AND SUBTRACT THE REULT FROM PI/2    
-ATN2:   
+    ld      hl,FSUBS              ; PUT FSUBS ON THE STACK SO WE WILL RETURN
+    push    hl                    ;   TO IT AND SUBTRACT THE REULT FROM PI/2
+ATN2:
     ld      hl,ATNCON             ; EVALUATE APPROXIMATION POLYNOMIAL
-  
-    call    POLYX              
+
+    call    POLYX
     ld      hl,PI2                ; GET POINTER TO PI/2 IN CASE WE HAVE TO
     ret                           ;   SUBTRACT THE RESULT FROM PI/2
-  
-;CONSTANTS FOR ATN  
-ATNCON: 
+
+;CONSTANTS FOR ATN
+ATNCON:
     db      9                     ;DEGREE
     db      $4A,$D7,$3B,$78       ; .002866226
     db      $02,$6E,$84,$7B       ; -.01616574
@@ -122,7 +122,7 @@ ATNCON:
     db      $00,$00,$00,$81       ; 1.0
 
 ;-----------------------------------------------------------------------------
-; CLS statement 
+; CLS statement
 ; syntax: CLS [fgcolor, bgcolor]
 ;-----------------------------------------------------------------------------
 ST_CLS:
@@ -133,8 +133,7 @@ ST_CLS:
     jp      clear_home            ; Clear screen and homecursor
 .cls_color:
     rst     CHRGET                ; Skip COL
-    rst     SYNCHR                
-    byte    ORTK                  ; Require COLOR    
+    SYNCHKT ORTK                  ; Require COLOR
     ld      iy,screen_clear_color
     jp      z,gfx_call_preserve_hl
     ld      iy,screen_clear_color_a
@@ -147,15 +146,15 @@ ST_CLS:
 ST_DEF:
     cp      FNTK
     jr      z,ST_DEF_FN
-    cp      INTTK         
+    cp      INTTK
     jp      z,ST_DEF_INT            ; DEF INTLIST
     cp      TILETK
     jp      z,ST_DEF_TILELIST       ; DEF TILELIST
-    cp      RGBTK                   
+    cp      RGBTK
     jp      z,ST_DEF_RGB            ; DEF RGBLIST
     cp      USRTK
     jr      z,ST_DEF_USR
-    cp      XTOKEN          
+    cp      XTOKEN
     jp      nz,SNERR                ; Extended Token Prefix
     inc     hl
     ld      a,(hl)                  ; Get Extended Token
@@ -174,15 +173,14 @@ ST_DEF:
 ;-----------------------------------------------------------------------------
 ST_DEF_USR:
     rst     CHRGET                  ; Skip USR
-    ld      bc,USRADD               ; DefAdr = USR() 
+    ld      bc,USRADD               ; DefAdr = USR()
     cp      INTTK
     jr      nz,.notint              ; If USRINT
-    rst     CHRGET                  ; 
+    rst     CHRGET                  ;
     ld      bc,BASINTADR            ;   DefAdr = User Interrupt
 .notint
     push    bc                      ; Stack = DefAdr, RtnAdr
-    rst     SYNCHR
-    byte    EQUATK                  ; Require =
+    SYNCHKT EQUATK                  ; Require =
     call    GETINT                  ; DE = UsrAdr
     ex      (sp),hl                 ; HL = DefAdr; Stack = TxrPtr, RtnAdr
     ld      (hl),e
@@ -197,86 +195,84 @@ ST_DEF_USR:
 ST_DEF_FN:
     call    get_fn_ptr                ; GET A POINTER TO THE FUNCTION NAME
     call    ERRDIR                ; DEF IS "ILLEGAL DIRECT"
-    ld      bc,DATA               ; MEMORY, RESTORE THE TXTPTR AND GO TO "DATA" 
+    ld      bc,DATA               ; MEMORY, RESTORE THE TXTPTR AND GO TO "DATA"
     push    bc                    ; SKIPPING THE REST OF THE FORMULA
-    push    de              
-    SYNCHK  '('                   ; SKIP OVER OPEN PAREN
+    push    de
+    SYNCHKC '('                   ; SKIP OVER OPEN PAREN
     call    PTRGET                ; GET POINTER TO DUMMY VAR(CREATE VAR)
-    push    hl              
-    ex      de,hl            
-    dec     hl              
-    ld      d,(hl)          
-    dec     hl              
-    ld      e,(hl)          
-    pop     hl              
-    call    CHKNUM          
-    SYNCHK  ')'                   ;{M80} MUST BE FOLLOWED BY )
-    rst      SYNCHR
-    db      EQUATK
-    ld      b,h              
-    ld      c,l              
-    ex      (sp),hl          
-    ld      (hl),c          
-    inc     hl              
-    ld      (hl),b          
-    jp      STRADX           
+    push    hl
+    ex      de,hl
+    dec     hl
+    ld      d,(hl)
+    dec     hl
+    ld      e,(hl)
+    pop     hl
+    call    CHKNUM
+    SYNCHKC ')'                   ;{M80} MUST BE FOLLOWED BY )
+    SYNCHKT EQUATK
+    ld      b,h
+    ld      c,l
+    ex      (sp),hl
+    ld      (hl),c
+    inc     hl
+    ld      (hl),b
+    jp      STRADX
 
 FN_FN:
     call    get_fn_ptr            ; GET A POINTER TO THE FUNCTION NAME
-    push    de                      
+    push    de
     call    PARCHK                ; RECURSIVELY EVALUATE THE FORMULA
     call    CHKNUM                ; MUST BE NUMBER
-    ex      (sp),hl               ; SAVE THE TEXT POINTER THAT POINTS PAST THE 
+    ex      (sp),hl               ; SAVE THE TEXT POINTER THAT POINTS PAST THE
                                       ; FUNCTION NAME IN THE CALL
     ld      e,(hl)                ; [H,L]=VALUE OF THE FUNCTION
-    inc     hl                    
-    ld      d,(hl)                
+    inc     hl
+    ld      d,(hl)
     inc     hl                    ; WHICH IS A TEXT POINTER AT THE FORMAL
     ld      a,d                   ; PARAMETER LIST IN THE DEFINITION
-    or      e                     ; A ZERO TEXT POINTER MEANS THE FUNCTION 
+    or      e                     ; A ZERO TEXT POINTER MEANS THE FUNCTION
                                       ; WAS NEVER DEFINED
     jp      z,UFERR               ; IF SO, GIVEN AN "UNDEFINED FUNCTION" ERROR
-    ld      a,(hl)              
-    inc     hl                  
-    ld      h,(hl)              
-    ld      l,a                 
+    ld      a,(hl)
+    inc     hl
+    ld      h,(hl)
+    ld      l,a
     push    hl                    ; SAVE THE NEW VALUE FOR PRMSTK
-    ld      hl,(VARNAM)           
-    ex      (sp),hl             
-    ld      (VARNAM),hl           
-    ld      hl,(FNPARM)           
-    push    hl                  
-    ld      hl,(VARPNT)           
-    push    hl                  
-    ld      hl,VARPNT             
-    push    de                  
-    call    MOVMF               
-    pop      hl                 
+    ld      hl,(VARNAM)
+    ex      (sp),hl
+    ld      (VARNAM),hl
+    ld      hl,(FNPARM)
+    push    hl
+    ld      hl,(VARPNT)
+    push    hl
+    ld      hl,VARPNT
+    push    de
+    call    MOVMF
+    pop      hl
     call    FRMNUM                ; AND EVALUATE THE DEFINITION FORMULA
     dec     hl                    ; CAN HAVE RECURSION AT THIS POINT
     rst     CHRGET                ; SEE IF THE STATEMENT ENDED RIGHT
-    jp      nz,SNERR              ; THIS IS A CHEAT, SINCE THE LINE 
+    jp      nz,SNERR              ; THIS IS A CHEAT, SINCE THE LINE
                                   ; NUMBER OF THE ERROR WILL BE THE CALLERS
                                   ; LINE # INSTEAD OF THE DEFINITIONS LINE #
-    pop     hl                  
-    ld      (VARPNT),hl           
-    pop     hl                  
-    ld      (FNPARM),hl           
-    pop     hl                  
-    ld      (VARNAM),hl           
+    pop     hl
+    ld      (VARPNT),hl
+    pop     hl
+    ld      (FNPARM),hl
+    pop     hl
+    ld      (VARNAM),hl
     pop     hl                    ; GET BACK THE TEXT POINTER
-    ret                      
+    ret
 
 
 
 ; SUBROUTINE TO GET A POINTER TO A FUNCTION NAME
-; 
-get_fn_ptr: 
-    rst     SYNCHR  
-    byte    FNTK                  ; MUST START WITH "FN"
+;
+get_fn_ptr:
+    SYNCHKT FNTK                  ; MUST START WITH "FN"
     ld      a,128                 ; DONT ALLOW AN ARRAY
     ld      (SUBFLG),a            ; DON'T RECOGNIZE THE "(" AS THE START OF AN ARRAY REFEREENCE
     or      (hl)                  ; PUT FUNCTION BIT ON
     ld      c,a                   ; GET FIRST CHARACTER INTO [C]
-    call    PTRGT2          
-    jp      CHKNUM          
+    call    PTRGT2
+    jp      CHKNUM

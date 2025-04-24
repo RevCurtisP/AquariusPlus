@@ -67,7 +67,7 @@ FN_HEX:
     push    hl              ; Stack = TxtPtr
     push    bc              ; Stack = DummyRtn, TxtPtr
     call    FRCINT          ; Evaluate formula @HL, result in DE
-    ld      hl, FPSTR       ; HL = temp string
+    ld      hl,FBUFFR+1     ; HL = temp string
     ld      a, d
     or      a               ; > zero ?
     jr      z, .lower_byte
@@ -77,7 +77,7 @@ FN_HEX:
     ld      a, e
     call    byte_to_hex     ; Convert byte in E to hex string
     ld      (hl), 0         ; Null-terminate string
-    ld      hl, FPSTR
+    ld      hl,FBUFFR+1
 .create_string:
     jp      TIMSTR                ; Create BASIC string
 
@@ -162,7 +162,7 @@ FN_IN:
     call    FRCINT                ; DE = IOPort
     push    de                    ; Stack = IOPort, RtnAdr
     call    get_comma_byte        ; DE = StrLen
-    SYNCHK  ')'                   ; Require )
+    SYNCHKC ')'                   ; Require )
     ex      (sp),hl               ; HL = IOPort; Stack = TxtPtr, RtnAdr
     push    hl                    ; Stack = IOPort, TxtPtr, RtnAdr
     ld      a,e
@@ -315,7 +315,7 @@ parse_screen_coord:
     jp      c, FCERR            ; If w, Illegal Quantity
 
     ; Expect comma
-    SYNCHK  ','
+    SYNCHKC ','
 
     call    GETBYT              ; Read number from command line (row). Stored in A and E
     cp      24                  ; Compare with 24 decimal (max rows on screen)
@@ -348,7 +348,7 @@ ST_OUT:
     jp      z,FCERR
 .okay
     push    de                  ; Stored to be used in BC
-    SYNCHK  ","                 ; Require comma
+    SYNCHKC ','                 ; Require comma
 .dloop
     call    FRMEVL              ; Parse data portion
     call    GETYPE
@@ -408,7 +408,7 @@ ST_PSG:
     out     (IO_PSG1ADDR), a ; Set the PSG register
 
     ; Expect comma
-    SYNCHK  ','
+    SYNCHKC   ','
 
     ; Get value to write to PSG register
     call    GETBYT           ; Get/evaluate value
@@ -428,7 +428,7 @@ ST_PSG:
     out     (IO_PSG2ADDR), a ; Set the PSG register
 
     ; Expect comma
-    SYNCHK  ','
+    SYNCHKC   ','
 
     ; Get value to write to PSG register
     call    GETBYT           ; Get/evaluate value

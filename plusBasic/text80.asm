@@ -255,7 +255,7 @@ outdo_hook:
   jp      output_to_buffer        ;   Write to buffer 
 .not_buffered:
   pop     af
-  jp      HOOK13+1
+  jp      OUTCON
 
 ;-----------------------------------------------------------------------------
 ; Hook 19 - TTYCHR (Print Character to Screen)

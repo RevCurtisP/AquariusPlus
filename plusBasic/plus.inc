@@ -304,10 +304,16 @@ pt3song     equ $0A00           ; PT3 file load address
 ;-----------------------------------------------------------------------------
 ; Macros
 ;-----------------------------------------------------------------------------
-SYNCHK macro value
-    rst     SYNCHR
+SYNCHKC macro value
+    rst     SYNCHK
     db      'value'
 endm
+
+SYNCHKT macro value
+    rst     SYNCHK
+    db      value
+endm
+
 
 ;-----------------------------------------------------------------------------
 ; ESP32 commands

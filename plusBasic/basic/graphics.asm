@@ -13,8 +13,7 @@ ST_USECHR:
 .andmask = 255-BASCHRSET
 .ormask = BASCHRSET * 256
     rst     CHRGET                ; Skip CHR
-    rst     SYNCHR                ; Require SET
-    byte    SETTK
+    SYNCHKT SETTK                 ; Require SET
     call    FRMEVL                ; Evaluate operand
     call    GETYPE
     jr      nz,.switch
@@ -35,7 +34,7 @@ ST_USECHR:
     jr      nz,.default
     and     $FF-BASCHRSET
     byte    $01                   ; LD BC over OR
-.default    
+.default
     or      BASCHRSET
     and     $FF-BASCHRMOD         ; Clear CharRAM modified bit
     ld      (BASYSCTL),a
@@ -85,16 +84,16 @@ FN_GETCHR:
 ; PRINT HEX$(GETCHRDEF$('@'))
 FN_GETCHRDEF:
     rst     CHRGET                ; Skip DEF
-    SYNCHK  '$'                   ; Require '$'
-    SYNCHK  '('                   ; Require (
+    SYNCHKC '$'                   ; Require '$'
+    SYNCHKC '('                   ; Require (
     call    get_char              ; A = ChrASC
     ld      b,a                   ; B = ChrASC
-    SYNCHK  ')'                   ; Require )
-    push    hl                    ; Stack = TxtPtr, RtnAdr  
+    SYNCHKC ')'                   ; Require )
+    push    hl                    ; Stack = TxtPtr, RtnAdr
     ld      iy,bas_getchrdef
     call    gfx_call
     jp      PUTNEW
-    
+
 ;-----------------------------------------------------------------------------
 ; GETCHRSET - Return Corrent Character Set
 ;-----------------------------------------------------------------------------
@@ -103,7 +102,7 @@ FN_GETCHRDEF:
 FN_GETCHRSET:
     rst     CHRGET                ; Skip SET
     push    hl                    ; Stack = TxtPtr, RtnAdr
-    ld      hl,LABBCK           
+    ld      hl,LABBCK
     push    hl                    ; Stack = LABBCK, TxtPtr, RtnAdr
     ld      iy,bas_get_chrset
     call    gfx_call
@@ -114,8 +113,7 @@ FN_GETCHRSET:
 ;-----------------------------------------------------------------------------
 FN_GETCOLOR:
     inc     hl                    ; Skip COL
-    rst     SYNCHR
-    byte    ORTK                  ; Require OR
+    SYNCHKT ORTK                  ; Require OR
     call    push_hl_labbck
     ld      a,(BASYSCTL)
     and     a,BASCRNCLR           ; If not in Color Print mode
@@ -129,8 +127,7 @@ FN_GETCOLOR:
 ;-----------------------------------------------------------------------------
 ST_SETCOLOR:
     rst     CHRGET                ; Skip CHR
-    rst     SYNCHR                ; Require OR
-    byte    ORTK
+    SYNCHKT ORTK                  ; Require OR
     cp      XTOKEN
     jr      z,.extended
     call    get_screen_colors
@@ -140,8 +137,7 @@ ST_SETCOLOR:
     jr      .done
 .extended
     rst     CHRGET                ; Skip XTOKEN
-    rst     SYNCHR                ; Require OFF
-    byte    OFFTK
+    SYNCHKT OFFTK                 ; Require OFF
     ld      a,(BASYSCTL)
     and     low(~BASCRNCLR)
 .done
@@ -171,17 +167,14 @@ ST_SETPALETTE:
     cp      INTK                  ; If followed by IN
     jr      nz,.not_index         ;
     rst     CHRGET                ;   Eat It
-    rst     SYNCHR
-    byte    XTOKEN
-    rst     SYNCHR
-    byte    DEXTK                 ;   Require DEX
+    SYNCHKT XTOKEN
+    SYNCHKT DEXTK                 ;   Require DEX
     push    de                    ;   Stack = Palette#
     call    get_byte16            ;   Parse Byte between 0 and 15
     ld      c,e                   ;   C = Entry #
     pop     de                    ;   DE = Palette#
 .not_index
-    rst     SYNCHR
-    byte    TOTK                  ; Require TO
+    SYNCHKT TOTK                  ; Require TO
     ld      a,e                   ; Get palette#
     cp      4                     ; If greater than 3
     jp      nc,FCERR              ;   Error
@@ -206,16 +199,16 @@ ST_SETPALETTE:
 
 ;-----------------------------------------------------------------------------
 ; SCREEN function
-; Returns: Bit   76    5      4        3       21     0   
+; Returns: Bit   76    5      4        3       21     0
 ;               Text Remap Priority Sprites Graphics  -
 ;-----------------------------------------------------------------------------
 FN_SCREEN:
-    rst     CHRGET                ; 
+    rst     CHRGET                ;
     push    hl                    ; Stack = TxtPtr, RtnAdr
     ld      bc,LABBCK
     push    bc                    ; Stack = LABBCK, TxtPtr, RtnAdr
     ld      iy,screen_status
-    call    gfx_call              ; A = Screen status    
+    call    gfx_call              ; A = Screen status
     jp      SNGFLT                ; Float it and return
 
 ;-----------------------------------------------------------------------------
@@ -228,7 +221,7 @@ FN_SCREEN:
 ST_SCREEN:
     call    get_byte_optional     ; A = [text]
     jr      c,.no_text            ; If specified
-    ld      iy,screen_switch      
+    ld      iy,screen_switch
     call    gfx_call_preserve_hl
 .no_text
     in      a,(IO_VCTRL)
@@ -276,8 +269,7 @@ ST_COPY_SCREEN:
     rst     CHRGET                ; Skip SCREEN
     call    screen_suffix         ; B: 1 = CHR, 2 = ATTR, 3 = Neither
     push    bc                    ; Stack = ScrSfx, RtnAdr
-    rst     SYNCHR
-    byte    TOTK
+    SYNCHKT TOTK
     call    get_page_addr         ; A = Page, DE = Address
     jp      nc,FCERR              ; Error if page not specified
     ld      iy,screen_write_paged
@@ -286,13 +278,12 @@ ST_COPY_SCREEN:
     cp      XTOKEN
     jr      nz,_copy_screen
     rst     CHRGET
-    rst     SYNCHR
-    byte    FASTK
+    SYNCHKT FASTK
     ld      iy,screen_write_fast
     jr      _copy_screen
 
 ;-----------------------------------------------------------------------------
-; COPY TO SCREEN - Copy paged memory to Screen RAM 
+; COPY TO SCREEN - Copy paged memory to Screen RAM
 ; COPY @page,address TO SCREEN
 ;-----------------------------------------------------------------------------
 ; On entry, A = Page, DE = Address
@@ -307,8 +298,7 @@ copy_to_screen:
     cp      XTOKEN
     jr      nz,_copy_screen
     rst     CHRGET
-    rst     SYNCHR
-    byte    FASTK
+    SYNCHKT FASTK
     ld      iy,screen_read_fast
 _copy_screen
     pop     af                    ; A = PgFlg; Stack = ScrSfx, RtnAdr
@@ -360,7 +350,7 @@ _swapcall_pophrt:
     rst     CHRGET                ; Skip SCREEN
     push    hl                    ; Stack = TxtPtr, RtnAdr
     ld      hl,SWPSCRN40          ; Stash to Swap Buffers
-    jp      gfx_call_popret              
+    jp      gfx_call_popret
 
 ;-----------------------------------------------------------------------------
 ; SET TILE Statement
@@ -382,8 +372,7 @@ ST_SET_TILE:
 .not_array
     call    get_int512            ; Get Tile#
     push    de                    ; Stack = Tile#, RtnAdr
-    rst     SYNCHR                ; Require TO
-    byte    TOTK
+    SYNCHKT TOTK                  ; Require TO
     cp      XTOKEN                ; If extended token
     jr      z,_set_tile_ext       ;   Do SET TILE ... TO CHR ...
     call    FRMEVL                ; Get DataAddr or String
@@ -395,7 +384,7 @@ _set_tile:
     pop     hl                    ; HL = Tile#; Stack = TxtPtr, RtnAdr
 _gfx_tile_call:
     call    gfx_call
-_check_nz_c:    
+_check_nz_c:
     jp      nz,FCERR              ; Error if bad HEX length
     jp      c,OVERR               ; Error if Overflow
     pop     hl                    ; HL = TxtPtr
@@ -426,10 +415,8 @@ _set_tile_ext:
 ; FILL COLORMAP (10,5)-(20,15) COLOR 7,1
 ST_FILL_COLORMAP:
     rst     CHRGET                ; Skip COL
-    rst     SYNCHR
-    byte    ORTK
-    rst     SYNCHR                ; Require ORMAP
-    byte    MAPTK                 
+    SYNCHKT ORTK
+    SYNCHKT MAPTK                 ; Require ORMAP
     call    scan_rect             ; B = BgnCol, C = EndCol, D = BgnRow, E= EndRow
     push    bc                    ; Stack = Cols, RtnAdr
     push    de                    ; Stack = Rows, Cols, RtnAdr
@@ -460,8 +447,7 @@ ST_FILL_SCREEN:
     cp      XTOKEN                ;
     jr      nz,.notx              ; If extended token
     inc     hl                    ;   Skip XTOKEN
-    rst     SYNCHR
-    byte    CHRTK                 ;   Require CHR
+    SYNCHKT CHRTK                 ;   Require CHR
     call    get_char              ;   Parse fill character
     pop     bc                    ;   BC = Cols; Stack = Rows, RtnAdr
     pop     de                    ;   DE = Rows; Stack = RtnAdr
@@ -498,8 +484,7 @@ ST_FILL_SCREEN:
 ; FILL TILEMAP (-1,0)-(63,31) TILE 128 PALETTE 0
 ST_FILL_TILE:
     rst     CHRGET                ; Skip TILE
-    rst     SYNCHR                ; Require MAP
-    byte    MAPTK
+    SYNCHKT MAPTK                 ; Require MAP
     cp      '('
     jr      nz,.fill_tile_all
     call    scan_rect             ; B = BgnCol, C = EndCol, D = BgnRow, E= EndRow
@@ -542,12 +527,11 @@ ST_GET_SCREEN:
 ;GET TILEMAP (1,1)-(2,2),^A$
 ST_GET_TILEMAP:
     rst     CHRGET                ; Skip TILE
-    rst     SYNCHR                ; Require MAP
-    byte    MAPTK
+    SYNCHKT MAPTK                 ; Require MAP
     call    scan_rect             ; B = BgnCol, C = EndCol, D = BgnRow, E = EndRow
     ld      iy,tilemap_get
 _do_get:
-    SYNCHK  ','                   ; Require comma
+    SYNCHKC ','                   ; Require comma
     push    de                    ; Stack = Rows, RtnAdr
     push    bc                    ; Stack = Cols, Rows, RtnAdr
     cp      MULTK                 ; If *
@@ -581,8 +565,7 @@ _parse_get_string:
     ld      a,l                   ; A = StrLen
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     push    af                    ; Stack = StrLen, RtnAdr
-    rst     SYNCHR
-    byte    EXPTK                 ; Require ^
+    SYNCHKT EXPTK                 ; Require ^
     call    PTRGET                ; Return DE = VarPtr
     pop     af                    ; A = StrLen; Stack = RtnAdr
     ret
@@ -611,8 +594,7 @@ screen_suffix:
     cp      CHRTK                 ; If CHR
     jp      z,CHRGTR              ;   Eat it and return 1 (SCREEN)
     ld      b,2
-    rst     SYNCHR                ; Else
-    byte    ATTRTK                ;   Require ATTRS
+    SYNCHKT ATTRTK                ; Else   Require ATTRS
     ret
 
 ;-----------------------------------------------------------------------------
@@ -626,25 +608,23 @@ screen_suffix:
 ;PUT TILEMAP (2,2),^A$
 ST_PUT_TILEMAP:
     rst     CHRGET                ; Skip TILE
-    rst     SYNCHR                ; Require MAP
-    byte    MAPTK
+    SYNCHKT MAPTK                 ; Require MAP
     call    SCAND                 ; C = Col, E = Row
     ld      iy,tilemap_put
 _do_put:
-    SYNCHK  ','                   ; Require comma
+    SYNCHKC ','                   ; Require comma
     push    de                    ; Stack = Row, RtnAdr
     push    bc                    ; Stack = Col, Row, RtnAdr
     cp      MULTK                 ; If *
     jr      z,_get_put_array      ;   Get into array
 _put_from_string:
-    rst     SYNCHR
-    byte    EXPTK                 ; Require ^
+    SYNCHKT EXPTK                 ; Require ^
     call    PTRGET                ; Return DE = VarPtr
     push    hl                    ; Stack = TxtPtr, Cols, Rows, RtnAdr
     ex      de,hl                 ; HL = VarPtr
     call    string_addr_len       ; DE = StrAdr, BC = StrLen
     ld      a,b
-    or      c                     ; If StrLen = 0 
+    or      c                     ; If StrLen = 0
     jr      z,ESERR               ;   Illegal quantity error
     pop     hl                    ; HL = TxtPtr; Stack = Cols, Rows, RtnAdr
     jr      _get_put              ; Put it
@@ -654,8 +634,7 @@ ESERR:
     jp      ERROR
 
 _get_put_array:
-    rst     SYNCHR
-    byte    MULTK                 ; Require * - for now
+    SYNCHKT MULTK                 ; Require * - for now
     call    get_array             ; DE = Array Data Address
 _get_put:
     pop     bc                    ; C = Col; Stack = Row, RtnAdr
@@ -688,8 +667,7 @@ ST_SET_TILEMAP:
     call    SCAND                 ;   C = Column, E = Row
     push    de                    ;   Stack = Row, RtnAdr
     push    bc                    ;   Stack = Column, Row, RtnAdr
-    rst     SYNCHR
-    byte    TOTK                  ;   Require TO
+    SYNCHKT TOTK                  ;   Require TO
     cp      TILETK
     jr      nz,.set_int           ;   If TILE
     call    _get_tile_props       ;     BC = Props, DE = Tile#
@@ -713,8 +691,7 @@ gfx_call_fc_popret:
 ; Output: BC = Props, DE = Tile#
 ; Note: TILE is not an extended token, the rest are
 _get_tile_props:
-    rst     SYNCHR                ; Require TILE
-    byte    TILETK
+    SYNCHKT TILETK                ; Require TILE
     call    get_int512            ; DE = Tile#
 _get_attr_palette:
     push    de                    ; Stack = Tile# , RtnAdr
@@ -723,8 +700,7 @@ _get_attr_palette:
     call    CHRGT2                ; Reget character
     jp      z,pop_de_ret          ; Return if terminator
     push    bc                    ; Stack = Props, Tile #, RtnAdr
-    rst     SYNCHR
-    byte    XTOKEN                ; Must be extended token
+    SYNCHKT XTOKEN                ; Must be extended token
     cp      ATTRTK                ; If ATTR
     jr      nz,.notattrs
     call    GTBYTC                ;   Get attributes
@@ -732,8 +708,7 @@ _get_attr_palette:
     ld      b,a                   ;   B = attributes
     jr      .loop
 .notattrs
-    rst     SYNCHR
-    byte    PALETK
+    SYNCHKT PALETK
     call    get_byte4             ;   Get palette#
     pop     bc                    ;   BC = Props; Stack = Tile#, RtnAdr
     ld      c,a                   ;   C = palette#
@@ -741,11 +716,10 @@ _get_attr_palette:
 
 _tilemap_offset:
     rst     CHRGET                ; Skip OFF
-    rst     SYNCHR                ; Require SET
-    byte    SETTK
+    SYNCHKT SETTK                 ; Require SET
     call    get_int512            ; DE = X-position
     push    de                    ; Stack = X-position, RtnAdr
-    SYNCHK  ','                   ; Require comma
+    SYNCHKC ','                   ; Require comma
     call    GETBYT                ; E = Y-position
     pop     bc                    ; BC = X-position, Stack = RtnAdr
     ld      iy,tilemap_set_offset ; Set Offset and return
@@ -758,12 +732,9 @@ FN_TILE:
     rst     CHRGET                ; Skip TILE
     cp      MAPTK                 ; If TILEMAP
     jr      z,FN_TILEMAP          ;   Go Do It
-    rst     SYNCHR                ; Else
-    byte    XTOKEN                ;   
-    rst     SYNCHR                ;   Require OFFSET
-    byte    OFFTK                 ;   
-    rst     SYNCHR                
-    byte    SETTK                 ;   
+    SYNCHKT XTOKEN                ; Else
+    SYNCHKT OFFTK                 ;   Require OFFSET
+    SYNCHKT SETTK                 ;
 ;-----------------------------------------------------------------------------
 ; TILEOFFSET
 ;-----------------------------------------------------------------------------
@@ -772,7 +743,7 @@ FN_TILEOFFSET:
     jr      z,.param
     call    tile_offset
     jr      push_labbck_floatbc
-.param    
+.param
     call    PARCHK                ; Parse argument
     call    CONINT
     xor     a                     ; Default to 0
@@ -829,13 +800,13 @@ ST_DEF_ATTR:
     rst     CHRGET                ; Skip ATTR/BYTE
     call    _setupdef             ; DatLen, BufAdr, VarPtr
 .loop
-    call    FRMEVL                
+    call    FRMEVL
     call    gfx_call_inline       ; A = Attributes
-    word    bas_parse_attr        
+    word    bas_parse_attr
     call    _write_byte_strbuf    ; Write it to string buffer
     call    CHRGT2                ; Reget next character
     jr      z,_finish_def         ; If not end of statement
-    SYNCHK  ','                   ;   Require comma
+    SYNCHKC ','                   ;   Require comma
     jr      .loop                 ;   and get next tile#
 
 ;-----------------------------------------------------------------------------
@@ -851,7 +822,7 @@ ST_DEF_PALETTE:
     call    _write_byte_strbuf    ; Write to buffer
     call    CHRGT2                ; Reget next character
     jr      z,_finish_def        ; If not end of statement
-    SYNCHK  ','                   ;   Require comma
+    SYNCHKC ','                   ;   Require comma
     jr      .loop                 ;   and get next color
 
 ;-----------------------------------------------------------------------------
@@ -872,7 +843,7 @@ ST_DEF_INT:
     rst     CHRGET                ;   Skip it
     jr      .loop                 ;   and get next integer
 .not_sc
-    SYNCHK  ','                   ; Else require comma
+    SYNCHKC ','                   ; Else require comma
     jr      .loop                 ;   and get next integer
 
 ;-----------------------------------------------------------------------------
@@ -886,7 +857,7 @@ ST_DEF_RGB:
     call    _write_word_strbuf    ; Write RGB to String Buffer
     call    CHRGT2                ; Reget next character
     jr      z,_finish_def         ; If not end of statement
-    SYNCHK  ';'                   ;   Require semicolon
+    SYNCHKC ';'                   ;   Require semicolon
     jr      .loop                 ;   and get next RGB
 
 ; On entry HL = TxtPtr; Stack = DatLen, BufPtr, VarPtr, RtnAdr
@@ -901,8 +872,7 @@ strbuf_to_strvar:
     jp      INBUFC                ; Copy Temporary to Variable and return
 
 _setupdef:
-    rst     SYNCHR
-    byte    LISTTK                ; Require LIST
+    SYNCHKT LISTK                 ; Require LIST
 _defnolist:
     call    get_stringvar         ; DE = VarAdr
 _defgotvar:
@@ -915,11 +885,10 @@ _defgotvar:
     ex      (sp),hl               ; HL = TxtPtr; Stack = BufAdr, TxtPtr, VarAdr
     ld      de,0
     push    de
-;    xor     a                     ; DatLen = 0
-;    push    af                    ; Stack = DatLen, BufAdr, VarPtr
+;    xor     a                    ; DatLen = 0
+;    push    af                   ; Stack = DatLen, BufAdr, VarPtr
     push    bc                    ; Stack = RtnAdr, DatLen, BufAdr, VarPtr
-    rst     SYNCHR                ; Else
-    byte    EQUATK                ;   Require '='
+    SYNCHKT EQUATK                ; Else  Require '='
     ret
 
 
@@ -969,7 +938,7 @@ ST_DEF_TILELIST:
     call    _write_word_strbuf    ; Write it to string buffer
     call    CHRGT2                ; Reget next character
     jr      z,_finish_def         ; If not end of statement
-    SYNCHK  ','                   ;   Require comma
+    SYNCHKC ','                   ;   Require comma
     jr      .loop                 ;   and get next tile#
 
 ;-----------------------------------------------------------------------------
@@ -979,8 +948,8 @@ ST_DEF_TILELIST:
 ;-----------------------------------------------------------------------------
 FN_GETTILE:
     rst     CHRGET                ; Skip Tile token
-    SYNCHK  '$'
-    SYNCHK  '('
+    SYNCHKC '$'
+    SYNCHKC '('
     call    get_int512            ; DE = Tile#
     ld      iy,tile_get
     jr      _get_gfx
@@ -992,12 +961,12 @@ FN_GETTILE:
 ;-----------------------------------------------------------------------------
 FN_GETPALETTE:
     rst     CHRGET                ; Skip PALETTE token
-    SYNCHK  '$'
-    SYNCHK  '('
+    SYNCHKC '$'
+    SYNCHKC '('
     ld      iy,palette_get
     call    GETBYT                ; E = Palette#
 _get_gfx
-    SYNCHK  ')'
+    SYNCHKC ')'
     push    hl                    ; Stack = TxtPtr
     push    hl                    ; Stack = DummyAdr, TxtPtr
     push    de                    ; Stack = Palette#, DummyAdr, TxtPtr
@@ -1035,14 +1004,14 @@ ST_DEF_SPRITE:
 .loop
     call    _get_byte             ; A,E = Spritle#
     call    _write_byte_strbuf    ; Write E to string buffer
-    SYNCHK  ','
+    SYNCHKC ','
     call    _get_byte             ; A,E = Xoffset
     cp      c
     jr      c,.skipx              ; If Xoffset > MaxXoffset
     ld      c,a                   ;   MaxXoffset = Xoffset
 .skipx
     call    _write_byte_strbuf    ; Write E to string buffer
-    SYNCHK  ','
+    SYNCHKC ','
     call    _get_byte             ; A,E Yoffset
     cp      b
     jr      c,.skipy              ; If Xoffset > MaxXoffset
@@ -1052,7 +1021,7 @@ ST_DEF_SPRITE:
     call    inc_xtemp0            ; Increment SptlCnt
     call    CHRGT2
     jr      z,_sprite_done
-    SYNCHK  ';'
+    SYNCHKC ';'
     jr      .loop
 _sprite_done
     push    hl                    ; Stack = TxtPtr, Datlen, BufPtr, VarPtr, RtnAdr
@@ -1143,7 +1112,7 @@ _parse_sprite_star:
     or      a                     ;   Set flags
     ret                           ; Else
 _parse_sprite_arg:
-    cp      '#'  
+    cp      '#'
     jr      nz,.string            ; If #
     call    GETBYT                ;   E = SptNum
     jr      .valtype              ; Else
@@ -1188,8 +1157,7 @@ ST_SET_SPRITE:
     jr      z,.on
     cp      TILETK
     jr      z,.tiles
-    rst     SYNCHR
-    byte    XTOKEN
+    SYNCHKT XTOKEN
     cp      ATTRTK
     jr      z,.attrs
     cp      OFFTK
@@ -1249,7 +1217,7 @@ ST_SET_SPRITE:
     rst     CHRGET                ; Skip POS
     call    GETINT                ; DE = X-pos
     push    de                    ; Stack = X-pos, SprAdr, RtnAdr
-    SYNCHK  ','                   ; Require Comma
+    SYNCHKC ','                   ; Require Comma
     call    GETINT                ; DE = Y-pos
     pop     bc                    ; BC = X-pos; Stack = SprAdr, RtnAdr
     ld      ix,_sprite_set_pos    ; IX = jump address
@@ -1259,10 +1227,8 @@ ST_SET_SPRITE:
     rst     CHRGET                ; Skip *
     cp      CLRTK                 ; If CLEAR
     jr      z,.allreset           ;   Reset all spritles
-    rst     SYNCHR                ; Else
-    byte    XTOKEN
-    rst     SYNCHR
-    byte    OFFTK                 ;   SNERR if not OFF
+    SYNCHKT XTOKEN                ; Else
+    SYNCHKT OFFTK                 ;   SNERR if not OFF
 .alloff
     ld      c,0
     jp      spritle_toggle_all    ; Disable all off and return
@@ -1272,13 +1238,12 @@ ST_SET_SPRITE:
     jp      gfx_call
 
 ; On entry: HL = TxtPtr; Stack = SprAdr, RtnAdr
-.tilex   
+.tilex
     rst     CHRGET                ; Skip XTOKEN
-    rst     SYNCHR
-    byte    CLIPTK                ; Require CLIP
+    SYNCHKT CLIPTK                ; Require CLIP
     dec     hl                    ; Back up for CHRGET
     byte    $F6                   ; OR A,$AF over XOR A
-.props                            
+.props
     xor     a                     ; ClpFlg = False
     push    af                    ; Stack = ClpFlg, SprAdr, RtnAdr
     rst     CHRGET                ; Skip TO
@@ -1290,9 +1255,9 @@ ST_SET_SPRITE:
     inc     de                    ;   Skip clip dimensions
     dec     bc
     dec     bc                    ;   Adjust string length
-.notclip    
+.notclip
     ex      (sp),hl               ; HL = SprAdr; Stack = TxtPtr, RtnAdr
-    call    sprite_set_props   
+    call    sprite_set_props
     jp      nz,FCERR
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     ret
@@ -1300,7 +1265,7 @@ ST_SET_SPRITE:
 _sprite_set_pos:
     ld      iy,sprite_set_pos
     jp      gfx_call
-  
+
 ;-----------------------------------------------------------------------------
 ; GETSPRITE Attributes
 ; GETSPRITE$(SpriteDef$)
@@ -1311,7 +1276,7 @@ _sprite_set_pos:
 ;-----------------------------------------------------------------------------
 FN_GETSPRITE:
     rst     CHRGET                ; Skip SPRITE token
-    SYNCHK  '$'
+    SYNCHKC '$'
     call    PARCHK                ; FACLO = Arg
     push    hl                    ; Stack = TxtPtr, RtnAdr
     push    hl                    ; Stack = DummyAdr, TxtPtr, RtnAdr
@@ -1339,20 +1304,20 @@ FN_GETSPRITE:
 FN_RGB:
     inc     hl                    ; Skip RGB
     ld      a,(hl)
-    cp      '$'                   ; 
+    cp      '$'                   ;
     push    af                    ; Stack = '$', RtnAdr
     call    z,CHRGTR              ; If $, skip it
-    SYNCHK  '('                   ; Require Open Paren
+    SYNCHKC '('                   ; Require Open Paren
     call    _get_rgb              ; DE = RGB value
-    SYNCHK  ')'                   ; Require Close Paren
+    SYNCHKC ')'                   ; Require Close Paren
     pop     af                    ; A = '$'; Stack = RrnAdr
     push    hl                    ; Stack = TxtPtr, RtnAdr
 
     jr      z,.string             ; If not RGB$()
-    ld      bc,LABBCK             
+    ld      bc,LABBCK
     push    bc                    ;   Push return address for FLOAT_DE
     jp      FLOAT_DE              ;   Float RGB and return.
-.string    
+.string
     push    de                    ; Stack = RGB, TxtPtr, RtnAdr
     ld      a,2
     call    STRINI                ; Allocate two character string

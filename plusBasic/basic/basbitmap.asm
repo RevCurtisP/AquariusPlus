@@ -12,10 +12,9 @@
 ; SCREEN 0,2:CLEAR BITMAP:PAUSE
 ; SCREEN 0,2:CLEAR BITMAP 7,1:PAUSE
 ; SCREEN 0,3:CLEAR BITMAP:PAUSE
-ST_CLEAR_BITMAP:              
-    rst     CHRGET                ; Skip BIT    
-    rst     SYNCHR
-    byte    MAPTK
+ST_CLEAR_BITMAP:
+    rst     CHRGET                ; Skip BIT
+    SYNCHKT MAPTK
     ld      b,0
     call    nz,_color_args
     ld      iy,bitmap_clear_screen
@@ -33,15 +32,13 @@ ST_CLEAR_BITMAP:
 ; SCREEN 0,3:FILL BITMAP BYTES $AE:PAUSE
 ; SCREEN 0,3:FILL BITMAP BYTES $AA COLOR 6,1:PAUSE
 ST_FILL_BITMAP:
-    rst     CHRGET                ; Skip BIT    
-    rst     SYNCHR
-    byte    MAPTK
-    cp      XTOKEN                  
+    rst     CHRGET                ; Skip BIT
+    SYNCHKT MAPTK
+    cp      XTOKEN
     jr      nz,.fill_color        ; If Extended Token
     rst     CHRGET                ;   Skip it
-    rst     SYNCHR                
-    byte    BYTETK                ;   Require BYTES
-    SYNCHK  'S'
+    SYNCHKT BYTETK                ;   Require BYTES
+    SYNCHKC 'S'
     call    GETBYT                ;   A = FillByte
     ld      b,a                   ;   B = FillByte
     push    hl                    ;   Stack = TxtPtr, RtnAdr
@@ -53,9 +50,9 @@ ST_FILL_BITMAP:
 .fill_color
     call    parse_colors          ; Require COLOR, A = Color Byte
 _fill_color:
-    ld      b,a   
+    ld      b,a
     call    get_bitmap_mode
-    push    hl                    ; Stack = TxtPtr, RtnAdr  
+    push    hl                    ; Stack = TxtPtr, RtnAdr
     ld      iy,bitmap_fill_color
     call    gfx_call              ; Do the fill
     jp      c,TOERR
@@ -72,8 +69,7 @@ _fill_color:
 ; SCREEN 0,2:COLOR 6,1:PRINT HEX$(COLOR)
 ; SCREEN 0,3:COLOR 5:PRINT HEX$(COLOR)
 ST_COLOR:
-    rst     SYNCHR
-    byte    ORTK                  ; Require OR
+    SYNCHKT ORTK                  ; Require OR
     call    _color_args
     ld      iy,bitmap_write_color
     call    gfx_call_preserve_hl
@@ -86,12 +82,12 @@ _color_args:
     cp      3
     jr      z,.color4bpp          ; If not 4bpp
     call    get_screen_colors     ;   A = fgcolor + bgcolor
-    jr      .done                 ; Else 
-.color4bpp            
+    jr      .done                 ; Else
+.color4bpp
     call    get_byte16            ;   A = color
 .done
     ld      b,a
-    ld      a,(hl)                
+    ld      a,(hl)
     cp      ','                   ; If NxtChr is comma
     ret     nz
     jp      TOERR                 ;   Too many arguments error
@@ -101,11 +97,10 @@ _color_args:
 ; Return default oolor(s)
 ;-----------------------------------------------------------------------------
 ; SCREEN 0,2:PRINT COLOR
-FN_COLOR:    
+FN_COLOR:
     rst     CHRGET                ; Skip COL
-    rst     SYNCHR
-    byte    ORTK                  ; Require OR
-    ld      iy,bitmap_read_color  
+    SYNCHKT ORTK                  ; Require OR
+    ld      iy,bitmap_read_color
 gfx_call_sngflt:
     call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
     call    gfx_call              ; A = Color
@@ -116,7 +111,7 @@ gfx_call_sngflt:
 ; Last X,Y position
 ;-----------------------------------------------------------------------------
 ; SCREEN 0,2:PSET (10,23):PRINT POSX;POSY
-FN_POS:    
+FN_POS:
     inc     hl
     ld      a,(hl)
     cp      '('
@@ -167,7 +162,7 @@ _point:
     jp      SNGFLT
 
 ;-----------------------------------------------------------------------------
-; Bloxel PRESET and PRESET with the EX AF,AF' factored out 
+; Bloxel PRESET and PRESET with the EX AF,AF' factored out
 ;-----------------------------------------------------------------------------
 ; SCREEN 0,2:CLEAR BITMAP 7,0:PSET (2,2):PAUSE
 ; SCREEN 0,2:PSET (4,4),2,7:PAUSE
@@ -182,26 +177,26 @@ ST_PSET:
     jr      nz,_pset
     call    SCAND                 ; Parse (X,Y)
     call    scale_xy              ; Convert X,Y
-    ld      a,1   
+    ld      a,1
     jp      z,RSETCC              ; Semigraphics at screen location?
     ld      (hl),$A0              ; No, store base semigraphic
-    jp      RSETCC    
-    
+    jp      RSETCC
+
 ; SCREEN 0,2:PRESET (160,0)
-ST_PRESET:    
+ST_PRESET:
     ld      a,(EXT_FLAGS)
     and     GFXM_1BPP
     jr      nz,_preset
     call    SCAND                 ; Parse (X,Y)
     call    scale_xy              ; Convert X,Y
-    ld      a,0   
+    ld      a,0
     jp      z,RSETCC              ; Semigraphics at screen location?
     ld      (hl),$A0              ; No, store base semigraphic
     jp      RSETCC
 
 ;; ToDo: Move to GfxROM
 ; Convert PSET Coordinates to Screen Position and Character Mask
-scale_xy: 
+scale_xy:
     ex      (sp),hl               ; HL = RtnAdr; Stack = TxtPtr     BC=X Coordinate
     push    hl                    ; Stack = RtnAdr, TxtPtr          DE=Y Coordinate
     push    bc                    ; Stack = Xpos, RtnAdr, TxtPtr
@@ -209,23 +204,23 @@ scale_xy:
     ld      hl,71
     rst     COMPAR                ; If Y greater than 71
     jp      c,FCERR
-    push    bc                    ; 
-    pop     de    
-    ld      a,(LINLEN)            ;  Get Line Length                          
-    add     a,a                   ;  Multiply by 2                            
-    dec     a                     ;  A = LinLen * 2 - 1                       
-    ld      l,a                                                               
-    ld      h, 0                  ;  HL = LinLen * 2 - 1                      
+    push    bc                    ;
+    pop     de
+    ld      a,(LINLEN)            ;  Get Line Length
+    add     a,a                   ;  Multiply by 2
+    dec     a                     ;  A = LinLen * 2 - 1
+    ld      l,a
+    ld      h, 0                  ;  HL = LinLen * 2 - 1
     rst     COMPAR                ; If X greater than screen width
     jp      c,FCERR
-    pop     de    
-    pop     bc    
-    ld      a,e                   ; A=Y Coordinate   
-    ld      de,(LINLEN)           
+    pop     de
+    pop     bc
+    ld      a,e                   ; A=Y Coordinate
+    ld      de,(LINLEN)
     ld      d,0
-    ld      hl,SCREEN             
+    ld      hl,SCREEN
     add     hl,de                 ; Starting Offset
-.yloop    
+.yloop
     cp      3                     ; Less than 3?
     jr      c,.ylooped            ; Convert X
     add     hl,de                 ; Add a line to offset
@@ -233,21 +228,21 @@ scale_xy:
     dec     a                     ;
     dec     a                     ;
     jr      .yloop                ; Repeat
-.ylooped    
+.ylooped
     rlca                          ; Multiply remainder by 2
     srl     c                     ; Column = X-Coordinate / 2
     jr      nc,.even              ; Was it odd?
     inc     a                     ; Yes, add one to remainder
-.even:    
+.even:
     add     hl,bc                 ; Add column to screen offset
     ld      de,BITTAB             ;
-.bloop:     
+.bloop:
     or      a                     ; Check bit#
     jr      z,.blooped              ; If not 0
     inc     de                    ;   Bump table pointer
     dec     a                     ;   Decrement bit#
     jr      .bloop                ;   and repeat
-.blooped:     
+.blooped:
     ld      a,(hl)                ; Get character at screen offset
     or      $A0                   ; and return it with
     xor     (hl)                  ; bits 5 and 7 cleared
@@ -289,18 +284,18 @@ _getcolor:
     ld      b,a
     ret
 
-; Scan (X,Y) into DE,C    
+; Scan (X,Y) into DE,C
 SCANDYX:
-    SYNCHK  '('                   
+    SYNCHKC '('
     call    GETINT                ; DE = X
     push    de                    ; Stack = X, RtnAdr
-    SYNCHK  ','
+    SYNCHKC ','
     call    GETBYT                ; A = Y
     ld      c,a                   ; C = Y
     pop     de                    ; DE = X; Stack = RtnAdr
-    SYNCHK  ')'
+    SYNCHKC ')'
     ret
-    
+
 ;-----------------------------------------------------------------------------
 ; Return current bitmap mode
 ; Output: A: Mode (0: 40col, 1: 80col, 2: 1bpp, 3: 4bpp)
@@ -308,7 +303,7 @@ SCANDYX:
 ; Clobbered: C
 ;-----------------------------------------------------------------------------
 get_bitmap_mode:
-    in      a,(IO_VCTRL)          
+    in      a,(IO_VCTRL)
     ld      c,a
     rra                           ; A = 2: 1bpp, 3: 4bpp
     and     GFXM_MASK             ; Isolate bits
@@ -319,8 +314,8 @@ get_bitmap_mode:
     scf
     ret     z                     ; If 40 col return 0
     ld      a,1                   ; Else Return 1
-    ret                     
-    
+    ret
+
 ;-----------------------------------------------------------------------------
 ; Move Bitmap Cursor
 ; MOVE{B|C) {ABS} (x,y)

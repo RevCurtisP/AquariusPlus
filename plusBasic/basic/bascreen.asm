@@ -16,33 +16,30 @@ FN_GETBORDER:
     jr      z,skip_aux_call_bufin
     cp      COLTK
     jr      z,.color              ; If Not COL
-    rst     SYNCHR
-    byte    XTOKEN
-    rst     SYNCHR
-    byte    CHRTK
+    SYNCHKT XTOKEN
+    SYNCHKT CHRTK
     jr      .getborder
 .color
     rst     CHRGET                ; Skip COL
-    rst     SYNCHR
-    byte    ORTK                  ; Require OR
+    SYNCHKT ORTK                  ; Require OR
     ld      iy,border_get_color
 .getborder
-    cp      '$'                   
+    cp      '$'
     jp      nz,gfx_call_sngflt
 skip_aux_call_bufin:
     rst     CHRGET                ; Skip '$'
 aux_call_bufcin:
     push    hl
-    call    aux_call              
+    call    aux_call
     jp      BUFCIN
-    
+
 ;-----------------------------------------------------------------------------
 ; Set border to character to space and colors to default
 ;-----------------------------------------------------------------------------
 ST_RESET_BORDER:
     rst     CHRGET                ; Skip BORDER
     push    hl
-    ld      a,' '                 
+    ld      a,' '
     ld      iy,set_border_chr
     call    aux_call
     call    get_cls_colors

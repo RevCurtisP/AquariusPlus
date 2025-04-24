@@ -36,7 +36,7 @@ _dump:
 ; Dump Simple Variables
 _variables:
     ld      de,svar
-    ld      bc,svarlen
+    ld      bc,mvarlen
     call    _write_string
     ld      hl,(VARTAB)           ; Start of variables
 .loop
@@ -424,9 +424,9 @@ yvar:
     byte    "System Variables:",13,10
 yvarlen     equ $ - yvar
 
-svar:
+mvar:
     byte    13,10,"Simple Variables:",13,10
-svarlen     equ $ - svar
+mvarlen     equ $ - mvar
 
 _asctxt:
     byte    "    ASCII:",13,10

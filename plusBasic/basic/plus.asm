@@ -9,19 +9,19 @@
 ; ? ATTR$(1,3,2),ATTR$(2,1,4)
 FN_ATTR:
     rst     CHRGET                ; Skip ATTR
-    cp      '$'                   
+    cp      '$'
     jr      nz,_attr_byte         ; If ATTR$
     call    skip_paren_colors     ;   DE = AtrByt
     push    af                    ;   Stack = AtrByt, RtnAdr
     call    get_comma_byte        ;   DE = Count
-    SYNCHK  ')'
+    SYNCHKC ')'
     pop     af                    ;   A = AtrByt; Stack = RtnAdr
     call    push_hl_labbck
     jp      SPACE2                ;   Do STRING$
 
 _attr_byte:
     call    get_paren_colors      ;   DE = AtrByt
-    SYNCHK  ')'
+    SYNCHKC ')'
     jp      push_labbck_floatde
 
 ;-----------------------------------------------------------------------------
@@ -30,14 +30,14 @@ _attr_byte:
 FN_BIN:
     jp      GSERR
     inc     hl                    ; Skip BIN
-    SYNCHK  '$'                   ; Require $
+    SYNCHKC '$'                   ; Require $
     call    PARTYP                ; FACC = Arg
     jp      z,TMERR               ; Type mismatch error if string
     ld      a,(FAC)               ; A = Exponent
     sub     128                   ; A = BinLen
     jr      z,.zero_string
     jr      c,.zero_string
-    
+
 .zero_string
 
 ;-----------------------------------------------------------------------------
@@ -52,7 +52,7 @@ FN_BIT:
     push    bc
     push    de                    ; Stack = LngInt, RtnAdr
     call    get_comma_byte        ; E = BitNo
-    SYNCHK  ')'
+    SYNCHKC ')'
     ld      a,e                   ; A = BitNo
     pop     de
     pop     bc                    ; BCDE = LngInt, Stack = RtnAdr
@@ -66,7 +66,7 @@ _bit_string:
     ld      de,(FACLO)            ; DE = StrDsc
     push    de                    ; Stack = StrDsc, RtnAdr
     call    get_comma_int         ; DE = BitNo
-    SYNCHK  ')'
+    SYNCHKC ')'
     pop     bc                    ; BC = StrDsc; Stack = RtnAdr
     call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
     push    de                    ; Stack = BitNo, LABBCK, TxtPtr, RtnAdr
@@ -76,7 +76,7 @@ _bit_string:
     pop     hl                    ; HL = BitNo; Stack = LABBCK, TxtPtr, RtnAdr
     ld      iy,bool_checkbit_string
     jr      auxcall_floatsbyte
-    
+
 
 ;-----------------------------------------------------------------------------
 ; BYTE(string)
@@ -86,7 +86,7 @@ FN_BYTE:
     rst     CHRGET                ; Skip BYTE
     ld      iy,float_signed_byte  ; Returning signed byte
     jp      sng_chr               ; Execute ASC() code
-    
+
 ;-----------------------------------------------------------------------------
 ; DATE$ - Get Current Date
 ; DATETIME$ - Get Current Date & Time
@@ -99,7 +99,7 @@ FN_DATE:
     rst     CHRGET                ;   Skip TIME token
     dec     c                     ;   Return Date and Time
 .notime
-    SYNCHK  '$'                   ; Require Dollar Sign
+    SYNCHKC '$'                   ; Require Dollar Sign
     call    push_hl_labbck
     call    aux_call_inline
     word    bas_date
@@ -114,27 +114,25 @@ FN_DEC:
     rst     CHRGET            ; Skip DEC
     call    PARCHK
     call    push_hl_labbck
-    call    free_addr_len   ; Free string and get text 
+    call    free_addr_len   ; Free string and get text
     dec     de              ; Back up Text Pointer
     xor     a               ; Set A to 0
     inc     c               ; Bump Length for DEC C
     ex      de,hl
     jp      eval_hex        ; Convert the Text
-    
+
 ;-----------------------------------------------------------------------------
 ; DUMP Variable and Array Table to File
 ;-----------------------------------------------------------------------------
 ST_DUMP:
     rst     CHRGET                ; Skip DUMP
-    rst     SYNCHR                ; Require VARS
-    byte    XTOKEN
-    rst     SYNCHR
-    byte    VARTK
-    SYNCHK  'S'
+    SYNCHKT XTOKEN                ; Require VARS
+    SYNCHKT VARTK
+    SYNCHKC 'S'
     jp      z,MOERR
     call    str_literal
     push    hl                    ; Stack = TxtPtr, RtnAdr
-    call    get_strbuf_addr       
+    call    get_strbuf_addr
     ex      de,hl                 ; DE = StrBuf
     ld      hl,FACLO              ; HL = FilNam
     ld      iy,dump_vars
@@ -151,11 +149,10 @@ FN_GET:
     jp      z,FN_GETCOLOR
     cp      TILETK
     jp      z,FN_GETTILE
-    rst     SYNCHR
-    byte    XTOKEN                ; Check Extended Tokens
+    SYNCHKT XTOKEN                ; Check Extended Tokens
     cp      SPRITK
     jp      z,FN_GETSPRITE
-    cp      PALETK                
+    cp      PALETK
     jp      z,FN_GETPALETTE
     cp      CHRTK
     jp      z,FN_GETCHR
@@ -206,12 +203,12 @@ push_hl_labbck_floata:
     jp      SNGFLT
 
 FN_GETCURSOR:
-    call    require_sor           
+    call    require_sor
     call    get_cursor_mode
     jr      push_hl_labbck_floata
 
 ;----------------------------------------------------------------------------
-; Decrement variable 
+; Decrement variable
 ; INC A
 ;----------------------------------------------------------------------------
 ST_DEC:
@@ -219,11 +216,11 @@ ST_DEC:
     jr      _inc_dec
 
 ;----------------------------------------------------------------------------
-; Increment variable 
+; Increment variable
 ; INC A
 ;----------------------------------------------------------------------------
 ST_INC:
-    SYNCHK  'C'                   ; Must be IN + C 
+    SYNCHKC 'C'                   ; Must be IN + C
     ld      iy,bas_inc
 _inc_dec
     CALL    PTRGET
@@ -251,10 +248,10 @@ FN_INMEM:
     push    af                    ; Stack = PgFlag, MemAdr, RtnAdr
     call    get_comma             ; Require comma
     call    FRMSTR                ; Parse string argument
-    SYNCHK  ')'                   ; Require )
+    SYNCHKC ')'                   ; Require )
     pop     af                    ; AF = PgFlag; Stack = MemAdr, RtnAdr
     ex      (sp),hl               ; HL = MemAdr; Stack = TxtPtr, RtnAdr
-    ld      bc,LABBCK             
+    ld      bc,LABBCK
     push    bc                    ; Stack = LABBCK, TxtPtr, RtnAdr
     push    hl                    ; Stack = MemAdr, TxtPtr, RtnAdr
     ex      af,af'                ; AF' = PgFlag
@@ -268,7 +265,7 @@ FN_INMEM:
     and     e
     inc     a                     ; If address = $FFFF
     jp      z,float_signed_int    ;   Return -1
-    jp      FLOAT_DE              ; Else return unsigned address 
+    jp      FLOAT_DE              ; Else return unsigned address
 .search
     jp      nc,string_find        ; If no page, search main memory and return
     call    page_find_string      ; Else search for page in string
@@ -286,7 +283,7 @@ FN_INMEM:
 ; ? INDEX(*A$,"baz")
 FN_INDEX:
     rst     CHRGET                ; Skip DEX
-    SYNCHK  '('                   ; Require (
+    SYNCHKC '('                   ; Require (
     call    get_star_array        ; DE = AryAdr, BC = AryLen
     call    CHKSTR                ; Error if nor string
     srl     b
@@ -295,9 +292,9 @@ FN_INDEX:
     rr      c                     ; ArySiz = AryLen / 4
     push    de                    ; Stack = AryAdr, RtnAdr
     push    bc                    ; Stack = ArySiz, AryAdr, RtnAdr
-    SYNCHK  ','                   ; Require ,
+    SYNCHKC ','                   ; Require ,
     call    FRMEVL                ; Evaluate search arg
-    SYNCHK  ')'                   ; Require (
+    SYNCHKC ')'                   ; Require (
     push    hl                    ; Stack = TxtPtr, ArySiz, AryAdr, RtnAdr
     call    free_addr_len         ; DE = StrAdr, A = StrLen
     pop     hl                    ; HL = TxtPtr; Stack = ArySiz, AryAdr, RtnAdr
@@ -306,8 +303,8 @@ FN_INDEX:
     ex      de,hl                 ; HL = StrAdr, DE = AryAdr
     call    .array
     ld      de,LABBCK
-    push    de                    ; Stack = LABBCK, TxtPtr, RtnAdr 
-    ld      a,b                   ; 
+    push    de                    ; Stack = LABBCK, TxtPtr, RtnAdr
+    ld      a,b                   ;
     jp      GIVINT                ; Float AB signed and return
 
 .array
@@ -323,7 +320,7 @@ FN_INDEX:
 FN_FLOAT:
     inc     hl                    ; Check character directly after ASC Token
     ld      a,(hl)                ; (don't skip spaces)
-    cp      '$'                   
+    cp      '$'
     ld      bc,MOVRF
     jp      z,str_float           ;   Go do it
     ld      bc,return_float
@@ -337,12 +334,12 @@ FN_FLOAT:
 FN_LONG:
     inc     hl                    ; Check character directly after ASC Token
     ld      a,(hl)                ; (don't skip spaces)
-    cp      '$'                   
+    cp      '$'
     jr      z,str_long            ;   Go do it
     ld      bc,FLOAT_CDE
 float_str:
     push    bc
-    call    FRMPRN          
+    call    FRMPRN
     call    CHKSTR
     pop     bc
     ld      de,(FACLO)
@@ -356,10 +353,10 @@ float_str:
     call    GETBYT                ; DE = BinPos
     or      a
     jp      z,FCERR
-_first_long:    
-    SYNCHK  ')'
+_first_long:
+    SYNCHKC ')'
     pop     iy                    ; IY = FltJmp; Stack = StrDsc, RtnAdr
-    ex      (sp),hl               ; HL = StrDsc; Stack = TxtPtr, RtnAdr                
+    ex      (sp),hl               ; HL = StrDsc; Stack = TxtPtr, RtnAdr
     ld      bc,LABBCK
     push    bc                    ; Stack = LABCK, TxtPtr, RtnAdr
     push    de                    ; Stack = BinPos, LABBCK, TxtPtr, RtnAdr
@@ -371,7 +368,7 @@ _first_long:
     jp      c,FCERR               ;   Illegal quantity
     dec     hl                    ; Adjust BinPos for add
     add     hl,de                 ; HL = WrdAdr
-    ld      e,(hl)                
+    ld      e,(hl)
     inc     hl
     ld      d,(hl)                ; DE = WrdVal
     inc     hl
@@ -385,7 +382,7 @@ str_long:
 str_float:
     rst     CHRGET                ; Skip $
     push    bc
-    call    PARCHK                
+    call    PARCHK
     pop     iy
     push    hl                    ; Stack = TxtPtr. RtnAdr
     call    jump_iy               ; BCDE = ArgVal
@@ -398,11 +395,11 @@ str_float:
     ld      hl,(DSCTMP+2)         ; HL = StrAdr
     ld      (hl),e                ; Write ArgVal to string
     inc     hl
-    ld      (hl),d                
+    ld      (hl),d
     inc     hl
-    ld      (hl),c                
+    ld      (hl),c
     inc     hl
-    ld      (hl),b                
+    ld      (hl),b
     jp      PUTNEW                ; and return it
 
 ;-----------------------------------------------------------------------------
@@ -410,8 +407,7 @@ str_float:
 ;-----------------------------------------------------------------------------
 ST_LOOP:
     rst     CHRGET                ; Skip LOOP token
-    rst     SYNCHR
-    byte    XTOKEN
+    SYNCHKT XTOKEN
     cp      PT3TK                 ;   If token is PT3
     jp      z,ST_LOOP_PT3         ;     Do PAUSE PT3
     jp      SNERR
@@ -437,7 +433,7 @@ FN_LWR:
     cp      (XTOKEN)              ; If Extended Token
     ld      iy,in_key
     jr      z,.extended           ;   Do UPRKEY, LWRKEY
-    cp      '$'                   ; 
+    cp      '$'                   ;
     jr      z,.do_string          ; If UPR() or LWR()
     call    get_char_parens       ;   C = Character
     pop     af                    ;   F = UprFlg; Stack = RtnAdr
@@ -458,7 +454,7 @@ FN_LWR:
     call    CONINT                ; E     = Character
 .ret_string
     pop     af                    ; F = UprFlg; Stack = DmyRtn, TxtPtr, RtnAdr
-    ld      a,e                   ; A = Character 
+    ld      a,e                   ; A = Character
     call    uprlwr_char           ;   Convert character
     ld      e,a
     jp      SETSTR
@@ -480,13 +476,12 @@ FN_LWR:
     pop     de                    ; DE = ArgDsc; Stack = DmyRtn, TxtPtr
     call    FRETMP                ; Free ArgStr
     jp      FINBCK                ; Return Result String
- 
+
 ; 10 IF K=UPRKEY:ON -(K=0) GOTO 10:? K: GOTO 10
- 
-.extended 
+
+.extended
     inc     hl
-    rst     SYNCHR                
-    byte    KEYTK                 ; Require KEY
+    SYNCHKT KEYTK                 ; Require KEY
     call    check_dollar          ; Stack = StrFlg, UprFlg, RtnAdr
     pop     bc                    ; C = StrFlg; Stack = UprFlg, RtnAdr
     pop     af                    ; F = UprFlg; Stack = RtnAdr
@@ -507,7 +502,7 @@ FN_LWR:
     call    STRIN1
     pop     de                    ; E = KeyChr; Stack = UprFlg, LABBCK, TxtPtr, RtnAdr
     jr      .ret_string
- 
+
 ;-----------------------------------------------------------------------------
 ; MOUSEB - Returns mouse buttons
 ; MOUSEW - Returns mouse wheel delta
@@ -526,8 +521,8 @@ FN_MOUSE:
     push    bc                    ; Stack = LABBCK, TxtPtr, RtnAdr
     call    aux_call_inline
     word    bas_mouse             ; A or BC = Result
-    jp      c,FLOAT_BC            
-    jp      m,float_signed_byte   
+    jp      c,FLOAT_BC
+    jp      m,float_signed_byte
     jp      SNGFLT
 
 ;-----------------------------------------------------------------------------
@@ -569,21 +564,20 @@ ST_JOIN:
     call    aux_call_inline
     word    bas_skipfirst         ; ARRAYPTR = AryPtr, ARRAYLEN = AryLen
     jp      z,BSERR               ; If only one element, Bad subscript error
-    rst     SYNCHR
-    byte    INTTK
-    SYNCHK  'O'                   ; Require INTO   
-    ld      de,(ARYTAB)           
+    SYNCHKT INTTK
+    SYNCHKC 'O'                   ; Require INTO
+    ld      de,(ARYTAB)
     push    de                    ; Stack = AryTab, RtnAdr
     call    get_stringvar         ; DE = VarPtr
-    ld      (SPLITDSC),de         ; SPLITDSC = VarPtr      
+    ld      (SPLITDSC),de         ; SPLITDSC = VarPtr
     pop     de                    ; DE = OldTab; Stack = RtnAdr
     push    hl                    ; Stack = TxtPtr, RtnAdr
-    ld      hl,(ARYTAB)           
-    sbc     hl,de                 ; DE = AryTab-OldTab 
+    ld      hl,(ARYTAB)
+    sbc     hl,de                 ; DE = AryTab-OldTab
     ex      de,hl                 ; If arrays moved because get_stringvar
     ld      hl,(ARRAYPTR)         ;   created a new string variable
     add     hl,de                 ;   Adjust array pointer
-    ld      (ARRAYPTR),hl         
+    ld      (ARRAYPTR),hl
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     call    parse_delimiter       ; A = DelChr
     ld      (SPLITDEL),a          ; SPLITDEL = DelChr
@@ -599,14 +593,13 @@ ST_JOIN:
 ;-----------------------------------------------------------------------------
 FN_OFF:
     inc     hl                    ; Skip OFF
-    rst     SYNCHR
-    byte    SETTK                 ; Require SET
+    SYNCHKT SETTK                 ; Require SET
     call    SCAND                 ; C = Column, E = Row
     call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
     call    aux_call_inline
     word    bas_offset            ; DE = Offset
     jp      FLOAT_DE
-    
+
 ;-----------------------------------------------------------------------------
 ; SPLIT Statement
 ; Syntax: SPLIT string$ INTO *array$ DEL delimiter
@@ -616,9 +609,8 @@ ST_SPLIT:
     call    FRMSTR                ; Parse SrcStr
     ld      de,(FACLO)            ; DE = SrcDsc
     ld      (SPLITDSC),de         ; SPLITDSC = SrcDsc
-    rst     SYNCHR
-    byte    INTTK
-    SYNCHK  'O'                   ; Require INTO   
+    SYNCHKT INTTK
+    SYNCHKC 'O'                   ; Require INTO
     call    get_star_array        ; DE = AryAdr, BC = AryLen
     ld      (ARRAYADR),de         ; ARRAYADR = AryAdr
     xor     a
@@ -638,7 +630,7 @@ ST_SPLIT:
 ;-----------------------------------------------------------------------------
 ST_STASH:
     rst     CHRGET                ; Skip STASH
-    cp      SCRNTK                
+    cp      SCRNTK
     jp      z,ST_STASH_SCREEN
     jp      SNERR
 
@@ -646,10 +638,9 @@ ST_STASH:
 ; SWAP Statement Stub
 ;-----------------------------------------------------------------------------
 ST_SWAP:
-    cp      SCRNTK                
+    cp      SCRNTK
     jp      z,ST_SWAP_SCREEN
-    rst     SYNCHR
-    byte    XTOKEN
+    SYNCHKT XTOKEN
     cp      VARTK
     jp      z,ST_SWAP_VARS
     jp      SNERR
@@ -661,7 +652,7 @@ FN_TIME:
     rst     CHRGET                ; Skip Token
     cp      'R'                   ; If TIMER
     jr      z,FN_TIMER            ;   Read Countdown Timer
-    SYNCHK  '$'                   ; Require dollar sign
+    SYNCHKC '$'                   ; Require dollar sign
     call    push_hl_labbck
 aux_call_timstr:
     call    aux_call_inline
@@ -684,9 +675,8 @@ FN_TIMER:
 ; Syntax: TIMER = Expression
 ;-----------------------------------------------------------------------------
 ST_TIMER:
-    SYNCHK  'R'                   ; Require 'R'
-    rst     SYNCHR
-    byte    EQUATK                ; Require '='
+    SYNCHKC 'R'                   ; Require 'R'
+    SYNCHKT EQUATK                ; Require '='
     call    GET_LONG              ; Get count into C,D,E
     jp      timer_write           ; Set the timer
 
@@ -696,7 +686,7 @@ ST_TIMER:
 ;----------------------------------------------------------------------------
 FN_COMPARE:
     rst     CHRGET                ; Skip COMPARE
-    SYNCHK  '('
+    SYNCHKC '('
     cp      MULTK                 ; If *
     jp      z,.compare_arrays     ;   Compare Arrays
     call    get_page_addr         ; AF = PgFlg1, DE = Addr1
@@ -715,7 +705,7 @@ FN_COMPARE:
     pop     af                    ; AF = PgFlg1; Stack = Addr1, RtnAdr
     ex      (sp),hl               ; HL = Addr1 ; Stack = TxtPtr, RtnAdr
     push    hl                    ; Stack = Addr1, TxtPtr, RtnAdr
-    ld      hl,LABBCK             
+    ld      hl,LABBCK
     ex      (sp),HL               ; HL = Addr1; Stack = LABBCK, TxtPtr, RtnAdr
     jr      c,.page1              ; If Addr1 not paged
     ex      af,af'                ;   AF = PgFlg2, AF' = PgFlg1
@@ -751,18 +741,18 @@ FN_COMPARE:
     pop     hl                    ; HL = TxtPtr; Stack = Addr1, RtnAdr
     ex      (sp),hl               ; HL = Addr1, Stack = TxtPtr, RtnAdr
     call    sys_mem_compare       ;      Compare Paged to Memory`
-    ld      hl,LABBCK             
+    ld      hl,LABBCK
     push    hl                    ; Stack = LABBCK, TxtPtr, RtnAdr
     jp      float_signed_int      ; Return result
 .badlen
     pop     hl                    ; HL = TxtPtr; Stack = Addr1, RtnAdr
     pop     de                    ; Stack = RtnAdr
     push    hl                    ; Stack = TxtPtr, RtnAdr
-    ld      hl,LABBCK             
+    ld      hl,LABBCK
     push    hl                    ; Stack = LABBCK, TxtPtr, RtnAdr
     xor     a
     jp      SNGFLT                ; Return 0
-    
+
 ;----------------------------------------------------------------------------
 ; EVAL - Evaluate string
 ;----------------------------------------------------------------------------
@@ -806,7 +796,7 @@ LSERR:
 ; FILL WORD [@page], startaddr, count, word
 ;-----------------------------------------------------------------------------
 ; ToDo: Chain memory fills with semicolon
-; Allow chaining of all the following 
+; Allow chaining of all the following
 ; FILL BITMAP BYTE becomes FILL BITMAP (x,y)-(x,y) ...
 ; FILL BITMAP COLOR becomes FILL COLORMAP
 ; FILL SCREEN CHR becomes FILL SCREEN
@@ -828,8 +818,7 @@ ST_FILL:
     jp      z,ST_FILL_BITMAP
     cp      COLTK
     jp      z,ST_FILL_COLORMAP
-    rst     SYNCHR
-    byte    XTOKEN
+    SYNCHKT XTOKEN
     cp      BYTETK
     jr      z,.fillmem
     cp      WORDTK
@@ -837,7 +826,7 @@ ST_FILL:
 .fillmem
     push    af                    ; Stack = BytWrd, RtnAdr
     rst     CHRGET                ; Skip BYTE/WORD
-    SYNCHK  'S'                   ; Require S
+    SYNCHKC 'S'                   ; Require S
     call    get_page_addr         ; Check for Page Arg
     pop     bc                    ; BC = BytWrd; Stack = RtnAdr
     push    de                    ; Stack = BgnAdr, RtnAdr
@@ -864,23 +853,22 @@ ST_FILL:
     jp      c,page_fill_byte
     ld      a,l                   ;   A = FilByt
     ex      de,hl                 ;   HL = BgnAdr
-    jp      sys_fill_mem          ;   
+    jp      sys_fill_mem          ;
 .isword
     ex      af,af'                ; AF = PgFlag
     jp      c,page_fill_word
     ex      de,hl                 ; HL = BgnAdr, DE = FilVal
-    jp      sys_fill_word          
-    
+    jp      sys_fill_word
+
 ;----------------------------------------------------------------------------
 ; GET Statement stub
 ;----------------------------------------------------------------------------
 ST_GET:
-    cp      SCRNTK                 
+    cp      SCRNTK
     jp      z,ST_GET_SCREEN
-    cp      TILETK                
-    jp      z,ST_GET_TILEMAP      
-    rst     SYNCHR
-    byte    XTOKEN
+    cp      TILETK
+    jp      z,ST_GET_TILEMAP
+    SYNCHKT XTOKEN
     cp      ARGSTK
     jp      z,ST_GETARGS
     jp      SNERR
@@ -925,8 +913,7 @@ ST_SET:
     cp      USRTK                 ; $B5
     jp      z,ST_SET_USR
 
-    rst     SYNCHR                ; Must be extended Token
-    byte    XTOKEN                ; $FE
+    SYNCHKT XTOKEN                ; Must be extended Token
     cp      PALETK                ; $81
     jp      z,ST_SETPALETTE
     cp      SPRITK                ; $84
@@ -968,7 +955,7 @@ _set_reset_bit:
     pop     af                    ; AF = VarTyp; Stack = AuxRtn, RtnAdr
     pop     iy                    ; IY = AuxRtn; Stack = RtnAdr
     jp      aux_call_preserve_hl  ; Execute core code and return
-    
+
 
 ;-----------------------------------------------------------------------------
 ; Toggle control-c checking
@@ -988,8 +975,7 @@ ST_SET_BREAK:
 ; SET CHRDEF "@" TO $"FF00FF00FF00FF00":PRINT "@"
 ST_SET_CHR:
     rst     CHRGET                ; Skip CHR
-    rst     SYNCHR
-    byte    DEFTK                 ; Require DEF
+    SYNCHKT DEFTK                 ; Require DEF
     call    get_char              ; A = ChrASC
     push    af                    ; Stack = ChrASC, RtnAdr
     call    get_to_string_arg     ; DE = StrAdr, BC = StrLen, Stack = TxtPtr, ChrASC, RtnAdr
@@ -1000,11 +986,11 @@ ST_SET_CHR:
     pop     af                    ; A = ChrASC
     push    hl                    ; Stack = TxtAdr, RtnAdr
     ld      l,b                   ; Destination = 0 - ChrRAM
-    ld      iy,gfx_redefine_char        
+    ld      iy,gfx_redefine_char
     call    aux_call
     jp      c,LSERR
     ld      a,(BASYSCTL)          ; Set character set modified flag
-    or      a,BASCHRMOD        
+    or      a,BASCHRMOD
     ld      (BASYSCTL),a
     pop     hl                    ; HL = TxtAdr; Stack = RtnAdr
     ret
@@ -1027,7 +1013,7 @@ ST_SET_KEY:
 ; Syntax: SET SPEED speed
 ;-----------------------------------------------------------------------------
 ST_SET_SPEED:
-    call    skip_get_byte4         ; 
+    call    skip_get_byte4         ;
     jr      _turbo_mode
 
 ;-----------------------------------------------------------------------------
@@ -1051,16 +1037,14 @@ ST_SET_CURSOR
     jp      set_cursor_mode
 
 require_cursor:
-    rst     SYNCHR
-    byte    CURTK
+    SYNCHKT CURTK
     byte    $3E                   ; LD A, over INC HL
 require_sor:
     inc     hl                    ; Skip CUR
-    SYNCHK  'S'                  
-    rst     SYNCHR                ; Require SOR
-    byte    ORTK
+    SYNCHKC 'S'
+    SYNCHKT ORTK                  ; Require SOR
     ret
-    
+
 ;-----------------------------------------------------------------------------
 ; Set File Error generation
 ; Syntax: SET FILE ERROR ON/OFF
@@ -1070,17 +1054,15 @@ require_sor:
 ; SET FILE ERROR OFF:LOAD "XXX":PRINT ERR,ERR$,ERRLINE
 ST_SET_FILE:
     rst     CHRGET
-    rst     SYNCHR
-    byte    ERRTK
-    rst     SYNCHR
-    byte    ORTK
+    SYNCHKT ERRTK
+    SYNCHKT ORTK
     call    check_on_off          ; A = $FF if ON, $00 if OFF
 set_ferr_flag:
     and     FERR_FLAG
     ld      b,a
     ld      a,(EXT_FLAGS)
     and     $FF-FERR_FLAG
-    or      b 
+    or      b
     ld      (EXT_FLAGS),a
     ret
 
@@ -1091,10 +1073,8 @@ set_ferr_flag:
 ; SET FNKEY 3 TO "CD"+CHR$(13)
 ST_SET_FNKEY:
     rst     CHRGET                ; Skip FN
-    rst     SYNCHR
-    byte    XTOKEN                ; Require KEY
-    rst     SYNCHR
-    byte    KEYTK
+    SYNCHKT XTOKEN                ; Require KEY
+    SYNCHKT KEYTK
     call    GETBYT                ; Get Function Key Number
     dec     a                     ; Make it 0 to 15
     cp      16                    ; If > 15
@@ -1118,8 +1098,7 @@ ST_SET_FNKEY:
 ;-----------------------------------------------------------------------------
 ST_SET_USR:
     inc     hl                    ; Skip USR
-    rst     SYNCHR
-    byte    INTTK                 ; Require INT
+    SYNCHKT INTTK                 ; Require INT
     call    check_on_off          ; A = $FF if ON, $00 if OFF
     push    hl                    ; Stack = TxtPtr, RtnAdr
     ld      hl,userint_enable
@@ -1131,15 +1110,14 @@ ST_SET_USR:
     ret
 
 ;-----------------------------------------------------------------------------
-; PAUSE Statement 
+; PAUSE Statement
 ;-----------------------------------------------------------------------------
 ;; ToDo: make pause_jiffies return carry set if ctrl-c was pressed
 ;;       and clear keybuffer if it was
 ST_PAUSE:
     jp      z,.tryin              ; If no argument, wait for key and return
     jp      p,.nottoken           ; If followed by token
-    rst     SYNCHR
-    byte    XTOKEN
+    SYNCHKT XTOKEN
     cp      UNTILTK
     jr      z,pause_until
     cp      PT3TK                 ;   If token is PT3
@@ -1147,7 +1125,7 @@ ST_PAUSE:
 .nottoken
     call    FRMEVL                ; Get Operand
     push    hl                    ; Stack = TxtPtr, RtnAdr
-    call    GETYPE                ; 
+    call    GETYPE                ;
     jp      z,.string             ; If Numeric
     call    FRCINT                ; DE = Jiffies
     ld      a,(BASYSCTL)
@@ -1161,7 +1139,7 @@ ST_PAUSE:
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
 .tryin
     jp      TRYIN                 ; Wait for key and return
-    
+
 
 ; PAUSE UNTIL INKEY
 pause_until:
@@ -1186,10 +1164,9 @@ ST_RESET:
     rst     CHRGET                ; Skip RESET
     cp      MULTK
     jr      z,_reset_array
-    cp      SCRNTK                
+    cp      SCRNTK
     jp      z,ST_RESET_SCREEN
-    rst     SYNCHR
-    byte    XTOKEN
+    SYNCHKT XTOKEN
     cp      PALETK
     jp      z,ST_RESET_PALETTE
     cp      BORDTK
@@ -1214,15 +1191,14 @@ _reset_array:
     push    bc                    ; Return to POPHRT
     ret     nz                    ; If numeric, pop TxtPtr and return
     jp      GARBA2                ; Else collect garbage, pop TxtPtr and return
-    
+
 ;-----------------------------------------------------------------------------
 ; USE Statement stub
 ;-----------------------------------------------------------------------------
 ST_USE:
     cp      SCRNTK
     jp      z,ST_USE_SCREEN
-    call    SYNCHR
-    byte    XTOKEN
+    SYNCHKT XTOKEN
     cp      CHRTK
     jp      z,ST_USECHR           ; USE CHRSET
     jp      SNERR
@@ -1233,16 +1209,16 @@ ST_USE:
 ; x = 0 for System, 1 for plusBASIC, 2 for S3 BASIC
 ;-----------------------------------------------------------------------------
 FN_VER:
-    inc     hl                    ; Skip VER 
+    inc     hl                    ; Skip VER
     ld      a,(hl)                ; Get following character
-    cp      '$'                   ; 
+    cp      '$'                   ;
     push    af                    ; Stack = StrFlg, RtnAdr
     jr      nz,.notstring         ; If '$'
     inc     hl                    ;   Skip it
 .notstring
-    SYNCHK  '('
+    SYNCHKC '('
     call    FRMEVL                ; Evaluate argument
-    SYNCHK  ')'
+    SYNCHKC ')'
     call    GETYPE
     jr      nz,.getver            ; If it's a string
     ex      (sp),hl               ; HL = StrFlg, Stack = TxtPtr, RtnAdr
@@ -1250,14 +1226,14 @@ FN_VER:
     call    free_addr_len         ; BC = StrLen, DE = StrAdr, HL = StrDsc
     ex      de,hl                 ; HL = StrAdr
     jr      .return_ver
-.getver    
+.getver
     call    CONINT                ; Convert argument to byte
     ld      ix,esp_get_version
     or      a
-    jr      z,.zero               
+    jr      z,.zero
     ld      ix,sys_ver_plusbasic
     cp      1
-    jp      nz,FCERR              
+    jp      nz,FCERR
 .zero
     ex      (sp),hl               ; HL = StrFlg, Stack = TxtPtr, RtnAdr
     push    hl                    ; Stack = StrFlg, TxtPtr, RtnAdr
@@ -1265,7 +1241,7 @@ FN_VER:
     ld      bc,14
     call    jump_ix               ; Get version string
 .return_ver
-    pop     af                    ; F = StrFlg, 
+    pop     af                    ; F = StrFlg,
     ld      bc,LABBCK
     push    bc                    ; Stack = LABBCK, TxtPtr, RtnAdr
     jp      z,TIMSTR              ; If VER$(), return version string
@@ -1284,8 +1260,8 @@ FN_VER:
 FN_WORD:
     inc     hl                    ; Check character directly after ASC Token
     ld      a,(hl)                ; (don't skip spaces)
-    cp      '$'                   
-    jr       z,str_word           
+    cp      '$'
+    jr       z,str_word
     call    FRMPRT                ; A = Type
     jp      nz,word_int
     ld      iy,FLOAT_DE
@@ -1301,10 +1277,10 @@ word_str:
     call    GETBYT                ; DE = WrdPos
     or      a
     jp      z,FCERR
-_first_word:    
-    SYNCHK  ')'
+_first_word:
+    SYNCHKC ')'
     pop     iy                    ; IY = FltJmp; Stack = StrDsc, RtnAdr
-    ex      (sp),hl               ; HL = StrDsc; Stack = TxtPtr, RtnAdr                
+    ex      (sp),hl               ; HL = StrDsc; Stack = TxtPtr, RtnAdr
     ld      bc,LABBCK
     push    bc                    ; Stack = LABCK, TxtPtr, RtnAdr
     push    de                    ; Stack = WrdPos, LABBCK, TxtPtr, RtnAdr
@@ -1316,45 +1292,44 @@ _first_word:
     jp      c,FCERR               ;   Illegal quantity
     dec     hl                    ; Adjust WrdPos for add
     add     hl,de                 ; HL = WrdAdr
-    ld      e,(hl)                
+    ld      e,(hl)
     inc     hl
     ld      d,(hl)                ; DE = WrdVal
     jp      (iy)                  ; Float it
 
 word_int:
-    SYNCHK  ')'                   ; Require )
+    SYNCHKC ')'                   ; Require )
     call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
     call    FRCINT                ; DE = ArgVal
     jp      FLOAT_DE
 
 str_word:
-    rst     CHRGET                ; Skip $
-    call    PARCHK                
-    push    hl                    ; Stack = TxtPtr. RtnAdr
-    call    FRCINT                ; DE = ArgVal
-    push    de                    ; Stack = ArgVal, TxtPtr, RtnAdr
-    ld      a,2
-    call    STRINI                ; Allocate 2 byte string
-    pop     de                    ; DE = ArgVal; Stack = TxtPtr. RtnAdr
-    ld      hl,(DSCTMP+2)         ; HL = StrAdr
-    ld      (hl),e                ; Write ArgVal to string
-    inc     hl
-    ld      (hl),d                
-    jp      PUTNEW                ; and return it
+    rst    CHRGET                ; Skip $
+    call   PARCHK
+    push   hl                    ; Stack = TxtPtr. RtnAdr
+    call   FRCINT                ; DE = ArgVal
+    push   de                    ; Stack = ArgVal, TxtPtr, RtnAdr
+    ld     a,2
+    call   STRINI                ; Allocate 2 byte string
+    pop    de                    ; DE = ArgVal; Stack = TxtPtr. RtnAdr
+    ld     hl,(DSCTMP+2)         ; HL = StrAdr
+    ld     (hl),e                ; Write ArgVal to string
+    inc    hl
+    ld     (hl),d
+    jp     PUTNEW                ; and return it
 
 ;-----------------------------------------------------------------------------
 ; WRITE Statement stub
 ;-----------------------------------------------------------------------------
 ST_WRITE:
-   cp       '#'
-   jp       z,write_file
-   rst      SYNCHR
-   byte     XTOKEN
-   rst      CHRGET                ; Skip XTOKEN
-   cp       KEYTK
-   jr       z,ST_WRITE_KEYS
-   jp       SNERR
-   
+    cp      '#'
+    jp      z,write_file
+    SYNCHKT XTOKEN
+    rst     CHRGET               ; Skip XTOKEN
+    cp      KEYTK
+    jr      z,ST_WRITE_KEYS
+    jp      SNERR
+
 ;-----------------------------------------------------------------------------
 ; WRITE KEYS Statement
 ; Syntax: WRITE KEYS string$
@@ -1362,8 +1337,8 @@ ST_WRITE:
 ; WRITE KEYS \" ? 123\r"
 ;; ToDo: Find out why first character gets eaten
 ST_WRITE_KEYS:
-   rst      CHRGET                ; Skip KEY
-   SYNCHK   'S'                   ; Require S
-   call     get_free_string       ; DE = StrAdr, BC = StrLen
-   ld       iy,autokey_write_buffer
-   jp       aux_call_popret       ; Write to auto-key buffer
+    rst      CHRGET                ; Skip KEY
+    SYNCHKC  'S'                   ; Require S
+    call     get_free_string       ; DE = StrAdr, BC = StrLen
+    ld       iy,autokey_write_buffer
+    jp       aux_call_popret      ; Write to auto-key buffer

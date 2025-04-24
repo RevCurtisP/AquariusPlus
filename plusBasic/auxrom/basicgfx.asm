@@ -156,8 +156,7 @@ bas_defgotvar:
     xor     a                     ; DatLen = 0
     push    af                    ; Stack = DatLen, BufAdr, VarPtr
     push    bc                    ; Stack = RtnAdr, DatLen, BufAdr, VarPtr
-    rst     SYNCHR
-    byte    EQUATK                ; Require '='
+    SYNCHKT EQUATK                ; Require '='
     ret
 
 bas_parse_attr:

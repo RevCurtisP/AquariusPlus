@@ -72,7 +72,7 @@ _read_error:
 ;-----------------------------------------------------------------------------
 FN_CD:
     rst     CHRGET                ; Skip Token
-    SYNCHK  '$'                   ; Require Dollar Sign
+    SYNCHKC '$'                   ; Require Dollar Sign
     push    hl                    ; Stack = TxtPtr, RtnAdr
     call    _get_cd
     ld      bc,LABBCK
@@ -143,8 +143,7 @@ ST_COPY_FILE:
 _file_from_to:
     push    de                    ; Stack = CallAdr, RtnAdr
     call    FRMSTR                ; Parse oldname
-    call    SYNCHR                ; Require TO token
-    byte    TOTK
+    SYNCHKT TOTK                  ; Require TO token
     push    hl                    ; Stack = TxtPtr, CallAdr, RtnAdr
     ld      hl,(FACLO)            ; HL = OldDsc
     ex      (sp),hl               ; HL = TxtPtr, Stack = OldDsc, CallAdr, RtnAdr
@@ -174,8 +173,7 @@ FN_FILE:
     jr      Z,FN_FILEDATETIME     ;   Do FILEDATETIME$()
     cp      LENTK                 ; If LEN
     jr      Z,FN_FILELEN          ;   Do FILELEN()
-    rst     SYNCHR
-    byte    XTOKEN                ; Must be extended Token
+    SYNCHKT XTOKEN                ; Must be extended Token
     cp      ATTRTK                ; If ATTR
     jr      z,FN_FILEATTR         ;   Do FILEATTR$()
     cp      EXTTK                 ; If EXT
@@ -235,13 +233,12 @@ FN_FILEATTR:
 ; ? FILEDATETIME$("1.palt")
 FN_FILEDATETIME:
     inc     hl                    ; Skip DATE
-    rst     SYNCHR
-    byte    TIMETK
+    SYNCHKT TIMETK
     ld      iy,file_datetime
     push    iy                    ; Stack = AuxRtn, RtnAdr
     ld      a,14                  ; A = StrSiz
     jr      _file_stat            ; Go do it
-  
+
 ;-----------------------------------------------------------------------------
 ; FILESTATUS$(filespec$)
 ;-----------------------------------------------------------------------------
@@ -254,7 +251,7 @@ FN_FILESTATUS:
     inc     hl                    ; Skip STATUS
 _file_stat:
     push    af                    ; Stack = StrSiz, AuxRtn, RtnAdr
-    SYNCHK  '$'                   ; Require $
+    SYNCHKC '$'                   ; Require $
     call    PARSTR                ; Parse string agument
     pop     a                     ; A = StrSiz; Stack = AuxRtn, RtnAdr
     pop     iy                    ; IY = AuxRtn; Stack = RtnAdr
@@ -293,7 +290,7 @@ FN_TRIMEXT:
 _file_trim:
     push    iy                    ; Stack = TrmRtn, RtnAdr
     rst     CHRGET                ; Skip EXT/DIR
-    SYNCHK  '$'                   ; Require string
+    SYNCHKC '$'                   ; Require string
     call    PARCHK                ; Parse agument
     pop     iy                    ; IY = TrmRtn; Stack = RtnAdr
     push    hl                    ; Stack = TxtPtr, RtnAdr
@@ -425,7 +422,7 @@ ST_LOAD:
 ; LOAD "tron.bim",$4200
     cp      '!'
     jr      nz,.not_ext
-    call    get_ext_addr          ;   AF = PgFlg, DE = Addr    
+    call    get_ext_addr          ;   AF = PgFlg, DE = Addr
     jr      .load_bin
 .not_ext
     call    get_page_arg          ; Check for page specifier
@@ -437,7 +434,7 @@ ST_LOAD:
     ld      bc,$4000
     jr      .pop_load_bin         ;   Else
 .page_params
-    SYNCHK  ','
+    SYNCHKC ','
 .bin_params
     call    GETINT                ;     DE = Addr
     ld      bc,$FFFF              ;     Load up to 64k
@@ -544,7 +541,7 @@ _load_ascii:
 ; SET FILE ERROR OFF:LOAD "xxxxx"
 load_basic_program:
     ; Open file
-    
+
     call    ferr_flag_on
     call    _open_read
 
@@ -657,9 +654,8 @@ load_array:
     ld      iy,aux_load_str_array
     call    CHRGT2
     jr      z,.load_array
-    SYNCHK  ','
-    rst     SYNCHR
-    byte    ASCTK
+    SYNCHKC ','
+    SYNCHKT ASCTK
     ld      iy,aux_load_asc_array
 .load_array
     ex      (sp),hl               ; HL = StrDsc, Stack = TxtPtr, RtnAdr
@@ -677,22 +673,20 @@ load_dir_array:
 .dir_arg
     call    get_strdesc_arg       ;   HL = StrDsc; Stack = TxtPtr, RtnAdr
     ex      (sp),hl               ;   HL = TxtPtr, Stack = StrDsc, RtnAdr
-    SYNCHK  ','                   ;   Require ,
+    SYNCHKC ','                   ;   Require ,
 .dir_cont
     call    get_star_array        ; A = NxtChr, DE = AryPtr, BC = AryLen
     call    CHKSTR                ; Type mismatch error if not string array
     ld      iy,aux_load_dir
     call    CHRGT2
     jr      z,.load_dir
-    SYNCHK  ','
+    SYNCHKC ','
     ld      iy,aux_load_dir_ascii
     cp      ASCTK
     jr      z,.skip_load_dir
-    rst     SYNCHR
-    byte    XTOKEN
+    SYNCHKT XTOKEN
     ld      iy,aux_load_dir_bin
-    rst     SYNCHR     
-    byte    BINTK
+    SYNCHKT BINTK
     byte    $3E                   ; LD A over RST
 .skip_load_dir
     rst     CHRGET                ; Skip ASC or BIN
@@ -708,11 +702,9 @@ _load_fnkeys:
 
 _set_up_fnkeys:
     rst     CHRGET                ; Skip FN
-    rst     SYNCHR
-    byte    XTOKEN
-    rst     SYNCHR                ; Require KEY
-    byte    KEYTK
-    SYNCHK  'S'                   ; Require S
+    SYNCHKT XTOKEN
+    SYNCHKT KEYTK                 ; Require KEY
+    SYNCHKC 'S'                   ; Require S
     call    get_strdesc_arg       ; HL = FilDsc; Stack = TxtPtr, RtnAdr
     ex      de,hl                 ; DE = FilDsc
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
@@ -730,10 +722,8 @@ _load_extended:
     jr      z,_load_palette
     cp      PT3TK                 ; $8C
     jr      z,_load_pt3
-    rst     SYNCHR      
-    byte    CHRTK                 ; $85
-    rst     SYNCHR                ; Must be CHRSET
-    byte    SETTK
+    SYNCHKT CHRTK                 ; $85
+    SYNCHKT SETTK                 ; Must be CHRSET
 ; load chrset "/chrsets/linedraw.char"
 ; load chrset "/chrsets/seraphim.char"
 _load_chrset:
@@ -766,17 +756,16 @@ _do_palette:
     push    iy                    ; Stack = FilRtn
     call    get_byte4             ; A = PalNum
     push    af                    ; Stack = PalNum, FilRtn, RtnAdr
-    SYNCHK  ','                   ; Require comma
+    SYNCHKC ','                   ; Require comma
     call    get_strdesc_arg       ; HL = FilStd; Stack = TxtPtr, PalNum, FilRtn, RtnAdr
     ex      (sp),hl               ; HL = TxtPtr; Stack = FilStd, PalNum, FilRtn, RtnAdr
     call    CHRGT2                ; Reget Character
     ld      b,0
     jr      z,.do_save_load       ; If not terminator
-    SYNCHK  ','                   
-    rst     SYNCHR                ; Require ,ASC
-    byte    ASCTK   
+    SYNCHKC ','
+    SYNCHKT ASCTK                ; Require ,ASC
     dec     b
-.do_save_load:    
+.do_save_load:
     ex      (sp),hl               ; HL = FilStd; Stack = TxtPtr, PalNum, FilRtn, RtnAdr
     pop     de                    ; DE = TxtPtr
     pop     af                    ; A = PalNum; Stack = FilRtn, RtnAdr
@@ -809,8 +798,7 @@ _save_tile:
     ld      iy,file_save_tilemap  ;   Load tilemap
     jr      _aux_call             ; Else
 _save_tileset
-    rst     SYNCHR
-    byte    SETTK                 ; Require SET
+    SYNCHKT SETTK                 ; Require SET
     call    get_int512            ; DE = TileNo
     call    get_comma             ; Require Comma
     push    de                    ; Stack = TileNo, RtnAdr
@@ -837,8 +825,7 @@ _load_tile:
     ld      iy,file_load_tilemap  ;   Load tilemap
     jp      skip_strdesc_auxcall  ; Else
 _load_tileset:
-    rst     SYNCHR
-    byte    SETTK                 ;   Require SET
+    SYNCHKT SETTK                 ;   Require SET
     ld      de,0                  ; Default TileNo to 0
     call    _index_offset
     jr      nz,.skip
@@ -849,7 +836,7 @@ _load_tileset:
     ex      de,hl
     add     hl,bc
     ex      de,hl                 ; DE = Index + Offset
-.skip    
+.skip
     push    de                    ;   Stack = TileNo, RtnAdr
     call    get_strdesc_arg       ;   HL = StrDsc; Stack = TxtPtr, TileNo, RtnAdr
     pop     bc                    ;   BC = TxtPtr; Stack = TileNo, RtnAdr
@@ -865,8 +852,7 @@ _load_tileset:
 ;-----------------------------------------------------------------------------
 _save_bitmap:
     rst     CHRGET                ; Skip BIT
-    rst     SYNCHR                ; Require MAP
-    byte    MAPTK
+    SYNCHKT MAPTK                 ; Require MAP
     call    get_strdesc_arg       ; HL = StrDsc, Stack = TxtPtr, RtnAdr
     ld      a,(EXT_FLAGS)
     and     GFXM_MASK
@@ -878,8 +864,7 @@ _load_bitmap:
     ld      iy,file_load_bitmap
 _load__map:
     rst     CHRGET                ; Skip BIT
-    rst     SYNCHR                ; Require MAP
-    byte    MAPTK
+    SYNCHKT MAPTK                 ; Require MAP
     jr      _strdesc_auxcall
 
 
@@ -900,10 +885,8 @@ _load_colormap:
     ld      iy,file_load_colormap
 _do_colormap:
     rst     CHRGET
-    rst     SYNCHR
-    byte    ORTK                  ; Require OR
-    rst     SYNCHR
-    byte    MAPTK                 ; Require MAP
+    SYNCHKT ORTK                  ; Require OR
+    SYNCHKT MAPTK                 ; Require MAP
     jr      nz,_strdesc_auxcall
     jr      _strdesc_auxcall
 
@@ -932,11 +915,11 @@ _load_screen:
     rst     CHRGET                ; Skip SCREEN
     call    screen_suffix
     dec     b                     ; CHR
-    jp      z,GSERR               
+    jp      z,GSERR
     ld      iy,file_load_color
     dec     b                     ; ATTR
     jr      z,_strdesc_auxcall
-    ld      iy,file_load_screen   
+    ld      iy,file_load_screen
     byte    $3E                   ; LD A, over CHRGET
 skip_strdesc_auxcall:
     rst     CHRGET                ; Skip SCREEN
@@ -1066,7 +1049,7 @@ run_file:
 .cartsig
     byte    $2A, $9C, $B0, $6C, $64, $A8, $70
 
-;Keep 
+;Keep
 .aqxsig
     byte    "AQPLUSEXEC"
 .basromsig
@@ -1190,7 +1173,7 @@ ST_SAVE:
     ; Save binary data
     cp      '!'
     jr      nz,.not_ext           ; If !
-    call    get_ext_addr          ;   AF = PgFlg, DE = Addr 
+    call    get_ext_addr          ;   AF = PgFlg, DE = Addr
     push    af                    ;   Stack = PgFlg, StrDsc, RtnAdr
     push    de                    ;   Stack = BinAdr, PgFlg, StrDsc, RtnAdr
     jr      .get_len              ; Else
@@ -1217,16 +1200,14 @@ ST_SAVE:
     ld      b,d
     ld      c,e                   ; BC = BinLen
     pop     de                    ; DE = BinAdr; Stack
-    jr      _pop_save_bin      
+    jr      _pop_save_bin
 
 .save_extended
     rst     CHRGET                ; Skip XTOKEN
     cp      PALETK
     jp      z,_save_palette       ; If not PALETTE
-    rst     SYNCHR
-    byte    CHRTK                 ;   Require CHRSET
-    rst     SYNCHR
-    byte    SETTK
+    SYNCHKT CHRTK                 ;   Require CHRSET
+    SYNCHKT SETTK
     jp      _save_chrset
 
 .save_fnkeys
@@ -1261,8 +1242,7 @@ ST_SAVE:
 ; 10 SAVE "/t/savecaq.baq",CAQ
 .save_xtoken
     rst     CHRGET                ; Skip XTOKEN
-    rst     SYNCHR
-    byte    CAQTK                 ; Require CAQ
+    SYNCHKT CAQTK                 ; Require CAQ
     jp      save_caq_program
 
 ; SAVE "t/paged.bin",@63,0,16384
@@ -1273,7 +1253,7 @@ _save_paged
     ld      iy,file_save_paged
     call    aux_call
     jp      m,_dos_error
-    jp      z,IQERR
+    jp      z,FCERR
     jp      c,OVERR
     pop     hl
     ret
@@ -1501,8 +1481,7 @@ check_sync_bytes:
 ;-----------------------------------------------------------------------------
 ST_SET_SAVE:
     rst     CHRGET                ; Skip SAVE
-    rst     SYNCHR
-    byte    ASCTK                 ; Require ASC
+    SYNCHKT ASCTK                 ; Require ASC
     call    check_on_off          ; ON = $FF, OFF = 0
     and     BASSAVASC             ; Isolate to SAVE ASC control bit
     ld      b,a                   ; B = Control bit
@@ -1526,8 +1505,7 @@ ST_OPEN:
     call    PTRGET                ; DE = VarPtr
     call    CHKNUM                ; Error if not numeric
     push    de                    ; Stack = VarPtr, RtnAdr
-    rst     SYNCHR
-    byte    TOTK                  ; Require TO
+    SYNCHKT TOTK                  ; Require TO
     call    get_strdesc_arg       ; HL = StrDsc; Stack = TxtPtr, VarPtr, RtnAdr
     ex      (sp),hl               ; HL = TxtPtr; Stack = StrDsc, VarPtr, RtnAdr
     call    aux_call_inline
@@ -1536,7 +1514,7 @@ ST_OPEN:
     call    aux_call              ; Open the file
     jp      m,_pop_hl_doserror
     inc     a                     ; A = FilChn
-    call    SNGFLT                
+    call    SNGFLT
     pop     hl                    ; HL = TxtPtr; Stack = VarPtr, RtnAdr
     ex      (sp),hl               ; HL = VarPtr; Stack = TxtPtr, RtnAdr
     call    MOVMF
@@ -1556,14 +1534,14 @@ ST_CLOSE:
 .close_chan
     call    _get_channel          ; A = FilDsc
     ret     z                     ; If FilDsc = 0, Retuen
-    dec     a 
+    dec     a
     ld      iy,aux_close_dir      ; If high bit set
     jp      p,aux_call            ;   Close directory
     ld      iy,dos_close          ; Else
     jp      aux_call              ;   Close file
 
 _get_channel:
-    SYNCHK  '#'                   
+    SYNCHKC '#'
     call    GETBYT                ; A = Channel
     or      a                     ; Set flags
     ret
@@ -1653,7 +1631,7 @@ _read_string:
     pop     de                    ; DE = VarPtr, Stack = Channel, RtnAdr
     ex      (sp),hl               ; H = Channel; Stack = TxtPtr, RtnAdr
     push    de                    ; Stack = VarPtr, TxtPtr, RtnAdr
-    ld      iy,bas_read_string    
+    ld      iy,bas_read_string
 _aux_call_inbufc:
     call    aux_call              ; HL = TmpDsc
 _push_inbufc:
@@ -1698,7 +1676,7 @@ get_string_direct:
     call    _clear_errflag        ; Set BASIC error to 0
     ld      a,(hl)                ; A = First character of argument
     cp      '"'                   ;
-    
+
     jr      z,get_string_arg      ; If not a quote
     dec     hl                    ;   Back up text pointer for STRLT2
     ld      b,' '                 ;   Delimiters are space
@@ -1708,8 +1686,7 @@ get_string_direct:
     jr      _proc_string_arg      ;   and process it
 
 get_to_string_arg:
-    rst     SYNCHR                
-    byte    TOTK                  ; Require TO
+    SYNCHKT TOTK                  ; Require TO
 ;-----------------------------------------------------------------------------
 ; Parse string at text pointer, return String Length and Text Address
 ;  Input: HL: Text Pointee

@@ -68,7 +68,7 @@ Quick Reference Guide
  - [ ] **BIT(_long_,_bit#_)** - Return status of bit in 23 bit number.
  - [ ] **BIT(_string_,_bit#_)** - Return status of bit in binary string.
  - [x] **BYTE(_string_{,_pos_})** - Return signed byte value of specified character in _string_.<!--convert-->
- - [ ] **CALL «!_ext_addr_»|«{@_page_,}_address_» {ARGS _hl_,_de_,_bc_}** - Executes machine language routine at address, optionally passing arguments into the associated registers.<!--CALL-->
+ - [ ] **CALL {@_page_,}_address_ {ARGS _hl_,_de_,_bc_}** - Executes machine language routine at address, optionally passing arguments into the associated registers.<!--CALL-->
  - [ ] **CALL MODULE** - _Proposed enhancement._
  - [ ] **CD {_dirname_}** - Display current path or change directory.<!--filesystem-->
  - [ ] **CD$** - Return current path.<!--filesystem-->

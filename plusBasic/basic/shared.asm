@@ -30,10 +30,10 @@ GET_LONG:
 ; Convert FACC to 23-bit integer in CDE
 ;-----------------------------------------------------------------------------
 FRC_LONG:
-    ld      a,(FAC)                ; Get Exponent
-    cp      153                    ; If < 2^24
-    jp      c,QINT                 ;   Convert it
-    jp      FCERR                  ; Else Illegal Quantity
+    ld      a,(FAC)               ; Get Exponent
+    cp      153                   ; If < 2^24
+    jp      c,QINT                ;   Convert it
+    jp      FCERR                 ; Else Illegal Quantity
 
 ;-----------------------------------------------------------------------------
 ; Parse positiv integer into DE
@@ -254,10 +254,9 @@ get_array:
     jp      GETYPE                ; Reread next character and set flags
 
 get_par_array_pointer:
-    SYNCHK  '('                   ; Requite (
+    SYNCHKC '('                   ; Requite (
 get_star_array_pointer:
-    rst     SYNCHR
-    byte    MULTK
+    SYNCHKT MULTK
 get_array_pointer:
     ld      a,1                   ; SEARCH ARRAYS ONLY
     ld      (SUBFLG),a            
@@ -266,14 +265,9 @@ get_array_pointer:
     ld      (SUBFLG),a            ; CLEAR THIS
     ret
 
-;Undimensioned Array Error
-UDERR:
-    ld      e,ERRUD
-    jp      ERROR
-
 ; Returns C = Character
 get_char_parens:
-    SYNCHK  '('
+    SYNCHKC '('
     call    get_char
 ;-----------------------------------------------------------------------------
 ; Require Close Paren on Function
@@ -282,7 +276,7 @@ close_paren:
     ld      a,(hl)
     cp      ','
     jp      z,TOERR
-    SYNCHK  ')'
+    SYNCHKC ')'
     ret
 
 ;-----------------------------------------------------------------------------
@@ -326,8 +320,7 @@ get_ptrtk:
     ld      c,PTRTK
 get_extoken:
     rst     CHRGET                ; Skip VAR
-    rst     SYNCHR
-    byte    XTOKEN
+    SYNCHKT XTOKEN
     cp      c                     ; If NxtChr = Token
     jp      z,CHRGTR              ;   Skip it and return
     jp      SNERR                 ; Else Syntax error
@@ -387,7 +380,7 @@ parse_cxy:
     inc     e                     ;   E = 1
     jp      CHRGTR                ;   Skip X and Return E
 .not_x    
-    SYNCHK  'Y'                   ; Else require Y
+    SYNCHKC   'Y'                   ; Else require Y
     dec     e                     ;   E = 255
     ret                           ;   Return E
 
@@ -403,7 +396,7 @@ get_page_arg:
     rst     CHRGET                ;   Skip '@'
     byte    $11                   ;   LD DE, over SYNCHK
 req_page_arg:
-    SYNCHK  '@'
+    SYNCHKC   '@'
     call    GETBYT                ;   Parse byte into E
     ld      a,e
 setcarry_ret:
@@ -422,7 +415,7 @@ require_page_addr:
     jr      _at_page_addr
 
 get_par_page_addr:
-    SYNCHK  '('
+    SYNCHKC '('
     jr      get_page_addr
 get_comma_page_addr:
     ld      a,(hl)
@@ -443,7 +436,7 @@ _at_page_addr
     call    get_page_arg          ; Get (optional) Page
     push    af                    ; Stack = Page+Flag
     jr      nc,_no_page           ; If Page specified
-    SYNCHK  ','                   ;   Require Comma
+    SYNCHKC   ','                   ;   Require Comma
     call    get_int16k            ;   DE = Address
     pop     af                    ; AF = Page+Flag
     ret
@@ -471,7 +464,7 @@ get_ext_addr:
     ret
 
 get_par_page_addr_len:
-    SYNCHK  '('
+    SYNCHKC   '('
 ;-----------------------------------------------------------------------------
 ; Parse @Page, Address, Length
 ; Output: A = Page number`
@@ -483,7 +476,7 @@ get_page_addr_len:
     call    get_page_addr         ; Get Page and Address
     push    af                    ; Stack = Page+Flag
     push    de                    ; Stack = Address, Page+Flag
-    SYNCHK  ','                   ; Require Comma
+    SYNCHKC   ','                 ; Require Comma
     call    GETINT                ; Get Length
     ld      b,d
     ld      c,e                   ; BC = Length
@@ -500,8 +493,7 @@ get_page_addr_len:
 get_addr_len:
     call    GET_POS_INT           ; DE = Address
     push    de                    ; Stack = Address, Page+Flag
-    SYNCHK  ','                   ; Require Comma
-    call    GETINT                ; Get Length
+    call    get_comma_byte        ; DE = Length
     ld      b,d
     ld      c,e                   ; BC = Length
     pop     de                    ; DE = Address, Stack = Page+Flag
@@ -655,10 +647,8 @@ get_byte200:
 ; Clobbers: B,DE
 ;-----------------------------------------------------------------------------
 parse_char:
-    rst     SYNCHR
-    byte    XTOKEN
-    rst     SYNCHR
-    byte    CHRTK
+    SYNCHKT XTOKEN
+    SYNCHKT CHRTK
     jr      get_char
 
 ;-----------------------------------------------------------------------------
@@ -666,8 +656,7 @@ parse_char:
 ; Output: A,C = Character ASCII value
 ; Clobbers: B,DE
 parse_delimiter:
-    rst     SYNCHR                ; Require DEL
-    byte    DELTK
+    SYNCHKT DELTK                 ; Require DEL
     jr      get_char
 
 ;-----------------------------------------------------------------------------
@@ -756,25 +745,21 @@ get_int_reget:
 skip_paren_colors:
     rst     CHRGET
 get_paren_colors:
-    SYNCHK  '('
+    SYNCHKC   '('
     jr      get_screen_colors
 
 ; Parse COLOR color
 parse_color:
-    rst     SYNCHR                
-    byte    COLTK
-    rst     SYNCHR                ; Require COLOR
-    byte    ORTK
+    SYNCHKT COLTK
+    SYNCHKT ORTK                  ; Require COLOR
     jp      get_byte16
 
 
 
 ; Parse COLOR fgcolor,bgcolor
 parse_colors:
-    rst     SYNCHR                
-    byte    COLTK
-    rst     SYNCHR                ; Require COLOR
-    byte    ORTK
+    SYNCHKT COLTK
+    SYNCHKT ORTK                  ; Require COLOR
     byte    $01                   ; LD BC over SYNCHK
 get_comma_colors:
     call    get_comma             ; Missing opersand if comma
@@ -824,12 +809,10 @@ check_on_off:
     jr      nz,.not_on            ; If ON
     rst     CHRGET                ;   Skip it
     or      $FF                   ;   Return $FF with flags set
-    ret 
+    ret                           ; Else
 .not_on
-    rst     SYNCHR
-    byte    XTOKEN                
-    rst     SYNCHR                ; Else
-    byte    OFFTK                 ;   Require OFF
+    SYNCHKT XTOKEN                
+    SYNCHKT OFFTK                 ;   Require OFF
     xor     a                     ;   Return 0 with flags set
     ret
 
@@ -846,9 +829,9 @@ skip_get_stringvar:
 ; Clobbers: A,BC
 ;-----------------------------------------------------------------------------
 get_stringvar:
-    call    PTRGET            ; DE = Pointer to variable
-    call    CHKSTR            ; If not a string
-    jp      CHRGT2            ; Reget Character and Return
+    call    PTRGET                ; DE = Pointer to variable
+    call    CHKSTR                ; If not a string
+    jp      CHRGT2                ; Reget Character and Return
 
 ; ------------------------------------------------------------------------------
 ; Increment XTEMP0
@@ -869,16 +852,16 @@ par_string_labbck:
 ; Increment text pointer, push it then LABBCK
 ; ------------------------------------------------------------------------------
 push_hlinc_labbck:
-    inc     hl                ; Skip current character
+    inc     hl                    ; Skip current character
 ; ------------------------------------------------------------------------------
 ; Push text pointer then LABBCK
 ; ------------------------------------------------------------------------------
 push_hl_labbck:
-    ex      (sp),hl           ; HL = RtnAdr; Stack = TxtPtr
-    push    hl                ; Stack = RtnAdr, TxtPtr
-    ld      hl,LABBCK         ; HL = LABBCK
-    ex      (sp),hl           ; HL = RtnAdr; Stack = LABBCK, TxtPtr 
-    jp      (hl)              ; Fast Return
+    ex      (sp),hl               ; HL = RtnAdr; Stack = TxtPtr
+    push    hl                    ; Stack = RtnAdr, TxtPtr
+    ld      hl,LABBCK             ; HL = LABBCK
+    ex      (sp),hl               ; HL = RtnAdr; Stack = LABBCK, TxtPtr 
+    jp      (hl)                  ; Fast Return
 
 ;-----------------------------------------------------------------------------
 ; Scan Rectangular Coordinates
@@ -892,8 +875,7 @@ scan_rect:
     call    SCAND                 ; C = BgnCol, E = BgnRow
     push    de                    ; Stack = BgnRow, RtnAdr
     push    bc                    ; Stack = BgnCol, BgnRow, RtnAdr
-    rst     SYNCHR                ; Require -
-    byte    MINUTK                 
+    SYNCHKT MINUTK                ; Require -                 
     call    SCAND                 ; C = EndCol, E = EndRow
     ex      (sp),hl               ; L = BgnCol; Stack = TxtPtr, BgnRow, RtnAdr
     ld      b,l                   ; B = BgnCol, C = EndCol

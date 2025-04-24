@@ -110,8 +110,7 @@ ST_RETURN:
 .line_ok:
     ld      hl,NEWSTT             ; HL = NEWSTT, Stack = *RetVars
     ex      (sp),hl               ; HL = *RetVars; Stack = NEWSTT
-    call    SYNCHR                ; Require RETURN after GOSUB Args
-    byte    RETTK
+    SYNCHKT RETTK                 ; Require RETURN after GOSUB Args
     push    hl                    ; Stack = *RetVars, NEWSTT
     ld      hl,(SAVTXT)           ; HL = *RetVals; Stack = *RetVars, NEWSTT
     ex      (sp),hl               ; HL = **RetVars; Stack = *RetVals, NEWSTT

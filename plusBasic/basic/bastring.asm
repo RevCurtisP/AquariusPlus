@@ -25,7 +25,7 @@ FN_PAD:
     push    af                    ; Stack = LenFlg, PadLen, ArgDsc, RtnAdr
     ld      c,' '                 ; PadChr = Space
     call    get_char_optional     ; C = PadChr
-    SYNCHK  ')'                   ; Require end paren
+    SYNCHKC ')'                   ; Require end paren
     pop     af                    ; F = LenFlg; Stack = PadLen, ArgDsc, RtnAdr
     pop     de                    ; DE = PadLen; Stack = ArgDsc, RtnAdr
     ex      (sp),hl               ; HL = ArgDsc; Stack = TxtPtr, RtnAdr
@@ -80,7 +80,7 @@ FN_TRIM:
     cp      'L'
     jr      z,trim_string
     ld      iy,string_trim_right
-    SYNCHK  'R'
+    SYNCHKC 'R'
     jr      trim_stringd
 .token
     cp      XTOKEN            ; If XTOKEN
@@ -110,7 +110,7 @@ trim_string:
     pop     de                    ;   DE = ArgDsc; Stack = TrmRtn, RetAdr
 .notcomma
     pop     iy                    ; IY = TrmRtn; Stack = RetAdr
-    SYNCHK  ')'                   ; Require )
+    SYNCHKC ')'                   ; Require )
     push    hl                    ; Stack = TxtPtr, RetAdr
     push    de                    ; Stack = ArgDsc, TxtPtr, ret
     ld      d,b
@@ -138,7 +138,7 @@ trim_string:
 _trim_arg:
     rst     CHRGET                ; Skip L/R
 _pad_arg:
-    SYNCHK  '$'                   ;
+    SYNCHKC '$'                   ;
     call    FRMPRN                ; Evaluate argument after (
     call    CHKSTR
 ;    call    GETYPE                ; If numeric

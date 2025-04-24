@@ -22,7 +22,7 @@ asc_chr:
     ld      iy,SNGFLT
 sng_chr:
     push    iy                    ; Stack = FltJmp, RtnAdr
-    SYNCHK  '('
+    SYNCHKC '('
     call    FRMSTR
     pop     bc                    ; BC = FltJmp; Stack = RtnAdr
     ld      de,(FACLO)
@@ -37,7 +37,7 @@ sng_chr:
     or      a
     jp      z,FCERR
 _asc_char:
-    SYNCHK  ')'
+    SYNCHKC ')'
     pop     iy                    ; IY = FltJmp; Stack = StrDsc, RtnAdr
     ex      (sp),hl               ; HL = StrDsc; Stack = TxtPtr, RtnAdr                
     ld      bc,LABBCK
@@ -85,7 +85,7 @@ ST_COPY:
     ld      a,(hl)
     cp      TOTK                  ; and followed by TO
     jp      z,.page2page          ;   Do Page to Page copy
-    SYNCHK  ','
+    SYNCHKC ','
 .no_fpg
     call    GETINT                ; DE = SrcAdr
     pop     af                    ; AF = SrcPgFlg
@@ -95,12 +95,11 @@ ST_COPY:
     ld      a,(hl)
     cp      TOTK
     jp      z,.copy_page_addr_to
-    SYNCHK  ','                   ; Require Comma
+    SYNCHKC ','                   ; Require Comma
     call    GETINT                ; DE = Len
     push    de                    ; Stack = Len, SrcPgFlg, SrcAdr
 .do_to_arg
-    rst     SYNCHR
-    byte    TOTK
+    SYNCHKT TOTK
     cp      MULTK
     jr      nz,.not_dary          ; If *
     call    skip_star_array       ;   DE = DstAdr, BC = AryLen
@@ -120,8 +119,7 @@ ST_COPY:
     jr      nz,.not_xtoken
     inc     hl                    ;   Skip it
     ld      ixl,FASTK             ;   Assume FAST
-    rst     SYNCHR                ;
-    byte    FASTK                 ;   SNERR if not FAST
+    SYNCHKT FASTK                 ;   SNERR if not FAST
 .not_xtoken
     pop     af                    ; AR = DstPgFlg; Stack = Len, SrcPgFlg, SrcAdr
     ex      af,af'                ; AF' = DstPgFlg
@@ -188,8 +186,7 @@ ST_COPY:
     cp      MULTK                 ; If *
     jr      z,.copy_to_array      ;   Parse array and copy to it
     ld      ix,copy_to_screen
-    rst     SYNCHR
-    byte    SCRNTK                ;   Only TO SCREEN allowed right now
+    SYNCHKT SCRNTK                ;   Only TO SCREEN allowed right now
 .do_page_addr_to
     pop     af                    ; AF = SrcPgFlg; Stack = SrcAdr, RtnAdr
     pop     de                    ; DE = SrcAdr; Stack = SrcAdr, RtnAdr
@@ -282,8 +279,7 @@ ST_INPUT:
     ld      d,a                   ; D = MinLen
     push    de                    ; Stack = MinMax, ColRow, RtnAdr
     call    get_comma             ; Missing operand error if no comma
-    rst     SYNCHR
-    byte    INTTK                 ; Require INT (for now)
+    SYNCHKT INTTK                 ; Require INT (for now)
     call    PTRGET                ; DE = VarPtr
     pop     bc                    ; BC = MinMax; Stack = ColRow, RtnAdr
     ex      (sp),hl               ; HL = ColRow; Stack = TxtPtr, RtnAdr
@@ -309,7 +305,7 @@ FN_INT:
     call    FRMPRS                ; Skip INT, Eequire '(', and evaluate argument 
     ld      iy,float_signed_int   ; If string, set conversion routine
     jp      z,word_str            ;   and jump into WORD()
-    SYNCHK  ')'                   ; Else require ')'
+    SYNCHKC ')'                   ; Else require ')'
     call    push_hl_labbck        ;   Stack = LABBCK, TxtPtr, RtnAdr
     jp      INT                   ; Perform standard INT()
 
@@ -321,12 +317,12 @@ FN_LEN:
     ld      d,h
     ld      e,l                   ; Save pointer to function token
     rst     CHRGET                ; Skip LEN
-    SYNCHK  '('                   ; Require (
+    SYNCHKC '('                   ; Require (
     cp      MULTK                 ; If no *
     jp      nz,EX_ABORT_FN        ;   Do normal LEN
     call    skip_star_array       ; BC = DatLen
     call    CHKNUM
-    SYNCHK  ')'
+    SYNCHKC ')'
     call    push_hl_labbck        ;   Stack = LABBCK, TxtPtr, RtnAdr
     jp      FLOAT_BC
 
@@ -350,7 +346,7 @@ ST_POKE:
     call    get_page_addr         ; AF = PgFlg, DE = Addr
     push    af                    ; Stack = Page, RtnAdr
     push    de                    ; Stack = Addr, Page, RtnAdr
-    SYNCHK  ','                   ; Require comma
+    SYNCHKC ','                   ; Require comma
     call    FRMEVL                ; Evaluate argumenr
     call    GETYPE                ; If String
     jr      z,.pokestring         ;   Poke It
@@ -385,13 +381,13 @@ ST_POKE:
 .write_paged_byte:
     call    check_paged_address
     call    page_write_byte     ; If page specified, write to it
-    jp      z,IQERR             ; FC error if illegal page
+    jp      z,FCERR             ; FC error if illegal page
     jr      .poke_done
 
 .write_paged_bytes:
     call    check_paged_address
     call    page_write_bytes    ; If page specified, write to it
-    jp      z,IQERR             ; FC error if illegal page
+    jp      z,FCERR             ; FC error if illegal page
     pop     hl
 .poke_done
     ld      a,(hl)
@@ -425,8 +421,7 @@ ST_POKE:
 
 .pokecolor
     rst     CHRGET                ; Skip COL
-    rst     SYNCHR
-    byte    ORTK                  ; Require OR
+    SYNCHKT ORTK                  ; Require OR
 .next_color
     call    .screen_args          ; Stack = AdrOfs, TxtPtr, RtnAdr
     jr      z,.colorstring        ; If Poking byte
@@ -469,7 +464,7 @@ ST_DOKE:
     call    get_page_addr         ; AF = PgFlg, DE = Addr
     push    af                    ; Save it
     push    de                    ; Save It
-    SYNCHK  ','                   ; Require comma
+    SYNCHKC ','                   ; Require comma
     call    GETINT                ; Parse Word
     ld      b,d
     ld      c,e                   ;
@@ -486,7 +481,7 @@ ST_DOKE:
 .write_paged_word
     call    check_paged_address   ; Verify pages addres is between 0 and 16383
     call    page_write_word       ; If page specified, write to it
-    jp      z,IQERR               ; FC error if illegal page
+    jp      z,FCERR               ; FC error if illegal page
     jp      c,OVERR               ; Return overflow error if end of RAM
 .doke_done
     ld      a,(hl)
@@ -502,7 +497,7 @@ check_paged_address:
     push    a                     ; Save Page
     ld      a,$C0
     and     d                     ; If address is not 0 - 16383
-    jp      nz,IQERR              ;   Illegal Quantity error
+    jp      nz,FCERR              ;   Illegal Quantity error
     pop     a
     ret
 
@@ -525,7 +520,7 @@ FN_PEEK:
     jr      z,.peekstring         ;   Do PEEK$()
     call    get_par_page_addr     ; AF = PgFlg, DE = Addr
     push    af                    ; Save it
-    SYNCHK  ')'                   ; Require close paren
+    SYNCHKC ')'                   ; Require close paren
     pop     af                    ; Get page
     push    hl                    ; Save text pointer
     ld      bc,LABBCK             ; Return address for SNGFLT
@@ -538,7 +533,7 @@ FN_PEEK:
 .get_page_byte
     call    check_paged_address
     call    page_read_byte        ; Read byte into C
-    jp      z,IQERR               ; FC error if illegal page
+    jp      z,FCERR               ; FC error if illegal page
     ld      a,c
     jr      .float_it
 
@@ -546,7 +541,7 @@ FN_PEEK:
     rst     CHRGET                ; Skip token
     call    get_par_page_addr_len ; AF = PgFlg, BC = PkLen, DE = PkAdr
     push    af                    ; Stack = PgArg, RtnAdr
-    SYNCHK  ')'                   ; Require close paren
+    SYNCHKC ')'                   ; Require close paren
     pop     af                    ; AF = PgArg; Stack = RtnAdr
     push    hl                    ; Stack = TxtPtr, RtnAdr
     call    .init_peek_string     ; DE = StrPtr
@@ -583,8 +578,7 @@ FN_PEEK:
 ; POKE SCREEN 999,"":POKE COLOR 999,""
 .peekcolor
     rst     CHRGET                ; Skip COL
-    rst     SYNCHR                ; Require OR
-    byte    ORTK
+    SYNCHKT ORTK                  ; Require OR
     xor     a                     ; SCFlag = Color RAM
     push    af                    ; Stack = SCFlag, TxtPtr
     jr      .do_screen_color
@@ -614,9 +608,9 @@ FN_PEEK:
 
 .peek_sc_string
     rst     CHRGET                ; Skip $
-    SYNCHK  '('                   ; Require '('
+    SYNCHKC '('                   ; Require '('
     call    get_addr_len          ; DE = ScrOfs, BC = PkLen
-    SYNCHK  ')'                   ; Require ')'
+    SYNCHKC ')'                   ; Require ')'
     pop     af                    ; AF = SCFlag; Stack = RtnAdr
     push    hl                    ; Stack = TxtPtr, RtnAdr
     call    .init_peek_string     ; DE = StrPtr, HL = ScrOfs
@@ -640,7 +634,7 @@ FN_DEEK:
     rst     CHRGET                ; Skip DEEK
     call    get_par_page_addr     ; AF = PgFlg, DE = Addr
     push    af                    ; Save it
-    SYNCHK  ')'                   ; Require close paren
+    SYNCHKC ')'                   ; Require close paren
     pop     af                    ; Get page
     push    hl                    ; Save text pointer
     ld      bc,LABBCK             ; Return address for FLOAT_BC
@@ -656,7 +650,7 @@ FN_DEEK:
 .read_page_word
     call    check_paged_address
     call    page_read_word
-    jp      z,IQERR               ; FC error if illegal page
+    jp      z,FCERR               ; FC error if illegal page
     jp      c,OVERR               ; Return overflow error if end of RAM
     jp      FLOAT_BC
 
@@ -665,7 +659,7 @@ _null_string:
     jp      TIMSTR        ; and return null string
 
 paren_page_arg:
-    SYNCHK  '('
+    SYNCHKC '('
 ; Check for and parse @page,
 ; Output: A, E = Page number`
 ;  Carry: Set if page specified
@@ -675,7 +669,6 @@ parse_page_arg:
     rst     CHRGET                ;   Skip '@'
     call    GETBYT                ;   Parse byte into E
     call    get_comma
-;   SYNCHK  ','                   ;   Require comma
     ld      a,e
     scf
     ret
@@ -687,10 +680,9 @@ parse_page_arg:
 ; WRITE KEYS "123":READ KEYS K$:PRINT K$
 read_xtoken:
     inc     hl                    ; Skip XTOKEN
-    rst     SYNCHR
-    byte    KEYTK                 ; Require KEY
+    SYNCHKT KEYTK                 ; Require KEY
 ST_READ_KEYS:
-    SYNCHK  'S'                   ; Require S
+    SYNCHKC 'S'                   ; Require S
     call    get_stringvar
     push    hl                    ; Stack = TxtPtr, RtnAdr
     push    de                    ; Stack = VarPtr, TxtPtr, RtnAdr
@@ -715,8 +707,7 @@ ST_RESTORE:
 ;-----------------------------------------------------------------------------
 ST_STOP:
     jp      z,STOP
-    rst     SYNCHR
-    byte    XTOKEN
+    SYNCHKT XTOKEN
     cp      PT3TK
     jp      z,ST_STOP_PT3
     jp      SNERR

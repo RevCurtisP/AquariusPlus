@@ -15,9 +15,12 @@
 ; To assemble:
 ;   zmac --zmac  -I basic -I gfx -o aqplusbas.cim -o aqplusbas.lst aqplusbas.asm
   
-    include "sbasic.inc"
+;    include "sbasic.inc"
     include "plus.inc"
     include "screen.inc"
+
+    include "sbasic.asm"
+
 
 ;Internal Jump Table: S3BASIC interface
     org     $2000
@@ -132,7 +135,7 @@ null_desc:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.24l"
+    db "v0.25"
     db 0
 plus_len   equ   $ - plus_text
 
@@ -346,24 +349,24 @@ _wait_key:
 
 _input_ctrl_c:
     ld      a,(BASYSCTL)
-    and     BASBRKOFF               ; If BRK is on
-    jp      nz,_read_key            ;   Break out of program
+    and     BASBRKOFF             ; If BRK is on
+    jp      nz,_read_key          ;   Break out of program
     ld      a,3
     ld      (IEND_KEY),a
-    push    bc                      ; Stack = TxtPtr, RtnAdr
-    jp      DATAH                   ; Skip to end of INPUT statement
+    push    bc                    ; Stack = TxtPtr, RtnAdr
+    jp      DATAH                 ; Skip to end of INPUT statement
 
 _main_ctrl_c:
     jp      c,STPEND
     rst     CHRGET
-    jp      MAIN1
+    jp      MAIN0
 
 _finish_input:
     ld      (IEND_KEY),a
     jp      FININL
 
 ;-----------------------------------------------------------------------------
-; Check for Control Keys before fetching next statement
+; Check for Control Keys before fetching next statement 
 ; returns to NEWSTT
 ;-----------------------------------------------------------------------------
 _incntc_hook:
@@ -629,10 +632,10 @@ _inlin_done:
 ;-----------------------------------------------------------------------------
 _line_edit:
 ;    push    hl
-;    call    get_linbuf_addr   ; HL = Line Buffer address
-;    ld      c,0               ; C = ChrCnt
+;    call    get_linbuf_addr      ; HL = Line Buffer address
+;    ld      c,0                  ; C = ChrCnt
 ;    ld      iy,edit
-;    call    aux_call          ; Edit the line
+;    call    aux_call             ; Edit the line
 ;    pop     hl
     ret
 
@@ -1208,32 +1211,32 @@ _buffer_write_init:
 
     phase   $C000     ;Assemble in ROM Page 1 which will be in Bank 3
 
-    include "tables.asm"        ; Lookup tables aligned to 256 byte boundaries
-    include "dispatch.asm"      ; Statement/Function dispatch tables and routiness
-    include "error.asm"         ; Error lookup table, messages and handling routines
-    include "args.asm"          ; ARGS statement and function
-    include "arrays.asm"        ; Array handling extensions
-    include "basic80.asm"       ; Statements and functions from MBASIC 80
-    include "baslines.asm"      ; (De)tokenize, add, insert, delete program lines
-    include "coldboot.asm"      ; Cold boot code
-    include "basbitmap.asm"     ; Bitmap drawing statements and functions
-    include "edit.asm"          ; Enhanced INPUT and line editor
-    include "enhanced.asm"      ; Enhanced stardard BASIC statements and functions
-    include "evalext.asm"       ; EVAL extension - hook 9
-    include "extended.asm"      ; Statements and functions from Aquarius Extended BASIC
-    include "basfile.asm"       ; Disk and File I/O statements and functions
-    include "bascreen.asm"      ; Text Screen statements and functions
-    include "bastring.asm"      ; String handling statements and functions
-    include "graphics.asm"      ; Graphics statements and functions
-    include "hooks.asm"         ; Extended BASIC hooks
-    include "play.asm"
-    include "plus.asm"          ; plusBASIC unique statements and functions
-    include "shared.asm"        ; Shared subroutines
-    include "tokens.asm"        ; Keyword lists and tokenize/expand routines
-    include "usbbas.asm"        ; Statements and functions from USB BASIC
+    include "tables.asm"          ; Lookup tables aligned to 256 byte boundaries
+    include "dispatch.asm"        ; Statement/Function dispatch tables and routiness
+    include "error.asm"           ; Error lookup table, messages and handling routines
+    include "args.asm"            ; ARGS statement and function
+    include "arrays.asm"          ; Array handling extensions
+    include "basic80.asm"         ; Statements and functions from MBASIC 80
+    include "baslines.asm"        ; (De)tokenize, add, insert, delete program lines
+    include "coldboot.asm"        ; Cold boot code
+    include "basbitmap.asm"       ; Bitmap drawing statements and functions
+    include "edit.asm"            ; Enhanced INPUT and line editor
+    include "enhanced.asm"        ; Enhanced stardard BASIC statements and functions
+    include "evalext.asm"         ; EVAL extension - hook 9
+    include "extended.asm"        ; Statements and functions from Aquarius Extended BASIC
+    include "basfile.asm"         ; Disk and File I/O statements and functions
+    include "bascreen.asm"        ; Text Screen statements and functions
+    include "bastring.asm"        ; String handling statements and functions
+    include "graphics.asm"        ; Graphics statements and functions
+    include "hooks.asm"           ; Extended BASIC hooks
+    include "play.asm"            ; PT3 player routines
+    include "plus.asm"            ; plusBASIC unique statements and functions
+    include "shared.asm"          ; Shared subroutines
+    include "tokens.asm"          ; Keyword lists and tokenize/expand routines
+    include "usbbas.asm"          ; Statements and functions from USB BASIC
 
     ; Graphics modules
-    include "sprite.asm"        ; Sprite graphics module
+    include "sprite.asm"          ; Sprite graphics module
 
     assert !($FFFF<$)   ; ROM full!
 
@@ -1247,52 +1250,52 @@ _buffer_write_init:
 ; Auxiliary ROM Routines
 ;-----------------------------------------------------------------------------
 
-    phase   $C000               ;Assemble in ROM Page 1 which will be in Bank 3
-    include "jump_aux.asm"      ; Auxiliary routines jump tables
-    assert !($C1FF<$)           ; ROM full!
+    phase   $C000                 ;Assemble in ROM Page 1 which will be in Bank 3
+    include "jump_aux.asm"        ; Auxiliary routines jump tables
+    assert !($C1FF<$)             ; ROM full!
     dc $C200-$,$76
     dephase
 
-    phase   $C000               ;Assemble in ROM Page 1 which will be in Bank 3
-    include "jump_gfx.asm"      ; Graphics routines jump tables
-    assert !($C2FF<$)           ; ROM full!
+    phase   $C000                 ;Assemble in ROM Page 1 which will be in Bank 3
+    include "jump_gfx.asm"        ; Graphics routines jump tables
+    assert !($C2FF<$)             ; ROM full!
     dc $C200-$,$76
     dephase
 
     phase   $C400
 
-    include "auxtables.asm"     ; Lookup tables
-    include "auxboot.asm"       ; Cold Boot code moved to AuxROM
-    include "basbuf.asm"        ; Basic buffer read/write routines
-    include "basicaux.asm"      ; BASIC auxiliary
-    include "debug.asm"         ; Debugging routines
-    include "dos.asm"           ; DOS routines
-    include "esp_aux.asm"       ; ESP routines in auxiliary ROM
-    include "fileaux.asm"       ; Disk and File I/O assembly ronibuutines
-    include "fileio.asm"        ; Disk and File I/O assembly ronibuutines
-    include "fileload.asm"      ; File LOAD I/O routines
-    include "filemisc.asm"      ; BASIC File auxilarry routines
-    include "fileplus.asm"      ; AQPLUS resource run/load routines
-    include "filesave.asm"      ; File SAVE I/O routines
-    include "filestr.asm"       ; File related string assembly routines
-    include "joyaux.asm"        ; BASIC game controller auxiliary code
-    include "loadaux.asm"       ; BASIC file operations auxiliary code
-    include "misc.asm"          ; Miscellaneous subroutines
-    include "s3hooks.asm"       ; S3 BASIC direct mode hooks
-    include "sound.asm"         ; Sound and Music
-    include "string.asm"        ; String manipulation routines
+    include "auxtables.asm"       ; Lookup tables
+    include "auxboot.asm"         ; Cold Boot code moved to AuxROM
+    include "basbuf.asm"          ; Basic buffer read/write routines
+    include "basicaux.asm"        ; BASIC auxiliary
+    include "debug.asm"           ; Debugging routines
+    include "dos.asm"             ; DOS routines
+    include "esp_aux.asm"         ; ESP routines in auxiliary ROM
+    include "fileaux.asm"         ; Disk and File I/O assembly ronibuutines
+    include "fileio.asm"          ; Disk and File I/O assembly ronibuutines
+    include "fileload.asm"        ; File LOAD I/O routines
+    include "filemisc.asm"        ; BASIC File auxilarry routines
+    include "fileplus.asm"        ; AQPLUS resource run/load routines
+    include "filesave.asm"        ; File SAVE I/O routines
+    include "filestr.asm"         ; File related string assembly routines
+    include "joyaux.asm"          ; BASIC game controller auxiliary code
+    include "loadaux.asm"         ; BASIC file operations auxiliary code
+    include "misc.asm"            ; Miscellaneous subroutines
+    include "s3hooks.asm"         ; S3 BASIC direct mode hooks
+    include "sound.asm"           ; Sound and Music
+    include "string.asm"          ; String manipulation routines
 
 ;; Grsphics routines
-    include "gfxvars.asm"       ; Graphics sysvars and lookup tables
-    include "gfx.asm"           ; Main graphics module
-    include "basicgfx.asm"      ; BASIC graphics.asm subcalls
-    include "color.asm"         ; Color palette module
-    include "gfxbitmap.asm"     ; Bitmap graphics routines
-    include "screen.asm"        ; Text screen graphics subroutines
-    include "screen_gfx.asm"    ; Screen graphics routines    
-    include "screen_swap.asm"   ; Screen buffering routines
-    include "sprite_aux.asm"    ; Sprite graphics module
-    include "tile.asm"          ; Tile graphics module
+    include "gfxvars.asm"         ; Graphics sysvars and lookup tables
+    include "gfx.asm"             ; Main graphics module
+    include "basicgfx.asm"        ; BASIC graphics.asm subcalls
+    include "color.asm"           ; Color palette module
+    include "gfxbitmap.asm"       ; Bitmap graphics routines
+    include "screen.asm"          ; Text screen graphics subroutines
+    include "screen_gfx.asm"      ; Screen graphics routines    
+    include "screen_swap.asm"     ; Screen buffering routines
+    include "sprite_aux.asm"      ; Sprite graphics module
+    include "tile.asm"            ; Tile graphics module
 
     free_rom_aux = $10000 - $
 

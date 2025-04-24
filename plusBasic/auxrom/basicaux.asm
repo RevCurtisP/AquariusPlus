@@ -34,12 +34,12 @@ ERSLOP: rst     COMPAR            ;SEE IF THE LAST LOCATION IS GOING TO BE MOVED
 ; Called from clear_hook in extended.asm
 ; On entry, HL points to KEY token
 bas_clear_keys:
-    inc     hl                ; Skip KEY
-    SYNCHK  'S'               ; Require S
+    inc     hl                    ; Skip KEY
+    SYNCHKC 'S'                   ; Require S
     xor     a
-    ld      (RESPTR+1),a      ; Reset autotype
-    ld      (CHARC),a         ; Clear INKEY buffer
-    jp      key_clear_fifo    ; Clear keyboard buffer and return
+    ld      (RESPTR+1),a          ; Reset autotype
+    ld      (CHARC),a             ; Clear INKEY buffer
+    jp      key_clear_fifo        ; Clear keyboard buffer and return
 
 ; Called from ST_DATE
 bas_date:
@@ -195,16 +195,16 @@ bas_mouse:
 ; On entry: C = Column, E = Row
 bas_offset:
     ld      a,(LINLEN)
-    dec     a                   ; 
-    cp      c                   ; If LinLen - 1 < Column
-    jp      c,FCERR             ;   Illegal Quantity error
+    dec     a                     ; 
+    cp      c                     ; If LinLen - 1 < Column
+    jp      c,FCERR               ;   Illegal Quantity error
     ld      a,24
-    cp      e                   ; If 24 < Row
-    jp      c,FCERR             ;   Illegal Quantity error
-    ld      d,c                 ; D = Column
-    ex      de,hl               ; H = Column, L = Row
-    call    cursor_offset       ; HL = Offset
-    ex      de,hl               ; DE = Offset
+    cp      e                     ; If 24 < Row
+    jp      c,FCERR               ;   Illegal Quantity error
+    ld      d,c                   ; D = Column
+    ex      de,hl                 ; H = Column, L = Row
+    call    cursor_offset         ; HL = Offset
+    ex      de,hl                 ; DE = Offset
     ret
 
 ; Called from ST_SET_BIT
@@ -351,8 +351,8 @@ _array_reader:
     scf                           ;   Return Carry Set
     ret     z
 .noteol
-    SYNCHK  ','                   ; Else require comma
-    jr      _array_reader           ;   and get next item
+    SYNCHKC ','                   ; Else require comma
+    jr      _array_reader         ;   and get next item
 
 ; Called from ST_JOIN
 bas_join:
@@ -576,23 +576,23 @@ aux_hex_to_byte
     ret
 
 aux_get_hex:
-    ld      a,(hl)          ; Get Hex Digit
-    inc     hl              ; Bump Pointer
+    ld      a,(hl)                ; Get Hex Digit
+    inc     hl                    ; Bump Pointer
 aux_cvt_hex:
     cp      '.'
-    jr      nz,.not_dot     ; If dot
-    add     '0'-'.'         ;   Convert to 0
+    jr      nz,.not_dot           ; If dot
+    add     '0'-'.'               ;   Convert to 0
 .not_dot
-    cp      ':'             ; Test for Digit
-    jr      nc,.not_digit   ; If A <= '9'
-    sub     '0'             ;   Convert Digit to Binary
-    ret                     ;   Else Return
+    cp      ':'                   ; Test for Digit
+    jr      nc,.not_digit         ; If A <= '9'
+    sub     '0'                   ;   Convert Digit to Binary
+    ret                           ;   Else Return
 .not_digit
-    and     $5F             ; Convert to Upper Case
-    sub     'A'-10          ; Make 'A' = 10
-    ret     c               ; Error if it was less than 'A'
-    cp      16              ; If less than 16
-    ret                     ;   Return
+    and     $5F                   ; Convert to Upper Case
+    sub     'A'-10                ; Make 'A' = 10
+    ret     c                     ; Error if it was less than 'A'
+    cp      16                    ; If less than 16
+    ret                           ;   Return
 
 
 ;; Function enhancement remove
@@ -600,11 +600,11 @@ aux_cvt_hex:
 ; dim a(9):S$=STR$(*A)
 FN_STRS:
     rst     CHRGET                ; Skip STR$
-    SYNCHK  '('                   ; Require (
+    SYNCHKC '('                   ; Require (
     cp      MULTK                 ;
     jr      z,.numeric_array;     ; If not *
     call    FRMEVL                ;   Evaluate argument
-    SYNCHK  ')'                   ;   Require ')'
+    SYNCHKC ')'                   ;   Require ')'
     jp      STR                   ;   Execute S3BASIC STR$ function
 .numeric_array
     call    get_star_array        ; DE = AryDat, BC = AryLen
@@ -615,8 +615,7 @@ FN_STRS:
     cp      ','
     jr      nz,.nocomma           ; If comma
     rst     CHRGET                ;
-    rst     SYNCHR
-    byte    XTOKEN                ;   Extended Tokens only
+    SYNCHKT XTOKEN                ;   Extended Tokens only
     ld      e,2                   ;   SegLen = 2
     ld      ix,.doword
     cp      WORDTK                ;   If not WORD
@@ -628,7 +627,7 @@ FN_STRS:
 .skipchr
     rst    CHRGET                 ;   Skip BYTE/WORD
 .nocomma
-    SYNCHK  ')'                   ; Require ')'
+    SYNCHKC ')'                   ; Require ')'
     push    hl                    ; Stack = TxtPtr, RtnAdr
     sra     b
     rr      c                     ; BC = BC / 2
@@ -690,24 +689,20 @@ FN_STRS:
 ; On entry: HL = TxtPtr
 ; Returns: IY = Dos open routine
 bas_open_mode:
-    rst     SYNCHR
-    byte    FORTK                 ; Require FOR
+    SYNCHKT FORTK                 ; Require FOR
     cp      INPUTK                ; If INPUT
     inc     hl
     ld      iy,dos_open_read      ;   Open for read
     ret     z
     cp      OUTTK                 
     jr      nz,.not_output        ; If OUT
-    rst     SYNCHR                ;   Require PUT
-    byte    PUTTK
+    SYNCHKT PUTTK                 ;   Require PUT
     ld      iy,dos_open_write     ;   Open for write
     ret
 .not_output
     dec     hl                    ; Back up to token
-    rst     SYNCHR                ; Else
-    byte    XTOKEN                
-    rst     SYNCHR
-    byte    APNDTK                ; Require APPEND
+    SYNCHKT XTOKEN                ; Else                
+    SYNCHKT APNDTK                ; Require APPEND
     ld      iy,dos_open_append    ;   Open for Append
     ret
 

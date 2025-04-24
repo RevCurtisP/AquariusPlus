@@ -3,7 +3,12 @@
 ;; Comment all routines
 
 _jump_table:
-
+; .
+; *****************
+; * Graphics ROM  *
+; * LD   IY,label *
+; * CALL gfx_call *
+; *****************
 ; gfxbitmap.asm <<Bitmap Graphics>>
     jp      bitmap_init_vars      ; Initialize bitmap system variables
     jp      bitmap_set_mode       ; Set bitmap mode system variable from video control register

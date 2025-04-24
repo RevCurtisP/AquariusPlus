@@ -1,4 +1,8 @@
 # plusBASIC Release History
+  - v0.25 (2025-04-23)
+    - Forked _s3basic.asm_ to plusBASIC specific _sbasic.asm_ and inlined into _aqplusbas.asm_
+    - Renamed macro `SYNCHK` to `SYNCHKC`, added `SYNCHKT`
+    - Refactored `rst SYNCHKC` calls to `SYNCHKC` or `SYNCHKT`
  - v0.24l (2025-04-15)
     - Implemented AqExec load to and run from paged RAM 
     - Added paged RAM destination to `CALL`

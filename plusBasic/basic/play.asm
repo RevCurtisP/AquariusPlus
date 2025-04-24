@@ -109,8 +109,7 @@ ST_STOP_PT3:
 FN_PT3:
     rst     CHRGET                ; Skip PT3
     call    pt3_status            ; B = Active, C = Looped, E = Fast
-    rst     SYNCHR
-    byte    XTOKEN
+    SYNCHKT XTOKEN
     call    push_hlinc_labbck
     cp      FASTK
     ld      l,e
@@ -138,8 +137,7 @@ FN_PT3:
 ; SET TRACK FAST OFF: PRINT TRACkFAST
 ST_SET_PT3:
     rst     CHRGET                ; Skip PT3
-    rst     SYNCHR
-    byte    XTOKEN
+    SYNCHKT XTOKEN
     cp      SPEEDTK
     jr      z,_pt3_speed
     ld      ix,pt3_setmode

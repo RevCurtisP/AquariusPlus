@@ -28,7 +28,7 @@ eval_extension:
     jp      z,eval_end
     cp      DIMTK
     jp      z,eval_dim
-    cp      LISTTK
+    cp      LISTK
     jp      z,eval_list
     cp      PLUSTK                ; IGNORE "+"
     jp      z,eval_extension      ;
@@ -164,14 +164,13 @@ null_string:
 ; Evaluate numeric character constant in the form of 'C'
 ;-------------------------------------------------------------------------
 eval_ascii:
-    inc     hl              ; Skip single quote
-    ld      c,(hl)          ; Get character
-    inc     hl              ; Move on
-    rst     SYNCHR          ; Require single quote
-    byte    $27
-    ld      a,c             ; A = character
-    push    hl              ; Save text pointer
-    call    SNGFLT          ; Float it
+    inc     hl                    ; Skip single quote
+    ld      c,(hl)                ; Get character
+    inc     hl                    ; Move on
+    SYNCHKT $27                   ; Require single quote
+    ld      a,c                   ; A = character
+    push    hl                    ; Save text pointer
+    call    SNGFLT                ; Float it
     pop     hl
     ret
 
@@ -363,7 +362,7 @@ oper_stringsub:
     call    GETYPE              ; If expression is not a string
     jp      nz,TMERR            ;   Type mismatch error
     rst     CHRGET              ; Skip %
-    SYNCHK  '('                 ; Require (
+    SYNCHKC '('                 ; Require (
     ex      (sp),hl             ; HL = BufPtr; Stack = TxtPtr, RtnAdr
     xor     a                   ; DatLen = 0
     push    af                  ; Stack = DatLen, TxtPtr, RtnAdr
@@ -402,7 +401,7 @@ oper_stringsub:
     ld      a,(hl)                ; A = NxtChr
     cp      ','                   ; If it's a comma
     jp      z,no_more             ;   Too many operands
-    SYNCHK  ')'                   ; Require )
+    SYNCHKC ')'                   ; Require )
     ex      (sp),hl               ; HL = StrDsc; Stack = TxtPtr, RtnAdr
     call    FRETMP                ; Free the temporary
     jp      PUTNEW                ; and Return it
@@ -495,8 +494,7 @@ let_extension:
     cp      h                     ; If FrmPos > StrLen
     jp      c,BRERR               ;   Substring out of range error
     ex      (sp),hl               ; HL = TxtPtr; Stack = FrmTo, RtnAdr
-    rst     SYNCHR
-    byte    EQUATK                ; Require =
+    SYNCHKT EQUATK                ; Require =
     ex      (sp),hl               ; H = FrmPos, L = ToPos; Stack = TxtPtr, RtnAdr
     push    de                    ; Stack = StrAdr, TxtPtr, RtnAdr
     call    range_offset_len      ; DE = DstOfs, A = DstLen
@@ -589,7 +587,7 @@ get_substring_range:
     pop     ix                    ; IX = RtnAdr
     or      a
     jp      z,BRERR               ; If FrmPos = 0, Subtring out of range error
-    SYNCHK  ']'                   ; Require ]
+    SYNCHKC ']'                   ; Require ]
     ex      (sp),hl               ; HL = VarPtr; Stack = TxtPtr
     push    de                    ; Stack = FrmTo, TxtPtr
     call    string_addr_len       ; DE = StrAdr, A,BC = StrLen
@@ -636,7 +634,7 @@ eval_dim:
     rst     CHRGET                ; Skip comma
     call    GETBYT                ; E = DimNum
 .no_dimnum
-    SYNCHK  ')'                   ; No comma for now
+    SYNCHKC ')'                   ; No comma for now
     ld      a,e                   ; A = DimNum
     or      a                     
     jr      nz,.dimsize           ; If DimNum = 0
@@ -670,10 +668,8 @@ float_de_pophrt:
 ; ? ENDKEY
 eval_end:
     rst     CHRGET                ; Skip End
-    rst     SYNCHR
-    byte    XTOKEN
-    rst     SYNCHR                ; Require KEY
-    byte    KEYTK
+    SYNCHKT XTOKEN
+    SYNCHKT KEYTK                ; Require KEY
     ld      a,(IEND_KEY)
     jp      float_byte
 
@@ -683,8 +679,8 @@ eval_end:
 ;-----------------------------------------------------------------------------
 eval_list:
     rst     CHRGET                ; Skip LIST
-    SYNCHK  '$'                   ; Require $
-    SYNCHK  '('                   ; Requite (
+    SYNCHKC '$'                   ; Require $
+    SYNCHKC '('                   ; Requite (
     cp      NEXTK
     jr      nz,.not_next          ; If NEXT
     rst     CHRGET                ;   Skip NEXT
@@ -692,7 +688,7 @@ eval_list:
     call    REM                   ;   HL = End of BASIC line
     inc     hl                    ;   HL = LinLnk of next line
     ex      (sp),hl               ;   HL = TxtPtr; Stack = LinLnk, RtnAdr
-    SYNCHK  ')'                   ;   Require )
+    SYNCHKC ')'                   ;   Require )
     ex      (sp),hl               ;   HL = LinLnk; Stack = TxtPtr, RtnAdr
     push    hl                    ;   Stack = LinLnk, TxtPtr, RtnAdr
     ld      a,(hl)
@@ -702,7 +698,7 @@ eval_list:
     jr      .list_line            ; Else
 .not_next
     call    GETINT                ;   DE = LinNum
-    SYNCHK  ')'                   ;   Require )
+    SYNCHKC ')'                   ;   Require )
     push    hl                    ;   Stack = TxtPtr, RtnAdr
     call    FNDLIN                ;   BC = LinLnk
     jp      nc,USERR              ;   No Carry = Line not found

@@ -16,6 +16,8 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
   <body>
     <h1 id="plusbasic-release-history">plusBASIC Release History</h1>
     <ul>
+      <li>v0.25 (2025-04-23)
+<ul><li>Forked <em>s3basic.asm</em> to plusBASIC specific <em>sbasic.asm</em> and inlined into <em>aqplusbas.asm</em></li><li>Renamed macro <code>SYNCHK</code> to <code>SYNCHKC</code>, added <code>SYNCHKT</code></li><li>Refactored <code>rst SYNCHKC</code> calls to <code>SYNCHKC</code> or <code>SYNCHKT</code></li></ul></li>
       <li>v0.24l (2025-04-15)
 <ul><li>Implemented AqExec load to and run from paged RAM</li><li>Added paged RAM destination to <code>CALL</code></li><li>Fixed <code>PUT SCREEN</code> generating <em>Illegal quantity error</em></li><li>Replaced UDF hook in <code>ATN</code> with direct jump</li><li>Replaced UDF hooks in <code>OUTDO</code> and <code>TTYCHR</code>/<code>TTYCH</code> with direct jump. Moved hook code from AuxROM to SysROM</li><li>Ensured that Extended ROM is paged in for direct jumps that replaced UDF hooks</li></ul></li>
       <li>v0.24k (2025-04-07)
