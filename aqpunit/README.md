@@ -88,12 +88,19 @@ Run the .baq file to run the associated tests.
   - PEEKCOLOR(_addr_)
   - PEEKCOLOR$(_addr_,_len_)
 - sb.baq
-    _string_\[_index_\]
-    _string_\[_index_ TO _index_\]
-    MID$(_strvar_,_pos_,_len_)=_string_
+  - _string_\[_index_\]
+  - _string_\[_index_ TO _index_\]
+  - MID$(_strvar_,_pos_,_len_)=_string_
 - sg.baq
-  - FILL SCREEN CHR _char_
-- sl.baq
+   - FILL SCREEN CHR _char_
+   - RESET BORDER
+   - SET BORDER CHR _char_
+   - SET BORDER COLOR _fg_, _bg
+   - SET BORDER CHR _char_ COLOR _fg_, _bg
+   - SET CURSOR ON
+   - SET CURSOR OFF
+   - CLEAR CURSOR
+ - sl.baq
   - SAVE/LOAD binary
   - SAVE/LOAD paged
   - SAVE/LOAD page

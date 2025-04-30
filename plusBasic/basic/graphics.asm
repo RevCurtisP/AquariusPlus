@@ -57,6 +57,27 @@ ST_USE_SCREEN:
     pop     bc                    ; B = text mode
     ret
 
+FN_CURSOR:
+;-----------------------------------------------------------------------------
+; CURSOROFFSET
+; CURSORX
+; CURSORY
+;-----------------------------------------------------------------------------
+; LOCATE 5,2:X=CURSORX:Y=CURSORY:F=CURSOROFFSET:PRINT:PRINT X;Y;F
+    call    require_cursor        ; Syntax error if not CURSOR
+    ld      a,(hl)
+    ld      b,a                   ; B = Suffix
+    inc     hl                    ; Skip Suffix
+    cp      XTOKEN
+    jr      nz,.not_xtoken        ; If Extended token
+    SYNCHKT OFFTK
+    SYNCHKT SETTK                 ;   Require OFFSET
+.not_xtoken
+    call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RrnAdr
+    ld      iy,bas_cursor
+    call    aux_call              ; DE = Offset/Xpos/Ypos
+    jp      FLOAT_DE
+
 ;-----------------------------------------------------------------------------
 ; GETATTR(X,Y) - Get Colors at (X,Y)
 ;-----------------------------------------------------------------------------
@@ -115,9 +136,11 @@ FN_GETCOLOR:
     inc     hl                    ; Skip COL
     SYNCHKT ORTK                  ; Require OR
     call    push_hl_labbck
-    ld      a,(BASYSCTL)
-    and     a,BASCRNCLR           ; If not in Color Print mode
-    jp      z,float_minus_one     ;   Return Negative 1
+;    ld      a,(BASYSCTL)
+;    and     a,BASCRNCLR           ; If not in Color Print mode
+    ld      a,(SCREENCTL)         ; 
+    rla                           ; Carry = SCRCOLOR
+    jp      nc,float_minus_one    ; If Color Print disabled Return -1
     ld      a,(SCOLOR)
     jp      SNGFLT
 
@@ -132,16 +155,21 @@ ST_SETCOLOR:
     jr      z,.extended
     call    get_screen_colors
     ld      (SCOLOR),a
-    ld      a,(BASYSCTL)
-    or      a,BASCRNCLR
+;    ld      a,(BASYSCTL)
+;    or      a,BASCRNCLR
+    ld      a,(SCREENCTL)
+    or      SCRCOLOR
     jr      .done
 .extended
     rst     CHRGET                ; Skip XTOKEN
     SYNCHKT OFFTK                 ; Require OFF
-    ld      a,(BASYSCTL)
-    and     low(~BASCRNCLR)
+;    ld      a,(BASYSCTL)
+;    and     low(~BASCRNCLR)
+    ld      a,(SCREENCTL)
+    and     $FF-SCRCOLOR
 .done
-    ld      (BASYSCTL),a
+;    ld      (BASYSCTL),a
+    ld      (SCREENCTL),a
     ret
 
 ;-----------------------------------------------------------------------------
@@ -480,7 +508,7 @@ ST_FILL_SCREEN:
 ;-----------------------------------------------------------------------------
 ; FILL TILEMAP (5,4) - (12,11) TILE 128
 ; FILL TILEMAP TILE 511
-; Errors
+; SCRCOLOR
 ; FILL TILEMAP (-1,0)-(63,31) TILE 128 PALETTE 0
 ST_FILL_TILE:
     rst     CHRGET                ; Skip TILE
@@ -1049,7 +1077,7 @@ _get_byte:
 
 ; DEF SPRITE var$ = (width,height),spritle#
 ; Stack = DatLen, BufPtr, VarPtr, RtnAdr
-;; DEF SPRITE S$=(2,2),11:PRINT HEX$(S$)
+;; DEF SPRITE S$=(5,6),11:PRINT HEX$(S$)
 _def_sprite_rect:
     pop     bc                    ; BC = DatLen; Stack = BufPtr, VarPtr, RtnAdr
     call    SCAND                 ; BC = SpCols, DE = SpRows

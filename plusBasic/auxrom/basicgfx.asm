@@ -2,6 +2,24 @@
 ; BASIC Graphics Statement and Function Code in GFX ROM Bank
 ;====================================================================
 
+
+; Called from FN_CURSOR
+; On Entry B = CURSOR suffix
+bas_cursor:
+    push    bc                    ; Stack = Suffix, RtnAdr
+    call    cursor_location       ; B = Xpos, C = Ypos, DE = Offset
+    pop     af                    ; A = Suffix; Stack = RtnAdr
+    cp      XTOKEN                ; If Suffix = OFFSET
+    ret     z                     ;   Return Offset
+    ld      d,0                   ; ResMSB = 0
+    cp      'X'                   ; If Suffix = X
+    ld      e,b
+    ret     z                     ;   Return XPOS
+    cp      'Y'                   ; If Suffix = Y
+    ld      e,c
+    ret     z                     ;   Return YPOS
+    jp      SNERR                 ; Else Syntax error
+
 ; Called from ST_RESET_SPRITE
 ; On Entry A = ValTyp, DE: SptNum or VarPtr, HL = TxtPtr
 bas_reset_sprite:

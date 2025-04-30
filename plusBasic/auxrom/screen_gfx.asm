@@ -16,9 +16,42 @@ screen_clear_cursor:
     pop     hl
     ret
 
+
+;-----------------------------------------------------------------------------
+; Get Text Cursor Location
+; Output: B: X-position
+;         C: Y-position
+;        DE: Screen RAM offset
+; Clobbered: A
+;-----------------------------------------------------------------------------
+cursor_location:
+    ld    bc,(LINLEN)
+    ld    b,0                     ; BC = LINLEN
+    ld    hl,(CURRAM)             ; DE = CurAdr
+; Input: BC: Line length, HL: Address
+cursor_addr_location:
+    or    a                       ; Clear carry
+    ld    de,SCREEN
+    sbc   hl,de                   ; HL = CurOfs
+    ret   c                       ; If < 0, Return carry set
+; Input: BC: Line length, HL: Offset
+cursor_offset_location:
+    push  hl                      ; Stack = CurOfs, RtnAdr
+    ld    d,b
+    ld    e,c                     ; DE = LinLen
+    ld    bc,$FF                  ; Xpos = 0, Ypos = -1
+.loop
+    sbc   hl,de                   ; Offset -= LinLen
+    inc   c                       ; Bump Ypos
+    jr    nc,.loop                ; If >=0, do it again
+    add   hl,de                   ; Back to line 0
+    ld    b,l                     ; B = Xpos
+    pop   de                      ; DE = CurOfs
+    ret
+
 ; Invert Screen corresponding to Screen RAM Offset
 ; Input: DE: Screen RAM Offset
-; 
+; Clobbered: A,DE,HL
 screen_invert_color:
     ld      hl,SCREEN
     add     hl,de                 ; Add offset to screen

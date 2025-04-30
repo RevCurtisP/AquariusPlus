@@ -10,9 +10,7 @@ Text:
 
 # KEYWORD
 
-**TYPE:** _whichBASIC v0.##x_ typeof [statement|function|pseudovariable]
-
-***
+**TYPE:** [_whichBASIC v0.##x_ type {statement|function|pseudovariable}(BASIC-Statement-and-Function-Types)
 
 **FORMAT:** KEYWORD _arg_ , _arg_ ...
 
@@ -25,10 +23,11 @@ Text:
     -
   - _[Error name](plusBASIC-Error-Messages)_ results if error-condition.
 
-<details><summary>Examples</summary>
+<details><summary>Advanced</summary>
 
-` single line of code `
-> Explanation
+</details>
+
+<details><summary>Examples</summary>
 
 ```
 multiple 

@@ -136,7 +136,6 @@ FINEXT  equ     $2066   ;; | FIN extension
 CLEARX  equ     $2069   ;; | CLEAR extension
 OUTDOX  equ     $206C   ;; | OUTDO hook
 ATNHK   equ     $206F   ;; | ATN hook
-TTYCHX  equ     $2072   ;; | TTYCHR hook
 EXTBAS  equ     $2000   ;;Start of Extended Basic
 XSTART  equ     $2010   ;;Extended BASIC Startup Routine
 XINIT   equ     $E010   ;;ROM Cartridge Initialization Entry Point
@@ -404,8 +403,10 @@ DEFALT: jp      USRDO             ;;3803 USRPOK                               01
 RNDTBL: byte    $35,$4A,$CA,$99   ;;3821 RNDTAB
         byte    $39,$1C,$76,$98   ;;3825
         byte    $22,$95,$B3,$98   ;;3829
-        byte    $0A,$DD,$47,$98   ;;383D
-        byte    $53,$D1,$99,$99   ;;3831
+        byte    $0A,$DD,$47,$98   ;;382D
+        byte    $53,$D1           ;;3831
+        byte    $06               ;;3833 SCOLOR
+        byte    $99               ;;3834
         byte    $0A,$1A,$9F,$98   ;;3835
         byte    $65,$BC,$CD,$98   ;;3839
         byte    $D6,$77,$3E,$98   ;;383D
@@ -5101,7 +5102,7 @@ CLOADN: call    RDBYTE            ;;Get Byte
 TTYCHR: ;Print character to screen
         nop                       ;; +                                        1D72  rst     HOOKDO
         nop                       ;; +                                        1D73  byte    19
-TTYCH:  jp      TTYCHX            ;; +                                        1D74  push    af
+TTYCH:  jp      ttychr_hook       ;; +                                        1D74  push    af
                                   ;; +                                        1d75  cp      10
                                   ;; +                                        1d76
 TTYILF: jr      z,ISLF            ;

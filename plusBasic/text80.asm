@@ -160,18 +160,18 @@ _lf:
 ; Scroll Screen Up one Line
 scroll80:
     push    af
-    ld      a,(BASYSCTL)
-    rla     
-    jr      nc,.nocolor
+    ld      a,(SCREENCTL)         ; 
+    rla                           ; Carry = SCRCOLOR
+    jr      nc,.nocolor           ; If Color PRINT enabled
     in      a,(IO_VCTRL)
-    set     7,a                   ; Select COLOR RAM
-    out     (IO_VCTRL),a          ; Select Screen RAM
+    set     7,a                   ;   Select COLOR RAM
+    out     (IO_VCTRL),a          ;   Select Screen RAM
     push    af
-    ld      a,(SCOLOR)            ; Get screen color
+    ld      a,(SCOLOR)            ;   Get screen color
     call    .scroll
     pop     af
     res     7,a
-    out     (IO_VCTRL),a          ; Select Screen RAM
+    out     (IO_VCTRL),a          ;   Select Screen RAM
 .nocolor
     ld      a,' '
     call    .scroll
@@ -191,21 +191,21 @@ scroll80:
     ret
 
 _ttyclr:
-    ld      a,(BASYSCTL)
-    rla     
+    ld      a,(SCREENCTL)         ; 
+    rla                           ; Carry = SCRCOLOR
     jr      nc,.default
-    ld      a,(SCOLOR)
-    byte    $01
+    ld      a,(SCOLOR)            ;   A = Screen Colors
+    byte    $01                   ; Else
 .default
-    ld      a,6                   ; default to black on cyan
+    ld      a,6                   ;   A = Default Colors
     call    cls80                 ; Clear Screen
     ld      de,$7F                ; Display Cursor
     jr      _exx_pop_ret
 
 ttymove80:
-    ld      a,(BASYSCTL)
-    rla     
-    jr      nc,.nocolor
+    ld      a,(SCREENCTL)         ; 
+    rla                           ; Carry = SCRCOLOR
+    jr      nc,.nocolor           ; If Color PRINT enabled
     in      a,(IO_VCTRL)
     set     7,a                   ; Select COLOR RAM
     out     (IO_VCTRL),a          ; Select Screen RAM
@@ -250,10 +250,8 @@ set_linlen_a:
 outdo_hook:
   push    af                
   ld      a,(BASYSCTL)            ; Get System Control Bits
-  rra                             ; Output to Buffer into Carry
-  jr      nc,.not_buffered        ; If bit set
-  jp      output_to_buffer        ;   Write to buffer 
-.not_buffered:
+  rra                             ; Carry = BASOUTBUF
+  jp      c, output_to_buffer     ; If bit set, write to buffer 
   pop     af
   jp      OUTCON
 
@@ -265,7 +263,7 @@ ttychr_hook:
     cp      11
     jr      nz,.not_cls
     ld      a,(BASYSCTL)
-    and     $FE
+    and     ~BASOUTBUF
     ld      (BASYSCTL),a
 .not_cls
     in      a,(IO_VCTRL)

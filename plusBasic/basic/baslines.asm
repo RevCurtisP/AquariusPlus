@@ -165,7 +165,7 @@ output_to_buffer:
     ex      de,hl                 ; HL = LinPtr
 disable_buffer_output:
     ld      a,(BASYSCTL)          ; Get system control bits
-    and     $7E                   ; Reset Output to Buffer
+    and     ~BASOUTBUF            ; Reset Output to Buffer
     ld      (BASYSCTL),a          ; and write back out
     ret                           ; Return from un
 
@@ -173,6 +173,6 @@ set_outdo_buffer:
     ld      (BUFPTR),de           ; 
 enable_buffer_output:
     ld      a,(BASYSCTL)          ; Get system control bits
-    or      $01                   ; Set Output to Buffer
+    or      BASOUTBUF             ; Set Output to Buffer
     ld      (BASYSCTL),a          ; and write back out
     ret

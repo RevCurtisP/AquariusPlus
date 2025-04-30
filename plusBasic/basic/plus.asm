@@ -205,7 +205,9 @@ push_hl_labbck_floata:
 FN_GETCURSOR:
     call    require_sor
     call    get_cursor_mode
-    jr      push_hl_labbck_floata
+push_hl_labbck_float_sbyte:
+    call    push_hl_labbck
+    jp      float_signed_byte
 
 ;----------------------------------------------------------------------------
 ; Decrement variable

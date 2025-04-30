@@ -1,4 +1,9 @@
 # plusBASIC Release History
+  - v0.26 (2025-04-30)
+    - Fixed `Illegal quantity error` in `DEF SPRITE (rows,columns),spritle`
+    - Added functions `CURSOROFFSET`, `CURSORX`, `CURSORY`
+    - Moved bit flag _SCRCOLOR_ from _BASYSCTL_ to _SCREENCTL_
+    - Added unit tests to _sg.bas_ (screen graphics)
   - v0.25 (2025-04-23)
     - Forked _s3basic.asm_ to plusBASIC specific _sbasic.asm_ and inlined into _aqplusbas.asm_
     - Renamed macro `SYNCHK` to `SYNCHKC`, added `SYNCHKT`

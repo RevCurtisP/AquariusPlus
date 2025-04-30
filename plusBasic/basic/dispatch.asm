@@ -110,9 +110,11 @@ extended_function:
     jp      z,FN_WORD
     sub     a,BYTETK-WORDTK     ; $A5 BYTE
     jp      z,FN_BYTE          
-    sub     a,BINTK-BYTETK      ; $AD MIN
+    sub     a,CURTK-BYTETK      ; $AA CUR
+    jp      z,FN_CURSOR
+    dec     a                   ; $AB HEX
+    dec     a                   ; $AC BIN
     jp      z,FN_BIN
-    
     dec     a                   ; $AD MIN
     jp      z,GSERR
     dec     a                   ; $AE MAX

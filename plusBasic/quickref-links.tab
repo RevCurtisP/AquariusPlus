@@ -8,6 +8,7 @@ CLEAR       BASIC-CLEAR-Statement
 COLOR       BASIC-COLOR-Statement-and-Function
 COMPARE     BASIC-COMPARE-Function
 convert     BASIC-Conversion-Functions
+cursor      BASIC-Text-Cursor-Statements-and-Functions
 COPY        BASIC-COPY-Statement
 DATA        BASIC-DATA-Statement
 DATETIME    BASIC-DATE-and-TIME-Functions

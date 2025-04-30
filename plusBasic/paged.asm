@@ -598,9 +598,7 @@ page_map_auxrom:
     in      a,(IO_BANK3)          ; A = CurPg
     push    af                    ; Stack = CurPg
     ld      a,ROM_AUX_RO
-    out     (IO_BANK3),a
-    ex      af,af'
-    jp      (ix)
+    jr      _map_rom
 
 ;-----------------------------------------------------------------------------
 ; Map Bank 3 to Page 2
@@ -612,6 +610,21 @@ page_map_extrom:
     in      a,(IO_BANK3)          ; A = CurPg
     push    af                    ; Stack = CurPg
     ld      a,ROM_EXT_RO
+    out     (IO_BANK3),a
+    ex      af,af'
+    jp      (ix)
+
+;-----------------------------------------------------------------------------
+; Map Bank 3 to Page 2
+; Clobbers AF',IX
+;-----------------------------------------------------------------------------
+page_map_gfxrom:
+    pop     ix                    ; IX = RtnAdr
+    ex      af,af'
+    in      a,(IO_BANK3)          ; A = CurPg
+    push    af                    ; Stack = CurPg
+    ld      a,ROM_GFX_RO
+_map_rom:
     out     (IO_BANK3),a
     ex      af,af'
     jp      (ix)

@@ -760,7 +760,8 @@ parse_color:
 parse_colors:
     SYNCHKT COLTK
     SYNCHKT ORTK                  ; Require COLOR
-    byte    $01                   ; LD BC over SYNCHK
+    jr      get_screen_colors
+    
 get_comma_colors:
     call    get_comma             ; Missing opersand if comma
 ;-----------------------------------------------------------------------------

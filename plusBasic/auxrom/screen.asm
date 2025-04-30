@@ -54,8 +54,9 @@ cursor_offset:
 ; Fill Color RAM with current/default colors
 ;-----------------------------------------------------------------------------
 screen_clear_color:
-    ld      a,(BASYSCTL)
-    rla     
+;    ld      a,(BASYSCTL)
+    ld      a,(SCREENCTL)         ; 
+    rla                           ; Carry = SCRCOLOR
     ld      a,DFLTATTRS
     jr      nc,screen_clear_color_a
     ld      a,(SCOLOR)

@@ -21,12 +21,14 @@ BANK_OVERLAY:   equ $40     ; RAM overlay
 ROM_SYS_PG      equ 60      ; Main System ROM, mapped into Bank 0 with overlay from $3000-$3FFF
 ROM_EXT_PG      equ 61      ; plusBASIC extended ROM, mapped into Bank 3 
 ROM_AUX_PG      equ 62      ; plusBASIC auxillary ROM, mapped into Bank 3 as needed
+ROM_GFX_PG      equ 62      ; plusBASIC graphics ROM, mapped into Bank 3 as needed
 ROM_CRT_PG      equ 63      ; Legacy cartridge image
 
-ROM_SYS_OV      equ 60 | BANK_READONLY | BANK_OVERLAY
-ROM_EXT_RO      equ 61 | BANK_READONLY 
-ROM_AUX_RO      equ 62 | BANK_READONLY 
-ROM_CRT_RO      equ 63 | BANK_READONLY 
+ROM_SYS_OV      equ ROM_SYS_PG | BANK_READONLY | BANK_OVERLAY
+ROM_EXT_RO      equ ROM_EXT_PG | BANK_READONLY 
+ROM_AUX_RO      equ ROM_AUX_PG | BANK_READONLY 
+ROM_GFX_RO      equ ROM_GFX_PG | BANK_READONLY 
+ROM_CRT_RO      equ ROM_CRT_PG | BANK_READONLY 
 
 ROM_CART        equ 19
 
@@ -257,13 +259,14 @@ BASCHRSET   equ $08     ; BASYSCTL: Character set in use (0 or 1)
 BASCHRMOD   equ $10     ; BASYSCTL: Character set in use has been modified
 BASBRKOFF   equ $20     ; BASYSCTL: BReak OFF (Disable Ctrl-C)
 BASLPRNTR   equ $40     ; BASYSCTL: LPRINT device: (0 = Serial, 1 = ESP)
-BASCRNCLR   equ $80     ; BASYSCTL: PRINT updates Color RAM
+; BASCRNCLR   equ $80     ; BASYSCTL: PRINT updates Color RAM
 ; Screen Control Bitmask
-BASCRNCTL   equ BASCHRSET + BASCRNCLR
-BASCRNMSK   equ $FF - BASCRNCTL
+BASCRNCTL   equ BASCHRSET ; + BASCRNCLR
+;BASCRNMSK   equ $FF - BASCRNCTL
 ; Screen printing control flags
 ;; ToDo: Move BASCRNCLR bit here
 CRSR_OFF    equ $40     ; SCREENCTL: Display cursor (1 = No)
+SCRCOLOR    equ $80     ; SCREENCTL: PRINT updates Color RAM
 
 ; Bitmap graphics mode: see gfx.asm for details
 GFXM_TEXT   equ $00     ; EXT_FLAGS: 40 colum mode (bloxels) 

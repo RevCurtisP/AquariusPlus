@@ -22,8 +22,8 @@
 1130 DIM Q(3):Q(1)=1:Q(2)=1:REM Suit Color: 0=Black, 1=Red
 
 1140 REM Sprites
-1142 DEF SPRITE SC$=[11,12,13,14,15],[16,17,18,19,10],[21,22,23,24,25],[26,27,28,29,30],[31,32,33,34,35],[36,37,38,39,40]
-1144 DEF SPRITE SH$=[41,42,43],[44,45,46],[47,48,49]:REM Hand sprite
+1142 DEF SPRITE SC$=(5,6),11: 'Card - spritles 11 - 40
+1144 DEF SPRITE SH$=(3,3),49: 'Hand - spritles 41 - 49
 
 1200 REM Load palette and tile definitions
 1210 LOAD PALETTE 1,"cards.pal"

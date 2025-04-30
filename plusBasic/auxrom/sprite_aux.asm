@@ -115,7 +115,7 @@ sprite_defrect:
 .mult
     dec     b                     ;
     jr      z,.mdone
-    add     a,a                   ; A = SpRows * SpCols
+    add     a,c                   ; A = SpRows * SpCols
     jr      .mult
 .mdone
     push    af                    ; Stack = SptCnt, RtnAdr

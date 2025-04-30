@@ -77,12 +77,12 @@ Quick Reference Guide
  - [x] **CLEAR {_integer_{,_address_}}** - Clear all variables, optionally allocating string text space and top of BASIC RAM.<!--CLEAR-->
  - [x] **CLEAR \*_array_{,...}** - Clear numeric or string array data.<!--CLEAR-->
  - [ ] **CLEAR BITMAP {_fgcolor_,_bgcolor_}** - Clear bitmap layer.
- - [ ] **CLEAR CURSOR** - Temporarily remove cursor from screen.
+ - [x] **CLEAR CURSOR** - Temporarily remove cursor from screen.<!--cursor-->
  - [ ] **CLEAR KEYS** - Clear keyboard and autotype buffers.
  - [ ] **CLOAD {{?}_filename_}|\*_array_** - Load or verify program or load array data from cassette.
  - [ ] **CLOSE #_channel_** - Close file.<!--fileio-->
  - [ ] **CLS {_fgcolor_,_bgcolor_}** - Clear the text screen.<!--screen-->
- - [ ] **CLS COLOR** - Fill Color RAM with current or specified foreground and background colors.<!--screen-->
+ - [ ] **CLS COLOR {_fgcolor_,_bgcolor_}** - Fill Color RAM with current or specified foreground and background colors.<!--screen-->
  - [ ] **COLOR _fgcolor_{,_bgcolor_}** - Set or get bitmap default color(s).<!--COLOR-->
  - [x] **COMPARE (*_array_,*_array_)** - Compare the binary contents of two numeric arrays.<!--variable-->
  - [x] **COMPARE ({«!_ext_addr_»|«{@_page_,}_address_»,«!_ext_addr_»|«{@_page_,}_address_»,_length_)** - Compare two blocks of memory.<!--variable-->
@@ -98,9 +98,12 @@ Quick Reference Guide
  - [ ] **COPY SCREEN {CHR|ATTR} TO «!_ext_addr_»|«@_page_,_address_» {FAST}** - Copy screen to paged memory.
  - [x] **COS(_float_)** - Return cosine of argument.<!--math-->
  - [ ] **CSAVE _filename_|\*_array_** - Save program or array data to cassette.
+ - [x] **CURSOROFFSET** - Return text screen relative address at cursor location.<!--cursor-->
+ - [x] **CURSORX** - Return text screen cursor column.<!--cursor-->
+ - [x] **CURSORY** - Return text screen cursor line.<!--cursor-->
  - [ ] **DATA _literal_{,...}** - Define data for `READ` statement.<!--DATA-->
- - [ ] **DATE$** - Return the current date.<!--DATETIME-->
- - [ ] **DATETIME$** - Return the current date and time.<!--DATETIME-->
+ - [x] **DATE$** - Return the current date.<!--DATETIME-->
+ - [x] **DATETIME$** - Return the current date and time.<!--DATETIME-->
  - [ ] **DEC _numvar_** - Decrement numeric variable.
  - [x] **DEC(_hexstring_)** - Convert hexadecimal string to integer.
  - [ ] **DEEK(«!_ext_addr_»|«@_page_,_address_»)** - Read integer from memory.<!--PEEK-->
@@ -221,7 +224,7 @@ Quick Reference Guide
  - [ ] **LOAD TILESET INDEX _tileno_,_filespec_** - Load tile definitions relative to start of Video RAM.<!--tilefile-->
  - [ ] **LOAD TILESET OFFSET _tileno_,_filespec_** - Load tile definitions relative to end of tilemap/bitmap.<!--tilefile-->
  - [ ] **LOAD TRACK _filespec_** - Load tracker file track into tracker player buffer.<!--track-->
- - [ ] **LOCATE _x_,_y_** - Move text cursor to specified position.<!--LOCATE-->
+ - [x] **LOCATE _x_,_y_** - Move text cursor to specified position.<!--cursor-->
  - [x] **LOG(_float_)** - Return natural logarithm of argument.<!--math-->
  - [ ] **LONG(_string_{,_offset_})** - Convert four consecutive bytes in string to unsigned long.<!--convert-->
  - [ ] **LONG$(_long_)** - Convert long to unsigned four byte binary string.<!--convert-->
@@ -265,7 +268,7 @@ Quick Reference Guide
  - [ ] **POKE «!_ext_addr_»|«{@_page_,}_address_»,_byte_|_string_{;..}.** - Write bytes and/or strings to memory.<!--POKE-->
  - [ ] **POKE COLOR _address_,_byte_|_string_{;...}** - Write bytes and/or strings to color RAM.<!--POKESCREEN-->
  - [ ] **POKE SCREEN _address_,_byte_|_string_{;...}** - Write bytes and/or strings to screen RAM.<!--POKESCREEN-->
- - [ ] **POS(_expression__)** - Return current cursor column.
+ - [x] **POS(_expression__)** - Return cursor position in current line.<!--cursor-->
  - [ ] **POSX** - Return last pixel or bloxel x-position.<!--pixel-->
  - [ ] **POSY** - Return 1bpp pixel or bloxel y-position.<!--pixel-->
  - [ ] **PRESET (_x_,_y_)** - Erase bloxel or pixel.<!--pixel-->
@@ -323,7 +326,7 @@ Quick Reference Guide
  - [ ] **SET CHRDEF _char_,_string_** - Redefine character.<!--chrset-->
  - [ ] **SET COLOR _fgcolor_,_bgcolor_** - Enable color printing mode.<!--screen-->
  - [ ] **SET COLOR OFF** - Disable color printing mode.<!--screen-->
- - [ ] **SET CURSOR ON|OFF** - Enable or disable cursor display.
+ - [ ] **SET CURSOR ON|OFF** - Enable or disable cursor display.<!--cursor-->
  - [ ] **SET FAST ON|OFF** - Enable or disable turbo mode.<!--SETFAST-->
  - [ ] **SET FILE ERROR ON|OFF** - Enable or disable file operations generating BASIC errors.
  - [ ] **SET FNKEY _key_ TO _string_** - Set auto-typed text when function key is pressed.<!--SETFNKY-->
@@ -368,9 +371,9 @@ Quick Reference Guide
  - [ ] **TILEMAPY** - Return X-offset of tilemap.<!--tilemap-->
  - [ ] **TILEOFFSET** - Return first free tile index for current graphics mode.<!--tilemap-->
  - [ ] **TILEOFFSET(_gfx_mode_)** - Return first free tile index for specified graphics mode.<!--tilemap-->
- - [ ] **TIME$** - Return the current time.<!--DATETIME-->
- - [ ] **TIMER** - Return timer count.<!--TIMER-->
- - [ ] **TIMER = _long_** - Set and start jiffy timer.<!--TIMER-->
+ - [x] **TIME$** - Return the current time.<!--DATETIME-->
+ - [x] **TIMER** - Return timer count..<!--DATETIME-->
+ - [x] **TIMER = _long_** - Set and start jiffy timer..<!--DATETIME-->
  - [ ] **TRACKFAST** - Return -1 if tracker playback is set to fast, else 0.<!--track-->
  - [ ] **TRACKLOOP** - Return -1 if tracker playback is set to loop, else 0.<!--track-->
  - [ ] **TRACKSPEED** - Return tracker playback speed in Hertz.<!--track-->

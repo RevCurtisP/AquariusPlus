@@ -62,7 +62,6 @@
     jp      _clear_ext      ; $2069 CLEARX CLEAR extension - Close files
     jp      outdo_hook      ; $206C OUTDOX Redirect output to buffer
     jp      _atn            ; $206F ATNHK  ATN hook
-    jp      ttychr_hook     ; $2072 TTYCHX TTYCHR 80 column extensuib
 
 just_ret:
     ret
@@ -135,7 +134,7 @@ null_desc:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.25"
+    db "v0.26"
     db 0
 plus_len   equ   $ - plus_text
 
@@ -684,9 +683,10 @@ _init_cursor
     ret
 
 get_cls_colors:
-    ld      a,(BASYSCTL)
-    rla
-    ld      a,(SCOLOR)
+;    ld      a,(BASYSCTL)
+    ld      a,(SCREENCTL)
+    rla                           ; Carry = SCRCOLOR
+    ld      a,(SCOLOR)            ; If Color PRINT enabled
     ret     c
     ld      a,(CLSCLR)            ; default to black on cyan
     ret
@@ -713,13 +713,10 @@ clear_screen40:
     ret
 
 _ttymove_hook:
-    ld      hl,(CURRAM)
-    ld      a,(HOOK+1)
-    cp      $2F                   ; If plusBASIC not hooked
-    jp      nz,TTYMOP
-    ld      a,(BASYSCTL)          ; or color PRINT not enabled
-    rla                           ;   Continue normally
-    jp      nc,TTYMOP             ; Else
+;    ld      a,(BASYSCTL)          ; If color PRINT not enabled
+    ld      a,(SCREENCTL)         ; 
+    rla                           ; Carry = SCRCOLOR
+    jp      nc,TTYMOP             ; If Color PRINT enabled
     ld      a,(SCOLOR)            ;   Get screen color
     set     2,h
     ld      (hl),a                ;   Write to color RAM
@@ -728,11 +725,10 @@ _ttymove_hook:
 
 _scroll_hook:
     push    af
-    ld      a,(HOOK+1)
-    cp      $2F                   ; If plusBASIC not hooked
-    ld      a,(BASYSCTL)          ; or color PRINT not enabled
-    rla                           ;   Continue normally
-    jr      nc,.nocolor           ; Else
+;    ld      a,(BASYSCTL)          ; or color PRINT not enabled
+    ld      a,(SCREENCTL)         ; 
+    rla                           ; Carry = SCRCOLOR
+    jr      nc,.nocolor           ; If Color PRINT enabled
     ld      bc,920                ;   Move 23 * 40 bytes
     ld      de,COLOR+40           ;   To Row 1 Column 0
     ld      hl,COLOR+80           ;   From Row 2 Column 1
@@ -1260,6 +1256,7 @@ _buffer_write_init:
     include "jump_gfx.asm"        ; Graphics routines jump tables
     assert !($C2FF<$)             ; ROM full!
     dc $C200-$,$76
+gfx_jump_table:
     dephase
 
     phase   $C400
@@ -1286,7 +1283,7 @@ _buffer_write_init:
     include "string.asm"          ; String manipulation routines
 
 ;; Grsphics routines
-    include "gfxvars.asm"         ; Graphics sysvars and lookup tables
+    include "gfxvar.asm"          ; Graphics sysvars and lookup tables
     include "gfx.asm"             ; Main graphics module
     include "basicgfx.asm"        ; BASIC graphics.asm subcalls
     include "color.asm"           ; Color palette module
