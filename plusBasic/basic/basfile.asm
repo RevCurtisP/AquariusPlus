@@ -720,7 +720,7 @@ _load_extended:
     rst     CHRGET                ; Skip XTOKEN
     cp      PALETK                ; $81
     jr      z,_load_palette
-    cp      PT3TK                 ; $8C
+    cp      TRKTK                 ; $8C
     jr      z,_load_pt3
     SYNCHKT CHRTK                 ; $85
     SYNCHKT SETTK                 ; Must be CHRSET

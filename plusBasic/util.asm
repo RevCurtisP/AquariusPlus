@@ -556,10 +556,10 @@ _clear_irq:
 ; Clobbered: B
 ;----------------------------------------------------------------------------
 pt3_loop:
-    and     PT3_LOOPS             ; Isolate repeat flah bit
+    and     TRK_LOOPS             ; Isolate repeat flah bit
     ld      b,a                   ; B = LoopFlag
     ld      a,(EXT_FLAGS)
-    and     $FF-PT3_LOOPS         ; Clear LoopBit
+    and     $FF-TRK_LOOPS         ; Clear LoopBit
     or      b                     ; Or in new LoopBit
     ld      (EXT_FLAGS),a
     ret
@@ -583,7 +583,7 @@ pt3_status:
     jr      .retstat
 .looped
     ld      a,(EXT_FLAGS)
-    and     PT3_LOOPS
+    and     TRK_LOOPS
 .retstat
     ret     z
     or      255

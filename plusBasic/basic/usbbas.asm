@@ -244,7 +244,7 @@ FN_JOY:
     call    aux_call_inline       ; A = PortVal 
     word    bas_joy            ;
     jr      c,_joy_string         ; If JOY$, go do it
-    jp      m,float_signed_byte
+    jp      m,FLOAT
     jp      SNGFLT                ; Float it
 
 .getsfx:

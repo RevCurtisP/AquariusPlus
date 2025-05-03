@@ -14,8 +14,8 @@ ST_PLAY:
     rst     CHRGET                ;   Skip XTOKEN
     sub     SAMPTK                ;   If SAMPLE
     jr      z,ST_PLAY_SAMPLE      ;     Play it
-    dec     a                     ;   Else if PT3
-    jr      z,ST_PLAY_PT3         ;     Not implemented error
+    dec     a                     ;   Else if TRACK
+    jr      z,ST_PLAY_TRACK      ;     Not implemented error
 .not_extended       
     jp      SNERR                 ; Else Syntax error
     
@@ -40,25 +40,25 @@ ST_PLAY_SAMPLE:
     ret
 
 ;-----------------------------------------------------------------------------
-; PLAY PT3 Statement
+; PLAY TRACK Statement
 ;-----------------------------------------------------------------------------
-; LOOP PT3 "/music/songs1/dontstop.pt3"
-; LOOP PT3
-ST_LOOP_PT3:
-    rst     CHRGET                ; Skip PT3
+; LOOP TRACK "/music/songs1/dontstop.pt3"
+; LOOP TRACK
+ST_LOOP_TRACK:
+    rst     CHRGET                ; Skip TRACK
     ld      a,(EXT_FLAGS)
-    or      PT3_LOOPS             ; Set repeat flag
-    jr      _play_pt3
+    or      TRK_LOOPS             ; Set repeat flag
+    jr      _play_track
 ;-----------------------------------------------------------------------------
-; PLAY PT3 Statement
+; PLAY TRACK Statement
 ;-----------------------------------------------------------------------------
-; PLAY PT3 "/music/songs1/dontstop.pt3"
-; PLAY PT3
-ST_PLAY_PT3
-    rst     CHRGET                ; Skip PT3
+; PLAY TRACK "/music/songs1/dontstop.pt3"
+; PLAY TRACK
+ST_PLAY_TRACK:
+    rst     CHRGET                ; Skip TRACK
     ld      a,(EXT_FLAGS)
-    and     $FF-PT3_LOOPS         ; Clear repeat flag
-_play_pt3:
+    and     $FF-TRK_LOOPS         ; Clear repeat flag
+_play_track:
     ld      (EXT_FLAGS),a
     call    CHRGT2
     call    nz,load_pt3
@@ -69,10 +69,10 @@ _play_pt3:
     ret
 
 ;-----------------------------------------------------------------------------
-; PAUSE PT3 Statement
+; PAUSE TRACK Statement
 ;-----------------------------------------------------------------------------
-ST_PAUSE_PT3
-    rst     CHRGET                ; Skip PT3
+ST_PAUSE_TRACK:
+    rst     CHRGET                ; Skip TRACK
     push    hl
     call    pt3_disable
     ld      iy,pt3mute
@@ -81,10 +81,10 @@ ST_PAUSE_PT3
     ret
 
 ;-----------------------------------------------------------------------------
-; RESUME PT3 Statement
+; RESUME TRACK Statement
 ;-----------------------------------------------------------------------------
-ST_RESUME_PT3
-    rst     CHRGET                ; Skip PT3
+ST_RESUME_TRACK:
+    rst     CHRGET                ; Skip TRACK
     push    hl
     call    pt3_enable
     pop     hl
@@ -93,8 +93,8 @@ ST_RESUME_PT3
 ;-----------------------------------------------------------------------------
 ; RESET Statement
 ;-----------------------------------------------------------------------------
-ST_STOP_PT3:
-    rst     CHRGET                ; Skip PT3
+ST_STOP_TRACK:
+    rst     CHRGET                ; Skip TRACK
     push    hl
     call    pt3_reset
     pop     hl
@@ -104,10 +104,10 @@ ST_STOP_PT3:
 
 ;-----------------------------------------------------------------------------
 ; TRACKFAST, TRACKLOOP, TRACKSTATUS, and TRACKPEED Functions
-; Returns -1 if PT3 is playing/looped/fast
+; Returns -1 if TRACK is playing/looped/fast
 ;-----------------------------------------------------------------------------
-FN_PT3:
-    rst     CHRGET                ; Skip PT3
+FN_TRACK:
+    rst     CHRGET                ; Skip TRACK
     call    pt3_status            ; B = Active, C = Looped, E = Fast
     SYNCHKT XTOKEN
     call    push_hlinc_labbck
@@ -126,17 +126,17 @@ FN_PT3:
     jp      SNGFLT
 .retstat
     ld      a,l
-    jp      float_signed_byte
+    jp      FLOAT
 
 ;-----------------------------------------------------------------------------
-; SET PT3 LOOP ON/OFF
+; SET TRACK LOOP ON/OFF
 ;-----------------------------------------------------------------------------
 ; SET TRACK LOOP ON: PRINT TRACkLOOP
 ; SET TRACK LOOP OFF: PRINT TRACkLOOP
 ; SET TRACK FAST ON: PRINT TRACkFAST
 ; SET TRACK FAST OFF: PRINT TRACkFAST
-ST_SET_PT3:
-    rst     CHRGET                ; Skip PT3
+ST_SET_TRACK:
+    rst     CHRGET                ; Skip TRACK
     SYNCHKT XTOKEN
     cp      SPEEDTK
     jr      z,_pt3_speed

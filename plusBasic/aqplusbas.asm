@@ -134,7 +134,7 @@ null_desc:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.26"
+    db "v0.27"
     db 0
 plus_len   equ   $ - plus_text
 
@@ -252,7 +252,7 @@ _pt3tick
     ret     z
     call    pt3_reset
     ld      a,(EXT_FLAGS)
-    and     PT3_LOOPS
+    and     TRK_LOOPS
     ret     z
     jp      pt3_start
 
@@ -260,11 +260,11 @@ pt3call:
     push    ix
     in      a,(IO_BANK1)
     push    af                    ; Stack = Bnk1pg, RtnAdr
-    ld      a,PT3_BUFFR
+    ld      a,TRK_BUFFR
     out     (IO_BANK1),a
     in      a,(IO_BANK3)
     push    af                    ; Stack = Bnk3pg, Bnk1pg, RtnAdr
-    ld      a,PT3_BUFFR
+    ld      a,TRK_BUFFR
     out     (IO_BANK3),a
     call    (jump_iy)
     ex      af,af'
@@ -797,7 +797,7 @@ key_read:
 
 ;-----------------------------------------------------------------------------
 ; Set keyboard mode
-;  Input: A: Mode (KB_ENABLE | KB_SCANCODE | KB_REPEAT) 
+;  Input: A: Mode (KB_ENABLE | KB_ASCII | KB_REPEAT) 
 ; Output: A: 0 if succesful, else error code
 ;-----------------------------------------------------------------------------
 key_set_keymode:

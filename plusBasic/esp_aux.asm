@@ -168,7 +168,7 @@ espx_read_buff:
 
 ;-----------------------------------------------------------------------------
 ; esp_set_keymode - Set keyboard buffer mode
-;  Input: A: Buffer Mode (KB_ENABLE | KB_SCANCODE | KB_REPEAT)
+;  Input: A: Buffer Mode (KB_ENABLE | KB_ASCII | KB_REPEAT)
 ; Output: A: 0 if succesful, else error code
 ;-----------------------------------------------------------------------------
 espx_set_keymode:

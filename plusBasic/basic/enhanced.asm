@@ -708,7 +708,7 @@ ST_RESTORE:
 ST_STOP:
     jp      z,STOP
     SYNCHKT XTOKEN
-    cp      PT3TK
-    jp      z,ST_STOP_PT3
+    cp      TRKTK
+    jp      z,ST_STOP_TRACK
     jp      SNERR
 

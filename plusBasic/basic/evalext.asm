@@ -481,9 +481,8 @@ oper_stringsub:
 
 ; On Entry: DE = VarPtr, HL = TxtPtr
 let_extension:
-    call    PTRGET                ; Parse variable name
-    call    GETYPE                ; If not string variable
-    jp      nz,LETEQ              ;   Continue LET
+    call    PTRTYP                ; Get pointer to variable
+    jp      nz,LETEQ              ; If not string variable  Continue LET
     ld      a,(hl)
     cp      '['                   ; If not followed by '['
     jp      nz,LETEQ              ;   Continue LET

@@ -132,8 +132,8 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <input disabled="disabled" type="checkbox" />
         <strong>CLEAR BITMAP {<em>fgcolor</em>,<em>bgcolor</em>}</strong> - Clear bitmap layer.</li>
       <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>CLEAR CURSOR</strong> - Temporarily remove cursor from screen.</li>
+        <input disabled="disabled" type="checkbox" checked="checked" />
+        <strong>CLEAR CURSOR</strong> - Temporarily remove cursor from screen.<!--cursor--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>CLEAR KEYS</strong> - Clear keyboard and autotype buffers.</li>
@@ -148,7 +148,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>CLS {<em>fgcolor</em>,<em>bgcolor</em>}</strong> - Clear the text screen.<!--screen--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>CLS COLOR</strong> - Fill Color RAM with current or specified foreground and background colors.<!--screen--></li>
+        <strong>CLS COLOR {<em>fgcolor</em>,<em>bgcolor</em>}</strong> - Fill Color RAM with current or specified foreground and background colors.<!--screen--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>COLOR <em>fgcolor</em>{,<em>bgcolor</em>}</strong> - Set or get bitmap default color(s).<!--COLOR--></li>
@@ -195,13 +195,22 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <input disabled="disabled" type="checkbox" />
         <strong>CSAVE <em>filename</em>|*<em>array</em></strong> - Save program or array data to cassette.</li>
       <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" checked="checked" />
+        <strong>CURSOROFFSET</strong> - Return text screen relative address at cursor location.<!--cursor--></li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" checked="checked" />
+        <strong>CURSORX</strong> - Return text screen cursor column.<!--cursor--></li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" checked="checked" />
+        <strong>CURSORY</strong> - Return text screen cursor line.<!--cursor--></li>
+      <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>DATA <em>literal</em>{,...}</strong> - Define data for <code>READ</code> statement.<!--DATA--></li>
       <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
+        <input disabled="disabled" type="checkbox" checked="checked" />
         <strong>DATE$</strong> - Return the current date.<!--DATETIME--></li>
       <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
+        <input disabled="disabled" type="checkbox" checked="checked" />
         <strong>DATETIME$</strong> - Return the current date and time.<!--DATETIME--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
@@ -564,8 +573,8 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <input disabled="disabled" type="checkbox" />
         <strong>LOAD TRACK <em>filespec</em></strong> - Load tracker file track into tracker player buffer.<!--track--></li>
       <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>LOCATE <em>x</em>,<em>y</em></strong> - Move text cursor to specified position.<!--LOCATE--></li>
+        <input disabled="disabled" type="checkbox" checked="checked" />
+        <strong>LOCATE <em>x</em>,<em>y</em></strong> - Move text cursor to specified position.<!--cursor--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" checked="checked" />
         <strong>LOG(<em>float</em>)</strong> - Return natural logarithm of argument.<!--math--></li>
@@ -696,8 +705,8 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <input disabled="disabled" type="checkbox" />
         <strong>POKE SCREEN <em>address</em>,<em>byte</em>|<em>string</em>{;...}</strong> - Write bytes and/or strings to screen RAM.<!--POKESCREEN--></li>
       <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>POS(<em>expression</em>_)</strong> - Return current cursor column.</li>
+        <input disabled="disabled" type="checkbox" checked="checked" />
+        <strong>POS(<em>expression</em>_)</strong> - Return cursor position in current line.<!--cursor--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>POSX</strong> - Return last pixel or bloxel x-position.<!--pixel--></li>
@@ -871,7 +880,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>SET COLOR OFF</strong> - Disable color printing mode.<!--screen--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>SET CURSOR ON|OFF</strong> - Enable or disable cursor display.</li>
+        <strong>SET CURSOR ON|OFF</strong> - Enable or disable cursor display.<!--cursor--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>SET FAST ON|OFF</strong> - Enable or disable turbo mode.<!--SETFAST--></li>
@@ -1005,14 +1014,14 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <input disabled="disabled" type="checkbox" />
         <strong>TILEOFFSET(<em>gfx_mode</em>)</strong> - Return first free tile index for specified graphics mode.<!--tilemap--></li>
       <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
+        <input disabled="disabled" type="checkbox" checked="checked" />
         <strong>TIME$</strong> - Return the current time.<!--DATETIME--></li>
       <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>TIMER</strong> - Return timer count.<!--TIMER--></li>
+        <input disabled="disabled" type="checkbox" checked="checked" />
+        <strong>TIMER</strong> - Return timer count..<!--DATETIME--></li>
       <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>TIMER = <em>long</em></strong> - Set and start jiffy timer.<!--TIMER--></li>
+        <input disabled="disabled" type="checkbox" checked="checked" />
+        <strong>TIMER = <em>long</em></strong> - Set and start jiffy timer..<!--DATETIME--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>TRACKFAST</strong> - Return -1 if tracker playback is set to fast, else 0.<!--track--></li>

@@ -99,22 +99,7 @@ pop_float_minus_one:
     pop     af
 float_minus_one:
     ld      a,-1
-;-----------------------------------------------------------------------------
-; Convert A into a signed Floating Point number in FACC
-; Clobbers: A,BC,DE
-;-----------------------------------------------------------------------------
-float_signed_byte:
-    push    hl
-    ld      b,0
-    ld      c,a
-    cp      128                   ; If A < 128
-    ld      a,0                   ;   Return Positive Integer
-    jr      c,.positive           ; Else
-    dec     a                     ;   Return Negative Integer
-.positive
-    call    GIVINT
-    pop     hl
-    ret
+    jp      FLOAT
 
 FLOAT_E:
     ld      a,e
@@ -227,11 +212,7 @@ skip_star_array:
 ;        BC = Length of Data
 ;-----------------------------------------------------------------------------
 get_array: 
-    ld      a,1                   ; SEARCH ARRAYS ONLY
-    ld      (SUBFLG),a            
-    call    PTRGET                ; GET PTR TO ARRAY
-    jp      nz,UDERR              ; NOT THERE - ERROR
-    ld      (SUBFLG),a            ; CLEAR THIS
+    call    get_array_pointer     ; Get pointer to array
     push    hl                    ; SAVE TXTPTR
     ld      h,b                   ; HL = PTR TO ARRAY
     ld      l,c                   

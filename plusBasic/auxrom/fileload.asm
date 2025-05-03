@@ -119,14 +119,14 @@ _load_chrset
 ; Load PT3 player into paged memory
 ;-----------------------------------------------------------------------------
 file_load_pt3play:
-    ld      a,PT3_BUFFR           ; Page
+    ld      a,TRK_BUFFR           ; Page
     ld      l,0
     call    xpage_fill_all_byte   ; Zero out buffer
     ld      hl,.ptdesc            ;   Load from ESP
 .load_ptplay:
-    ld      a,PT3_BUFFR           ; Page
+    ld      a,TRK_BUFFR           ; Page
     ld      bc,$4000              ; Load up to 16k
-    ld      de,PT3_BASE           ; Start address
+    ld      de,PT3_BASE           ; Player Start address
     jr      xfile_load_paged
 .ptplay:
     byte    "esp:ptplay.bin"
@@ -292,7 +292,7 @@ file_load_buffer:
 ;-----------------------------------------------------------------------------
 ; LOAD PT3 "/music/songs1/drops.pt3"
 file_load_pt3:
-    ld      a,PT3_BUFFR
+    ld      a,TRK_BUFFR
     ld      de,pt3song
     ld      bc,$4000-pt3song
     call    file_load_buffer

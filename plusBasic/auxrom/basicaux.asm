@@ -96,7 +96,7 @@ _incdec:
 ; Input: Arg Type
 bas_key:
     jr      z,.string             ; If numeric
-    ld      hl,float_signed_byte
+    ld      hl,FLOAT
     ld      a,-1
     rst     FSIGN
     call    p,CONINT              ;   A = Matrix code
@@ -259,41 +259,6 @@ aux_eserr:
 aux_slerr:
     ld      e,ERRSL
     jp      ERROR
-
-; *** Not called from anywhere, don't remember why it's here ***
-aux_set_array:
-    rst     CHRGET                ; Skip =
-    push    hl                    ; Stack = TxtPtr, RtnAdr
-    ld      hl,(TEMP3)            ; HL = DimsPtr
-    dec     hl
-    dec     hl
-    ld      b,(hl)
-    inc     hl
-    ld      c,(hl)                ; BC = AryLen;
-    inc     hl
-    ld      (ARRAYLEN),bc         ; BC = AryLen
-    ld      a,(hl)                ; A = NumDims
-    or      a                     ; If no dimensions
-    jp      z,UDERR               ;   Undimensioned array error
-    inc     hl
-    add     a,a                   ; A = NumDims * 2
-    ld      b,0
-    ld      c,a                   ; BC = NumDims * 2
-    add     hl,bc                 ; HL = AryAdr    
-    ld      (ARRAYPTR),hl         ; ARRAYPTR = AryPtr
-    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
-    call    CHRGT2                ; Reget current character
-    ret     z                     ; If terminator, return
-    ld      a,$FF
-    ld      (ARRAYREQ),a          ; Strings must be quoted
-    call    _array_reader         ; Read literals into array
-    ret     c                     ; Return if end of statement
-    call    CHRGT2                ; If terminator
-    ret     z
-    cp      ','
-    ld      e,ERRTO
-    jp      z,ERROR               ; If comma, Too many operands error
-    jp      SNERR                 ; Else syntax error
 
 ; Populate array from comma separated text
 ; (ARRAYPTR) = Pointer into array data

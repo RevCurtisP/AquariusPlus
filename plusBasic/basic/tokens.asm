@@ -177,7 +177,7 @@ FASTK     equ     $88
 TEXTK     equ     $89
 ARGSTK    equ     $8A
 SAMPTK    equ     $8B
-PT3TK     equ     $8C
+TRKTK     equ     $8C
 PIXTK     equ     $8D
 NAMETK    equ     $8F
 RESETK    equ     $90

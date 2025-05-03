@@ -61,7 +61,7 @@ FN_BIT:
 auxcall_floatsbyte:
     call    aux_call              ; Get bit value
     jp      c,FCERR               ; If invalid bit#, Illegal quantity error
-    jp      float_signed_byte     ; Else return it
+    jp      FLOAT                 ; Else return it
 _bit_string:
     ld      de,(FACLO)            ; DE = StrDsc
     push    de                    ; Stack = StrDsc, RtnAdr
@@ -84,7 +84,7 @@ _bit_string:
 ;-----------------------------------------------------------------------------
 FN_BYTE:
     rst     CHRGET                ; Skip BYTE
-    ld      iy,float_signed_byte  ; Returning signed byte
+    ld      iy,FLOAT              ; Returning signed byte
     jp      sng_chr               ; Execute ASC() code
 
 ;-----------------------------------------------------------------------------
@@ -207,7 +207,7 @@ FN_GETCURSOR:
     call    get_cursor_mode
 push_hl_labbck_float_sbyte:
     call    push_hl_labbck
-    jp      float_signed_byte
+    jp      FLOAT
 
 ;----------------------------------------------------------------------------
 ; Decrement variable
@@ -410,8 +410,8 @@ str_float:
 ST_LOOP:
     rst     CHRGET                ; Skip LOOP token
     SYNCHKT XTOKEN
-    cp      PT3TK                 ;   If token is PT3
-    jp      z,ST_LOOP_PT3         ;     Do PAUSE PT3
+    cp      TRKTK                 ;   If token is TRACK
+    jp      z,ST_LOOP_TRACK       ;     Do PAUSE TRACK
     jp      SNERR
 
 ;-----------------------------------------------------------------------------
@@ -524,7 +524,7 @@ FN_MOUSE:
     call    aux_call_inline
     word    bas_mouse             ; A or BC = Result
     jp      c,FLOAT_BC
-    jp      m,float_signed_byte
+    jp      m,FLOAT               
     jp      SNGFLT
 
 ;-----------------------------------------------------------------------------
@@ -926,8 +926,8 @@ ST_SET:
     jr      z,ST_SET_KEY
     cp      FASTK                 ; $88
     jr      z,ST_SET_FAST
-    cp      PT3TK                 ; $8C
-    jp      z,ST_SET_PT3
+    cp      TRKTK                 ; $8C
+    jp      z,ST_SET_TRACK
     cp      BRKTK                 ; $9A
     jr      z,ST_SET_BREAK
     cp      CURTK                 ; $AA
@@ -948,8 +948,7 @@ ST_SET_BIT:
 _set_reset_bit:
     rst     CHRGET                ; Skip BIT
     push    bc                    ; Stack = AuxRtn, RtnAdr
-    call    PTRGET                ; DE = VarPtr
-    call    GETYPE                ; AF = VarTyp
+    call    PTRTYP                ; DE = VarPtr, AF = VarTyp
     push    af                    ; Stack = VarTyp, AuxRtn, RtnAdr
     push    de                    ; Stack = VarPtr, VarTyp, AuxRtn, RtnAdr
     call    get_comma_int         ; DE = BitNo
@@ -1122,8 +1121,8 @@ ST_PAUSE:
     SYNCHKT XTOKEN
     cp      UNTILTK
     jr      z,pause_until
-    cp      PT3TK                 ;   If token is PT3
-    jp      z,ST_PAUSE_PT3        ;     Do PAUSE PT3
+    cp      TRKTK                 ;   If token is TRACK
+    jp      z,ST_PAUSE_TRACK      ;     Do PAUSE TRACK
 .nottoken
     call    FRMEVL                ; Get Operand
     push    hl                    ; Stack = TxtPtr, RtnAdr

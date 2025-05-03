@@ -16,6 +16,13 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
   <body>
     <h1 id="plusbasic-release-history">plusBASIC Release History</h1>
     <ul>
+      <li>v0.27 (2025-05-??)
+<ul><li>Replaced all calls to <em>float_signed_byte</em> with calls to <em>FLOAT</em>, removed <em>float_signed_byte</em></li><li>Renamed labels <code>FN_PT3</code>, <code>PT3_BUFFR</code>, <code>PT3_LOOPS</code>, <code>PT3TK</code>, <code>ST_LOOP_PT3</code>, <code>ST_PAUSE_PT3</code>, <code>ST_PLAY_PT3</code>, <code>ST_RESUME_PT3</code>,
+<code>ST_SET_PT3</code>, <code>ST_STOP_PT3</code>, and <code>_play_pt3</code>
+with <code>FN_TRACK</code>, <code>TRK_BUFFR</code>, <code>TRK_LOOPS</code>, <code>TRKTK</code>, <code>ST_LOOP_TRACK</code>, <code>ST_PAUSE_TRACK</code>, <code>ST_PLAY_TRACK</code>, <code>ST_RESUME_TRACK</code>,
+<code>ST_SET_TRACK</code>, <code>ST_STOP_TRACK</code>, <code>__play_track</code></li></ul></li>
+      <li>v0.26 (2025-04-30)
+<ul><li>Fixed <code>Illegal quantity error</code> in <code>DEF SPRITE (rows,columns),spritle</code></li><li>Added functions <code>CURSOROFFSET</code>, <code>CURSORX</code>, <code>CURSORY</code></li><li>Moved bit flag <em>SCRCOLOR</em> from <em>BASYSCTL</em> to <em>SCREENCTL</em></li><li>Added unit tests to <em>sg.bas</em> (screen graphics)</li></ul></li>
       <li>v0.25 (2025-04-23)
 <ul><li>Forked <em>s3basic.asm</em> to plusBASIC specific <em>sbasic.asm</em> and inlined into <em>aqplusbas.asm</em></li><li>Renamed macro <code>SYNCHK</code> to <code>SYNCHKC</code>, added <code>SYNCHKT</code></li><li>Refactored <code>rst SYNCHKC</code> calls to <code>SYNCHKC</code> or <code>SYNCHKT</code></li></ul></li>
       <li>v0.24l (2025-04-15)

@@ -1,4 +1,10 @@
 # plusBASIC Release History
+  - v0.27 (2025-05-??)
+    - Replaced all calls to _float_signed_byte_ with calls to _FLOAT_, removed _float_signed_byte_
+    - Renamed labels `FN_PT3`, `PT3_BUFFR`, `PT3_LOOPS`, `PT3TK`, `ST_LOOP_PT3`, `ST_PAUSE_PT3`, `ST_PLAY_PT3`, `ST_RESUME_PT3`,
+      `ST_SET_PT3`, `ST_STOP_PT3`, and `_play_pt3` 
+      with `FN_TRACK`, `TRK_BUFFR`, `TRK_LOOPS`, `TRKTK`, `ST_LOOP_TRACK`, `ST_PAUSE_TRACK`, `ST_PLAY_TRACK`, `ST_RESUME_TRACK`,
+      `ST_SET_TRACK`, `ST_STOP_TRACK`, `__play_track`
   - v0.26 (2025-04-30)
     - Fixed `Illegal quantity error` in `DEF SPRITE (rows,columns),spritle`
     - Added functions `CURSOROFFSET`, `CURSORX`, `CURSORY`

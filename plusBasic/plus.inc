@@ -47,7 +47,7 @@ BOOT_BUFR       equ 51      ; Boot ROM work area
 SCR_BUFFR       equ 52      ; Screen Buffers
 VID_BUFFR       equ 53      ; Video RAM Shadow Buffer
 BAS_BUFFR       equ 54      ; plusBASIC extended system variables and buffers, mapped in bank 3 as needed
-PT3_BUFFR       equ 55      ; PT3 Player Buffer
+TRK_BUFFR       equ 55      ; Tracker Player Buffer
     
 USER_RAM        equ 32      ; First page of User RAM
 USER_END        equ 47      ; Last page of User RAM
@@ -278,7 +278,7 @@ GFXBUFLAG   equ $04     ; EXT_FLAGS: Bitmap operations are buffered
 GFXSETMSK   equ $F8     ; Mask for writing EXT_FLAGS
 ; BASIC extended control flags
 BASOUTOVR   equ $10     ; EXT_FLAGS: Allow OUT to all ports
-PT3_LOOPS   equ $20     ; EXT_FLAGS: PT3 songs repeat
+TRK_LOOPS   equ $20     ; EXT_FLAGS: PT3 songs repeat
 FERR_FLAG   equ $40     ; EXT_FLAGS: File operations generate BASIC errors
 TRON_FLAG   equ $80     ; EXT_FLAGS: Trace on/off
 

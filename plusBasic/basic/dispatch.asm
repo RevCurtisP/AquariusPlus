@@ -89,9 +89,9 @@ extended_function:
     sub     ARGSTK-KEYTK        ; $8A ARGS
     jp      z,FN_ARGS
     dec     a                   ; $8B SAMPTK
-    dec     a                   ; $8C PT3TK
-    jp      z,FN_PT3
-    sub     VERTK-PT3TK         ; $92 VER
+    dec     a                   ; $8C TRKTK
+    jp      z,FN_TRACK
+    sub     VERTK-TRKTK         ; $92 VER
     jp      z,FN_VER
     dec     a                   ; $93 FILL
     dec     a                   ; $94 COMPARE

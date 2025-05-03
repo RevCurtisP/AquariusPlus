@@ -306,8 +306,8 @@ ST_RESUME:
 .error: jp      force_error       ; Do Error
 
 .token: SYNCHKT XTOKEN
-        cp      PT3TK
-        jp      z,ST_RESUME_PT3
+        cp      TRKTK
+        jp      z,ST_RESUME_TRACK
         jp      SNERR
 
 ;----------------------------------------------------------------------------
