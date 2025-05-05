@@ -132,13 +132,13 @@ bas_getchrdef:
 ; Called from FN_GETCHRSET
 ; Output: ChrSet
 bas_get_chrset:
-    ld      a,(BASYSCTL)
+    ld      a,(SCREENCTL)
     ld      b,a
-    and     BASCHRMOD
+    and     SCRCHRMOD
     ld      a,-1
     ret     nz
     ld      a,b
-    and     BASCHRSET             ; A = 0 if default character Set
+    and     SCRCHRSET             ; A = 0 if default character Set
     ret     z
     ld      a,1                   ;   A = 1
     ret

@@ -134,7 +134,7 @@ null_desc:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.27"
+    db "v0.25c"
     db 0
 plus_len   equ   $ - plus_text
 
@@ -802,7 +802,6 @@ key_read:
 ;-----------------------------------------------------------------------------
 key_set_keymode:
     jp      esp_set_keymode
-
 
 ;-----------------------------------------------------------------------------
 ; INCHRA - INCHRH Replacement

@@ -158,12 +158,12 @@ screen_swap_vars:
     pop     de                    ; DE = VarBufBase; Stack = SwapBufAdr, RtnAdr
     call    screen_swap_palette
     ex      de,hl                 ; HL = VarBufBase
-    call    _svar_buff_addr       ; HL = VarBufAdr, A = CurBASCHRSET
+    call    _svar_buff_addr       ; HL = VarBufAdr, A = CurSCRCHRSET
     push    hl                    ; Stack = VarBufAdr, SwapBufAdr, RtnAdr
-    push    af                    ; Stack = CurBASCHRSET, VarBufAdr, SwapBufAdr, RtnAdr
-    call    screen_restore_vars   ; A = OrgBASCHRSET
+    push    af                    ; Stack = CurSCRCHRSET, VarBufAdr, SwapBufAdr, RtnAdr
+    call    screen_restore_vars   ; A = OrgSCRCHRSET
     pop     bc                    ; B = CurBASCHGSER; Stack = VarBufAdr, SwapBufAdr, RtnAdr
-    cp      b                     ; If OrgBASCHRSET <> CurBASCHGSER
+    cp      b                     ; If OrgSCRCHRSET <> CurBASCHGSER
     call    nz,_select_chrset     ;   Switch to buffered character set
     pop     de                    ; DE = VarBufAdr; Stack = SwapBufAdr, RtnAdr
     pop     hl                    ; HL = SwapBufAdr; Stack = RtnAdr
@@ -192,12 +192,12 @@ screen_restore:
     jr      _copy_color
 
 _restore_vars:
-    call    _svar_buff_addr       ; HL = BufAdr, A = CurBASCHRSET
+    call    _svar_buff_addr       ; HL = BufAdr, A = CurSCRCHRSET
     push    hl                    ; Stack = ScrBuf, RtnAdr
-    push    af                    ; Stack = CurBASCHRSET, SavePg, RtnAdr
-    call    screen_restore_vars   ; A = OrgBASCHRSET
+    push    af                    ; Stack = CurSCRCHRSET, SavePg, RtnAdr
+    call    screen_restore_vars   ; A = OrgSCRCHRSET
     pop     bc                    ; B = CurBASCHGSER
-    cp      b                     ; If OrgBASCHRSET <> CurBASCHGSER
+    cp      b                     ; If OrgSCRCHRSET <> CurBASCHGSER
     call    nz,_select_chrset     ;   Switch to buffered character set
     pop     de                    ; DE = ScrBuf
     call    screen_restore_palette
@@ -294,7 +294,7 @@ screen_switch:
 ;-----------------------------------------------------------------------------
 ; Copy screen variables into buffer
 ; Input: HL = Buffer Address
-; Output: A = BASCRNCTL
+; Output: A = SCREENCTL
 ;      HL: Address of next Buffer
 ; Clobbers: DE
 ;-----------------------------------------------------------------------------
@@ -313,15 +313,9 @@ screen_restore_vars:
     inc     hl
     ld      (CURRAM),de
 
-    ld      d,(hl)                ; Offset $4
-    inc     hl
-    ld      a,(BASYSCTL)          ;
-    and     $FF-BASCRNCTL         ; Clear screen control bits
-    or      d                     ; And in saved bits
-    ld      (BASYSCTL),a
-    push    af                    ; Stack = BASCRNCTL, RtnAdr
+    inc     hl                    ; Offset 4
 
-    ld      d,(hl)                ; Offset $4
+    ld      d,(hl)                ; Offset $5
     inc     hl
     in      a,(IO_VCTRL)          ;
     and     $FF-VCTRL_REMAP_BC
@@ -335,9 +329,7 @@ screen_restore_vars:
     ld      a,(hl)                ; Offset $7
     inc     hl                    ; Next buffer
     ld      (SCREENCTL),a
-
-    pop     af                    ; A = BASCRNCTL Stack = RtnAdr
-    and     BASCHRSET             ; A = BASCHRSET
+    and     SCRCHRSET             ; A = ChrSet
     ret
 
 ;-----------------------------------------------------------------------------
@@ -357,8 +349,7 @@ screen_stash_vars:
     inc     hl
     ld      (hl),d
     inc     hl
-    ld      a,(BASYSCTL)
-    and     BASCRNCTL
+    xor     a
     ld      (hl),a                ; Offset $4
     inc     hl
     in      a,(IO_VCTRL)
@@ -389,17 +380,17 @@ _scrn_buff_addr:
 ;-----------------------------------------------------------------------------
 ; Get screen buffer address
 ;  Input: L: BUFSCRN40 or SWPSCRN40
-; Output: A: BASCHRSET
+; Output: A: SCRCHRSET
 ;         DE: Buffer offset
-;         HL: Buffer Address
+;         HL: Buffer Address
 ;  Flags: Zero set if default chrset
 ;-----------------------------------------------------------------------------
 _svar_buff_addr:
     ld      h,high(BANK1_BASE)
     call    _svar_buff_ofs
     add     hl,de
-    ld      a,(BASYSCTL)
-    and     BASCHRSET
+    ld      a,(SCREENCTL)
+    and     SCRCHRSET
     ret
 
 ;-----------------------------------------------------------------------------
@@ -733,10 +724,10 @@ _map_screen_vars:
     jp      page_map_bank1
 
 ; Select character set
-; Input: A = BASYSCTL
+; Input: A = SCREENCTL
 ; Clobbered: AF',BC,DE,HL,IX
 _select_chrset:
-    and     BASCHRSET
+    and     SCRCHRSET
     rra
     rra
     rra                           ; Move

@@ -10,8 +10,8 @@
 ;-----------------------------------------------------------------------------
 ; USE CHRSET "latin1d.chr"
 ST_USECHR:
-.andmask = 255-BASCHRSET
-.ormask = BASCHRSET * 256
+;.andmask = 255-SCRCHRSET
+;.ormask = SCRCHRSET * 256
     rst     CHRGET                ; Skip CHR
     SYNCHKT SETTK                 ; Require SET
     call    FRMEVL                ; Evaluate operand
@@ -30,14 +30,14 @@ ST_USECHR:
 .select
     or      a                     ; Set Flags
     push    af                    ; Stack = ChrSet, TxtPtr, RtnAdr
-    ld      a,(BASYSCTL)
+    ld      a,(SCREENCTL)
     jr      nz,.default
-    and     $FF-BASCHRSET
+    and     $FF-SCRCHRSET
     byte    $01                   ; LD BC over OR
 .default
-    or      BASCHRSET
-    and     $FF-BASCHRMOD         ; Clear CharRAM modified bit
-    ld      (BASYSCTL),a
+    or      SCRCHRSET
+    and     $FF-SCRCHRMOD         ; Clear CharRAM modified bit
+    ld      (SCREENCTL),a
     pop     af                    ; A = ChrSet; Stack = TxtPtr, RtnAdr
     call    select_chrset         ;
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr

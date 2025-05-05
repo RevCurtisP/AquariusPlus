@@ -990,9 +990,9 @@ ST_SET_CHR:
     ld      iy,gfx_redefine_char
     call    aux_call
     jp      c,LSERR
-    ld      a,(BASYSCTL)          ; Set character set modified flag
-    or      a,BASCHRMOD
-    ld      (BASYSCTL),a
+    ld      a,(SCREENCTL)         ; Set character set modified flag
+    or      a,SCRCHRMOD
+    ld      (SCREENCTL),a
     pop     hl                    ; HL = TxtAdr; Stack = RtnAdr
     ret
 

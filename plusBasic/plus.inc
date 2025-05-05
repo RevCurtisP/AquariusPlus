@@ -255,18 +255,15 @@ ASCSETLEN   equ 768     ; Size of ASCII character set (' ' - DEL)
 BASOUTBUF   equ $01     ; BASYSCTL: redirect OUTput to BUFfer
 BASSAVASC   equ $02     ; BASYSCTL: Default SAVe to ASC
 BASKEYRPT   equ $04     ; BASYSCTL: KEY RePeaT on
-BASCHRSET   equ $08     ; BASYSCTL: Character set in use (0 or 1)
-BASCHRMOD   equ $10     ; BASYSCTL: Character set in use has been modified
 BASBRKOFF   equ $20     ; BASYSCTL: BReak OFF (Disable Ctrl-C)
 BASLPRNTR   equ $40     ; BASYSCTL: LPRINT device: (0 = Serial, 1 = ESP)
 ; BASCRNCLR   equ $80     ; BASYSCTL: PRINT updates Color RAM
 ; Screen Control Bitmask
-BASCRNCTL   equ BASCHRSET ; + BASCRNCLR
-;BASCRNMSK   equ $FF - BASCRNCTL
 ; Screen printing control flags
-;; ToDo: Move BASCRNCLR bit here
 CRSR_OFF    equ $40     ; SCREENCTL: Display cursor (1 = No)
 SCRCOLOR    equ $80     ; SCREENCTL: PRINT updates Color RAM
+SCRCHRSET   equ $08     ; SCREENCTL: Character set in use (0 or 1)
+SCRCHRMOD   equ $10     ; SCREENCTL: Character set in use has been modified
 
 ; Bitmap graphics mode: see gfx.asm for details
 GFXM_TEXT   equ $00     ; EXT_FLAGS: 40 colum mode (bloxels) 
