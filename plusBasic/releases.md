@@ -1,7 +1,7 @@
 # plusBASIC Release History
-  - v0.25c (2025-05-25)
+  - v0.25c (2025-05-04)
     - Replaced bit flags `BASCHRMOD` and `BASCHRMOD` in `BASYSCTL` with `SCRCHRMOD` and `SCRCHRMOD` in `SCREENCTL`
-  - v0.25b (2025-05-25)
+  - v0.25b (2025-05-03)
     - Replaced all calls to _float_signed_byte_ with calls to _FLOAT_, removed _float_signed_byte_
     - Renamed labels `FN_PT3`, `PT3_BUFFR`, `PT3_LOOPS`, `PT3TK`, `ST_LOOP_PT3`, `ST_PAUSE_PT3`, `ST_PLAY_PT3`, `ST_RESUME_PT3`,
       `ST_SET_PT3`, `ST_STOP_PT3`, and `_play_pt3` 
