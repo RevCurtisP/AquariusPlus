@@ -216,6 +216,8 @@ FLOATK    equ     $B3
 PATHTK    equ     $B4
 DUMPTK    equ     $B5
 BORDTK    equ     $B6
+CHECKTK   equ     $B7
+REPEATK   equ     $B8
 UNTILTK   equ     $B9
 
 ;-----------------------------------------------------------------------------

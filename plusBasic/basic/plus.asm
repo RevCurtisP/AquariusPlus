@@ -87,6 +87,33 @@ FN_BYTE:
     ld      iy,FLOAT              ; Returning signed byte
     jp      sng_chr               ; Execute ASC() code
 
+
+;-----------------------------------------------------------------------------
+; CHECK functions stub
+;-----------------------------------------------------------------------------
+FN_CHECK:
+    inc     hl
+    ld      a,(hl)
+    cp      DIRTK
+    jp      z,FN_CHECKDIR
+    jp      SNERR
+
+;-----------------------------------------------------------------------------
+; CHECK statements stub
+;-----------------------------------------------------------------------------
+ST_CHECK:
+    rst     CHRGET                ; Skip CHECK
+    SYNCHKT XTOKEN
+    SYNCHKT VERTK
+    
+ST_CHECK_VER:
+    call    get_free_string       ; BC = ArgLen, DE = ArgAdr, HL = ArgDsc; Stack = TxtPtr
+    ld      iy,aux_check_ver
+    call    aux_call              ; HL = BufAdr
+    jp      nc,POPHRT             ; If version okay, pop TxtPtr and return
+    call    print_c_string        ; Print error message
+    jp      ENDPRG                ; and end program
+  
 ;-----------------------------------------------------------------------------
 ; DATE$ - Get Current Date
 ; DATETIME$ - Get Current Date & Time
@@ -1217,10 +1244,7 @@ FN_VER:
     jr      nz,.notstring         ; If '$'
     inc     hl                    ;   Skip it
 .notstring
-    SYNCHKC '('
-    call    FRMEVL                ; Evaluate argument
-    SYNCHKC ')'
-    call    GETYPE
+    call    PARTYP                ; FACC = Arg, A = ArgTyp
     jr      nz,.getver            ; If it's a string
     ex      (sp),hl               ; HL = StrFlg, Stack = TxtPtr, RtnAdr
     push    hl                    ; Stack = StrFlg, TxtPtr, RtnAdr
@@ -1229,24 +1253,25 @@ FN_VER:
     jr      .return_ver
 .getver
     call    CONINT                ; Convert argument to byte
-    ld      ix,esp_get_version
+    ld      iy,get_system_version
     or      a
-    jr      z,.zero
-    ld      ix,sys_ver_plusbasic
+    jr      z,.sysver
+    ld      iy,get_plusbas_version
     cp      1
     jp      nz,FCERR
-.zero
+.sysver
     ex      (sp),hl               ; HL = StrFlg, Stack = TxtPtr, RtnAdr
     push    hl                    ; Stack = StrFlg, TxtPtr, RtnAdr
     ld      hl,FBUFFR
     ld      bc,14
-    call    jump_ix               ; Get version string
+    call    aux_call              ; Get version string
 .return_ver
     pop     af                    ; F = StrFlg,
     ld      bc,LABBCK
     push    bc                    ; Stack = LABBCK, TxtPtr, RtnAdr
     jp      z,TIMSTR              ; If VER$(), return version string
-    call    sys_num_ver           ; Else convert to integer
+    ld      iy,version_to_long
+    call    aux_call              ; Else convert to long
     jp      FLOAT_CDE             ; and return it
 
 ;-----------------------------------------------------------------------------

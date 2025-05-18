@@ -9,6 +9,7 @@ Run the .baq file to run the associated tests.
 | bt.baq  | BIT                |
 | cp.baq  | COPY and COMPARE   |
 | cs.baq  | COPY SCREEN        |
+| cv.baq  | Convert functions  |
 | dr.baq  | DIM and READ       |
 | gr.baq  | Misc. Graphics     |
 | pp.baq  | POKE and PEEK      |
@@ -45,6 +46,16 @@ Run the .baq file to run the associated tests.
   - COPY @_page_,_offset_ TO SCREEN CHR
   - COPY SCREEN ATTR TO @_page_,_offset_
   - COPY @_page_,_offset_ TO SCREEN ATTR
+- cv.baq
+  - ASC(_string_)
+  - ASC(_string_,byte)
+  - ASC$(_string_)
+  - BYTE(_string_)
+  - BYTE(_string_,byte)
+  - CHR$(_byte)
+  - DEC(_string_)
+  - HEX$(_long_)
+  - HEX$(_string_)
 - dr.baq
   - DIM _var_, _var_$
   - DIM _array_()_, _array_$()

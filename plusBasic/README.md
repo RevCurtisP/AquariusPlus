@@ -105,7 +105,7 @@ Quick Reference Guide
  - [x] **DATE$** - Return the current date.<!--DATETIME-->
  - [x] **DATETIME$** - Return the current date and time.<!--DATETIME-->
  - [ ] **DEC _numvar_** - Decrement numeric variable.
- - [x] **DEC(_hexstring_)** - Convert hexadecimal string to integer.
+ - [x] **DEC(_hexstring_)** - Convert hexadecimal string to long.<!--convert-->
  - [ ] **DEEK(«!_ext_addr_»|«@_page_,_address_»)** - Read integer from memory.<!--PEEK-->
  - [ ] **DEF ATTRLIST _strvar_=_attr_,...** - Create a string list of sprite and/or tile attributes.<!--defstrlist-->
  - [ ] **DEF BYTELIST _strvar_=_byte_,...** - Create a string list of bytes.<!--defstrlist-->

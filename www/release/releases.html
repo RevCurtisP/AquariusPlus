@@ -16,12 +16,17 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
   <body>
     <h1 id="plusbasic-release-history">plusBASIC Release History</h1>
     <ul>
-      <li>v0.27 (2025-05-??)
+      <li>v0.25d (2025-05-??)
+<ul><li>Fixed <em>Type mismatch error</em> in <code>BYTE()</code></li><li>Added function <code>CHECKDIR()</code> and kernel routine <em>file_check_ver</em></li><li>Hex literals, <code>DEC()</code> and <code>HEX$()</code> now support longs</li><li>Added statement <code>CHECK VER</code></li><li><code>VER()</code> evaluates <code>.dev</code> as higher than <code>.99</code> (the current highest major or minor version number)</li><li>Renamed kernel routines and moved to Auxiliary ROM
+<ul><li><em>esp_get_version</em> to <em>get_system_version</em></li><li><em>sys_ver_plusbasic</em> to get_plusbas_version</li><li><em>sys_num_ver</em> to <em>version_to_long</em></li></ul></li><li>Moved utility routines <em>asc_to_bcd</em>, <em>bcd_to_bin</em>, and <em>mult_hl_10</em>  from System ROM to Auxiliary</li><li>Refactored routines <em>s3_ctrl_keys</em>, s3_stuffh_ext_, <em>s3_string_ext</em> to be used with <em>aux_call</em></li><li>Added jump table address to comments in <em>kernel.asm</em> to verify that the jump points don't accidentally change</li></ul></li>
+      <li>v0.25c (2025-05-04)
+<ul><li>Replaced bit flags <code>BASCHRMOD</code> and <code>BASCHRMOD</code> in <code>BASYSCTL</code> with <code>SCRCHRMOD</code> and <code>SCRCHRMOD</code> in <code>SCREENCTL</code></li></ul></li>
+      <li>v0.25b (2025-05-03)
 <ul><li>Replaced all calls to <em>float_signed_byte</em> with calls to <em>FLOAT</em>, removed <em>float_signed_byte</em></li><li>Renamed labels <code>FN_PT3</code>, <code>PT3_BUFFR</code>, <code>PT3_LOOPS</code>, <code>PT3TK</code>, <code>ST_LOOP_PT3</code>, <code>ST_PAUSE_PT3</code>, <code>ST_PLAY_PT3</code>, <code>ST_RESUME_PT3</code>,
 <code>ST_SET_PT3</code>, <code>ST_STOP_PT3</code>, and <code>_play_pt3</code>
 with <code>FN_TRACK</code>, <code>TRK_BUFFR</code>, <code>TRK_LOOPS</code>, <code>TRKTK</code>, <code>ST_LOOP_TRACK</code>, <code>ST_PAUSE_TRACK</code>, <code>ST_PLAY_TRACK</code>, <code>ST_RESUME_TRACK</code>,
 <code>ST_SET_TRACK</code>, <code>ST_STOP_TRACK</code>, <code>__play_track</code></li></ul></li>
-      <li>v0.26 (2025-04-30)
+      <li>v0.25a (2025-04-30)
 <ul><li>Fixed <code>Illegal quantity error</code> in <code>DEF SPRITE (rows,columns),spritle</code></li><li>Added functions <code>CURSOROFFSET</code>, <code>CURSORX</code>, <code>CURSORY</code></li><li>Moved bit flag <em>SCRCOLOR</em> from <em>BASYSCTL</em> to <em>SCREENCTL</em></li><li>Added unit tests to <em>sg.bas</em> (screen graphics)</li></ul></li>
       <li>v0.25 (2025-04-23)
 <ul><li>Forked <em>s3basic.asm</em> to plusBASIC specific <em>sbasic.asm</em> and inlined into <em>aqplusbas.asm</em></li><li>Renamed macro <code>SYNCHK</code> to <code>SYNCHKC</code>, added <code>SYNCHKT</code></li><li>Refactored <code>rst SYNCHKC</code> calls to <code>SYNCHKC</code> or <code>SYNCHKT</code></li></ul></li>

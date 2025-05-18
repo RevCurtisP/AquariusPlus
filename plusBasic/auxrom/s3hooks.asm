@@ -1,5 +1,5 @@
 ;=====================================================================================
-; S3BASIC Enhancement Hooks 
+; S3BASIC Enhancement Hooks
 ; These routines are located in the 8K ROM in ROM Bank 2
 ; They called from S3BASIC and are routed through a jump table at $2000
 ;=====================================================================================
@@ -10,14 +10,13 @@
 ; On entry: A,C = character typed, B = input buffer character count
 ;-----------------------------------------------------------------------------
 s3_ctrl_keys:
-    push    bc                    ; Save character count
+    push    bc                    ; Stack = ChrCnt+ChrTyp
     call    in_direct
+    pop     bc                    ; B = ChrCnt, C = ChrTyp
     jr      c,.dontscreen         ; If Not in Direct Mode
     ld      a,c
     or      a
     jp      m,.extended
-    pop     bc
-    push    bc
     dec     b
     jr      nz,.dontscreen        ; and Input Buffer is empty
     ld      a,c
@@ -51,11 +50,9 @@ s3_ctrl_keys:
 .notrepeat:
     cp      'P'-'K'               ; If not ^N through ^P
     jr      c,.charset
-
-
 .notrub
-    pop     bc                    ;   Restore character count
-    jp      NOTRUB                ;   Continue standard Ctrl-key check
+    ld      ix,NOTRUB             ;   Continue standard Ctrl-key check
+    ret
 .charset
     sub     a,'N'-'K'             ; ^N = 0, ^O = 1, ^P = 2
     xor     1                     ; ^O = 1, ^O = 0, ^P = 2
@@ -63,8 +60,8 @@ s3_ctrl_keys:
     call    select_chrset         ; Select the character set
     pop     hl
 .inlinc
-    pop     bc                    ;   Restore character count
-    jp      INLINC                ;   Wait for next keyhl
+    ld      ix,INLINC             ;   Wait for next key
+    ret
 .extended
     cp      $A0                   ; If international character
     jr      nc,.notrub            ;   use it
@@ -89,18 +86,18 @@ s3_ctrl_keys:
 ;-----------------------------------------------------------------------------
 s3_stuffh_ext:
     cp      DATATK-':'            ; If DATA
-    jp      z,COLIS               ;   Continue STUFFH
-    ex      af,af'                ; 
+    jr      z,.colis              ;   Continue STUFFH
+    ex      af,af'                ;
     ld      a,(TEMP3)             ; Get Line# Flag
     and     $01                   ; If carry set
-    jr      nz,.exaf_nodatt       ;   Continue  STUFFH
+    jr      nz,.exaf_nodatt       ;   Continue STUFFH
     ex      af,af'
-    cp      RUNTK-':'                 
+    cp      RUNTK-':'
     jr      z,.space_loop
     cp      DIRTK-':'             ; If Not DIRTK through CDTK
-    jp      c,NODATT              ;
-    cp      CDTK-':'+1            ;
-    jp      nc,NODATT             ;  Continue STUFFH
+    jr      c,.nodatt
+    cp      CDTK-':'+1
+    jr      nc,.nodatt            ;   Continue STUFFH
 .space_loop
     ld      a,(hl)                ; Eat Spaces
     cp      ' '
@@ -110,64 +107,82 @@ s3_stuffh_ext:
 .not_space
     ld      b,a                   ; Set up delimiter for STRNG
     cp      '"'                   ; If quotes
-    jp      z,STRNG               ;   Go stuff quoted string
+    jr      z,_strng              ;   Go stuff quoted string
+    ld      ix,KLOOP
 .string_loop
     ld      a,(hl)                ; Get character
     or      a                     ; If end of line
-    jp      z,CRDONE              ;   Finish it up
+    jr      z,.crdone             ;   Finish it up
     cp      ' '                   ; If space
-    jp      z,KLOOP               ;   Stuff it and continue
+    ret     z                     ;   Stuff it and continue
     cp      ':'                   ; If colon
-    jp      z,KLOOP               ;   Stuff it and continue
+    ret     z                     ;   Stuff it and continue
     cp      '('                   ; If colon
-    jp      z,KLOOP               ;   Stuff it and continue
+    ret     z                     ;   Stuff it and continue
     call    _stuff_chr                ; Else Stuff it
     jr      .string_loop          ;   and check next character
-.exaf_nodatt:
+
+.exaf_nodatt
     ex      af,af'
-    jp      NODATT
+.nodatt
+    ld      ix,NODATT
+    ret
+.colis
+    ld      ix,COLIS
+    ret
+.crdone
+    ld      ix,CRDONE
+    ret
+.strngr
+    ld      ix,STRNGR
+    ret
 
-; If label at beginning of line: don't tokenize, just stuff it                                  
-stuff_label: 
-    cp      '_'                   ; If not a undersoore                   
-    jp      nz,STRNGR             ;   Keep on truckin'                    
-    call    _stuff_chr            ; Stuff character in KRUNCH buffer      
-.loop                                                                    
-    ld      a,(hl)                ; Get character from buf                
-    or      a                   ; If end of line                      
-    jp      z,CRDONE            ;   Finish it up                      
-    cp      ' '                 ; If Space                            
-    jr      z,.stuff_it         ;   Stuff it and keep going         
-    cp      ':'                 ; If colon                            
-    jp      z,STRNGR            ;   Stuff it and return               
-.stuff_it:                                                               
-    call    _stuff_upper          ; Stuff character in KRUNCH buffer      
-    jr      .loop                 ; Next character                         
 
-; Uppercase and stuff character  
-_stuff_upper: call    uppercase_char                                        
-                                                                            
-; Stuff char in KRUNCH buffer                                              
-_stuff_chr:                                                                 
-    inc     hl                    ; Bump BUF pointer                       
-    ld      (de),a                ; Save byte in KRUNCH buffer             
-    inc     de                    ; Bump KRUNCH pointer                    
-    inc     c                     ; Increment buffer count                 
-    ret                                                                   
+; If label at beginning of line: don't tokenize, just stuff it
+stuff_label:
+    cp      '_'                   ; If not a undersoore
+    jp      nz,STRNGR             ;   Keep on truckin'
+    call    _stuff_chr            ; Stuff character in KRUNCH buffer
+.loop
+    ld      a,(hl)                ; Get character from buf
+    or      a                     ; If end of line
+    jp      z,CRDONE              ;   Finish it up
+    cp      ' '                   ; If Space
+    jr      z,.stuff_it           ;   Stuff it and keep going
+    cp      ':'                   ; If colon
+    jp      z,STRNGR              ;   Stuff it and return
+.stuff_it:
+    call    _stuff_upper          ; Stuff character in KRUNCH buffer
+    jr      .loop                 ; Next character
+
+; Uppercase and stuff character
+_stuff_upper:
+    call    uppercase_char
+; Stuff char in KRUNCH buffer
+_stuff_chr:
+    inc     hl                    ; Bump BUF pointer
+    ld      (de),a                ; Save byte in KRUNCH buffer
+    inc     de                    ; Bump KRUNCH pointer
+    inc     c                     ; Increment buffer count
+    ret
+
+_strng:
+    ld      ix,STRNG
+    ret
 
 ;-----------------------------------------------------------------------------
 ; Hook 39: Extended string processing during CRUNCH
 ;-----------------------------------------------------------------------------
 s3_string_ext:
-    jp      z,STRNG               ; Special Handling for Double Quote      
-    cp      $27                   ;                                         
-    jp      z,STRNG               ; Do the same for Single Quote           
+    jp      z,STRNG               ; Special Handling for Double Quote
+    cp      $27                   ;
+    jp      z,STRNG               ; Do the same for Single Quote
     cp      '~'                   ; If tilde
     jr      z,.stuff_suffix       ;   Stuff variable suffix
     cp      $5C                   ; If not backslash
-    jp      nz,stuff_label        ;   See if it's a label         
+    jp      nz,stuff_label        ;   See if it's a label
 ; Stuff escaped string
-    call    _stuff_chr            ; Copy backslash 
+    call    _stuff_chr            ; Copy backslash
     ld      a,(hl)                ; Get next character
     cp      '"'                   ; If not quotes`
     jp      nz,STRNGR             ;   Carry on
@@ -189,7 +204,7 @@ s3_string_ext:
 ;Stuff ~ and variable suffix
 .stuff_suffix
     call    _stuff_chr            ; Stuff suffix character
-    ld      a,(hl)                ;  
+    ld      a,(hl)                ;
     cp      '0'                   ; If < '0'
     jp      c,_strngr             ;   Finish CRUNCH
     cp      ':'                   ; If '0'...'9'
@@ -207,18 +222,18 @@ _strngr
 ; Clobbered: A
 ;-----------------------------------------------------------------------------
 fnkey_get_buff_addr:
-    ld      e,a                                             
-    and     $97                   ;            100X0XXX   
+    ld      e,a
+    and     $97                   ;            100X0XXX
     cp      e
     ret     nz
-    ld      d,FKEYBASE/512        ; 011??000                
-    rla                           ; 011??000 1 00X0XXX0     
-    ccf                           ; 011??000 0 00X0XXX0   
-    rla                           ; 011??000 0 0X0XXX00   
-    rla                           ; 011??000 0 X0XXX000   
-    rla                           ; 011??000 X 0XXX0000   
-    rl      d                     ; 11??000X 0 0XXX0000   
-    rla                           ; 11??000X 0 XXX00000   
+    ld      d,FKEYBASE/512        ; 011??000
+    rla                           ; 011??000 1 00X0XXX0
+    ccf                           ; 011??000 0 00X0XXX0
+    rla                           ; 011??000 0 0X0XXX00
+    rla                           ; 011??000 0 X0XXX000
+    rla                           ; 011??000 X 0XXX0000
+    rl      d                     ; 11??000X 0 0XXX0000
+    rla                           ; 11??000X 0 XXX00000
     ld      e,a
     xor     a
     ret

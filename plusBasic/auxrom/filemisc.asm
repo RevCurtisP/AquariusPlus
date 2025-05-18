@@ -2,6 +2,24 @@
 ; File I/O Statements and Functions Auxillary ROM routines
 ;====================================================================
 
+
+;-----------------------------------------------------------------------------
+; file_checkdir - return true if filespec exists and is directory
+; Flags are NOT set
+;-----------------------------------------------------------------------------
+file_checkdir:
+    call    send_stat_cmd         ; Send stat command
+    jp      m,aux_ret_zero        ; If no error
+    call    esp_get_long          ;   Skip DateTime
+    call    esp_get_byte          ;   A = FileAttr
+    and     1                     ;   If not directory
+    ret     z                     ;     Return 0
+    or      $FF                   ;   Else
+    ret                           ;     Return -1
+aux_ret_zero:
+    xor     a                     ; Else
+    ret                           ;   Return 0
+
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ; file_datetime - Get file date
 ; - Returns the specified file's date stamp as a 14 byte ASCII string

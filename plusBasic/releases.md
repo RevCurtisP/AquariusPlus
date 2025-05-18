@@ -1,4 +1,17 @@
 # plusBASIC Release History
+  - v0.25d (2025-05-??)
+    - Fixed _Type mismatch error_ in `BYTE()`
+    - Added function `CHECKDIR()` and kernel routine _file_check_ver_
+    - Hex literals, `DEC()` and `HEX$()` now support longs
+    - Added statement `CHECK VER`
+    - `VER()` evaluates `.dev` as higher than `.99` (the current highest major or minor version number)
+    - Renamed kernel routines and moved to Auxiliary ROM
+      - _esp_get_version_ to _get_system_version_
+      - _sys_ver_plusbasic_ to get_plusbas_version
+      - _sys_num_ver_ to _version_to_long_
+    - Moved utility routines _asc_to_bcd_, _bcd_to_bin_, and _mult_hl_10_  from System ROM to Auxiliary
+    - Refactored routines _s3_ctrl_keys_, s3_stuffh_ext_, _s3_string_ext_ to be used with _aux_call_
+    - Added jump table address to comments in _kernel.asm_ to verify that the jump points don't accidentally change
   - v0.25c (2025-05-04)
     - Replaced bit flags `BASCHRMOD` and `BASCHRMOD` in `BASYSCTL` with `SCRCHRMOD` and `SCRCHRMOD` in `SCREENCTL`
   - v0.25b (2025-05-03)

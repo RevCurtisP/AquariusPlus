@@ -373,7 +373,6 @@ shift_hl_right:
     push    hl
     jp      NULRT                 ; Pop HL abd return Null String
 
-
 ;-----------------------------------------------------------------------------
 ; Compare blocks of memory
 ; Input: BC: Compare Length
@@ -397,91 +396,6 @@ sys_mem_compare:
     cpl                           ; Make $FF matched, 0 not
     ld    d,a
     ld    e,a
-    ret
-
-;-----------------------------------------------------------------------------
-; Convert null-terminated Version string to BCD integer
-; Input: HL: Version String Address - ['V']major.minor[letter]
-; Output: C,D,E = Major,Minor,Letter (SYSROM and plusBASIC)
-;         HL = Address after Version string
-; Clobbered: A, B
-;-----------------------------------------------------------------------------
-sys_num_ver:    
-    ld      a,(hl)
-    call    uppercase_char        ; Skip 'V'
-    cp      'V'                 
-    jr      nz,.notv
-    inc     hl
-.notv
-    call    asc_to_bcd            ; Get Major number
-    ld      c,e                   ;   and put in C
-    ld      de,0                  ; Init minor to 0
-    cp      '.'                   ; If no dot
-    ret     nz                    ;   Return
-    inc     hl                    ; Skip .
-    call    asc_to_bcd            ; Get Minor number
-    ld      d,e                   ;   and put in D
-    ld      e,0                   ; Init letter to none
-    call    uppercase_char        ; Capitalize 
-    cp      'A'                   ; If not a letter
-    ret     c                     ;    Return
-    cp      'Z'+1
-    ret     nc                    
-    ld      e,a                   ; Else put in E
-    ret
-; Convert YY-MM-DDrRR      CCCCCCCC DDDDDDDD EEEEEEEE   
-;                           YYYYYYYM MMMDDDD DRRRRRRR
-    
-;-----------------------------------------------------------------------------
-; Convert ASCII to BCD
-;  Input: HL: String address
-; Output: A: Character after last digit
-;        DE: BCD Result
-;        HL: Address after last digit 
-; Clobbers: A, B
-;----------------------------------------------------------------------------
-asc_to_bcd:
-    ld      de,0                  ; Init Result
-    dec     hl                    ; Back up for chrget
-.loop
-    rst     CHRGET                ; Get next character
-    ret     nc                    ; Return if not a digit
-    sub     a,'0'                 ; Convert digit to BCD
-    ld      b,4
-.rollde
-    rl      e                     ; Shift DE left 4 bits
-    rl      d
-    djnz    .rollde
-    or      e
-    ld      e,a                   ; Move digit into bottom nybble                  
-    jr      .loop
-
-;-----------------------------------------------------------------------------
-; Convert BCD to Binary
-;  Input: DE: BCD integer
-; Output: A: Character after last digit
-;        DE: Binary result Result
-; Clobbers: A
-;----------------------------------------------------------------------------
-bcd_to_bin:
-    push    hl
-    ld      hl,0                  ; Init binary result
-    ld      a,d                   ; A = First digit
-
-;-----------------------------------------------------------------------------
-; HL = HL * 10
-mult_hl_10:
-    push    bc
-    ld      b,h                   ; BC = HL
-    ld      c,l
-    sla     l                     ; HL*4
-    rl      d
-    sla     l
-    rl      d                     
-    add     hl,bc                 ; HL*4+1
-    sla     l
-    rl      d                     ; HL*(4+1)*2
-    pop     bc
     ret
 
 ;----------------------------------------------------------------------------

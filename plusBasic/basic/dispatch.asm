@@ -74,6 +74,9 @@ extended_statement:
     jp      z,ST_WAIT
     sub     DUMPTK-WAITK        ; $B5 DUMP
     jp      z,ST_DUMP
+    dec     a                   ; $B6 BORDER
+    dec     a                   ; $B7 CHECK
+    jp      z,ST_CHECK
     jp      SNERR 
    
 extended_function:
@@ -128,6 +131,8 @@ extended_function:
     jp      z,FN_LONG
     dec     a                   ; $B3 FLOAT
     jp      z,FN_FLOAT
+    sub     a,CHECKTK-FLOATK    ; $B7 CHECK
+    jp      z,FN_CHECK
     jp      SNERR
 
 ; ------------------------------------------------------------------------------

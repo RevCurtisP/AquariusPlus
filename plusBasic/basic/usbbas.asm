@@ -60,25 +60,30 @@ ST_CALL:
 ; eg. A$=HEX$(B)
 ;-----------------------------------------------------------------------------
 FN_HEX:
-    rst     CHRGET            ; Skip Token and Eat Spaces
-    call    PARCHK
-    call    GETYPE          ; Get Type of Argument
-    jr      z,HEX_STRING    ; If String, Convert It and Return
-    push    hl              ; Stack = TxtPtr
-    push    bc              ; Stack = DummyRtn, TxtPtr
-    call    FRCINT          ; Evaluate formula @HL, result in DE
-    ld      hl,FBUFFR+1     ; HL = temp string
-    ld      a, d
-    or      a               ; > zero ?
-    jr      z, .lower_byte
-    ld      a, d
-    call    byte_to_hex     ; Yes, convert byte in D to hex string
-.lower_byte:
-    ld      a, e
-    call    byte_to_hex     ; Convert byte in E to hex string
-    ld      (hl), 0         ; Null-terminate string
+    rst     CHRGET                ; Skip Token and Eat Spaces
+    call    PARTYP                ; FACC = Arg, A = ArgTyo
+    jr      z,HEX_STRING          ; If String, Convert It and Return
+    push    hl                    ; Stack = TxtPtr
+    push    bc                    ; Stack = DummyRtn, TxtPtr
+    call    FRC_LONG              ; CDE = Arg
+    ld      hl,FBUFFR+1           ; HL = temp string
+    ld      a,c
+    or      a                     ; If high byte <> 0
+    jr      z,.middle_byte
+    call    byte_to_hex           ;   Convert to hex string
+    ld      a,d
+    jr      .force_middle
+.middle_byte
+    ld      a,d
+    or      a                     ; If middle byte <> 0
+    jr      z,.lower_byte
+.force_middle
+    call    byte_to_hex           ;   Convert to hex string
+.lower_byte
+    ld      a,e
+    call    byte_to_hex           ; Convert low byte to hex string
+    ld      (hl),0                ; Null-terminate string
     ld      hl,FBUFFR+1
-.create_string:
     jp      TIMSTR                ; Create BASIC string
 
 HEX_STRING:

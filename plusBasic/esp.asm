@@ -60,18 +60,6 @@ esp_get_result:
     or      a
     ret
 
-;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-; Return system version
-; - Populates a string buffer with the current firmwsre version
-; Input: HL: String buffer address
-; Output: BC: Length of version string
-; Clobbered: A
-;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-esp_get_version:
-    ld      a, ESPCMD_VERSION
-    call    esp_cmd
-    jp      esp_read_buff
-
 ;-----------------------------------------------------------------------------
 ; Close all files and directories
 ; Output: A: Result 

@@ -42,7 +42,7 @@
     jp      _finish_input   ; $202D FININX C/R in INPUT patch
     jp      _scan_label     ; $2030 SCNLBL Scan line label or line number
     jp      _tty_finish     ; $2033 TTYFIN Display cursor
-    jp      _ctrl_keys      ; $2036 XFUNKY _Evaluate extended function keys
+    jp      just_ret        ; $2036
     jp      _then_hook      ; $2039 THENHK *Not Implemented* Check for ELSE after IF ... THEN
     jp      _trap_error     ; $203C XERROR Restore Stack, Display Error, and Stop Program
     jp      _main_ext       ; $203F XMAIN  Save Line# Flag in TEMP3
@@ -134,8 +134,9 @@ null_desc:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.25c"
+    db "v0.25d"
     db 0
+plusver_len equ $ - plus_version
 plus_len   equ   $ - plus_text
 
 ; ROM Signature
@@ -318,14 +319,17 @@ _start_screen:
 ; Jumped to from INLNC
 ; On entry: A,C = character typed, B = input buffer character count
 ;-----------------------------------------------------------------------------
-_ctrl_keys:
+ctrl_keys:
     cp      ' '                   ;
     jr      c,.is_ctrl            ; If >= ' ' and and < DEL
     cp      $7F
     jp      c,GOODCH              ;    Stuff in Input Buffer
 .is_ctrl
-    call    page_set_aux
-    jp      s3_ctrl_keys
+    push    bc
+    ld      iy,s3_ctrl_keys
+    call    aux_call              ; IX = Jump Address
+    pop     bc
+    jp      (ix)          
 
 ;-----------------------------------------------------------------------------
 ; Check for Direct Mode
@@ -1098,8 +1102,10 @@ _trap_error:
 ;; ToDo: Move routines to ExtROM or wrap in aux_call
 
 _stuffh_ext:
-    call    page_set_aux
-    jp      s3_stuffh_ext
+    ld      iy,s3_stuffh_ext
+auxcall_jumpix:
+    call    aux_call
+    jp      (ix)
 
 _then_hook:
     jp      REM
@@ -1107,11 +1113,6 @@ _then_hook:
 _string_ext:
     call    page_set_aux
     jp      s3_string_ext
-
-;aux_line_print:
-;    call    page_set_plus         ; Map in Ext ROM
-;    call    LINPRT                ; Print the line number
-;    jp      page_set_aux          ; Remap Aux ROM and return
 
 ; 10 _label:PRINT "testing":'comment
 ; 20 'comment
@@ -1267,8 +1268,8 @@ gfx_jump_table:
     include "debug.asm"           ; Debugging routines
     include "dos.asm"             ; DOS routines
     include "esp_aux.asm"         ; ESP routines in auxiliary ROM
-    include "fileaux.asm"         ; Disk and File I/O assembly ronibuutines
-    include "fileio.asm"          ; Disk and File I/O assembly ronibuutines
+    include "fileaux.asm"         ; Disk and File BASIC auxilarry routines 
+    include "fileio.asm"          ; Disk and File I/O kernel routines
     include "fileload.asm"        ; File LOAD I/O routines
     include "filemisc.asm"        ; BASIC File auxilarry routines
     include "fileplus.asm"        ; AQPLUS resource run/load routines
@@ -1280,6 +1281,7 @@ gfx_jump_table:
     include "s3hooks.asm"         ; S3 BASIC direct mode hooks
     include "sound.asm"           ; Sound and Music
     include "string.asm"          ; String manipulation routines
+    include "version.asm"         ; System and plusBASIC version mani
 
 ;; Grsphics routines
     include "gfxvar.asm"          ; Graphics sysvars and lookup tables

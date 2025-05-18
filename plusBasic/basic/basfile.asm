@@ -127,6 +127,20 @@ ST_RENAME:
     jr      _ret_p_doserror
 
 ;-----------------------------------------------------------------------------
+; CHECKDIR$(dirspec$) - Return TRUE if dirspec$ exists and is a directory
+;-----------------------------------------------------------------------------
+FN_CHECKDIR:
+    inc     hl                    ; Skip DIR
+    call    PARCHK                ; FACC = Argument
+    ld      iy,file_checkdir
+    call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
+    call    free_addr_len         ; HL = StrDsc
+    xor     a
+    ld      (VALTYP),a
+    call    aux_call
+    jp      FLOAT                 ; Float signed byte and return
+
+;-----------------------------------------------------------------------------
 ; COPY FILE - Copy a file
 ; Syntax: COPY FILE oldfile$ TO newfile$
 ;-----------------------------------------------------------------------------
@@ -490,6 +504,8 @@ _load_string:
 ;; RUN "/t/ascbad.bas
 ;; RUN "/t/ascdup.bas
 ;; RUN "/t/ascsnerr.bas
+;;; ToDo: Check for Valid ASCII BASIC file (1st char is CR, LF, Space, 0-9, or ')
+;;;       Modift .lineloop to skip lines beginnning with '
 _load_ascii:
     ld      hl,(TXTTAB)
     inc     hl

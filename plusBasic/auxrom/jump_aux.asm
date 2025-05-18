@@ -95,4 +95,15 @@ _jump_table:
     jp      just_ret
 ; sound.asm <<Sounds>>
     jp      play_sample           ; Play digitized sound sample
+    jp      just_ret
+    jp      just_ret
+    jp      just_ret
+    jp      just_ret
+    jp      just_ret
+    jp      just_ret
+    jp      just_ret
+; version.asm <<System and plusBASIC versions>>
+    jp      get_plusbas_version   ; Return plusBASIC version string
+    jp      get_system_version    ; Read system version string from ESP
+    jp      version_to_long       ; Convert string version to long int
 _end_jump_table:

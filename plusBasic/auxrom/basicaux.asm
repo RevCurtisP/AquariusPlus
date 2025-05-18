@@ -1,10 +1,81 @@
+;-----------------------------------------------------------------------------
 ; Core routines for BASIC statements and functions
+;-----------------------------------------------------------------------------
 
 ; ------------------------------------------------------------------------------
 ; ------------------------------------------------------------------------------
 bas_bin_str:
 
+; ------------------------------------------------------------------------------
+; CHECK VER core code
+; On entry: BC = ArgLen, DE = ArgAdr, HL = ArgDsc
+; ------------------------------------------------------------------------------
+aux_check_ver:
+        ld      (FILNAF),bc
+        ld      (FILNAF+2),de
+        ex      de,hl             ; HL = ArgAdr
+        call    version_to_long   ; C = Major, D = Minor, E = Suffix
+        push    de                ; Stack = ArgLo, RtnAdr
+        push    bc                ; Stack = ArgHi, Arglow, RtnAdr
+        ld      hl,FBUFFR
+        call    bas_get_version   ; HL = VerAdr, BC - VerKen
+        call    version_to_long   ; C = Major, D = Minor, E = Suffix
+        ld      a,c               ; A = BasHi
+        pop     bc                ; C = ArgHi; Stack = ArgLo, RtnAdr
+        cp      c
+        pop     hl                ; HL = ArgLo; Stack = RtnAdr
+        jr      c,.badver         ; If ArgHi < BasHi
+        ret     nz       
+        ex      de,hl             ; HL = ArgLo, DE = VerLo
+        rst     COMPAR            ; and ArgLo <  VerLo
+        ret     nc
+.badver
+        call    get_strbuf_addr   ; HL = BufAdr, RtnAdr
+        push    hl                ; Stack = BufAdr
+        ex      de,hl             ; DE = BufAdr
+        ld      hl,.head
+        ld      bc,.headln-1
+        ldir                      ; Write head to String Buffer
+        ld      bc,(FILNAF)       ; HL = ArgAdr
+        ld      hl,(FILNAF+2)     ; BC = ArgLen
+        ldir                      ; Write version string to String Buffer
+        ld      hl,.tail
+        ld      bc,.tailln
+        ldir                      ; Write tail to String Buffer
+        pop     hl                ; HL = BufAdr; Stack = RtnAdr
+        scf
+        ret
+        
+.head   byte    13,10,"This program requires",13,10,"plusBASIC ",0
+.headln equ     $ - .head
+.tail   byte    " or higher.",0
+.tailln equ     $ - .tail
 
+; ------------------------------------------------------------------------------
+; FN_VER core code
+; On entry: A = StrFlg, FACC, VALTYP = Arg
+; ------------------------------------------------------------------------------
+;;; ToDo: Finish this
+aux_ver:
+    push    hl                    ; Stack = StrFlg, TxtPtr, RtnAdr
+    call    free_addr_len         ; BC = StrLen, DE = StrAdr, HL = StrDsc
+    ex      de,hl                 ; HL = StrAdr
+    ;jr      .return_ver
+
+;-----------------------------------------------------------------------------
+; Return BASIC Version
+; Input: HL: String Buffer address
+; Output: BC: Version String Length
+; Clobbers: A,DE
+;-----------------------------------------------------------------------------
+bas_get_version:
+    ex      de,hl                 ; DE = BufAdr
+    ld      hl,plus_version       ; HL = VerAdr
+    call    str_copy              ; Copy VerStr to StrBuf
+    ex      de,hl                 ; HL = BufAdr
+    ret
+
+        
 ; ------------------------------------------------------------------------------
 ; ERASE statement core code
 ; ------------------------------------------------------------------------------

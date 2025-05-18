@@ -39,7 +39,7 @@ eval_extension:
     ld      a,(hl)                ; Get Next Character
     dec     hl                    ; and Move Back
     cp      '"'                   ; If Not a Quote
-    jp      nz,eval_hex_int       ;   Convert HEX Number
+    jp      nz,eval_hex_long      ;   Convert HEX Number
     inc     hl                    ; Bump Again
 eval_hex_str:
     call    STRLTI                ; Get String Literal
@@ -58,35 +58,40 @@ fin_extension:
     ld      a,(hl)
     cp      '$'                   ; If not '$'
     jp      nz,FIN                ;   Evaluate float
-eval_hex_int:
+eval_hex_long:
     xor     a
     ld      (VALTYP),a        ; Returning Number
-    ld      c,a               ; Parse up to 255 characters
+    ld      b,a               ; Parse up to 255 characters
 eval_hex:
+    ld      c,a
     ld      d,a
     ld      e,a               ; DE is the parsed Integer
 .hex_loop:
-    dec     c
-    jp      z,FLOAT_DE        ; Last Character - float it
+    dec     b
+    jp      z,FLOAT_CDE       ; Last Character - float it
     rst     CHRGET
-    jp      z,FLOAT_DE        ; End of Line - float it
+    jp      z,FLOAT_CDE       ; End of Line - float it
     jr      c,.dec_digit      ; Decimal Digit - process it
     cp      CDTK              ; If CD token
     jr      z,.hex_cdtoken    ;   Handle it
     and     $DF               ; Convert to Upper Case
     cp      'A'               ; If < 'A'
-    jp      c,FLOAT_DE        ;   Not Hex Digit - float it
+    jp      c,FLOAT_CDE       ;   Not Hex Digit - float it
     cp      'G'               ; If > 'F'
-    jp      nc,FLOAT_DE       ;   Not Hex Digit - float it
+    jp      nc,FLOAT_CDE      ;   Not Hex Digit - float it
     sub     'A'-':'           ; Make 'A' come after '9'
 .dec_digit:
     sub     '0'               ; Convert Hex Digit to Binary
-    ld      b,4               ; Shift DE Left 4 bits
+    ex      af,af'            ; Save HexVal
+    ld      a,4               ; Shift DE Left 4 bits
 .sla_loop
     sla     e
     rl      d
+    rl      c
     jp      c,OVERR           ;   Overflow!
-    djnz    .sla_loop
+    dec     a
+    jr      nz,.sla_loop
+    ex      af,af'            ; Restore HexVal
     or      e                 ; Put into low nybble
     ld      e,a
     jr      .hex_loop         ; Look for Next Hex Digit

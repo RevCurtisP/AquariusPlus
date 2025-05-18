@@ -116,7 +116,6 @@ FININX  equ     $202D   ;; + Finish INPUT
 ;;plusBASIC specific hooks
 SCNLBL  equ     $2030   ;; | Scan line label or line number
 TTYFIX  equ     $2033   ;; | TTYFIN Extension
-XFUNKY  equ     $2036   ;; | Extended function key check
 THENHK  equ     $2039   ;; | Scan for ELSE after IF THEN
 XERROR  equ     $203C   ;; | Restore Stack, Display Error, and Stop Program
 XMAIN   equ     $203F   ;; | Line Crunch Hook
@@ -2201,7 +2200,7 @@ RESFIN: ld      (DATPTR),hl       ;[M80] READ FINISHES COME TO RESFIN
 STOP:   ret     nz                ;[M80] MAKE SURE "STOP" STATEMENTS HAVE A TERMINATOR
 STOPC:  byte    $F6               ;;"OR" to skip next instruction
 ENDS:   ret     nz                ;[M80] MAKE SURE "END" STATEMENTS HAVE A TERMINATOR
-        ld      (SAVTXT),hl       ;
+ENDPRG: ld      (SAVTXT),hl       ;
         byte    $21               ;{M80} SKIP OVER OR USING "LD H,"
 STPEND: or      $FF               ;[M80] SET NON-ZERO TO FORCE PRINTING OF BREAK MESSAGE
         pop     bc                ;[M80] POP OFF NEWSTT ADDRESS
@@ -2444,7 +2443,7 @@ INLIN:  ld      hl,BUF            ;
         nop
 INLINC: call    INCHRX            ; + Bypasss Ctrl-C check                    0D8E  call    INCHR
 INLNC1: ld      c,a               ;[M80] SAVE CURRENT CHAR IN [C]
-        jp      XFUNKY            ;; + Check for Extended Ctrl-Keys            0D92  cp      127 
+        jp      ctrl_keys         ;; + Check for Extended Ctrl-Keys            0D92  cp      127 
                                   ;; +                                         0D93    
                                   ;; +                                         0D94  jr      z,RUBOUT          
 UDERR:  ld      e,ERRUD           ;; + Undimensioned Array error               0D95
