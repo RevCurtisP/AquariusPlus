@@ -1,5 +1,9 @@
 # plusBASIC Release History
-  - v0.25d (2025-05-??)
+  - v0.25e (2025-05-19)
+    - Fixed ".dev" minor version evaluation in _version_to_long_
+    - Moved `VER()` and `VER$()` core code to auxiliary ROM
+    - Modified _s3_string_ext_ and wrapped in _aux_call_
+  - v0.25d (2025-05-18)
     - Fixed _Type mismatch error_ in `BYTE()`
     - Added function `CHECKDIR()` and kernel routine _file_check_ver_
     - Hex literals, `DEC()` and `HEX$()` now support longs

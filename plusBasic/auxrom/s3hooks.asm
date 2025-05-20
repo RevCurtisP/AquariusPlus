@@ -108,17 +108,16 @@ s3_stuffh_ext:
     ld      b,a                   ; Set up delimiter for STRNG
     cp      '"'                   ; If quotes
     jr      z,_strng              ;   Go stuff quoted string
-    ld      ix,KLOOP
 .string_loop
     ld      a,(hl)                ; Get character
     or      a                     ; If end of line
-    jr      z,.crdone             ;   Finish it up
+    jr      z,_crdone             ;   Finish it up
     cp      ' '                   ; If space
-    ret     z                     ;   Stuff it and continue
+    jr      z,_kloop              ;   Stuff it and continue
     cp      ':'                   ; If colon
-    ret     z                     ;   Stuff it and continue
-    cp      '('                   ; If colon
-    ret     z                     ;   Stuff it and continue
+    jr      z,_kloop              ;   Stuff it and continue
+    cp      '('                   ; If paren
+    jr      z,_kloop              ;   Stuff it and continue
     call    _stuff_chr                ; Else Stuff it
     jr      .string_loop          ;   and check next character
 
@@ -130,27 +129,26 @@ s3_stuffh_ext:
 .colis
     ld      ix,COLIS
     ret
-.crdone
+_crdone:
     ld      ix,CRDONE
     ret
-.strngr
-    ld      ix,STRNGR
+_kloop:
+    ld      ix,KLOOP
     ret
 
-
 ; If label at beginning of line: don't tokenize, just stuff it
-stuff_label:
+_stuff_label:
     cp      '_'                   ; If not a undersoore
-    jp      nz,STRNGR             ;   Keep on truckin'
+    jr      nz,_strngr            ;   Keep on truckin'
     call    _stuff_chr            ; Stuff character in KRUNCH buffer
 .loop
     ld      a,(hl)                ; Get character from buf
     or      a                     ; If end of line
-    jp      z,CRDONE              ;   Finish it up
+    jr      z,_crdone             ;   Finish it up
     cp      ' '                   ; If Space
     jr      z,.stuff_it           ;   Stuff it and keep going
     cp      ':'                   ; If colon
-    jp      z,STRNGR              ;   Stuff it and return
+    jr      z,_strngr             ;   Stuff it and return
 .stuff_it:
     call    _stuff_upper          ; Stuff character in KRUNCH buffer
     jr      .loop                 ; Next character
@@ -174,27 +172,27 @@ _strng:
 ; Hook 39: Extended string processing during CRUNCH
 ;-----------------------------------------------------------------------------
 s3_string_ext:
-    jp      z,STRNG               ; Special Handling for Double Quote
+    jr      z,_strng              ; Special Handling for Double Quote
     cp      $27                   ;
-    jp      z,STRNG               ; Do the same for Single Quote
+    jp      z,_strng              ; Do the same for Single Quote
     cp      '~'                   ; If tilde
     jr      z,.stuff_suffix       ;   Stuff variable suffix
     cp      $5C                   ; If not backslash
-    jp      nz,stuff_label        ;   See if it's a label
+    jp      nz,_stuff_label       ;   See if it's a label
 ; Stuff escaped string
     call    _stuff_chr            ; Copy backslash
     ld      a,(hl)                ; Get next character
     cp      '"'                   ; If not quotes`
-    jp      nz,STRNGR             ;   Carry on
+    jr      nz,_strngr            ;   Carry on
 .escape_char
     call    _stuff_chr            ; Stuff quotes
 .escape_loop
     ld      a,(hl)                ; Get next character
     call    _stuff_chr            ; Else stuff it
     or      a                     ; If EOL
-    jp      z,STRNGR              ;   Finish CRUNCH
+    jr      z,_strngr             ;   Finish CRUNCH
     cp      '"'                   ;
-    jp      z,KLOOP               ; If quotes
+    jr      z,_kloop              ; If quotes
     jr      nz,.not_quotes        ;   Continue crunching
 .not_quotes
     cp      $5C                   ; If not escape
@@ -212,7 +210,8 @@ s3_string_ext:
     call    ISLETC                ; If letter
     jr      nc,.stuff_suffix      ;   Stuff it
 _strngr
-    jp      STRNGR                ; Else finish crunch
+    ld      ix,STRNGR
+    ret
 
 ;-----------------------------------------------------------------------------
 ; Get Function Key Buffer Address

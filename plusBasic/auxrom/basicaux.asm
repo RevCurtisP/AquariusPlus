@@ -53,14 +53,34 @@ aux_check_ver:
 
 ; ------------------------------------------------------------------------------
 ; FN_VER core code
-; On entry: A = StrFlg, FACC, VALTYP = Arg
+; On entry: BC = StrFlg, FACC, VALTYP = Arg
+; In exit: AF = StrFlg, HL = VerAdr or CDE = VerLng
 ; ------------------------------------------------------------------------------
-;;; ToDo: Finish this
 aux_ver:
-    push    hl                    ; Stack = StrFlg, TxtPtr, RtnAdr
-    call    free_addr_len         ; BC = StrLen, DE = StrAdr, HL = StrDsc
-    ex      de,hl                 ; HL = StrAdr
-    ;jr      .return_ver
+    push    af                    ; Stack = StrFlg, RtnAdr
+    call    GETYPE                ; A = ArgTyp
+    jr      nz,.numarg            ; If string arg
+    call    free_addr_len         ;   BC = StrLen, DE = StrAdr, HL = StrDsc
+    ex      de,hl                 ;   HL = StrAdr
+    jr      .return_ver           ; Else
+.numarg
+    call    CONINT                ;   A = Arg
+    ld      iy,get_system_version ;   If Arg = 0
+    or      a                     ;     Getting system version
+    jr      z,.getver             ;   Else If Arg = 1
+    ld      iy,get_plusbas_version;     Getting plusBASIC version
+    cp      1                     ;   Else
+    jp      nz,FCERR              ;     Illegal quantity error
+.getver
+    ld      hl,FBUFFR
+    ld      bc,14
+    call    jump_iy               ;   HL = VerAdr
+.return_ver
+    pop     af                    ; AF = StrFlg, Stack = RtnAdr
+    ret     z                     ; If string, return A=0, HL = VerAdr
+    call    version_to_long       ; Else return A=-1, CDE = VerHsh
+    or      $FF                   ;  
+    ret
 
 ;-----------------------------------------------------------------------------
 ; Return BASIC Version

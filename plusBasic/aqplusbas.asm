@@ -46,13 +46,13 @@
     jp      _then_hook      ; $2039 THENHK *Not Implemented* Check for ELSE after IF ... THEN
     jp      _trap_error     ; $203C XERROR Restore Stack, Display Error, and Stop Program
     jp      _main_ext       ; $203F XMAIN  Save Line# Flag in TEMP3
-    jp      _stuffh_ext     ; $2042 XSTUFF Check for additional tokens when stuffing
+    jp      just_ret        ; $2042
     jp      _read_key       ; $2045 INCHRA Read alt keyboard port instead of matrix
     jp      _check_topmem   ; $2048 XCLEAR Verify TOPMEM is in Bank 2
     jp      _ptrget_hook    ; $204B XPTRGT Allow ~alphanumunder after var name
     jp      _skip_label     ; $204E SKPLBL Skip label at beginning of line
     jp      _skip_on_label  ; $2051 SKPLOG Skip label in ON GOTO
-    jp      _string_ext     ; $2054 STRNGX Don't capitalize letters between single quotes (STRNGX)
+    jp      just_ret        ; $2054
     jp      _check_comment  ; $2057 CHKCMT Check for ' and treat as REM
     jp      _isvar_ext      ; $205A ISVARX Variable evaluation extension - string splicing
     jp      _let_ext        ; $205D LETEXT Variable assignment extension - string splicing
@@ -134,7 +134,7 @@ null_desc:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.25d"
+    db "v0.25e"
     db 0
 plusver_len equ $ - plus_version
 plus_len   equ   $ - plus_text
@@ -968,8 +968,6 @@ run_exec:
 ; ------------------------------------------------------------------------------
 ;  Hook Jump Table
 ; ------------------------------------------------------------------------------
-;;; ToDo: Put extended error jumps here after UDF hooks eliminated
-
 
     assert !($2EFF<$)   ; ROM full!
     dc $2F00-$,$76
@@ -1099,9 +1097,11 @@ _trap_error:
 ;-----------------------------------------------------------------------------
 ; S3 BASIC extensions routines in Auxiliary ROM Page
 ;-----------------------------------------------------------------------------
-;; ToDo: Move routines to ExtROM or wrap in aux_call
 
-_stuffh_ext:
+string_ext:
+    ld      iy,s3_string_ext
+    jr      auxcall_jumpix
+stuffh_ext:
     ld      iy,s3_stuffh_ext
 auxcall_jumpix:
     call    aux_call
@@ -1110,9 +1110,6 @@ auxcall_jumpix:
 _then_hook:
     jp      REM
 
-_string_ext:
-    call    page_set_aux
-    jp      s3_string_ext
 
 ; 10 _label:PRINT "testing":'comment
 ; 20 'comment
@@ -1125,15 +1122,6 @@ _check_comment:
 .rem
     rst     CHRGET                ; Skip '
     jp      REM                   ;   and do REM
-
-;_dim_extension:
-;    call    dim_extension         ; DIM extension - Populate array from list
-;    call    CHRGT2                ; Reget current character
-;    ret     z                     ; If terminator, DIM statement is done
-;    jp      DIMNXT                ; Else DIM the next array
-
-
-
 
 ;-----------------------------------------------------------------------------
 ; Internal routines to write to BASIC buffers
@@ -1162,7 +1150,6 @@ _buffer_write_done:
     ex      af,af'                ; A = OldPg
     out     (IO_BANK3),a          ; Map old Page
     ret
-
 
 _buffer_write_init:
     ex      af,af'                ; A' = WritePg

@@ -119,7 +119,6 @@ TTYFIX  equ     $2033   ;; | TTYFIN Extension
 THENHK  equ     $2039   ;; | Scan for ELSE after IF THEN
 XERROR  equ     $203C   ;; | Restore Stack, Display Error, and Stop Program
 XMAIN   equ     $203F   ;; | Line Crunch Hook
-XSTUFF  equ     $2042   ;; | STUFFH hook
 INCHRA  equ     $2045   ;; | Read alt keyboard port instead of matrix
 XCLEAR  equ     $2048   ;; | Issue Error if TOPMEM too low
 XPTRGT  equ     $204B   ;; | PTRGET Hook
@@ -963,8 +962,8 @@ KLOOP:  ld      a,(hl)            ;GET CHARACTER FROM BUF
         jp      z,STUFFH          ;JUST STUFF AWAY
         ld      b,a               ;SETUP B WITH A QUOTE IF IT IS A STRING
         cp      '"'               ;QUOTE SIGN?
-;;; + Extended literal string handling
-        jp      STRNGX            ; + Patch to handle both " and '            04CE  jp      z,STRNG
+;;; + Extended literal string handling                                        Original Code
+        jp      string_ext        ;; + Patch to handle both " and '           04CE  jp      z,STRNG
 STRNGR: or      a                 ;END OF LINE?
         jp      z,CRDONE          ;YES, DONE CRUNCHING
         ld      a,(DORES)         ;IN DATA STATEMENT AND NO CRUNCH?
@@ -1043,10 +1042,10 @@ STUFFH: inc     hl                ;[M80] ENTRY TO BUMP [H,L]
         sub     ':'               ;[M65] IS IT A ":"?"
         jr      z,COLIS           ;[M65] YES, ALLOW CRUNCHING AGAIN.
 ;; + Tokenizer Mods
-        jp      XSTUFF            ; + Check for DATA and DOS statements               ; 0544  cp      DATATK-':'
-                                  ;+                                                  ; 0545
-                                  ;+                                                  ; 0546  jr      nz,NODATT
-        byte    $03                                                                   ; 0547
+        jp      stuffh_ext        ;; + Check for DATA and DOS statements      ; 0544  cp      DATATK-':'
+                                  ;; +                                        ; 0545
+                                  ;; +                                        ; 0546  jr      nz,NODATT
+        byte    $03                                                           ; 0547
 COLIS:  ld      (DORES),a         ;[M65] SETUP FLAG.
 NODATT: sub     REMTK-':'         ;[M65] REM ONLY STOPS ON NULL.
         jp      nz,KLOOP          ;[M65] NO, CONTINUE CRUNCHING.
@@ -5155,8 +5154,8 @@ LF:     ld      de,SCREEN+960     ;
         ld      (CURRAM),hl       ;;Save New Screen Position
         jr      TTYFIN            ;
 LFS:    call    SCROLX            ;; +                                        1DD8  call    SCROLL
-                                  ;;+                                         1DDA
-                                  ;;+                                         1DEB
+                                  ;; +                                        1DDA
+                                  ;; +                                        1DEB
         jr      TTYFIN            ;
 ;;Back Space: Move Cursor Left and Delete Character
 BS:     ld      a,(TTYPOS)        ;

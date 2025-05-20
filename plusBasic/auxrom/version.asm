@@ -49,6 +49,7 @@ version_to_long:
     cp      '.'                   ; If no dot
     ret     nz                    ;   Return
     inc     hl                    ; Skip .
+    ld      a,(hl)                ; A = NxtChr
     ld      d,$FF                 ; Preload minor with value > 99
     cp      'd'                   ; If "d" after dot
     ret     z                     ;   Assume .dev and return > 99

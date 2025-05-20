@@ -1239,40 +1239,16 @@ ST_USE:
 FN_VER:
     inc     hl                    ; Skip VER
     ld      a,(hl)                ; Get following character
-    cp      '$'                   ;
+    cp      '$'                   ; StrFlg = 0 if StrFn, else StrNum
     push    af                    ; Stack = StrFlg, RtnAdr
-    jr      nz,.notstring         ; If '$'
-    inc     hl                    ;   Skip it
-.notstring
+    call    z,CHRGTR              ; If String, Skip $
     call    PARTYP                ; FACC = Arg, A = ArgTyp
-    jr      nz,.getver            ; If it's a string
-    ex      (sp),hl               ; HL = StrFlg, Stack = TxtPtr, RtnAdr
-    push    hl                    ; Stack = StrFlg, TxtPtr, RtnAdr
-    call    free_addr_len         ; BC = StrLen, DE = StrAdr, HL = StrDsc
-    ex      de,hl                 ; HL = StrAdr
-    jr      .return_ver
-.getver
-    call    CONINT                ; Convert argument to byte
-    ld      iy,get_system_version
-    or      a
-    jr      z,.sysver
-    ld      iy,get_plusbas_version
-    cp      1
-    jp      nz,FCERR
-.sysver
-    ex      (sp),hl               ; HL = StrFlg, Stack = TxtPtr, RtnAdr
-    push    hl                    ; Stack = StrFlg, TxtPtr, RtnAdr
-    ld      hl,FBUFFR
-    ld      bc,14
-    call    aux_call              ; Get version string
-.return_ver
-    pop     af                    ; F = StrFlg,
-    ld      bc,LABBCK
-    push    bc                    ; Stack = LABBCK, TxtPtr, RtnAdr
+    pop     af                    ; AF = StrFlg
+    call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
+    ld      iy,aux_ver
+    call    aux_call              ; A = StrFlg, HL = StrAdr or CDE = SrtHsh
     jp      z,TIMSTR              ; If VER$(), return version string
-    ld      iy,version_to_long
-    call    aux_call              ; Else convert to long
-    jp      FLOAT_CDE             ; and return it
+    jp      FLOAT_CDE             ; Else return SrtHsh
 
 ;-----------------------------------------------------------------------------
 ; WORD(string)

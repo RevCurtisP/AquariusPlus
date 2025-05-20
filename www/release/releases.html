@@ -16,7 +16,9 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
   <body>
     <h1 id="plusbasic-release-history">plusBASIC Release History</h1>
     <ul>
-      <li>v0.25d (2025-05-??)
+      <li>v0.25e (2025-05-19)
+<ul><li>Fixed ".dev" minor version evaluation in <em>version_to_long</em></li><li>Moved <code>VER()</code> and <code>VER$()</code> core code to auxiliary ROM</li><li>Modified <em>s3_string_ext</em> and wrapped in <em>aux_call</em></li></ul></li>
+      <li>v0.25d (2025-05-18)
 <ul><li>Fixed <em>Type mismatch error</em> in <code>BYTE()</code></li><li>Added function <code>CHECKDIR()</code> and kernel routine <em>file_check_ver</em></li><li>Hex literals, <code>DEC()</code> and <code>HEX$()</code> now support longs</li><li>Added statement <code>CHECK VER</code></li><li><code>VER()</code> evaluates <code>.dev</code> as higher than <code>.99</code> (the current highest major or minor version number)</li><li>Renamed kernel routines and moved to Auxiliary ROM
 <ul><li><em>esp_get_version</em> to <em>get_system_version</em></li><li><em>sys_ver_plusbasic</em> to get_plusbas_version</li><li><em>sys_num_ver</em> to <em>version_to_long</em></li></ul></li><li>Moved utility routines <em>asc_to_bcd</em>, <em>bcd_to_bin</em>, and <em>mult_hl_10</em>  from System ROM to Auxiliary</li><li>Refactored routines <em>s3_ctrl_keys</em>, s3_stuffh_ext_, <em>s3_string_ext</em> to be used with <em>aux_call</em></li><li>Added jump table address to comments in <em>kernel.asm</em> to verify that the jump points don't accidentally change</li></ul></li>
       <li>v0.25c (2025-05-04)
