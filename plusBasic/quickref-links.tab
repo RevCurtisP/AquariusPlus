@@ -18,6 +18,7 @@ DEFINT      BASIC-DEF-INTLIST-Statement
 DEFPALETTE  BASIC-DEF-PALETTELIST-Statement
 DEFTILE     BASIC-DEF-TILELIST-Statement
 DIM         BASIC-DIM-Statement
+fileio      BASIC-File-Statements-and-Functions 
 filesystem  BASIC-Filesystem-Statements-and-Functions
 FILLSCREEN  BASIC-FILL-SCREEN-Statement
 FILLTILE    BASIC-FILL-TILEMAP-Statement
