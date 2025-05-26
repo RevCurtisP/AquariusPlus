@@ -957,7 +957,7 @@ page_call:
 run_exec:
     call    page_set_plus         ; Put extended ROM back
     call    SCRTCH                ; Do a New
-    ld      bc,READY                            ; Return to Direct Mode
+    ld      bc,READY              ; Return to Direct Mode
     push    bc
     ld      iy,(FILNAF)           ; IY = ExecAdr
     ld      a,(FILNAF+2)          ; A = ExecPg
