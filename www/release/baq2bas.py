@@ -233,7 +233,9 @@ xtokens = {
     0xB6: "BORDER",
     0xB7: "CHECK",
     0xB8: "REPEAT",
-    0xB9: "UNTIL"
+    0xB9: "UNTIL",
+    0xBA: "RAN",
+    0xBB: "DOM"
 }
 
 with open(args.input, "rb") as f:

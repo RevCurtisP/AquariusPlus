@@ -129,9 +129,9 @@ _joy_gamectrl:
 .decode
     ld      a,c                   ; A = StrLen
     or      a                     ; If StrLen = 0
-    jp      z,aux_eserr           ;   Empty string error
+    jp      z,ESERR               ;   Empty string error
     cp      8                     ; If StrLen <> 8
-    jp      nz,aux_slerr          ;   String Length Error
+    jp      nz,SLERR              ;   String Length Error
     pop     bc                    ; BC = FnSfx1; Stack = RtnAdr
     ex      de,hl                 ; HL = StrAdr
     ld      d,0                   ; Clear StrOfs MSB

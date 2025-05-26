@@ -34,9 +34,9 @@ bas_reset_sprite:
     push    hl                    ; Stack = TxtPtr, RtnAdr
     ex      de,hl                 ; HL = VarPtr
     call    string_addr_len       ; C = StrLen, DE = StrAdr
-    jp      z,aux_eserr           ; If StrLen = 0, Empty String Error
+    jp      z,ESERR               ; If StrLen = 0, Empty String Error
     call    sprite_reset
-    jp      c,gfx_slerr
+    jp      c,SLERR
     pop     hl
     ret
 
@@ -56,9 +56,9 @@ bas_rgb_string:
     push    hl                    ;   Stack = TxtPtr, RtnAdr
     call    free_addr_len         ;   DE = StrAdr, A = StrLen
     pop     hl                    ;   HL = TxtPtr, Stack = RtnAdr
-    jp      z,gfx_eserr           ;   If StrLen = 0
+    jp      z,ESERR               ;   If StrLen = 0, Empty string error
     cp      3                     ;   If StrLen <> 3
-    jp      nz,gfx_slerr          ;     String length error
+    jp      nz,SLERR              ;     String length error
     call    .get_nybble           ;   A = Red
     push    af                    ;   Stack = Red, RtnAdr
     call    .get_nybble           ;   A = Green
@@ -118,6 +118,23 @@ bas_getsprite:
     pop     hl                    ; HL = BufDsc; Stack = DummyAdr, TxtPtr, RtnAdr
     ret
 
+; Called from ST_PUT_CHR
+; On entry, A = ChrASC, BC = Col, DE = Row
+bas_put_chr:
+    push    bc                    ; Stack = Col, RtnAdr
+    ex      de,hl                 ; HL = Row
+    add     hl,hl                 ; HL = Row * 2
+    add     hl,hl                 ; HL = Row * 4
+    add     hl,hl                 ; HL = Row * 6
+    push    hl                    ; Stack = Line, Col, RtnAdr
+    ld      de,FBUFFR             ; DE = BufAdr
+    push    de                    ; Stack = BufAdr, Row, Col, RtnAdr
+    call    _getchrdef            ; Copy ChrData to buffer
+    pop     hl                    ; HL = BufAdr, Stack = Row, Col, RtnAdr
+    pop     de                    ; DE = Line; Stack = Col, RtnAdr
+    pop     bc                    ; BC = Col; Stack = RtnAdr
+    jp      bitmap_put_char       ; Put char to bitmap and return
+
 ; Called from FN_GETCHRDEF
 ; Input: B: ChrASCl
 bas_getchrdef:
@@ -125,8 +142,9 @@ bas_getchrdef:
     ld      a,8                   ; A = BufLen
     call    STRINI                ; DE = BufAdr
     pop     af
+_getchrdef
     ld      bc,8                  ; BC = BufLen
-    ld      l,0                   ; L = ChrSet
+    ld      l,0                   ; L = ChrSet (CharRAM)
     jp      gfx_get_char_def
 
 ; Called from FN_GETCHRSET
@@ -283,10 +301,3 @@ bas_set_tile_ary:
     dec     bc
     jr      .loop
 
-
-gfx_eserr:
-    ld      e,ERRES
-    byte    $01                   ; LD BC over LD E
-gfx_slerr:
-    ld      e,ERRSL
-    jp      ERROR

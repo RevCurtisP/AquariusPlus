@@ -137,7 +137,7 @@ dos_open_append:
 ; Output: A: file descriptor
 ;-----------------------------------------------------------------------------
 dos_open_random:
-    ld      a, FO_CREATE
+    ld      a, FO_RDWR | FO_CREATE
     jr      dos_open
 
 ;-----------------------------------------------------------------------------
@@ -259,11 +259,12 @@ dos_rewind:
 
 ;-----------------------------------------------------------------------------
 ; Move to position in open file
-; Input:  BC = Offset low 16 bits
-;         DE = Offset high 16 bits
-; Clobbered registers: A
+; Input: A = File descriptor
+;       BC = Offset low 16 bits
+;       DE = Offset high 16 bits
+; Output: A = Result
 ;-----------------------------------------------------------------------------
-;; FILE #filenum GOTO position
+;; SET FILE #channel POS TO position
 dos_seek:
     push    af                    ; Stack = FilDsc, RtnAdr
     ld      a, ESPCMD_SEEK
@@ -275,10 +276,20 @@ dos_seek:
 
 ;-----------------------------------------------------------------------------
 ; Get current position in open file
+;  Input: A = FilDsc
 ; Output: BC = Offset low 16 bits
 ;         DE = Offset high 16 bits
 ; Clobbered registers: A
 ;-----------------------------------------------------------------------------
 ; FILEPOS(#filenum)
 dos_tell:
+    push    af
+    ld      a,ESPCMD_TELL
+    call    esp_cmd
+    pop     af
+    call    esp_send_byte         ; Send FilDsc
+    call    esp_get_result
+    ret     m
+    call    esp_get_long          ; DEBC = FilPos
+    xor     a
     ret

@@ -420,38 +420,68 @@ RNDTBL: byte    $35,$4A,$CA,$99   ;;3821 RNDTAB
         word    BASTXT            ;;3901 TXTTAB
 ;[M65] STATEMENT DISPATCH ADDRESSES
 STMDSP: ;MARKS START OF STATEMENT LIST
-        word    ENDS              ;;$0C21
-        word    FOR               ;;$05BC
-        word    NEXT              ;;$0D13
-        word    DATA              ;;$071C
-        word    INPUT             ;;$0893
-        word    DIM               ;;$10CC
-        word    READ              ;;$08BE
-        word    LET               ;;$0731
-        word    GOTO              ;;$06DC
-        word    RUN               ;;$06BE
-        word    IFS               ;;$079C
-        word    RESTOR            ;;$0C05
-        word    GOSUB             ;;$06CB
-        word    RETURN            ;;$06F8
-        word    REM               ;;$071E
-        word    STOP              ;;$0C1F
-        word    ONGOTO            ;;$0780
-        word    LPRINT            ;;$07B5
-        word    COPY              ;;$1B15
-        word    DEF               ;;$0B3B
-        word    POKE              ;;$0B6D
-        word    PRINT             ;;$07BC
-        word    CONT              ;;$0C4B
-        word    LIST              ;;$056C
-        word    LLIST             ;;$0567
-        word    CLEAR             ;;$0CCD
-        word    CLOAD             ;;$1C2C
-        word    CSAVE             ;;$1C08
-        word    PSET              ;;$1A4F
-        word    PRESET            ;;$1A4C
-        word    SOUND             ;;$1AD6
-        word    SCRATH            ;;$0BBD NEW
+        word    ENDS              ;;$0C21                                             01D5
+        word    FOR               ;;$05BC                                             01D7
+                                  ;; +                                                01D8
+        word    NEXT              ;;$0D13                                             01D9
+                                  ;; +                                                01DA
+        word    DATA              ;;$071C                                             01DB
+                                  ;; +                                                01DC
+        word    INPUT             ;;$0893                                             01DD
+                                  ;; +                                                01DE
+        word    DIM               ;;$10CC                                             01DF
+                                  ;; +                                                01E0              
+        word    READ              ;;$08BE                                             01E1
+                                  ;; +                                                01E2              
+        word    LET               ;;$0731                                             01E3
+                                  ;; +                                                01E4              
+        word    GOTO              ;;$06DC                                             01E5
+                                  ;; +                                                01E6              
+        word    RUN               ;;$06BE                                             01E7
+                                  ;; +                                                01E8              
+        word    IFS               ;;$079C                                             01E9
+        nop                       ;; +                                                01EB  word    RESTOR
+SLERR   ld      e,ERRSL           ;; + 32 String length                               01FC
+                                  ;; +                                                01ED  word    GOSUB
+        byte    $01               ;; +                                                01FE                
+ESERR:  ld      e,ERRES           ;; + 31 Empty string                                01EF  word    RETURN
+                                  ;; +                                                01F0                
+        byte    $01               ;; +                                                01F1  word    REM   
+BRERR:  ld      e,ERRBR           ;; + 30 Bad range                                   01F2                
+                                  ;; +                                                01F3  word    STOP  
+        byte    $01               ;; +                                                01F4                
+IMERR:  ld      e,ERRIM           ;; + 29 Invalid mode                                01F5  word    ONGOTO
+                                  ;; +                                                01F6                
+        byte    $01               ;; +                                                01F7  word    LPRINT
+TOERR:  ld      e,ERRTO           ;; + 28 Too many operands                           01F8                
+                                  ;; +                                                01F9  word    COPY  
+        byte    $01               ;; +                                                01FA                
+UDERR:  ld      e,ERRUD           ;; + 27 Undimensioned array                         01FB  word    DEF   
+                                  ;; +                                                01FC                
+        byte    $01               ;; +                                                01FD  word    POKE  
+AGERR:  ld      e,ERRAG           ;; + 26 ARG without GOSUB                           01FE                
+                                  ;; +                                                01FF  word    PRINT 
+        byte    $01               ;; +                                                0200
+ULERR:  ld      e,ERRUL           ;; + 25 Undefined label                             0201  word    CONT  
+                                  ;; +                                                0202                
+        byte    $01               ;; +                                                0203  word    LIST  
+GSERR:  ld      e,ERRGS           ;; + 24 Statement not implemented                   0204                
+                                  ;; +                                                0205  word    LLIST 
+        byte    $01               ;; +                                                0206                
+LBOERR: ld      e,ERRLBO          ;; + 23 Line buffer overflow                        0207  word    CLEAR 
+                                  ;; +                                                0208                
+        byte    $01               ;; +                                                0209  word    CLOAD 
+UEERR:  ld      e,ERRUE           ;; + 22 Unprintable error                           020A                
+                                  ;; +                                                020B  word    CSAVE 
+        byte    $01               ;; +                                                020C                
+REERR:  ld      e,ERRRE           ;; + 21 RESUME without error                        020D  word    PSET
+                                  ;; +                                                020E                
+        byte    $01               ;; +                                                020F  word    PRESET
+NRERR:  ld      e,ERRNR           ;; + 20 No RESUME                                   0210                
+                                  ;; +                                                0211  word    SOUND 
+        jp      ERROR             ;; +                                                0212                
+                                  ;; +                                                0213  word    SCRATH
+                                  ;; +                                                0214
 ;;Function Dispatch Table
 FUNDSP: word    SGN               ;;$14F5
         word    INT               ;;$15B1
@@ -739,7 +769,6 @@ ERRUF   equ     $-ERRTAB          ;;$22
         byte    "UF"              ;[M80] Undefined user function
 ERRMO   equ     $-ERRTAB          ;;$24
         byte    "MO"              ;[M80] Missing operand
-ERRUD   equ     $34               ;;Undimensioned array
 
 ;[M80] FIND A "FOR" ENTRY ON THE STACK WITH THE VARIABLE POINTER PASSED IN [D,E]
 FORSIZ  equ     13                ;;Size of a FOR entry on the stack
@@ -785,7 +814,7 @@ MOERR:  ld      e,ERRMO           ;;     Missing Operand
         byte    $01               ;[M80] "LD BC," OVER THE NEXT 2
 TMERR:  ld      e,ERRTM           ;[M80] TYPE MISMATCH ERROR
 
-ERROR:  jp      XERROR            ;; + Trap Error                             03DB  call    STKINI
+ERROR:  jp      error_ext         ;; + Trap Error                             03DB  call    STKINI
                                   ;; +                                        03DC  
                                   ;; +                                        03DD  
 ;;; Eliminate UDF Hook for Error Trapping
@@ -2445,15 +2474,16 @@ INLNC1: ld      c,a               ;[M80] SAVE CURRENT CHAR IN [C]
         jp      ctrl_keys         ;; + Check for Extended Ctrl-Keys            0D92  cp      127 
                                   ;; +                                         0D93    
                                   ;; +                                         0D94  jr      z,RUBOUT          
-UDERR:  ld      e,ERRUD           ;; + Undimensioned Array error               0D95
-                                  ;; +                                         0D96  ld      a,(RUBSW)
-        jp      ERROR             ;; +                                         0D97
+;; Set VALTYP to 1 (string) or 0 (number)
+VALSTR: byte    $3E               ;; + LD A,$AF                               0D95
+VALNUM: xor     a                 ;; + A = 0                                   0D96  ld      a,(RUBSW)
+        and     1                 ;; + Convert $AF to 1                        0D97
                                   ;; +                                         0D98
-                                  ;; +                                         0D99  or      a
-;;; Deprecated code - 9 bytes
-;; ToDo: Put more extended errors here?
-        jr      z,NOTRUB          ;[M80] NOPE.
-        ld      a,'\'             ;[M80] GET READY TO TYPE SLASH
+VALSET: ld      (VALTYP),a        ;; +                                         0D99  or      a
+                                  ;; +                                         0D9A  jr      z,NOTRUB          
+                                  ;; +                                         0D9B
+        ret                       ;; +                                         0D9D  ld      a,'\'
+        nop                       ;; +                                         0D9E
         rst     OUTCHR            ;[M80] SEND IT
         xor     a                 ;[M80] CLEAR RUBSW
         ld      (RUBSW),a         ;[M80] LIKE SO
@@ -3009,9 +3039,9 @@ DIMCON: jp      DIMEXT            ;; + Dim Extesion hook                      10
 DIMNXT: rst     SYNCHK            ;
         byte    ','               ;[M80] MUST BE COMMA
 ;{M80} DIMENSION
-DIM:    ld      bc,DIMCON       ;[M80] PLACE TO COME BACK TO
-        push    bc              ;
-        byte    $F6             ;;"OR" to skip next instruction
+DIM:    ld      bc,DIMCON         ;[M80] PLACE TO COME BACK TO
+        push    bc                ;
+        byte    $F6               ;;"OR" to skip next instruction
 ;{M80} VARIABLE SEARCHING
 ;;Get Pointer to Variable
 PTRGET: xor      a                ;[M80] MAKE [A]=0
@@ -3023,12 +3053,15 @@ PTRGT2: call    ISLET             ;[M80] CHECK FOR LETTER
         xor     a                 ;
         ld      b,a               ;[M80] ASSUME NO SECOND CHARACTER
         ld      (VALTYP),a        ;[M80] ZERO NAMCNT
-        jp      XPTRGT            ;; + Check for tilde in variable name       10E1  rst     CHRGET
-                                  ;; +                                        10E2  jr      c,ISSEC
-                                  ;; +                                        10E3  
-CHKLET: call    ISLETC            ;[M80] SET CARRY IF NOT ALPHABETIC
-        jr      c,NOSEC           ;[M80] ALLOW ALPHABETICS
-ISSEC:  ld      b,a               ;[M80] IT IS A NUMBER--SAVE IN B
+        rst     CHRGET            ;[M80] GET CHAR
+        jp      c,issec_ext       ;; + If digit, save and check for tilde             10E2  jr      c,ISSEC
+                                  ;; +                                                10E3
+                                  ;; +                                                10E4  call    ISLETC
+        jp      ptrget_ext        ;; + Compare to tilde                               10E5
+                                  ;; +                                                10E6
+                                  ;; +                                                10E7  jr      c,NOSEC
+        nop                       ;; +                                                10E8
+DEATEM: dec     hl                ;; +                                                10E9  ld      b,a
 EATEM:  rst     CHRGET            ;[M80] GET CHAR
         jr      c,EATEM           ;[M65] SKIP NUMERICS
         call    ISLETC            ;

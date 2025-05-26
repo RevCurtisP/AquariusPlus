@@ -10,137 +10,137 @@ _jump_table:
 ; * CALL gfx_call *
 ; *****************
 ; gfxbitmap.asm <<Bitmap Graphics>>
-    jp      bitmap_init_vars      ; Initialize bitmap system variables
-    jp      bitmap_set_mode       ; Set bitmap mode system variable from video control register
-    jp      bitmap_read_sysvars   ; Read bitmap system variables
-    jp      bitmap_read_color     ; Get Bitmap Draw Colors
-    jp      bitmap_write_color    ; Set Bitmap Draw Colors
-    jp      bitmap_clear_screen   ; Clear Bitmap
-    jp      bitmap_fill_byte      ; Fill Bitmap with Byte
-    jp      bitmap_fill_color     ; Fill Bitmap Color RAM
-    jp      bitmap_line           ; [Future]
-    jp      just_ret              ; (bitmap_circle)
-    jp      just_ret              ; (bitmap_box)
-    jp      just_ret              ; (bitmap_move)
-    jp      just_ret              ; (bitmap_setcell)
-    jp      just_ret
-    jp      just_ret
-    jp      bitmap_setpixel       ; Draw pixel
-    jp      bitmap_resetpixel     ; Erase pixel on 1 bpp bitmap screen
-    jp      bitmap_getpixel       ; Return pixel/bloxel at position
-    jp      bitmap_get            ; [future] Read Bitmap Screen Section into Buffer
-    jp      just_ret              ; (bitmap_put)
-    jp      just_ret
-    jp      just_ret
-    jp      just_ret
-    jp      colormap_fill         ; Fill 1bpp Color Map Rectangle with Byte
-    jp      just_ret
-    jp      just_ret
-    jp      just_ret
-    jp      just_ret
+    jp      bitmap_init_vars      ; C000 Initialize bitmap system variables
+    jp      bitmap_set_mode       ; C003 Set bitmap mode system variable from video control register
+    jp      bitmap_read_sysvars   ; C006 Read bitmap system variables
+    jp      bitmap_read_color     ; C009 Get Bitmap Draw Colors
+    jp      bitmap_write_color    ; C00C Set Bitmap Draw Colors
+    jp      bitmap_clear_screen   ; C00F Clear Bitmap
+    jp      bitmap_fill_byte      ; C012 Fill Bitmap with Byte
+    jp      bitmap_fill_color     ; C015 Fill Bitmap Color RAM
+    jp      bitmap_line           ; C018 [Future]
+    jp      just_ret              ; C01B (bitmap_circle)
+    jp      just_ret              ; C01E (bitmap_box)
+    jp      just_ret              ; C021 (bitmap_move)
+    jp      just_ret              ; C024 (bitmap_setcell)
+    jp      just_ret              ; C027 
+    jp      just_ret              ; C02A 
+    jp      bitmap_setpixel       ; C02D Draw pixel
+    jp      bitmap_resetpixel     ; C030 Erase pixel on 1 bpp bitmap screen
+    jp      bitmap_getpixel       ; C033 Return pixel/bloxel at position
+    jp      bitmap_get            ; C036 [future] Read Bitmap Screen Section into Buffer
+    jp      just_ret              ; C039 (bitmap_put)
+    jp      just_ret              ; C03C (bitmap_putchar)
+    jp      just_ret              ; C03F (bitmap_putstring)
+    jp      just_ret              ; C042 (bitmap_putclip)
+    jp      colormap_fill         ; C045 Fill 1bpp Color Map Rectangle with Byte
+    jp      just_ret              ; C048 
+    jp      just_ret              ; C04B 
+    jp      just_ret              ; C04E 
+    jp      just_ret              ; C051 
 ; color.asm <<Palette and Colors>>
-    jp      palette_reset         ; Reset palette to default colors
-    jp      palette_set           ; palette_set
-    jp      palette_get           ; Get palette
-    jp      just_ret
-    jp      rgb_to_asc            ; Convert Binary RGB list to ASCII
-    jp      asc_to_rgb            ; Convert ASCII RRGGBB to binary GB0R
-    jp      just_ret
-    jp      just_ret
+    jp      palette_reset         ; C054 Reset palette to default colors
+    jp      palette_set           ; C057 palette_set
+    jp      palette_get           ; C05A Get palette
+    jp      just_ret              ; C05D 
+    jp      rgb_to_asc            ; C060 Convert Binary RGB list to ASCII
+    jp      asc_to_rgb            ; C063 Convert ASCII RRGGBB to binary GB0R
+    jp      just_ret              ; C066 
+    jp      just_ret              ; C069 
 ;; move to nybble.asm
 ;;    jp      read_nybbles
 ;;    jp      read_hex_nybble
 ;;    jp      hex_to_nybble
-    jp      just_ret
-    jp      just_ret
-    jp      just_ret
-    jp      just_ret
+    jp      just_ret              ; C06C 
+    jp      just_ret              ; C06F 
+    jp      just_ret              ; C072 
+    jp      just_ret              ; C075 
 ; screen.asm <<Text Screen Read and Write>>
-    jp      screen_clear_color    ; Fill Color RAM with current/default colors
-    jp      just_ret
-    jp      just_ret
-    jp      just_ret
-    jp      screen_read_byte      ; Read byte from screen
-    jp      screen_write_byte     ; Write byte to screen
-    jp      screen_read_string    ; Read string from Screen RAM
-    jp      screen_write_string   ; Write string to Screen RAM
-    jp      just_ret
-    jp      just_ret
-    jp      screen_read_paged
-    jp      screen_write_paged
-    jp      screen_read_fast
-    jp      screen_write_fast
-    jp      just_ret
-    jp      just_ret
-    jp      oolor_read_byte       ; Read byte from Color RAM
-    jp      color_write_byte      ; Write byte to Color RAM
-    jp      color_read_string     ; Read string from Color RAM
-    jp      color_write_string    ; Write string to Color RAM
-    jp      just_ret
-    jp      just_ret
-    jp      just_ret
-    jp      just_ret
+    jp      screen_clear_color    ; C078 Fill Color RAM with current/default colors
+    jp      just_ret              ; C07B 
+    jp      just_ret              ; C07E 
+    jp      just_ret              ; C081 
+    jp      screen_read_byte      ; C084 Read byte from screen
+    jp      screen_write_byte     ; C087 Write byte to screen
+    jp      screen_read_string    ; C08A Read string from Screen RAM
+    jp      screen_write_string   ; C08D Write string to Screen RAM
+    jp      just_ret              ; C090 
+    jp      just_ret              ; C093 
+    jp      screen_read_paged     ; C096 
+    jp      screen_write_paged    ; C099 
+    jp      screen_read_fast      ; C09C 
+    jp      screen_write_fast     ; C09F 
+    jp      just_ret              ; C0A2 
+    jp      just_ret              ; C0A5 
+    jp      oolor_read_byte       ; C0A8 Read byte from Color RAM
+    jp      color_write_byte      ; C0AB Write byte to Color RAM
+    jp      color_read_string     ; C0AE Read string from Color RAM
+    jp      color_write_string    ; C0B1 Write string to Color RAM
+    jp      just_ret              ; C0B4 
+    jp      just_ret              ; C0B7 
+    jp      just_ret              ; C0BA 
+    jp      just_ret              ; C0BD 
 ; screen_gfx.asm
-    jp      screen_clear_cursor   ; Remove cursor from screen
-    jp      just_ret
-    jp      screen_invert_color
-    jp      screen_invert_cursor
-    jp      just_ret
-    jp      just_ret
-    jp      screen_get            ; Read Text Screen Section into Buffer
-    jp      screen_put            ; Write Text Screen Section from Buffer
-    jp      screen_fill           ; Fill Text or Color Screen Rectangle with Byte
-    jp      just_ret
-    jp      just_ret
-    jp      just_ret
+    jp      screen_clear_cursor   ; C0C0 Remove cursor from screen
+    jp      just_ret              ; C0C3 
+    jp      screen_invert_color   ; C0C6 
+    jp      screen_invert_cursor  ; C0C9 
+    jp      just_ret              ; C0CC 
+    jp      just_ret              ; C0CF 
+    jp      screen_get            ; C0D2 Read Text Screen Section into Buffer
+    jp      screen_put            ; C0D5 Write Text Screen Section from Buffer
+    jp      screen_fill           ; C0D8 Fill Text or Color Screen Rectangle with Byte
+    jp      just_ret              ; C0DB 
+    jp      just_ret              ; C0DE 
+    jp      just_ret              ; C0E1 
 ; move to nybble.asm
 ;   jp      swap_nybbles
 ;   jp      swap_nybbles_de
 ; screen_swap.asm <<Text Screen Switch and Swap>>
-    jp      init_screen_buffers
-    jp      init_screen_vars
-    jp      just_ret
-    jp      just_ret
-    jp      screen_reset
-    jp      screen_status
-    jp      just_ret
-    jp      just_ret
-    jp      screen_restore
-    jp      screen_stash
-    jp      screen_swap
-    jp      screen_switch
-    jp      just_ret
-    jp      just_ret
+    jp      init_screen_buffers   ; C0E4 
+    jp      init_screen_vars      ; C0E7 
+    jp      just_ret              ; C0EA 
+    jp      just_ret              ; C0ED 
+    jp      screen_reset          ; C0F0 
+    jp      screen_status         ; C0F3 
+    jp      just_ret              ; C0F6 
+    jp      just_ret              ; C0F9 
+    jp      screen_restore        ; C0FC 
+    jp      screen_stash          ; C0FF 
+    jp      screen_swap           ; C102 
+    jp      screen_switch         ; C105 
+    jp      just_ret              ; C108 
+    jp      just_ret              ; C10B 
 ; tile.asm <<Tilemap>>
-    jp      tile_set
-    jp      tile_get
-    jp      tile_from_chrrom
-    jp      tile_combine_props
-    jp      just_ret
-    jp      just_ret
-    jp      tilemap_set_offset
-    jp      tilemap_get_offset
-    jp      tilemap_set_tile
-    jp      tilemap_get_tile
-    jp      tilemap_fill
-    jp      tilemap_get
-    jp      tilemap_put
-    jp      just_ret
-    jp      just_ret
-    jp      just_ret
-    jp      just_ret
+    jp      tile_set              ; C10E 
+    jp      tile_get              ; C111 
+    jp      tile_from_chrrom      ; C114 
+    jp      tile_combine_props    ; C117 
+    jp      just_ret              ; C11A 
+    jp      just_ret              ; C11D 
+    jp      tilemap_set_offset    ; C120 
+    jp      tilemap_get_offset    ; C123 
+    jp      tilemap_set_tile      ; C126 
+    jp      tilemap_get_tile      ; C129 
+    jp      tilemap_fill          ; C12C 
+    jp      tilemap_get           ; C12F 
+    jp      tilemap_put           ; C132 
+    jp      just_ret              ; C135 
+    jp      just_ret              ; C138 
+    jp      just_ret              ; C13B 
+    jp      just_ret              ; C13E 
 ; sprite_aux.asm
 ; currently subject to change
 ; in auxrom
-    jp      sprite_define
-    jp      sprite_defrect
-    jp      sprite_set_attrs
-    jp      sprite_get_attrs
-    jp      spritle_set_pos
-    jp      spritle_get_pos
-    jp      spritle_string_attrs
-    jp      spritle_reset
-    jp      spritle_reset_all
+    jp      sprite_define         ; C141 
+    jp      sprite_defrect        ; C144 
+    jp      sprite_set_attrs      ; C147 
+    jp      sprite_get_attrs      ; C14A 
+    jp      spritle_set_pos       ; C14D 
+    jp      spritle_get_pos       ; C150 
+    jp      spritle_string_attrs  ; C153 
+    jp      spritle_reset         ; C156 
+    jp      spritle_reset_all     ; C159 
 ; in extrom
     
 _end_jump_table:

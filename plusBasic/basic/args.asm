@@ -16,7 +16,7 @@ ST_GETARGS:
     add     hl,sp                 ; HL = Top FOR/GOSUB stack entry
     ld      a,(hl)                ; Get Token
     cp      GOSUTK                ; If not GOSUB
-    jr      nz,AGERR              ;   "ARGS without GOSUB" error
+    jp      nz,AGERR              ;   "ARGS without GOSUB" error
     inc     hl                    ; Skip Token
     inc     hl                    ; Skip Line Number
     inc     hl                    ; Now HL = Pointer to Return Address
@@ -80,11 +80,6 @@ ST_GETARGS:
     ld      (hl),b                ; End of ArgVals is new Return Address
     ex      de,hl                 ; HL = *ArgVars
     ret
-
-AGERR:
-    ld      e,ERRAG
-    jp      ERROR
-
 
 ;-----------------------------------------------------------------------------
 ; RETURN arg, arg, ...

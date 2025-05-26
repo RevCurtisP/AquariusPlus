@@ -187,6 +187,8 @@ FN_FILE:
     jr      Z,FN_FILEDATETIME     ;   Do FILEDATETIME$()
     cp      LENTK                 ; If LEN
     jr      Z,FN_FILELEN          ;   Do FILELEN()
+    cp      POSTK                 ; If POS
+    jr      Z,FN_FILEPOS          ;   Do FILEPOS()
     SYNCHKT XTOKEN                ; Must be extended Token
     cp      ATTRTK                ; If ATTR
     jr      z,FN_FILEATTR         ;   Do FILEATTR$()
@@ -196,6 +198,42 @@ FN_FILE:
     jr      z,FN_FILESTATUS       ;   Do FILESTAT$()
     jp      SNERR
 
+;-----------------------------------------------------------------------------
+; FILEPOS(channel)
+;-----------------------------------------------------------------------------
+; OPEN "3.txt" FOR APPEND AS A 
+; ? FILEPOS(A)
+FN_FILEPOS:
+    rst     CHRGET                ; Skip POS
+    SYNCHKC '('                   ; Require (
+    cp      '#'                   ; If #
+    call    z,CHRGTR              ;   Skip it
+    call    FRMNUM                ; FACC = FilChn
+    SYNCHKC ')'                   ; Require )
+    call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
+    call    CONINT                ; A = FilChn
+    dec     a                     ; A = FilDsc
+    ld      iy,dos_tell           ; DEBC = FilPos
+    call    _aux_call_doserror
+    jp      FLOAT_DEBC            ; Float FilPos and return
+
+; OPEN "4.txt" FOR RANDOM AS R     
+; SET FILE #R POS TO 10
+set_filepos:
+    call    _get_channel          ; A = FilChn
+    dec     a                     ; A = FilDsc
+    push    af                    ; Stack = FilDsc
+    SYNCHKT POSTK
+    SYNCHKT TOTK
+    call    GET_LONG              ; BCDE = FilPos
+    push    bc
+    push    de
+    pop     bc
+    pop     de                    ; DEBC = FilPos
+    pop     af                    ; A - FilDsc
+    ld      iy,dos_seek
+    jp      _aux_call_doserror
+    
 ;-----------------------------------------------------------------------------
 ; FILEEXT$(filespec$)
 ;-----------------------------------------------------------------------------
@@ -1511,31 +1549,19 @@ ST_SET_SAVE:
 ;-----------------------------------------------------------------------------
 ; Open File
 ; Syntax: OPEN var TO filename$ FOR INPUT/OUTPUT
+; New syntax: OPEN filename$ FOR INPUT/OUTPUT/RANDON AS var
 ; Channel is File Descriptor + 1
 ;-----------------------------------------------------------------------------
-; ToDo: Add RANDOM
-; OPEN I TO "1.txt" FOR INPUT
-; OPEN W TO "2.txt" FOR OUTPUT
-; OPEN A TO "3.txt" FOR APPEND
+; OPEN "1.txt" FOR INPUT AS I 
+; OPEN "2.txt" FOR OUTPUT AS W
+; OPEN "3.txt" FOR APPEND AS A 
+; OPEN "4.txt" FOR RANDOM AS R 
 ST_OPEN:
-    call    PTRGET                ; DE = VarPtr
-    call    CHKNUM                ; Error if not numeric
-    push    de                    ; Stack = VarPtr, RtnAdr
-    SYNCHKT TOTK                  ; Require TO
-    call    get_strdesc_arg       ; HL = StrDsc; Stack = TxtPtr, VarPtr, RtnAdr
-    ex      (sp),hl               ; HL = TxtPtr; Stack = StrDsc, VarPtr, RtnAdr
-    call    aux_call_inline
-    word    bas_open_mode         ; IY = OpnRtn
-    ex      (sp),hl               ; HL = StrDsc; Stack = TxtPtr, VarPtr, RtnAdr
-    call    aux_call              ; Open the file
-    jp      m,_pop_hl_doserror
-    inc     a                     ; A = FilChn
-    call    SNGFLT
-    pop     hl                    ; HL = TxtPtr; Stack = VarPtr, RtnAdr
-    ex      (sp),hl               ; HL = VarPtr; Stack = TxtPtr, RtnAdr
-    call    MOVMF
+    call    get_strdesc_arg       ; HL = StrDsc; Stack = TxtPtr, RtnAdr
+    ex      de,hl                 ; DE = StrDsc
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
-    ret
+    ld      iy,bas_open           ; A = Result
+    jp      _aux_call_doserror
 
 ;-----------------------------------------------------------------------------
 ; Close File
@@ -1552,7 +1578,7 @@ ST_CLOSE:
     ret     z                     ; If FilDsc = 0, Retuen
     dec     a
     ld      iy,aux_close_dir      ; If high bit set
-    jp      p,aux_call            ;   Close directory
+    jp      m,aux_call            ;   Close directory
     ld      iy,dos_close          ; Else
     jp      aux_call              ;   Close file
 
@@ -1623,29 +1649,30 @@ _clear_errflag:
 ; Read from File
 ; Syntax: READ #channel,^var$,length
 ;-----------------------------------------------------------------------------
-; OPEN I TO "1.txt" FOR INPUT
+; OPEN "4.txt" FOR INPUT AS I
 ; READ #I,^A$,15
 ; PRINT A$
 read_file:
-    call    _get_channel
-    push    af                    ; Stack = Channel, RtnAdr
+    call    _get_channel          ; A = FilChn
+    dec     a                     ; A = FilDsc
+    push    af                    ; Stack = FilDsc, RtnAdr
     call    get_comma
     cp      EXPTK
     jr      z,_read_string
     jp      SNERR
 ;    ld      bc,bas_read_chunk
 ;_rw_mem:
-;    push    bc                    ; Stack = AuxRtn, Channel, RtnAdr
+;    push    bc                    ; Stack = AuxRtn, FilDsc, RtnAdr
 ;    call    get_page_addr_len     ; A = Page, BC = Len, DE = Addr
-;    pop     iy                    ; IY = AusRtn; Stack = Channel, RtnAdr
-;    ex      (sp),hl               ; H = Channel; Stack = TxtPtr
+;    pop     iy                    ; IY = AusRtn; Stack = FilDsc, RtnAdr
+;    ex      (sp),hl               ; H = FilDsc; Stack = TxtPtr
 ;    jp      aux_call_popret       ; Do READ/WRITE and return
 _read_string:
     call    skip_get_stringvar
-    push    de                    ; Stack = VarPtr, Channel, RtnAdr
+    push    de                    ; Stack = VarPtr, FilDsc, RtnAdr
     call    get_comma_byte        ; A = RecLen
-    pop     de                    ; DE = VarPtr, Stack = Channel, RtnAdr
-    ex      (sp),hl               ; H = Channel; Stack = TxtPtr, RtnAdr
+    pop     de                    ; DE = VarPtr, Stack = FilDsc, RtnAdr
+    ex      (sp),hl               ; H = FilDsc; Stack = TxtPtr, RtnAdr
     push    de                    ; Stack = VarPtr, TxtPtr, RtnAdr
     ld      iy,bas_read_string
 _aux_call_inbufc:
@@ -1658,24 +1685,23 @@ _push_inbufc:
 ; Write to File
 ; Syntax: WRITE #channel,var$
 ;-----------------------------------------------------------------------------
-; OPEN W TO "2.txt" FOR OUTPUT
+; OPEN "2.txt" FOR OUTPUT AS W
 ; A$="Hello World!"
 ; WRITE #W,^A$
 ; CLOSE #W
 write_file:
-    call    _get_channel
-    push    af                    ; Stack = Channel, RtnAdr
+    call    _get_channel          ; A = FilChn
+    dec     a                     ; A = FilDsc
+    push    af                    ; Stack = FilDsc, RtnAdr
     call    get_comma
     cp      EXPTK
     jr      z,_write_string
     jp      SNERR
 _write_string:
     call    skip_get_stringvar    ; DE = VarPtr
-    ex      (sp),hl               ; H = Channel; Stack = TxtPtr, RtnAdr
+    ex      (sp),hl               ; H = FilDsc; Stack = TxtPtr, RtnAdr
     ld      iy,bas_write_string
-    jp      aux_call_popret
-
-
+    jp      _aux_call_hl_error
 
 ;-----------------------------------------------------------------------------
 ; Parse literal string only in Direct Mode
@@ -1815,12 +1841,5 @@ _badfile:
 
 BDFERR:
     ld      e,ERRBDF
-    jp      ERROR
-
-;-----------------------------------------------------------------------------
-; Invalid mode error
-;-----------------------------------------------------------------------------
-IMERR:
-    ld      e,ERRIM
     jp      ERROR
 

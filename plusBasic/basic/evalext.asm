@@ -496,7 +496,7 @@ let_extension:
     push    de                    ; Stack = VarPtr, RtnAdr
     call    get_substring_range   ; DE = StrAdr, A,BC = StrLen, H = FrmPos, L = ToPos; Stack = TxtPtr, RtnAdr
     cp      h                     ; If FrmPos > StrLen
-    jp      c,BRERR               ;   Substring out of range error
+    jp      c,BRERR               ;   Bad range error
     ex      (sp),hl               ; HL = TxtPtr; Stack = FrmTo, RtnAdr
     SYNCHKT EQUATK                ; Require =
     ex      (sp),hl               ; H = FrmPos, L = ToPos; Stack = TxtPtr, RtnAdr
@@ -590,7 +590,7 @@ get_substring_range:
     call    get_byte_range        ; A,D = FrmPos, E = ToPos
     pop     ix                    ; IX = RtnAdr
     or      a
-    jp      z,BRERR               ; If FrmPos = 0, Subtring out of range error
+    jp      z,BRERR               ; If FrmPos = 0, Bad range error
     SYNCHKC ']'                   ; Require ]
     ex      (sp),hl               ; HL = VarPtr; Stack = TxtPtr
     push    de                    ; Stack = FrmTo, TxtPtr

@@ -237,3 +237,39 @@ fnkey_get_buff_addr:
     xor     a
     ret
 
+;=====================================================================================
+; Routines not routed through jump table
+;=====================================================================================
+
+; Eat digits and letters after tilde
+; Any tokenized keywords are also eaten
+aux_eat_suffix:
+    inc     hl
+    ld      a,(hl)                ; Get next character
+    or      a                     ; If NUL
+    ret     z                     ;   Get out
+    cp      ' '                   ; If Space
+    ret     z                     ;   Get out
+    cp      '~'                   ; If tilde
+    jr      z,aux_eat_suffix      ;   Skip it
+    cp      '0'                   ; If < '0'
+    ret     c                     ;   Get out
+    cp      ':'                   ; If ':'
+    ret     z                     ;   Get out
+    jr      c,aux_eat_suffix      ; If <= '9', skip it
+    cp      'A'                   ; If < 'A'
+    ret     c                     ;   Get out
+    cp      'Z'+1                 ; If <= 'Z'
+    jr      c,aux_eat_suffix      ;   Skip it
+    cp      $80                   ; If not token
+    ret     c                     ;   Get out
+    ;; Check for non-alphabetic tokens
+    cp      PLUSTK                ; If < '+'
+    jr      c,aux_eat_suffix      ;   Skip it
+    cp      EXPTK+1               ; If <= '^'
+    ret     c                     ;   Get out
+    cp      ORTK+1                ; If AND or OR
+    jr      c,aux_eat_suffix      ;   Skip it
+    cp      LESSTK+1              ; If < '<'
+    ret     c                     ;   Get out
+    jr      aux_eat_suffix        ; Else skip it

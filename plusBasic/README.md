@@ -140,6 +140,7 @@ Quick Reference Guide
  - [x] **FILEDIR$(_filespec_)** - Extract path from filespec. <!--filesystem-->
  - [x] **FILEEXT$(_filespec_)** - Extract extension from filespec.<!--filesystem-->
  - [ ] **FILELEN(_filespec_)** - Return file length.<!--filesystem-->
+ - [ ] **FILEPOS({#}_channel_)** - Return current position in open file.<!--fileio-->
  - [ ] **FILESTATUS$(_filespec_)** - Return file information as binary string.<!--filesystem-->
  - [ ] **FILL BYTES {@_page_},_address_,_oount_,_byte_** - Fill block of memory with byte.
  - [ ] **FILL WORDS {@_page_},_address_,_oount_,_integer_** - Fill block of memory with integer.
@@ -249,7 +250,7 @@ Quick Reference Guide
  - [ ] **ON .. _integer_ .. GOTO _lineref_,...** - `GOTO` one of several line numbers based on _expression_.<!--ON-->
  - [ ] **ON ERROR GOTO _lineref_** - Enable or disable error trapping.<!--ON-->
  - [ ] **OFFSET(_column_,_row_)** - Return offset into Screen or Color RAM.<!--screen-->
- - [ ] **OPEN _var_ TO _filespec_ FOR INPUT|OUTPUT|APPEND** - Open file.<!--fileio-->
+ - [ ] **OPEN _filespec_ FOR INPUT|OUTPUT|APPEND|RANDOM as _numvar_** - Open file.<!--fileio-->
  - [ ] **OUT _port_,_byte_|_string_{,...}{;...}** - Write to a Z80 port.<!--OUT-->
  - [ ] **PAD$(_string_,_length_{,_char_})** - Pad string on left or right with optional fill character.<!--PAD-->
  - [ ] **PAUSE** - Halt program execution until key is pressed.<!--PAUSE-->
@@ -328,6 +329,7 @@ Quick Reference Guide
  - [ ] **SET COLOR OFF** - Disable color printing mode.<!--screen-->
  - [ ] **SET CURSOR ON|OFF** - Enable or disable cursor display.<!--cursor-->
  - [ ] **SET FAST ON|OFF** - Enable or disable turbo mode.<!--SETFAST-->
+ - [ ] **SET FILE _channel_ POS TO _long_** - Set current position in opened file.<!--fileio-->
  - [ ] **SET FILE ERROR ON|OFF** - Enable or disable file operations generating BASIC errors.
  - [ ] **SET FNKEY _key_ TO _string_** - Set auto-typed text when function key is pressed.<!--SETFNKY-->
  - [ ] **SET KEY _mode_** - Set alternate keyboard port mode.

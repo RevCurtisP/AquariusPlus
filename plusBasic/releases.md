@@ -1,4 +1,15 @@
 # plusBASIC Release History
+  - v0.27a (2025-05-25)
+    - Renamed _ptrget_hook_ to _ptrget_ext_ and moved to AuxROM, with stub in SysROM
+    - Changed _trap_error_ and _ptrget_ext_ from jump table entries to direct calls
+    - Added tokens `RAN` and `DOM`
+    - Changed `OPEN var TO filespec$ FOR mode` to `OPEN filespec$ FOR mode AS var`
+    - Debugged _dos_open_random_, _write_file_, 
+    - Implemented _dos_tell_, `FILEPOS()`, and `SET FILE .. POS TO ...`
+    - Moved `OPEN` core code to AuxROM and implemented mode `RANDOM` in `OPEN`
+    - Added (not debugged) statement `PUT CHR` and kernel routine _page_skip_write_
+    - Moved plusBASIC extended error calls to now deprecated `STMDSP`
+    - Fixed error on hex digits `A`-`F` in aux_cvt_hex
   - v0.25e (2025-05-19)
     - Fixed ".dev" minor version evaluation in _version_to_long_
     - Moved `VER()` and `VER$()` core code to auxiliary ROM
