@@ -881,8 +881,55 @@ bitmap_get:
     ret
     
     jr      nz,.get_4bpp          ; If A <> 0
-    
+
 .get_4bpp
+    
+;------------------------------------------------------------------------------
+; Draw Character on 1bpp Bitmap Screen
+; Input: BC: Column (0-39)
+;        DE: Line (0-199)
+;        HL: Character Data Address
+; Sets: Carry if coordinate out of range
+; Clobbered: A, B, DE, HL
+;------------------------------------------------------------------------------
+bitmap_put_char:
+    call    _char_bounds          ; If ColRow out of bounds
+    ret     c                     ; Return Carry Set
+    push    hl                    ; Stack = ChrAdr, RtnAdr
+    call    _char_offset          ; HL = Offset
+    pop     hl                    ; DE = ChrAdr; Stack RtnAdr
+_put_char:    
+    ld      a,VIDEO_RAM           ; A = Bank
+    ld      b,8                   ; B = LinCnt
+    ld      c,40                  ; C = LinLen
+    jp      page_skip_write
+
+; In: C=Column, E=Line
+; Out: Carry set if out of bounds
+_char_bounds:
+    ld      a,39
+    cp      c                     ; If EndCol > 39
+    ret     c                     ;   Return Carry Set
+    ld      a,19
+    cp      e                     ; If EndRow > 191
+    ret                           ;   Return Carry Set
+    
+; Input: BC = Column, DE = Line
+; Output: HL = VRAM Offset
+; Clobbered: DE
+_char_offset:
+    ex      de,hl                 ; HL = Row
+    add     hl,hl                 ; HL = Row * 2
+    add     hl,hl                 ; HL = Row * 4
+    add     hl,hl                 ; HL = Row * 8
+    ld      d,h
+    ld      e,l                   ; DE = Row * 8
+    add     hl,hl                 ; HL = Row * 16
+    add     hl,hl                 ; HL = Row * 32
+    add     hl,de                 ; HL = Row * 40
+    add     hl,bc                 ; HL = Row * 40 + Col
+    ex      de,hl                 ; DE = Row * 40 + Col
+    ret
 
 get_set_init:
     ld      hl,(BUFADR)           

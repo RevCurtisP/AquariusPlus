@@ -239,11 +239,11 @@ get_par_array_pointer:
 get_star_array_pointer:
     SYNCHKT MULTK
 get_array_pointer:
-    ld      a,1                   ; SEARCH ARRAYS ONLY
+    ld      a,1                   ; Search arrays only
     ld      (SUBFLG),a            
     call    PTRGET                ; BC = NumDim, DE = NxtAry
-    jp      nz,UDERR              ; NOT THERE - ERROR
-    ld      (SUBFLG),a            ; CLEAR THIS
+    jp      nz,UDERR              ; If not found, Undimensioned array error
+    ld      (SUBFLG),a            ; Clear Arrays only flag
     ret
 
 ; Returns C = Character
@@ -274,9 +274,7 @@ no_more:
     ld      a,(hl)
     cp      ','
     ret     nz
-TOERR:
-    ld      e,ERRTO
-    jp      ERROR
+    jp      TOERR
 
 ;-----------------------------------------------------------------------------
 ; Parse string
@@ -500,16 +498,11 @@ get_byte_range:
     call    GETBYT                ; A = ToOpd
     pop     de                    ; D = FrmOpd; Stack = RtnAdr
     cp      d                     ; If ToOpd < FrmOpd
-    jr      c,BRERR               ;   Bad range error
+    jp      c,BRERR               ;   Bad range error
     ld      e,a                   ; E = ToOpd
     ld      a,d                   ; A = FrmOpd
     or      a                     ; Clear Carry
     ret
-    
-; Substring out of range error
-BRERR:
-    ld      e,ERRBR
-    jp      ERROR
     
 ;-----------------------------------------------------------------------------
 ; Parse Optional Byte Operand

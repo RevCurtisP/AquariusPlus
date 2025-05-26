@@ -135,14 +135,5 @@ extended_function:
     jp      z,FN_CHECK
     jp      SNERR
 
-; ------------------------------------------------------------------------------
-;  Issue Statement not implemented err
-; ------------------------------------------------------------------------------
-
-GSERR:
-    ld    e,ERRGS
-    jp    force_error    
-
-
 
     

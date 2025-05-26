@@ -918,6 +918,9 @@ ST_PUT:
     jp      z,ST_PUT_SCREEN
     cp      TILETK                ; If GET TILEMAP
     jp      z,ST_PUT_TILEMAP      ;   Go do it
+    SYNCHKT XTOKEN
+    cp      CHRTK
+    jp      z,ST_PUT_CHR
     jp      SNERR
 
 ;-----------------------------------------------------------------------------
@@ -1082,6 +1085,8 @@ require_sor:
 ; SET FILE ERROR OFF:LOAD "XXX":PRINT ERR,ERR$,ERRLINE
 ST_SET_FILE:
     rst     CHRGET
+    cp      '#'
+    jp      z,set_filepos
     SYNCHKT ERRTK
     SYNCHKT ORTK
     call    check_on_off          ; A = $FF if ON, $00 if OFF
@@ -1144,13 +1149,15 @@ ST_SET_USR:
 ;;       and clear keybuffer if it was
 ST_PAUSE:
     jp      z,.tryin              ; If no argument, wait for key and return
-    jp      p,.nottoken           ; If followed by token
-    SYNCHKT XTOKEN
+    jp      p,.notxtoken          ; If followed by token
+    cp      XTOKEN
+    jr      nz,.notxtoken
+    rst     CHRGET
     cp      UNTILTK
-    jr      z,pause_until
+    jr      z,ST_PAUSE_UNTIL
     cp      TRKTK                 ;   If token is TRACK
     jp      z,ST_PAUSE_TRACK      ;     Do PAUSE TRACK
-.nottoken
+.notxtoken
     call    FRMEVL                ; Get Operand
     push    hl                    ; Stack = TxtPtr, RtnAdr
     call    GETYPE                ;
@@ -1170,7 +1177,7 @@ ST_PAUSE:
 
 
 ; PAUSE UNTIL INKEY
-pause_until:
+ST_PAUSE_UNTIL
     rst     CHRGET                ; Skip UNTIL
 .loop
     push    hl                    ; Stack = CndPtr, RtnAdr
@@ -1343,4 +1350,5 @@ ST_WRITE_KEYS:
     SYNCHKC  'S'                   ; Require S
     call     get_free_string       ; DE = StrAdr, BC = StrLen
     ld       iy,autokey_write_buffer
-    jp       aux_call_popret      ; Write to auto-key buffer
+    call     aux_call
+    jp       aux_call_popret       ; Write to auto-key buffer

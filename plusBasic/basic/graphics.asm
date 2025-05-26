@@ -599,6 +599,26 @@ _parse_get_string:
     ret
 
 
+;------------------------------------------------------------------------
+; Print character to 1bpp Bitmap Screen
+; PUT CHR (x1,y1),char
+;----------------------------------------------------------------------------
+; SCREEN 0,2:CLEAR BITMAP 7,0:PUT CHR (0,0),"@":PAUSE
+ST_PUT_CHR:
+    jp      GSERR
+    call    get_bitmap_mode       ; A = BmpMode
+    cp      2                     ; If BmpMode <> 2
+    jp      nz,IMERR              ;   Invalid mode error
+    rst     CHRGET                ; Skip CHR
+    call    SCAND                 ; BC = Col, DE = Row
+    push    bc                    ; Stack = Col, RtnAdr
+    push    de                    ; Stack = Row, Col, RtnAdr
+    call    get_comma             ; Require comma
+    call    get_char              ; A = Char
+    pop     de                    ; DE = Row; Stack = Col, RtnAdr
+    pop     bc                    ; BC = Col; Stack = RtnAdr
+    ld      iy,bas_put_chr
+    jp      aux_call_fcerr        ; Execute PUT CHR and return
 
 ;------------------------------------------------------------------------
 ; PUT SCREEN Statement
@@ -653,13 +673,9 @@ _put_from_string:
     call    string_addr_len       ; DE = StrAdr, BC = StrLen
     ld      a,b
     or      c                     ; If StrLen = 0
-    jr      z,ESERR               ;   Illegal quantity error
+    jp      z,ESERR               ;   Empty string error
     pop     hl                    ; HL = TxtPtr; Stack = Cols, Rows, RtnAdr
     jr      _get_put              ; Put it
-
-ESERR:
-    ld      e,ERRES
-    jp      ERROR
 
 _get_put_array:
     SYNCHKT MULTK                 ; Require * - for now
@@ -1170,7 +1186,7 @@ ST_SET_SPRITE:
     call    string_addr_len       ; BC = SprLen, DE = SprAdr
     xor     a
     cp      c                     ; If Sprite not defined
-    jp      z,ESERR               ;   FC Error
+    jp      z,ESERR               ;   Empty string error
     ex      de,hl                 ; DE = SprPtr, HL = SprAdr
     ex      (sp),hl               ; HL = TxtPtr; Stack = SprAdr, RtnAdr
     ld      a,(hl)                ; Get current character

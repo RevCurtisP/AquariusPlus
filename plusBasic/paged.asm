@@ -696,6 +696,34 @@ page_write_bytes:
 .done
     jp      page_restore_bank3    ; Restore BANK3 page and return
 
+;-----------------------------------------------------------------------------
+; Write Bytes to Page Stepping Page Address
+; Input: A: Page
+;        B: Byte Count
+;        C: Step
+;       DE: Destination address 0-16383 
+;       HL: Source Address
+; Output: DE: New destination address (coerced)
+;         HL: New source address
+; Flags Set: Z if llegal page
+;            C if page overflow
+; Clobbers: A, BC, DE, HL
+;-----------------------------------------------------------------------------
+page_skip_write:
+    call    page_set4write_coerce
+    ex      de,hl                 ; DE = SrcAdr, HL = DstAdr
+    ld      a,b                   ; A = BytCnt
+    ld      b,0                   ; BC = Step
+.loop
+    ex      af,af'
+    ld      a,(de)
+    inc     de
+    ld      (hl),a
+    add     hl,bc
+    ex      af,af'
+    dec     a
+    jr      nz,.loop
+    jp      _success
 
 ;-----------------------------------------------------------------------------
 ; Read Bytes from Page - wraps to next page if address is 16383

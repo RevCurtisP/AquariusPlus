@@ -176,11 +176,6 @@ scan_label:
     xor     a                     ;   Treat like terminator
     ret
 
-ULERR:
-    ld      e,ERRUL
-    jp      force_error
-
-
 ;-----------------------------------------------------------------------------
 ; Extension to CLEAR command
 ;-----------------------------------------------------------------------------
@@ -201,57 +196,6 @@ main_ext:
     push    bc                    ; Flag back on stack
     push    de                      ; Return address back on stack
     jp      SCNLIN                ; Continue to SCNLIN
-
-;-----------------------------------------------------------------------------
-; Hook 36: Allow tilde after 1 or 2 letter variable name
-; Skips following letters, numbers, and underscores.
-;-----------------------------------------------------------------------------
-ptrget_hook:
-    rst     CHRGET                ; Get character after first letter variable name
-    jr      c,.is_second          ; If not a digit
-    cp      '~'
-    jr      z,.eat_suffix         ; or tilde
-    call    ISLETC                ; or letter
-    jr      c,.nosec              ;   Get out
-.is_second
-    ld      b,a                   ; Make it the second character
-    rst     CHRGET                ; Get following character
-    cp      '~'                   ;
-    jr      z,.eat_suffix         ; If not underscore
-    dec     hl                    ;  Back up
-    jp      EATEM                 ;  and continue with normal skip
-.eat_suffix
-    inc     hl
-    ld      a,(hl)                ; Get next character
-    or      a                     ; If NUL
-    jr      z,.nosec              ;   Get out
-    cp      ' '                   ; If Space
-    jp      z,SKIPDS              ;   Get out
-    cp      '~'                   ; If underscore
-    jr      z,.eat_suffix         ;   Skip it
-    cp      '0'                   ; If < '0'
-    jp      c,NOSEC               ;   Get out
-    cp      ':'                   ; If ':'
-    jr      z,.nosec              ;   Get out
-    jr      c,.eat_suffix         ; If <= '9', skip it
-    cp      'A'                   ; If < 'A'
-    jp      c,NOSEC               ;   Get out
-    cp      'Z'+1                 ; If <= 'Z'
-    jr      c,.eat_suffix         ;   Skip it
-    cp      $80                   ; If not token
-    jp      c,NOSEC               ;   Get out
-    cp      PLUSTK                ; If < '+'
-    jr      c,.eat_suffix         ;   Skip it
-    cp      EXPTK+1               ; If <= '^'
-    jp      c,NOSEC               ;   Get out
-    cp      ORTK+1                ; If AND or OR
-    jr      c,.eat_suffix         ;   Skip it
-    cp      LESSTK+1              ; If < '<'
-    jp      c,NOSEC               ;   Get out
-    jr      .eat_suffix           ; Else skip it
-.nosec
-    scf
-    jp      NOSEC                 ;   jump to NOSEC with carry set
 
 ;-----------------------------------------------------------------------------
 ; Hook 37: Skip label at begin of line                                           

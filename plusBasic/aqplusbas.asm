@@ -44,12 +44,12 @@
     jp      _tty_finish     ; $2033 TTYFIN Display cursor
     jp      just_ret        ; $2036
     jp      _then_hook      ; $2039 THENHK *Not Implemented* Check for ELSE after IF ... THEN
-    jp      _trap_error     ; $203C XERROR Restore Stack, Display Error, and Stop Program
+    jp      just_ret        ; $203C 
     jp      _main_ext       ; $203F XMAIN  Save Line# Flag in TEMP3
     jp      just_ret        ; $2042
     jp      _read_key       ; $2045 INCHRA Read alt keyboard port instead of matrix
     jp      _check_topmem   ; $2048 XCLEAR Verify TOPMEM is in Bank 2
-    jp      _ptrget_hook    ; $204B XPTRGT Allow ~alphanumunder after var name
+    jp      just_ret        ; $204B
     jp      _skip_label     ; $204E SKPLBL Skip label at beginning of line
     jp      _skip_on_label  ; $2051 SKPLOG Skip label in ON GOTO
     jp      just_ret        ; $2054
@@ -134,7 +134,7 @@ null_desc:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.25e"
+    db "v0.25f"
     db 0
 plusver_len equ $ - plus_version
 plus_len   equ   $ - plus_text
@@ -965,6 +965,22 @@ run_exec:
     jp      nz,page_call          ;   Run in page
     jp      (iy)                  ; Else jumop directly to it
     
+ptrget_ext:
+    cp      '~'                   ; If tilde
+    jr      z,_eat_suffix         ;   Eat suffix and continue
+    call    ISLETC                ; If not a letter
+    jp      c,NOSEC               ;    Continue
+issec_ext:
+    ld      b,a                   ; Make it the second character
+    rst     CHRGET                ; Get following character
+    cp      '~'                   ; If not tilde
+    jp      nz,DEATEM             ;   Backup and reat rest of variable
+_eat_suffix
+    ld      iy,aux_eat_suffix
+    call    aux_call
+    jp      NOSEC
+
+
 ; ------------------------------------------------------------------------------
 ;  Hook Jump Table
 ; ------------------------------------------------------------------------------
@@ -1070,10 +1086,6 @@ _next_statement:
     call    page_set_plus
     jp      exec_next_statement   ; Go do the Statement
 
-_ptrget_hook:
-    call    page_set_plus
-    jp      ptrget_hook
-
 _run_cmd:
     call    page_set_plus
     jp      run_cmd
@@ -1090,9 +1102,9 @@ _skip_on_label:
     call    page_set_plus
     jp      skip_on_label
 
-_trap_error:
-    call    page_set_plus
-    jp      trap_error
+error_ext:
+    call    page_set_plus         ; Bank 3 could be mapped to any page at this point,
+    jp      trap_error            ; so map to Extended ROM, before continuing
 
 ;-----------------------------------------------------------------------------
 ; S3 BASIC extensions routines in Auxiliary ROM Page

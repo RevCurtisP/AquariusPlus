@@ -385,7 +385,7 @@ screen_pos_addr:
 ; Out: Carry set if out of bounds
 screen_bounds:
     ld      a,(LINLEN)
-    cp      b                     ; If EndCol > 39
+    cp      c                     ; If EndCol > 39
     ret     c                     ;   Return Carry Set
     ld      a,25
     cp      e                     ; If EndRow > 24

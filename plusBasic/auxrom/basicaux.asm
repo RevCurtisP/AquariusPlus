@@ -1,6 +1,6 @@
-;-----------------------------------------------------------------------------
+;=====================================================================================
 ; Core routines for BASIC statements and functions
-;-----------------------------------------------------------------------------
+;=====================================================================================
 
 ; ------------------------------------------------------------------------------
 ; ------------------------------------------------------------------------------
@@ -344,13 +344,6 @@ aux_str_literal:
     ld      (FACLO),bc            ; Srore in StrDsc
     ret
 
-aux_eserr:
-    ld      e,ERRES
-    byte    $01                   ; LD BC over LD E
-aux_slerr:
-    ld      e,ERRSL
-    jp      ERROR
-
 ; Populate array from comma separated text
 ; (ARRAYPTR) = Pointer into array data
 ; (ARRAYLEN) = Bytes left in array data
@@ -618,7 +611,7 @@ _ret_nz:
     ret
 
 ; Clobbers: C
-aux_hex_to_byte
+aux_hex_to_byte:
     call    aux_get_hex           ; Get Hex Digit from Argument
     ret     c
     sla     a                     ; Shift to High Nybble
@@ -647,7 +640,8 @@ aux_cvt_hex:
     and     $5F                   ; Convert to Upper Case
     sub     'A'-10                ; Make 'A' = 10
     ret     c                     ; Error if it was less than 'A'
-    cp      16                    ; If less than 16
+    cp      16                    ;
+    ccf                           ; Set Carry if > 15
     ret                           ;   Return
 
 
@@ -741,27 +735,6 @@ FN_STRS:
     ld      (ARRAYPTR),hl         ; ARRAYPTR = AryPtr
     ret
 
-; Called from ST_OPEN
-; On entry: HL = TxtPtr
-; Returns: IY = Dos open routine
-bas_open_mode:
-    SYNCHKT FORTK                 ; Require FOR
-    cp      INPUTK                ; If INPUT
-    inc     hl
-    ld      iy,dos_open_read      ;   Open for read
-    ret     z
-    cp      OUTTK                 
-    jr      nz,.not_output        ; If OUT
-    SYNCHKT PUTTK                 ;   Require PUT
-    ld      iy,dos_open_write     ;   Open for write
-    ret
-.not_output
-    dec     hl                    ; Back up to token
-    SYNCHKT XTOKEN                ; Else                
-    SYNCHKT APNDTK                ; Require APPEND
-    ld      iy,dos_open_append    ;   Open for Append
-    ret
-
 ; Called from read_file
 ; On entry: A = RecLen, H = Channel 
 ; Returns: HL = TmpDsc
@@ -778,7 +751,7 @@ bas_read_string:
     ret
     
 ; Called from write_file
-; On entry: DE = StrDsc, H = FilDsc
+; On entry: DE = StrDsc, H = FilChn
 bas_write_string:
     push    hl                    ; Stack = FilDsc, RtnAdr
     ex      de,hl

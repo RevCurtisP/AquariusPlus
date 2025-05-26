@@ -322,6 +322,9 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>FILELEN(<em>filespec</em>)</strong> - Return file length.<!--filesystem--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
+        <strong>FILEPOS(<em>channel</em>)</strong> - Return current position in open file.<!--fileio--></li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
         <strong>FILESTATUS$(<em>filespec</em>)</strong> - Return file information as binary string.<!--filesystem--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
@@ -649,7 +652,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>OFFSET(<em>column</em>,<em>row</em>)</strong> - Return offset into Screen or Color RAM.<!--screen--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>OPEN <em>var</em> TO <em>filespec</em> FOR INPUT|OUTPUT|APPEND</strong> - Open file.<!--fileio--></li>
+        <strong>OPEN <em>filespec</em> FOR INPUT|OUTPUT|APPEND|RANDOM as <em>numvar</em></strong> - Open file.<!--fileio--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>OUT <em>port</em>,<em>byte</em>|<em>string</em>{,...}{;...}</strong> - Write to a Z80 port.<!--OUT--></li>
@@ -884,6 +887,9 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>SET FAST ON|OFF</strong> - Enable or disable turbo mode.<!--SETFAST--></li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>SET FILE <em>channel</em> POS TO <em>long</em></strong> - Set current position in opened file.<!--fileio--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>SET FILE ERROR ON|OFF</strong> - Enable or disable file operations generating BASIC errors.</li>

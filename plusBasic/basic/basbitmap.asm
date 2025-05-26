@@ -262,6 +262,7 @@ _set:
     call    SCANDYX               ; C = Y, DE = X
     call    _getcolor
     pop     iy                    ; IY = SubAdr; Stack = RtnAdr
+aux_call_fcerr:
     push    hl                    ; Stack = TxtPtr, RtnAdr
     call    aux_call
     jp      c,FCERR               ; Error if illegal coordinate
