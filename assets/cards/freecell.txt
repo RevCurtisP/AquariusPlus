@@ -1,0 +1,67 @@
+Variables
+
+B           Mouse buttons status
+B(7)        Row of bottom cards in Tableau (column) 0=Empty
+BG          Tableau number of rows
+C           Card ID (S*16+R)
+CX          Card tilemap column
+CY          Card tilemap row
+
+
+C$(3,14)    Playing card tile clips (suit,rank)
+            Suits: 0=Clubs, 1=Hearts, 2=Diamonds, 3=Spades
+            Ranks: 1=Ace ... 13=King
+            Other: (0,0)=Red Back     (0,14)=Filled Blank
+                   (1,0)=Blue Back    (1,14)=Unfilled  Blank
+                   (2,0)=Red Joker    (2,14)=Open Hand
+                   (3.0)=Black Joker  (3,14)=Grabbing Hand
+
+D(52)       Card Deck (1=Top, 52=Bottom)
+D           FOR/NEXT index for Card Deck 
+DC        ` Card behind selected card           
+DR          Rank of card behind selected card
+DS          Suit of card behind selected card
+DX          Card behind selected card tilemap column
+DY          Card behind selected card tilemap row
+E           Shuffle card index/Dummy variable
+FC          Card in foundation
+FL          Lowest rank on foundation
+FS          Suit of card in foundation
+FR          Rank of card in foundation
+
+G(7,BG)     Tableau (column,row) top row=1
+            Row 0, columns 0-3=Free Cells, 4-7=Fondation
+GC          Grid Column (0-7)
+GR          Grid Row (1-BG)
+GY          Grid tilemap row
+
+N           Card in new spot
+NQ          Color of card in new spot
+NR          Rank of card in new spot 
+NS          Suit of card in new spot 
+NX          Drop tilemap column
+NY          Drop tilemap row
+PB          Flag: Update bottom of column
+PC          Drop grid column
+PR          Drop grid row
+
+Q(3)        Suit colors (suit) 0=Black, 1=Red
+R           Rank: 1=Ace ... 13=King
+S           Suit: 0=Clubs, 1=Hearts, 2=Diamonds, 3=Spades 
+S1          Card Drop sample offset
+S2          Card Pickup sample offset
+SC$         Playing card Sprite def (spritles 11-40)
+SH$         Hand Sprite def (spritles 41-49)
+
+SP          Sound samples page
+T           Card swap temporary index
+TX          Tableau/Freecell/Foundation tilemap column
+TY          Tableau/Freecell/Foundation tilemap row
+X           Mouse horizontal position
+Y           Mouse vertical position
+
+
+
+
+
+

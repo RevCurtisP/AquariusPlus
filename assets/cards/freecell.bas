@@ -1,10 +1,11 @@
 1000 REM Freecell Demo
-1010 SET FNKEY 3 TO \"run freecell.bas\r"
+1005 SET FNKEY 3 TO \"run freecell.baq\r"
+1010 SET SPEED 1
 1020 CLEAR 4096:REM Reserve string space for the tileclips
 1030 E=RND(-VAL(TIME$)):REM Set Random seed
 1040 SET SPRITE * CLEAR:REM Disable all sprites
 
-1090 PRINT "Building the deck"
+1090 PRINT "Shuffling the deck"
 
 1110 REM Card array indexes
 1111 REM Suits: 0=Clubs, 1=Hearts, 2=Diamonds, 3=Spades
@@ -28,7 +29,7 @@
 1200 REM Load palette and tile definitions
 1210 LOAD PALETTE 1,"cards.pal"
 1220 REM Skip if tiles already loaded
-1225 IF PEEK$(@20,$40CC,4)<>$"33320122" THEN LOAD "cards.til",@20,4096
+1225 IF PEEK$(@20,4096,4)<>$"33320122" THEN LOAD "cards.tset",@20,4096
 
 1230 REM Load Sound Clips
 1232 SP=41:S1=0:S2=2048
@@ -36,14 +37,7 @@
 1236 LOAD "cardpick.saq",@SP,S2
 
 1300 REM Load the Tile clips, substitute for unimplemented
-1302 REM LOAD "cards.clip",*C$
-1310 REM Skip if clips already loaded
-1315 IF PEEK$(@40,0,4)<>$"3E0506B5" THEN LOAD "cards.clp",@40,0
-1320 A=0:REM Start at beginning of clips
-1330 FOR S=0 TO 3:FOR R=0 TO 14:REM suits, ranks
-1340 L=PEEK(@40,A):A=A+1:REM Read string length
-1350 C$(S,R)=PEEK$(@40,A,L):A=A+L:REM Read string
-1360 NEXT:NEXT:REM Next rank and suit
+1302 LOAD "cards.clip",*C$
 
 1400 REM Clear the tilemap
 1410 FILL TILEMAP TILE 128 PALETTE 1
@@ -104,11 +98,15 @@
 3000 _main:REM Let the game begin
 
 3100 _autobuild:
-3110 FL=13:REM Lowest rank on foundation
-3112 FOR PC=4 TO 7:FR=C(PC,0)AND15:IF FR<FL THEN FL=FR
-3114 NEXT
-3116 IF FL=13 THEN REM Game Over
-3120 FOR GC=0 TO 7:C=G(GC,G[B]):S=INT(C/16):R=C AND 15 
+3110 'FL=13:REM Lowest rank on foundation
+3112 'FOR PC=4 TO 7:FR=C(PC,0)AND15:IF FR<FL THEN FL=FR
+3114 'NEXT
+3116 'IF FL=13 THEN REM Game Over
+3120 'FOR GC=0 TO 7:GR=B(GC)
+3122 'C=G(GC,B(GR)):S=INT(C/16):R=C AND 15
+3124 'FOR PC=4 TO 7:C=C(PC,0):PS=INT(C/16):PR=C AND 15
+3126 'IF PR=R AND S=PS+1 THEN GOSUB _automove
+3128 'NEXT:NEXT
 
 4100 _hand:REM Move the hand cursor and check for button click
 4110 SET SPRITE SH$ TILECLIP C$(2,14):REM Display open hand
@@ -150,7 +148,7 @@
 5000 _pickup:REM Pick up the card
 5005 PLAY SAMPLE @SP,S2
 5010 SET SPRITE SH$ TILECLIP C$(3,14):REM Display grabbing hand
-5015 SET SPRITE SH$ ON:REM Renable sprite
+5015 SET SPRITE SH$ ON:REM Reenable sprite
 5020 C=G(GC,GR):S=INT(C/16):R=C AND 15:Q=Q(S):REM Card value, suit, rank, color
 5030 CX=GC*5:CY=0:IF GR THEN CY=GR+5:REM Card tile column and row
 5035 SET SPRITE SC$ TILECLIP C$(S,R):REM Set card sprite to selected card
@@ -215,3 +213,14 @@
 5910 PUT TILEMAP (CX,CY),^C$(S,R)
 5920 SET SPRITE SC$ OFF
 5990 GOTO _main
+
+8000 _automove:
+8010 PLAY SAMPLE @SP,S2
+8090 RETURN
+
+9000 _redraw:
+9010 IF GR=0 THEN CY=0:PUT TILEMAP (CX,CY),^C$(1,14):GOTO _drag
+9020 CY=GR+5:IF GR=1 THEN CY=6:FILL TILEMAP (CX,CY)-(CX+4,CY+5) TILE 128 PALETTE 1:GOTO _drag
+9030 DR=GR-1:DC=G(GC,DR):DS=DC/16:DR=DC AND 15:REM Get card underneath
+9040 PUT TILEMAP (CX,CY-1),^C$(DS,DR):REM Redraw card underneath
+9050 FILL TILEMAP (CX,CY+5)-(CX+4,CY+5) TILE 128 PALETTE 1
