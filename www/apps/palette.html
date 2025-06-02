@@ -1,18 +1,55 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
   <head>
     <title>Aquarius+ Palette Editor</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="palette.css">
     <script src="palette.js"></script>
   </head>
-  <body onload="Init()">
+  <body onload="init()">
     <div id="palette">
+      <div>
+        <input type="color" id="pe0" onchange="fix_palette_entry(pe0)">
+        <input type="color" id="pe1" onchange="fix_palette_entry(pe1)">  
+        <input type="color" id="pe2" onchange="fix_palette_entry(pe2)">  
+        <input type="color" id="pe3" onchange="fix_palette_entry(pe3)">  
+        <input type="color" id="pe4" onchange="fix_palette_entry(pe4)">  
+        <input type="color" id="pe5" onchange="fix_palette_entry(pe5)">  
+        <input type="color" id="pe6" onchange="fix_palette_entry(pe6)">  
+        <input type="color" id="pe7" onchange="fix_palette_entry(pe7)">  
+      </div>
+      <div>
+        <input type="color" id="pe8" onchange="fix_palette_entry(pe8)">  
+        <input type="color" id="pe9" onchange="fix_palette_entry(pe9)">  
+        <input type="color" id="pe10" onchange="fix_palette_entry(pe10)">  
+        <input type="color" id="pe11" onchange="fix_palette_entry(pe11)">  
+        <input type="color" id="pe12" onchange="fix_palette_entry(pe12)">  
+        <input type="color" id="pe13" onchange="fix_palette_entry(pe13)">  
+        <input type="color" id="pe14" onchange="fix_palette_entry(pe14)">  
+        <input type="color" id="pe15" onchange="fix_palette_entry(pe15)">  
+      </div>
+      <div class="controls">
+        <button id="ssve" onclick="save_click()">Save</button>
+        <a id="expfile" hidden="true"></a>
+        <button id="load" onclick="load_click()">Load</button>
+        <input type="file" id="impfile" hidden="true" onchange="load_palette()">
+        <button id="import" onclick="import_click()">Import</button>
+        <button id="export" onclick="export_click()">Export</button>
+      </div>
+      <form>
+        <label for="format">Save/Export format</label>
+        <select id="format">
+          <option value="gpl">GIMP GPL</option>
+          <option value="hex">Hexadecimal text</option>
+          <option value="pbhex">plusBASIC hex</option>
+          <option value="pnet">Paint.net</option>
+          <option value="pspro">Paintshop Pro</option>
+        </select>
+      </form>
     </div>
     <script>
-      function Init() {
-        InitPalette()
+      function init() {
+        init_palette()
       }
     </script>
   </body>
 </html>
-
