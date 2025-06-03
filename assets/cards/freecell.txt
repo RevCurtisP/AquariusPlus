@@ -1,6 +1,5 @@
 Variables
 
-B           Mouse buttons status
 B(7)        Row of bottom cards in Tableau (column) 0=Empty
 BG          Tableau number of rows
 C           Card ID (S*16+R)
@@ -35,6 +34,10 @@ GC          Grid Column (0-7)
 GR          Grid Row (1-BG)
 GY          Grid tilemap row
 
+MB          Mouse buttons status
+MX          Mouse horizontal position
+MY          Mouse vertical position
+
 N           Card in new spot
 NQ          Color of card in new spot
 NR          Rank of card in new spot 
@@ -55,10 +58,8 @@ SH$         Hand Sprite def (spritles 41-49)
 
 SP          Sound samples page
 T           Card swap temporary index
-TX          Tableau/Freecell/Foundation tilemap column
-TY          Tableau/Freecell/Foundation tilemap row
-X           Mouse horizontal position
-Y           Mouse vertical position
+TX          Card tileclip top left column
+TY          Card tileclip top left row
 
 
 
