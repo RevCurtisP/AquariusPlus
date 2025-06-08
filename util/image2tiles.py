@@ -43,9 +43,10 @@ parser.add_argument("imagename",help="Image filename")
 parser.add_argument("-b","--blanktile", default=None, type=int, help="Tile ID of pre-existing blank tile")
 parser.add_argument("-c","--clipsize", default=None, help="Tileclip size WIDTHxHEIGHT[r]")
 parser.add_argument("-d","--debug", action="store_true", help="Write debug info to stdout")
-#parser.add_argument("--docs",action="store_true", help="Display documentation")
-parser.add_argument("-p","--palette", default=2, type=int, help="Palette number (0-3)")
+parser.add_argument("-n","--palnum", default=2, type=int, help="Palette number (0-3)")
+parser.add_argument("-p","--palette", default=None, help="Base palette")
 parser.add_argument("-s","--starttile", default=128, type=int, help="Starting tile number")
+parser.add_argument("-t","--truncate", action="store_true", help="Write truncated palette")
 parser.add_argument("-v","--verbose", action="store_true", help="Write image info to stdout")
 parser.add_argument("-x","--suffix", default="", help="Tileclip size WIDTHxHEIGHT[r]")
 args = parser.parse_args()
@@ -53,10 +54,15 @@ args = parser.parse_args()
 blank_tile = args.blanktile
 clip_size = args.clipsize
 debug = args.debug
-palette_num = args.palette
+palette_num = args.palnum
+base_palt = args.palette
 start_tile = args.starttile
+truncate_pallete = args.truncate
 verbose = args.verbose
 suffix = args.suffix
+
+if palette_num < 0 or palette_num > 3:
+    exit_err(255, "Invalid palette number")
 
 palt_props = palette_num << 12
 
@@ -87,6 +93,20 @@ if suffix: base_name += suffix
 palt = []   # Paleette entries
 tset = []   # Tileset entries
 
+if base_palt:
+    if base_palt[:1] == "#":
+         palt_bytes = bytes.fromhex(base_palt[1:])
+    else:
+        with open(base_palt, "rb") as palt_file:
+            palt_bytes = palt_file.read()
+    if len(palt_bytes) % 2 != 0:
+        exit_err(255,"Invalid base palette")
+    if debug: print("\nBase palette:")
+    for i in range(0,len(palt_bytes),2):
+        rgb = hex_byte(palt_bytes[i]) + hex_byte(palt_bytes[i+1])
+        palt.append(rgb)
+        if debug: print("  " + rgb)
+
 img = Image.open(img_name)
 
 (img_width, img_height) = img.size
@@ -110,11 +130,19 @@ if vmap_width > 64: warning("Tilmap width is more than 64 tiles")
 if vmap_height > 32: warning("Tilmap height is more than 64 tiles")
 
 if clip_size:
-    if verbose: 
-        print("Tileclip size: %d x %d" % (clip_width, clip_height))
-        print("Rotate tileclip = %s" % (clip_rotate))
     if vmap_width % clip_width != 0: exit_err(255, "Tilemap width is not multiple of tileclip width")
     if vmap_height % clip_height != 0: exit_err(255, "Tilemap height is not multiple of tileclip height")
+    hclips = vmap_width // clip_width
+    vclips = vmap_height // clip_height
+    if verbose: 
+        print("\nTileclip size: %d x %d" % (clip_width, clip_height))
+        print("Rotate tileclip = %s" % (clip_rotate))
+        verbose: print("Tile clips: %dx%d" % (hclips, vclips))
+
+if verbose: print("\nTruncate palette = %s" % (truncate_pallete))
+
+blank_id = blank_tile if blank_tile else start_tile
+if verbose: print("\nBlank tile ID: %d" % (blank_id))
 
 bdef = "0" * 64
 if blank_tile == None:
@@ -187,7 +215,7 @@ for vmap_row in range(0,vmap_height):
 if pmap != None: print("\n"+pmap)
 if debug: print("\nTilemap: \n"+dmap)
 
-with open(base_name + ".tset","wb") as tset_file:
+with open(base_name + ".tile","wb") as tset_file:
     thex = "TileSet:\n"
     for i in range(0,len(tset)):
         tdef = tset[i]
@@ -210,30 +238,31 @@ for rgb in palt:
 
 if verbose:
     print("\n%d unique tiledefs" % (len(tset)))
-    print("\nPalette (%d entries)" % (len(palt)))
+    print("%d palette entries" % (len(palt)))
+
+if debug:
+    print("\nPalette:")
     print(ptxt)
     
-phex = phex.ljust(64,"0")
+# Write Palette to file
+if not truncate_pallete: phex = phex.ljust(64,"0")
 pbytes = bytes.fromhex(phex)
 with open(base_name + ".palt","wb") as palt_file:
     palt_file.write(pbytes)
 
-bcell = blank_tile if blank_tile else start_tile
 with open(base_name + ".tmap","wb") as tmap_file:
     for row in range(0,32):
         if row < len(vmap): vrow = vmap[row]
         else: vrow = []
         for col in range(0,64):
             if col < len(vrow): tcell = vrow[col]
-            else: tcell = bcell | palt_props
+            else: tcell = blank_id | palt_props
             tmap_file.write(tcell.to_bytes(2,"little"))
 
 if clip_size:
     if debug: print("\nTileClips:")
     clips = bytes()
     clip_len = clip_width * clip_height * 2 + 2
-    hclips = vmap_width // clip_width
-    vclips = vmap_height // clip_height
     if clip_rotate:
         for clipx in range(0,hclips):
             for clipy in range(0,vclips):
