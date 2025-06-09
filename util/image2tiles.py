@@ -26,27 +26,17 @@ def hex_nybble(num):
 def build_tile(pixels, tcol, vrow):
     return None
 
-argdesc = "Image to tileset, tilemap, and tileclip converter"
-argnotes = ""
+argdesc = "Image to tileset, tilemap, and tileclip converter (2025-06-09)"
 
-docs = """'--verbose' outputs image size, tilemap size, number of entires in the tileset, and palette,
-'--debug' outputs textual representations of the tilemap and tileset.
-Specifying '--verbose' and '--debug' adds a textual represntation of the pixels in each tile.
-  This greatly increases the run time of the utility.
-If '--starttile' is not specified, the generated tile definitions start at tile 128.
-The first tile generated will be blank (color indes 0 in all pixels) unless '--blanktile' is sprecitied.
-  If the specified tile ID falls within the the range of geberated tiles, then that tile will be defined as blank.
-"""
-
-parser = argparse.ArgumentParser(prog="image2tiles", description=argdesc, epilog=argnotes, formatter_class=argparse.RawTextHelpFormatter)
+parser = argparse.ArgumentParser(prog="image2tiles", description=argdesc)
 parser.add_argument("imagename",help="Image filename")
 parser.add_argument("-b","--blanktile", default=None, type=int, help="Tile ID of pre-existing blank tile")
 parser.add_argument("-c","--clipsize", default=None, help="Tileclip size WIDTHxHEIGHT[r]")
 parser.add_argument("-d","--debug", action="store_true", help="Write debug info to stdout")
 parser.add_argument("-n","--palnum", default=2, type=int, help="Palette number (0-3)")
 parser.add_argument("-p","--palette", default=None, help="Base palette")
+parser.add_argument("-r","--truncate", action="store_true", help="Write truncated palette")
 parser.add_argument("-s","--starttile", default=128, type=int, help="Starting tile number")
-parser.add_argument("-t","--truncate", action="store_true", help="Write truncated palette")
 parser.add_argument("-v","--verbose", action="store_true", help="Write image info to stdout")
 parser.add_argument("-x","--suffix", default="", help="Tileclip size WIDTHxHEIGHT[r]")
 args = parser.parse_args()
