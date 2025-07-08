@@ -1,4 +1,10 @@
 # plusBASIC Release History
+  - v0.27b (2025-07-07)
+    - Added file types `hex` and `rgb` to _file_load_palette_ and _file_save_palette_
+    - Added `,HEX` and `,RGB` options to `LOAD PALETTE` and `SAVE PALETTE`
+    - Added function `FGBDEC$()`
+    - Moved `LOAD PALETTE` and `SAVE PALETTE` to _sp.baq_ and added tests for `HEX`, `ASC`, and `RGB`
+    - Refactored only `call gfx_call_inline` and removed routine _gfx_call_inline_
   - v0.27a (2025-05-25)
     - Renamed _ptrget_hook_ to _ptrget_ext_ and moved to AuxROM, with stub in SysROM
     - Changed _trap_error_ and _ptrget_ext_ from jump table entries to direct calls

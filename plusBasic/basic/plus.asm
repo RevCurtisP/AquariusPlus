@@ -260,7 +260,7 @@ _inc_dec
 ; INMEM(address,string$)
 ; INMEM(@page,address,string$)
 ;----------------------------------------------------------------------------
-; ToDo: INMEM(!extaddr,string)
+;; ToDo: INMEM(!extaddr,string)
 ;       Have to mod to return long
 ; PRINT INMEM(0,"Copyright")
 ; PRINT INMEM($3900,"Copyright")
@@ -269,7 +269,6 @@ _inc_dec
 ; PRINT INMEM(@61,0,"WontFindMe")
 FN_INMEM:
     rst     CHRGET                ; Skip MEM
-    call    paren_page_arg        ; AF = PgFlag
     push    af                    ; Stack = PgFlag, RtnAdr
     call    GETINT                ; DE = MemAdr
     pop     af                    ; AF = PgFlag; Stack = RtnAdr

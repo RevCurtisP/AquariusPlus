@@ -550,7 +550,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>LOAD MODULE</strong> - <em>Proposed enhancement.</em></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>LOAD PALETTE <em>p</em>,<em>filespec</em>{,ASC}</strong> - Load file data ino palette.<!--LOADPALETTE--></li>
+        <strong>LOAD PALETTE <em>p</em>,<em>filespec</em>{,ASC|HEX|RGB}</strong> - Load file data ino palette.<!--palette--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>LOAD SCREEN <em>filespec</em></strong> - Load text screen from file.</li>
@@ -742,7 +742,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>PUT SCREEN ATTR (<em>x</em>,y_) *<em>array</em>|^<em>strvar</em></strong> - Copy clip from array or string variable to text screen.<!--PUTSCREEN--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>PUT TILEMAP (<em>x</em>,y_) *<em>array</em>|^<em>strvar</em></strong> - Copy clip from array or string variable to tilemap.<!--PUTTILE--></li>
+        <strong>PUT TILEMAP (<em>x</em>,y_),*<em>array</em>|^<em>strvar</em></strong> - Copy clip from array or string variable to tilemap.<!--PUTTILE--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>READ <em>var</em>{,...}</strong> - Read values from DATA statements into variables.<!--READ--></li>
@@ -801,6 +801,9 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <input disabled="disabled" type="checkbox" checked="checked" />
         <strong>RGB$(<em>r</em>,<em>g</em>,<em>b</em>|<em>rgbstr</em>)</strong> - Return string representing a single palette entry.<!--palette--></li>
       <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>RGBDEC$(<em>string</em>{,<em>char</em>})</strong> - Convert binary RGB value to decimal red,green, and blue.<!--palette--></li>
+      <li class="task-list-item">
         <input disabled="disabled" type="checkbox" checked="checked" />
         <strong>RIGHT$(<em>string</em>,<em>len</em>)</strong> - Return the last up to <em>byte</em> characters of string.<!--string--></li>
       <li class="task-list-item">
@@ -838,7 +841,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>SAVE FNKEYS <em>filespec</em></strong> - Save function key definitions to file.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>SAVE PALETTE <em>p</em>,<em>filespec</em>{,ASC}</strong> - Save palette contents to file.<!--SAVEPALETTE--></li>
+        <strong>SAVE PALETTE <em>p</em>,<em>filespec</em>{,ASC|HEX|RGB}</strong> - Save palette contents to file.<!--SAVEPALETTE--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>SAVE SCREEN <em>filespec</em></strong> - Save text screen to file.</li>

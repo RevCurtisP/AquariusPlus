@@ -304,7 +304,7 @@ file_load_pt3:
 ;-----------------------------------------------------------------------------
 ; Load Palette
 ; Input: A: Palette number
-;        B: File type: 0 = binary, else ASCII
+;        B: File type: 0 = binary, 1 = ASCII, 2 = RGB, 3 = Hex string
 ;       HL: String descriptor address
 ; Output: A: result code
 ; Flags Set: S if I/O error
@@ -314,21 +314,49 @@ file_load_pt3:
 ;-----------------------------------------------------------------------------
 file_load_palette:
     ld      e,a                   ; E = PalNum
-    ld      a,b
-    or      a
-    jr      nz,_load_palette_asc
+    dec     b                     ; If FilTyp = 1
+    jr      z,_load_palette_asc   ;   Load ASCII palette
+    dec     b                     ; If FilTyp = 2
+    jr      z,_load_palette_rgb   ;   Load RGB palette
+    dec     b                     ; If FilTyp = 3
+    jr      z,_load_palette_hex   ;   Load Hex String palette
     push    de                    ; Stack = PalNum, RtnAdr
-    call    file_load_strbuf      ; A = Result, BC = DatLen, HL = StrBuf
+    call    file_load_strbuf      ; A = Result, BC = PalLen, HL = StrBuf
     pop     de                    ; E = PalNum; Stack = RtnAdr
     ret     m                     ; Return if I/O Error
-    ld      a,32                  ; If result > 32
-    cp      c
-    jp      c,discard_ret         ;   Return overflow
+    ld      a,c
+    cp      64                    ; If FileLen = 64
+    jr      z,_pallete_hex        ;   Treat as hexadecimal ASCII
+    cp      32                    ; If FilLen <> 32
+    jp      nz,ret_carry_set      ;   Bad file error
+_ex_de_palette_set:
     ex      de,hl                 ; DE = StrBuf, L = PalNum
     xor     a
 _palette_set:
-    ld      iy,palette_set           ; Write out palette and return
+    ld      iy,palette_set        ; Write out palette and return
     jp      gfx_call
+
+_load_palette_hex:
+    push    de                    ; Stack = PalNum, RtnAdr
+    call    file_load_strbuf      ; A = Result, BC = HexLen, HL = StrBuf
+    pop     de                    ; E = PalNum; Stack = RtnAdr
+    ret     m                     ; Return if I/O Error
+    ld      a,64
+    cp      c                     ; If FileLen > 64
+    ret     c                     ;   Return carry set1
+_pallete_hex:
+    push    de                    ; Stack = PalNum, RtnAdr
+    push    hl                    ; Stack = StrBuf, PalNum, RtnAdr
+    ld      de,64
+    add     hl,de                 ; HL = PalBuf
+    pop     de                    ; DE = StrBuf, Stack = PalNum, RtnAdr
+    call    aux_hex_to_asc        ; BC = PalLen, HL = PalBuf
+    pop     de                    ; E = PalNum; Stack = RtnAdr
+    ret     c                     ; If bad hex string, return bad file
+    jr      _ex_de_palette_set
+
+_load_palette_rgb:
+    jp      GSERR
 
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ; Resource: Palette
@@ -361,19 +389,40 @@ _load_palette_asc:
     ld      b,d                   ; B = FilDsc
     jp      m,.finish
     pop     de                    ; DE = BinPtr; Stack = LinBuf, PalNum, RtnAdr
+    ld      a,8                   ; If LinLen = 8 and first two characters = FF
+    cp      c
+    jr      nz,.check6
     ld      a,(hl)                
     inc     hl
-    cp      '#'                   
-    jr      nz,.next              ; If first character is #
-    ld      a,c                   
-    cp      7                     ;   If LinLen < 7
+    cp      'F'                   
+    jr      nz,.next
+    ld      a,(hl)                
+    inc     hl
+    cp      'F'                   
+    jr      nz,.next
+    jr      .convert
+.check6
+    ld      a,6
+    cp      c                     ; Or LinLen == 6
+    jr      z,.decode
+    ld      a,(hl)                
+    inc     hl
+    cp      '#'                   ; Or first character = #       
+    jr      z,.len7
+    cp      '$'                   ; Or first character = #       
+    jr      nz,.next              ;   Convert line to palette entry
+.len7
+    ld      a,7
+.decode
+    cp      a                     ;   If line is too short
     jr      c,.badline            ;     Exit with carry set
+.convert
     push    bc                    ;   Stack = FilDsc, LinBuf, PalNum, RtnAdr
     call    asc_to_rgb            ;   Read RRGGBB to (DE)
     pop     bc                    ;   B = FilDsc; Stack = LinBuf, PalNum, RtnAdr
     jr      c,.badline
-    ld      a,b                   ;   A = FilDsc
 .next
+    ld      a,b                   ;   A = FilDsc
     pop     hl                    ; HL = LinBuf; Stack = PalNum, RtnAdr
     jr      .loop
 .finish
@@ -395,6 +444,9 @@ _load_palette_asc:
     ld      b,h
     ld      c,l                   ; BC = BinLen
     pop     hl                    ; L = PalNum; Stack = RtnAdr
+    ld      a,32
+    cp      c                     ; If PalLen <> 32
+    jp      nz,ret_carry_set      ;   Return Bad file
     xor     a                     ; Palette entry 0
     jp      _palette_set          ; Write palette and return
 .badline

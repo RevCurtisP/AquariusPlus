@@ -91,7 +91,24 @@ _close:
     pop     af
     ret
 
+
+;-----------------------------------------------------------------------------
+; RGB pallet format is 16 lines of comma separated decimal red, green, and 
+; blue, each of which is followed by a CR/LF
+;-----------------------------------------------------------------------------
+; Input: A: PalNum, HL: FilStd
+_save_palette_rgb:
+    ld      iy,rgb_to_dec
+    jr      _save_palette
+
+;-----------------------------------------------------------------------------
+; ASC Pallet format is 16 lines of hexadecimal RRGGBB,
+; each of which is followed by a CR/LF
+;-----------------------------------------------------------------------------
+; Input: A: PalNum, HL: FilStd
 _save_palette_asc:
+    ld      iy,rgb_to_asc
+_save_palette:
     push    hl                    ; Stack = FilStd, RtnAdr
     call    _get_palette
     call    get_strbuf_addr       ; HL = StrBuf
@@ -99,24 +116,47 @@ _save_palette_asc:
     ld      e,l                   ; DE = StrBuf
     ld      bc,32
     add     hl,bc                 ; AscAdr = StrBuf+32
-    push    hl                    ; Stack = AscAdr, FilStd,, RtnAdr
+    push    hl                    ; Stack = AscAdr, FilStd, RtnAdr
+    ld      b,','                 ; Delimiter for RGB
     ld      c,16
-    call    rgb_to_asc
+    call    gfx_call              ; Call RGB converter
     pop     de                    ; DE = AscAdr; Stack = FilStd, RtnAdr
     pop     hl                    ; HL = FilStd; Stack = RtnAdr
     jr      _save_string
 
+; Input: A: PalNum, HL: FilStd
+_save_palette_hex:
+    push    hl                    ; Stack = FilStd, RtnAdr
+    call    _get_palette
+    call    get_strbuf_addr       ; HL = StrBuf
+    push    hl                    ; Stack = PalBuf, FilStd, RtnAdr
+    ld      bc,32
+    add     hl,bc                 ; HL = HexBuf
+    pop     de                    ; DE = PalBuf; Stack = FilStd. RtnAdr
+    call    aux_asc_to_hex        ; BC = HexLen, HL = HexBuf
+    ex      de,hl                 ; DE = HexBuf
+    pop     hl                    ; HL = FilStd; Stack = RtnAdr
+    jr      file_save_string
+
+; Input: A: PalNum, DE: BufAdr
 _get_palette:
+    push    iy
     call    get_strbuf_addr       ; HL = StrBuf
     ex      de,hl                 ; DE = StrBuf
     ld      bc,32                 ; Read 16 palette entries
-    ld      iy,palette_get           ; Read palette into string buffer
-    jp      gfx_call
+    ld      iy,palette_get        ; Read palette into string buffer
+aux_gfxcall_pop_iy:
+    call    gfx_call
+aux_pop_iy_ret:
+    pop     iy
+    ret
 
 ;-----------------------------------------------------------------------------
 ; Save Pallete
 ; Input: A: Palette number
-;        C: File Type - 0: Binary, !0: ASCII
+;        B: File type: 0 = Binary, 1 = ASCII, 2 = RGB, 3 = Hex string
+;; ToDo  C: Line prefix (ASCII only)
+;; ToDo DE: Work buffer address (256 bytes)
 ;       HL: String descriptor address
 ; Output: A: result code
 ; Flags Set: S if I/O error
@@ -126,10 +166,12 @@ _get_palette:
 ;-----------------------------------------------------------------------------
 file_save_palette:
     ld      c,a
-    ld      a,b
-    or      a
-    ld      a,c
-    jr      nz,_save_palette_asc
+    dec     b                     ; If FilTyp = 1
+    jr      z,_save_palette_asc   ;   Save ASCII palette
+    dec     b                     ; If FilTyp = 2
+    jr      z,_save_palette_rgb   ;   Save RGB palette
+    dec     b                     ; If FilTyp = 3
+    jr      z,_save_palette_hex   ;   Save Hex String palette
     push    hl                    ; Stack = FilStd, RtnAdr
     call    _get_palette          ; 
     pop     hl                    ; HL = FilStd; Stack = RtnAdr

@@ -18,6 +18,7 @@ Run the .baq file to run the associated tests.
 | sg.baq  | Screen Graphics    |
 | sj.baq  | SPLIT and JOIN     |
 | sl.baq  | SAVE and LOAD      |
+| sp.baq  | SAVE/LOAD PALETTE  |
 | ss.baq  | SAVE/LOAD SCREEN   |
 | sx.baq  | SAVE/LOAD extended |
 | tf.baq  | FILL TILE          |
@@ -121,11 +122,23 @@ Run the .baq file to run the associated tests.
   - SAVE/LOAD string variable
   - LOAD DIR binary
   - LOAD DIR text
+- sp.baq
+  - LOAD PALETTE
+  - LOAD PALETTE ... ,ASC
+  - LOAD PALETTE ... ,HEX
+  - LOAD PALETTE ... ,RGB
+  - SAVE PALETTE ...
+  - SAVE PALETTE ... ,ASC
+  - SAVE PALETTE ... ,HEX
+  - SAVE PALETTE ... ,RGB
+- ss.baq
+  - LOAD SCREEN
+  - LOAD SCREEN ATTR
+  - LOAD SCREEN CHR
 - sx.baq
   - SAVE/LOAD BITMAP
   - SAVE/LOAD CHRSET
   - SAVE/LOAD FNKEYS
-  - SAVE/LOAD PALETTE
   - **_ToDo:_**
     - LOAD TILESET
 - tf.baq
@@ -178,3 +191,19 @@ Run the .baq file to run the associated tests.
 - vl.baq
   - Extended variable names (tilde)
   - Character literals (single quote)
+
+## Asset Files
+
+| Asset File | Tests                        |
+| :------    | :--------------------------- |
+| gray.pal   | plusBASIC binary palette     |
+| gray.asc   | ASCII palette: RRGGBB        |
+| gray.hex   | plusBASIC hex string palette |
+| gray.jasc  | Paintshop Pro palette: R G B |
+| cga.asc    | ASCII palette: #RRGGBB       |
+| c64.asc    | ASCII palette: $RRGGBB       |
+| cga.hex    | plusBASIC hex string palette |
+| c64.hex    | plusBASIC hex string palette |
+| win.gpl    | Gimp palette: R\tG\tB        |
+| win.asc    | Paint.net palette: FFRRGGBB  |
+

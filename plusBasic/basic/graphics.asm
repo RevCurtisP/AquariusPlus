@@ -845,8 +845,8 @@ ST_DEF_ATTR:
     call    _setupdef             ; DatLen, BufAdr, VarPtr
 .loop
     call    FRMEVL
-    call    gfx_call_inline       ; A = Attributes
-    word    bas_parse_attr
+    ld      iy,bas_parse_attr
+    call    gfx_call              ; A = Attributes
     call    _write_byte_strbuf    ; Write it to string buffer
     call    CHRGT2                ; Reget next character
     jr      z,_finish_def         ; If not end of statement
@@ -1348,6 +1348,8 @@ FN_GETSPRITE:
 FN_RGB:
     inc     hl                    ; Skip RGB
     ld      a,(hl)
+    cp      DECTK
+    jr      z,_rgbdec
     cp      '$'                   ;
     push    af                    ; Stack = '$', RtnAdr
     call    z,CHRGTR              ; If $, skip it
@@ -1377,7 +1379,7 @@ FN_RGB:
 _get_rgb:
     call    FRMTYP                ; Parse first argument
     ld      iy,bas_rgb_string
-    jr      z,.dorgb              ; If numberic
+    jr      z,.dorgb              ; If numeric
     call    con_byte16            ;   Convert to Red
     push    af                    ;   Stack = Red, RtnAdr
     call    get_comma_byte16      ;   Get Green
@@ -1387,8 +1389,26 @@ _get_rgb:
     pop     af                    ;   A = Green
     pop     bc                    ;   B = Red
     ld      iy,bas_make_rgb
-.dorgb:
+.dorgb
     jp      gfx_call
+
+
+; PRINT RGBDEC$($"2301")
+_rgbdec:
+    inc     hl                    ; Skip DEC
+    SYNCHKC '$'                   ; Require $
+    call    FRMPRN                ; Parse formula after (
+    call    CHKSTR
+    ld      de,(FACLO)            ; DE = RgbDsc
+    push    de                    ; Stack = RgbDsc, RtnAdr
+    ld      c,','                 ; Default delimiter to comma
+    call    get_char_optional     ; A = Optional delimiter
+    SYNCHKC ')'
+    pop     de                    ; DE = RgbDsc, Stack = RtnAdr
+    ld      iy,bas_rgbdec
+    call    push_hl_labbck
+    call    gfx_call              ; HL = StrPtr
+    jp      TIMSTR                ; Return "red,grn,blu"
 
 test_gs_init:
     push    hl

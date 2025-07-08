@@ -216,7 +216,7 @@ Quick Reference Guide
  - [ ] **LOAD DIR \{_filespec_,}\*_array_**,BIN - Load binary disk directory into string array.
  - [ ] **LOAD FNKEYS _filespec_** - Load function key definitions from file.<!--FNKEYS-->
  - [ ] **LOAD MODULE** - _Proposed enhancement._
- - [ ] **LOAD PALETTE _p_,_filespec_{,ASC}** - Load file data ino palette.<!--LOADPALETTE-->
+ - [ ] **LOAD PALETTE _p_,_filespec_{,ASC|HEX|RGB}** - Load file data ino palette.<!--palette-->
  - [ ] **LOAD SCREEN _filespec_** - Load text screen from file.
  - [ ] **LOAD SCREEN ATTR _filespec_** - Load text colors from file.
  - [ ] **LOAD SCREEN CHR _filespec_** - _Not implemented_
@@ -280,7 +280,7 @@ Quick Reference Guide
  - [ ] **PUT SCREEN (_x_,y_) \*_array_|^_strvar_** - Copy clip from array or string variable to text screen.<!--PUTSCREEN-->
  - [ ] **PUT SCREEN CHR (_x_,y_) \*_array_|^_strvar_** - Copy clip from array or string variable to text screen.<!--PUTSCREEN-->
  - [ ] **PUT SCREEN ATTR (_x_,y_) \*_array_|^_strvar_** - Copy clip from array or string variable to text screen.<!--PUTSCREEN-->
- - [ ] **PUT TILEMAP (_x_,y_) \*_array_|^_strvar_** - Copy clip from array or string variable to tilemap.<!--PUTTILE-->
+ - [ ] **PUT TILEMAP (_x_,y_),\*_array_|^_strvar_** - Copy clip from array or string variable to tilemap.<!--PUTTILE-->
  - [ ] **READ _var_{,...}** - Read values from DATA statements into variables.<!--READ-->
  - [ ] **READ \*_array_{,...}** - Read values from DATA statements into an array.<!--READ-->
  - [ ] **READ #_channel_,^_strvar_,_length_)** - Read string from open file.<!--fileio-->
@@ -300,6 +300,7 @@ Quick Reference Guide
  - [ ] **RETURN {_expression_{,...}}** - Resume program execution after GOSUB, optionally returning results.<!--flow-->
  - [x] **RGB(_r_,_g_,_b_|_rgbstr_)** - Return integer representing a single palette entry.<!--palette-->
  - [x] **RGB$(_r_,_g_,_b_|_rgbstr_)** - Return string representing a single palette entry.<!--palette-->
+ - [ ] **RGBDEC$(_string_{,_char_})** - Convert binary RGB value to decimal red,green, and blue.<!--palette-->
  - [x] **RIGHT$(_string_,_len_)** - Return the last up to _byte_ characters of string.<!--string-->
  - [x] **RND(_integer_)** - Return new or previous psuedo-random number or seeds the random number generator.<!--math-->
  - [ ] **RUN {_lineref_}** - Start program execution at first or specified line.<!--run-->
@@ -312,7 +313,7 @@ Quick Reference Guide
  - [ ] **SAVE CHRSET _filespec_** - Save curent character set to file.<!--chrset-->
  - [ ] **SAVE COLORMAP _filespec_** - Save 1bpp color map from Video RAM to file.<!--bmpfile-->
  - [ ] **SAVE FNKEYS _filespec_** - Save function key definitions to file.
- - [ ] **SAVE PALETTE _p_,_filespec_{,ASC}** - Save palette contents to file.<!--SAVEPALETTE-->
+ - [ ] **SAVE PALETTE _p_,_filespec_{,ASC|HEX|RGB}** - Save palette contents to file.<!--SAVEPALETTE-->
  - [ ] **SAVE SCREEN _filespec_** - Save text screen to file.
  - [ ] **SAVE SCREEN ATTR _filespec_** - _Not implemented_
  - [ ] **SAVE SCREEN CHR _filespec_** - _Not implemented_

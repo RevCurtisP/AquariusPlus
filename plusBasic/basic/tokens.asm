@@ -148,6 +148,7 @@ MKDTK     equ     $DE
 DELTK     equ     $DF
 CDTK      equ     $E0
 INTK      equ     $E1
+DECTK     equ     $E6
 MODTK     equ     $E7
 DATETK    equ     $E5
 ERRTK     equ     $E9

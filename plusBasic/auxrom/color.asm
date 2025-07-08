@@ -99,10 +99,12 @@ rgb_to_asc:
 .loop
     dec     c
     ret     z
+;; ToDo: Pass in optional prefix
+; no prefix for now
     ex      af,af'                ; A' = AscLen
-    ld      a,'#'
-    ld      (hl),a                ; Write #
-    inc     hl    
+;    ld      a,'#'
+;    ld      (hl),a                ; Write #
+;    inc     hl    
     ld      a,(de)                ; A = GB
     inc     de                    ; 
     push    af                    ; Stack = GB, RtnAdr
@@ -145,6 +147,104 @@ _crlf:
     ld      (hl),a                ; Write LF
     inc     hl    
     ret
+
+;-----------------------------------------------------------------------------
+; Convert Binary RGB value to Decimal triplet
+; Input: B: Delimiter
+;        C: Entry Count
+;       DE: Binary Data Address
+;       HL: ASCII Buffer Address
+; Output: A: ASCII String length
+; Clobbered: A,BC,DE,HL
+;-----------------------------------------------------------------------------
+rgb_to_dec:
+    push    hl                    ; Stack = BufAdr
+    inc     c                     ; Bump for countdown
+.loop
+    dec     c
+    jr      z,.done
+    call    rgb_dec               ; Write red,grn,blu
+    call    _crlf                 ; Write CR/LF
+    jr      .loop
+.done
+    or      a                     ; Clear carry
+    pop     de                    ; DE = BufAdr
+    sbc     hl,de                 ; HL = StrLen
+    ld      a,l                   ; A = StrLen
+    ret
+
+; Convert $GB0R to "red,green,blue"
+; Input: B: Delmtr, DE: BinPtr, HL: BufPtr
+rgb_dec:
+    ld      a,(de)                ; A = GrnBlu
+    inc     de                    ; Bump BinPtr
+    push    af                    ; Stack = GrnBlu, RtnAdr
+    ld      a,(de)                ; A = Red
+    inc     de                    ; Bump BinPtr
+    call    .to_dec               ; Convert and write to buffer
+    pop     af                    ; A = GrnBlu; Stack = RtnAdr
+    push    af                    ; Stack = GrnBlu, RtnAdr
+    rra
+    rra
+    rra
+    rra                           ; Fast A = A >> 4 
+    call    .del_to_dec           ; Write delimiter and Green to buffer
+    pop     af                    ; A = GrnBlu; Stack = RtnAdr
+    call    .del_to_dec           ; Write delimiter and Blue to buffer
+    xor     a                     ; A = 0, Clear carry
+    ld      (hl),a                ; Null terminate string
+    ret
+    
+.del_to_dec:
+    ld      (hl),b
+    inc     hl
+.to_dec:
+    push    bc                    ; Stack = Del+Cnt, RtnAdr
+    push    de                    ; Stack = BinPtr, Del+Cnt, RtnAdr
+    and     $0F                   ; Strip high nybble and clear carry
+    ld      e,a                   ; E = Color
+    rla
+    rla
+    rla
+    rla                           ; A = A << 4
+    add     e                     ; Made $x into $xx
+    call    byte_to_dec_fast
+    pop     de                    ; DE = BinPtr; Stack = Del+Cnt, RtnAdr
+    pop     bc                    ; BC = Del+Cnt; Stack = RtnAdr
+    ret
+
+;; Input: A: Byte, HL: TxtPtr; Clobbered: AF, BC, DE
+;; Does not generate leading spaces
+;; ToDo: (after release) move to auxrom/misc.asm
+byte_to_dec_fast:
+    ld      e,'0'
+    ld      d,100
+    call    .digit
+    ld      d,10
+    call    .digit
+    dec     e
+    ld      d,1
+.digit
+    ld      b,-1
+.loop
+    inc     b
+    sub     a,d
+    jr      nc,.loop
+    add     a,d
+    ld      c,a
+    ld      a,'0'
+    add     b
+    cp      e
+    jr      z,.ret
+    ld      (hl),a
+    inc     hl
+    ex      af,af'
+    dec     e
+.ret
+    ld      a,c
+    ret
+
+    
     
 ;-----------------------------------------------------------------------------
 ; Convert ASCII RRGGBB to binary GB0R
@@ -201,3 +301,101 @@ hex_to_nybble:
     cp      16                    ; Return carry if > 15
     ccf
     ret
+
+;-----------------------------------------------------------------------------
+; Convert decimal "rrr ggg bbb" to binary GB0R
+; Input: HL: ASCII Buffer Address
+; Output: BC: RGB value
+; Flags: Carry set if invalid line
+; Clobbered: A
+;-----------------------------------------------------------------------------
+dec_to_rgb:
+    call    dec_to_byte           ; A = Red
+    ret     c                     ; Return if no red
+    call    div_a_16              ; Red = Red / 16
+    ld      b,a                   ; B = Red 
+    push    bc
+    call    dec_to_byte           ; A = Green
+    pop     bc
+    ret     c                     ; Return if no blue
+    and     $F0                   ; Green = Green / 16
+    ld      c,a                   ; C = Green
+    push    bc
+    call    dec_to_byte           ; A = Blue
+    pop     bc
+    ret     c                     ; Return if no green
+    call    div_a_16              ; Blue = Blue / 16
+    or      c                     ; A = Green + Blue
+    ld      c,a                   ; A = Green + Blue
+    ret     
+
+; Input: HL: TxtPtr
+; Output: A: Byte
+; Flags: Carry set if not number
+;   else Zero set if end of line
+; Clobbers: BC
+dec_to_byte:
+    ld      c,0
+    call    get_dec_digit         ; A = Digit
+    ret     c                     ; Return if not digit
+    ld      c,a
+.loop
+    call    get_dec_digit         ; A = Digit
+    jr      c,.skip               ; Return if not digit
+    call    mult_c_10
+    add     a,c                   ; Byte = Byte * 10 + Digit
+    ret     c                     ; Return if overflow
+    ld      c,a
+    jr      .loop
+.skip
+    ld      a,(hl)                ; A = NxtChr
+    inc     hl                    ; Bump TxtPtr
+    or      a                     ; If NxtChr = NUL
+    jr      z,.done               ;   Return EOL
+    cp      '0'                   ; If NxtChr < '0'
+    jr      c,.skip               ;   Loop
+    cp      ':'                   ; If NxtChr > '9'
+    jr      nc,.skip              ;   Loop
+    dec     hl                    ; Back up to LstChr
+    or      a                     ; Clear Carry
+.done
+    ld      a,c                   ; Return Byte
+    ret
+
+; Input: HL: TxtPtr
+; Output: A: Byte
+; Flags: Carry set if not digit
+get_dec_digit:
+    ld      a,(hl)                ; A = TxtChr
+    sub     '0'                   ; A = Digit
+    ret     c                     ; If Digit < 0 return not digit
+    cp      10
+    ccf                           ; If Digit > 9
+    ret     c                     ;   Return not digit
+    inc     hl                    ; Bump Pointer
+    ret
+
+div_a_16:
+    sra     a                     ; A = A / 2
+div_a_8:
+    sra     a                     ; A = A / 4
+div_a_4:
+    sra     a                     ; A = A / 8
+    sra     a                     ; A = A / 16
+    ret
+
+; Clobbers B
+mult_c_10:
+    ld      b,a                   ; Save A
+    ld      a,c                   ; A = Num
+    add     a                     ; A = Num * 2
+    ret     c                     ; Return if overflow
+    add     a                     ; A = Num * 4
+    ret     c                     ; Return if overflow
+    add     c                     ; A = Num * 5
+    ret     c                     ; Return if overflow
+    add     a,a                   ; A = Num * 10 (Carry set if overflow)
+    ld      c,a                   ; C = Num * 10
+    ld      a,b                   ; Restore A
+    ret
+    

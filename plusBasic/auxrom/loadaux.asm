@@ -323,3 +323,4 @@ aux_bcde2hl:
     ld      (hl),d                ; Write StrAdr to array entry
     inc     hl
     ret
+

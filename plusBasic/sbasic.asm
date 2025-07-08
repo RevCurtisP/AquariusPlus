@@ -309,8 +309,9 @@ GETYPE: ld      a,(VALTYP)        ;; +                                        01
                                   ;; +                                        0116  jr      z,MEMCHK
         dec     a                 ;; +                                        0118  xor     c                 
         ret                       ;; +                                        0119  ld      (hl),a
-;; Evaluate Formula after parenthesis and Return Type
+;; Skip character Evaluate Formula after parenthesis and Return Type
 FRMPRS: rst     CHRGET            ;; +                                        011A  ld      b,(hl)
+;; Evaluate Formula after parenthesis and Return Type
 FRMPRT: call    FRMPRN            ;; +                                        011B  cpl                
                                   ;; +                                        011C  ld      (hl),a     
                                   ;; +                                        011D  ld      a,(hl)     
@@ -441,7 +442,7 @@ STMDSP: ;MARKS START OF STATEMENT LIST
                                   ;; +                                                01E8              
         word    IFS               ;;$079C                                             01E9
         nop                       ;; +                                                01EB  word    RESTOR
-SLERR   ld      e,ERRSL           ;; + 32 String length                               01FC
+SLERR:  ld      e,ERRSL           ;; + 32 String length                               01FC
                                   ;; +                                                01ED  word    GOSUB
         byte    $01               ;; +                                                01FE                
 ESERR:  ld      e,ERRES           ;; + 31 Empty string                                01EF  word    RETURN
@@ -530,7 +531,7 @@ DIMTK   equ     TK                ;
 TK      =            TK+1
         byte    'R'+$80,"EAD"     ;;$86
 TK      =            TK+1
-RETTK   equ     TK                ;
+LETTK   equ     TK                ;
         byte    'L'+$80,"ET"      ;;$87
 TK      =            TK+1
 GOTOTK  equ     TK
@@ -546,6 +547,7 @@ TK      =            TK+1
 GOSUTK  equ     TK                ;
         byte    'G'+$80,"OSUB"    ;;$8C
 TK      =            TK+1
+RETTK   equ     TK                ;
         byte    'R'+$80,"ETURN"   ;;$8D
                                   ;
 TK      =            TK+1
@@ -1153,11 +1155,12 @@ MORLNP: and     $7F               ;[M80] AND OFF HIGH ORDER BIT
         jp      p,MORLNP          ;[M80] END OF RESWRD?
         jr      LISPRT            ;[M80] PRINT NEXT CHAR
 ;[M80] "FOR" STATEMENT
+;;; Proposed: allow multiple loop specifiers separated by semicolon
 FOR:    ld      a,100
         ld      (SUBFLG),a        ;[M80] DONT RECOGNIZE SUBSCRIPTED VARIABLES
         call    LET               ;[M65] READ VARIABLE AND ASSIGN INITIAL VALUE
-        pop     bc                ;
-        push    hl                ;[M80] SAVE THE TEXT POINTER
+        pop     bc                ;; BC = RtnAdr
+        push    hl                ;; Stack = TxtPtr
         call    DATA              ;[M80] SET [H,L]=END OF STATEMENT
         ld      (ENDFOR),hl       ;[M80] SAVE FOR COMPARISON
         ld      hl,2              ;[M80] SET UP POINTER INTO STACK
@@ -1218,9 +1221,9 @@ ONEON:  push    bc                ;[M80] PUT VALUE ON BACKWARDS
         push    de                ;[M80] OPPOSITE OF PUSHR
         push    af                ;
         inc     sp                ;
-        push    hl                ;
+        push    hl                ;; Text pointer onto stack
         ld      hl,(SAVTXT)       ;
-        ex      (sp),hl           ;
+        ex      (sp),hl           ;; HL = text pointer, FOR? sddress onto stack
 NXTCON: ld      b,FORTK           ;[M80] PUT A 'FOR' TOKEN ONTO THE STACK
         push    bc                ;
         inc     sp                ;[M80] THE "TOKEN" ONLY TAKES ONE BYTE OF STACK SPACE
@@ -1438,7 +1441,7 @@ LETDO:  push    de                ; Stack = VarPtr
         ld      a,(VALTYP)        ; A = VarTyp
         push    af                ; Stack = VarTyp, VarPtr
         call    FRMEVL            ; Evaluate Formula
-        pop     af                ; A = VarTyp
+        pop     af                ; A = VarTyp; Stack = VarPtr
         ex      (sp),hl           ; HL = VarPtr, Stack = TxtPtr
         ld      (SAVTXT),hl       ; SAVTXT = VarPtr
         rra                       ;

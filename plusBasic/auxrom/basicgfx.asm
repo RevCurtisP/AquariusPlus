@@ -53,12 +53,13 @@ bas_make_rgb:
     ld      d,b                   ; D = Red
     ret
 bas_rgb_string:
-    push    hl                    ;   Stack = TxtPtr, RtnAdr
-    call    free_addr_len         ;   DE = StrAdr, A = StrLen
-    pop     hl                    ;   HL = TxtPtr, Stack = RtnAdr
-    jp      z,ESERR               ;   If StrLen = 0, Empty string error
-    cp      3                     ;   If StrLen <> 3
-    jp      nz,SLERR              ;     String length error
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    call    free_addr_len         ; DE = StrAdr, A = StrLen
+    pop     hl                    ; HL = TxtPtr, Stack = RtnAdr
+    jp      z,ESERR               ; If StrLen = 0, Empty string error
+    cp      3                     ; If StrLen < 3
+    jp      c,SLERR               ;   String length error
+    jr      nz,.rgb_string        ; If
     call    .get_nybble           ;   A = Red
     push    af                    ;   Stack = Red, RtnAdr
     call    .get_nybble           ;   A = Green
@@ -67,12 +68,57 @@ bas_rgb_string:
     ld      e,a                   ;   E = Blue
     pop     af                    ;   A = Green
     pop     bc                    ;   B = Red
-    jr      bas_make_rgb          ;   Build and return RGB
+    jr      bas_make_rgb          ;   Return RGB in DE
+.rgb_string
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    call    bytes_to_fbuffr       ; Copy String to FBUFFR
+    jp      c,SLERR               ; Error if string too long
+    call    dec_to_rgb            ; BC = RGB
+    pop     hl                    ; HL = TxtPtr, Stack = RtnAdr
+    jp      c,FCERR               ; Error if not "rrr ggg bbb"
+    ld      d,b
+    ld      e,c                   ; Return RGB in DE
+    ret
+
 .get_nybble
-    ld      a,(de)                ;   A = Color Component
+    ld      a,(de)                ; A = Color Component
     inc     de
     call    aux_cvt_hex           ; Convert Hex digit to nybble and return
     jp      c,FCERR
+    ret
+
+; Called from _rgbdec:
+; On entry: C = Delmtr, DE = RgbDsc
+; On exit: HL = BufAdr, A = StrLen
+bas_rgbdec:
+    ld      a,c                   ; A = Delmtr
+    push    af                    ; Stack = Delmtr, RtnAdr
+    ex      de,hl
+    call    free_hl_addr_len      ; DE = StrAdr, A = StrLen
+    cp      2                     ; If StrLen <> 2
+    jp      nz,SLERR              ;   Strnig length error
+    ld      hl,FBUFFR             ; HL = BufAdr
+    pop     bc                    ; B = Delmtr; Stack = RtnAdr
+    push    hl
+    call    rgb_dec
+    pop     hl
+    ret
+
+;Input: BC: StrLen, DE: StrAdr
+;Output: HL: FBUFFR
+;Clobbers: A, BC, DE
+bytes_to_fbuffr:
+    ld      a,c
+    cp      14
+    ccf                           ;If StrLen >= 14
+    ret     c                     ;  Return Carry set
+    ld      hl,FBUFFR
+    push    hl                    ; Stack = FBUFFR, RtnAdr
+    ex      de,hl                 ; DE = FBUFFR, HL = StrBuf
+    ldir                             ; Copy string
+    xor     a                     ; Clear carry
+    ld      (de),a                ; Write delimiter
+    pop     hl                    ; HL = FBUFFR, Stack = RtnAdr
     ret
 
 ; Called from _def_sprite_string

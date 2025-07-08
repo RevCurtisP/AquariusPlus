@@ -134,7 +134,7 @@ null_desc:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.27a"
+    db "v0.27b"
     db 0
 plusver_len equ $ - plus_version
 plus_len   equ   $ - plus_text
@@ -883,17 +883,6 @@ gfx__call:
     inc     iy
     jr      aux_call
 
-gfx_call_inline:
-    ex      af,af'
-    ex      (sp),hl               ; HL = RtnAdr
-    ld      a,(hl)
-    ld      iyl,a
-    inc     hl
-    ld      a,(hl)
-    ld      iyh,a
-    inc     hl
-    ex      (sp),hl               ; Stack = RtnAdr
-    ex      af,af'
 gfx_call:
     jr      aux_call
 
@@ -1298,6 +1287,29 @@ gfx_jump_table:
 
     dc $10000-$,$76
 
-    end
+    dephase
 
+;-----------------------------------------------------------------------------
+; Graphics ROM Routines
+;-----------------------------------------------------------------------------
+
+ifdef xxxxx
+
+    ToDo: (Eventually) Modify boot.asm to load Graphics ROM into bank 3.
+
+    phase   $C000                 ;Assemble in ROM Page 1 which will be in Bank 3
+    ;jump_gfx here eventually
+
+    assert !($C1FF<$)             ; ROM full!
+    dc $C200-$,$76
+
+    byte    "Graphics ROM"
+    
+    free_rom_gfx = $10000 - $
+
+    dc $10000-$,$76
+    
+endif    
+    
+    end
 

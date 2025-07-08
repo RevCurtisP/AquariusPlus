@@ -96,6 +96,34 @@ bool_or_long:
     ld      d,a
     ret
 
+; Input: A: Byte
+;        HL: TxtPtr
+; Clobbers: A
+byte_to_dec:
+    ld      ix,SNGFLT
+_to_dec:
+    push    bc
+    push    de
+    push    hl                    ; Stack = TxtPtr, DE, BC, RtnAdr
+    call    jump_ix
+    call    FOUT
+    pop     hl                    ; HL = TxtPtr; Stack = DE, BC, RtnAdr
+    ld      de,FBUFFR+2
+.loop
+    ld      a,(de)
+    inc     de
+    or      a
+    jr      z,.done
+    ld      (hl),a
+    inc     hl
+    jr      .loop
+.done
+    pop     de                    ; Stack = BC, RtnAdr
+    pop     bc                    ; Stack = RtnAdr
+    ret
+
+
+
 ;-----------------------------------------------------------------------------
 ; Pause program execution
 ; Input: A: Diaable Ctrl-C 

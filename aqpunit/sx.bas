@@ -97,55 +97,41 @@
 321 SET FILE ERROR OFF:LOAD BITMAP "nofile.bmp":SET FILE ERROR ON
 322 GOSUB _assert:ARGS "ERR=50"
 
-410 GOSUB _title:ARGS "LOAD/SAVE CHRSET"
-412 GOSUB _output:ARGS LIST$(NEXT)
-413 LOAD "assets/linedraw.char",@32,0:USE CHRSET "assets/linedraw.char"
-414 GOSUB _assert:ARGS "COMPARE(@54,$3800,@32,0,2048)"
+340 GOSUB _title:ARGS "LOAD/SAVE CHRSET"
+342 GOSUB _output:ARGS LIST$(NEXT)
+343 LOAD "assets/linedraw.char",@32,0:USE CHRSET "assets/linedraw.char"
+344 GOSUB _assert:ARGS "COMPARE(@54,$3800,@32,0,2048)"
+345 GOSUB _output:ARGS LIST$(NEXT)
+346 LOAD CHRSET "assets/seraphim.char":LOAD "assets/seraphim.char",@33,0
+347 GOSUB _assert:ARGS "COMPARE(@54,$3800,@32,0,256)"
+348 GOSUB _assert:ARGS "COMPARE(@54,$3900,@33,0,768)"
+349 GOSUB _assert:ARGS "COMPARE(@54,$3C00,@32,$400,1024)"
+350 GOSUB _output:ARGS LIST$(NEXT)
+351 LOAD CHRSET "assets/arabic.char":LOAD "assets/arabic.char",@34,0
+352 GOSUB _assert:ARGS "COMPARE(@54,$3800,@32,0,256)"
+353 GOSUB _assert:ARGS "COMPARE(@54,$3900,@33,0,768)"
+354 GOSUB _assert:ARGS "COMPARE(@54,$3C00,@34,0,1024)"
+360 GOSUB _output:ARGS LIST$(NEXT)
+361 USE CHRSET 1:SAVE CHRSET "work/savechrset.char"
+362 GOSUB _output:ARGS LIST$(NEXT)
+363 LOAD "work/savechrset.char",@35,0
+364 GOSUB _assert:ARGS "COMPARE(@54,$3800,@35,0,2048)"
+366 USE CHRSET 0
+368 DEL "work/savechrset.char"
+
+370 GOSUB _output:ARGS LIST$(NEXT)
+371 SET FILE ERROR OFF:LOAD CHRSET "nofile.chr":SET FILE ERROR ON
+372 GOSUB _assert:ARGS "ERR=50"
+
+400 GOSUB _title:ARGS "LOAD/SAVE FNKEYS"
+402 GOSUB _output:ARGS LIST$(NEXT)
+403 SAVE FNKEYS "work/fnkeysave.fkey":LOAD "work/fnkeysave.fkey",@32,0
+405 GOSUB _assert:ARGS "COMPARE(@32,0,@54,$200,512)"
+408 DEL "work/fnkeysave.fkey"
+
 415 GOSUB _output:ARGS LIST$(NEXT)
-416 LOAD CHRSET "assets/seraphim.char":LOAD "assets/seraphim.char",@33,0
-417 GOSUB _assert:ARGS "COMPARE(@54,$3800,@32,0,256)"
-418 GOSUB _assert:ARGS "COMPARE(@54,$3900,@33,0,768)"
-419 GOSUB _assert:ARGS "COMPARE(@54,$3C00,@32,$400,1024)"
-420 GOSUB _output:ARGS LIST$(NEXT)
-421 LOAD CHRSET "assets/arabic.char":LOAD "assets/arabic.char",@34,0
-422 GOSUB _assert:ARGS "COMPARE(@54,$3800,@32,0,256)"
-423 GOSUB _assert:ARGS "COMPARE(@54,$3900,@33,0,768)"
-424 GOSUB _assert:ARGS "COMPARE(@54,$3C00,@34,0,1024)"
-430 GOSUB _output:ARGS LIST$(NEXT)
-431 USE CHRSET 1:SAVE CHRSET "work/savechrset.char"
-432 GOSUB _output:ARGS LIST$(NEXT)
-433 LOAD "work/savechrset.char",@35,0
-434 GOSUB _assert:ARGS "COMPARE(@54,$3800,@35,0,2048)"
-436 USE CHRSET 0
-438 DEL "work/savechrset.char"
-
-440 GOSUB _output:ARGS LIST$(NEXT)
-441 SET FILE ERROR OFF:LOAD CHRSET "nofile.chr":SET FILE ERROR ON
-442 GOSUB _assert:ARGS "ERR=50"
-
-450 GOSUB _title:ARGS "LOAD/SAVE FNKEYS"
-452 GOSUB _output:ARGS LIST$(NEXT)
-453 SAVE FNKEYS "work/fnkeysave.fkey":LOAD "work/fnkeysave.fkey",@32,0
-455 GOSUB _assert:ARGS "COMPARE(@32,0,@54,$200,512)"
-458 DEL "work/fnkeysave.fkey"
-
-465 GOSUB _output:ARGS LIST$(NEXT)
-466 SET FILE ERROR OFF:LOAD FNKEYS "nofnkeys.fkey":SET FILE ERROR ON
-467 GOSUB _assert:ARGS "ERR=50"
-
-470 GOSUB _title:ARGS "LOAD/SAVE PALETTE"
-472 GOSUB _output:ARGS LIST$(NEXT)
-473 FOR P=0 TO 3:SAVE PALETTE P,"palette%%.palt" % (P):NEXT
-474 GOSUB _output:ARGS LIST$(NEXT)
-475 FOR P=0 TO 3:LOAD "palette%%.palt" % (P),@32,P*32:NEXT
-476 FOR P=0 TO 3
-477 GOSUB _assert:ARGS "PEEK$(@32,P*32,32)=GETPALETTE$(P)"
-478 NEXT
-479 FOR P=0 TO 3:DEL "palette%%.palt" % (P):NEXT
-
-485 GOSUB _output:ARGS LIST$(NEXT)
-486 SET FILE ERROR OFF:LOAD FNKEYS "nopalette.palt":SET FILE ERROR ON
-487 GOSUB _assert:ARGS "ERR=50"
+416 SET FILE ERROR OFF:LOAD FNKEYS "nofnkeys.fkey":SET FILE ERROR ON
+417 GOSUB _assert:ARGS "ERR=50"
 
 500 GOSUB _title:ARGS "LOAD TRACK"
 501 FILL BYTES @55,$0A00,$3600,0

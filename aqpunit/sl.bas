@@ -1,6 +1,6 @@
 100 REM Test Save and Load
 
-110 QG$="ss"
+110 QG$="sp"
 120 GOSUB _init
 
 200 GOSUB _title:ARGS "SAVE and LOAD"

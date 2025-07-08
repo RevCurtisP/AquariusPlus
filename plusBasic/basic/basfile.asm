@@ -792,17 +792,22 @@ load_chrset:
 ; SAVE CHRSET "/t/test.chrs"
 ; PRINT COMPARE "/t/test.chrs" TO "esp:/default.chr"
 _save_chrset:
-    call    get_strdesc_arg       ; HL = FilStd; Stack = TxtPtr, PalNum, FilRtn, RtnAdr
     ld      iy,file_save_chrset
-    jr      _aux_call
+    jp      _strdesc_auxcall
 
+;;; ToDo: Add types HEX (plusBASIC 64 byte hex palette) and RGB (decimal RGB values)
 _save_palette:
 ; save palette 0,"/t/default.pal"
 ; save palette 1,"/t/palette.txt",ASC
+; save palette 0,"/t/gray.hex",hex
     ld      iy,file_save_palette
     jr      _do_palette
 ; load palette 0,"/t/gray.pal"
 ; load palette 0,"/t/palette.txt",ASC
+; load palette 0,"/t/gray.asc",asc
+; load palette 0,"/t/gray.hex",hex
+; load palette 1,"/au/assets/cga.asc",asc
+; load palette 1,"/au/assets/c64.asc",asc
 _load_palette:
     ld      iy,file_load_palette
 _do_palette:
@@ -810,15 +815,10 @@ _do_palette:
     push    iy                    ; Stack = FilRtn
     call    get_byte4             ; A = PalNum
     push    af                    ; Stack = PalNum, FilRtn, RtnAdr
-    SYNCHKC ','                   ; Require comma
+    call    get_comma             ; Require comma
     call    get_strdesc_arg       ; HL = FilStd; Stack = TxtPtr, PalNum, FilRtn, RtnAdr
     ex      (sp),hl               ; HL = TxtPtr; Stack = FilStd, PalNum, FilRtn, RtnAdr
-    call    CHRGT2                ; Reget Character
-    ld      b,0
-    jr      z,.do_save_load       ; If not terminator
-    SYNCHKC ','
-    SYNCHKT ASCTK                ; Require ,ASC
-    dec     b
+    call    _parse_asc_hex_rgb    ; B = Mode (0 - Binary, 1 - ASCII, 2 - Hex string)
 .do_save_load:
     ex      (sp),hl               ; HL = FilStd; Stack = TxtPtr, PalNum, FilRtn, RtnAdr
     pop     de                    ; DE = TxtPtr
@@ -826,6 +826,23 @@ _do_palette:
     pop     iy                    ; IY = FilRtn; Stack = RtnAdr
     push    de                    ; Stack = TxtPtr, RtnAdr
     jp      _aux_call_bdf
+
+_parse_asc_hex_rgb:
+    call    CHRGT2                ; Reget Character
+    ld      b,0                   ; If terminator
+    ret     z                     ;   Return 0 (Binary)
+    SYNCHKC ','                   ; Require comma
+    inc     b                     ;   B = 1
+    cp      ASCTK                 ; If ASC
+    jp      z,CHRGTR              ;   Skip and return 1 (ASCII)
+    inc     b                     ; If RGB
+    cp      RGBTK                 ;   Skip and return 2 (RGB)
+    jp      z,CHRGTR              ;   Skip and return 1 (ASCII)
+    inc     b                     ; Require HEX and return 3 (Hex string)
+require_hex:
+    SYNCHKT XTOKEN
+    SYNCHKT HEXTK 
+    ret
 
 ; load pt3 "/music/songs1/dontstop.pt3"
 ; load pt3 "/music/songs1/dance.pt3"

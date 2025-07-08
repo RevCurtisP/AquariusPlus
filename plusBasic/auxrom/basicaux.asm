@@ -579,15 +579,58 @@ _array_len
     or      c                     ;   If not last element
     ret
 
+
 ;-----------------------------------------------------------------------------
-; Convert Hexademimal String to Binary String
+; Convert Binary String to Hexadecimal String
+; Input: BC: Binary string length
+;        DE: Binary string buffer
+;        HL: Hex string buffer
+; Output: BC: Hex string length
+; Clobbered: A, DE
+;-----------------------------------------------------------------------------
+aux_asc_to_hex:
+    ld    a,c                     ; A = BinLen
+    add   a                       ; HexLen = BinLen * 2
+    ret   z                       ; Return HexLen = 0 if BinLen = 0
+    push  hl                      ; Stack = HexAdr, RtnAdr
+    push  af                      ; Stack = HexLen, HexAdr, RtnAdr
+    ld    b,c                     ; B = BinLen
+.loop
+    ld    a,(de)                  ; A = BinByt
+    inc   de
+    call  aux_byte_to_hex         ; Convert to Hex at (HL)
+    djnz  .loop
+    jr    _hex_done               ; Return BC = HexLen, HL = HexBuf
+
+aux_byte_to_hex:
+    ld      c,a
+    rra
+    rra
+    rra
+    rra
+    call    .hex
+    ld      a,c
+.hex:
+    and     $0f
+    cp      10
+    jr      c,.chr
+    add     7
+.chr:
+    add     '0'
+    ld      (hl),a
+    inc     hl
+    ret
+
+;-----------------------------------------------------------------------------
+; Convert Hexadecimal String to Binary String
 ; Input: BC: Hex string length
 ;        DE: Hex string buffer
 ;        HL: Binary string buffer
-; Output: BC: Binary strin length
-; Clobbered: A,DE
+; Output: BC: Binary string length
+; Clobbered: A, DE
 ;-----------------------------------------------------------------------------
 aux_hex_to_asc:
+    ld      a,c                   ; A = AscLen / 2
     srl     a                     ; BinLen = AscLen / 2
     ret     c                     ; Return Carry if AscLen was Odd
     push    hl                    ; Stack = BinAdr, RtnAdr
@@ -595,19 +638,16 @@ aux_hex_to_asc:
     ex      de,hl                 ; HL = AscAdr, DE=BinAdr
     ld      b,a                   ; B = BinLen
 .loop
-    call    aux_hex_to_byte
-    jr      c,_ret_nz
+    call    aux_hex_to_byte       ; A = Byte
+    jp      c,discard2ret         ; If error, clean stack and return Carry set
     ld      (de),a
     inc     de
     djnz    .loop
+_hex_done:
     pop     af
     ld      b,0
     ld      c,a                   ; BC = BinLen
     pop     hl                    ; HL = BufAdr
-    ret
-
-_ret_nz:
-    or      $FF
     ret
 
 ; Clobbers: C
