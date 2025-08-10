@@ -816,12 +816,16 @@ _do_palette:
     call    get_byte4             ; A = PalNum
     push    af                    ; Stack = PalNum, FilRtn, RtnAdr
     call    get_comma             ; Require comma
-    call    get_strdesc_arg       ; HL = FilStd; Stack = TxtPtr, PalNum, FilRtn, RtnAdr
-    ex      (sp),hl               ; HL = TxtPtr; Stack = FilStd, PalNum, FilRtn, RtnAdr
-    call    _parse_asc_hex_rgb    ; B = Mode (0 - Binary, 1 - ASCII, 2 - Hex string)
+    call    FRMSTR                ; Parse FileSpec
+    ld      de,(FACLO)            ; HL = FilStd
+    push    de                    ; Stack = FilStd, PalNum, FilRtn, RtnAdr
+    call    _parse_asc_hex_rgb    ; B = Mode (0 - Binary, 1 - ASCII, 2 - Hex string), C = PfxDel
 .do_save_load:
     ex      (sp),hl               ; HL = FilStd; Stack = TxtPtr, PalNum, FilRtn, RtnAdr
-    pop     de                    ; DE = TxtPtr
+    push    bc                    ; Stack = Mode+PfxDel, TxtPtr, PalNum, FilRtn, RtnAdr
+    call    FRETM2                ; Free Filedesc string
+    pop     bc                    ; B = Mode, C = PfxDel ; Stack = TxtPtr, PalNum, FilRtn, RtnAdr
+    pop     de                    ; DE = TxtPtr; Stack = PalNum, FilRtn, RtnAdr
     pop     af                    ; A = PalNum; Stack = FilRtn, RtnAdr
     pop     iy                    ; IY = FilRtn; Stack = RtnAdr
     push    de                    ; Stack = TxtPtr, RtnAdr
@@ -834,14 +838,23 @@ _parse_asc_hex_rgb:
     SYNCHKC ','                   ; Require comma
     inc     b                     ;   B = 1
     cp      ASCTK                 ; If ASC
-    jp      z,CHRGTR              ;   Skip and return 1 (ASCII)
+    jr      z,_asc_rgb_cont       ;   Skip and return 1 (ASCII)
     inc     b                     ; If RGB
     cp      RGBTK                 ;   Skip and return 2 (RGB)
-    jp      z,CHRGTR              ;   Skip and return 1 (ASCII)
+    jp      z,_asc_rgb_cont       ;   Skip and return 1 (ASCII)
     inc     b                     ; Require HEX and return 3 (Hex string)
 require_hex:
     SYNCHKT XTOKEN
     SYNCHKT HEXTK 
+    ret
+
+_asc_rgb_cont
+    rst     CHRGET                ; Skip ASC or RGB
+    push    bc                    ; Stack = FilTyp, RtnAdr
+    ld      c,0
+    call    get_char_optional     ; C = PfxDlm
+    pop     af                    ; A = FilYyp
+    ld      b,a                   ; B = FilTyp
     ret
 
 ; load pt3 "/music/songs1/dontstop.pt3"

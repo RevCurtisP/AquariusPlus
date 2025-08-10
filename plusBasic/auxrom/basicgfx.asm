@@ -87,11 +87,21 @@ bas_rgb_string:
     jp      c,FCERR
     ret
 
+bas_rgbhex
+    ld      ix,rgb_hex
+    ld      a,c
+    jr      _rgbhexdec
+
 ; Called from _rgbdec:
 ; On entry: C = Delmtr, DE = RgbDsc
 ; On exit: HL = BufAdr, A = StrLen
 bas_rgbdec:
+    ld      ix,rgb_dec
     ld      a,c                   ; A = Delmtr
+    or      a
+    jr      nz,_rgbhexdec
+    ld      a,','
+_rgbhexdec:
     push    af                    ; Stack = Delmtr, RtnAdr
     ex      de,hl
     call    free_hl_addr_len      ; DE = StrAdr, A = StrLen
@@ -100,7 +110,7 @@ bas_rgbdec:
     ld      hl,FBUFFR             ; HL = BufAdr
     pop     bc                    ; B = Delmtr; Stack = RtnAdr
     push    hl
-    call    rgb_dec
+    call    jump_ix
     pop     hl
     ret
 

@@ -1343,11 +1343,11 @@ FN_GETSPRITE:
 ; PRINT RGB("123")
 ; PRINT RGB("1234")
 
-
-;; ToDo: Add unit tests
 FN_RGB:
     inc     hl                    ; Skip RGB
     ld      a,(hl)
+    cp      HEXSTK
+    jr      z,_rgbhex
     cp      DECTK
     jr      z,_rgbdec
     cp      '$'                   ;
@@ -1376,7 +1376,6 @@ FN_RGB:
 
 
 ; Parse RGB triplet, returns DE = RGB integer
-_get_rgb:
     call    FRMTYP                ; Parse first argument
     ld      iy,bas_rgb_string
     jr      z,.dorgb              ; If numeric
@@ -1393,19 +1392,35 @@ _get_rgb:
     jp      gfx_call
 
 
+
+
+; PRINT RGBHEX$($"2301")
+; PRINT RGBHEX$($"5604",64)
+; PRINT RGBHEX$($"BC0A","#")
+_rgbhex:
+    inc     hl                    ; Skip HEX$
+    ld      bc,bas_rgbhex
+    jr      _rgbdechex
+
+;; ToDo: Add unit tests
 ; PRINT RGBDEC$($"2301")
+; PRINT RGBDEC$($"2301",9)
+; PRINT RGBDEC$($"2301"," ")
 _rgbdec:
+    ld      bc,bas_rgbdec
     inc     hl                    ; Skip DEC
     SYNCHKC '$'                   ; Require $
+_rgbdechex:
+    push    bc                    ; Stack = AuxCal, RtnAdr
     call    FRMPRN                ; Parse formula after (
     call    CHKSTR
     ld      de,(FACLO)            ; DE = RgbDsc
-    push    de                    ; Stack = RgbDsc, RtnAdr
-    ld      c,','                 ; Default delimiter to comma
+    push    de                    ; Stack = RgbDsc, AuxCal, RtnAdr
+    ld      c,0                   ; Default delimiter to comma
     call    get_char_optional     ; A = Optional delimiter
     SYNCHKC ')'
-    pop     de                    ; DE = RgbDsc, Stack = RtnAdr
-    ld      iy,bas_rgbdec
+    pop     de                    ; DE = RgbDsc, Stack = AuxCal, RtnAdr
+    pop     iy                    ; IY = AuxCal; Stack = RtnAdr
     call    push_hl_labbck
     call    gfx_call              ; HL = StrPtr
     jp      TIMSTR                ; Return "red,grn,blu"

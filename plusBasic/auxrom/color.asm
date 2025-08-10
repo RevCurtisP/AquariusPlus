@@ -87,7 +87,8 @@ palette_get:
 
 ;-----------------------------------------------------------------------------
 ; Convert Binary RGB list to ASCII
-; Input: C: Entry Count
+; Input: B: (ToDo) Prefix
+;        C: Entry Count
 ;       DE: Binary Data Address
 ;       HL: ASCII Buffer Address
 ; Output: A: ASCII data length
@@ -99,12 +100,28 @@ rgb_to_asc:
 .loop
     dec     c
     ret     z
-;; ToDo: Pass in optional prefix
-; no prefix for now
+    call    rgb_hex
+    ex      af,af'                ; A = AscLen
+    call    _crlf                 ; Write CR+LF
+    ex      af,af'                ; A = AscLen
+    add     a,2
+    jr      .loop
+
+; Input: B: Prefix (ToDo)
+;       DE: BinPtr, HL: BufPtr
+; Preserve A, BC
+rgb_hex:
     ex      af,af'                ; A' = AscLen
-;    ld      a,'#'
-;    ld      (hl),a                ; Write #
-;    inc     hl    
+    ld      a,b                   ; A = PfxChr
+    or      a
+    jr      z,.nopfx              ; If PfxChr <> NUL
+    ld      (hl),a                ;   Write it
+    inc     hl
+    ex      af,af'                ;   A = AscLen
+    inc     a
+    ex      af,af'                ;   A' = AscLen
+.nopfx    
+    push    bc
     ld      a,(de)                ; A = GB
     inc     de                    ; 
     push    af                    ; Stack = GB, RtnAdr
@@ -116,10 +133,11 @@ rgb_to_asc:
     call    .high_nybble          ; Write GG
     pop     af                    ; A = GB; Stack = RtnAdr
     call    .low_nybble
-    call    _crlf                 ; Write CR+LF
     ex      af,af'                ; A = AscLen
     add     9                     ; AscLen += LinLen
-    jr      .loop
+    ld      (hl),0
+    pop     bc
+    ret
 .low_nybble
     and     $0F
     ld      b,a
