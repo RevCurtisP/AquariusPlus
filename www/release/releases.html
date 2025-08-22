@@ -16,6 +16,8 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
   <body>
     <h1 id="plusbasic-release-history">plusBASIC Release History</h1>
     <ul>
+      <li>v0.27c (2025-08-21)
+<ul><li>Added <em>page_call</em> to kernel jump table</li><li>Removed extended palette modes from <em>file_load_palette</em> and <em>file_save_palette</em></li><li>Removed <code>ASC</code>/<code>HEX</code>/<code>RGB</code> mode from <code>SAVE PALETTE</code> and <code>LOAD PALETTE</code>\</li><li>Added argument format <code>RRGGBB</code>  to <code>RGB$()</code></li></ul></li>
       <li>v0.27b (2025-07-07)
 <ul><li>Added file types <code>hex</code> and <code>rgb</code> to <em>file_load_palette</em> and <em>file_save_palette</em></li><li>Added <code>,HEX</code> and <code>,RGB</code> options to <code>LOAD PALETTE</code> and <code>SAVE PALETTE</code></li><li>Added function <code>FGBDEC$()</code></li><li>Moved <code>LOAD PALETTE</code> and <code>SAVE PALETTE</code> to <em>sp.baq</em> and added tests for <code>HEX</code>, <code>ASC</code>, and <code>RGB</code></li><li>Refactored only <code>call gfx_call_inline</code> and removed routine <em>gfx_call_inline</em></li></ul></li>
       <li>v0.27a (2025-05-25)

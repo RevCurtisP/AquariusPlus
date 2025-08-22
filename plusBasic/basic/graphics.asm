@@ -1342,7 +1342,7 @@ FN_GETSPRITE:
 ; PRINT RGB("12")
 ; PRINT RGB("123")
 ; PRINT RGB("1234")
-
+;;; ToDo: RGB$(string$,delimiter) "red,green,blue"
 FN_RGB:
     inc     hl                    ; Skip RGB
     ld      a,(hl)
@@ -1374,8 +1374,8 @@ FN_RGB:
     ld      (hl),d                ; Store MSB
     jp      PUTNEW                ; Set Pointer to StringDesc and return
 
-
 ; Parse RGB triplet, returns DE = RGB integer
+_get_rgb:
     call    FRMTYP                ; Parse first argument
     ld      iy,bas_rgb_string
     jr      z,.dorgb              ; If numeric
@@ -1390,9 +1390,6 @@ FN_RGB:
     ld      iy,bas_make_rgb
 .dorgb
     jp      gfx_call
-
-
-
 
 ; PRINT RGBHEX$($"2301")
 ; PRINT RGBHEX$($"5604",64)

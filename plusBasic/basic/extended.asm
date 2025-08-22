@@ -10,7 +10,6 @@
 ; CLEAR KEYS
 ;-----------------------------------------------------------------------------
 ; CLEAR CURSOR:PAUSE
-;; ToDo: CLEAR KEYS - Clear autotype and alt key buffer
 clear_hook:
     jp      z,CLEARC              ; If no operands just CLEAR
     cp      BITTK

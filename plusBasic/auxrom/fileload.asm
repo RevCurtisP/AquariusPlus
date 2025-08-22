@@ -301,6 +301,15 @@ file_load_pt3:
     pop     af
     ret
 
+
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+; Resource: Palette
+; File extension: .palt
+; Legacy extension: .pal
+; Binary 32 bytes
+; - 16 pairs of $GB $0R (little-endian $0RGB
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 ;-----------------------------------------------------------------------------
 ; Load Palette
 ; Input: A: Palette number
@@ -314,19 +323,13 @@ file_load_pt3:
 ;-----------------------------------------------------------------------------
 file_load_palette:
     ld      e,a                   ; E = PalNum
-    dec     b                     ; If FilTyp = 1
-    jr      z,_load_palette_asc   ;   Load ASCII palette
-    dec     b                     ; If FilTyp = 2
-    jr      z,_load_palette_rgb   ;   Load RGB palette
-    dec     b                     ; If FilTyp = 3
-    jr      z,_load_palette_hex   ;   Load Hex String palette
     push    de                    ; Stack = PalNum, RtnAdr
     call    file_load_strbuf      ; A = Result, BC = PalLen, HL = StrBuf
     pop     de                    ; E = PalNum; Stack = RtnAdr
     ret     m                     ; Return if I/O Error
     ld      a,c
     cp      64                    ; If FileLen = 64
-    jr      z,_pallete_hex        ;   Treat as hexadecimal ASCII
+    jr      z,_pallete_asc        ;   Treat as hexadecimal ASCII
     cp      32                    ; If FilLen <> 32
     jp      nz,ret_carry_set      ;   Bad file error
 _ex_de_palette_set:
@@ -336,15 +339,7 @@ _palette_set:
     ld      iy,palette_set        ; Write out palette and return
     jp      gfx_call
 
-_load_palette_hex:
-    push    de                    ; Stack = PalNum, RtnAdr
-    call    file_load_strbuf      ; A = Result, BC = HexLen, HL = StrBuf
-    pop     de                    ; E = PalNum; Stack = RtnAdr
-    ret     m                     ; Return if I/O Error
-    ld      a,64
-    cp      c                     ; If FileLen > 64
-    ret     c                     ;   Return carry set1
-_pallete_hex:
+_pallete_asc:
     push    de                    ; Stack = PalNum, RtnAdr
     push    hl                    ; Stack = StrBuf, PalNum, RtnAdr
     ld      de,64
@@ -355,108 +350,7 @@ _pallete_hex:
     ret     c                     ; If bad hex string, return bad file
     jr      _ex_de_palette_set
 
-_load_palette_rgb:
-    jp      GSERR
 
-;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-; Resource: Palette
-; File extension: .palt
-; Legacy extension: .pal
-; Binary 32 bytes
-; - 16 pairs of $GB $0R (little-endian $0RGB
-; ASCII
-; - Up to 16 lines of hexadecimal RGB values in the format #RRGGBB
-; - Lines that do not start with # are ignored
-; - Text after #RRGGBB is ignored
-;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-_load_palette_asc:
-    call    dos_open_read         ; A = FilDsc
-    ret     m                     ; Return if I/O Error
-    push    de                    ; Stack = PalNum, RtnAdr
-    push    af                    ; Stack = FilDsc, PalNum, RtnAdr
-    call    get_strbuf_addr       ; HL = StrBuf
-    ld      d,h
-    ld      e,l                   ; DE = BinPtr
-    ld      bc,32
-    add     hl,bc                 ; LinBuf = StrBuf+32
-    pop     af                    ; A = FilDsc; Stack = PalNum, RtnAdr
-.loop
-    push    hl                    ; Stack = LinBuf, PalNum, RtnAdr
-    push    de                    ; Stack = BinPtr, LinBuf, PalNum, RtnAdr
-    ld      bc,255-32
-    call    espx_read_line        ; A = Result, C = LinLen, D = FilDsc
-    ld      b,d                   ; B = FilDsc
-    jp      m,.finish
-    pop     de                    ; DE = BinPtr; Stack = LinBuf, PalNum, RtnAdr
-    ld      a,8                   ; If LinLen = 8 and first two characters = FF
-    cp      c
-    jr      nz,.check6
-    ld      a,(hl)                
-    inc     hl
-    cp      'F'                   
-    jr      nz,.next
-    ld      a,(hl)                
-    inc     hl
-    cp      'F'                   
-    jr      nz,.next
-    jr      .convert
-.check6
-    ld      a,6
-    cp      c                     ; Or LinLen == 6
-    jr      z,.decode
-    ld      a,(hl)                
-    inc     hl
-    cp      '#'                   ; Or first character = #       
-    jr      z,.len7
-    cp      '$'                   ; Or first character = #       
-    jr      nz,.next              ;   Convert line to palette entry
-.len7
-    ld      a,7
-.decode
-    cp      a                     ;   If line is too short
-    jr      c,.badline            ;     Exit with carry set
-.convert
-    push    bc                    ;   Stack = FilDsc, LinBuf, PalNum, RtnAdr
-    call    asc_to_rgb            ;   Read RRGGBB to (DE)
-    pop     bc                    ;   B = FilDsc; Stack = LinBuf, PalNum, RtnAdr
-    jr      c,.badline
-.next
-    ld      a,b                   ;   A = FilDsc
-    pop     hl                    ; HL = LinBuf; Stack = PalNum, RtnAdr
-    jr      .loop
-.finish
-    pop     de                    ; DE = BinPtr, Stack = LinBuf, PalNum, RtnAdr
-    pop     hl                    ; Stack = PalNum, RtnAdr
-    pop     hl                    ; L = PalNum; Stack = RtnAdr
-    push    af                    ; Stack = Result, RtnAdr
-    ld      a,b                   ; A = FilDsc
-    call    dos_close             
-    pop     af                    ; AF = Result; Stack = RtnAdr
-    jp      p,.write              ; If Error
-    cp      ERR_EOF               ;   and not EOF
-    jp      nz,_or_a_ret          ;   Return it
-.write
-    push    hl                    ; Stack = PalNum, RtnAdr
-    call    get_strbuf_addr       ; HL = StrBuf
-    ex      de,hl                 ; DE = StrBuf; HL = BinPtr
-    sbc     hl,de                 
-    ld      b,h
-    ld      c,l                   ; BC = BinLen
-    pop     hl                    ; L = PalNum; Stack = RtnAdr
-    ld      a,32
-    cp      c                     ; If PalLen <> 32
-    jp      nz,ret_carry_set      ;   Return Bad file
-    xor     a                     ; Palette entry 0
-    jp      _palette_set          ; Write palette and return
-.badline
-    pop     hl                    ; HL = LinBuf; Stack = PalNum, RtnAdr
-    pop     hl                    ; HL = PalNum; Stack = RtnAdr
-.close
-    push    af
-    ld      a,b                   ; A = FilDsc
-    jp      _close_pop_af
-    
 ;-----------------------------------------------------------------------------
 ; Read file into string buffer
 ; Input: HL: String descriptor address

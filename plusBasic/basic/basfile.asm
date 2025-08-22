@@ -795,67 +795,30 @@ _save_chrset:
     ld      iy,file_save_chrset
     jp      _strdesc_auxcall
 
-;;; ToDo: Add types HEX (plusBASIC 64 byte hex palette) and RGB (decimal RGB values)
 _save_palette:
 ; save palette 0,"/t/default.pal"
-; save palette 1,"/t/palette.txt",ASC
-; save palette 0,"/t/gray.hex",hex
     ld      iy,file_save_palette
     jr      _do_palette
 ; load palette 0,"/t/gray.pal"
-; load palette 0,"/t/palette.txt",ASC
-; load palette 0,"/t/gray.asc",asc
-; load palette 0,"/t/gray.hex",hex
-; load palette 1,"/au/assets/cga.asc",asc
-; load palette 1,"/au/assets/c64.asc",asc
 _load_palette:
     ld      iy,file_load_palette
 _do_palette:
     rst     CHRGET                ; Skip PALETTE
-    push    iy                    ; Stack = FilRtn
+    push    iy                    ; Stack = AuxAdr, RtnAdr
     call    get_byte4             ; A = PalNum
-    push    af                    ; Stack = PalNum, FilRtn, RtnAdr
+    push    af                    ; Stack = PalNum, AuxAdr, RtnAdr
     call    get_comma             ; Require comma
     call    FRMSTR                ; Parse FileSpec
     ld      de,(FACLO)            ; HL = FilStd
-    push    de                    ; Stack = FilStd, PalNum, FilRtn, RtnAdr
-    call    _parse_asc_hex_rgb    ; B = Mode (0 - Binary, 1 - ASCII, 2 - Hex string), C = PfxDel
+    push    de                    ; Stack = FilStd, PalNum, AuxAdr, RtnAdr
 .do_save_load:
-    ex      (sp),hl               ; HL = FilStd; Stack = TxtPtr, PalNum, FilRtn, RtnAdr
-    push    bc                    ; Stack = Mode+PfxDel, TxtPtr, PalNum, FilRtn, RtnAdr
+    ex      (sp),hl               ; HL = FilStd; Stack = TxtPtr, PalNum, AuxAdr, RtnAdr
     call    FRETM2                ; Free Filedesc string
-    pop     bc                    ; B = Mode, C = PfxDel ; Stack = TxtPtr, PalNum, FilRtn, RtnAdr
-    pop     de                    ; DE = TxtPtr; Stack = PalNum, FilRtn, RtnAdr
-    pop     af                    ; A = PalNum; Stack = FilRtn, RtnAdr
-    pop     iy                    ; IY = FilRtn; Stack = RtnAdr
+    pop     de                    ; DE = TxtPtr; Stack = PalNum, AuxAdr, RtnAdr
+    pop     af                    ; A = PalNum; Stack = AuxAdr, RtnAdr
+    pop     iy                    ; IY = AuxAdr; Stack = RtnAdr
     push    de                    ; Stack = TxtPtr, RtnAdr
     jp      _aux_call_bdf
-
-_parse_asc_hex_rgb:
-    call    CHRGT2                ; Reget Character
-    ld      b,0                   ; If terminator
-    ret     z                     ;   Return 0 (Binary)
-    SYNCHKC ','                   ; Require comma
-    inc     b                     ;   B = 1
-    cp      ASCTK                 ; If ASC
-    jr      z,_asc_rgb_cont       ;   Skip and return 1 (ASCII)
-    inc     b                     ; If RGB
-    cp      RGBTK                 ;   Skip and return 2 (RGB)
-    jp      z,_asc_rgb_cont       ;   Skip and return 1 (ASCII)
-    inc     b                     ; Require HEX and return 3 (Hex string)
-require_hex:
-    SYNCHKT XTOKEN
-    SYNCHKT HEXTK 
-    ret
-
-_asc_rgb_cont
-    rst     CHRGET                ; Skip ASC or RGB
-    push    bc                    ; Stack = FilTyp, RtnAdr
-    ld      c,0
-    call    get_char_optional     ; C = PfxDlm
-    pop     af                    ; A = FilYyp
-    ld      b,a                   ; B = FilTyp
-    ret
 
 ; load pt3 "/music/songs1/dontstop.pt3"
 ; load pt3 "/music/songs1/dance.pt3"
@@ -870,7 +833,6 @@ _aux_call
     jp      m,_dos_error
     pop     hl
     ret
-
 
 ; SAVE TILEMAP "/t/savemap.tmap"
 ; SAVE TILESET 128,249,"/t/savetiles.tile"

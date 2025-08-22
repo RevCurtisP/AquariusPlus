@@ -20,7 +20,7 @@ _jump_table:
     jp      key_read              ; 212A Read from alternate keyboard buffer
     jp      just_ret              ; 212D
     jp      key_set_keymode       ; 2130 Set alternate keyboard buffer mode
-    jp      just_ret              ; 2133
+    jp      page_call             ; 2133 Call subroutine in paged memory
     jp      just_ret              ; 2136
     jp      just_ret              ; 2139
 

@@ -40,8 +40,36 @@ bas_reset_sprite:
     pop     hl
     ret
 
+; Jumped to from FN_RGB when argument is a string
+bas_rgb_string:
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    call    free_addr_len         ; DE = StrAdr, A = StrLen
+    pop     hl                    ; HL = TxtPtr, Stack = RtnAdr
+    jp      z,ESERR               ; If StrLen = 0, Empty string error
+    cp      6
+    jr      nz,.not_hex6          ; If StrLen = 6
+    call    _get_nybble           ;   A = Red MSB
+    push    af                    ;   Stack = Red, RtnAdr
+    inc     de                    ;   Skip Red LSB
+    call    _get_nybble           ;   A = Green
+    push    af                    ;   Stack = Green, Red, RtnAdr
+    inc     de                    ;   Skip Green LSB
+    jr      .do_blue              ; Else
+.not_hex6
+    cp      3                     ;   If StrLen <> 3
+    jp      nz,SLERR              ;     String length error
+    call    _get_nybble           ;   A = Red
+    push    af                    ;   Stack = Red, RtnAdr
+    call    _get_nybble           ;   A = Green
+    push    af                    ;   Stack = Green, Red, RtnAdr
+.do_blue
+    call    _get_nybble           ; A = Blue
+    ld      e,a                   ; E = Blue
+    pop     af                    ; A = Green
+    pop     bc                    ; B = Red
 ; Called from _get_rgb
 ; Input: A: Green, B: Red, E:Blue
+; Output: DE: Red + Green + Blue
 bas_make_rgb:
     and     $0F                   ; Shift Green to high nybble
     rla
@@ -52,23 +80,8 @@ bas_make_rgb:
     ld      e,a                   ; E = Green + Blue
     ld      d,b                   ; D = Red
     ret
-bas_rgb_string:
-    push    hl                    ; Stack = TxtPtr, RtnAdr
-    call    free_addr_len         ; DE = StrAdr, A = StrLen
-    pop     hl                    ; HL = TxtPtr, Stack = RtnAdr
-    jp      z,ESERR               ; If StrLen = 0, Empty string error
-    cp      3                     ; If StrLen < 3
-    jp      c,SLERR               ;   String length error
-    jr      nz,.rgb_string        ; If
-    call    .get_nybble           ;   A = Red
-    push    af                    ;   Stack = Red, RtnAdr
-    call    .get_nybble           ;   A = Green
-    push    af                    ;   Stack = Green, Red, RtnAdr
-    call    .get_nybble           ;   A = Blue
-    ld      e,a                   ;   E = Blue
-    pop     af                    ;   A = Green
-    pop     bc                    ;   B = Red
-    jr      bas_make_rgb          ;   Return RGB in DE
+
+;;; ToDo: hook this to RGB$("string",delimiter)
 .rgb_string
     push    hl                    ; Stack = TxtPtr, RtnAdr
     call    bytes_to_fbuffr       ; Copy String to FBUFFR
@@ -79,15 +92,15 @@ bas_rgb_string:
     ld      d,b
     ld      e,c                   ; Return RGB in DE
     ret
-
-.get_nybble
+    
+_get_nybble:
     ld      a,(de)                ; A = Color Component
     inc     de
     call    aux_cvt_hex           ; Convert Hex digit to nybble and return
     jp      c,FCERR
     ret
 
-bas_rgbhex
+bas_rgbhex:
     ld      ix,rgb_hex
     ld      a,c
     jr      _rgbhexdec

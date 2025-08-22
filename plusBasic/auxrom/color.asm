@@ -107,6 +107,7 @@ rgb_to_asc:
     add     a,2
     jr      .loop
 
+; Convert Palette entry to "RRGGBB"
 ; Input: B: Prefix (ToDo)
 ;       DE: BinPtr, HL: BufPtr
 ; Preserve A, BC

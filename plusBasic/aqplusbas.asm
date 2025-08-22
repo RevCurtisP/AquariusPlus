@@ -931,6 +931,7 @@ ext_call:
 ; - Restores Bank 3 and returns all registers exoept AF'
 ; Input: A = Page
 ;       IY = Routine address
+; Clobbered: AF'
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 page_call:
     call    page_map_bank3

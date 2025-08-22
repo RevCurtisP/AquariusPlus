@@ -1,4 +1,9 @@
 # plusBASIC Release History
+  - v0.27c (2025-08-21)
+    - Added _page_call_ to kernel jump table
+    - Removed extended palette modes from _file_load_palette_ and _file_save_palette_
+    - Removed `ASC`/`HEX`/`RGB` mode from `SAVE PALETTE` and `LOAD PALETTE`\
+    - Added argument format `RRGGBB`  to `RGB$()`
   - v0.27b (2025-07-07)
     - Added file types `hex` and `rgb` to _file_load_palette_ and _file_save_palette_
     - Added `,HEX` and `,RGB` options to `LOAD PALETTE` and `SAVE PALETTE`

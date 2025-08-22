@@ -216,7 +216,7 @@ Quick Reference Guide
  - [ ] **LOAD DIR \{_filespec_,}\*_array_**,BIN - Load binary disk directory into string array.
  - [ ] **LOAD FNKEYS _filespec_** - Load function key definitions from file.<!--FNKEYS-->
  - [ ] **LOAD MODULE** - _Proposed enhancement._
- - [ ] **LOAD PALETTE _p_,_filespec_{,ASC|HEX|RGB}** - Load file data ino palette.<!--palette-->
+ - [ ] **LOAD PALETTE _p_,_filespec_** - Load file data ino palette.<!--palette-->
  - [ ] **LOAD SCREEN _filespec_** - Load text screen from file.
  - [ ] **LOAD SCREEN ATTR _filespec_** - Load text colors from file.
  - [ ] **LOAD SCREEN CHR _filespec_** - _Not implemented_
@@ -313,7 +313,7 @@ Quick Reference Guide
  - [ ] **SAVE CHRSET _filespec_** - Save curent character set to file.<!--chrset-->
  - [ ] **SAVE COLORMAP _filespec_** - Save 1bpp color map from Video RAM to file.<!--bmpfile-->
  - [ ] **SAVE FNKEYS _filespec_** - Save function key definitions to file.
- - [ ] **SAVE PALETTE _p_,_filespec_{,ASC|HEX|RGB}** - Save palette contents to file.<!--SAVEPALETTE-->
+ - [ ] **SAVE PALETTE _p_,_filespec_** - Save palette contents to file.<!--SAVEPALETTE-->
  - [ ] **SAVE SCREEN _filespec_** - Save text screen to file.
  - [ ] **SAVE SCREEN ATTR _filespec_** - _Not implemented_
  - [ ] **SAVE SCREEN CHR _filespec_** - _Not implemented_
