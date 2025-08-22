@@ -134,7 +134,7 @@ null_desc:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.27c"
+    db "v0.27d"
     db 0
 plusver_len equ $ - plus_version
 plus_len   equ   $ - plus_text
@@ -353,7 +353,7 @@ _wait_key:
 _input_ctrl_c:
     ld      a,(BASYSCTL)
     and     BASBRKOFF             ; If BRK is on
-    jp      nz,_read_key          ;   Break out of program
+    jp      z,STPEND              ;   Break out of program
     ld      a,3
     ld      (IEND_KEY),a
     push    bc                    ; Stack = TxtPtr, RtnAdr

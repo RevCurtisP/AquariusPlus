@@ -1,4 +1,6 @@
 # plusBASIC Release History
+  - v0.27d (2025-08-21)
+    - Fixed Ctrl-C during `INPUT` not causing `BREAK`
   - v0.27c (2025-08-21)
     - Added _page_call_ to kernel jump table
     - Removed extended palette modes from _file_load_palette_ and _file_save_palette_
