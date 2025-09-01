@@ -106,7 +106,8 @@ EXT_FLAGS   equ $3830   ; Extended BASIC flags
 BAS_FDESC   equ $3831   ; ESP file descriptor to close on Error or Ctrl-C
 IEND_KEY    equ $3832   ; Key pressed to end input
 SCREENCTL   equ $3833   ; Text Screen flags
-;               $3834   ; unused (2 bytes)
+GFX_FLAGS   equ $3834
+;               $3835   ; unused (1 bytes)
 ; SPLIT statement
 SPLITDSC    equ $3838   ; String descriptor 
 SPLITTRM    equ $3838   ; Segment terminator  (overwrites LSB of SPLITDSC)
@@ -266,13 +267,13 @@ SCRCHRSET   equ $08     ; SCREENCTL: Character set in use (0 or 1)
 SCRCHRMOD   equ $10     ; SCREENCTL: Character set in use has been modified
 
 ; Bitmap graphics mode: see gfx.asm for details
-GFXM_TEXT   equ $00     ; EXT_FLAGS: 40 colum mode (bloxels) 
-GFXM_WIDE   equ $01     ; EXT_FLAGS: 80 colum mode (bloxels) 
-GFXM_1BPP   equ $02     ; EXT_FLAGS: Bitmap mode (1bpp)
-GFXM_4BPP   equ $03     ; EXT_FLAGS: Bitmap mode (4bpp)
+GFXM_TEXT   equ $00     ; GFX_FLAGS: 40 colum mode (bloxels) 
+GFXM_WIDE   equ $01     ; GFX_FLAGS: 80 colum mode (bloxels) 
+GFXM_1BPP   equ $02     ; GFX_FLAGS: Bitmap mode (1bpp)
+GFXM_4BPP   equ $03     ; GFX_FLAGS: Bitmap mode (4bpp)
 GFXM_MASK   equ $03     ; Graphics mode bit mask
-GFXBUFLAG   equ $04     ; EXT_FLAGS: Bitmap operations are buffered
-GFXSETMSK   equ $F8     ; Mask for writing EXT_FLAGS
+GFXBUFLAG   equ $04     ; GFX_FLAGS: Bitmap operations are buffered
+GFXSETMSK   equ $F8     ; Mask for writing GFX_FLAGS
 ; BASIC extended control flags
 BASOUTOVR   equ $10     ; EXT_FLAGS: Allow OUT to all ports
 TRK_LOOPS   equ $20     ; EXT_FLAGS: PT3 songs repeat

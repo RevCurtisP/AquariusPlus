@@ -1,4 +1,6 @@
 # plusBASIC Release History
+  - v0.27e (2025-08-31)
+    - Moved bit flags `GFXM_TEXT`,`GFXM_WIDE`,`GFXM_1BPP`, and`GFXM_4BPP` to new system variable `GFX_FLAGS`
   - v0.27d (2025-08-21)
     - Fixed Ctrl-C during `INPUT` not causing `BREAK`
   - v0.27c (2025-08-21)

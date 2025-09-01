@@ -55,13 +55,13 @@ _get_chardef_address:
 ;-----------------------------------------------------------------------------
 ; Set bitmap drawing mode
 ;  Input: A: Mode (0: bloxel, 2: 1bpp, 3: 4bpp)
-; Output: A: New EXT_FLAGS
+; Output: A: New GFX_FLAGS
 ;-----------------------------------------------------------------------------
 gfs_set_mode:
     and     GFXM_MASK             ; Isolate mode bits
     push    bc
     ld      b,a                   ; B = Mode
-    ld      a,(EXT_FLAGS)         ; A = Extended Flags
+    ld      a,(GFX_FLAGS)         ; A = Extended Flags
     and     $FF-GFXM_MASK         ; Clear old mode
     or      b                     ; Set new modebit
     pop     bc
@@ -73,7 +73,7 @@ gfs_set_mode:
 ; Sets: Z if bloxel, NZ if bitmap
 ;-----------------------------------------------------------------------------
 gfs_get_mode:
-    ld      a,(EXT_FLAGS)         ; A = Extended Flags
+    ld      a,(GFX_FLAGS)         ; A = Extended Flags
     and     GFXM_MASK             ; Isolate mode bits
     ret
 

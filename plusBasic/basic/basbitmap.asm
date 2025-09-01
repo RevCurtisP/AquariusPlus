@@ -77,7 +77,7 @@ ST_COLOR:
 
 ; Output: B: Color(s)
 _color_args:
-    ld      a,(EXT_FLAGS)
+    ld      a,(GFX_FLAGS)
     and     GFXM_MASK             ; A = BmpMode
     cp      3
     jr      z,.color4bpp          ; If not 4bpp
@@ -150,7 +150,7 @@ FN_POS:
 ; SCREEN 0,2:? POINT (299,55)
 FN_POINT:
     rst     CHRGET                ; Skip POINT
-    ld      a,(EXT_FLAGS)
+    ld      a,(GFX_FLAGS)
     and     GFXM_1BPP
     jp      z,POINTX
 _point:
@@ -172,7 +172,7 @@ _point:
 ; SCREEN 0,3:PSET (159,0),2:PAUSE
 ; SCREEN 0,3:PSET (159,0),0:PAUSE
 ST_PSET:
-    ld      a,(EXT_FLAGS)
+    ld      a,(GFX_FLAGS)
     and     GFXM_1BPP
     jr      nz,_pset
     call    SCAND                 ; Parse (X,Y)
@@ -184,7 +184,7 @@ ST_PSET:
 
 ; SCREEN 0,2:PRESET (160,0)
 ST_PRESET:
-    ld      a,(EXT_FLAGS)
+    ld      a,(GFX_FLAGS)
     and     GFXM_1BPP
     jr      nz,_preset
     call    SCAND                 ; Parse (X,Y)

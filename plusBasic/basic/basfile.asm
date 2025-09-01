@@ -900,7 +900,7 @@ _save_bitmap:
     rst     CHRGET                ; Skip BIT
     SYNCHKT MAPTK                 ; Require MAP
     call    get_strdesc_arg       ; HL = StrDsc, Stack = TxtPtr, RtnAdr
-    ld      a,(EXT_FLAGS)
+    ld      a,(GFX_FLAGS)
     and     GFXM_MASK
     sub     2                     ; 0 = 1bpp, 1 = 4bpp
     jp      c,IMERR               ; If GfxMode < 2, Invalid mode error
@@ -1795,9 +1795,9 @@ _index_offset:
     ret
 
 tile_offset:
-    ld      a,(EXT_FLAGS)
+    ld      a,(GFX_FLAGS)
 tile_offset_a:
-    and     3
+    and     GFXM_MASK
     ld      bc,288
     sub     a,2
     ret     z

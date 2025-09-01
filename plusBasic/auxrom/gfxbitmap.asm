@@ -46,10 +46,10 @@ bitmap_set_mode:
 .write 
     or      b                     ; Include BufFlg
     ld      c,a                   ; C = New flags
-    ld      a,(EXT_FLAGS)         
+    ld      a,(GFX_FLAGS)         
     and     GFXSETMSK             ; Clear old flags
     or      c                     ; Set new flags
-    ld      (EXT_FLAGS),a
+    ld      (GFX_FLAGS),a
     ret                     
 
 ;-----------------------------------------------------------------------------
@@ -94,7 +94,7 @@ bitmap_read_color:
 
 ; In: A: GfxMode; Out: HL: VarBase
 _get_varbase:
-    ld      a,(EXT_FLAGS)
+    ld      a,(GFX_FLAGS)
     and     GFXM_MASK             ; A = BmpMode
     ld      h,high(BANK1_BASE+GFXVBASE)
     ld      l,a
@@ -125,7 +125,7 @@ bitmap_write_color:
 ; Clobbered: AF,AF',BC,DE,HL
 ;-----------------------------------------------------------------------------
 bitmap_fill_byte:
-    ld      a,(EXT_FLAGS)
+    ld      a,(GFX_FLAGS)
     and     GFXM_MASK             ; A = GfxMode
     ld      d,b                   ; D = FillByte
     ld      hl,$3000
@@ -156,7 +156,7 @@ _fill_video_ram:
 ; Clobbered: AF,AF',BC,DE,HL
 ;-----------------------------------------------------------------------------
 bitmap_clear_screen:
-    ld      a,(EXT_FLAGS)
+    ld      a,(GFX_FLAGS)
     and     GFXM_MASK
     push    af                    ; Stack = BmpMode, RtnAdr
     push    bc                    ; Stack = Color, BmpMode, RtnAdr
@@ -180,7 +180,7 @@ bitmap_clear_screen:
 ; Clobbered: AF,AF',BC,DE,HL
 ;-----------------------------------------------------------------------------
 bitmap_fill_color:
-    ld      a,(EXT_FLAGS)
+    ld      a,(GFX_FLAGS)
     and     GFXM_MASK
     ld      d,b
     ld      hl,$3400
@@ -397,7 +397,7 @@ bitmap_setcell:
 ; Clobbered: BC, DE, HL
 ;-----------------------------------------------------------------------------
 bitmap_getpixel:
-    ld      a,(EXT_FLAGS)
+    ld      a,(GFX_FLAGS)
     and     GFXM_MASK             ; Mask bits and set flags
     ld      l,a                   ; L = GfxMode
     ld      ix,_getpixel4         ;
@@ -420,7 +420,7 @@ bitmap_getpixel:
 ; Clobbered: A, BC, DE, HL
 ;-----------------------------------------------------------------------------
 bitmap_resetpixel:
-    ld      a,(EXT_FLAGS)
+    ld      a,(GFX_FLAGS)
     and     GFXM_MASK             ; Mask bits and set flags
     ld      l,a                   ; L = GfxMode
     ld      ix,_resetpixel4
@@ -443,7 +443,7 @@ bitmap_resetpixel:
 ; Clobbered: A, HL
 ;-----------------------------------------------------------------------------
 bitmap_setpixel:
-    ld      a,(EXT_FLAGS)
+    ld      a,(GFX_FLAGS)
     and     GFXM_MASK             ; Mask bits and set flags
     ld      l,a                   ; L = GfxMode
     ld      ix,_setpixel4         ;
@@ -457,7 +457,7 @@ bitmap_setpixel:
     ld      ix,_setpixelc         ; Else fo Bitmap 4bpp
 .dopixel
     call    _dopixel
-    ld      a,(EXT_FLAGS)
+    ld      a,(GFX_FLAGS)
     and     GFXM_MASK             ; 
     cp      3                     ; If 4bpp
     call    nz,_set_cellcolor
