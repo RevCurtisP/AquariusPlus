@@ -169,6 +169,7 @@ Quick Reference Guide
  - [ ] **GETKEY** - Wait for key and return ASCII code.<!--key-->
  - [ ] **GETKEY$**  - Wait for key and return as string.<!--key-->
  - [ ] **GETPALETTE$(_palette_)** - Return palette contents.<!--GETPALETTE-->
+ - [ ] **GETSOUNDFAST** - Return `SOUNS FAST` status.
  - [ ] **GETSPEED** - Return current turbo setting.<!--system-->
  - [x] **GETSPRITE$(_spritedef_)** - Return attributes of each spritle in the spritedef.<!--sprites-->
  - [ ] **GETTILE$(_tileno_)** - Return tile pixels.<!--GETTILE-->
@@ -336,7 +337,8 @@ Quick Reference Guide
  - [ ] **SET KEY _mode_** - Set alternate keyboard port mode.
  - [ ] **SET PALETTE _palette_ {INDEX _index_} TO _rgblist_** - Set palette entries.<!--palette-->
  - [ ] **SET SAVE ASC ON|OFF** - Enable or disable forced saving of BASIC programs in ASCII format.<!--SETSAVE-->
- - [ ] **SET SPEED _speed_** - Set turbo mode.<!--system--><!--system-->
+ - [ ] **SET SOUND FAST ON|OFF_** - Set whether SOUND is affected by turbo mode.<!--system-->
+ - [ ] **SET SPEED _speed_** - Set turbo mode.<!--system-->
  - [ ] **SET SPRITE _spritedef_ {ON|OFF} {POS _x_,_y_} {TILE _tilelist_} {PALETTE _palettelist_} {ATTR _attrlist_}** - Set sprite properties.<!--sprites-->
  - [x] **SET SPRITE _spritedef_ TILECLIP \*_array_|^_strvar_** - Set sprite to tile indexes and properties in tilemap clip.<!--sprites-->
  - [ ] **SET SPRITE _spritedef_ TO _proplist_** - Set sprite properties from combined properties list.<!--sprites-->

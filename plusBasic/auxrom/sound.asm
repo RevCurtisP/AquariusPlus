@@ -3,6 +3,33 @@
 ;=====================================================================================
 
 ;-----------------------------------------------------------------------------
+; Input: A: $FF for ON, 0 for OFF
+;-----------------------------------------------------------------------------
+set_soundfast:
+    ld      a,(EXT_FLAGS)         ; Read Extended Flags
+    jr      z,.off                ; If ON
+    and     $FF-SOUNDSLOW         ;   Clear Slow Sound bit
+    jr      .done                 ; Else
+.off    
+    or      a,SOUNDSLOW           ;   Set Slow Sound bit
+.done
+    ld      (EXT_FLAGS),a         ; Write Extended Flags
+    ret
+
+;-----------------------------------------------------------------------------
+; Output: A: $FF for ON, 0 for OFF
+;-----------------------------------------------------------------------------
+get_soundfast:
+    ld      a,(EXT_FLAGS)         ; Read Extended Flags
+    and     SOUNDSLOW             ;   Isolate Slow Sound bit
+    jr      z,.done               ; If Set
+    ld      a,$FF                 ;   Return 0
+.done    
+    xor     $FF                   ; Else Return $FF
+    ret
+
+
+;-----------------------------------------------------------------------------
 ; Play Raw Sample in Paged Memory
 ; Input: A: Page
 ;       HL: Start address

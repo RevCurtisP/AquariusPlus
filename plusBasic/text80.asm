@@ -75,7 +75,7 @@ ttyout80:
     push    af
     exx                           ;
     cp      7                     ; Is it BEL!
-    jp      z,_beep               ; Make Beep Sound
+    jp      z,BEEP                ; Make Beep Sound
     cp      11                    ; Is it CLS?
     jp      z,_ttyclr             ; Clear the Screen
     ld      e,a                   ; Save A
@@ -94,13 +94,6 @@ ttyout80:
     call    ttymove80             ; Move Cursor Right
     jr      _tty_finish           ; Finish Up
 
-; Ring the bell
-_beep:
-    ld      bc,200
-    ld      de,50
-    call    SOUNDS
-    jr      _exx_pop_ret
-
 ; Backspace: Move Cursor Left and Delete Character
 _bs:
     ld      a,(TTYPOS)
@@ -118,7 +111,7 @@ _bs:
     dec      hl                   ; Backup to end of previous line
     dec      hl
     ld       a,78
-.do_bs                                                                              ; 0D72  rst     OUTCHR
+.do_bs                                                                              
     dec     hl                    ; No, Move One to the Left
     dec     a
 .no_bs

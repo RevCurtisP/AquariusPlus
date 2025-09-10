@@ -95,8 +95,8 @@ _jump_table:
     jp      just_ret
 ; sound.asm <<Sounds>>
     jp      play_sample           ; Play digitized sound sample
-    jp      just_ret
-    jp      just_ret
+    jp      set_soundfast         ; Set SOUND speed flag
+    jp      get_soundfast         ; Return SOUND speed flag
     jp      just_ret
     jp      just_ret
     jp      just_ret

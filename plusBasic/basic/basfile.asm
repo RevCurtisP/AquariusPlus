@@ -137,6 +137,7 @@ FN_CHECKDIR:
     call    free_addr_len         ; HL = StrDsc
     xor     a
     ld      (VALTYP),a
+aux_call_float:
     call    aux_call
     jp      FLOAT                 ; Float signed byte and return
 

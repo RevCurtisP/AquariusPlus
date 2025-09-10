@@ -176,6 +176,8 @@ FN_GET:
     jp      z,FN_GETCOLOR
     cp      TILETK
     jp      z,FN_GETTILE
+    cp      SOUNDTK
+    jr      Z,FN_GETSOUND
     SYNCHKT XTOKEN                ; Check Extended Tokens
     cp      SPRITK
     jp      z,FN_GETSPRITE
@@ -221,6 +223,14 @@ FN_GETKEY:
     jp      nz,SNGFLT             ; If not GETKEY$, Float it
     pop     bc                    ; Get rid of dummy return address
     jp      BUFCIN                ; Else Return String
+
+FN_GETSOUND:
+    rst     CHRGET                ; Skip SOUND
+    SYNCHKT XTOKEN
+    SYNCHKT FASTK                 ; Require FAST
+    call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
+    ld      iy,get_soundfast
+    jp      aux_call_float
 
 FN_GETSPEED:
     rst     CHRGET                ; Skip SPEED
@@ -943,6 +953,8 @@ ST_SET:
     jp      z,ST_SET_FILE
     cp      USRTK                 ; $B5
     jp      z,ST_SET_USR
+    cp      SOUNDTK               ; $B5
+    jp      z,ST_SET_SOUND
 
     SYNCHKT XTOKEN                ; Must be extended Token
     cp      PALETK                ; $81
@@ -1123,6 +1135,18 @@ ST_SET_FNKEY:
     call    aux_call
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     ret
+
+;-----------------------------------------------------------------------------
+; Set SOUND turbo mode (defaults to ON)
+; Syntax: SET SOUND FAST ON/OFF
+;-----------------------------------------------------------------------------
+ST_SET_SOUND:
+    rst     CHRGET                ; Skip SOUND
+    SYNCHKT XTOKEN
+    SYNCHKT FASTK                 ; Require FAST
+    call    check_on_off          ; 0 = Off, $FF = On
+    ld      iy,set_soundfast
+    jp      aux_call              ; Set flag and return
 
 ;-----------------------------------------------------------------------------
 ; Enable/Disable User Interrupt

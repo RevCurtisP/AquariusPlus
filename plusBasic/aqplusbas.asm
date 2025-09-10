@@ -30,7 +30,7 @@
     jp      irq_handler     ; $2009 XINTR  Interrupt handler
     jp      _warm_boot      ; $200C Called from main ROM for warm boot
     jp      _xkeyread       ; $200F XINCHR Called from COLORS
-    jp      _sounds_hook    ; $2012 SOUNDX Adjust SOUNDS for turbo mode
+    jp      just_ret        ; $2012 
     jp      _ttymove_hook   ; $2015 TTYMOX TTYMOV extension - set screen colors if SYSCTRL bit set
     jp      _scroll_hook    ; $2018 SCROLX SCROLL extension - scroll color memory if SYSCTRL bit set
     jp      _check_cart     ; $201B RESETX Start-up screen extension
@@ -134,7 +134,7 @@ null_desc:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.27d"
+    db "v0.27f"
     db 0
 plusver_len equ $ - plus_version
 plus_len   equ   $ - plus_text
@@ -482,16 +482,12 @@ sys_break_mode:
 ;-----------------------------------------------------------------------------
 ; Double SOUNDS delay timer if in Turbo Mode
 ;-----------------------------------------------------------------------------
-_sounds_hook:
-    in      a,(IO_SYSCTRL)
-    and     $7F                   ; Strip Reset bit
-    push    af                    ; Stack = SysCtrl, RtnAdr
-    and     ~SYSCTRL_TURBO
-    out     (IO_SYSCTRL),a
-    call    SOUNDS                
-    pop     af
-    out     (IO_SYSCTRL),a
-    ret
+beep_hook:
+    byte    $F6                   ; OR over SCF to clear carry
+sound_hook:
+    scf                           ; Carry Set = Respect Flag
+    ld      iy,s3_sound_hook      ; Play the sound
+    jp      aux_call
 
 ;-----------------------------------------------------------------------------
 ; Return BASIC Version
@@ -1245,7 +1241,6 @@ _buffer_write_init:
     include "jump_gfx.asm"        ; Graphics routines jump tables
     assert !($C2FF<$)             ; ROM full!
     dc $C200-$,$76
-gfx_jump_table:
     dephase
 
     phase   $C400

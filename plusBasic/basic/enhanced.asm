@@ -410,7 +410,7 @@ ST_POKE:
     call    free_addr_len         ;   DE = StrAdr, BC = StrLen
     ex      de,hl                 ;   HL = StrAdr
     pop     de                    ;   DE = AdrOfs; Stack = TxtPtr, RtnAdr
-    ld      iy,screen_write_string
+    ld      iy,screen_write_bytes
 .gfx_call_next_screen
     call    gfx_call              ;   Write string
     jp      c,FCERR               ; Error if Offset too large
@@ -435,7 +435,7 @@ ST_POKE:
     call    free_addr_len         ;   DE = StrAdr, BC = StrLen
     ex      de,hl                 ;   HL = StrAdr
     pop     de                    ;   DE = AdrOfs; Stack = TxtPtr, RtnAdr
-    ld      iy,color_write_string ;   Write wtring
+    ld      iy,color_write_bytes ;   Write wtring
 .gfx_call_next_color
     call    gfx_call
     jp      c,FCERR               ; Error if Offset too large
@@ -618,10 +618,10 @@ FN_PEEK:
     call    .init_peek_string     ; DE = StrPtr, HL = ScrOfs
     ex      de,hl                 ; DE = ScrOfs, HL = StrPtr
     jr      z,.colorstring
-    ld      iy,screen_read_string ; Read string
+    ld      iy,screen_read_bytes ; Read string
     jr      .gfx_call_putnew
 .colorstring
-    ld      iy,color_read_string
+    ld      iy,color_read_bytes
 .gfx_call_putnew
     call    gfx_call
     jp      c,FCERR

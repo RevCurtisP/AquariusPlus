@@ -275,6 +275,7 @@ GFXM_MASK   equ $03     ; Graphics mode bit mask
 GFXBUFLAG   equ $04     ; GFX_FLAGS: Bitmap operations are buffered
 GFXSETMSK   equ $F8     ; Mask for writing GFX_FLAGS
 ; BASIC extended control flags
+SOUNDSLOW   equ $08     ; Play SOUNDs at standard clock speed
 BASOUTOVR   equ $10     ; EXT_FLAGS: Allow OUT to all ports
 TRK_LOOPS   equ $20     ; EXT_FLAGS: PT3 songs repeat
 FERR_FLAG   equ $40     ; EXT_FLAGS: File operations generate BASIC errors

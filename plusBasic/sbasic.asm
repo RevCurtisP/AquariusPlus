@@ -103,7 +103,6 @@ XCART   equ     $2006   ;; + plusBASIC Start Cartridge
 XINTR   equ     $2009   ;; + plusBASIC Interrupt Handler
 XWARM   equ     $200C   ;; + plusBASIC Warm Start`
 XINCHR  equ     $200F   ;; + Alternate keyboard read
-SOUNDX  equ     $2012   ;; + Adjust SOUNDS delay counter in turbo mode
 TTYMOX  equ     $2015   ;; + TTYMOV extension
 SCROLX  equ     $2018   ;; + SCROLL extension
 RESETX  equ     $201B   ;; + Skip start screen, cold boot if ':' pressed
@@ -590,6 +589,7 @@ TK      =            TK+1
         byte    'P'+$80,"RESET"   ;;$9D
                                   ;
 TK      =            TK+1
+SOUNDTK equ     TK
         byte    'S'+$80,"OUND"    ;;$9E
 TK      =            TK+1
 SCRATK  equ     TK                ;
@@ -4737,7 +4737,7 @@ GETINT: call    FRMNUM            ;;Get a number
 SOUND:  push    de
         call    SCAND
         push    hl
-        call    SOUNDX            ;; + Disable turbo during beep              1ADB  call    SOUNDS
+        call    sound_hook        ;; + Disable turbo during beep              1ADB  call    SOUNDS
                                   ;; +                                        1ADC
                                   ;; +                                        1ADD
         pop     hl
@@ -5235,7 +5235,7 @@ SCROLP: ld      (hl),' '          ;;Put Space
 ;;Make a Beep Sound
 BEEP:   ld      bc,200            ;
         ld      de,50             ;
-        call    SOUNDX            ;; + Disable turbo during beep              1E1A  call    SOUNDS
+        call    beep_hook         ;; + Disable turbo during beep              1E1A  call    SOUNDS
                                   ;; +                                        1E1B
                                   ;; +                                        1E1C
         jr      TTYXPR            ;;Restore Registers and return

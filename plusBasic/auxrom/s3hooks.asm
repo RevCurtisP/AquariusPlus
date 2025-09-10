@@ -237,6 +237,28 @@ fnkey_get_buff_addr:
     xor     a
     ret
 
+;-----------------------------------------------------------------------------
+; SOUNDS/BEEP extension
+; Play slow if Carry Clear, resoect SOUNDSLOW if Carry Set
+;-----------------------------------------------------------------------------
+s3_sound_hook:
+    jr      nc,.slow
+    ld      a,(EXT_FLAGS)
+    and     SOUNDSLOW             ; If SOUND FAST
+    jp      z,SOUNDS              ;   Do sounds and return
+.slow
+    in      a,(IO_SYSCTRL)
+    and     $7F                   ; Strip Reset bit
+    push    af                    ; Stack = SysCtrl, RtnAdr
+    and     ~SYSCTRL_TURBO
+    out     (IO_SYSCTRL),a
+    call    SOUNDS                
+    pop     af
+    out     (IO_SYSCTRL),a
+    ret
+
+
+
 ;=====================================================================================
 ; Routines not routed through jump table
 ;=====================================================================================

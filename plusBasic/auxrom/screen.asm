@@ -1,6 +1,9 @@
-;=============================================================================
+;~===========================================================================~
 ; Text Screen Auxilliary ROM Routines
-;=============================================================================
+;
+; LD IY,_routine_name_
+; CALL AUX_CALL
+;~===========================================================================~
 
 ; Input: D: Column, E: Row
 ; Output: HL: Screen RAM address
@@ -49,12 +52,10 @@ cursor_offset:
     add     hl, de              ; Added the columns
     ret
 
-
 ;-----------------------------------------------------------------------------
 ; Fill Color RAM with current/default colors
 ;-----------------------------------------------------------------------------
 screen_clear_color:
-;    ld      a,(BASYSCTL)
     ld      a,(SCREENCTL)         ; 
     rla                           ; Carry = SCRCOLOR
     ld      a,DFLTATTRS
@@ -291,24 +292,24 @@ _readwrite_hlde:
     ld      a,(hl)
     ret
 
-;-----------------------------------------------------------------------------
-; Read string from Color RAM
-; Input: BC: String Length 
-;        DE: Screen Offset
-;        HL: String Pointer
-; Flags: Carry set if address out of range
-;-----------------------------------------------------------------------------
-color_read_string:
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+; Read multiple bytes from Color RAM
+; Input: BC: Number of bytes to read
+;        DE: Color RAM Offset
+;        HL: Destination Address
+; Flags: Carry set if bytes will overflow Color RAM
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+color_read_bytes:
     xor     a                     ; Z = Read
     jr      _color_string
-;-----------------------------------------------------------------------------
-; Write string to Color RAM
-; Input: BC: String Length 
-;        DE: Screen Offset
-;        HL: String Pointer
-; Flags: Carry set if address out of range
-;-----------------------------------------------------------------------------
-color_write_string:
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+; Write multiple bytes to Color RAM
+; Input: BC: Number of bytes to read
+;        DE: Color RAM Offset
+;        HL: Source Address
+; Flags: Carry set if bytes will overflow Color RAM
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+color_write_bytes:
     or      $FF                   ; NZ = Write
 _color_string:
     push    af                    ; Stack = RWFlag, RtnAdr
@@ -345,24 +346,24 @@ _color_string:
     out     (IO_VCTRL),a          ;   Select screen page
     ret
 
-;-----------------------------------------------------------------------------
-; Read string from Screen RAM
-; Input: BC: Read Length 
-;        DE: Screen Offset
-;        HL: String Address
-; Flags: Carry set if address out of range
-;-----------------------------------------------------------------------------
-screen_read_string:
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+; Read multiple bytes from Screen RAM
+; Input: BC: Number of bytes to read
+;        DE: Screen RAM Offset
+;        HL: Destination Address
+; Flags: Carry set if bytes will overflow Screen RAM
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+screen_read_bytes:
     xor     a                     ; Z = Read
     jr      _screen_string
-;-----------------------------------------------------------------------------
-; Write string to Screen RAM
-; Input: BC: String Length 
-;        DE: Screen Offset
-;        HL: String Address
-; Flags: Carry set if address out of range
-;-----------------------------------------------------------------------------
-screen_write_string:
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+; Write multiple bytes to Screen RAM
+; Input: BC: Number of bytes to read
+;        DE: Screen RAM Offset
+;        HL: Source Address
+; Flags: Carry set if bytes will overflow Screen RAM
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+screen_write_bytes:
     or      $FF                   ; NZ = Write
 _screen_string:
     push    af                    ; Stack = RWFlag, RtnAdr

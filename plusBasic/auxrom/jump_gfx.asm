@@ -62,8 +62,8 @@ _jump_table:
     jp      just_ret              ; C081 
     jp      screen_read_byte      ; C084 Read byte from screen
     jp      screen_write_byte     ; C087 Write byte to screen
-    jp      screen_read_string    ; C08A Read string from Screen RAM
-    jp      screen_write_string   ; C08D Write string to Screen RAM
+    jp      screen_read_bytes    ; C08A Read string from Screen RAM
+    jp      screen_write_bytes   ; C08D Write string to Screen RAM
     jp      just_ret              ; C090 
     jp      just_ret              ; C093 
     jp      screen_read_paged     ; C096 
@@ -74,8 +74,8 @@ _jump_table:
     jp      just_ret              ; C0A5 
     jp      oolor_read_byte       ; C0A8 Read byte from Color RAM
     jp      color_write_byte      ; C0AB Write byte to Color RAM
-    jp      color_read_string     ; C0AE Read string from Color RAM
-    jp      color_write_string    ; C0B1 Write string to Color RAM
+    jp      color_read_bytes     ; C0AE Read string from Color RAM
+    jp      color_write_bytes    ; C0B1 Write string to Color RAM
     jp      just_ret              ; C0B4 
     jp      just_ret              ; C0B7 
     jp      just_ret              ; C0BA 
