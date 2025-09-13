@@ -49,8 +49,10 @@ for line in md_in.readlines():
 
     # Strip checkboxes
     i = line.find("- [ ] ")
-    if i < 0: i = line.find("- [.] ")
-    if i < 0: i = line.find("- [x] ")
+    if i < 0: i = line.find("- [.] ")   # Stub
+    if i < 0: i = line.find("- [-] ")   # Incomplete
+    if i < 0: i = line.find("- [x] ")   # Complete
+    if i < 0: i = line.find("- [!] ")   # Bug fix required
     if i > 0: line = line[:i] + "- " + line[i+6:]
     
     # Get statement/function name

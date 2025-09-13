@@ -1,0 +1,410 @@
+Quick Reference Guide
+<!-- Do not edit this page. Contents are copied from file quickref_wiki.md which is generated from README.md-->
+
+## Literals
+  - _Numeric literals_ evaluate to floating point or integer numbers.
+    - **{_+_|_-_}{_digit_...|{_digit_}{_._}{_digit_...}}{_E_{_+_|_-_}_digit_...}** - A floating point decimal number.
+    - **{_+_|_-_}{_digit_...}** - An integer decimal number.
+    - **$_hexdigit_...** - An integer hexadecimal number.
+    - **'_character_'** - An integer number equal to the ASCII code of _character_.
+  - _String literals_ evaluate to a string of ASCII characters.
+    - **"{_character_...}"** - A string containing the specified characters.
+    - **$"{_hexdigit_...}"** - A string containing the characters specified by each two-digit hexadecimal number.
+    - **\\"{{_\\_}_character_}..."** - A string containing C style escape codes.
+## Variables
+  - _Numeric variables_ contain an floating point or integer numbers.
+    - **_alpha_{_alphanum_|~...}** - Numeric variable.
+    - **_alpha_{_alphanum_|~...}((_index_{,_index_...})** - Numeric array element.
+  - _String variables_ contain a string of ASCII characters.
+    - **_alpha_{_alphanum_|~...}$** - String variable.
+    - **_alpha_{_alphanum_|~...}$((_index_{,_index_...})** - String array element.
+  - _String slices_ represent a substring of a string variable.
+    - **_var$_[_pos_]** - Character _pos_ of string variable _var$_.
+    - **_var$_[_start_ TO _end_]** - Characters _start_ through _end_ of string variable _var$_.
+    - **_array$(...)_[_pos_]** - Character _pos_ of string array element _array$(...)_.
+    - **_array$(...)_[_start_ TO _end_]** - Characters _start_ through _end_ of string array element _array$(...)_.
+
+## Operators
+ - *Arithmetic operations* evaluate performed using floating point math.
+   - **- _expression_** - Negate expression
+   - **_expression_ + _expression_** - Add second expression to first expression.
+   - **_expression_ - _expression_** - Subtract second expression from first expression.
+   - **_expression_ \* _expression_** - Multiply first expression by second expression.
+   - **_expression_ / _expression_** - Divide  first expression by second expression.
+   - **_expression_ ^ _expression_** - Raise first expression to power second expression.
+   - **_expression_ MOD _expression_** - Calculate the remainder of the first expression divided by the second expression.
+ - *Relational operations* return -1 if true, 0 if false.
+   - **_expression_ > _expression_** - True if first expression is greater than second expression.
+   - **_expression_ = _expression_** - True if first expression is equal second expression.
+   - **_expression_ < _expression_** - True if first expression is less than second expression.
+   - **_expression_ >= _expression_** - True if first expression is greater than or equal to second expression.
+   - **_expression_ <= _expression_** - True if first expression is less than or equal to second expression.
+ - *Logical operators* perform the corresponding boolean operation on the bits of the each integer expression.
+   - **NOT _integer_** - Sets resulting bit to 1 if the operand bit is 0.
+   - **_integer_ AND _integer_** - Sets resulting bit to 1 if both operand bits are 1.
+   - **_integer_ OR _integer_** - Sets the resulting bit to 1 if either operand bit is 1.
+   - **_integer_ XOR _integer_** - Sets resulting bit to 1 if one operand bits is 1, and the other is 0.
+ - *String operators* create new temporary string.
+   - **_string_ + _string_** - Concatenates second string to the end of first string.
+   - **_string_ %% (_expression_{,...})** - Perform string substitution.
+
+## Special Characters
+ - **\__label_** - Line label. Valid at the beginining of a line, or as the operand of a GOTO or GOSUB.
+ - **'comment** - Shortcut for REM. Valid at the beginning of a line, or after a statement terminating colon.
+
+## Statements and Functions
+ - **[ABS(_float_)](BASIC-Math-Functions#AB)** - Return absolute value of expression.
+ - **[APPEND _filespec_,^_strvar_](BASIC-SAVE-and-APPEND-Statements#APPEND)** - Append string to file.
+ - **[APPEND _filespec_,_address_,_length_](BASIC-SAVE-and-APPEND-Statements#APPEND)** - Append memory to binary file.
+ - **ARGS  _arg_{,...} {RETURN _var_{,...}}** - Specify subroutine arguments and return variables.
+ - **ARGS** - Return number of RUN arguments
+ - **ARGS$(_argno_)** - Return RUN argument number _index_.
+ - **[ASC(_string_{,_pos_})](BASIC-Conversion-Functions#AS)** - Return ASCII value of specified character in _string_.
+ - **[ASC$(_hexstring_)](BASIC-Conversion-Functions#ASC)** - Convert hexadecimal string to ASCII string.
+ - **[ATN(_float_)](BASIC-Math-Functions#AT)** - Return arctangent of argument.
+ - **ATTR(_fgcolor_,_bgcolor_)** - Build color attribute byte.
+ - **ATTR$(_fgcolor_,_bgcolor_,_count_)** - Build color attributes string.
+ - **BIN$()** - _Not implemented_
+ - **BIT(_long_,_bit#_)** - Return status of bit in 23 bit number.
+ - **BIT(_string_,_bit#_)** - Return status of bit in binary string.
+ - **[BYTE(_string_{,_pos_})](BASIC-Conversion-Functions#BYTE)** - Return signed byte value of specified character in _string_.
+ - **[CALL {@_page_,}_address_ {ARGS _hl_,_de_,_bc_}](BASIC-CALL-Statement#CALL)** - Executes machine language routine at address, optionally passing arguments into the associated registers.
+ - **CALL MODULE** - _Proposed enhancement._
+ - **[CD {_dirname_}](BASIC-Filesystem-Statements-and-Functions#CD)** - Display current path or change directory.
+ - **[CD$](BASIC-Filesystem-Statements-and-Functions#CD)** - Return current path.
+ - **[CHR$(_byte_)](BASIC-Conversion-Functions#CHR)** - Convert ASCII value to string.
+ - **CIRCLE (_x_,_y_),_radius_{,{_color_}{,{_start_},{_end_}{,_aspect_}}}** - _Not implemented._
+ - **[CLEAR {_integer_{,_address_}}](BASIC-CLEAR-Statement#CLEAR)** - Clear all variables, optionally allocating string text space and top of BASIC RAM.
+ - **[CLEAR \*_array_{,...}](BASIC-CLEAR-Statement#CLEAR)** - Clear numeric or string array data.
+ - **CLEAR BITMAP {_fgcolor_,_bgcolor_}** - Clear bitmap layer.
+ - **[CLEAR CURSOR](BASIC-Text-Cursor-Statements-and-Functions#CLEAR-CURSOR)** - Temporarily remove cursor from screen.
+ - **CLEAR KEYS** - Clear keyboard and autotype buffers.
+ - **CLOAD {{?}_filename_}|\*_array_** - Load or verify program or load array data from cassette.
+ - **[CLOSE #_channel_](BASIC-File-Statements-and-Functions#CLOSE-#)** - Close file.
+ - **[CLS {_fgcolor_,_bgcolor_}](BASIC-Screen-Statements-and-Functions#CLS)** - Clear the text screen.
+ - **[CLS COLOR {_fgcolor_,_bgcolor_}](BASIC-Screen-Statements-and-Functions#CLS-COLOR)** - Fill Color RAM with current or specified foreground and background colors.
+ - **[COLOR _fgcolor_{,_bgcolor_}](BASIC-Bitmap-Statements-and-Functions#COLOR)** - Set or get bitmap default color(s).
+ - **[COMPARE (*_array_,*_array_)](BASIC-Variable-and-Memory-Statements-and-Functions#COMPARE)** - Compare the binary contents of two numeric arrays.
+ - **[COMPARE ({«!_ext_addr_»|«{@_page_,}_address_»,«!_ext_addr_»|«{@_page_,}_address_»,_length_)](BASIC-Variable-and-Memory-Statements-and-Functions#COMPARE)** - Compare two blocks of memory.
+ - **COMPARE (_filespec_,_filespec_)** - _Not implemented._
+ - **[CONT](BASIC-Flow-Control-Statements#CONT)** - Resume program execution after STOP, Ctrl-C/Escape, or error.
+ - **[COPY](BASIC-Screen-IO-Statements-and-Functions#COPY)** - Copy text screen to serial printer.
+ - **[COPY \*_array_ TO \*array](BASIC-Variable-and-Memory-Statements-and-Functions#COPY)** - Copy contents of one numeric array to another.
+ - **[COPY \*_array_ TO «!_ext_addr_»|«{@_page_,}_address_» {FAST}](BASIC-Variable-and-Memory-Statements-and-Functions#COPY)** - Copy numeric array contents to memory.
+ - **[COPY «!_ext_addr_»|«{@_page_,}_address_»,_length_ TO «!_ext_addr_»|«{@_page_,}_address_» {FAST}](BASIC-Variable-and-Memory-Statements-and-Functions#COPY)** - Copy bytes from one section of memory to another.
+ - **COPY «!_ext_addr_»|«{@_page_,}_address_»{,_length(=_} TO \*_array_** - Copy memory to array contents.
+ - **COPY «!_ext_addr_»|«@_page_,_address_» TO SCREEN {CHR|ATTR}** - Copy paged memory to screen.
+ - **[COPY FILE _filespec_ TO _filespec_](BASIC-Variable-and-Memory-Statements-and-Functions#COPY-FILE)** - Copy file.
+ - **COPY SCREEN {CHR|ATTR} TO «!_ext_addr_»|«@_page_,_address_» {FAST}** - Copy screen to paged memory.
+ - **[COS(_float_)](BASIC-Math-Functions#CO)** - Return cosine of argument.
+ - **CSAVE _filename_|\*_array_** - Save program or array data to cassette.
+ - **[CURSOROFFSET](BASIC-Text-Cursor-Statements-and-Functions#CURSOROFFSET)** - Return text screen relative address at cursor location.
+ - **[CURSORX](BASIC-Text-Cursor-Statements-and-Functions#CURSORX)** - Return text screen cursor column.
+ - **[CURSORY](BASIC-Text-Cursor-Statements-and-Functions#CURSORY)** - Return text screen cursor line.
+ - **[DATA _literal_{,...}](BASIC-DATA-Statement#DATA)** - Define data for `READ` statement.
+ - **[DATE$](BASIC-DATE-and-TIME-Functions#DATE)** - Return the current date.
+ - **[DATETIME$](BASIC-DATE-and-TIME-Functions#DATETIME)** - Return the current date and time.
+ - **DEC _numvar_** - Decrement numeric variable.
+ - **[DEC(_hexstring_)](BASIC-Conversion-Functions#DE)** - Convert hexadecimal string to long.
+ - **[DEEK(«!_ext_addr_»|«@_page_,_address_»)](BASIC-PEEK-and-DEEK-Functions#DEEK)** - Read integer from memory.
+ - **[DEF ATTRLIST _strvar_=_attr_,...](BASIC-Stringlist-Statements#DEF-ATTRLIST)** - Create a string list of sprite and/or tile attributes.
+ - **[DEF BYTELIST _strvar_=_byte_,...](BASIC-Stringlist-Statements#DEF-BYTELIST)** - Create a string list of bytes.
+ - **DEF FN _var_(_var_) = _expression_** - Define user-defined function.
+ - **[DEF INTLIST _strvar_=_integer_,...](BASIC-Stringlist-Statements#DEF-INTLIST)** - Create a string list of integers.
+ - **[DEF PALETTELIST _strvar_=_palette_,...](BASIC-Stringlist-Statements#DEF-PALETTELIST)** - Create a string list of palette numbers.
+ - **[DEF RGBLIST _strvar_=_r_,_g_,_b_|_rgbstr_;...](BASIC-Stringlist-Statements#DEF-RGBLIST)** - Create a string list of RGB values.
+ - **[DEF SPRITE _strvar_= _spritle_, _x-offset_, _y-offset_ ;...](BASIC-SPRITE-Statements-and-Functions#DEF-SPRITE)** - Create a sprite definition.
+ - **[DEF SPRITE _strvar_= ( _cols_, _rows_ ) , _spritle_](BASIC-SPRITE-Statements-and-Functions#DEF-SPRITE)** - Create a sprite definition.
+ - **[DEF SPRITE _strvar_=^_strvar_](BASIC-SPRITE-Statements-and-Functions#DEF-SPRITE)** - Create a sprite definition.
+ - **[DEF TILELIST _strvar_=_tileno_,...](BASIC-Stringlist-Statements#DEF-TILELIST)** - Create a string list of tile indexes.
+ - **[DEF USR=_address_](BASIC-System-Statements-and-Functions#DEF-USR)** - Set USR() machine language routine address.
+ - **[DEF USRINT=_address_](BASIC-System-Statements-and-Functions#DEF-USRINT)** - Set user interupt machine language routine address.
+ - **[DEL _filespec_](BASIC-Filesystem-Statements-and-Functions#DEL)** - Delete file or directory.
+ - **[DIM _array_(_dim_{,...}),...](BASIC-DIM-Statement#DIM)** - Create and allocate one or more arrays.
+ - **[DIM _array_(_dim_{,...})=expr,...](BASIC-DIM-Statement#DIM)** - Create and populate array.
+ - **[DIM(\*_array_)](BASIC-DIM-Statement#DI)** - Return number of dimensions in array.
+ - **[DIM(\*_array_,_dim_)](BASIC-DIM-Statement#DI)** - Return size of array dimension.
+ - **[DIR {_dirspec_}](BASIC-Filesystem-Statements-and-Functions#DIR)** - Display disk directory.
+ - **[DOKE {«!_ext_addr_»|«@_page_,_address_»,_integer_{;...}](BASIC-POKE-and-DOKE-Statements#DOKE)** - Write one or more integers to memory.
+ - **DRAW _command_string_** - _Not implemented._
+ - **DRAW TEXT (_col_,_row)_),_string_** - _Not implemented._
+ - **DUMP VARS "_filespec_"** - Dump system and BASIC variables to YAML file.
+ - **EDIT {_lineref_}** - _Not implemented._
+ - **[END](BASIC-Flow-Control-Statements#EN)** - Terminate program execution.
+ - **ENDKEY** - Return key used to exit enhanced INPUT.
+ - **ERASE _\*array_{,_\*array_...}** - Delete arrays.
+ - **EVAL(_string_)** - Evaluate expression in string.
+ - **EXP(_float_)** - Return argument to the power of mathematical constant _e_.
+ - **[FILEDATETIME$(_filespec_)](BASIC-Filesystem-Statements-and-Functions#FILEDATETIME)** - Return file timestamp.
+ - **[FILEATTR(_filespec_)](BASIC-Filesystem-Statements-and-Functions#FILEATTR)** - Return file attribute byte.
+ - **[FILEDIR$(_filespec_)](BASIC-Filesystem-Statements-and-Functions#FILEDIR)** - Extract path from filespec. 
+ - **[FILEEXT$(_filespec_)](BASIC-Filesystem-Statements-and-Functions#FILEEXT)** - Extract extension from filespec.
+ - **[FILELEN(_filespec_)](BASIC-Filesystem-Statements-and-Functions#FILELEN)** - Return file length.
+ - **[FILEPOS({#}_channel_)](BASIC-File-Statements-and-Functions#FILEPOS)** - Return current position in open file.
+ - **[FILESTATUS$(_filespec_)](BASIC-Filesystem-Statements-and-Functions#FILESTATUS)** - Return file information as binary string.
+ - **FILL BYTES {@_page_},_address_,_oount_,_byte_** - Fill block of memory with byte.
+ - **FILL WORDS {@_page_},_address_,_oount_,_integer_** - Fill block of memory with integer.
+ - **FILL BITMAP {BYTES _byte_} {COLOR _fgcolor_, _bgcolor_}** - Fill bitmap and/or colormap with byte and/or color(s).
+ - **FILL COLORMAP (_x_,y_)-(_x_,_y_) COLOR _fgcolor_, _bgcolor_** - Fill rectangular section of 1bpp colormap.
+ - **[FILL SCREEN {CHR} {(_x_,y_)-(_x_,_y_)} _char_](BASIC-FILL-SCREEN-Statement#FILL-SCREEN)** - Fill screen with character and/or colors.
+ - **[FILL SCREEN COLOR {(_x_,y_)-(_x_,_y_)} _fgcolor_,_bgcolor_](BASIC-FILL-SCREEN-Statement#FILL-SCREEN-COLOR)** - Fill screen with character and/or colors.
+ - **[FILL TILEMAP {(_x_,y_)-(_x_,_y_)} TILE _tileno_ { ATTR _attrs_} { PALETTE _palette_}](BASIC-FILL-TILEMAP-Statement#FILL-TILEMAP)** - Fill tilemap with specified tile, attributes and palette.
+ - **[FLOAT(_string_{,_offset_})](BASIC-Conversion-Functions#FLOAT)** - Convert four consecutive bytes in string to float.
+ - **[FLOAT$(_long_)](BASIC-Conversion-Functions#FLOAT-1)** - Convert float to four byte binary string.
+ - **[FOR _var_=_expression_ TO _expression_ {STEP _expression_]](BASIC-Flow-Control-Statements#FOR)** - Initiate a _FOR_ loop.
+ - **FRE(_float_|_string_)** - Return amount of unused variable and array or string space (after forcing garage collection).
+ - **GET ARGS _var_{,...}** - Read arguments from argument list after `GOSUB`.
+ - **[GET SCREEN (_x_,y_)-(_x_,_y_) \*_array_|^_strvar_](BASIC-GETSCREEN-Statement#GET-SCREEN)** - Copy text screen clip to array or string variable.
+ - **[GET SCREEN CHRS (_x_,y_)-(_x_,_y_) \*_array_|^_strvar_](BASIC-GETSCREEN-Statement#GET-SCREEN-CHRS)** - Copy text screen clip to array or string variable.
+ - **[GET SCREEN COLORS (_x_,y_)-(_x_,_y_) \*_array_|^_strvar_](BASIC-GETSCREEN-Statement#GET-SCREEN-COLORS)** - Copy text screen clip to array or string variable.
+ - **[GET TILEMAP (_x_,y_)-(_x_,_y_) \*_array_|^_strvar_](BASIC-GETTILE$-Function#GET-TILEMAP)** - Copy tilemap clip to array or string variable.
+ - **GETCHRDEF$(_char_)** - Return character definition.
+ - **[GETBORDERCHR](BASIC-Screen-Statements-and-Functions#GETBORDERCHR)** - Return screen border character.
+ - **[GETBORDERCHR$](BASIC-Screen-Statements-and-Functions#GETBORDERCHR-1)** - Return screen border character as string.
+ - **[GETBORDERCOLOR](BASIC-Screen-Statements-and-Functions#GETBORDERCOLOR)** - Return screen border colors.
+ - **[GETBORDERCOLOR$](BASIC-Screen-Statements-and-Functions#GETBORDERCOLOR-1)** - Return screen border colors as string.
+ - **GETCHRSET** - Return character set currently in use.
+ - **[GETCOLOR](BASIC-Screen-Statements-and-Functions#GETCOLOR)** - Return screen printing colors.
+ - **GETCURSOR** - Return cursor display mode.
+ - **[GETKEY](BASIC-KEY-Functions#GETKEY)** - Wait for key and return ASCII code.
+ - **[GETKEY$](BASIC-KEY-Functions#GETKEY-1)**  - Wait for key and return as string.
+ - **[GETPALETTE$(_palette_)](BASIC-Palette-Statements-and-Functions#GETPALETTE)** - Return palette contents.
+ - **GETSOUNDFAST** - Return `SOUNS FAST` status.
+ - **[GETSPEED](BASIC-System-Statements-and-Functions#GETSPEED)** - Return current turbo setting.
+ - **[GETSPRITE$(_spritedef_)](BASIC-SPRITE-Statements-and-Functions#GETSPRITE)** - Return attributes of each spritle in the spritedef.
+ - **[GETTILE$(_tileno_)](BASIC-GETTILE$-Function#GETTILE)** - Return tile pixels.
+ - **[GOSUB _lineref_{:ARGS _expression_{,...} {RETURN _var_{,...}}](BASIC-Flow-Control-Statements#GOSUB)** - Branch to subroutine with optional call and return arguments.
+ - **[GOTO _lineref_](BASIC-Flow-Control-Statements#GOTO)** - Branch to line specified by line number or label.
+ - **[HEX$(_number_)](BASIC-Conversion-Functions#HEX)** - Convert byte or integer into hexadecimal string.
+ - **[HEX$(_string_)](BASIC-Conversion-Functions#HEX)** - Convert ASCII string into hexadecimal string.
+ - **[IF _expression_ GOTO _linefref_|THEN _lineno_|_statement_](BASIC-Flow-Control-Statements#IF)** - Branch to line or execute statements if expression evaluates to true.
+ - **[IN(_port_)](BASIC-System-Statements-and-Functions#IN)** - Read byte from Z80 I/O port.
+ - **[IN$(_port_,_length_)](BASIC-System-Statements-and-Functions#IN)** - Read multiple bytes from Z80 I/O port.
+ - **INC _numvar_** - Increment numeric variable.
+ - **INDEX(\*_array_,_string_)** - Search for string in element of array
+ - **INMEM({@_page_,}_address_,_string_)** - Search for string in memory.
+ - **[INT(_expression_)](BASIC-Math-Functions#IN)** - Return expression rounded down to nearest integer.
+ - **[INT(_string_{,_offset_})](BASIC-Conversion-Functions#IN)** - Convert two consecutive bytes in string to signed integer.
+ - **INKEY** - Return ASCII code of most recently pressed key.
+ - **INKEY$** - Return most recently pressed key as string.
+ - **INPUT {_stringliteral_;}_var_{,...}** - Prompt for keyboard input and assigns entries to variables.
+ - **INPUT (_col_,_row_),_minlen_,_maxlen_,INT _var_** - Enhanced keyboard input routine.
+ - **INSTR({_offset_,}_haystack_,_needle)** - Search for string _needle_ in string _haystack_.
+ - **JOIN \*_array$_ INTO _string_ DEL _delimiter_** - Join string array elements into delimited string.
+ - **[JOY(_stick_)](BASIC-JOY-Function#JO)** - Read one or both game controllers.
+ - **[JOY$(_id_)](BASIC-JOY-Function#JOY)** - Read wireless game controller.
+ - **[KEY({_keycode_|_string_})](BASIC-KEY-Functions#KE)** - Check if key is currently pressed.
+ - **[LEFT$(_string_,_len_)](BASIC-String-Functions#LEFT)** - Return the first up to _len_ characters of string.
+ - **LEN(_string_)** - Return length of string.
+ - **LEN(\*_array_)** - Return total length of array data.
+ - **\{LET} _var_=_expression_** - Define and assigns value to variable.
+ - **LINE {(_x1_,_y1_)}-(_x2_,_y2_){,{_color_}{,B{F}}}}** - _Not implemented._
+ - **LINEH _x_,_y1_,_y2_** - _Not implemented._
+ - **LINEV _x1_,_x2_,_y_** - _Not implemented._
+ - **[LIST {_lineref_}](BASIC-LIST-Statements-and-Functions#LIST)** - Display program lines starting at beginning of program or specified line.
+ - **[LIST$(_lineno_|NEXT)](BASIC-LIST-Statements-and-Functions#LIST-1)** - Detokenize program line.
+ - **[LLIST {_lineref_}](BASIC-LIST-Statements-and-Functions#LLIST)** - Outputs program lines to printer starting at beginning of program or specified line.
+ - **[LOAD _filespec_](BASIC-LOAD-Statement#LOAD)** - Load BASIC program into memory.
+ - **[LOAD _filespec_,«!_ext_addr_»|«{@_page_,}_address_»](BASIC-LOAD-Statement#LOAD)** - Load binary file into memory.
+ - **[LOAD _filespec_,\*_array_](BASIC-LOAD-Statement#LOAD)** - Load binary file data into numeric or string array.
+ - **[LOAD _filespec_,\*_array_,ASC](BASIC-LOAD-Statement#LOAD)** - Load multi-line ASCII file into string array.
+ - **[LOAD _filespec_,^_string_](BASIC-LOAD-Statement#LOAD)** - Load up to 255 characters of file into string variable.
+ - **[LOAD BITMAP _filespec_](BASIC-BITMAP-File-Statements#LOAD-BITMAP)** - Load bitmap file into Video RAM.
+ - **LOAD CHRSET _filespec_** - Load character set into alternate character buffer.
+ - **[LOAD COLORMAP _filespec_](BASIC-BITMAP-File-Statements#LOAD-COLORMAP)** - Load 1bpp color map file into Video RAM.
+ - **LOAD DIR \{_filespec_,}\*_array_** - Load disk directory filenames into string array.
+ - **LOAD DIR \{_filespec_,}}\*_array_,ASC** - Load formatted disk directory into string array.
+ - **LOAD DIR \{_filespec_,}\*_array_**,BIN - Load binary disk directory into string array.
+ - **[LOAD FNKEYS _filespec_](BASIC-LOAD-FNKEYS-Statement#LOAD-FNKEYS)** - Load function key definitions from file.
+ - **LOAD MODULE** - _Proposed enhancement._
+ - **[LOAD PALETTE _p_,_filespec_](BASIC-Palette-Statements-and-Functions#LOAD-PALETTE)** - Load file data ino palette.
+ - **[LOAD SCREEN _filespec_](BASIC-Screen-IO-Statements-and-Functions#LOAD-SCREEN)** - Load text screen from file.
+ - **LOAD SCREEN ATTR _filespec_** - Load text colors from file.
+ - **LOAD SCREEN CHR _filespec_** - _Not implemented_
+ - **[LOAD TILEMAP _filespec_](BASIC-Tile-File-Statements#LOAD-TILEMAP)** - Load tile map into Video RAM.
+ - **[LOAD TILESET _filespec_](BASIC-Tile-File-Statements#LOAD-TILESET)** - Load tile definitions to Video RAM.
+ - **[LOAD TILESET INDEX _tileno_,_filespec_](BASIC-Tile-File-Statements#LOAD-TILESET-INDEX)** - Load tile definitions relative to start of Video RAM.
+ - **[LOAD TILESET OFFSET _tileno_,_filespec_](BASIC-Tile-File-Statements#LOAD-TILESET-OFFSET)** - Load tile definitions relative to end of tilemap/bitmap.
+ - **[LOAD TRACK _filespec_](BASIC-TRACK-Statements#LOAD-TRACK)** - Load tracker file track into tracker player buffer.
+ - **[LOCATE _x_,_y_](BASIC-Text-Cursor-Statements-and-Functions#LOCATE)** - Move text cursor to specified position.
+ - **[LOG(_float_)](BASIC-Math-Functions#LO)** - Return natural logarithm of argument.
+ - **[LONG(_string_{,_offset_})](BASIC-Conversion-Functions#LONG)** - Convert four consecutive bytes in string to unsigned long.
+ - **[LONG$(_long_)](BASIC-Conversion-Functions#LONG-1)** - Convert long to unsigned four byte binary string.
+ - **[LOOP TRACK {_filespec_}](BASIC-TRACK-Statements#LOOP-TRACK)** - Play specified or previously loaded tracker file repeatedly.
+ - **LPOS(_expression__)** - Return current column position of printer.
+ - **[LPRINT TAB(_integer_)|SPC(_integer_)|_expression_|;|,{...}](BASIC-PRINT-Statements#LPRINT)** - Output data to printer.
+ - **LWR(_char_)** - Lowercases numeric ASCII code or ASCII code of first character of string
+ - **LWR$(_string_|_byte_)** - Lowercases argument string or argument ASCII code converted to string.
+ - **LWRKEY** - Return lowercased ASCII code of last key presed.
+ - **LWRKEY$** - Return lowercased string containing last key pressed.
+ - **MENU** - _Not implemented._
+ - **[MID$(_string_,_start_{,_len_})](BASIC-String-Functions#MID)** - Return first up to _len_ or all remaining characters starting at character _start_ of string.
+ - **MID$(_strvar_,_start__{,_len_})=_string_** - Replace text in string variable.
+ - **[MKDIR _dirname_](BASIC-Filesystem-Statements-and-Functions#MKDIR)** - Create directory.
+ - **[MOUSEB](BASIC-MOUSE-Functions#MOUSEB)** - Return mouse button state.
+ - **[MOUSEW](BASIC-MOUSE-Functions#MOUSEW)** - Return mouse wheel delta.
+ - **[MOUSEX](BASIC-MOUSE-Functions#MOUSEX)** - Return mouse x-position.
+ - **[MOUSEY](BASIC-MOUSE-Functions#MOUSEY)** - Return mouse y-position.
+ - **[NEXT {_var_,...}](BASIC-Flow-Control-Statements#NEXT)** - Terminate one or more _FOR_ loops.
+ - **NEW** - Delete program and clears all variables.
+ - **[ON _integer_ GOSUB _lineref_,...](BASIC-ON-Statement#ON--GOSUB)** - `GOSUB` one of several line numbers based on _expression_.
+ - **[ON _integer_ GOTO _lineref_,...](BASIC-ON-Statement#ON--GOTO)** - `GOTO` one of several line numbers based on _expression_.
+ - **[ON ERROR GOTO _lineref_](BASIC-ON-Statement#ON-ERROR-GOTO)** - Enable or disable error trapping.
+ - **[OFFSET(_column_,_row_)](BASIC-Screen-Statements-and-Functions#OFFSET)** - Return offset into Screen or Color RAM.
+ - **[OPEN _filespec_ FOR INPUT|OUTPUT|APPEND|RANDOM as _numvar_](BASIC-File-Statements-and-Functions#OPEN)** - Open file.
+ - **[OUT _port_,_byte_|_string_{,...}{;...}](BASIC-OUT-Statement#OUT)** - Write to a Z80 port.
+ - **[PAD$(_string_,_length_{,_char_})](BASIC-PAD-Function#PAD)** - Pad string on left or right with optional fill character.
+ - **[PAUSE](BASIC-PAUSE-Statement#PAUSE)** - Halt program execution until key is pressed.
+ - **[PAUSE _jiffies_](BASIC-PAUSE-Statement#PAUSE)** - Pauses program execution for the specified amount of time.
+ - **[PAUSE UNTIL _expression_](BASIC-PAUSE-Statement#PAUSE-UNTIL)** - Pauses program execution until _expression_ evaluates to true.
+ - **[PAUSE TRACK](BASIC-TRACK-Statements#PAUSE-TRACK)** - Pause currently playing track.
+ - **[PEEK(«!_ext_addr_»|«{@_page_,}_address_»)](BASIC-PEEK-and-DEEK-Functions#PEEK)** - Read byte from memory.
+ - **[PEEK$(«!_ext_addr_»|«{@_page_,}_address_»,_length_)](BASIC-PEEK-and-DEEK-Functions#PEEK-1)** - Read string from memory.
+ - **[PEEKCOLOR(_address_)](BASIC-PEEK-and-DEEK-Functions#PEEKCOLOR)** - Read byte from color RAM.
+ - **[PEEKCOLOR$(_address_,_length_)](BASIC-PEEK-and-DEEK-Functions#PEEKCOLOR-1)** - Read string from color RAM.
+ - **[PEEKSCREEN(_address_)](BASIC-PEEK-and-DEEK-Functions#PEEKSCREEN)** - Read byte from screen RAM.
+ - **[PEEKSCREEN$(_address_,_length_)](BASIC-PEEK-and-DEEK-Functions#PEEKSCREEN-1)** - Read string from screen RAM.
+ - **[PLAY SAMPLE «!_ext_addr_»|«@_page_,_address_»](BASIC-PLAY-SAMPLE-Statement#PLAY-SAMPLE)** - Play digital sample from previously loaded file.
+ - **[PLAY TRACK \{_filespec_}](BASIC-TRACK-Statements#PLAY-TRACK)** - Play specified or previously loaded tracker file.
+ - **[POINT(_x_,_y_)](BASIC-Bloxel-and-Pixel-Functions#POINT)** - Return status of bloxel or pixel.
+ - **[POKE «!_ext_addr_»|«{@_page_,}_address_»,_byte_|_string_{;..}.](BASIC-POKE-and-DOKE-Statements#POKE)** - Write bytes and/or strings to memory.
+ - **[POKE COLOR _address_,_byte_|_string_{;...}](BASIC-POKE-SCREEN-and-POKE-COLOR-Statements#POKE-COLOR)** - Write bytes and/or strings to color RAM.
+ - **[POKE SCREEN _address_,_byte_|_string_{;...}](BASIC-POKE-SCREEN-and-POKE-COLOR-Statements#POKE-SCREEN)** - Write bytes and/or strings to screen RAM.
+ - **[POS(_expression__)](BASIC-Text-Cursor-Statements-and-Functions#PO)** - Return cursor position in current line.
+ - **[POSX](BASIC-Bloxel-and-Pixel-Functions#POSX)** - Return last pixel or bloxel x-position.
+ - **[POSY](BASIC-Bloxel-and-Pixel-Functions#POSY)** - Return 1bpp pixel or bloxel y-position.
+ - **[PRESET (_x_,_y_)](BASIC-Bloxel-and-Pixel-Functions#PRESET)** - Erase bloxel or pixel.
+ - **[PRINT {@(_x_,_y_)} TAB(_integer_)|SPC(_integer_)|_expression_|;|,{...}](BASIC-PRINT-Statements#PRINT)** - Display data on screen.
+ - **PSG _register_,_byte_{,...}** - Write bytes to PSG register
+ - **PSG _register_,_byte_{;...}** - Not implemented
+ - **[PSET (_x_,_y_)](BASIC-Bloxel-and-Pixel-Functions#PSET)** - Draw bloxel or pixel.
+ - **[PUT SCREEN (_x_,y_) \*_array_|^_strvar_](BASIC-PUT-SCREEN-Statement#PUT-SCREEN)** - Copy clip from array or string variable to text screen.
+ - **[PUT SCREEN CHR (_x_,y_) \*_array_|^_strvar_](BASIC-PUT-SCREEN-Statement#PUT-SCREEN-CHR)** - Copy clip from array or string variable to text screen.
+ - **[PUT SCREEN ATTR (_x_,y_) \*_array_|^_strvar_](BASIC-PUT-SCREEN-Statement#PUT-SCREEN-ATTR)** - Copy clip from array or string variable to text screen.
+ - **[PUT TILEMAP (_x_,y_),\*_array_|^_strvar_](BASIC-PUT-TILEMAP-Statement#PUT-TILEMAP)** - Copy clip from array or string variable to tilemap.
+ - **[READ _var_{,...}](BASIC-READ-Statement#READ)** - Read values from DATA statements into variables.
+ - **[READ \*_array_{,...}](BASIC-READ-Statement#READ)** - Read values from DATA statements into an array.
+ - **[READ #_channel_,^_strvar_,_length_)](BASIC-File-Statements-and-Functions#READ-#)** - Read string from open file.
+ - **[REM _text_](BASIC-REM-Statement#REM)** - Denotes comment.
+ - **RENAME _filespec_ TO _filespec_** - Rename file or directory
+ - **RESUME _lineref_** - Clear error condition and continues program execution at specified line
+ - **[RESUME TRACK](BASIC-TRACK-Statements#RESUME-TRACK)** - Resume playing paused track.
+ - **RESET \*_array_** - Set all array elements to 0 or empty string and collect garbage if string array.
+ - **RESET BIT** - _Not implemented_
+ - **[RESET BORDER](BASIC-Screen-Statements-and-Functions#RESET-BORDER)** - Set border character and colors to default values.
+ - **[RESET PALETTE _palette_](BASIC-Palette-Statements-and-Functions#RESET-PALETTE)** - Reset palette to default RGB values.
+ - **RESET SCREEN** - Reset current text screen to default settings.
+ - **[RESET SPRITE _spritedef_|#_spritle_|\*](BASIC-SPRITE-Statements-and-Functions#RESET-SPRITE)** - Reset all spritle properties.
+ - **[RESTORE {_lineref_}](BASIC-RESTORE-Statement#RESTORE)** - Reset READ/DATA pointer to beginning of program or specified line.
+ - **RESTORE BITMAP|TILEMAP** - _Not implemented._
+ - **RESTORE SCREEN** - Copy respective screen buffer to current text screen.
+ - **[RETURN {_expression_{,...}}](BASIC-Flow-Control-Statements#RETURN)** - Resume program execution after GOSUB, optionally returning results.
+ - **[RGB(_r_,_g_,_b_|_rgbstr_)](BASIC-Palette-Statements-and-Functions#RG)** - Return integer representing a single palette entry.
+ - **[RGB$(_r_,_g_,_b_|_rgbstr_)](BASIC-Palette-Statements-and-Functions#RGB)** - Return string representing a single palette entry.
+ - **[RGBDEC$(_string_{,_char_})](BASIC-Palette-Statements-and-Functions#RGBDEC)** - Convert binary RGB value to decimal red,green, and blue.
+ - **[RGBHEX$(_string_{,_char_})](BASIC-Palette-Statements-and-Functions#RGBHEX)** - Convert binary RGB value to decimal red,green, and blue.
+ - **[RIGHT$(_string_,_len_)](BASIC-String-Functions#RIGHT)** - Return the last up to _byte_ characters of string.
+ - **[RND(_integer_)](BASIC-Math-Functions#RN)** - Return new or previous psuedo-random number or seeds the random number generator.
+ - **RUN {_lineref_}** - Start program execution at first or specified line.
+ - **RUN _filespec_** - Load a.0nd runs specified program, cartridge image, or FPGA core.
+ - **[SAVE _filespec_{,ASC|CAQ|BIN}](BASIC-SAVE-and-APPEND-Statements#SAVE)** - Save BASIC program to CAQ or ASCII or raw tokenized file.
+ - **[SAVE _filespec_,{@_page_,}_address_,_length_](BASIC-SAVE-and-APPEND-Statements#SAVE)** - Save memory to binary file.
+ - **[SAVE _filespec_,\*_array_](BASIC-SAVE-and-APPEND-Statements#SAVE)** - Save numeric or string array data to file.
+ - **[SAVE _filespec_,^_strvar_](BASIC-SAVE-and-APPEND-Statements#SAVE)** - Save string to file.
+ - **[SAVE BITMAP _filespec_](BASIC-BITMAP-File-Statements#SAVE-BITMAP)** - Save bitmap screen data from Video RAM to file.
+ - **[SAVE CHRSET _filespec_](BASIC-CHRSET-and-CHRDEF-Statements#SAVE-CHRSET)** - Save curent character set to file.
+ - **[SAVE COLORMAP _filespec_](BASIC-BITMAP-File-Statements#SAVE-COLORMAP)** - Save 1bpp color map from Video RAM to file.
+ - **SAVE FNKEYS _filespec_** - Save function key definitions to file.
+ - **[SAVE PALETTE _p_,_filespec_](BASIC-Palette-Statements-and-Functions#SAVE-PALETTE)** - Save palette contents to file.
+ - **[SAVE SCREEN _filespec_{{,PALETTE},BORDERMAP}](BASIC-Screen-IO-Statements-and-Functions#SAVE-SCREEN)** - Save text screen to file.
+ - **SAVE SCREEN ATTR _filespec_** - _Not implemented_
+ - **SAVE SCREEN CHR _filespec_** - _Not implemented_
+ - **[SAVE TILEMAP _filespec_](BASIC-Tile-File-Statements#SAVE-TILEMAP)** - Save tile map to file.
+ - **[SAVE TILESET _tileno_,_tilecount_,_filespec_](BASIC-Tile-File-Statements#SAVE-TILESET)** - Save tile definitions to disk.
+ - **[SCREEN {_text_mode_},{_gfx_mode_},{_sprites_},{_priority_},{_remap_}](BASIC-Screen-Statements-and-Functions#SCREEN)** - Set screen mode.
+ - **[SCREEN](BASIC-Screen-Statements-and-Functions#SCREEN)** - Return screen settings.
+ - **SCROLL BITMAP** - Not implemented.
+ - **SCROLL SCREEN** - Not implemented.
+ - **SET BIT** - _Not implemented_
+ - **[SET BORDER {CHR _char_} {COLOR _fgcolor_,_bgcolor_}](BASIC-Screen-Statements-and-Functions#SET-BORDER)** - Enable color printing mode.
+ - **[SET BREAK ON|OFF](BASIC-System-Statements-and-Functions#SET-BREAK)** - Enable or disable control-c checking.
+ - **[SET CHRDEF _char_,_string_](BASIC-CHRSET-and-CHRDEF-Statements#SET-CHRDEF)** - Redefine character.
+ - **[SET COLOR _fgcolor_,_bgcolor_](BASIC-Screen-Statements-and-Functions#SET-COLOR)** - Enable color printing mode.
+ - **[SET COLOR OFF](BASIC-Screen-Statements-and-Functions#SET-COLOR)** - Disable color printing mode.
+ - **[SET CURSOR ON|OFF](BASIC-Text-Cursor-Statements-and-Functions#SET-CURSOR)** - Enable or disable cursor display.
+ - **[SET FAST ON|OFF](BASIC-SET-FAST-Statement#SET-FAST)** - Enable or disable turbo mode.
+ - **[SET FILE _channel_ POS TO _long_](BASIC-File-Statements-and-Functions#SET-FILE)** - Set current position in opened file.
+ - **SET FILE ERROR ON|OFF** - Enable or disable file operations generating BASIC errors.
+ - **SET FNKEY _key_ TO _string_** - Set auto-typed text when function key is pressed.
+ - **SET KEY _mode_** - Set alternate keyboard port mode.
+ - **[SET PALETTE _palette_ {INDEX _index_} TO _rgblist_](BASIC-Palette-Statements-and-Functions#SET-PALETTE)** - Set palette entries.
+ - **[SET SAVE ASC ON|OFF](BASIC-SET-SAVE-Statement#SET-SAVE-ASC)** - Enable or disable forced saving of BASIC programs in ASCII format.
+ - **[SET SOUND FAST ON|OFF_](BASIC-System-Statements-and-Functions#SET-SOUND-FAST)** - Set whether SOUND is affected by turbo mode.
+ - **[SET SPEED _speed_](BASIC-System-Statements-and-Functions#SET-SPEED)** - Set turbo mode.
+ - **[SET SPRITE _spritedef_ {ON|OFF} {POS _x_,_y_} {TILE _tilelist_} {PALETTE _palettelist_} {ATTR _attrlist_}](BASIC-SPRITE-Statements-and-Functions#SET-SPRITE)** - Set sprite properties.
+ - **[SET SPRITE _spritedef_ TILECLIP \*_array_|^_strvar_](BASIC-SPRITE-Statements-and-Functions#SET-SPRITE)** - Set sprite to tile indexes and properties in tilemap clip.
+ - **[SET SPRITE _spritedef_ TO _proplist_](BASIC-SPRITE-Statements-and-Functions#SET-SPRITE)** - Set sprite properties from combined properties list.
+ - **[SET SPRITE \* OFF|CLEAR](BASIC-SPRITE-Statements-and-Functions#SET-SPRITE)** - Disable or clears all sprites.
+ - **[SET TILE _tileno_ TO _tiledata_](BASIC-SET-TILE-Statement#SET-TILE)** - Write tile definition Video RAM.
+ - **SET TILE_ _tileno_ TO CHR _char_, _fg_color_, _bg_color_** - Convert character definition to tile data and write to Video RAM.
+ - **SET TILE \*array$** - Set multiple tiles from tile array.
+ - **[SET TILEMAP (_x_,_y_) TO TILE _tileno_ {ATTR _attrs_} {PALETTE _palette_}](BASIC-SET-TILEMAP-Statement#SET-TILEMAP)** - Set tilemap cell to tile index, attributes, and palette.
+ - **[SET TILEMAP (_x_,_y_) TO _integer_](BASIC-SET-TILEMAP-Statement#SET-TILEMAP)** - Set tilemap cell to integer represeting combined tile index, attributes, and palette.
+ - **[SET TILEMAP OFFSET _x_,_y_](BASIC-SET-TILEMAP-Statement#SET-TILEMAP-OFFSET)** - Scroll tilemap to specified position.
+ - **[SET TRACK FAST {ON|OFF}](BASIC-TRACK-Statements#SET-TRACK-FAST)** - Set tracker playback to 50Hz or 60Hz mode.
+ - **[SET TRACK LOOP {ON|OFF}](BASIC-TRACK-Statements#SET-TRACK-LOOP)** - Set loop status of active or paused track.
+ - **[SET TRACK SPEED _hertz_](BASIC-TRACK-Statements#SET-TRACK-SPEED)** - Set tracker playback rate.
+ - **[SET USRINT ON|OFF](BASIC-System-Statements-and-Functions#SET-USRINT)** - Enable disable user interrupt.
+ - **[SGN(_expression_)](BASIC-Math-Functions#SG)** - Return signum of expression.
+ - **[SIN(_float_)](BASIC-Math-Functions#SI)** - Return sine of argument.
+ - **SOUND (_duration_,_frequency_)** - Generate a tone through the television speaker.
+ - **SPLIT _string_ INTO \*_array$_ DEL _delimiter_** - Split delimited string into string array elements.
+ - **[SQR(_float)](BASIC-Math-Functions#SQ)** - Return square root of argument.
+ - **STASH BITMAP** - _Not implemented._
+ - **STASH SCREEN** - Copy current text screen to respective screen buffer.
+ - **STASH TILEMAP** - _Not implemented._
+ - **[STOP](BASIC-Flow-Control-Statements#STOP)** - Interrupt program execution.
+ - **[STOP TRACK](BASIC-TRACK-Statements#STOP-TRACK)** - Stop currently playing track.
+ - **[STR$(_float_)](BASIC-Conversion-Functions#STR)** - Convert floating point number to ASCII string.
+ - **[STRING$(_length_{,_byte_|_string_})](BASIC-STRING-Function#STRING)** - Create string of repeated character.
+ - **STRPTR(_strvar_)** - Return address of text for string variable.
+ - **SWAP BITMAP** - _Not implemented._
+ - **SWAP SCREEN** - Swap current text screen with respective screen buffer.
+ - **SWAP TILEMAP** - _Not implemented._
+ - **SWAP VARS _var_,_var_** - Swap contents of two variables.
+ - **[TAN(_float_)](BASIC-Math-Functions#TA)** - Return tangent of argument.
+ - **[TILEMAP(_x_,_y_)](BASIC-TILEMAP-Functions#TILEMAP)** - Return tile index and properties in tile cell.
+ - **[TILEMAPX](BASIC-TILEMAP-Functions#TILEMAPX)** - Return X-offset of tilemap.
+ - **[TILEMAPY](BASIC-TILEMAP-Functions#TILEMAPY)** - Return X-offset of tilemap.
+ - **[TILEOFFSET](BASIC-TILEMAP-Functions#TILEOFFSET)** - Return first free tile index for current graphics mode.
+ - **[TILEOFFSET(_gfx_mode_)](BASIC-TILEMAP-Functions#TILEOFFSET)** - Return first free tile index for specified graphics mode.
+ - **[TIME$](BASIC-DATE-and-TIME-Functions#TIME)** - Return the current time.
+ - **[TIMER](BASIC-DATE-and-TIME-Functions#TIMER)** - Return timer count..
+ - **[TIMER = _long_](BASIC-DATE-and-TIME-Functions#TIMER)** - Set and start jiffy timer..
+ - **[TRACKFAST](BASIC-TRACK-Statements#TRACKFAST)** - Return -1 if tracker playback is set to fast, else 0.
+ - **[TRACKLOOP](BASIC-TRACK-Statements#TRACKLOOP)** - Return -1 if tracker playback is set to loop, else 0.
+ - **[TRACKSPEED](BASIC-TRACK-Statements#TRACKSPEED)** - Return tracker playback speed in Hertz.
+ - **[TRACKSTATUS](BASIC-TRACK-Statements#TRACKSTATUS)** - Return -1 if track is playing, else 0.
+ - **[TRIM$(_string_{,_string_})](BASIC-String-Functions#TRIM)** - Remove characters from both ends of string.
+ - **[TRIMDIR$(_filespec_)](BASIC-Filesystem-Statements-and-Functions#TRIMDIR)** - Remove path from filespec.
+ - **[TRIMEXT$(_filespec_)](BASIC-Filesystem-Statements-and-Functions#TRIMEXT)** - Remove extension from filespec.
+ - **[TRIML$(_string_{,_string_})](BASIC-String-Functions#TRIML)** - Remove characters from left end of string.
+ - **[TRIMR$(_string_{,_string_})](BASIC-String-Functions#TRIMR)** - Remove characters from right end of string.
+ - **TRON** - Enable line tracing.
+ - **TROFF** - Disable line tracing.
+ - **UPR(_char_)** - Uppercases numeric ASCII code or ASCII code of first character of string
+ - **UPR$(_string_|_byte_)** - Uppercases argument string or argument ASCII code converted to string.
+ - **UPRKEY** - Return uppercased ASCII code of last key presed.
+ - **UPRKEY$** - Return uppercased string containing last key pressed.
+ - **USE CHRSET _0_|_1_|_filespec_** - Copy specified character set to character RAM.
+ - **USE SCREEN {@_page_,}_text_mode_,_gfx_mode_** - _Not implemented._
+ - **[USR(_float_)](BASIC-USR-Function#US)** - Call user-defined machine language routine passing argument and returning result.
+ - **[VAL(_string_)](BASIC-Conversion-Functions#VA)** - Convert ASCII string to floating point number.
+ - **VARPTR(_var{$}_|\*_array{$}_)** - Return address of variable, array element, or array
+ - **[VER(_expression_)](BASIC-System-Statements-and-Functions#VE)** - Return System or plusBASIC version as integer.
+ - **[VER$(_expression_)](BASIC-System-Statements-and-Functions#VER)** - Return System or plusBASIC version as printable string.
+ - **[WAIT _port_,_xor_mask_{,_and_mask_}](BASIC-System-Statements-and-Functions#WAIT)** - Pause until specifie bit pattern received from IO port.
+ - **[WORD(_string_{,_offset_})](BASIC-Conversion-Functions#WORD)** - Convert two consecutive bytes in string to unsigned integer.
+ - **[WORD$(_integer_)](BASIC-Conversion-Functions#WORD-1)** - Convert integer to unsigned two byte binary string.
+ - **[WRITE #_channel_,^_strvar_](BASIC-File-Statements-and-Functions#WRITE-#)** - Write string to open file.
+ - **WRITE KEYS _string_** - Write string to auto-type buffer.

@@ -1,11 +1,10 @@
 ASC         BASIC-ASC-Function
-border      BASIC-Border-Statements-and-Functions
+bitmap      BASIC-Bitmap-Statements-and-Functions
 bmpfile     BASIC-BITMAP-File-Statements
 tilefile    BASIC-Tile-File-Statements
 CALL        BASIC-CALL-Statement
 chrset      BASIC-CHRSET-and-CHRDEF-Statements
 CLEAR       BASIC-CLEAR-Statement
-COLOR       BASIC-COLOR-Statement-and-Function
 COMPARE     BASIC-COMPARE-Function
 convert     BASIC-Conversion-Functions
 cursor      BASIC-Text-Cursor-Statements-and-Functions
@@ -26,7 +25,6 @@ flow        BASIC-Flow-Control-Statements
 FNKEYS      BASIC-LOAD-FNKEYS-Statement
 GETSCREEN   BASIC-GETSCREEN-Statement
 GETTILE     BASIC-GETTILE-Statement
-GETPALETTE  BASIC-GETPALETTE$-Function
 GETTILE     BASIC-GETTILE$-Function
 IN          BASIC-IN-Function
 INPUT       BASIC-INPUT-Statement
@@ -58,6 +56,7 @@ RESTORE     BASIC-RESTORE-Statement
 RUN         BASIC-RUN-Command
 SAVE        BASIC-SAVE-and-APPEND-Statements
 screen      BASIC-Screen-Statements-and-Functions
+screenio    BASIC-Screen-IO-Statements-and-Functions
 SETFAST     BASIC-SET-FAST-Statement
 SETFNKEY    BASIC-SET-FNKEY-Statement
 SETSAVE     BASIC-SET-SAVE-Statement

@@ -81,14 +81,14 @@ Quick Reference Guide
  - [ ] **CLEAR KEYS** - Clear keyboard and autotype buffers.
  - [ ] **CLOAD {{?}_filename_}|\*_array_** - Load or verify program or load array data from cassette.
  - [ ] **CLOSE #_channel_** - Close file.<!--fileio-->
- - [ ] **CLS {_fgcolor_,_bgcolor_}** - Clear the text screen.<!--screen-->
- - [ ] **CLS COLOR {_fgcolor_,_bgcolor_}** - Fill Color RAM with current or specified foreground and background colors.<!--screen-->
- - [ ] **COLOR _fgcolor_{,_bgcolor_}** - Set or get bitmap default color(s).<!--COLOR-->
+ - [.] **CLS {_fgcolor_,_bgcolor_}** - Clear the text screen.<!--screen-->
+ - [.] **CLS COLOR {_fgcolor_,_bgcolor_}** - Fill Color RAM with current or specified foreground and background colors.<!--screen-->
+ - [ ] **COLOR _fgcolor_{,_bgcolor_}** - Set or get bitmap default color(s).<!--bitmap-->
  - [x] **COMPARE (*_array_,*_array_)** - Compare the binary contents of two numeric arrays.<!--variable-->
  - [x] **COMPARE ({«!_ext_addr_»|«{@_page_,}_address_»,«!_ext_addr_»|«{@_page_,}_address_»,_length_)** - Compare two blocks of memory.<!--variable-->
  - [ ] **COMPARE (_filespec_,_filespec_)** - _Not implemented._
  - [ ] **CONT** - Resume program execution after STOP, Ctrl-C/Escape, or error.<!--flow-->
- - [x] **COPY** - Copy text screen to serial printer.<!--screen-->
+ - [x] **COPY** - Copy text screen to serial printer.<!--screenio-->
  - [ ] **COPY \*_array_ TO \*array** - Copy contents of one numeric array to another.<!--variable-->
  - [ ] **COPY \*_array_ TO «!_ext_addr_»|«{@_page_,}_address_» {FAST}** - Copy numeric array contents to memory.<!--variable-->
  - [x] **COPY «!_ext_addr_»|«{@_page_,}_address_»,_length_ TO «!_ext_addr_»|«{@_page_,}_address_» {FAST}** - Copy bytes from one section of memory to another.<!--variable-->
@@ -159,16 +159,16 @@ Quick Reference Guide
  - [ ] **GET SCREEN COLORS (_x_,y_)-(_x_,_y_) \*_array_|^_strvar_** - Copy text screen clip to array or string variable.<!--GETSCREEN-->
  - [ ] **GET TILEMAP (_x_,y_)-(_x_,_y_) \*_array_|^_strvar_** - Copy tilemap clip to array or string variable.<!--GETTILE-->
  - [ ] **GETCHRDEF$(_char_)** - Return character definition.<!--CHRSET-->
- - [ ] **GETBORDERCHR** - Return screen border character.<!--border-->
- - [ ] **GETBORDERCHR$** - Return screen border character as string.<!--border-->
- - [ ] **GETBORDERCOLOR** - Return screen border colors.<!--border-->
- - [ ] **GETBORDERCOLOR$** - Return screen border colors as string.<!--border-->
+ - [.] **GETBORDERCHR** - Return screen border character.<!--screen-->
+ - [.] **GETBORDERCHR$** - Return screen border character as string.<!--screen-->
+ - [.] **GETBORDERCOLOR** - Return screen border colors.<!--screen-->
+ - [.] **GETBORDERCOLOR$** - Return screen border colors as string.<!--screen-->
  - [ ] **GETCHRSET** - Return character set currently in use.<!--CHRSET-->
- - [ ] **GETCOLOR** - Return screen printing colors.
+ - [!] **GETCOLOR** - Return screen printing colors.<!--screen-->
  - [ ] **GETCURSOR** - Return cursor display mode.
  - [ ] **GETKEY** - Wait for key and return ASCII code.<!--key-->
  - [ ] **GETKEY$**  - Wait for key and return as string.<!--key-->
- - [ ] **GETPALETTE$(_palette_)** - Return palette contents.<!--GETPALETTE-->
+ - [x] **GETPALETTE$(_palette_)** - Return palette contents.<!--palette-->
  - [ ] **GETSOUNDFAST** - Return `SOUNS FAST` status.
  - [ ] **GETSPEED** - Return current turbo setting.<!--system-->
  - [x] **GETSPRITE$(_spritedef_)** - Return attributes of each spritle in the spritedef.<!--sprites-->
@@ -218,7 +218,7 @@ Quick Reference Guide
  - [ ] **LOAD FNKEYS _filespec_** - Load function key definitions from file.<!--FNKEYS-->
  - [ ] **LOAD MODULE** - _Proposed enhancement._
  - [ ] **LOAD PALETTE _p_,_filespec_** - Load file data ino palette.<!--palette-->
- - [ ] **LOAD SCREEN _filespec_** - Load text screen from file.<!--screen-->
+ - [x] **LOAD SCREEN _filespec_** - Load text screen from file.<!--screenio-->
  - [ ] **LOAD SCREEN ATTR _filespec_** - Load text colors from file.
  - [ ] **LOAD SCREEN CHR _filespec_** - _Not implemented_
  - [ ] **LOAD TILEMAP _filespec_** - Load tile map into Video RAM.<!--tilefile-->
@@ -291,7 +291,7 @@ Quick Reference Guide
  - [ ] **RESUME TRACK** - Resume playing paused track.<!--track-->
  - [ ] **RESET \*_array_** - Set all array elements to 0 or empty string and collect garbage if string array.
  - [ ] **RESET BIT** - _Not implemented_
- - [ ] **RESET BORDER** - Set border character and colors to default values.<!--screen-->
+ - [x] **RESET BORDER** - Set border character and colors to default values.<!--screen-->
  - [ ] **RESET PALETTE _palette_** - Reset palette to default RGB values.<!--palette-->
  - [ ] **RESET SCREEN** - Reset current text screen to default settings.
  - [ ] **RESET SPRITE _spritedef_|#_spritle_|\*** - Reset all spritle properties.<!--sprites-->
@@ -302,6 +302,7 @@ Quick Reference Guide
  - [x] **RGB(_r_,_g_,_b_|_rgbstr_)** - Return integer representing a single palette entry.<!--palette-->
  - [x] **RGB$(_r_,_g_,_b_|_rgbstr_)** - Return string representing a single palette entry.<!--palette-->
  - [ ] **RGBDEC$(_string_{,_char_})** - Convert binary RGB value to decimal red,green, and blue.<!--palette-->
+ - [ ] **RGBHEX$(_string_{,_char_})** - Convert binary RGB value to decimal red,green, and blue.<!--palette-->
  - [x] **RIGHT$(_string_,_len_)** - Return the last up to _byte_ characters of string.<!--string-->
  - [x] **RND(_integer_)** - Return new or previous psuedo-random number or seeds the random number generator.<!--math-->
  - [ ] **RUN {_lineref_}** - Start program execution at first or specified line.<!--run-->
@@ -315,21 +316,21 @@ Quick Reference Guide
  - [ ] **SAVE COLORMAP _filespec_** - Save 1bpp color map from Video RAM to file.<!--bmpfile-->
  - [ ] **SAVE FNKEYS _filespec_** - Save function key definitions to file.
  - [ ] **SAVE PALETTE _p_,_filespec_** - Save palette contents to file.<!--palette-->
- - [ ] **SAVE SCREEN _filespec_{{,PALETTE},BORDERMAP}** - Save text screen to file.<!--screen-->
+ - [x] **SAVE SCREEN _filespec_{{,PALETTE},BORDERMAP}** - Save text screen to file.<!--screenio-->
  - [ ] **SAVE SCREEN ATTR _filespec_** - _Not implemented_
  - [ ] **SAVE SCREEN CHR _filespec_** - _Not implemented_
  - [ ] **SAVE TILEMAP _filespec_** - Save tile map to file.<!--tilefile-->
  - [ ] **SAVE TILESET _tileno_,_tilecount_,_filespec_** - Save tile definitions to disk.<!--tilefile-->
- - [ ] **SCREEN {_text_mode_},{_gfx_mode_},{_sprites_},{_priority_},{_remap_}** - Set screen mode.<!--screen-->
+ - [x] **SCREEN {_text_mode_},{_gfx_mode_},{_sprites_},{_priority_},{_remap_}** - Set screen mode.<!--screen-->
  - [ ] **SCREEN** - Return screen settings.<!--screen-->
  - [ ] **SCROLL BITMAP** - Not implemented.
  - [ ] **SCROLL SCREEN** - Not implemented.
  - [ ] **SET BIT** - _Not implemented_
- - [ ] **SET BORDER {CHR _char_} {COLOR _fgcolor_,_bgcolor_}** - Enable color printing mode.<!--screen-->
+ - [x] **SET BORDER {CHR _char_} {COLOR _fgcolor_,_bgcolor_}** - Enable color printing mode.<!--screen-->
  - [ ] **SET BREAK ON|OFF** - Enable or disable control-c checking.<!--system-->
  - [ ] **SET CHRDEF _char_,_string_** - Redefine character.<!--chrset-->
- - [ ] **SET COLOR _fgcolor_,_bgcolor_** - Enable color printing mode.<!--screen-->
- - [ ] **SET COLOR OFF** - Disable color printing mode.<!--screen-->
+ - [x] **SET COLOR _fgcolor_,_bgcolor_** - Enable color printing mode.<!--screen-->
+ - [x] **SET COLOR OFF** - Disable color printing mode.<!--screen-->
  - [ ] **SET CURSOR ON|OFF** - Enable or disable cursor display.<!--cursor-->
  - [ ] **SET FAST ON|OFF** - Enable or disable turbo mode.<!--SETFAST-->
  - [ ] **SET FILE _channel_ POS TO _long_** - Set current position in opened file.<!--fileio-->

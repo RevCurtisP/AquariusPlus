@@ -541,7 +541,8 @@
  - 
  - 
  - 
- - 
+ - v0.18f (2023-11-14)
+    - Added SET COLOR statement, printing and scrolling color text 
  - 
  - 
  - 
