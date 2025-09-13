@@ -523,8 +523,9 @@ _map_page_bank3:
 
 ;-----------------------------------------------------------------------------
 ; Map Temp Buffer into Bank 1
+; Output: A = TMP_BUFFR
 ; Returns with original page on stack
-; Clobbers AF',IX
+; Clobbers: AF',IX
 ;-----------------------------------------------------------------------------
 page_map_tmpbfr:
     ld      a,TMP_BUFFR

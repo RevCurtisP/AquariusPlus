@@ -218,7 +218,7 @@ Quick Reference Guide
  - [ ] **LOAD FNKEYS _filespec_** - Load function key definitions from file.<!--FNKEYS-->
  - [ ] **LOAD MODULE** - _Proposed enhancement._
  - [ ] **LOAD PALETTE _p_,_filespec_** - Load file data ino palette.<!--palette-->
- - [ ] **LOAD SCREEN _filespec_** - Load text screen from file.
+ - [ ] **LOAD SCREEN _filespec_** - Load text screen from file.<!--screen-->
  - [ ] **LOAD SCREEN ATTR _filespec_** - Load text colors from file.
  - [ ] **LOAD SCREEN CHR _filespec_** - _Not implemented_
  - [ ] **LOAD TILEMAP _filespec_** - Load tile map into Video RAM.<!--tilefile-->
@@ -291,7 +291,7 @@ Quick Reference Guide
  - [ ] **RESUME TRACK** - Resume playing paused track.<!--track-->
  - [ ] **RESET \*_array_** - Set all array elements to 0 or empty string and collect garbage if string array.
  - [ ] **RESET BIT** - _Not implemented_
- - [ ] **RESET BORDER** - Set border character and colors to default values.<!--border-->
+ - [ ] **RESET BORDER** - Set border character and colors to default values.<!--screen-->
  - [ ] **RESET PALETTE _palette_** - Reset palette to default RGB values.<!--palette-->
  - [ ] **RESET SCREEN** - Reset current text screen to default settings.
  - [ ] **RESET SPRITE _spritedef_|#_spritle_|\*** - Reset all spritle properties.<!--sprites-->
@@ -314,17 +314,18 @@ Quick Reference Guide
  - [ ] **SAVE CHRSET _filespec_** - Save curent character set to file.<!--chrset-->
  - [ ] **SAVE COLORMAP _filespec_** - Save 1bpp color map from Video RAM to file.<!--bmpfile-->
  - [ ] **SAVE FNKEYS _filespec_** - Save function key definitions to file.
- - [ ] **SAVE PALETTE _p_,_filespec_** - Save palette contents to file.<!--SAVEPALETTE-->
- - [ ] **SAVE SCREEN _filespec_** - Save text screen to file.
+ - [ ] **SAVE PALETTE _p_,_filespec_** - Save palette contents to file.<!--palette-->
+ - [ ] **SAVE SCREEN _filespec_{{,PALETTE},BORDERMAP}** - Save text screen to file.<!--screen-->
  - [ ] **SAVE SCREEN ATTR _filespec_** - _Not implemented_
  - [ ] **SAVE SCREEN CHR _filespec_** - _Not implemented_
  - [ ] **SAVE TILEMAP _filespec_** - Save tile map to file.<!--tilefile-->
  - [ ] **SAVE TILESET _tileno_,_tilecount_,_filespec_** - Save tile definitions to disk.<!--tilefile-->
  - [ ] **SCREEN {_text_mode_},{_gfx_mode_},{_sprites_},{_priority_},{_remap_}** - Set screen mode.<!--screen-->
+ - [ ] **SCREEN** - Return screen settings.<!--screen-->
  - [ ] **SCROLL BITMAP** - Not implemented.
  - [ ] **SCROLL SCREEN** - Not implemented.
  - [ ] **SET BIT** - _Not implemented_
- - [ ] **SET BORDER {CHR _char_} {COLOR _fgcolor_,_bgcolor_}** - Enable color printing mode.<!--border-->
+ - [ ] **SET BORDER {CHR _char_} {COLOR _fgcolor_,_bgcolor_}** - Enable color printing mode.<!--screen-->
  - [ ] **SET BREAK ON|OFF** - Enable or disable control-c checking.<!--system-->
  - [ ] **SET CHRDEF _char_,_string_** - Redefine character.<!--chrset-->
  - [ ] **SET COLOR _fgcolor_,_bgcolor_** - Enable color printing mode.<!--screen-->

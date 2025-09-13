@@ -1,4 +1,10 @@
 # plusBASIC Release History
+<!--ToDo: Add entries between v0.18x and v0.13h-->
+  - v0.27g (2025-09-12)
+    - `SAVE SCREEN` _file_save_screen_ now defaults to writing only Screen RAM and Color RAM.
+    - Added trailing options `PALETTE` and `BORDERMAP` to `SAVE SCREEN` and write options parameter to _file_save_screen_
+    - Remap border byte is now written as either `$00` or `$FF`
+    - Add unit tests to _ss.bas_
   - v0.27f (2025-09-09)
     - Added `SET SOUND FAST ON/OFF`, `GETSOUNDFAST`, _set_soundfast_, and _get_soundfast_
     - Deleted deprecated include file _sbasic.inc_
@@ -531,4 +537,46 @@
     - LOAD and RUN now autodect CAQ vs ASCII when loading BASIC programs. Removed ,ASC option from LOAD.
  - v0.18x (2023-11-24) 
     - Added SAVE file$,ASC
+ -  
+ - 
+ - 
+ - 
+ - 
+ - 
+ - 
+ - 
+ - 
+ - 
+ - v0.13h (2023-10-01)
+    - Added ESP write protect error reporting
+ - v0.13g (2023-09-30)
+    - Changed SCREEN SET filename$ to call new routine dos_load_charram
+ - v0.13f (2023-09-30)
+    - Added SCREEN SET filename$
+ - v0.13e (2023-09-30)
+    - Added character set switchng
+ - v0.13d (2023-09-30)
+    - S3BASIC boot screen calls read_key_ascii through vector at $2012
+ - v0.13c (2023-09-28)
+    - activated key read from port $FA
+ - v0.13a (2023-09-27)
+    - Added HOOK18 handler to read keyboard.
+ - v0.13 (2023-09-26)
+    - Added COPY! statement, page_fast_copy; renamed existing fast page routines
+ - v0.12s (2023-09-26)
+    - Fixed esp_get_mouse after fixing DIR date and time
+ - v0.12r (2023-09-26)
+    - Fixed date and time display in DIR, mapped PgUp, PgDn, Home, End to shifted cursor keys
+ - v0.12q (2023-09-25)
+    - MOUSE functions, esp routine return -1 when no mouse is found instead of ?Not found error
+ - v0.12q (2023-09-25)
+    - Fixed SCREEN statement, screen_set_mode routine
+ - v0.12p (2023-09-24)
+    - Moved text screen restore to READY hook. Enabled SET SCREEN OFFSET
+ - v0.12m (2023-09-24)
+    - Modified S3BASIC and plusBASIC to revert to text only after Ctrl-C, STOP, or END
+ - v0.12l (2023-09-23)
+    - Added ASC$(hex$)
+ - 0.12k (2023-09-23)
+    - Added PEEK$([@page], addr, len)
     

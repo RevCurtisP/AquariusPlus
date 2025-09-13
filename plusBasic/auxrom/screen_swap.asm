@@ -639,13 +639,16 @@ screen_read_tmpbfr:
 
 ;-----------------------------------------------------------------------------
 ; Copy Screen, Palette, and IO_VCTRL to TMP_BUFFR
+; Input: A = Write Options (Bit 7 - Palette, Bit 6 - Border)
 ; Output: BC = Length of copied data
 ; Clobbers: AF, AF', DE, HL
 ;-----------------------------------------------------------------------------
 screen_write_tmpbfr:
-    call    page_map_tmpbfr
+    ld      d,a                   ; D = WrtOpt
+    call    page_map_tmpbfr       ; Bank 1 = TempBuffer. AF, Af', IX clobbered
     in      a,(IO_VCTRL)
     push    af                    ; Stack = IO_VCTRL, RtnAdr
+    push    de                    ; Stack = WrtOpt, IO_VCTRL, RtnAdr
     and     VCRTL_80COL_EN
     jr      z,.col40              ; If 80 column mode
     in      a,(IO_VCTRL)
@@ -659,13 +662,26 @@ screen_write_tmpbfr:
 .col40
     call    .copy
 .trailer
-    xor     a                     ; Start at palette index 0
-    ld      bc,32                 ; Total 32 bytes
-    call    palette_get           ; Write palette to buffer
+    pop     af                    ; A = WrtOpt; Stack = IO_VCTRL, RtnAdr
+    rla                           ; Carry = WritePalette, Bit7 = WriteRemap
+    ld      h,a                   ; H = WrtOpt
+    jr      nc,.dont_palette      ; If WritePalette
+    xor     a                     ;   Start at palette index 0
+    ld      bc,32                 ;   Total 32 bytes
+    call    palette_get           ;   Write palette to buffer. DE = NxtAdr
+.dont_palette
     pop     af                    ; A = IO_VCTRL; Stack = RtnAdr
     out     (IO_VCTRL),a          ; Restore VCTRL
-    ld      (de),a                ; Write VCTRL to buffer
+    sla     h                     ; Carry = WrtRmp
+    jr      nc,.dont_remap        ; If WriteRemap
+    and     VCTRL_REMAP_BC        ;   Check Remap Border flag
+    ld      a,0                   ;   Border Control byte = 0 (False)
+    jr      z,.remap_off          ;   If Remap Border flag set
+    dec     a                     ;   Border Control byte = $FF (True)
+.remap_off
+    ld      (de),a                ;   Write Border control byte to buffer
     inc     de
+.dont_remap:
     ex      de,hl                 ; HL = EndAdr
     ld      bc,-BANK1_BASE
     add     hl,bc                 ; HL = DatLen

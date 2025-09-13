@@ -556,7 +556,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>LOAD PALETTE <em>p</em>,<em>filespec</em></strong> - Load file data ino palette.<!--palette--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>LOAD SCREEN <em>filespec</em></strong> - Load text screen from file.</li>
+        <strong>LOAD SCREEN <em>filespec</em></strong> - Load text screen from file.<!--screen--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>LOAD SCREEN ATTR <em>filespec</em></strong> - Load text colors from file.</li>
@@ -775,7 +775,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>RESET BIT</strong> - <em>Not implemented</em></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>RESET BORDER</strong> - Set border character and colors to default values.<!--border--></li>
+        <strong>RESET BORDER</strong> - Set border character and colors to default values.<!--screen--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>RESET PALETTE <em>palette</em></strong> - Reset palette to default RGB values.<!--palette--></li>
@@ -844,10 +844,10 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>SAVE FNKEYS <em>filespec</em></strong> - Save function key definitions to file.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>SAVE PALETTE <em>p</em>,<em>filespec</em></strong> - Save palette contents to file.<!--SAVEPALETTE--></li>
+        <strong>SAVE PALETTE <em>p</em>,<em>filespec</em></strong> - Save palette contents to file.<!--palette--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>SAVE SCREEN <em>filespec</em></strong> - Save text screen to file.</li>
+        <strong>SAVE SCREEN <em>filespec</em>{{,PALETTE},BORDERMAP}</strong> - Save text screen to file.<!--screen--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>SAVE SCREEN ATTR <em>filespec</em></strong> - <em>Not implemented</em></li>
@@ -865,6 +865,9 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>SCREEN ,,,,</strong> - Set screen mode.<!--screen--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
+        <strong>SCREEN</strong> - Return screen settings.<!--screen--></li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
         <strong>SCROLL BITMAP</strong> - Not implemented.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
@@ -874,7 +877,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>SET BIT</strong> - <em>Not implemented</em></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>SET BORDER  {COLOR <em>fgcolor</em>,<em>bgcolor</em>}</strong> - Enable color printing mode.<!--border--></li>
+        <strong>SET BORDER  {COLOR <em>fgcolor</em>,<em>bgcolor</em>}</strong> - Enable color printing mode.<!--screen--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>SET BREAK ON|OFF</strong> - Enable or disable control-c checking.<!--system--></li>

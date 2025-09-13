@@ -15,7 +15,10 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
   </head>
   <body>
     <h1 id="plusbasic-release-history">plusBASIC Release History</h1>
+    <!--ToDo: Add entries between v0.18x and v0.13h-->
     <ul>
+      <li>v0.27g (2025-09-12)
+<ul><li><code>SAVE SCREEN</code><em>file_save_screen</em> now defaults to writing only Screen RAM and Color RAM.</li><li>Added trailing options <code>PALETTE</code> and <code>BORDERMAP</code> to <code>SAVE SCREEN</code> and write options parameter to <em>file_save_screen</em></li><li>Remap border byte is now written as either <code>$00</code> or <code>$FF</code></li><li>Add unit tests to <em>ss.bas</em></li></ul></li>
       <li>v0.27f (2025-09-09)
 <ul><li>Added <code>SET SOUND FAST ON/OFF</code>, <code>GETSOUNDFAST</code>, <em>set_soundfast</em>, and <em>get_soundfast</em></li><li>Deleted deprecated include file <em>sbasic.inc</em></li><li>Removed spurious label <em>gfx_jump_table</em> causing corrupted <em>aqplus.inc</em> and <em>aqplus_asm.inc</em> to be generated</li><li>Renamed <em>screen_read_string</em> and <em>screen_write_string</em> to <em>screen_read_bytes</em>, <em>screen_write_bytes</em></li><li>Renamed <em>color_read_string</em> and <em>color_write_string</em> to <em>color_read_bytes</em>, <em>color_write_bytes</em></li></ul></li>
       <li>v0.27e (2025-08-31)
@@ -309,6 +312,48 @@ v0.22v (2024-05-19)</li>
 <ul><li>LOAD and RUN now autodect CAQ vs ASCII when loading BASIC programs. Removed ,ASC option from LOAD.</li></ul></li>
       <li>v0.18x (2023-11-24)
 <ul><li>Added SAVE file$,ASC</li></ul></li>
+      <li></li>
+      <li></li>
+      <li></li>
+      <li></li>
+      <li></li>
+      <li></li>
+      <li></li>
+      <li></li>
+      <li></li>
+      <li></li>
+      <li>v0.13h (2023-10-01)
+<ul><li>Added ESP write protect error reporting</li></ul></li>
+      <li>v0.13g (2023-09-30)
+<ul><li>Changed SCREEN SET filename$ to call new routine dos_load_charram</li></ul></li>
+      <li>v0.13f (2023-09-30)
+<ul><li>Added SCREEN SET filename$</li></ul></li>
+      <li>v0.13e (2023-09-30)
+<ul><li>Added character set switchng</li></ul></li>
+      <li>v0.13d (2023-09-30)
+<ul><li>S3BASIC boot screen calls read_key_ascii through vector at $2012</li></ul></li>
+      <li>v0.13c (2023-09-28)
+<ul><li>activated key read from port $FA</li></ul></li>
+      <li>v0.13a (2023-09-27)
+<ul><li>Added HOOK18 handler to read keyboard.</li></ul></li>
+      <li>v0.13 (2023-09-26)
+<ul><li>Added COPY! statement, page_fast_copy; renamed existing fast page routines</li></ul></li>
+      <li>v0.12s (2023-09-26)
+<ul><li>Fixed esp_get_mouse after fixing DIR date and time</li></ul></li>
+      <li>v0.12r (2023-09-26)
+<ul><li>Fixed date and time display in DIR, mapped PgUp, PgDn, Home, End to shifted cursor keys</li></ul></li>
+      <li>v0.12q (2023-09-25)
+<ul><li>MOUSE functions, esp routine return -1 when no mouse is found instead of ?Not found error</li></ul></li>
+      <li>v0.12q (2023-09-25)
+<ul><li>Fixed SCREEN statement, screen_set_mode routine</li></ul></li>
+      <li>v0.12p (2023-09-24)
+<ul><li>Moved text screen restore to READY hook. Enabled SET SCREEN OFFSET</li></ul></li>
+      <li>v0.12m (2023-09-24)
+<ul><li>Modified S3BASIC and plusBASIC to revert to text only after Ctrl-C, STOP, or END</li></ul></li>
+      <li>v0.12l (2023-09-23)
+<ul><li>Added ASC$(hex$)</li></ul></li>
+      <li>0.12k (2023-09-23)
+<ul><li>Added PEEK$([@page], addr, len)</li></ul></li>
     </ul>
   </body>
 </html>

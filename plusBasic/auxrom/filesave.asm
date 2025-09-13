@@ -148,7 +148,8 @@ file_save_string:
 
 ;-----------------------------------------------------------------------------
 ; Save screen image
-; Input: HL: String descriptor address
+; Input: A: Save Options: Bit7: Write Palette, Bit6: Write Bprder Remap flag
+;       HL: String descriptor address
 ; Output: A: result code
 ; Flags Set: S if I/O error
 ; Clobbered: CD, DE, EF

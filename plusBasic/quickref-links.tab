@@ -57,7 +57,6 @@ REM         BASIC-REM-Statement
 RESTORE     BASIC-RESTORE-Statement
 RUN         BASIC-RUN-Command
 SAVE        BASIC-SAVE-and-APPEND-Statements
-SAVEPALETTE BASIC-SAVE-PALETTE-Statement
 screen      BASIC-Screen-Statements-and-Functions
 SETFAST     BASIC-SET-FAST-Statement
 SETFNKEY    BASIC-SET-FNKEY-Statement

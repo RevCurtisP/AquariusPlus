@@ -288,7 +288,7 @@ FN_FILEDATETIME:
     inc     hl                    ; Skip DATE
     SYNCHKT TIMETK
     ld      iy,file_datetime
-    push    iy                    ; Stack = AuxRtn, RtnAdr
+    push    iy                    ; Stack = AuxAdr, RtnAdr
     ld      a,14                  ; A = StrSiz
     jr      _file_stat            ; Go do it
 
@@ -299,15 +299,15 @@ FN_FILEDATETIME:
 ; ? HEX$(S$)
 FN_FILESTATUS:
     ld      iy,dos_stat
-    push    iy                    ; Stack = AuxRtn, RtnAdr
+    push    iy                    ; Stack = AuxAdr, RtnAdr
     ld      a,9                   ; A = StrSiz
     inc     hl                    ; Skip STATUS
 _file_stat:
-    push    af                    ; Stack = StrSiz, AuxRtn, RtnAdr
+    push    af                    ; Stack = StrSiz, AuxAdr, RtnAdr
     SYNCHKC '$'                   ; Require $
     call    PARSTR                ; Parse string agument
-    pop     a                     ; A = StrSiz; Stack = AuxRtn, RtnAdr
-    pop     iy                    ; IY = AuxRtn; Stack = RtnAdr
+    pop     a                     ; A = StrSiz; Stack = AuxAdr, RtnAdr
+    pop     iy                    ; IY = AuxAdr; Stack = RtnAdr
     push    hl                    ; Stack = TxtPtr, RtnAdr
     ld      hl,(FACLO)            ; HL = ArgDsc
     push    hl                    ; Stack = ArgDsc, TxtPtr, RtnAdr
@@ -945,6 +945,12 @@ _do_colormap:
 ;  80 column: 2048 byte Screen RAM + 2048 byte Color RAM {+ 32 byte palette} {+ 1 byte border flag}
 ;-----------------------------------------------------------------------------
 ;; ToDo: Add SAVE/LOAD SCREEN CHR/ATTR
+; CD /temp/scrn
+; SAVE SCREEN "screen-only.scrn"
+; SAVE SCREEN "screen+palt.scrn",PALETTE
+; SAVE SCREEN "screen+bmap.scrn",BORDERMAP
+; SAVE SCREEN "screen+both.scrn",PALETTE,BORDERMAP
+; LOAD SCREEN ATTR "/au/assets/rect80.sclr"
 ; SCREEN 1:SAVE SCREEN "/t/test41.scrn"
 ; SCREEN 2:SAVE SCREEN "/t/test42.scrn"
 ; SCREEN 3:SAVE SCREEN "/t/test80.scrn"
@@ -956,18 +962,35 @@ _do_colormap:
 ; SET FILE ERROR OFF:SCREEN 1:LOAD SCREEN "/t/test42.scrn":PRINT ERR
 ; SET FILE ERROR OFF:LOAD SCREEN "/t/array.caq":PRINT ERR
 _save_screen:
-    ld      iy,file_save_screen
-    jr      skip_strdesc_auxcall
+    ld      de,file_save_screen   ; DE = AuxAdr
+    ld      c,0                   ; C = 0 (Save)
+    jr      _screen
 _load_screen:
     rst     CHRGET                ; Skip SCREEN
     call    screen_suffix
     dec     b                     ; CHR
     jp      z,GSERR
-    ld      iy,file_load_color
+    ld      de,file_load_color    ; DE = AuxAdr
     dec     b                     ; ATTR
-    jr      z,_strdesc_auxcall
-    ld      iy,file_load_screen
-    byte    $3E                   ; LD A, over CHRGET
+    jr      z,_screen_strdesc
+    ld      de,file_load_screen   ; DE = AuxAdr
+    byte    $0E                   ; LD C, over CHRGET; C = $D7 (Load)
+_screen:
+    rst     CHRGET                ; Skip SCREEN
+_screen_strdesc:
+    call    get_strdesc_arg       ; HL = FilDsc; Stack = TxtPtr
+    xor     a
+    sla     c                     ; Set Carry if Loading
+    jr      c,_screen_aux_call    ; If Saving
+    ex      (sp),hl               ;   HL = TxtPtr; Stack = StrDsc
+    ld      iy,bas_save_screen_opts
+    call    aux_call              ;   Parse PALETTE and/or BORDERMAP
+    ex      (sp),hl               ;   HL = StrDsc; Stack = TxtPtr
+_screen_aux_call:
+    push    de                    ; Stack = AuxAdr, TxtPtr
+    pop     iy                    ; IY = AuxAdr; Stack = TxtPtr
+    jr      _aux_call_bdf
+
 skip_strdesc_auxcall:
     rst     CHRGET                ; Skip SCREEN
 _strdesc_auxcall:
@@ -993,7 +1016,7 @@ run_cmd:
     jr      z,con_run             ;   RUN line#
 
     ld      (SUBFLG),a            ; Stash FileSpec start character
-    call    get_string_direct     ; HL = StrDsc, DE = TxtAdr, BC = StrLen; Stack = TxtPtr
+    call    get_string_direct     ; HL = StrDsc, DE = StrAdr, BC = StrLen; Stack = TxtPtr
     call    run_args              ; HL = StrDsc; A, BC, DE clobbered
     jr      run_file              ; Load and run file
 
@@ -1609,7 +1632,7 @@ ST_LINE_INPUT:
     call    get_comma_stringvar   ;   DE = VarPtr
     pop     af                    ;   A = FilDsc; Stack = RtnAdr
     push    hl                    ;   Stack = TxtPtr, RtnAdr
-    push    de                    ;   Stack = VarPtr, TxtPtr, RtbAdr
+    push    de                    ;   Stack = VarPtr, TxtPtr, RtnAdr
     call    clear_string_var      ;   Int StrVar to ""
     call    get_strbuf_addr       ;   HL = BufAdr
     call    esp_read_line
@@ -1621,7 +1644,7 @@ ST_LINE_INPUT:
     call    ERRDIR
     call    get_comma_stringvar   ;   DE = VarPtr
     push    hl                    ;   Stack = TxtPtr, RtnAdr
-    push    de                    ;   Stack = VarPtr, TxtPtr, RtbAdr
+    push    de                    ;   Stack = VarPtr, TxtPtr, RtnAdr
     call    INLIN                 ;   Input line
     jp      c,pop2hl_ret          ;   Abort if Ctrl-C
 
@@ -1655,9 +1678,9 @@ read_file:
     jp      SNERR
 ;    ld      bc,bas_read_chunk
 ;_rw_mem:
-;    push    bc                    ; Stack = AuxRtn, FilDsc, RtnAdr
+;    push    bc                    ; Stack = AuxAdr, FilDsc, RtnAdr
 ;    call    get_page_addr_len     ; A = Page, BC = Len, DE = Addr
-;    pop     iy                    ; IY = AusRtn; Stack = FilDsc, RtnAdr
+;    pop     iy                    ; IY = AuxAdr; Stack = FilDsc, RtnAdr
 ;    ex      (sp),hl               ; H = FilDsc; Stack = TxtPtr
 ;    jp      aux_call_popret       ; Do READ/WRITE and return
 _read_string:
@@ -1750,16 +1773,25 @@ _proc_string_arg:
 ; Input: HL = Text Pointee
 ; Output: HL = String Descriptor
 ;         Text Pointer on Stack
+; Clobbered: AF
 ;-----------------------------------------------------------------------------
 chrget_strdesc_arg:
     rst     CHRGET
 get_strdesc_arg:
     push    iy                    ; Stack = IY, RtnAdr
+    push    bc                    ; Stack = BC, IY, RtnAdr
+    push    de                    ; Stack = DE, BC, IY, RtnAdr
     call    FRMEVL                ; Get String at HL
+    pop     de                    ; Stack = BC, IY, RtnAdr
+    pop     bc                    ; Stack = IY, RtnAdr
     pop     iy                    ; Stack = RtnAdr
     pop     ix                    ; IX = RtnAdr
     push    hl                    ; Stack = TxtPtr
-    call    FRESTR                ; Free Temporary String
+    push    bc                    ; Stack = BC, TxtPtr
+    push    de                    ; Stack = DE, BC, TxtPtr
+    call    FRESTR                ; HL = StrDsc
+    pop     de                    ; Stack = BC, TxtPtr
+    pop     bc                    ; Stack = TxtPtr
     jp      (ix)                  ; Fast Return
 
 _index_offset:

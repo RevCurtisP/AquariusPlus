@@ -684,97 +684,6 @@ aux_cvt_hex:
     ccf                           ; Set Carry if > 15
     ret                           ;   Return
 
-
-;; Function enhancement remove
-;; ToDo: Move this functionality to JOIN
-; dim a(9):S$=STR$(*A)
-FN_STRS:
-    rst     CHRGET                ; Skip STR$
-    SYNCHKC '('                   ; Require (
-    cp      MULTK                 ;
-    jr      z,.numeric_array;     ; If not *
-    call    FRMEVL                ;   Evaluate argument
-    SYNCHKC ')'                   ;   Require ')'
-    jp      STR                   ;   Execute S3BASIC STR$ function
-.numeric_array
-    call    get_star_array        ; DE = AryDat, BC = AryLen
-    call    CHKNUM                ; Type mismatch error if not numeric
-    ld      (ARRAYPTR),de         ; ARRAYPTR = AryPtr
-    ld      ix,.dofloat           ; Default to floating point
-    ld      de,4                  ; SegLen = 4
-    cp      ','
-    jr      nz,.nocomma           ; If comma
-    rst     CHRGET                ;
-    SYNCHKT XTOKEN                ;   Extended Tokens only
-    ld      e,2                   ;   SegLen = 2
-    ld      ix,.doword
-    cp      WORDTK                ;   If not WORD
-    jr      z,.skipchr
-    dec     e                     ;   SegLen = 4
-    ld      ix,.dobyte
-    cp      BYTETK                ;   If not BYTE
-    jp      nz,SNERR              ;     Syntax error
-.skipchr
-    rst    CHRGET                 ;   Skip BYTE/WORD
-.nocomma
-    SYNCHKC ')'                   ; Require ')'
-    push    hl                    ; Stack = TxtPtr, RtnAdr
-    sra     b
-    rr      c                     ; BC = BC / 2
-    sra     b
-    jp      nz,LSERR              ; IF BC/4 is 255, String too long error
-    rr      c                     ; BC = BC / 4
-    ld      (ARRAYLEN),bc         ; ARRAYLEN = ArySiz
-    call    mult_a_de             ; HL = StrLen
-    ld      a,h
-    or      a                     ; If StrLen > 255
-    jp      nz,LSERR              ;   String too long error
-    ld      a,l                   ; A = StrLen
-    call    STRINI                ; DSCTMP = StrDsc, DE = StrAdr, A = StrLen
-    ld      (BUFPTR),de           ; BUFPTR = StrPtr
-    call    FREFAC                ; Free up temp
-.loop
-    call    jump_ix               ; Convert array element and write to string
-    jr      nz,.loop              ; If not done, loop
-    jp      PUTNEW                ; Else return the string
-; Subroutines
-.dobyte
-    call    .array_to_facc
-    call    CONINT                ; E = Byte
-    ld      hl,(BUFPTR)           ; HL = StrPtr
-    ld      (hl),e
-    inc     hl
-    jr      .next
-.doword
-    call    .array_to_facc
-    call    FRCINT                ; DE = Word
-    ld      hl,(BUFPTR)           ; HL = StrPtr
-    ld      (hl),e
-    inc     hl
-    ld      (hl),d
-    inc     hl                    ; Copy word to string
-.next
-    ld      (BUFPTR),hl           ; HL = StrPtr
-    ld      hl,ARRAYLEN
-    dec     (hl)                  ; ArySiz = ArySiz - 1
-    ret
-.dofloat:
-    ld      hl,(ARRAYPTR)         ; HL = AryPtr
-    ld      de,(BUFPTR)           ; DE = StrPtr
-    ld      bc,4                  ; Copy 4 byte Float from Array to String
-    ldir                          ; HL = AryPtr, DE = StrPtr
-    ld      (ARRAYPTR),hl         ; ARRAYPTR = AryPtr
-    ld      (BUFPTR),de           ; BUFPTR = StrPtr
-    ret
-; Copy array element to FACC
-.array_to_facc
-    ld      hl,(ARRAYPTR)         ; HL = AryPtr
-    ld      de,FACLO              ; DstAdr = FACC
-    ld      bc,4
-    ldir                          ; Do copy
-    ld      (ARRAYPTR),hl         ; ARRAYPTR = AryPtr
-    ret
-
 ; Called from read_file
 ; On entry: A = RecLen, H = Channel 
 ; Returns: HL = TmpDsc
@@ -798,3 +707,29 @@ bas_write_string:
     call    string_addr_len       ; DE = StrAdr, BC = StrLen
     pop     af                    ; A = FilDsc; Stack = RtnAdr
     jp      esp_writec_bytes      ; Write and return
+
+
+; Called from SAVE SCREEN
+; On entry: HL = TxtPtr
+; Returns: A = SaveOpts
+; Clobbers: C
+bas_save_screen_opts:
+    ld      c,0                   ; C = NoOpts
+    call    CHRGT2                ; A = CurChr
+    jr      z,.done               ; If not terminator
+    SYNCHKC ','                   ;   Require comma
+    SYNCHKT XTOKEN                ;   Require extended tokeb
+    cp      PALETK         
+    jr      nz,.not_palette       ;   If PALETTE
+    set     7,c                   ;     Set WritePalette bit
+    rst     CHRGET                ;     A = NxtChr
+    jr      z,.done               ;     If terminator, finish up
+    SYNCHKC ','                   ;     Require comma
+    SYNCHKT XTOKEN                ;     Require extended tokeb
+.not_palette
+    SYNCHKT BORDTK                ;   Require BORDERMAP
+    SYNCHKT MAPTK
+    set     6,c                   ;   Set WriteBorderRemap bit
+.done
+    ld      a,c                   ; A = SaveOpts
+    ret
