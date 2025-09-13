@@ -49,6 +49,7 @@ for line in md_in.readlines():
 
     # Strip checkboxes
     i = line.find("- [ ] ")
+    if i < 0: i = line.find("- [.] ")
     if i < 0: i = line.find("- [x] ")
     if i > 0: line = line[:i] + "- " + line[i+6:]
     
@@ -63,6 +64,8 @@ for line in md_in.readlines():
         if m: kword = m.group(1)
         i = kword.find("ON|OFF")
         if i > 0: kword = kword[:i]
+        i = kword.find(" OFF")
+        if i == len(kword)-4: kword = kword[:i]
         kword = kword.rstrip().replace(" ","-")
         n = len(kword) - 1
         if kword[n] == "$": 
