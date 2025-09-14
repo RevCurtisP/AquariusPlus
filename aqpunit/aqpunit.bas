@@ -10,7 +10,7 @@
 892 QS$=ARGS$(0)+\" - Passed: %%, Failed: %%, Errors: %%\n" % (QR(1), QR(0), QR(2))
 894 APPEND "out/_results.txt",^QS$:IF QU<>0 THEN GOSUB _outscreen:ARGS QS$
 896 IF QC=0 THEN PRINT "Unit Tests Complete":END
-897 IF QG THEN RUN QG$+".baq"
+897 IF QM AND QG THEN RUN QG$+".baq"
 898 _theend:GOSUB _nlscreen:ARGS "F3=Run Again, F4=Run Next":END
 899 _failend:GOSUB _nlscreen:ARGS "Test failed":goto _theend
 
@@ -18,7 +18,7 @@
 900 _init:
 901 SET FNKEY 3 To "run "+ARGS$(0)+CHR$(13):SET FNKEY 4 TO "run "+QG$+".baq"+CHR$(13)
 902 DIM QR(2),QR$(2):QC=LEN(QG$):SET SPEED 3:SCREEN 3:QZ=FRE("")
-904 IF FRE(2)=$BFF6 THEN QX=-1:QG=PEEK($BFF7):QF=-PEEK($BFFE):QU=PEEK($BFFF):IF QU=0 THEN CLS
+904 IF FRE(2)=$BFF5 THEN QX=-1:QM=-PEEK($BFF6):QG=PEEK($BFF7):QF=-PEEK($BFFE):QU=PEEK($BFFF):IF QU=0 THEN CLS
 906 IF QU=2 THEN QF$=TRIMEXT$(ARGS$(0)):QF$="out/"+QF$+".out":SAVE QF$,^QZ$
 908 GOSUB _outscreen:ARGS "Running Tests":QQ$=CHR$(34):QR$(0)="Fail: ":QR$(1)="Pass: ":RETURN
 
