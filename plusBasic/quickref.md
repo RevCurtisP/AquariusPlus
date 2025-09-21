@@ -1,5 +1,13 @@
-Quick Reference Guide
+plusBASIC Quick Reference Guide
 <!-- Do not edit this page. Contents are copied from file quickref_wiki.md which is generated from README.md-->
+
+<!-- Check Box key
+  [ ] - Either not documented, or documented but not linked
+  [.] - Stub has been added to documentation
+  [-] - Incomplete entry in documentation
+  [x] - Documentation is complete
+  [!] - Bug fix required in plusBASIC
+-->
 
 ## Literals
   - _Numeric literals_ evaluate to floating point or integer numbers.
@@ -146,17 +154,14 @@ Quick Reference Guide
  - **FILL WORDS {@_page_},_address_,_oount_,_integer_** - Fill block of memory with integer.
  - **FILL BITMAP {BYTES _byte_} {COLOR _fgcolor_, _bgcolor_}** - Fill bitmap and/or colormap with byte and/or color(s).
  - **FILL COLORMAP (_x_,y_)-(_x_,_y_) COLOR _fgcolor_, _bgcolor_** - Fill rectangular section of 1bpp colormap.
- - **FILL SCREEN {CHR} {(_x_,y_)-(_x_,_y_)} _char_** - Fill screen with character and/or colors.
- - **FILL SCREEN COLOR {(_x_,y_)-(_x_,_y_)} _fgcolor_,_bgcolor_** - Fill screen with character and/or colors.
+ - **FILL SCREEN {(_x_,y_)-(_x_,_y_)} {CHR _char) {COLOR _fgcolor_,_bgcolor_}** - Fill screen with character and/or colors.
  - **FILL TILEMAP {(_x_,y_)-(_x_,_y_)} TILE _tileno_ { ATTR _attrs_} { PALETTE _palette_}** - Fill tilemap with specified tile, attributes and palette.
  - **FLOAT(_string_{,_offset_})** - Convert four consecutive bytes in string to float.
  - **FLOAT$(_long_)** - Convert float to four byte binary string.
  - **FOR _var_=_expression_ TO _expression_ {STEP _expression_]** - Initiate a _FOR_ loop.
  - **FRE(_float_|_string_)** - Return amount of unused variable and array or string space (after forcing garage collection).
  - **GET ARGS _var_{,...}** - Read arguments from argument list after `GOSUB`.
- - **GET SCREEN (_x_,y_)-(_x_,_y_) \*_array_|^_strvar_** - Copy text screen clip to array or string variable.
- - **GET SCREEN CHRS (_x_,y_)-(_x_,_y_) \*_array_|^_strvar_** - Copy text screen clip to array or string variable.
- - **GET SCREEN COLORS (_x_,y_)-(_x_,_y_) \*_array_|^_strvar_** - Copy text screen clip to array or string variable.
+ - **GET SCREEN {CHRS|COLORS} (_x_,y_)-(_x_,_y_) \*_array_|^_strvar_** - Copy text screen clip to array or string variable.
  - **GET TILEMAP (_x_,y_)-(_x_,_y_) \*_array_|^_strvar_** - Copy tilemap clip to array or string variable.
  - **GETCHRDEF$(_char_)** - Return character definition.
  - **GETBORDERCHR** - Return screen border character.
@@ -199,8 +204,8 @@ Quick Reference Guide
  - **LEN(\*_array_)** - Return total length of array data.
  - **\{LET} _var_=_expression_** - Define and assigns value to variable.
  - **LINE {(_x1_,_y1_)}-(_x2_,_y2_){,{_color_}{,B{F}}}}** - _Not implemented._
- - **LINEH _x_,_y1_,_y2_** - _Not implemented._
- - **LINEV _x1_,_x2_,_y_** - _Not implemented._
+ - **LINE stringvar** - Read an entire line of input from keyboard.
+ - **LINE INPUT #channel,stringvar** - Read an entire line of input from keyboard or file.
  - **LIST {_lineref_}** - Display program lines starting at beginning of program or specified line.
  - **LIST$(_lineno_|NEXT)** - Detokenize program line.
  - **LLIST {_lineref_}** - Outputs program lines to printer starting at beginning of program or specified line.
@@ -208,7 +213,7 @@ Quick Reference Guide
  - **LOAD _filespec_,«!_ext_addr_»|«{@_page_,}_address_»** - Load binary file into memory.
  - **LOAD _filespec_,\*_array_** - Load binary file data into numeric or string array.
  - **LOAD _filespec_,\*_array_,ASC** - Load multi-line ASCII file into string array.
- - **LOAD _filespec_,^_string_** - Load up to 255 characters of file into string variable.
+ - **LOAD _filespec_,^_stringvar_** - Load up to 255 characters of file into string variable.
  - **LOAD BITMAP _filespec_** - Load bitmap file into Video RAM.
  - **LOAD CHRSET _filespec_** - Load character set into alternate character buffer.
  - **LOAD COLORMAP _filespec_** - Load 1bpp color map file into Video RAM.
@@ -222,9 +227,7 @@ Quick Reference Guide
  - **LOAD SCREEN ATTR _filespec_** - Load text colors from file.
  - **LOAD SCREEN CHR _filespec_** - _Not implemented_
  - **LOAD TILEMAP _filespec_** - Load tile map into Video RAM.
- - **LOAD TILESET _filespec_** - Load tile definitions to Video RAM.
- - **LOAD TILESET INDEX _tileno_,_filespec_** - Load tile definitions relative to start of Video RAM.
- - **LOAD TILESET OFFSET _tileno_,_filespec_** - Load tile definitions relative to end of tilemap/bitmap.
+ - **LOAD TILESET {INDEX _tileno_|OFFSET _tileofs_}  _filespec_** - Load tile definitions to Video RAM.
  - **LOAD TRACK _filespec_** - Load tracker file track into tracker player buffer.
  - **LOCATE _x_,_y_** - Move text cursor to specified position.
  - **LOG(_float_)** - Return natural logarithm of argument.
@@ -278,9 +281,7 @@ Quick Reference Guide
  - **PSG _register_,_byte_{,...}** - Write bytes to PSG register
  - **PSG _register_,_byte_{;...}** - Not implemented
  - **PSET (_x_,_y_)** - Draw bloxel or pixel.
- - **PUT SCREEN (_x_,y_) \*_array_|^_strvar_** - Copy clip from array or string variable to text screen.
- - **PUT SCREEN CHR (_x_,y_) \*_array_|^_strvar_** - Copy clip from array or string variable to text screen.
- - **PUT SCREEN ATTR (_x_,y_) \*_array_|^_strvar_** - Copy clip from array or string variable to text screen.
+ - **PUT SCREEN {CHR|ATTR} (_x_,y_) \*_array_|^_strvar_** - Copy clip from array or string variable to text screen.
  - **PUT TILEMAP (_x_,y_),\*_array_|^_strvar_** - Copy clip from array or string variable to tilemap.
  - **READ _var_{,...}** - Read values from DATA statements into variables.
  - **READ \*_array_{,...}** - Read values from DATA statements into an array.
@@ -306,7 +307,7 @@ Quick Reference Guide
  - **RIGHT$(_string_,_len_)** - Return the last up to _byte_ characters of string.
  - **RND(_integer_)** - Return new or previous psuedo-random number or seeds the random number generator.
  - **RUN {_lineref_}** - Start program execution at first or specified line.
- - **RUN _filespec_** - Load a.0nd runs specified program, cartridge image, or FPGA core.
+ - **RUN _filespec_** - Load a.d runs specified program, cartridge image, or FPGA core.
  - **SAVE _filespec_{,ASC|CAQ|BIN}** - Save BASIC program to CAQ or ASCII or raw tokenized file.
  - **SAVE _filespec_,{@_page_,}_address_,_length_** - Save memory to binary file.
  - **SAVE _filespec_,\*_array_** - Save numeric or string array data to file.

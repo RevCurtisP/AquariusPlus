@@ -1,0 +1,1 @@
+python checkwiki.py

@@ -1,0 +1,489 @@
+**C**
+	Developer-Guide
+ABS
+	BASIC-Math-Functions
+AND
+	BASIC-Logical-Operators
+APPEND
+	BASIC-SAVE-and-APPEND-Statements
+ARGS
+	BASIC-ARGS-Statements-and-Functions
+	BASIC-RUN-Command-and-ARGS-Functions
+ARGS$
+	BASIC-ARGS-Statements-and-Functions
+	BASIC-RUN-Command-and-ARGS-Functions
+ASC
+	BASIC-Conversion-Functions
+ASC$
+	BASIC-Conversion-Functions
+ATN
+	BASIC-Math-Functions
+BYTE
+	BASIC-Conversion-Functions
+CALL
+	BASIC-CALL-Statement
+CD
+	BASIC-Filesystem-Statements-and-Functions
+CD$
+	BASIC-Filesystem-Statements-and-Functions
+CHR$
+	BASIC-Conversion-Functions
+CLEAR
+	BASIC-Variable-and-Memory-Statements-and-Functions
+CLEAR CURSOR
+	BASIC-Text-Cursor-Statements-and-Functions
+CLOAD
+	BASIC-CLOAD-Statement
+CLOSE
+	BASIC-File-IO-Statements-and-Functions
+CLS
+	BASIC-CLS-Function
+	BASIC-Screen-Statements-and-Functions
+CLS COLOR
+	BASIC-Screen-Statements-and-Functions
+COLOR
+	BASIC-Bitmap-Statements-and-Functions
+COMPARE
+	BASIC-Variable-and-Memory-Statements-and-Functions
+CONT
+	BASIC-Flow-Control-Statements
+COPY
+	BASIC-Screen-IO-Statements-and-Functions
+	BASIC-Variable-and-Memory-Statements-and-Functions
+COS
+	BASIC-Math-Functions
+CURSOROFFSET
+	BASIC-Text-Cursor-Statements-and-Functions
+CURSORX
+	BASIC-Text-Cursor-Statements-and-Functions
+CURSORY
+	BASIC-Text-Cursor-Statements-and-Functions
+DATA
+	BASIC-DATA-Statement
+DATE$
+	BASIC-DATE-and-TIME-Functions
+DATETIME$
+	BASIC-DATE-and-TIME-Functions
+DEC
+	BASIC-Conversion-Functions
+DEEK
+	BASIC-PEEK-and-DEEK-Functions
+DEF ATTRLIST
+	BASIC-Sprite-Statements-and-Functions
+DEF BYTELIST
+	BASIC-Stringlist-Statements
+DEF INTLIST
+	BASIC-Stringlist-Statements
+DEF PALETTELIST
+	BASIC-Sprite-Statements-and-Functions
+DEF RGBLIST
+	BASIC-Palette-Statements-and-Functions
+DEF SPRITE
+	BASIC-Sprite-Statements-and-Functions
+DEF TILELIST
+	BASIC-Sprite-Statements-and-Functions
+DEF USR
+	BASIC-System-Statements-and-Functions
+DEF USRINT
+	BASIC-System-Statements-and-Functions
+DEL
+	BASIC-Filesystem-Statements-and-Functions
+DIM
+	BASIC-DIM-Statement
+DIR
+	BASIC-Filesystem-Statements-and-Functions
+DOKE
+	BASIC-POKE-and-DOKE-Statements
+END
+	BASIC-Flow-Control-Statements
+EXP
+	BASIC-Math-Functions
+FILEATTR
+	BASIC-Filesystem-Statements-and-Functions
+FILEDATETIME
+	BASIC-Filesystem-Statements-and-Functions
+FILEDIR$
+	BASIC-Filespec-Functions
+FILEEXT$
+	BASIC-Filespec-Functions
+FILELEN
+	BASIC-Filesystem-Statements-and-Functions
+FILEPOS
+	BASIC-File-IO-Statements-and-Functions
+FILESTATUS
+	BASIC-Filesystem-Statements-and-Functions
+FILL SCREEN
+	BASIC-FILL-SCREEN-Statement
+FILL TILEMAP
+	BASIC-FILL-TILEMAP-Statement
+FLOAT
+	BASIC-Conversion-Functions
+FLOAT$
+	BASIC-Conversion-Functions
+FRE
+	BASIC-FRE-Function
+GET SCREEN
+	BASIC-GET-SCREEN-Statement
+GET TILEMAP
+	BASIC-GET-TILEMAP-Statement
+GETARGS
+	BASIC-ARGS-Statements-and-Functions
+GETBORDERCHR
+	BASIC-Screen-Statements-and-Functions
+GETBORDERCHR$
+	BASIC-Screen-Statements-and-Functions
+GETBORDERCOLOR
+	BASIC-Screen-Statements-and-Functions
+GETBORDERCOLOR$
+	BASIC-Screen-Statements-and-Functions
+GETCHRDEF
+	BASIC-CHRSET-and-CHRDEF-Statements
+GETCHRSET
+	BASIC-CHRSET-and-CHRDEF-Statements
+GETCOLOR
+	BASIC-Screen-Statements-and-Functions
+GETKEY
+	BASIC-KEY-Functions
+GETKEY$
+	BASIC-KEY-Functions
+GETPALETTE$
+	BASIC-Palette-Statements-and-Functions
+GETSPEED
+	BASIC-System-Statements-and-Functions
+GETSPRITE$
+	BASIC-Sprite-Statements-and-Functions
+GETTILE$
+	BASIC-Tile-Statements-and-Functions
+GOSUB
+	BASIC-Flow-Control-Statements
+GOTO
+	BASIC-Flow-Control-Statements
+HEX$
+	BASIC-Conversion-Functions
+IF ... THEN ...
+	BASIC-Flow-Control-Statements
+IN
+	BASIC-IN-Function
+	BASIC-System-Statements-and-Functions
+IN$
+	BASIC-System-Statements-and-Functions
+INKEY
+	BASIC-KEY-Functions
+INKEY$
+	BASIC-KEY-Functions
+INPUT
+	BASIC-INPUT-Statement
+INT
+	BASIC-Conversion-Functions
+	BASIC-Math-Functions
+JOIN
+	BASIC-JOIN-and-SPLIT-statements.
+JOY
+	BASIC-JOY-Function
+JOY$
+	BASIC-JOY-Function
+KEY
+	BASIC-KEY-Functions
+LEFT$
+	BASIC-String-Functions
+LEN
+	BASIC-Variable-and-Memory-Statements-and-Functions
+LET
+	BASIC-LET-Statement
+LINE INPUT
+	BASIC-File-IO-Statements-and-Functions
+LIST
+	BASIC-LIST-Statements-and-Functions
+LIST$
+	BASIC-LIST-Statements-and-Functions
+LLIST
+	BASIC-LIST-Statements-and-Functions
+LOAD
+	BASIC-LOAD-Statement
+LOAD BITMAP
+	BASIC-BITMAP-File-Statements
+LOAD CHRSET
+	BASIC-CHRSET-and-CHRDEF-Statements
+LOAD COLORMAP
+	BASIC-BITMAP-File-Statements
+LOAD FNKEYS
+	BASIC-LOAD-FNKEYS-Statement
+LOAD PALETTE
+	BASIC-Palette-Statements-and-Functions
+LOAD SCREEN
+	BASIC-Screen-IO-Statements-and-Functions
+LOAD TILEMAP
+	BASIC-Tile-File-Statements
+LOAD TILESET
+	BASIC-Tile-File-Statements
+LOAD TRACK
+	BASIC-TRACK-Statements
+LOCATE
+	BASIC-Text-Cursor-Statements-and-Functions
+LOG
+	BASIC-Math-Functions
+LONG
+	BASIC-Conversion-Functions
+LONG$
+	BASIC-Conversion-Functions
+LOOP TRACK
+	BASIC-TRACK-Statements
+LPRINT
+	BASIC-PRINT-Statements
+LWR
+	BASIC-Conversion-Functions
+LWR$
+	BASIC-Conversion-Functions
+LWRKEY
+	BASIC-KEY-Functions
+LWRKEY$
+	BASIC-KEY-Functions
+MID$
+	BASIC-String-Functions
+MKDIR
+	BASIC-Filesystem-Statements-and-Functions
+MOUSEB
+	BASIC-MOUSE-Functions
+MOUSEW
+	BASIC-MOUSE-Functions
+MOUSEX
+	BASIC-MOUSE-Functions
+MOUSEY
+	BASIC-MOUSE-Functions
+NEW
+	BASIC-NEW-Command
+NEXT
+	BASIC-Flow-Control-Statements
+NOT
+	BASIC-Logical-Operators
+OFFSET
+	BASIC-Screen-Statements-and-Functions
+ON ... GOSUB
+	BASIC-ON-Statement
+ON ... GOTO
+	BASIC-ON-Statement
+ON ERROR GOTO
+	BASIC-ON-Statement
+OPEN
+	BASIC-File-IO-Statements-and-Functions
+OR
+	BASIC-Logical-Operators
+OUT
+	BASIC-System-Statements-and-Functions
+PAD
+	BASIC-PAD-Function
+PAUSE
+	BASIC-System-Statements-and-Functions
+PAUSE TRACK
+	BASIC-TRACK-Statements
+PAUSE UNTIL
+	BASIC-System-Statements-and-Functions
+PEEK
+	BASIC-PEEK-and-DEEK-Functions
+PEEK$
+	BASIC-PEEK-and-DEEK-Functions
+PEEKCOLOR
+	BASIC-PEEK-and-DEEK-Functions
+PEEKCOLOR$
+	BASIC-PEEK-and-DEEK-Functions
+PEEKSCREEN
+	BASIC-PEEK-and-DEEK-Functions
+PEEKSCREEN$
+	BASIC-PEEK-and-DEEK-Functions
+PLAY SAMPLE
+	BASIC-PLAY-SAMPLE-Statement
+PLAY TRACK
+	BASIC-TRACK-Statements
+POINT
+	BASIC-Bloxel-and-Pixel-Functions
+POKE
+	BASIC-POKE-and-DOKE-Statements
+POKE COLOR
+	BASIC-POKE-SCREEN-and-POKE-COLOR-Statements
+POKE SCREEN
+	BASIC-POKE-SCREEN-and-POKE-COLOR-Statements
+POS
+	BASIC-POS-Functions
+	BASIC-Text-Cursor-Statements-and-Functions
+POSX
+	BASIC-Bloxel-and-Pixel-Functions
+POSY
+	BASIC-Bloxel-and-Pixel-Functions
+PRESET
+	BASIC-Bloxel-and-Pixel-Functions
+PRINT
+	BASIC-PRINT-Statements
+PSET
+	BASIC-Bloxel-and-Pixel-Functions
+PUT SCREEN
+	BASIC-PUT-SCREEN-Statement
+PUT TILEMAP
+	BASIC-PUT-TILEMAP-Statement
+READ
+	BASIC-File-IO-Statements-and-Functions
+	BASIC-READ-Statement
+REM
+	BASIC-REM-Statement
+RESET BORDER
+	BASIC-Screen-Statements-and-Functions
+RESET PALETTE
+	BASIC-Palette-Statements-and-Functions
+RESET SPRITE
+	BASIC-Sprite-Statements-and-Functions
+RESTORE
+	BASIC-RESTORE-Statement
+RESUME TRACK
+	BASIC-TRACK-Statements
+RETURN
+	BASIC-Flow-Control-Statements
+RGB
+	BASIC-Palette-Statements-and-Functions
+RGB$
+	BASIC-Palette-Statements-and-Functions
+RGBDEC$
+	BASIC-Palette-Statements-and-Functions
+RGBHEX$
+	BASIC-Palette-Statements-and-Functions
+RIGHT$
+	BASIC-String-Functions
+RND
+	BASIC-Math-Functions
+RUN
+	BASIC-RUN-Command-and-ARGS-Functions
+SAVE
+	BASIC-SAVE-and-APPEND-Statements
+SAVE BITMAP
+	BASIC-BITMAP-File-Statements
+SAVE CHRSET
+	BASIC-CHRSET-and-CHRDEF-Statements
+SAVE COLORMAP
+	BASIC-BITMAP-File-Statements
+SAVE PALETTE
+	BASIC-Palette-Statements-and-Functions
+SAVE SCREEN
+	BASIC-Screen-IO-Statements-and-Functions
+SAVE TILEMAP
+	BASIC-Tile-File-Statements
+SAVE TILESET
+	BASIC-Tile-File-Statements
+SCREEN
+	BASIC-Screen-Statements-and-Functions
+SET BORDER
+	BASIC-Screen-Statements-and-Functions
+SET BREAK
+	BASIC-System-Statements-and-Functions
+SET CHRDEF
+	BASIC-CHRSET-and-CHRDEF-Statements
+SET COLOR
+	BASIC-Screen-Statements-and-Functions
+SET CURSOR
+	BASIC-Text-Cursor-Statements-and-Functions
+SET FAST
+	BASIC-System-Statements-and-Functions
+SET FILE
+	BASIC-File-IO-Statements-and-Functions
+SET FNKEY
+	BASIC-SET-FNKEY-Statement
+SET PALETTE
+	BASIC-Palette-Statements-and-Functions
+SET SAVE ASC
+	BASIC-SAVE-and-APPEND-Statements
+SET SOUND FAST
+	BASIC-System-Statements-and-Functions
+SET SPEED
+	BASIC-System-Statements-and-Functions
+SET SPRITE
+	BASIC-Sprite-Statements-and-Functions
+SET TILE
+	BASIC-Tile-Statements-and-Functions
+SET TILEMAP
+	BASIC-Tilemap-Statements-and-Functions
+SET TILEMAP OFFSET
+	BASIC-Tilemap-Statements-and-Functions
+SET TRACK FAST
+	BASIC-TRACK-Statements
+SET TRACK LOOP
+	BASIC-TRACK-Statements
+SET TRACK SPEED
+	BASIC-TRACK-Statements
+SET USRINT
+	BASIC-System-Statements-and-Functions
+SGN
+	BASIC-Math-Functions
+SIN
+	BASIC-Math-Functions
+SPC
+	BASIC-SPC-Function
+SPLIT
+	BASIC-JOIN-and-SPLIT-statements.
+SQR
+	BASIC-Math-Functions
+STOP
+	BASIC-Flow-Control-Statements
+STOP TRACK
+	BASIC-TRACK-Statements
+STR$
+	BASIC-Conversion-Functions
+STRING$
+	BASIC-String-Functions
+TAB
+	BASIC-TAB-Function
+TAN
+	BASIC-Math-Functions
+TILEMAP
+	BASIC-Tilemap-Statements-and-Functions
+TILEMAPX
+	BASIC-Tilemap-Statements-and-Functions
+TILEMAPY
+	BASIC-Tilemap-Statements-and-Functions
+TILEOFFSET
+	BASIC-Tile-File-Statements
+	BASIC-Tile-Statements-and-Functions
+TIME$
+	BASIC-DATE-and-TIME-Functions
+TIMER
+	BASIC-DATE-and-TIME-Functions
+TRACKFAST
+	BASIC-TRACK-Statements
+TRACKLOOP
+	BASIC-TRACK-Statements
+TRACKSPEED
+	BASIC-TRACK-Statements
+TRACKSTATUS
+	BASIC-TRACK-Statements
+TRIM$
+	BASIC-String-Functions
+TRIMDIR$
+	BASIC-Filespec-Functions
+TRIMEXT$
+	BASIC-Filespec-Functions
+TRIML$
+	BASIC-String-Functions
+TRIMR$
+	BASIC-String-Functions
+UPR
+	BASIC-Conversion-Functions
+UPR$
+	BASIC-Conversion-Functions
+UPRKEY
+	BASIC-KEY-Functions
+UPRKEY$
+	BASIC-KEY-Functions
+USE CHRSET
+	BASIC-CHRSET-and-CHRDEF-Statements
+USR
+	BASIC-USR-Function
+VAL
+	BASIC-Conversion-Functions
+VER
+	BASIC-System-Statements-and-Functions
+VER$
+	BASIC-System-Statements-and-Functions
+WAIT
+	BASIC-System-Statements-and-Functions
+WORD
+	BASIC-Conversion-Functions
+WORD$
+	BASIC-Conversion-Functions
+WRITE
+	BASIC-File-IO-Statements-and-Functions
