@@ -62,12 +62,12 @@ for line in md_in.readlines():
         b = l.find(" .. ")
         e = l.find(" .. ", b+4)
         if b and e: l = l[:b] + "--" + l[e+4:]
-        m = re.search(r"^(.+?)[(_*{&=«\\]",l)
+        m = re.search(r"^(.+?)[(_*#{&=«\\]",l)
         if m: kword = m.group(1)
         i = kword.find("ON|OFF")
         if i > 0: kword = kword[:i]
         i = kword.find(" OFF")
-        if i == len(kword)-4: kword = kword[:i]
+        if i > -1 and i == len(kword)-4: kword = kword[:i]
         kword = kword.rstrip().replace(" ","-")
         n = len(kword) - 1
         if kword[n] == "$": 
@@ -82,14 +82,25 @@ for line in md_in.readlines():
         e = line.find("-->",s)
         key = line[s+4:e]
         line = line[:s] + line[s+e+1:]
+        i = key.find(':')
+        if i > -1:
+            kword = key[i+1:]
+            key = key[:i]
+            is_operator = True
+        else:
+            is_operator = False
 
     # Insert wiki link into line
     wiki = line
     if key and key in links:
         link = links[key]
-        if kword: link = link + "#" + kword
-        b = wiki.find(" **")+3
-        e = wiki.find("** ")
+        if kword: link = link + "#" + kword.lower()
+        if is_operator:
+           b = wiki.find(kword)
+           e = b + len(kword)
+        else:
+            b = wiki.find(" **")+3
+            e = wiki.find("** ")
         wiki = wiki[:b] + "[" + wiki[b:e] + "](" + link + ")" + wiki[e:]
         wiki = wiki.replace(" __ ", " ")
         wiki = wiki.replace(" .. ", " ")
