@@ -91,11 +91,8 @@ _jump_table:
     jp      screen_put            ; C0D5 Write Text Screen Section from Buffer
     jp      screen_fill           ; C0D8 Fill Text or Color Screen Rectangle with Byte
     jp      just_ret              ; C0DB 
-    jp      just_ret              ; C0DE 
+    jp      screen_mode           ; C0DE Return current Text Screen 
     jp      just_ret              ; C0E1 
-; move to nybble.asm
-;   jp      swap_nybbles
-;   jp      swap_nybbles_de
 ; screen_swap.asm <<Text Screen Switch and Swap>>
     jp      init_screen_buffers   ; C0E4 
     jp      init_screen_vars      ; C0E7 

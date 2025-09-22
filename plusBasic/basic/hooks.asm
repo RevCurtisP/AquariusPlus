@@ -71,6 +71,7 @@ linker_hook:
 ;-----------------------------------------------------------------------------
 new_hook:
 	  call    page_set_plus
+    call    clear_run_args
 	  call    clear_all_errvars
 	  ld      c,0
 	  call    spritle_toggle_all    ; Disable all sprite

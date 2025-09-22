@@ -1,60 +1,6 @@
-;-----------------------------------------------------------------------------
-; basbuf.asm - Basic Buffers read/write and associated routines
-;-----------------------------------------------------------------------------
-
-;-----------------------------------------------------------------------------
-; Read byte from BASIC buffer
-; Input: DE = Address
-; Output: C = Byte
-;         DE = Coerced address + 1
-; Clobbered: A
-;-----------------------------------------------------------------------------
-basbuf_read_byte:
-    ld      a,BAS_BUFFR
-    call    page_read_byte
-    inc     de
-    ret
-
-;-----------------------------------------------------------------------------
-; Read bytes from BASIC buffer
-; Input: BC: Byte Count
-;        DE: Destination address
-;        HL: Source address (0-16383)
-; Output: DE: Address after last byte written to destination
-; Clobbered: AF,AF',BC,HL
-;-----------------------------------------------------------------------------
-basbuf_read_bytes:
-    ld      a,BAS_BUFFR
-    jp      page_fast_read_bytes
-
-;-----------------------------------------------------------------------------
-; Read word from BASIC buffer
-; Input: DE = Address
-; Output: BC = Word
-;         DE = Coerced address + 2
-; Clobbered: A
-;-----------------------------------------------------------------------------
-basbuf_read_word:
-    ld      a,BAS_BUFFR
-    call    page_read_word
-    inc     de
-    inc     de
-    ret
-
-;-----------------------------------------------------------------------------
-; Write bytes from BASIC buffer
-; Input: BC: Byte Count
-;        DE: Destination address (0-16383)
-;        HL: Source address
-; Output: DE: Coerced address after last byte written to destination
-; Clobbered: AF,AF',BC,HL
-;-----------------------------------------------------------------------------
-basbuf_write_bytes:
-    ld      a,b
-    or      c
-    ret     z
-    ld      a,BAS_BUFFR
-    jp      buffer_write_bytes
+;=====================================================================================
+; basbuf.asm - Routines that write to and read from page BAS_BUFFR
+;=====================================================================================
 
 ;-----------------------------------------------------------------------------
 ; Write string to Autokey buffer
@@ -68,32 +14,7 @@ autokey_write_buffer:
     ld      (RESPTR),de           ; Set autokey address pointer to buffer.
     inc     de                    ; DE = BufAdr
     call    basbuf_write_bytes    ; C = 0 when done
-;-----------------------------------------------------------------------------
-; Write byte to BASIC buffer
-; Input: C = Byte
-;        DE = Address
-; Output: DE = Coerced address + 2
-; Clobbered: A
-;-----------------------------------------------------------------------------
-basbuf_write_byte:
-    ld      a,BAS_BUFFR
-    call    buffer_write_byte
-    inc     de
-    ret
-
-;-----------------------------------------------------------------------------
-; Write word to BASIC buffer
-; Input: BC = Word
-;        DE = Address
-; Output: DE = Coerced address + 2
-; Clobbered: A
-;-----------------------------------------------------------------------------
-basbuf_write_word:
-    ld      a,BAS_BUFFR
-    call    buffer_write_word
-    inc     de
-    inc     de
-    ret
+    jp      basbuf_write_byte
 
 ;-----------------------------------------------------------------------------
 ; Write string to Function Key buffer
@@ -121,6 +42,7 @@ fnkey_write_buffer:
 ; Get RUN arguments count
 ; Output: A, BC = # of Arguments (excluding filespec)
 ;         DE = Byte after ArgCount in ArgsBuffer
+; Flags: Z if no arguments
 ; Clobbered: A
 ;----------------------------------------------------------------------------
 runarg_count:
@@ -132,7 +54,7 @@ runarg_count:
 ;----------------------------------------------------------------------------
 ; Get RUN argument
 ; Input: BC = Argument# (0 = filespec)
-;        HL = Destination address
+;        HL = Buffer Address
 ; Output: DE = Address of string terminator
 ; Flags: Carry set if illegal argument number
 ; Clobbered: AF,AF',BC,HL
@@ -144,14 +66,13 @@ runarg_get:
     pop     bc                    ; C = ArgNum; Stack = RtnAdr
     inc     bc                    ; Bump ArgNum for compare
     cp      c                     ; If ArgCnt < ArgNum
-    ret     c                     ;   and Return
-    ld      de,RUNARGS+2
+    ret     c                     ;   Return Carry Set
+.get_arg
     call    basbuf_read_word      ; BC = ArgLen, DE = ArgTxt
     push    bc                    ; Stack = ArgLen, TxtPtr, RtnAdr
-    ex      de,hl                 ; HL = ArgTxt, DE = StrBuf
+    ex      de,hl                 ; HL = ArgTxt, DE = BufAdt
     pop     bc                    ; BC = ArgLen; Stack = TxtPtr, RtnAdr
-    call    basbuf_read_bytes     ; Copy ARG to StrBuf
+    call    basbuf_read_bytes     ; Copy ARG to Buffer
     xor     a
     ld      (de),a                ; Terminate string
     ret
-

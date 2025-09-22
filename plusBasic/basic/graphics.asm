@@ -148,6 +148,7 @@ FN_GETCOLOR:
 ; SET COLOR statements
 ; SET COLOR foreground, background
 ;-----------------------------------------------------------------------------
+;;; ToDo: BUG FIX - Make PRRINT CHR$(11) do SET COLOR OFF
 ST_SETCOLOR:
     rst     CHRGET                ; Skip CHR
     SYNCHKT ORTK                  ; Require OR
@@ -155,20 +156,16 @@ ST_SETCOLOR:
     jr      z,.extended
     call    get_screen_colors
     ld      (SCOLOR),a
-;    ld      a,(BASYSCTL)
-;    or      a,BASCRNCLR
     ld      a,(SCREENCTL)
     or      SCRCOLOR
-    jr      .done
+    jr      write_screenctl_ret
 .extended
     rst     CHRGET                ; Skip XTOKEN
     SYNCHKT OFFTK                 ; Require OFF
-;    ld      a,(BASYSCTL)
-;    and     low(~BASCRNCLR)
+set_color_off:
     ld      a,(SCREENCTL)
     and     $FF-SCRCOLOR
-.done
-;    ld      (BASYSCTL),a
+write_screenctl_ret:
     ld      (SCREENCTL),a
     ret
 
@@ -897,6 +894,7 @@ ST_DEF_RGB:
     rst     CHRGET                ; Skip RGB
     call    _setupdef             ; Stack = DatLen, BufPtr, VarPtr
 .loop
+    or      a                     ; Carry Clear = No `string$,del`
     call    _get_rgb              ; DE = RGB value
     call    _write_word_strbuf    ; Write RGB to String Buffer
     call    CHRGT2                ; Reget next character
@@ -1342,6 +1340,8 @@ FN_GETSPRITE:
 ; PRINT RGB("12")
 ; PRINT RGB("123")
 ; PRINT RGB("1234")
+; PRINT RGB("16,32,48",",")
+; PRINT HEX$(RGB$("16,32,48",","))
 ;;; ToDo: RGB$(string$,delimiter) "red,green,blue"
 FN_RGB:
     inc     hl                    ; Skip RGB
@@ -1354,11 +1354,11 @@ FN_RGB:
     push    af                    ; Stack = '$', RtnAdr
     call    z,CHRGTR              ; If $, skip it
     SYNCHKC '('                   ; Require Open Paren
+    scf                           ; Carry Set = Allow `string$`,del`
     call    _get_rgb              ; DE = RGB value
     SYNCHKC ')'                   ; Require Close Paren
     pop     af                    ; A = '$'; Stack = RrnAdr
     push    hl                    ; Stack = TxtPtr, RtnAdr
-
     jr      z,.string             ; If not RGB$()
     ld      bc,LABBCK
     push    bc                    ;   Push return address for FLOAT_DE
@@ -1376,9 +1376,26 @@ FN_RGB:
 
 ; Parse RGB triplet, returns DE = RGB integer
 _get_rgb:
+    push    af                    ; Stack = FnFlag, RtnAdr
     call    FRMTYP                ; Parse first argument
-    ld      iy,bas_rgb_string
-    jr      z,.dorgb              ; If numeric
+    pop     bc                    ; C = FnFlag; Stack = RtnAdr
+    jr      nz,.numeric           ; If String
+    push    bc                    ;   Stack = FnFlag, RtnAdr
+    pop     af                    ;   F = FnFlag; Stack = RtnAdr
+    jr      nc,.no_del            ;   If Carry sET
+    ld      a,(hl)                
+    cp      ','
+    jr      nz,.no_del            ;   and comma
+    ld      de,(FACLO)            ;     DE = RgbDsc
+    push    de                    ;     Stack = RgbDsc, RtnAd
+    call    skip_get_char         ;     A, C = DelChr
+    pop     de                    ;     DE = RgbDsc
+    ld      iy,bas_rgb_from_dec   ;     Do RGB$(string$,delimiter)
+    jr      .dorgb                ;   Else
+.no_del
+    ld      iy,bas_rgb_string     ;     Do RGB$(string$)
+    jr      .dorgb                ; Else
+.numeric
     call    con_byte16            ;   Convert to Red
     push    af                    ;   Stack = Red, RtnAdr
     call    get_comma_byte16      ;   Get Green

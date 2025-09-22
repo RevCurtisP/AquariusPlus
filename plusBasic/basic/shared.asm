@@ -547,6 +547,25 @@ get_byte2:
     jp      nc,FCERR              ;   FC Error
     ret
 
+get_comma_byte_capped:
+    call    get_comma
+skip_get_byte_capped:
+    rst     CHRGET
+;-----------------------------------------------------------------------------
+; Parse Byte between 0 - 3
+; Input: C = Value Cap
+;       HL = Text Pointer
+; Output: A,DE = Byte Value
+; Clobbers: A
+;-----------------------------------------------------------------------------
+get_byte_capped:
+    push    bc                    ; Stack = ValCap, RtnAdr
+    call    GETBYT                ; get foreground color in e
+    pop     bc                    ; C = ValCap, C = MaxVal
+    cp      c                     ; if > 15
+    jp      nc,FCERR              ;   FC Error
+    ret
+
 skip_get_byte4:
     rst     CHRGET
 ;-----------------------------------------------------------------------------
@@ -613,7 +632,6 @@ get_byte200:
     cp      200                   ; if > 1200
     jp      nc,FCERR              ;   FC Error
     ret
-
 
 ;-----------------------------------------------------------------------------
 ; Parse CHR character

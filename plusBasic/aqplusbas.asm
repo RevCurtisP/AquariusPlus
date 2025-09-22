@@ -41,7 +41,7 @@
     jp      _main_ctrl_c    ; $202A MAINCC Handle Ctrl-c in MAIN
     jp      _finish_input   ; $202D FININX C/R in INPUT patch
     jp      _scan_label     ; $2030 SCNLBL Scan line label or line number
-    jp      _tty_finish     ; $2033 TTYFIN Display cursor
+    jp      just_ret        ; $2033
     jp      just_ret        ; $2036
     jp      _then_hook      ; $2039 THENHK *Not Implemented* Check for ELSE after IF ... THEN
     jp      just_ret        ; $203C 
@@ -134,7 +134,7 @@ null_desc:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.27g"
+    db "v0.27h"
     db 0
 plusver_len equ $ - plus_version
 plus_len   equ   $ - plus_text
@@ -768,6 +768,10 @@ _scroll_hook:
 ;-----------------------------------------------------------------------------
     include "util.asm"
 
+;-----------------------------------------------------------------------------
+; BASIC Buffer routines
+;-----------------------------------------------------------------------------
+    include "buffer.asm"
 
 ;-----------------------------------------------------------------------------
 ; Wait for Key Press
@@ -858,9 +862,17 @@ sys_swap_mem:
     jp      sys_swap_mem
 
 ;-----------------------------------------------------------------------------
+; TTYCLR Hook
+;-----------------------------------------------------------------------------
+tty_clear:
+    call    set_color_off         ; Turn off color printing
+    xor     a                     ; Return Column = 0
+    jp      TTYFIS                ; Save and Finish
+
+;-----------------------------------------------------------------------------
 ; TTYFIN hook
 ;-----------------------------------------------------------------------------
-_tty_finish:
+tty_finish:
     ld      (CURCHR),a            ; Save character under cursor
     ld      a,(SCREENCTL)
     and     CRSR_OFF
@@ -1120,44 +1132,6 @@ _check_comment:
 .rem
     rst     CHRGET                ; Skip '
     jp      REM                   ;   and do REM
-
-;-----------------------------------------------------------------------------
-; Internal routines to write to BASIC buffers
-;-----------------------------------------------------------------------------
-buffer_write_byte:
-    call    _buffer_write_init
-    ld      a,c
-    ld      (de),a                ; Write the byte
-    inc     de
-    jr      _buffer_write_done
-
-buffer_write_word:
-    call    _buffer_write_init
-    ld      a,c
-    ld      (de),a
-    inc     de
-    ld      a,b
-    ld      (de),a
-    inc     de
-    jr      _buffer_write_done
-
-buffer_write_bytes:
-    call    _buffer_write_init
-    ldir
-_buffer_write_done:
-    ex      af,af'                ; A = OldPg
-    out     (IO_BANK3),a          ; Map old Page
-    ret
-
-_buffer_write_init:
-    ex      af,af'                ; A' = WritePg
-    in      a,(IO_BANK3)          ; A' = OldPg
-    ex      af,af'                ; A = WritePg, A' = OldPg
-    out     (IO_BANK3),a          ; Map WritePg into Bank 3
-    ld      a,d                   ; Coerce Address
-    or      $C0
-    ld      d,a
-    ret
 
 ;-----------------------------------------------------------------------------
 ; SysROM File Name

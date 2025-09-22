@@ -209,8 +209,10 @@ page_mem_swap_bytes:
 ;       BC: Byte Count
 ;       DE: Destination address (0-16383)
 ;       HL: Source Address (0-16383)
-; Output: Zero Set if either page is not valid
-;         Carry Set if Overflow
+; Output: DE: Next Destination address (coerced)
+;         HL: Next Sourxe addrrss (coerced)
+; Flags: Zero Set if either page is not valid
+;       Carry Set if Overflow
 ; Clobbers: A,BC,DE,HL,AF',HL',IX
 ;-----------------------------------------------------------------------------
 page_copy_bytes:
@@ -235,6 +237,8 @@ page_copy_bytes_sys:
     ld      (de),a
     jr      .loop
 .done
+    inc     de                    ; Bump DstAdr
+    inc     hl                    ; Bump SrcAdr
     xor     a                     ; Clear Carry Flag
     inc     a                     ; Clear Zero Flag
 .over

@@ -1,5 +1,11 @@
 # plusBASIC Release History
 <!--ToDo: Add entries between v0.18x and v0.13h-->
+  - v0.27h (2025-09-21)
+    - Printing `CHR$(11)` now disables color printing mode.
+    - Moved _buffer_read_ and _buffer_write_ routines from `aqplusbas.asm` to new file `buffer.asm`
+    - Moved _basbuf_read_ and _basbuf_write_ routines from `basbuf.asm` to 0`buffer.asm`
+    - `NEW` and `LOAD` basic progran clear run arguments returned by `ARGS` and `ARGS$`
+    - Added parsing of delimited decimal RGB string to `RGB()` and `RGB$`
   - v0.27g (2025-09-12)
     - `SAVE SCREEN` _file_save_screen_ now defaults to writing only Screen RAM and Color RAM.
     - Added trailing options `PALETTE` and `BORDERMAP` to `SAVE SCREEN` and write options parameter to _file_save_screen_

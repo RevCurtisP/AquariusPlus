@@ -40,6 +40,23 @@ bas_reset_sprite:
     pop     hl
     ret
 
+; Jumped to from FN_RGB when argument is `string, delimiter`
+; One entry A, C = DelChr, DE = StrDsc, HL = TxtPtr
+; Returns: BC = RGB
+bas_rgb_from_dec:
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    push    af                    ; Stack = DelChr, TxtPtr, RtnAdr
+    call    FRETMP                ; HL = StrDsc`
+    call    string_addr_len       ; DE = StrAdr, BC = StrLen
+    ex      de,hl                 ; HL = StrDsc
+    pop     af                    ; A = DelChr
+    call    dec_to_rgb            ; BC = RGB
+    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
+    jp      c,FCERR
+    ld      d,b
+    ld      e,c                   ; DE = RGB
+    ret
+
 ; Jumped to from FN_RGB when argument is a string
 bas_rgb_string:
     push    hl                    ; Stack = TxtPtr, RtnAdr
@@ -79,18 +96,6 @@ bas_make_rgb:
     or      e                     ; A = Green + Blue
     ld      e,a                   ; E = Green + Blue
     ld      d,b                   ; D = Red
-    ret
-
-;;; ToDo: hook this to RGB$("string",delimiter)
-.rgb_string
-    push    hl                    ; Stack = TxtPtr, RtnAdr
-    call    bytes_to_fbuffr       ; Copy String to FBUFFR
-    jp      c,SLERR               ; Error if string too long
-    call    dec_to_rgb            ; BC = RGB
-    pop     hl                    ; HL = TxtPtr, Stack = RtnAdr
-    jp      c,FCERR               ; Error if not "rrr ggg bbb"
-    ld      d,b
-    ld      e,c                   ; Return RGB in DE
     ret
     
 _get_nybble:

@@ -114,7 +114,6 @@ MAINCC  equ     $202A   ;; + Handle Ctrl-C in direct mode
 FININX  equ     $202D   ;; + Finish INPUT
 ;;plusBASIC specific hooks
 SCNLBL  equ     $2030   ;; | Scan line label or line number
-TTYFIX  equ     $2033   ;; | TTYFIN Extension
 THENHK  equ     $2039   ;; | Scan for ELSE after IF THEN
 XERROR  equ     $203C   ;; | Restore Stack, Display Error, and Stop Program
 XMAIN   equ     $203F   ;; | Line Crunch Hook
@@ -5206,7 +5205,7 @@ NOBS:   ld      (hl),' '          ;;Erase Character at Position
 TTYFIS: call    TTYSAV            ;;Save Column and Position
 TTYFIN: ld      hl,(CURRAM)       ;
         ld      a,(hl)            ;;Get character at position
-        jp      TTYFIX            ;; +                                        1DEA  ld      (CURCHR),a
+        jp      tty_finish        ;; +                                        1DEA  ld      (CURCHR),a
                                   ;;                                          1DEB
                                   ;;                                          1DEC
 TTYFID: ld      (hl),$7F          ;Display Cursor
@@ -5270,8 +5269,8 @@ TTYCLR: ld      b,' '             ;
 CLSCLR: ld      b,6               ;;Black on Light Cyan
         call    FILLIT            ;;Write to Color RAM
         ld      hl,SCREEN+41      ;;Home Cursor
-        xor     a                 ;;Column = 0
-        jp      TTYFIS            ;;Save and Finish
+        xor     a                 ;;Column = 0                                
+        jp      tty_clear         ;;Save and Finish
 ;;Fill 1024 bytes atarting at HL with A
 ;;;Code Change - Fill all 1024 bytes
 FILLIT: ld      de,$400           ;;Count down from 1023

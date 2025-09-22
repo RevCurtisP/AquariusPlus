@@ -323,67 +323,96 @@ hex_to_nybble:
 
 ;-----------------------------------------------------------------------------
 ; Convert decimal "rrr ggg bbb" to binary GB0R
-; Input: HL: ASCII Buffer Address
+; Input: A: Delimiter character
+;        C: String Length
+;       DE: String address
 ; Output: BC: RGB value
+;         HL: String Pointer
 ; Flags: Carry set if invalid line
-; Clobbered: A
+; Clobbered: A, DE
 ;-----------------------------------------------------------------------------
 dec_to_rgb:
+    ld      d,a                   ; D = Delimiter
+    ld      e,c                   ; E = StrLen
+    ld      bc,0                  ; RGB = $00
+    push    bc                    ; Stack = RGB, RtnAdr
     call    dec_to_byte           ; A = Red
-    ret     c                     ; Return if no red
+    pop     bc                    ; BC = RGB, Stack = RtnAdr
+    ret     c                     ; Return Error if no red
     call    div_a_16              ; Red = Red / 16
     ld      b,a                   ; B = Red 
-    push    bc
+    call    _check_delimiter      ; If no Delimiter
+    ret     c                     ;   Return Error
+    push    bc                    ; Stack = RGB, RtnAdr
     call    dec_to_byte           ; A = Green
-    pop     bc
+    pop     bc                    ; BC = RGB, Stack = RtnAdr
     ret     c                     ; Return if no blue
-    and     $F0                   ; Green = Green / 16
+    and     $F0                   ; Green = Green / 16 (MSB)
     ld      c,a                   ; C = Green
-    push    bc
+    call    _check_delimiter      ; If no Delimiter
+    ret     c                     ;   Return Error
+    push    bc                    ; Stack = RGB, RtnAdr
     call    dec_to_byte           ; A = Blue
-    pop     bc
+    pop     bc                    ; BC = RGB, Stack = RtnAdr
     ret     c                     ; Return if no green
     call    div_a_16              ; Blue = Blue / 16
     or      c                     ; A = Green + Blue
-    ld      c,a                   ; A = Green + Blue
+    ld      c,a                   ; C = Green + Blue
     ret     
 
-; Input: HL: TxtPtr
-; Output: A: Byte
+; Input: D = DelChr
+;        E = StrCnt
+;       HL = StrPtr
+; Output: HL = StrPtr
+; Flags: Carry set if not delimiter
+_check_delimiter:
+    ld      a,e                   ; A = StrCnt
+    or      a                     ; If End of String
+    jr      z,_scf                ;   Return Error
+    ld      a,(hl)                ; A = CurChr
+    inc     hl                    ; Bump StrPtr (even if not DelChr)
+    dec     e                     ; Decrement StrCnt
+    cp      d                     ; If CurChr = DelChr
+    ret     z                     ;   Return Carry Clear (from CP D)
+_scf
+    scf                           ; Return Carry Set
+    ret     
+
+; Input: E: StrCnt
+;        HL: StrPtr
+; Output: A, C: Byte
+;         E:StrCnt
+;        HL: StrPtr
 ; Flags: Carry set if not number
 ;   else Zero set if end of line
 ; Clobbers: BC
 dec_to_byte:
+    ld      a,e                   ; A = StrCnt
+    or      a                     ; If StrCnt = 0
+    jr      z,_scf                ;   Return error
     ld      c,0
     call    get_dec_digit         ; A = Digit
     ret     c                     ; Return if not digit
-    ld      c,a
+    ld      c,a                   ; Byte = 0
 .loop
     call    get_dec_digit         ; A = Digit
-    jr      c,.skip               ; Return if not digit
+    jr      c,.done               ; If not digit
+    push    af                    ;   Stack = EolFlg, RtnAdr
     call    mult_c_10
     add     a,c                   ; Byte = Byte * 10 + Digit
     ret     c                     ; Return if overflow
     ld      c,a
-    jr      .loop
-.skip
-    ld      a,(hl)                ; A = NxtChr
-    inc     hl                    ; Bump TxtPtr
-    or      a                     ; If NxtChr = NUL
-    jr      z,.done               ;   Return EOL
-    cp      '0'                   ; If NxtChr < '0'
-    jr      c,.skip               ;   Loop
-    cp      ':'                   ; If NxtChr > '9'
-    jr      nc,.skip              ;   Loop
-    dec     hl                    ; Back up to LstChr
-    or      a                     ; Clear Carry
+    pop     af                    ; F = EolFlg; Stack = RtnAdr
+    jr      nz,.loop              ; If not EOL, check next character
 .done
     ld      a,c                   ; Return Byte
+    or      a                     ; Carry Clear = Valid Byte
     ret
 
 ; Input: HL: TxtPtr
 ; Output: A: Byte
-; Flags: Carry set if not digit
+; Flags: Carry set if not digit;
+;        Zero set if end of string
 get_dec_digit:
     ld      a,(hl)                ; A = TxtChr
     sub     '0'                   ; A = Digit
@@ -392,8 +421,8 @@ get_dec_digit:
     ccf                           ; If Digit > 9
     ret     c                     ;   Return not digit
     inc     hl                    ; Bump Pointer
+    dec     e
     ret
-
 div_a_16:
     sra     a                     ; A = A / 2
 div_a_8:

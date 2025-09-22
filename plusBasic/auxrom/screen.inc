@@ -5,6 +5,15 @@
 ;=====================================================================================
 
 ;-----------------------------------------------------------------------------
+; SAVE SCREEN and LOAD SCREEN argument and option flags
+;-----------------------------------------------------------------------------
+SCRN_SCRNUM equ $03     ; Screen number 1 - 3 (0 = Current)
+SCRN_ISSWAP equ $04     ; Use swap buffer if set
+SCRN_BRDMAP equ $40     ; Append border map flag
+SCRN_PALLTE equ $80     ; Append palette
+
+
+;-----------------------------------------------------------------------------
 ; Screen Data Buffers
 ; Offsets into Page SCR_BUFFR
 ;-----------------------------------------------------------------------------

@@ -513,6 +513,7 @@ ST_LOAD:
     jp      _pop_hl_doserror
 
 .basic
+    call    clear_run_args        ; Clear ARGS and ARGS$()
     ex      (sp),hl               ; HL = String Descriptor, Stack = Text Pointer
     jp      load_basic_program
 
@@ -945,11 +946,13 @@ _do_colormap:
 ;  80 column: 2048 byte Screen RAM + 2048 byte Color RAM {+ 32 byte palette} {+ 1 byte border flag}
 ;-----------------------------------------------------------------------------
 ;; ToDo: Add SAVE/LOAD SCREEN CHR/ATTR
-; CD /temp/scrn
+; CD /u/tmp/scrn
 ; SAVE SCREEN "screen-only.scrn"
 ; SAVE SCREEN "screen+palt.scrn",PALETTE
 ; SAVE SCREEN "screen+bmap.scrn",BORDERMAP
 ; SAVE SCREEN "screen+both.scrn",PALETTE,BORDERMAP
+; SAVE SCREEN #2,"screen2.scrn"
+; SAVE SCREEN #7,"screen7.scrn"
 ; LOAD SCREEN ATTR "/au/assets/rect80.sclr"
 ; SCREEN 1:SAVE SCREEN "/t/test41.scrn"
 ; SCREEN 2:SAVE SCREEN "/t/test42.scrn"
@@ -972,24 +975,37 @@ _load_screen:
     jp      z,GSERR
     ld      de,file_load_color    ; DE = AuxAdr
     dec     b                     ; ATTR
-    jr      z,_screen_strdesc
+    jr      z,_cur_scrn
     ld      de,file_load_screen   ; DE = AuxAdr
     byte    $0E                   ; LD C, over CHRGET; C = $D7 (Load)
 _screen:
     rst     CHRGET                ; Skip SCREEN
-_screen_strdesc:
-    call    get_strdesc_arg       ; HL = FilDsc; Stack = TxtPtr
-    xor     a
+_screen_args:
+    push    de                    ; Stack = AuxAdr, RtnAdr
+    push    bc                    ; Stack = IsLoad, AuxAdr, RtnAdr
+    cp      a,'#'                 ; 
+    ld      e,0                   ; ScrnNum = 0 (Current Screen)
+    jr      nz,_cur_scrn          ; If CurChr is #
+    ld      c,8                   ;   Limit byte to 0 - 7
+    call    skip_get_byte_capped  ;   E = IsSwap + ScrnNum
+    call    get_comma             ;   MOERR if no comma
+_cur_scrn
+    ld      a,e                   ; A = ScrnArgs
+    push    af                    ; Stack = ScrnArgs, IsLoad, AuxAdr, RtnAdr
+    call    get_strdesc_arg       ; HL = FilDsc; Stack = TxtPtr, ScrnArgs, IsLoad, AuxAdr, RtnAdr
+    pop     de                    ; DE = TxtPtr; Stack = ScrnArgs, IsLoad, AuxAdr, RtnAdr
+    pop     af                    ; A = ScrnArgs; Stack = IsLoad, AuxAdr, RtnAdr
+    pop     bc                    ; C = IsLoad; Stack = AuxAdr, RtnAdr
+    ex      de,hl                 ; DE = FilDsc, HL = TxtPtr
     sla     c                     ; Set Carry if Loading
     jr      c,_screen_aux_call    ; If Saving
-    ex      (sp),hl               ;   HL = TxtPtr; Stack = StrDsc
     ld      iy,bas_save_screen_opts
-    call    aux_call              ;   Parse PALETTE and/or BORDERMAP
-    ex      (sp),hl               ;   HL = StrDsc; Stack = TxtPtr
+    call    aux_call              ;   A = ScreenArgs+SaveOpts
 _screen_aux_call:
-    push    de                    ; Stack = AuxAdr, TxtPtr
-    pop     iy                    ; IY = AuxAdr; Stack = TxtPtr
-    jr      _aux_call_bdf
+    pop     iy                    ; IY = AuxAdr; Stack = RtnAdr
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    ex      de,hl                 ; HL = FilDsc
+    jr      _aux_call_bdf         ; Do LOAD/SAVE
 
 skip_strdesc_auxcall:
     rst     CHRGET                ; Skip SCREEN

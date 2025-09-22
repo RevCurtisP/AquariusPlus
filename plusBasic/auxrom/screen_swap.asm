@@ -639,12 +639,36 @@ screen_read_tmpbfr:
 
 ;-----------------------------------------------------------------------------
 ; Copy Screen, Palette, and IO_VCTRL to TMP_BUFFR
-; Input: A = Write Options (Bit 7 - Palette, Bit 6 - Border)
+; Input: A = WriteOptBits (7 = Palette, 6 = Border, 2 = Swap, 0-1 = Screen#)
 ; Output: BC = Length of copied data
 ; Clobbers: AF, AF', DE, HL
 ;-----------------------------------------------------------------------------
 screen_write_tmpbfr:
     ld      d,a                   ; D = WrtOpt
+    and     7
+    ld      e,a                   ; E = Swap+Scrn
+    jr      z,_scrn_write_tmpbfr  ; If not writing active screen
+    call    screen_mode           ;   A = ScrnMode
+    cp      e                     ;   
+    jr      z,_scrn_write_tmpbfr  ;   If not writing current screen
+    call    calc_buff_ofs         ;     HL = ScrnBuffOfs
+    call    calc_screen_len       ;     BC = ScrnLen
+    ld      e,a                   ;     E = VarBufOfs
+    push    de                    ;     Stack = WrtOpt+VarBufOfs, RtnAdr
+    ld      de,0                  ;     DE = TmpBufOfs
+    ld      a,SCR_BUFFR           ;      Copying from Screen Buffer
+    ex      af,af'                
+    ld      a,TMP_BUFFR           ;     to TempBuffer 
+    call    page_copy_bytes_sys   ;     Copy Screen Data to TempBuffer
+    pop     bc                    ; B = WtrI
+
+
+    ld      a,d
+    and     $3F
+    ld      b,a
+    ld      c,e                   ;     BC = WriteLen
+    ret
+_scrn_write_tmpbfr:
     call    page_map_tmpbfr       ; Bank 1 = TempBuffer. AF, Af', IX clobbered
     in      a,(IO_VCTRL)
     push    af                    ; Stack = IO_VCTRL, RtnAdr
@@ -695,6 +719,34 @@ screen_write_tmpbfr:
     ld      bc,2048
     ldir
     ret
+
+; Input: E: Swap+Scrn; Output: H: VarOfs, HL: BufAdr; Clobbers: A
+calc_buff_ofs:
+    ld      a,e
+    and     3
+    dec     a                     ; $00, $01, or $02
+    rla                           ; $00, $02, or $04
+    rla                           ; $00, $04, ot $08
+    rla                           ; $00, $08, ot $10
+    ld      h,a
+    ld      l,0                   ; HL = $0000, $0800, or $10000
+    ld      a,e
+    and     4                     ; If not Swap
+    ret     z                     ;   Return
+    ld      a,$20
+    add     h                     ; $20, $28, or $30
+    ld      h,a                   ; HL = $2000, $2800, or $3000
+    ret                           
+
+; Input: E: Swap+Scrn; Output: DE: ScrnLen; Clobbers: A
+calc_screen_len:
+    ld      bc,$0800               ; ScrnLen = 2048 (40 column)
+    ld      a,e
+    and     3                     ; A = Screen#
+    cp      3                     ; If Screen# <> 3
+    ret     nz                    ;   Return 2048
+    ld      b,$10                 ; Else
+    ret                           ;   Return 4096
 
 ; Input: DE = Variable buffer address
 ; Output: HL = Palette buffer address, B = 32, C = 0

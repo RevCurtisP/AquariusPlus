@@ -300,8 +300,8 @@ plusBASIC Quick Reference Guide
  - [ ] **RESTORE BITMAP|TILEMAP** - _Not implemented._
  - [ ] **RESTORE SCREEN** - Copy respective screen buffer to current text screen.
  - [ ] **RETURN {_expression_{,...}}** - Resume program execution after GOSUB, optionally returning results.<!--flow-->
- - [x] **RGB(_r_,_g_,_b_|_rgbstr_)** - Return integer representing a single palette entry.<!--palette-->
- - [x] **RGB$(_r_,_g_,_b_|_rgbstr_)** - Return string representing a single palette entry.<!--palette-->
+ - [-] **RGB(«_r_,_g_,_b_»|«_rgbstr_»|«_string_,_delimiter_»)** - Return integer representing a single palette entry.<!--palette-->
+ - [-] **RGB$(«_r_,_g_,_b_»|«_rgbstr_»|«_string_,_delimiter_»)** - Return string representing a single palette entry.<!--palette-->
  - [ ] **RGBDEC$(_string_{,_char_})** - Convert binary RGB value to decimal red,green, and blue.<!--palette-->
  - [ ] **RGBHEX$(_string_{,_char_})** - Convert binary RGB value to decimal red,green, and blue.<!--palette-->
  - [x] **RIGHT$(_string_,_len_)** - Return the last up to _byte_ characters of string.<!--string-->

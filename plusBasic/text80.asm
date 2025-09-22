@@ -184,12 +184,7 @@ scroll80:
     ret
 
 _ttyclr:
-    ld      a,(SCREENCTL)         ; 
-    rla                           ; Carry = SCRCOLOR
-    jr      nc,.default
-    ld      a,(SCOLOR)            ;   A = Screen Colors
-    byte    $01                   ; Else
-.default
+    call    set_color_off         ; Turn off color printing
     ld      a,6                   ;   A = Default Colors
     call    cls80                 ; Clear Screen
     ld      de,$7F                ; Display Cursor

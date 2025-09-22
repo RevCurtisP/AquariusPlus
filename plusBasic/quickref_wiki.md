@@ -300,8 +300,8 @@ plusBASIC Quick Reference Guide
  - **RESTORE BITMAP|TILEMAP** - _Not implemented._
  - **RESTORE SCREEN** - Copy respective screen buffer to current text screen.
  - **[RETURN {_expression_{,...}}](BASIC-Flow-Control-Statements#return)** - Resume program execution after GOSUB, optionally returning results.
- - **[RGB(_r_,_g_,_b_|_rgbstr_)](BASIC-Palette-Statements-and-Functions#rgb)** - Return integer representing a single palette entry.
- - **[RGB$(_r_,_g_,_b_|_rgbstr_)](BASIC-Palette-Statements-and-Functions#rgb-1)** - Return string representing a single palette entry.
+ - **[RGB(«_r_,_g_,_b_»|«_rgbstr_»|«_string_,_delimiter_»)](BASIC-Palette-Statements-and-Functions#rgb)** - Return integer representing a single palette entry.
+ - **[RGB$(«_r_,_g_,_b_»|«_rgbstr_»|«_string_,_delimiter_»)](BASIC-Palette-Statements-and-Functions#rgb-1)** - Return string representing a single palette entry.
  - **[RGBDEC$(_string_{,_char_})](BASIC-Palette-Statements-and-Functions#rgbdec)** - Convert binary RGB value to decimal red,green, and blue.
  - **[RGBHEX$(_string_{,_char_})](BASIC-Palette-Statements-and-Functions#rgbhex)** - Convert binary RGB value to decimal red,green, and blue.
  - **[RIGHT$(_string_,_len_)](BASIC-String-Functions#right)** - Return the last up to _byte_ characters of string.

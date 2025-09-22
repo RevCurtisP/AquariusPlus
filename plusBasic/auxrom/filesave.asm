@@ -148,13 +148,20 @@ file_save_string:
 
 ;-----------------------------------------------------------------------------
 ; Save screen image
-; Input: A: Save Options: Bit7: Write Palette, Bit6: Write Bprder Remap flag
+; Input: A: Save Options
 ;       HL: String descriptor address
 ; Output: A: result code
 ; Flags Set: S if I/O error
 ; Clobbered: CD, DE, EF
+;
+; Save Options
+; | Bit | Description                 |
+; | :-: | :-------------------------- |
+; | 0-1 | Screen Number (0 = Current) |
+; |  2  | Use Swap Buffer if Set      |
+; |  6  | Save BordermMap flag        |
+; |  7  | Save Palette                |
 ;-----------------------------------------------------------------------------
-; ToDo: Allow saving from a screen buffer
 file_save_screen:
     push    hl                    ; Stack = StrDsc, RtnAdr
     ld      iy,screen_write_tmpbfr

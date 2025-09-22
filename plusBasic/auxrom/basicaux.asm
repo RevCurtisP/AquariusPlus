@@ -710,18 +710,20 @@ bas_write_string:
 
 
 ; Called from SAVE SCREEN
-; On entry: HL = TxtPtr
-; Returns: A = SaveOpts
-; Clobbers: C
+; On entry: A = SaveArgs
+;          HL = TxtPtr
+; Returns: A = SaveArgs + SaveOpts
+; Clobbers: B
 bas_save_screen_opts:
-    ld      c,0                   ; C = NoOpts
+    ex      af,af'                ; A' = SaveArgs
+    ld      b,0                   ; C = NoOpts
     call    CHRGT2                ; A = CurChr
     jr      z,.done               ; If not terminator
     SYNCHKC ','                   ;   Require comma
     SYNCHKT XTOKEN                ;   Require extended tokeb
     cp      PALETK         
     jr      nz,.not_palette       ;   If PALETTE
-    set     7,c                   ;     Set WritePalette bit
+    set     7,b                   ;     Set WritePalette bit
     rst     CHRGET                ;     A = NxtChr
     jr      z,.done               ;     If terminator, finish up
     SYNCHKC ','                   ;     Require comma
@@ -729,7 +731,8 @@ bas_save_screen_opts:
 .not_palette
     SYNCHKT BORDTK                ;   Require BORDERMAP
     SYNCHKT MAPTK
-    set     6,c                   ;   Set WriteBorderRemap bit
+    set     6,b                   ;   Set WriteBorderRemap bit
 .done
-    ld      a,c                   ; A = SaveOpts
+    ex      af,af'                ; A = SaveArgs
+    or      b                     ; A = SaveArgs + SaveOpts
     ret

@@ -17,6 +17,8 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
     <h1 id="plusbasic-release-history">plusBASIC Release History</h1>
     <!--ToDo: Add entries between v0.18x and v0.13h-->
     <ul>
+      <li>v0.27h (2025-09-21)
+<ul><li>Printing <code>CHR$(11)</code> now disables color printing mode.</li><li>Moved <em>buffer_read</em> and <em>buffer_write</em> routines from <code>aqplusbas.asm</code> to new file <code>buffer.asm</code></li><li>Moved <em>basbuf_read</em> and <em>basbuf_write</em> routines from <code>basbuf.asm</code> to 0<code>buffer.asm</code></li><li><code>NEW</code> and <code>LOAD</code> basic progran clear run arguments returned by <code>ARGS</code> and <code>ARGS$</code></li><li>Added parsing of delimited decimal RGB string to <code>RGB()</code> and <code>RGB$</code></li></ul></li>
       <li>v0.27g (2025-09-12)
 <ul><li><code>SAVE SCREEN</code><em>file_save_screen</em> now defaults to writing only Screen RAM and Color RAM.</li><li>Added trailing options <code>PALETTE</code> and <code>BORDERMAP</code> to <code>SAVE SCREEN</code> and write options parameter to <em>file_save_screen</em></li><li>Remap border byte is now written as either <code>$00</code> or <code>$FF</code></li><li>Add unit tests to <em>ss.bas</em></li></ul></li>
       <li>v0.27f (2025-09-09)
@@ -316,7 +318,8 @@ v0.22v (2024-05-19)</li>
       <li></li>
       <li></li>
       <li></li>
-      <li></li>
+      <li>v0.18f (2023-11-14)
+<ul><li>Added SET COLOR statement, printing and scrolling color text</li></ul></li>
       <li></li>
       <li></li>
       <li></li>

@@ -14,8 +14,15 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         </style>
   </head>
   <body>
-    <p>Quick Reference Guide</p>
+    <p>plusBASIC Quick Reference Guide</p>
     <!-- Do not edit this page. Contents are copied from file quickref_wiki.md which is generated from README.md-->
+    <!-- Check Box key
+  [ ] - Either not documented, or documented but not linked
+  [.] - Stub has been added to documentation
+  [-] - Incomplete entry in documentation
+  [x] - Documentation is complete 
+  [!] - Bug fix required in plusBASIC
+-->
     <h2 id="literals">Literals</h2>
     <ul>
       <li>
@@ -44,7 +51,8 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
       <li>
         <em>Relational operations</em> return -1 if true, 0 if false.<!--operators.relational--><ul class="contains-task-list"><li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /><strong><em>expression</em> &gt; <em>expression</em></strong> - True if first expression is greater than second expression.</li><li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /><strong><em>expression</em> = <em>expression</em></strong> - True if first expression is equal second expression.</li><li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /><strong><em>expression</em> &lt; <em>expression</em></strong> - True if first expression is less than second expression.</li><li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /><strong><em>expression</em> &gt;= <em>expression</em></strong> - True if first expression is greater than or equal to second expression.</li><li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /><strong><em>expression</em> &lt;= <em>expression</em></strong> - True if first expression is less than or equal to second expression.</li></ul></li>
       <li>
-        <em>Logical operators</em> perform the corresponding boolean operation on the bits of the each integer expression.<!--operators.logical--><ul class="contains-task-list"><li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /><strong>NOT <em>integer</em></strong> - Sets resulting bit to 1 if the operand bit is 0.</li><li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /><strong><em>integer</em> AND <em>integer</em></strong> - Sets resulting bit to 1 if both operand bits are 1.</li><li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /><strong><em>integer</em> OR <em>integer</em></strong> - Sets the resulting bit to 1 if either operand bit is 1.</li><li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /><strong><em>integer</em> XOR <em>integer</em></strong> - Sets resulting bit to 1 if one operand bits is 1, and the other is 0.</li></ul></li>
+        <em>Logical operators</em> perform the corresponding boolean operation on the bits of the each integer expression.
+<ul class="contains-task-list"><li>[-] <strong>NOT <em>integer</em></strong> - Sets resulting bit to 1 if the operand bit is 0.<!--logical:NOT--></li><li>[-] <strong><em>integer</em> AND <em>integer</em></strong> - Sets resulting bit to 1 if both operand bits are 1.<!--logical:AND--></li><li>[-] <strong><em>integer</em> OR <em>integer</em></strong> - Sets the resulting bit to 1 if either operand bit is 1.<!--logical:OR--></li><li class="task-list-item"><input disabled="disabled" type="checkbox" /><strong><em>integer</em> XOR <em>integer</em></strong> - Sets resulting bit to 1 if one operand bits is 1, and the other is 0.</li></ul></li>
       <li>
         <em>String operators</em> create new temporary string.<!--operators.string--><ul class="contains-task-list"><li class="task-list-item"><input disabled="disabled" type="checkbox" /><strong><em>string</em> + <em>string</em></strong> - Concatenates second string to the end of first string.</li><li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /><strong><em>string</em> %% (<em>expression</em>{,...})</strong> - Perform string substitution.</li></ul></li>
     </ul>
@@ -68,15 +76,11 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" checked="checked" />
         <strong>APPEND <em>filespec</em>,<em>address</em>,<em>length</em></strong> - Append memory to binary file.<!--SAVE--></li>
+      <li>[-] <strong>ARGS  <em>arg</em>{,...} {RETURN <em>var</em>{,...}}</strong> - Specify subroutine arguments and return variables.</li>
+      <li>[-] <strong>ARGS</strong> - Return number of RUN arguments<!--runargs--></li>
       <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>ARGS  <em>arg</em>{,...} {RETURN <em>var</em>{,...}}</strong> - Specify subroutine arguments and return variables.</li>
-      <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>ARGS</strong> - Return number of RUN arguments</li>
-      <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>ARGS$(<em>argno</em>)</strong> - Return RUN argument number <em>index</em>.</li>
+        <input disabled="disabled" type="checkbox" checked="checked" />
+        <strong>ARGS$(<em>argno</em>)</strong> - Return RUN argument number <em>index</em>.<!--runargs--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" checked="checked" />
         <strong>ASC(<em>string</em>{,<em>pos</em>})</strong> - Return ASCII value of specified character in <em>string</em>.<!--convert--></li>
@@ -124,10 +128,10 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>CIRCLE (<em>x</em>,<em>y</em>),<em>radius</em>{,{,,{,<em>aspect</em>}}}</strong> - <em>Not implemented.</em></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" checked="checked" />
-        <strong>CLEAR {<em>integer</em>{,<em>address</em>}}</strong> - Clear all variables, optionally allocating string text space and top of BASIC RAM.<!--CLEAR--></li>
+        <strong>CLEAR {<em>integer</em>{,<em>address</em>}}</strong> - Clear all variables, optionally allocating string text space and top of BASIC RAM.<!--variable--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" checked="checked" />
-        <strong>CLEAR *<em>array</em>{,...}</strong> - Clear numeric or string array data.<!--CLEAR--></li>
+        <strong>CLEAR *<em>array</em>{,...}</strong> - Clear numeric or string array data.<!--variable--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>CLEAR BITMAP {<em>fgcolor</em>,<em>bgcolor</em>}</strong> - Clear bitmap layer.</li>
@@ -140,18 +144,12 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>CLOAD {{?}<em>filename</em>}|*<em>array</em></strong> - Load or verify program or load array data from cassette.</li>
+      <li>[.] <strong>CLOSE #<em>channel</em></strong> - Close file.<!--fileio--></li>
+      <li>[.] <strong>CLS {<em>fgcolor</em>,<em>bgcolor</em>}</strong> - Clear the text screen.<!--screen--></li>
+      <li>[.] <strong>CLS COLOR {<em>fgcolor</em>,<em>bgcolor</em>}</strong> - Fill Color RAM with current or specified foreground and background colors.<!--screen--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>CLOSE #<em>channel</em></strong> - Close file.<!--fileio--></li>
-      <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>CLS {<em>fgcolor</em>,<em>bgcolor</em>}</strong> - Clear the text screen.<!--screen--></li>
-      <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>CLS COLOR {<em>fgcolor</em>,<em>bgcolor</em>}</strong> - Fill Color RAM with current or specified foreground and background colors.<!--screen--></li>
-      <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>COLOR <em>fgcolor</em>{,<em>bgcolor</em>}</strong> - Set or get bitmap default color(s).<!--COLOR--></li>
+        <strong>COLOR <em>fgcolor</em>{,<em>bgcolor</em>}</strong> - Set or get bitmap default color(s).<!--bitmap--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" checked="checked" />
         <strong>COMPARE (<em><em>array</em>,</em><em>array</em>)</strong> - Compare the binary contents of two numeric arrays.<!--variable--></li>
@@ -166,7 +164,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>CONT</strong> - Resume program execution after STOP, Ctrl-C/Escape, or error.<!--flow--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" checked="checked" />
-        <strong>COPY</strong> - Copy text screen to serial printer.<!--screen--></li>
+        <strong>COPY</strong> - Copy text screen to serial printer.<!--screenio--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>COPY *<em>array</em> TO *array</strong> - Copy contents of one numeric array to another.<!--variable--></li>
@@ -184,7 +182,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>COPY �!_ext_addr_�|�@<em>page</em>,_address_� TO SCREEN {CHR|ATTR}</strong> - Copy paged memory to screen.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>COPY FILE <em>filespec</em> TO <em>filespec</em></strong> - Copy file.<!--variable--></li>
+        <strong>COPY FILE <em>filespec</em> TO <em>filespec</em></strong> - Copy file.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>COPY SCREEN {CHR|ATTR} TO �!_ext_addr_�|�@<em>page</em>,_address_� </strong> - Copy screen to paged memory.</li>
@@ -223,7 +221,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>DEEK(�!_ext_addr_�|�@<em>page</em>,_address_�)</strong> - Read integer from memory.<!--PEEK--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>DEF ATTRLIST <em>strvar</em>=<em>attr</em>,...</strong> - Create a string list of sprite and/or tile attributes.<!--defstrlist--></li>
+        <strong>DEF ATTRLIST <em>strvar</em>=<em>attr</em>,...</strong> - Create a string list of sprite and/or tile attributes.<!--sprites--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>DEF BYTELIST <em>strvar</em>=<em>byte</em>,...</strong> - Create a string list of bytes.<!--defstrlist--></li>
@@ -235,10 +233,10 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>DEF INTLIST <em>strvar</em>=<em>integer</em>,...</strong> - Create a string list of integers.<!--defstrlist--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>DEF PALETTELIST <em>strvar</em>=<em>palette</em>,...</strong> - Create a string list of palette numbers.<!--defstrlist--></li>
+        <strong>DEF PALETTELIST <em>strvar</em>=<em>palette</em>,...</strong> - Create a string list of palette numbers.<!--sprites--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>DEF RGBLIST <em>strvar</em>=<em>r</em>,<em>g</em>,<em>b</em>|<em>rgbstr</em>;...</strong> - Create a string list of RGB values.<!--defstrlist--></li>
+        <strong>DEF RGBLIST <em>strvar</em>=<em>r</em>,<em>g</em>,<em>b</em>|<em>rgbstr</em>;...</strong> - Create a string list of RGB values.<!--palette--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>DEF SPRITE <em>strvar</em>= <em>spritle</em>, <em>x-offset</em>, <em>y-offset</em> ;...</strong> - Create a sprite definition.<!--sprites--></li>
@@ -250,7 +248,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>DEF SPRITE <em>strvar</em>=^<em>strvar</em></strong> - Create a sprite definition.<!--sprites--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>DEF TILELIST <em>strvar</em>=<em>tileno</em>,...</strong> - Create a string list of tile indexes.<!--defstrlist--></li>
+        <strong>DEF TILELIST <em>strvar</em>=<em>tileno</em>,...</strong> - Create a string list of tile indexes.<!--sprites--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>DEF USR=<em>address</em></strong> - Set USR() machine language routine address.<!--system--></li>
@@ -313,16 +311,14 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>FILEATTR(<em>filespec</em>)</strong> - Return file attribute byte.<!--filesystem--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" checked="checked" />
-        <strong>FILEDIR$(<em>filespec</em>)</strong> - Extract path from filespec. <!--filesystem--></li>
+        <strong>FILEDIR$(<em>filespec</em>)</strong> - Extract path from filespec. <!--filespec--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" checked="checked" />
-        <strong>FILEEXT$(<em>filespec</em>)</strong> - Extract extension from filespec.<!--filesystem--></li>
+        <strong>FILEEXT$(<em>filespec</em>)</strong> - Extract extension from filespec.<!--filespec--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>FILELEN(<em>filespec</em>)</strong> - Return file length.<!--filesystem--></li>
-      <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>FILEPOS(<em>channel</em>)</strong> - Return current position in open file.<!--fileio--></li>
+      <li>[.] <strong>FILEPOS(<em>channel</em>)</strong> - Return current position in open file.<!--fileio--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>FILESTATUS$(<em>filespec</em>)</strong> - Return file information as binary string.<!--filesystem--></li>
@@ -340,22 +336,15 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>FILL COLORMAP (<em>x</em>,y_)-(<em>x</em>,<em>y</em>) COLOR <em>fgcolor</em>, <em>bgcolor</em></strong> - Fill rectangular section of 1bpp colormap.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>FILL SCREEN  {(<em>x</em>,y_)-(<em>x</em>,<em>y</em>)} <em>char</em></strong> - Fill screen with character and/or colors.<!--FILLSCREEN--></li>
-      <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>FILL SCREEN COLOR {(<em>x</em>,y_)-(<em>x</em>,<em>y</em>)} <em>fgcolor</em>,<em>bgcolor</em></strong> - Fill screen with character and/or colors.<!--FILLSCREEN--></li>
+        <strong>FILL SCREEN {(<em>x</em>,y_)-(<em>x</em>,<em>y</em>)} {CHR _char) {COLOR <em>fgcolor</em>,<em>bgcolor</em>}</strong> - Fill screen with character and/or colors.<!--FILLSCREEN--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>FILL TILEMAP {(<em>x</em>,y_)-(<em>x</em>,<em>y</em>)} TILE <em>tileno</em></strong> - Fill tilemap with specified tile, attributes and palette.<!--FILLTILE--></li>
+      <li>[.] <strong>FLOAT(<em>string</em>{,<em>offset</em>})</strong> - Convert four consecutive bytes in string to float.<!--convert--></li>
+      <li>[.] <strong>FLOAT$(<em>long</em>)</strong> - Convert float to four byte binary string.<!--convert--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>FLOAT(<em>string</em>{,<em>offset</em>})</strong> - Convert four consecutive bytes in string to float.<!--convert--></li>
-      <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>FLOAT$(<em>long</em>)</strong> - Convert float to four byte binary string.<!--convert--></li>
-      <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>FOR <em>var</em>=<em>expression</em> TO <em>expression</em> {STEP <em>expression</em>]</strong> - Initiate a <em>FOR</em> loop.<!--flow--></li>
+        <strong>FOR <em>var</em>=<em>expression</em> TO <em>expression</em> {STEP <em>expression</em>]</strong> - Initiate a <em>FOR</em> loop.&lt;!--flow.for--to--step--next--&gt;</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>FRE(<em>float</em>|<em>string</em>)</strong> - Return amount of unused variable and array or string space (after forcing garage collection).</li>
@@ -364,37 +353,21 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>GET ARGS <em>var</em>{,...}</strong> - Read arguments from argument list after <code>GOSUB</code>.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>GET SCREEN (<em>x</em>,y_)-(<em>x</em>,<em>y</em>) *<em>array</em>|^<em>strvar</em></strong> - Copy text screen clip to array or string variable.<!--GETSCREEN--></li>
+        <strong>GET SCREEN {CHRS|COLORS} (<em>x</em>,y_)-(<em>x</em>,<em>y</em>) *<em>array</em>|^<em>strvar</em></strong> - Copy text screen clip to array or string variable.<!--GETSCREEN--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>GET SCREEN CHRS (<em>x</em>,y_)-(<em>x</em>,<em>y</em>) *<em>array</em>|^<em>strvar</em></strong> - Copy text screen clip to array or string variable.<!--GETSCREEN--></li>
-      <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>GET SCREEN COLORS (<em>x</em>,y_)-(<em>x</em>,<em>y</em>) *<em>array</em>|^<em>strvar</em></strong> - Copy text screen clip to array or string variable.<!--GETSCREEN--></li>
-      <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>GET TILEMAP (<em>x</em>,y_)-(<em>x</em>,<em>y</em>) *<em>array</em>|^<em>strvar</em></strong> - Copy tilemap clip to array or string variable.<!--GETTILE--></li>
+        <strong>GET TILEMAP (<em>x</em>,y_)-(<em>x</em>,<em>y</em>) *<em>array</em>|^<em>strvar</em></strong> - Copy tilemap clip to array or string variable.<!--GETTILEMAP--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>GETCHRDEF$(<em>char</em>)</strong> - Return character definition.<!--CHRSET--></li>
-      <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>GETBORDERCHR</strong> - Return screen border character.<!--border--></li>
-      <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>GETBORDERCHR$</strong> - Return screen border character as string.<!--border--></li>
-      <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>GETBORDERCOLOR</strong> - Return screen border colors.<!--border--></li>
-      <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>GETBORDERCOLOR$</strong> - Return screen border colors as string.<!--border--></li>
+      <li>[.] <strong>GETBORDERCHR</strong> - Return screen border character.<!--screen--></li>
+      <li>[.] <strong>GETBORDERCHR$</strong> - Return screen border character as string.<!--screen--></li>
+      <li>[.] <strong>GETBORDERCOLOR</strong> - Return screen border colors.<!--screen--></li>
+      <li>[.] <strong>GETBORDERCOLOR$</strong> - Return screen border colors as string.<!--screen--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>GETCHRSET</strong> - Return character set currently in use.<!--CHRSET--></li>
-      <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>GETCOLOR</strong> - Return screen printing colors.</li>
+      <li>[!] <strong>GETCOLOR</strong> - Return screen printing colors.<!--screen--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>GETCURSOR</strong> - Return cursor display mode.</li>
@@ -405,8 +378,8 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <input disabled="disabled" type="checkbox" />
         <strong>GETKEY$</strong>  - Wait for key and return as string.<!--key--></li>
       <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>GETPALETTE$(<em>palette</em>)</strong> - Return palette contents.<!--GETPALETTE--></li>
+        <input disabled="disabled" type="checkbox" checked="checked" />
+        <strong>GETPALETTE$(<em>palette</em>)</strong> - Return palette contents.<!--palette--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>GETSOUNDFAST</strong> - Return <code>SOUNS FAST</code> status.</li>
@@ -417,8 +390,8 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <input disabled="disabled" type="checkbox" checked="checked" />
         <strong>GETSPRITE$(<em>spritedef</em>)</strong> - Return attributes of each spritle in the spritedef.<!--sprites--></li>
       <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>GETTILE$(<em>tileno</em>)</strong> - Return tile pixels.<!--GETTILE--></li>
+        <input disabled="disabled" type="checkbox" checked="checked" />
+        <strong>GETTILE$(<em>tileno</em>)</strong> - Return tile pixels.<!--tile--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>GOSUB <em>lineref</em>{:ARGS <em>expression</em>{,...} {RETURN <em>var</em>{,...}}</strong> - Branch to subroutine with optional call and return arguments.<!--flow--></li>
@@ -433,7 +406,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>HEX$(<em>string</em>)</strong> - Convert ASCII string into hexadecimal string.<!--convert--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>IF <em>expression</em> GOTO <em>linefref</em>|THEN <em>lineno</em>|<em>statement</em></strong> - Branch to line or execute statements if expression evaluates to true.<!--flow--></li>
+        <strong>IF <em>expression</em> GOTO <em>linefref</em>|THEN <em>lineno</em>|<em>statement</em></strong> - Branch to line or execute statements if expression evaluates to true.&lt;!--flow.i--then----&gt;</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>IN(<em>port</em>)</strong> - Read byte from Z80 I/O port.<!--system--></li>
@@ -499,19 +472,13 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>LINE {(<em>x1</em>,<em>y1</em>)}-(<em>x2</em>,<em>y2</em>){,{,B}}}</strong> - <em>Not implemented.</em></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>LINEH <em>x</em>,<em>y1</em>,<em>y2</em></strong> - <em>Not implemented.</em></li>
+        <strong>LINE stringvar</strong> - Read an entire line of input from keyboard.<!--input--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>LINEV <em>x1</em>,<em>x2</em>,<em>y</em></strong> - <em>Not implemented.</em></li>
-      <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>LIST </strong> - Display program lines starting at beginning of program or specified line.<!--list--></li>
-      <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>LIST$(<em>lineno</em>|NEXT)</strong> - Detokenize program line.<!--list--></li>
-      <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>LLIST </strong> - Outputs program lines to printer starting at beginning of program or specified line.<!--list--></li>
+        <strong>LINE INPUT #channel,stringvar</strong> - Read an entire line of input from keyboard or file.<!--fileio--></li>
+      <li>[-] <strong>LIST </strong> - Display program lines starting at beginning of program or specified line.<!--list--></li>
+      <li>[.] <strong>LIST$(<em>lineno</em>|NEXT)</strong> - Detokenize program line.<!--list--></li>
+      <li>[.] <strong>LLIST </strong> - Outputs program lines to printer starting at beginning of program or specified line.<!--list--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>LOAD <em>filespec</em></strong> - Load BASIC program into memory.<!--LOAD--></li>
@@ -526,7 +493,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>LOAD <em>filespec</em>,*<em>array</em>,ASC</strong> - Load multi-line ASCII file into string array.<!--LOAD--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>LOAD <em>filespec</em>,^<em>string</em></strong> - Load up to 255 characters of file into string variable.<!--LOAD--></li>
+        <strong>LOAD <em>filespec</em>,^<em>stringvar</em></strong> - Load up to 255 characters of file into string variable.<!--LOAD--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>LOAD BITMAP <em>filespec</em></strong> - Load bitmap file into Video RAM.<!--bmpfile--></li>
@@ -555,8 +522,8 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <input disabled="disabled" type="checkbox" />
         <strong>LOAD PALETTE <em>p</em>,<em>filespec</em></strong> - Load file data ino palette.<!--palette--></li>
       <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>LOAD SCREEN <em>filespec</em></strong> - Load text screen from file.<!--screen--></li>
+        <input disabled="disabled" type="checkbox" checked="checked" />
+        <strong>LOAD SCREEN <em>filespec</em></strong> - Load text screen from file.<!--screenio--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>LOAD SCREEN ATTR <em>filespec</em></strong> - Load text colors from file.</li>
@@ -568,31 +535,17 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>LOAD TILEMAP <em>filespec</em></strong> - Load tile map into Video RAM.<!--tilefile--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>LOAD TILESET <em>filespec</em></strong> - Load tile definitions to Video RAM.<!--tilefile--></li>
-      <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>LOAD TILESET INDEX <em>tileno</em>,<em>filespec</em></strong> - Load tile definitions relative to start of Video RAM.<!--tilefile--></li>
-      <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>LOAD TILESET OFFSET <em>tileno</em>,<em>filespec</em></strong> - Load tile definitions relative to end of tilemap/bitmap.<!--tilefile--></li>
-      <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>LOAD TRACK <em>filespec</em></strong> - Load tracker file track into tracker player buffer.<!--track--></li>
+        <strong>LOAD TILESET {INDEX <em>tileno</em>|OFFSET <em>tileofs</em>}  <em>filespec</em></strong> - Load tile definitions to Video RAM.<!--tilefile--></li>
+      <li>[.] <strong>LOAD TRACK <em>filespec</em></strong> - Load tracker file track into tracker player buffer.<!--track--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" checked="checked" />
         <strong>LOCATE <em>x</em>,<em>y</em></strong> - Move text cursor to specified position.<!--cursor--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" checked="checked" />
         <strong>LOG(<em>float</em>)</strong> - Return natural logarithm of argument.<!--math--></li>
-      <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>LONG(<em>string</em>{,<em>offset</em>})</strong> - Convert four consecutive bytes in string to unsigned long.<!--convert--></li>
-      <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>LONG$(<em>long</em>)</strong> - Convert long to unsigned four byte binary string.<!--convert--></li>
-      <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>LOOP TRACK </strong> - Play specified or previously loaded tracker file repeatedly.<!--track--></li>
+      <li>[.] <strong>LONG(<em>string</em>{,<em>offset</em>})</strong> - Convert four consecutive bytes in string to unsigned long.<!--convert--></li>
+      <li>[.] <strong>LONG$(<em>long</em>)</strong> - Convert long to unsigned four byte binary string.<!--convert--></li>
+      <li>[.] <strong>LOOP TRACK </strong> - Play specified or previously loaded tracker file repeatedly.<!--track--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>LPOS(<em>expression</em>_)</strong> - Return current column position of printer.</li>
@@ -643,37 +596,33 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>NEW</strong> - Delete program and clears all variables.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>ON .. <em>integer</em> .. GOSUB <em>lineref</em>,...</strong> - <code>GOSUB</code> one of several line numbers based on <em>expression</em>.<!--ON--></li>
+        <strong>ON .. <em>integer</em> .. GOSUB <em>lineref</em>,...</strong> - <code>GOSUB</code> one of several line numbers based on <em>expression</em>.&lt;!--ON.on--gosub--&gt;</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>ON .. <em>integer</em> .. GOTO <em>lineref</em>,...</strong> - <code>GOTO</code> one of several line numbers based on <em>expression</em>.<!--ON--></li>
+        <strong>ON .. <em>integer</em> .. GOTO <em>lineref</em>,...</strong> - <code>GOTO</code> one of several line numbers based on <em>expression</em>.&lt;!--ON.on--goto--&gt;</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>ON ERROR GOTO <em>lineref</em></strong> - Enable or disable error trapping.<!--ON--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>OFFSET(<em>column</em>,<em>row</em>)</strong> - Return offset into Screen or Color RAM.<!--screen--></li>
+      <li>[.] <strong>OPEN <em>filespec</em> FOR INPUT|OUTPUT|APPEND|RANDOM as <em>numvar</em></strong> - Open file.<!--fileio--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>OPEN <em>filespec</em> FOR INPUT|OUTPUT|APPEND|RANDOM as <em>numvar</em></strong> - Open file.<!--fileio--></li>
-      <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>OUT <em>port</em>,<em>byte</em>|<em>string</em>{,...}{;...}</strong> - Write to a Z80 port.<!--OUT--></li>
+        <strong>OUT <em>port</em>,<em>byte</em>|<em>string</em>{,...}{;...}</strong> - Write to a Z80 port.<!--system--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>PAD$(<em>string</em>,<em>length</em>{,<em>char</em>})</strong> - Pad string on left or right with optional fill character.<!--PAD--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>PAUSE</strong> - Halt program execution until key is pressed.<!--PAUSE--></li>
+        <strong>PAUSE</strong> - Halt program execution until key is pressed.<!--system--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>PAUSE <em>jiffies</em></strong> - Pauses program execution for the specified amount of time.<!--PAUSE--></li>
+        <strong>PAUSE <em>jiffies</em></strong> - Pauses program execution for the specified amount of time.<!--system--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>PAUSE UNTIL <em>expression</em></strong> - Pauses program execution until <em>expression</em> evaluates to true.<!--PAUSE--></li>
-      <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>PAUSE TRACK</strong> - Pause currently playing track.<!--track--></li>
+        <strong>PAUSE UNTIL <em>expression</em></strong> - Pauses program execution until <em>expression</em> evaluates to true.<!--system--></li>
+      <li>[-] <strong>PAUSE TRACK</strong> - Pause currently playing track.<!--track--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>PEEK(�!_ext_addr_�|�{@<em>page</em>,}_address_�)</strong> - Read byte from memory.<!--PEEK--></li>
@@ -695,9 +644,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>PLAY SAMPLE �!_ext_addr_�|�@<em>page</em>,_address_�</strong> - Play digital sample from previously loaded file.<!--PLAYSAMPLE--></li>
-      <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>PLAY TRACK {<em>filespec</em>}</strong> - Play specified or previously loaded tracker file.<!--track--></li>
+      <li>[-] <strong>PLAY TRACK {<em>filespec</em>}</strong> - Play specified or previously loaded tracker file.<!--track--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>POINT(<em>x</em>,<em>y</em>)</strong> - Return status of bloxel or pixel.<!--pixel--></li>
@@ -736,13 +683,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>PSET (<em>x</em>,<em>y</em>)</strong> - Draw bloxel or pixel.<!--pixel--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>PUT SCREEN (<em>x</em>,y_) *<em>array</em>|^<em>strvar</em></strong> - Copy clip from array or string variable to text screen.<!--PUTSCREEN--></li>
-      <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>PUT SCREEN CHR (<em>x</em>,y_) *<em>array</em>|^<em>strvar</em></strong> - Copy clip from array or string variable to text screen.<!--PUTSCREEN--></li>
-      <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>PUT SCREEN ATTR (<em>x</em>,y_) *<em>array</em>|^<em>strvar</em></strong> - Copy clip from array or string variable to text screen.<!--PUTSCREEN--></li>
+        <strong>PUT SCREEN {CHR|ATTR} (<em>x</em>,y_) *<em>array</em>|^<em>strvar</em></strong> - Copy clip from array or string variable to text screen.<!--PUTSCREEN--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>PUT TILEMAP (<em>x</em>,y_),*<em>array</em>|^<em>strvar</em></strong> - Copy clip from array or string variable to tilemap.<!--PUTTILE--></li>
@@ -752,9 +693,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>READ *<em>array</em>{,...}</strong> - Read values from DATA statements into an array.<!--READ--></li>
-      <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>READ #<em>channel</em>,^<em>strvar</em>,<em>length</em>)</strong> - Read string from open file.<!--fileio--></li>
+      <li>[.] <strong>READ #<em>channel</em>,^<em>strvar</em>,<em>length</em>)</strong> - Read string from open file.<!--fileio--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>REM <em>text</em></strong> - Denotes comment.<!--REM--></li>
@@ -764,9 +703,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>RESUME <em>lineref</em></strong> - Clear error condition and continues program execution at specified line</li>
-      <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>RESUME TRACK</strong> - Resume playing paused track.<!--track--></li>
+      <li>[-] <strong>RESUME TRACK</strong> - Resume playing paused track.<!--track--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>RESET *<em>array</em></strong> - Set all array elements to 0 or empty string and collect garbage if string array.</li>
@@ -774,7 +711,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <input disabled="disabled" type="checkbox" />
         <strong>RESET BIT</strong> - <em>Not implemented</em></li>
       <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
+        <input disabled="disabled" type="checkbox" checked="checked" />
         <strong>RESET BORDER</strong> - Set border character and colors to default values.<!--screen--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
@@ -797,15 +734,14 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>RETURN {<em>expression</em>{,...}}</strong> - Resume program execution after GOSUB, optionally returning results.<!--flow--></li>
-      <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" checked="checked" />
-        <strong>RGB(<em>r</em>,<em>g</em>,<em>b</em>|<em>rgbstr</em>)</strong> - Return integer representing a single palette entry.<!--palette--></li>
-      <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" checked="checked" />
-        <strong>RGB$(<em>r</em>,<em>g</em>,<em>b</em>|<em>rgbstr</em>)</strong> - Return string representing a single palette entry.<!--palette--></li>
+      <li>[-] <strong>RGB(�_r_,<em>g</em>,<em>b_�|�_rgbstr_�|�_string</em>,_delimiter_�)</strong> - Return integer representing a single palette entry.<!--palette--></li>
+      <li>[-] <strong>RGB$(�_r_,<em>g</em>,<em>b_�|�_rgbstr_�|�_string</em>,_delimiter_�)</strong> - Return string representing a single palette entry.<!--palette--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>RGBDEC$(<em>string</em>{,<em>char</em>})</strong> - Convert binary RGB value to decimal red,green, and blue.<!--palette--></li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>RGBHEX$(<em>string</em>{,<em>char</em>})</strong> - Convert binary RGB value to decimal red,green, and blue.<!--palette--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" checked="checked" />
         <strong>RIGHT$(<em>string</em>,<em>len</em>)</strong> - Return the last up to <em>byte</em> characters of string.<!--string--></li>
@@ -813,11 +749,9 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <input disabled="disabled" type="checkbox" checked="checked" />
         <strong>RND(<em>integer</em>)</strong> - Return new or previous psuedo-random number or seeds the random number generator.<!--math--></li>
       <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>RUN </strong> - Start program execution at first or specified line.<!--run--></li>
-      <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>RUN <em>filespec</em></strong> - Load a.0nd runs specified program, cartridge image, or FPGA core.<!--run--></li>
+        <input disabled="disabled" type="checkbox" checked="checked" />
+        <strong>RUN </strong> - Start program execution at first or specified line.<!--runargs--></li>
+      <li>[-] <strong>RUN <em>filespec</em></strong> - Load a.d runs specified program, cartridge image, or FPGA core.<!--runargs--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>SAVE <em>filespec</em>{,ASC|CAQ|BIN}</strong> - Save BASIC program to CAQ or ASCII or raw tokenized file.<!--SAVE--></li>
@@ -846,8 +780,8 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <input disabled="disabled" type="checkbox" />
         <strong>SAVE PALETTE <em>p</em>,<em>filespec</em></strong> - Save palette contents to file.<!--palette--></li>
       <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>SAVE SCREEN <em>filespec</em>{{,PALETTE},BORDERMAP}</strong> - Save text screen to file.<!--screen--></li>
+        <input disabled="disabled" type="checkbox" checked="checked" />
+        <strong>SAVE SCREEN <em>filespec</em>{{,PALETTE},BORDERMAP}</strong> - Save text screen to file.<!--screenio--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>SAVE SCREEN ATTR <em>filespec</em></strong> - <em>Not implemented</em></li>
@@ -861,7 +795,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <input disabled="disabled" type="checkbox" />
         <strong>SAVE TILESET <em>tileno</em>,<em>tilecount</em>,<em>filespec</em></strong> - Save tile definitions to disk.<!--tilefile--></li>
       <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
+        <input disabled="disabled" type="checkbox" checked="checked" />
         <strong>SCREEN ,,,,</strong> - Set screen mode.<!--screen--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
@@ -876,7 +810,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <input disabled="disabled" type="checkbox" />
         <strong>SET BIT</strong> - <em>Not implemented</em></li>
       <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
+        <input disabled="disabled" type="checkbox" checked="checked" />
         <strong>SET BORDER  {COLOR <em>fgcolor</em>,<em>bgcolor</em>}</strong> - Enable color printing mode.<!--screen--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
@@ -885,20 +819,18 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <input disabled="disabled" type="checkbox" />
         <strong>SET CHRDEF <em>char</em>,<em>string</em></strong> - Redefine character.<!--chrset--></li>
       <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
+        <input disabled="disabled" type="checkbox" checked="checked" />
         <strong>SET COLOR <em>fgcolor</em>,<em>bgcolor</em></strong> - Enable color printing mode.<!--screen--></li>
       <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
+        <input disabled="disabled" type="checkbox" checked="checked" />
         <strong>SET COLOR OFF</strong> - Disable color printing mode.<!--screen--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>SET CURSOR ON|OFF</strong> - Enable or disable cursor display.<!--cursor--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>SET FAST ON|OFF</strong> - Enable or disable turbo mode.<!--SETFAST--></li>
-      <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>SET FILE <em>channel</em> POS TO <em>long</em></strong> - Set current position in opened file.<!--fileio--></li>
+        <strong>SET FAST ON|OFF</strong> - Enable or disable turbo mode.<!--system--></li>
+      <li>[.] <strong>SET FILE <em>channel</em> POS TO <em>long</em></strong> - Set current position in opened file.<!--fileio--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>SET FILE ERROR ON|OFF</strong> - Enable or disable file operations generating BASIC errors.</li>
@@ -913,7 +845,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>SET PALETTE <em>palette</em>  TO <em>rgblist</em></strong> - Set palette entries.<!--palette--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>SET SAVE ASC ON|OFF</strong> - Enable or disable forced saving of BASIC programs in ASCII format.<!--SETSAVE--></li>
+        <strong>SET SAVE ASC ON|OFF</strong> - Enable or disable forced saving of BASIC programs in ASCII format.<!--save--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>SET SOUND FAST ON|OFF_</strong> - Set whether SOUND is affected by turbo mode.<!--system--></li>
@@ -933,8 +865,8 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <input disabled="disabled" type="checkbox" checked="checked" />
         <strong>SET SPRITE * OFF|CLEAR</strong> - Disable or clears all sprites.<!--sprites--></li>
       <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>SET TILE <em>tileno</em> TO <em>tiledata</em></strong> - Write tile definition Video RAM.<!--SETTILE--></li>
+        <input disabled="disabled" type="checkbox" checked="checked" />
+        <strong>SET TILE <em>tileno</em> TO <em>tiledata</em></strong> - Write tile definition Video RAM.<!--tile--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>SET TILE_ <em>tileno</em> TO CHR <em>char</em>, <em>fg_color</em>, <em>bg_color</em></strong> - Convert character definition to tile data and write to Video RAM.</li>
@@ -943,25 +875,17 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>SET TILE *array$</strong> - Set multiple tiles from tile array.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>SET TILEMAP (<em>x</em>,<em>y</em>) TO TILE <em>tileno</em></strong> - Set tilemap cell to tile index, attributes, and palette.<!--SETTILEMAP--></li>
+        <strong>SET TILEMAP (<em>x</em>,<em>y</em>) TO TILE <em>tileno</em></strong> - Set tilemap cell to tile index, attributes, and palette.<!--tilemap--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>SET TILEMAP (<em>x</em>,<em>y</em>) TO <em>integer</em></strong> - Set tilemap cell to integer represeting combined tile index, attributes, and palette.<!--SETTILEMAP--></li>
+        <strong>SET TILEMAP (<em>x</em>,<em>y</em>) TO <em>integer</em></strong> - Set tilemap cell to integer represeting combined tile index, attributes, and palette.<!--tile,ap--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>SET TILEMAP OFFSET <em>x</em>,<em>y</em></strong> - Scroll tilemap to specified position.<!--SETTILEMAP--></li>
-      <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>SET TRACK FAST {ON|OFF}</strong> - Set tracker playback to 50Hz or 60Hz mode.<!--track--></li>
-      <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>SET TRACK LOOP {ON|OFF}</strong> - Set loop status of active or paused track.<!--track--></li>
-      <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>SET TRACK SPEED <em>hertz</em></strong> - Set tracker playback rate.<!--track--></li>
-      <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>SET USRINT ON|OFF</strong> - Enable disable user interrupt.<!--system--></li>
+        <strong>SET TILEMAP OFFSET <em>x</em>,<em>y</em></strong> - Scroll tilemap to specified position.<!--tilemap--></li>
+      <li>[.] <strong>SET TRACK FAST {ON|OFF}</strong> - Set tracker playback to 50Hz or 60Hz mode.<!--track--></li>
+      <li>[.] <strong>SET TRACK LOOP {ON|OFF}</strong> - Set loop status of active or paused track.<!--track--></li>
+      <li>[.] <strong>SET TRACK SPEED <em>hertz</em></strong> - Set tracker playback rate.<!--track--></li>
+      <li>[.] <strong>SET USRINT ON|OFF</strong> - Enable disable user interrupt.<!--system--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" checked="checked" />
         <strong>SGN(<em>expression</em>)</strong> - Return signum of expression.<!--math--></li>
@@ -989,9 +913,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>STOP</strong> - Interrupt program execution.<!--flow--></li>
-      <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>STOP TRACK</strong> - Stop currently playing track.<!--track--></li>
+      <li>[-] <strong>STOP TRACK</strong> - Stop currently playing track.<!--track--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" checked="checked" />
         <strong>STR$(<em>float</em>)</strong> - Convert floating point number to ASCII string.<!--convert--></li>
@@ -1027,10 +949,10 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>TILEMAPY</strong> - Return X-offset of tilemap.<!--tilemap--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>TILEOFFSET</strong> - Return first free tile index for current graphics mode.<!--tilemap--></li>
+        <strong>TILEOFFSET</strong> - Return first free tile index for current graphics mode.<!--tile--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>TILEOFFSET(<em>gfx_mode</em>)</strong> - Return first free tile index for specified graphics mode.<!--tilemap--></li>
+        <strong>TILEOFFSET(<em>gfx_mode</em>)</strong> - Return first free tile index for specified graphics mode.<!--tile--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" checked="checked" />
         <strong>TIME$</strong> - Return the current time.<!--DATETIME--></li>
@@ -1040,27 +962,19 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" checked="checked" />
         <strong>TIMER = <em>long</em></strong> - Set and start jiffy timer..<!--DATETIME--></li>
-      <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>TRACKFAST</strong> - Return -1 if tracker playback is set to fast, else 0.<!--track--></li>
-      <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>TRACKLOOP</strong> - Return -1 if tracker playback is set to loop, else 0.<!--track--></li>
-      <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>TRACKSPEED</strong> - Return tracker playback speed in Hertz.<!--track--></li>
-      <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>TRACKSTATUS</strong> - Return -1 if track is playing, else 0.<!--track--></li>
+      <li>[.] <strong>TRACKFAST</strong> - Return -1 if tracker playback is set to fast, else 0.<!--track--></li>
+      <li>[.] <strong>TRACKLOOP</strong> - Return -1 if tracker playback is set to loop, else 0.<!--track--></li>
+      <li>[.] <strong>TRACKSPEED</strong> - Return tracker playback speed in Hertz.<!--track--></li>
+      <li>[.] <strong>TRACKSTATUS</strong> - Return -1 if track is playing, else 0.<!--track--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" checked="checked" />
         <strong>TRIM$(<em>string</em>{,<em>string</em>})</strong> - Remove characters from both ends of string.<!--string--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" checked="checked" />
-        <strong>TRIMDIR$(<em>filespec</em>)</strong> - Remove path from filespec.<!--filesystem--></li>
+        <strong>TRIMDIR$(<em>filespec</em>)</strong> - Remove path from filespec.<!--filespec--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" checked="checked" />
-        <strong>TRIMEXT$(<em>filespec</em>)</strong> - Remove extension from filespec.<!--filesystem--></li>
+        <strong>TRIMEXT$(<em>filespec</em>)</strong> - Remove extension from filespec.<!--filespec--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" checked="checked" />
         <strong>TRIML$(<em>string</em>{,<em>string</em>})</strong> - Remove characters from left end of string.<!--string--></li>
@@ -1115,9 +1029,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" checked="checked" />
         <strong>WORD$(<em>integer</em>)</strong> - Convert integer to unsigned two byte binary string.<!--convert--></li>
-      <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" />
-        <strong>WRITE #<em>channel</em>,^<em>strvar</em></strong> - Write string to open file.<!--fileio--></li>
+      <li>[.] <strong>WRITE #<em>channel</em>,^<em>strvar</em></strong> - Write string to open file.<!--fileio--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>WRITE KEYS <em>string</em></strong> - Write string to auto-type buffer.</li>

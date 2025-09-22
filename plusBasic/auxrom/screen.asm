@@ -429,4 +429,3 @@ screen_max_ofs:
     rl      d                     ;   MaxOfs = 2048
     or      a                     ; Set NZ flag
     ret
-    

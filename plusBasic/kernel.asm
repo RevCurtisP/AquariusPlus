@@ -108,4 +108,20 @@ _jump_table:
     jp      just_ret              ; 2226
     jp      just_ret              ; 2229
 
+; buffer.asm <<BASIC Buffers>>
+    jp      buffer_read_byte      ; 222C Read byte from BASIC buffer
+    jp      buffer_read_bytes     ; 222F Read bytes from BASIC buffer
+    jp      buffer_read_word      ; 2232 Read word from BASIC buffer
+    jp      buffer_write_byte     ; 2235 Write byte to BASIC buffer
+    jp      buffer_write_bytes    ; 2238 Write bytes to BASIC buffer
+    jp      buffer_write_word     ; 223B Write word to BASIC buffer
+    jp      basbuf_read_byte      ; 223E Read byte from BASIC buffer
+    jp      basbuf_read_bytes     ; 2241 Read bytes from BASIC buffer
+    jp      basbuf_read_word      ; 2244 Read word from BASIC buffer
+    jp      basbuf_write_byte     ; 2247 Write byte to BASIC buffer
+    jp      basbuf_write_bytes    ; 224A Write bytes to BASIC buffer
+    jp      basbuf_write_word     ; 224D Write word to BASIC buffer
+    jp      just_ret              ; 2250
+    jp      just_ret              ; 2253
+
 _end_jump_table:

@@ -128,12 +128,21 @@ pop_de_ret:
     pop     de                    ; HL = *RetVars; Stack = NEWSTT
     ret
 
+clear_run_args:
+    ld      bc,0                  ; ArgCnt = 0
+    call    set_run_argcnt
+    call    basbuf_write_word     ; Set ARG$(0) length to 0
+    jp      basbuf_write_byte     ; Set ARG$(0) to ""
+
+set_run_argcnt:
+    ld      de,RUNARGS
+    jp      basbuf_write_word     ; Write ArgCnt and return
 
 ;-----------------------------------------------------------------------------
 ; Parse RUN arguments
 ; Currently only saves filename to ARGS buffer
 ; Input: HL: Filename StrDsc
-;        DE: Filename TxtAdr
+;        DE: Filename StrAdr
 ;        BC: Filename StrLen
 ; ARGS buffer is at offset RUNARGS in page BAS_BUFFR
 ; Buffer format:
@@ -146,21 +155,12 @@ run_args:
     push    hl                    ; Stack = StrDsc, RtnAdr
     push    de                    ; Stack = TxtAdr, StrDsc, RtnAdr
     push    bc                    ; Stack = StrLen, TxtAdr, StrDsc, RtnAdr
-    ld      l,BAS_BUFFR           ; L = Page
-    ld      a,l                   ; A = Page
-    ld      de,RUNARGS
-    ld      bc,1                  ; ArgCnt = 0
-    call    buffer_write_word     ; Write ArgCnt
-;    inc     de
-;    inc     de                    ; Bump write address
+    ld      bc,1                  ; ArgCnt = 1
+    call    set_run_argcnt        ; DE = ArgBufAdr
     pop     bc                    ; BC = StrLen; Stack = TxtAdr, StrDsc, RtnAdr
-    ld      a,l                   ; A = Page
-    call    buffer_write_word     ; Write StrLen
-;    inc     de
-;    inc     de                    ; Bump write address
-    ld      a,l                   ; A = Page
+    call    basbuf_write_word     ; Write StrLen
     pop     hl                    ; HL = TxtAdrl Stack = StrDsc, RtnAdr
-    call    buffer_write_bytes    ; Write filename
+    call    basbuf_write_bytes    ; Write filename
     pop     hl                    ; HL = StrDsc; Stack = RtnAdr
     ret
 
@@ -172,11 +172,9 @@ FN_ARGS:
     rst     CHRGET                ; Skip ARGS
     cp      '$'
     jr      z,.get_arg            ; If not $
-    push    hl                    ;   Stack = TxtPtr, RtnAdr
-    ld      bc,LABBCK
-    push    bc                    ;   Stack = LABBCK, TxtPtr,RtnAdr
-    call    aux_call_inline       ; BC = ArgCnt
-    word    runarg_count
+    call    push_hl_labbck        ;   Stack = LABBCK, TxtPtr,RtnAdr
+    ld      iy,runarg_count
+    call    aux_call              ; BC = ArgCnt
     jp      FLOAT_BC              ;   Return ArgCnt
 .get_arg
     rst     CHRGET                ; Skip $
@@ -186,7 +184,7 @@ FN_ARGS:
     call    get_strbuf_addr       ; HL = StrBuf
     ld      b,d
     ld      c,e                   ; BC = Argum
-    call    aux_call_inline       ; BC = ArgCnt
-    word    runarg_get
+    ld      iy,runarg_get
+    call    aux_call              ; BC = ArgCnt
     jp      c,FCERR
     jp      return_strbuf         ; and return it
