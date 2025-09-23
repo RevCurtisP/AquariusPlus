@@ -13,4 +13,9 @@ for %%f in (??.bas) do (
   move %%~nf.baq %aquaplus%\sdcard\au\ >nul
   del %%~nf.$$$
 )
+
+echo Building list of tests
+findstr /C:".baq  |" README.md >tests.txt
+copy tests.txt %aquaplus%\sdcard\au\
+
 echo Build complete
