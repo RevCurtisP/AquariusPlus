@@ -11,9 +11,9 @@ Run the .baq file to run the associated tests.
 | cs.baq  | COPY SCREEN        |
 | cv.baq  | Convert functions  |
 | dr.baq  | DIM and READ       |
-| gr.baq  | Misc. Graphics     |
 | pp.baq  | POKE and PEEK      |
 | ps.baq  | POKE/POKE SCREEN   |
+| rg.baq  | RGB and PALETTE    |
 | sb.baq  | String Slicing     |
 | sg.baq  | Screen Graphics    |
 | sj.baq  | SPLIT and JOIN     |
@@ -49,14 +49,18 @@ Run the .baq file to run the associated tests.
   - COPY @_page_,_offset_ TO SCREEN ATTR
 - cv.baq
   - ASC(_string_)
-  - ASC(_string_,byte)
   - ASC$(_string_)
   - BYTE(_string_)
-  - BYTE(_string_,byte)
   - CHR$(_byte)
   - DEC(_string_)
   - HEX$(_long_)
   - HEX$(_string_)
+  - DEF BYTELIST _var$_ = ...
+  - ASC(_string_,byte)
+  - BYTE(_string_,byte)
+  - DEF INTLIST _var$_ = ...
+  - INT(_string_,byte)
+  - WORD(_string_,byte)
 - dr.baq
   - DIM _var_, _var_$
   - DIM _array_()_, _array_$()
@@ -65,11 +69,6 @@ Run the .baq file to run the associated tests.
   - READ _var_, _var_$
   - READ \*_array_
   - READ \*_array_$
-- gr.baq 
-  - RGB(_red_,_green_,_blue_)
-  - RGB$(_red_,_green_,_blue_)
-  - RGB("RGB")
-  - RGB$("RGB")
 - pp.baq
   - POKE _addr_,_byte_
   - POKE _addr,_string_
@@ -99,6 +98,15 @@ Run the .baq file to run the associated tests.
   - PEEKSCREEN$(_addr_,_len_)
   - PEEKCOLOR(_addr_)
   - PEEKCOLOR$(_addr_,_len_)
+- rg.baq 
+  - RGB(_red_,_green_,_blue_)
+  - RGB$(_red_,_green_,_blue_)
+  - RGB("RGB")
+  - RGB$("RGB")
+  - SET PALETTE _palette_ TO _rgb_list_
+  - RESET PALETTE
+  - GETPALETTE$(_palette_)
+
 - sb.baq
   - _string_\[_index_\]
   - _string_\[_index_ TO _index_\]
@@ -160,11 +168,10 @@ Run the .baq file to run the associated tests.
   - TRIMDIR$(_filespec_)
   - TRIMEXT$(_filespec_)
 - ts.baq
-  - DEF ATTRLIST _var_$ = _attr_, ...
-  - DEF PALETTELIST  _var_$ = _palette_, ...
-  - DEF RGBLIST _var_$ = _r_,_g_,_b_; ...
+  - DEF/APPEND ATTRLIST _var_$ = _attr_, ...
+  - DEF/APPEND PALETTELIST  _var_$ = _palette_, ...
   - DEF SPRITE _var_$ = _spritle_,_x_ofs_,_y_ofs_; ...
-  - DEF TILELIST _var_$ = _tile_index_, ...
+  - DEF/APPEND TILELIST _var_$ = _tile_index_, ...
   - FILL TILEMAP TILE _tile_index_ PALETTE _palette_
   - FILL TILEMAP (_left_,_top_) - (_right_,_bottom_) TILE )_tile_index_ PALETTE _palette_ 
   - GET TILEMAP (_left_,_top_)-(_right_,_bottom_),*_var_
