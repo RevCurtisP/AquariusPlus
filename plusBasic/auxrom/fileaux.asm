@@ -54,3 +54,42 @@ bas_open:
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     xor     a                     ; Return no errors
     ret
+
+; On entry: F = AscFlg (Z = ASCII), BC = AryLen, HL = AryPtr
+bas_save_string_array:
+    push    bc                    ; Stack = AryLen, RtnAdr
+.strloop
+    push    hl                    ; Stack = AryPtr, AryLen, RtnAdr
+    push    af                    ; Stack = AscFlg, AryPtr, AryLen, RtnAdr
+    call    string_addr_len       ; DE = StrAdr, BC = StrLen
+    pop     af                    ; F = AscFlag; Stack = AryPtr, AryLen, RtnAdr
+    push    af                    ; Stack = AscFlg, AryPtr, AryLen, TxtPtr, RtnAdr
+    jr      z,.skip_len           ; If Not ASCII mode
+    call    esp_write_byte        ;   Write string length
+.skip_len
+    call    esp_write_bytes       ; Write string data
+    pop     af                    ; F = AscFlag; Stack = AryPtr, AryLen, RtnAdr
+    push    af                    ; Stack = AscFlag, AryPtr, AryLen, RtnAdr
+    jr      nz,.skip_crlf         ; If ASCII mode
+    jr      c,.skip_cr
+    ld      c,13                  
+    call    esp_write_byte        ; Write CR
+.skip_cr
+    ld      c,10                  
+    call    esp_write_byte        ; Write LF
+.skip_crlf
+    pop     af                    ; F = AscFlag; Stack = AryPtr, AryLen, RtnAdr
+    pop     hl                    ; HL = AryPtr; Stack = AryLen, RtnAdr
+    pop     de                    ; DE = AryLen; Stack = RtnAdr
+    ld      b,4
+.nextloop
+    inc     hl
+    dec     de
+    djnz    .nextloop
+    ex      af,af'                ; F' = AscFlg
+    ld      a,d
+    or      e
+    ret     z
+    ex      af,af'                ; F = AscFlg
+    push    de                    ; Stack = AryLen, RtnAdr
+    jr      .strloop

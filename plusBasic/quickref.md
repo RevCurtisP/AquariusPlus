@@ -64,6 +64,12 @@ plusBASIC Quick Reference Guide
  - **ABS(_float_)** - Return absolute value of expression.
  - **APPEND _filespec_,^_strvar_** - Append string to file.
  - **APPEND _filespec_,_address_,_length_** - Append memory to binary file.
+ - **APPEND ATTRLIST _strvar_=_attr_,...** - Add to string list of sprite and/or tile attributes.
+ - **APPEND BYTELIST _strvar_=_byte_,...** - Add to a string list of bytes.
+ - **APPEND INTLIST _strvar_=_integer_,...** - Add to a string list of integers.
+ - **APPEND PALETTELIST _strvar_=_palette_,...** - Add to a string list of palette numbers.
+ - **APPEND RGBLIST _strvar_=_r_,_g_,_b_|_rgbstr_;...** - Add to a string list of RGB values.
+ - **APPEND TILELIST _strvar_=_tileno_,...** - Add to a string list of tile indexes.
  - **ARGS  _arg_{,...} {RETURN _var_{,...}}** - Specify subroutine arguments and return variables.
  - **ARGS** - Return number of RUN arguments
  - **ARGS$(_argno_)** - Return RUN argument number _index_.
@@ -174,7 +180,8 @@ plusBASIC Quick Reference Guide
  - **GETKEY** - Wait for key and return ASCII code.
  - **GETKEY$**  - Wait for key and return as string.
  - **GETPALETTE$(_palette_)** - Return palette contents.
- - **GETSOUNDFAST** - Return `SOUNS FAST` status.
+ - **GETPALETTE$(_palette_,_index_)** - Return palette entry.
+ - **GETSOUNDFAST** - Return `SOUND FAST` status.
  - **GETSPEED** - Return current turbo setting.
  - **GETSPRITE$(_spritedef_)** - Return attributes of each spritle in the spritedef.
  - **GETTILE$(_tileno_)** - Return tile pixels.
@@ -207,8 +214,10 @@ plusBASIC Quick Reference Guide
  - **LINE stringvar** - Read an entire line of input from keyboard.
  - **LINE INPUT #channel,stringvar** - Read an entire line of input from keyboard or file.
  - **LIST {_lineref_}** - Display program lines starting at beginning of program or specified line.
+ - **LIST \*_array_** - Display contents of specified string array.
  - **LIST$(_lineno_|NEXT)** - Detokenize program line.
  - **LLIST {_lineref_}** - Outputs program lines to printer starting at beginning of program or specified line.
+ - **LLIST \*_array_** - Outputs contemts of specified string array to printer.
  - **LOAD _filespec_** - Load BASIC program into memory.
  - **LOAD _filespec_,«!_ext_addr_»|«{@_page_,}_address_»** - Load binary file into memory.
  - **LOAD _filespec_,\*_array_** - Load binary file data into numeric or string array.
@@ -401,6 +410,7 @@ plusBASIC Quick Reference Guide
  - **USE SCREEN {@_page_,}_text_mode_,_gfx_mode_** - _Not implemented._
  - **USR(_float_)** - Call user-defined machine language routine passing argument and returning result.
  - **VAL(_string_)** - Convert ASCII string to floating point number.
+ - **VARDEF(\*_array{$}_)** - Return True if array is defined.
  - **VARPTR(_var{$}_|\*_array{$}_)** - Return address of variable, array element, or array
  - **VER(_expression_)** - Return System or plusBASIC version as integer.
  - **VER$(_expression_)** - Return System or plusBASIC version as printable string.

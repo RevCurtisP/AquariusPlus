@@ -94,6 +94,19 @@ asm_page_write_byte        equ $221D ; 221D Write Byte to Page
 asm_page_write_word        equ $2220 ; 2220 Write Word to Page
 asm_page_write_bytes       equ $2223 ; 2223 Write Bytes to Page
 
+asm_buffer_read_byte       equ $222C ; 222C Read byte from BASIC buffer
+asm_buffer_read_bytes      equ $222F ; 222F Read bytes from BASIC buffer
+asm_buffer_read_word       equ $2232 ; 2232 Read word from BASIC buffer
+asm_buffer_write_byte      equ $2235 ; 2235 Write byte to BASIC buffer
+asm_buffer_write_bytes     equ $2238 ; 2238 Write bytes to BASIC buffer
+asm_buffer_write_word      equ $223B ; 223B Write word to BASIC buffer
+asm_basbuf_read_byte       equ $223E ; 223E Read byte from BASIC buffer
+asm_basbuf_read_bytes      equ $2241 ; 2241 Read bytes from BASIC buffer
+asm_basbuf_read_word       equ $2244 ; 2244 Read word from BASIC buffer
+asm_basbuf_write_byte      equ $2247 ; 2247 Write byte to BASIC buffer
+asm_basbuf_write_bytes     equ $224A ; 224A Write bytes to BASIC buffer
+asm_basbuf_write_word      equ $224D ; 224D Write word to BASIC buffer
+
 asm_get_linbuf_addr        equ $C200 ; Get Line Buffer Address
 asm_get_strbuf_addr        equ $C203 ; Get String Buffer Address
 asm_FLOAT_BC               equ $C206 ; Convert BC to unsigned float in FACC
@@ -106,74 +119,72 @@ asm_FLOAT_CDE              equ $C20C ; Convert CDE to unsigned float in FACC
 ; * CALL aux_call *
 ; *****************
 
-asm_dos_change_dir         equ $C000 ; Change Directory
-asm_dos_close              equ $C003 ; Close file or directory
-asm_dos_close_all          equ $C006 ; Close all files
-asm_dos_create_dir         equ $C009 ; Create directory
-asm_dos_delete             equ $C00C ; Delete file/directory
-asm_dos_stat               equ $C00F ; Return File Status
-asm_dos_get_cwd            equ $C012 ; Get Current Directory
-asm_dos_open               equ $C015 ; Open file
-asm_dos_open_append        equ $C018 ; Open file for write
-asm_dos_open_dir           equ $C01B ; Open directory for read
-asm_dos_open_read          equ $C01E ; Open file for read
-asm_dos_open_write         equ $C021 ; Open file for write
-asm_dos_read_dir           equ $C024 ; Read directory entry
-asm_dos_rename             equ $C027 ; Delete file/directory
-asm_dos_rewind             equ $C02A ; Move to beginning of file
-asm_dos_seek               equ $C02D ; Move to position in file
-asm_dos_tell               equ $C030 ; Get current position in file
+asm_dos_change_dir         equ $C000 ; C000 Change Directory
+asm_dos_close              equ $C003 ; C003 Close file or directory
+asm_dos_close_all          equ $C006 ; C006 Close all files
+asm_dos_create_dir         equ $C009 ; C009 Create directory
+asm_dos_delete             equ $C00C ; C00C Delete file/directory
+asm_dos_stat               equ $C00F ; C00F Return File Status
+asm_dos_get_cwd            equ $C012 ; C012 Get Current Directory
+asm_dos_open               equ $C015 ; C015 Open file
+asm_dos_open_append        equ $C018 ; C018 Open file for write
+asm_dos_open_dir           equ $C01B ; C01B Open directory for read
+asm_dos_open_read          equ $C01E ; C01E Open file for read
+asm_dos_open_write         equ $C021 ; C021 Open file for write
+asm_dos_read_dir           equ $C024 ; C024 Read directory entry
+asm_dos_rename             equ $C027 ; C027 Delete file/directory
+asm_dos_rewind             equ $C02A ; C02A Move to beginning of file
+asm_dos_seek               equ $C02D ; C02D Move to position in file
+asm_dos_tell               equ $C030 ; C030 Get current position in file
 
-asm_file_get_dir           equ $C033 ; Extract path from filespec
-asm_file_get_ext           equ $C036 ; Extract extension from filespec
-asm_file_trim_dir          equ $C03C ; Trim path from filespec
-asm_file_trim_ext          equ $C03F ; Trim extension from filespec
-asm_file_load_binary       equ $C042 ; Load binary file into main memory
-asm_file_load_chrset       equ $C045 ; Load file into alternate chrset buffer
-asm_file_load_paged        equ $C048 ; Load binary file into paged memory
-asm_file_load_palette      equ $C04B ; Load and set palette
-asm_file_load_pt3          equ $C04E ; Load PT3 file into PT3 buffer
-asm_file_load_rom          equ $C051 ; Load ROM file into page 35
-asm_file_load_screen       equ $C054 ; Load screen image
-asm_file_load_strbuf       equ $C057 ; Load file into BASIC string buffer
-asm_file_save_binary       equ $C060 ; Save binary file from main memory
-asm_file_save_paged        equ $C063 ; Save file from paged memory
-asm_file_save_palette      equ $C066 ; Get and save palette
-asm_file_save_screen       equ $C069 ; Save screen image
-asm_file_save_strbuf       equ $C06C ; Save BASIC string buffer to file
-asm_file_load_defchrs      equ $C06F ; Load file into default chrset buffer
-asm_file_load_tilemap      equ $C072 ; Load tilemap
-asm_file_save_tilemap      equ $C075 ; Save tilemap
-asm_file_save_chrset       equ $C078 ;
-asm_file_load_tileset      equ $C07B ; Load tiles
-asm_file_save_tileset      equ $C07E ; Save tiles
-asm_file_read_dir          equ $C081 ; Read directory entry as ASCII string
+asm_file_get_dir           equ $C033 ; C033 Extract path from filespec
+asm_file_get_ext           equ $C036 ; C036 Extract extension from filespec
+asm_file_trim_dir          equ $C03C ; C03C Trim path from filespec
+asm_file_trim_ext          equ $C03F ; C03F Trim extension from filespec
+asm_file_load_binary       equ $C042 ; C042 Load binary file into main memory
+asm_file_load_chrset       equ $C045 ; C045 Load file into alternate chrset buffer
+asm_file_load_paged        equ $C048 ; C048 Load binary file into paged memory
+asm_file_load_palette      equ $C04B ; C04B Load and set palette
+asm_file_load_pt3          equ $C04E ; C04E Load PT3 file into PT3 buffer
+asm_file_load_rom          equ $C051 ; C051 Load ROM file into page 35
+asm_file_load_screen       equ $C054 ; C054 Load screen image
+asm_file_load_strbuf       equ $C057 ; C057 Load file into BASIC string buffer
+asm_file_save_binary       equ $C060 ; C060 Save binary file from main memory
+asm_file_save_paged        equ $C063 ; C063 Save file from paged memory
+asm_file_save_palette      equ $C066 ; C066 Get and save palette
+asm_file_save_screen       equ $C069 ; C069 Save screen image
+asm_file_save_strbuf       equ $C06C ; C06C Save BASIC string buffer to file
+asm_file_load_defchrs      equ $C06F ; C06F Load file into default chrset buffer
+asm_file_load_tilemap      equ $C072 ; C072 Load tilemap
+asm_file_save_tilemap      equ $C075 ; C075 Save tilemap
+asm_file_save_chrset       equ $C078 ; C078
+asm_file_load_tileset      equ $C07B ; C07B Load tiles
+asm_file_save_tileset      equ $C07E ; C07E Save tiles
+asm_file_read_dir          equ $C081 ; C081 Read directory entry as ASCII string
 
-asm_string_trim            equ $C090 
-asm_string_trim_left       equ $C093 
-asm_string_trim_right      equ $C096 
-asm_string_search          equ $C099 
-asm_string_search_array    equ $C09C 
+asm_string_trim            equ $C090 ; C090
+asm_string_trim_left       equ $C093 ; C093
+asm_string_trim_right      equ $C096 ; C096
+asm_string_search          equ $C099 ; C099
+asm_string_search_array    equ $C09C ; C09C
 
-asm_basbuf_read_byte       equ $C0A8 
-asm_basbuf_read_bytes      equ $C0AB 
-asm_basbuf_read_word       equ $C0AE 
-asm_basbuf_write_byte      equ $C0B1 
-asm_basbuf_write_bytes     equ $C0B4 
-asm_basbuf_write_word      equ $C0B7 
-asm_runarg_count           equ $C0BA 
-asm_runarg_get             equ $C0BD 
+asm_autokey_write_buffer   equ $C0A8 ; C0A8
+asm_fnkey_write_buffer     equ $C0AB ; C0AB
+asm_runarg_count           equ $C0BA ; C0BA
+asm_runarg_get             equ $C0BD ; C0BD
 
-asm_pause_jiffies          equ $C0CC 
-asm_read_gamepad           equ $C0CF ; Read gamepad(s)
-asm_get_gamectrl           equ $C0D2 ; Read full Xbox controller status
-asm_key_pressed            equ $C0D5 ; Check key matrix for key press
+asm_pause_jiffies          equ $C0CC ; C0CC    `
+asm_read_gamepad           equ $C0CF ; C0CF Read gamepad(s)
+asm_get_gamectrl           equ $C0D2 ; C0D2 Read full Xbox controller status
+asm_key_pressed            equ $C0D5 ; C0D5 Check key matrix for key press
 
-asm_play_sample            equ $C0EA ; Play digitized sound sample
+asm_play_sample            equ $C0EA ; C0EA Play digitized sound sample
+asm_set_soundfast          equ $C0ED ; C0ED Set SOUND speed flag
+asm_get_soundfast          equ $C0F0 ; C0F0 Return SOUND speed flag
 
-asm_get_plusbas_version    equ $C102 ; Return plusBASIC version string
-asm_get_system_version     equ $C105 ; Read system version string from ESP
-asm_version_to_long        equ $C108 ; Convert string version to long int
+asm_get_plusbas_version    equ $C102 ; C102 Return plusBASIC version string
+asm_get_system_version     equ $C105 ; C105 Read system version string from ESP
+asm_version_to_long        equ $C108 ; C108 Convert string version to long int
 
 ; *****************
 ; * Graphics ROM  *
@@ -197,30 +208,30 @@ asm_bitmap_get             equ $C036 ; C036 [future] Read Bitmap Screen Section 
 asm_colormap_fill          equ $C045 ; C045 Fill 1bpp Color Map Rectangle with Byte
 
 asm_palette_reset          equ $C054 ; C054 Reset palette to default colors
-asm_palette_set            equ $C057 ; C057 palette_set
-asm_palette_get            equ $C05A ; C05A Get palette
-asm_rgb_to_asc             equ $C060 ; C060 Convert Binary RGB list to ASCII
-asm_asc_to_rgb             equ $C063 ; C063 Convert ASCII RRGGBB to binary GB0R
+asm_palette_set            equ $C057 ; C057 Write one or more entries to palette
+asm_palette_get            equ $C05A ; C05A Read entire palette
+asm_palette_get_entry      equ $C05D ; C05D Read single palette entry
 
 asm_screen_clear_color     equ $C078 ; C078 Fill Color RAM with current/default colors
 asm_screen_read_byte       equ $C084 ; C084 Read byte from screen
 asm_screen_write_byte      equ $C087 ; C087 Write byte to screen
-asm_screen_read_string     equ $C08A ; C08A Read string from Screen RAM
-asm_screen_write_string    equ $C08D ; C08D Write string to Screen RAM
+asm_screen_read_bytes      equ $C08A ; C08A Read string from Screen RAM
+asm_screen_write_bytes     equ $C08D ; C08D Write string to Screen RAM
 asm_screen_read_paged      equ $C096 ; C096
 asm_screen_write_paged     equ $C099 ; C099
 asm_screen_read_fast       equ $C09C ; C09C
 asm_screen_write_fast      equ $C09F ; C09F
 asm_oolor_read_byte        equ $C0A8 ; C0A8 Read byte from Color RAM
 asm_color_write_byte       equ $C0AB ; C0AB Write byte to Color RAM
-asm_color_read_string      equ $C0AE ; C0AE Read string from Color RAM
-asm_color_write_string     equ $C0B1 ; C0B1 Write string to Color RAM
+asm_color_read_bytes       equ $C0AE ; C0AE Read string from Color RAM
+asm_color_write_bytes      equ $C0B1 ; C0B1 Write string to Color RAM
 asm_screen_clear_cursor    equ $C0C0 ; C0C0 Remove cursor from screen
 asm_screen_invert_color    equ $C0C6 ; C0C6
 asm_screen_invert_cursor   equ $C0C9 ; C0C9
 asm_screen_get             equ $C0D2 ; C0D2 Read Text Screen Section into Buffer
 asm_screen_put             equ $C0D5 ; C0D5 Write Text Screen Section from Buffer
 asm_screen_fill            equ $C0D8 ; C0D8 Fill Text or Color Screen Rectangle with Byte
+asm_screen_mode            equ $C0DE ; C0DE Return current Text Screen
 
 asm_init_screen_buffers    equ $C0E4 ; C0E4
 asm_init_screen_vars       equ $C0E7 ; C0E7

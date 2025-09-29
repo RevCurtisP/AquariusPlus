@@ -1,4 +1,4 @@
-;=============================================================================
+\;=============================================================================
 ; Color and Palette Assembly Routines
 ;=============================================================================
 
@@ -29,7 +29,7 @@ default_palette:
 
 
 ;-----------------------------------------------------------------------------
-; Set palette
+; Write one or more entries to palette
 ; Input: A: Entry#               VPALSEL   ~PPEEEEE : P = Palette#, E = Entry#
 ;       BC: Data Length          VPALDATA  GGGGBBBB : G = Green, B = Blue 
 ;       DE: Data Address                   ~~~~RRRR : R = Red
@@ -37,6 +37,7 @@ default_palette:
 ;           
 ; Clobbered: A,BC,DE,HL
 ;-----------------------------------------------------------------------------
+;;; ToDo: Add SET PALETTE and GETPALETTE$ tests to gr,bas (rename to rg.bas?)
 palette_set:
     push    af
     jr      c,.shifted
@@ -63,7 +64,7 @@ palette_set:
     jr      .loop
 
 ;-----------------------------------------------------------------------------
-; Get palette
+; Read entire palette
 ; Input: A: Palette#
 ;       BC: Data Length      
 ;       DE: Data Address
@@ -86,6 +87,28 @@ palette_get:
     jr      .loop
 
 ;-----------------------------------------------------------------------------
+; Read single palette entry
+; Input: A: Palette#
+;        E: Ebtry Index
+; Output: DE: Palette Entry
+; Clobbered: A,BC
+;-----------------------------------------------------------------------------
+palette_get_entry:
+    call    mult_a_32             ; A = Shifted palette #
+    sla     e                     ; E = Entry Offset
+    add     e
+    ld      b,a                   ; B = Register Index
+    ld      c,IO_VPALSEL
+    out     (c),b                 ; Select Index
+    in      a,(IO_VPALDATA)       ; Read Green+Blue byte
+    ld      e,a                   ; E = GB
+    inc     b                     ; 
+    out     (c),b                 ; Select Next Index
+    in      a,(IO_VPALDATA)       ; Read Red byte
+    ld      d,a                   ; DE = RGB
+    ret
+
+;-----------------------------------------------------------------------------
 ; Convert Binary RGB list to ASCII
 ; Input: B: (ToDo) Prefix
 ;        C: Entry Count
@@ -94,7 +117,7 @@ palette_get:
 ; Output: A: ASCII data length
 ; Clobbered: A,BC,DE,HL
 ;-----------------------------------------------------------------------------
-rgb_to_asc:
+;rgb_to_asc:
     xor     a                     ; AscLen = 0
     inc     c                     ; Bump for countdown
 .loop
@@ -273,7 +296,7 @@ byte_to_dec_fast:
 ; Flags: Carry set if invalid line
 ; Clobbered: BC, HL
 ;-----------------------------------------------------------------------------
-asc_to_rgb:
+;asc_to_rgb:
     call    read_nybbles          ; B,C = hiRed,lowRed
     ret     c
     push    bc                    ; Stack = Red, RtnAdr
@@ -424,12 +447,12 @@ get_dec_digit:
     dec     e
     ret
 div_a_16:
-    sra     a                     ; A = A / 2
+    srl     a                     ; A = A / 2
 div_a_8:
-    sra     a                     ; A = A / 4
+    srl     a                     ; A = A / 4
 div_a_4:
-    sra     a                     ; A = A / 8
-    sra     a                     ; A = A / 16
+    srl     a                     ; A = A / 8
+    srl     a                     ; A = A / 16
     ret
 
 ; Clobbers B

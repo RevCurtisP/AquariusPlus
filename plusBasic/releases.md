@@ -1,5 +1,12 @@
 # plusBASIC Release History
 <!--ToDo: Add entries between v0.18x and v0.13h-->
+  - v0.27i (2025-09-28)
+    - Fixed assignment of sysvar `DEFTK` in _sbasic.asm_ and added `VARDEF(*array)`
+    - Added `,ASC` opttion to `SAVE filespec$,*array$`
+    - Replaced `SRA` with `SRL` in _div_a_16_, _div_a_8_, and _div_a_4_ to fix `RGB(rgb$,delimiter)`
+    - Added `LIST *array$` and `LLIST array$` ro print contents of a string array.
+    - Added new syntax `GETPALETTE$(palnum,index)` to return a single palette entry
+    - Added `APPEND INTLIST`, `APPEND RGBLIST`, `APPEND TILELIST`, `APPEND ATTRLIST`, `APPEND BYTELIST`, and `APPEND PALETTELIST`
   - v0.27h (2025-09-21)
     - Printing `CHR$(11)` now disables color printing mode.
     - Moved _buffer_read_ and _buffer_write_ routines from `aqplusbas.asm` to new file `buffer.asm`

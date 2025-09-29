@@ -329,6 +329,30 @@ FN_LEN:
     jp      FLOAT_BC
 
 ;-----------------------------------------------------------------------------
+; Enhanced LIST function
+; lLIST *array$
+;-----------------------------------------------------------------------------
+; DIM A$(5):LOAD "lipsum.txt",*A$,ASC:LLIST *A$
+ST_LLIST:
+    ld      a,1               
+    ld      (PRTFLG),a            ;  Set PRINT to Printer flag
+;-----------------------------------------------------------------------------
+; Enhanced LIST function
+; LIST *array$
+;-----------------------------------------------------------------------------
+; CLEAR:DIM A$(5)
+; LOAD "lipsum.txt",*A$,ASC
+; LIST *A$
+; DIM A$(5):LOAD "lipsum.txt",*A$,ASC:LIST *A$
+ST_LIST:
+    cp      MULTK                 ; If not *
+    jp      nz,LIST               ;   Do normal list
+    call    get_star_array        ; AF = Type, DE = DatAdr, BC = DatLen
+    ld      iy,list_string_array
+    call    aux_call              ; Print array contentes
+    jp      FINPRT                ; Clear LPRINT Flag and retrun
+
+;-----------------------------------------------------------------------------
 ; Enhanced POKE
 ; syntax: POKE address, byte
 ;         POKE address, string$

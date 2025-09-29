@@ -148,7 +148,7 @@ ST_DEF:
     cp      INTTK
     jp      z,ST_DEF_INT            ; DEF INTLIST
     cp      TILETK
-    jp      z,ST_DEF_TILELIST       ; DEF TILELIST
+    jp      z,ST_DEF_TILE           ; DEF TILELIST
     cp      RGBTK
     jp      z,ST_DEF_RGB            ; DEF RGBLIST
     cp      USRTK

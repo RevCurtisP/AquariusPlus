@@ -118,6 +118,7 @@ SPLITDEL    equ $383C   ; Delimiter character
 ARRAYTYP    equ $383C   ; Array Type
 ARRAYPTR    equ $383D   ; Pointer into array data
 ARRAYLEN    equ $383F   ; Array data length
+;; ToDo: Make $3836-$383 End of Temp String buffer after temp vars are moved to FBUFFR
 ; bitmap_get and bitmap_set
 BMPMODE     equ $3837   ; Bitmap Mode 0=1bpp, 2=4bpp
 STARTCOL    equ $3838
@@ -147,6 +148,19 @@ LINEDELTA   equ $383C   ; LINELEN - RIGHTCOL + LEFTCOL
 SAVEHL      equ $383A
 SAVEDE      equ $383C
 SAVEBC      equ $383E
+
+;;; ToDo: Debug and implement
+BAS_FLAGS   equ $3835; Temporary Variables stored in FBUFFR (for statements that don't call FLOAT)
+; SPLIT, JOIN, READ *array statements
+;SPLITDSC    equ FBUFFR+1 ; String descriptor [bas_join, bas_split]
+;SPLITSEG    equ FBUFFR+3 ; Segment counter [bas_split]
+;ARRAYTYP    equ FBUFFR+3 ; Array Type [array_read]
+;SPLITDEL    equ FBUFFR+4 ; Delimiter character [bas_join, bas_split]
+;ARRAYREQ    equ FBUFFR+4 ; String must be quoted [_array_read]
+;ARRAYADR    equ FBUFFR+5 ; Array data start address 
+;ARRAYPTR    equ FBUFFR+7 ; Pointer into array data
+;ARRAYLEN    equ FBUFFR+9 ; Array data length
+
 
 ;-----------------------------------------------------------------------------
 ; Variables
@@ -258,7 +272,7 @@ BASSAVASC   equ $02     ; BASYSCTL: Default SAVe to ASC
 BASKEYRPT   equ $04     ; BASYSCTL: KEY RePeaT on
 BASBRKOFF   equ $20     ; BASYSCTL: BReak OFF (Disable Ctrl-C)
 BASLPRNTR   equ $40     ; BASYSCTL: LPRINT device: (0 = Serial, 1 = ESP)
-; BASCRNCLR   equ $80     ; BASYSCTL: PRINT updates Color RAM
+BASVARDEF   equ $80     ; PTRGET called from VARDEF
 ; Screen Control Bitmask
 ; Screen printing control flags
 CRSR_OFF    equ $40     ; SCREENCTL: Display cursor (1 = No)

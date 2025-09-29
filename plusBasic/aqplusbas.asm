@@ -134,7 +134,7 @@ null_desc:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.27h"
+    db "v0.27i"
     db 0
 plusver_len equ $ - plus_version
 plus_len   equ   $ - plus_text
@@ -996,7 +996,7 @@ hook_table:                     ; ## caller   addr  performing function
     dw      HOOK4+1             ;  4 FINI     0480  Finish Adding/Removing Line or Loading Program
     dw      linker_hook         ;  5 LINKER   0485  Update BASIC Program Line Links
     dw      print_hook          ;  6 PRINT    07BC  Execute PRINT Statement
-    dw      HOOK7+1             ;  7 FINPRT   0866  End of PRINT Statement
+    dw      0                   ;  7                Deprecated
     dw      HOOK8+1             ;  8 TRMNOK   0880  Improperly Formatted INPUT or DATA handler
     dw      eval_extension      ;  9 EVAL     09FD  Evaluate Number or String
     dw      keyword_to_token    ; 10 NOTGOS   0536  Converting Keyword to Token
@@ -1221,6 +1221,7 @@ _check_comment:
 
     include "auxtables.asm"       ; Lookup tables
     include "auxboot.asm"         ; Cold Boot code moved to AuxROM
+    include "arrayaux.asm"        ; Array auxiliary routines
     include "basbuf.asm"          ; Basic buffer read/write routines
     include "basicaux.asm"        ; BASIC auxiliary
     include "debug.asm"           ; Debugging routines

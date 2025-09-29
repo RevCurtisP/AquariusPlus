@@ -837,6 +837,11 @@ _tilemap_xy:
 ; DEF ATTRLIST A1$=2,4,6,8,64:PRINT HEX$(A1$)
 ; DEF ATTRLIST A2$="H","V","HV","D","P":PRINT HEX$(A2$)
 ; DEF ATTRLIST E$="B"
+; APPEND TILELIST T$ = tile#, tile#, ...
+;-----------------------------------------------------------------------------
+ST_APPEND_ATTR:
+    call    _check_append_list    ; Back to APPEND if not TILELIST
+    byte    $06                   ; LD B, over RST CHRGET
 ST_DEF_ATTR:
     rst     CHRGET                ; Skip ATTR/BYTE
     call    _setupdef             ; DatLen, BufAdr, VarPtr
@@ -852,9 +857,13 @@ ST_DEF_ATTR:
 
 ;-----------------------------------------------------------------------------
 ; DEF PALETTELIST P$ = palette#, palette#, ...
+; APPEND PALETTELIST P$ = palette#, palette#, ...
 ; palette# is an integer between 0 and 3
 ;-----------------------------------------------------------------------------
 ;DEF PALETTELIST P$ = 0,1,2,3
+ST_APPEND_PALETTE:
+    call    _check_append_list    ; Back to APPEND if not TILELIST
+    byte    $06                   ; LD B, over RST CHRGET
 ST_DEF_PALETTE:
     rst     CHRGET                ; Skip PALETTE
     call    _setupdef            ; Stack = DatLen, BufPtr, VarPtr, RtnAdr
@@ -868,9 +877,13 @@ ST_DEF_PALETTE:
 
 ;-----------------------------------------------------------------------------
 ; DEF INTLIST I$ = int, int, ...
+; APPEND INTLIST I$ = int, int, ...
 ; int is a integer between 0 and 65535
 ;-----------------------------------------------------------------------------
 ; DEF INTLIST I$ = 1234,$ABBA;0,$FFFF
+ST_APPEND_INT:
+    call    _check_append_list    ; Back to APPEND if not TILELIST
+    byte    $06                   ; LD B, over RST CHRGET
 ST_DEF_INT:
     rst     CHRGET                ; Skip INT
     call    _setupdef            ; Stack = DatLen, BufPtr, VarPtr, RtnAdr
@@ -889,9 +902,13 @@ ST_DEF_INT:
 
 ;-----------------------------------------------------------------------------
 ; DEF RGBLIST R$ = r,g,b; r,g,b; ...
+; APPEND RGBLIST R$ = r,g,b; r,g,b; ...
 ;-----------------------------------------------------------------------------
+ST_APPEND_RGB:
+    call    _check_append_list    ; Back to APPEND if not TILELIST
+    byte    $06                   ; LD B, over RST CHRGET
 ST_DEF_RGB:
-    rst     CHRGET                ; Skip RGB
+    rst     CHRGET                ; Skip RGB, NZ set for DEF 
     call    _setupdef             ; Stack = DatLen, BufPtr, VarPtr
 .loop
     or      a                     ; Carry Clear = No `string$,del`
@@ -914,25 +931,39 @@ strbuf_to_strvar:
     jp      INBUFC                ; Copy Temporary to Variable and return
 
 _setupdef:
+    push    af                    ; Stack = ApndFlg, RtnAdr
     SYNCHKT LISTK                 ; Require LIST
+    byte    $06                   ; LD B, over PUSH AF
 _defnolist:
+    push    af                    ; Stack = ApndFlg, RtnAdr
     call    get_stringvar         ; DE = VarAdr
 _defgotvar:
+    pop     af                    ; F = ApndFlg; Stack = RtnAdr
     pop     bc                    ; BC = RtnAdr
-    push    de                    ; VarAdr
+    push    de                    ; Stack = VarAdr
     push    hl                    ; Stack = TxtPtr, VarAdr
     push    bc                    ; Stack = RtnAdr, TxtPtr, VarAdr
     call    get_strbuf_addr       ; HL = BufAdr
+    ld      a,0                   ; StrLen = 0
+    call    z,_defcopyvar         ; If APPEND, copy VarDat to StrBuf
     pop     bc                    ; BC = RtnAdr; Stack = TxtPtr, VarAdr
-    ex      (sp),hl               ; HL = TxtPtr; Stack = BufAdr, TxtPtr, VarAdr
-    ld      de,0
-    push    de
-;    xor     a                    ; DatLen = 0
-;    push    af                   ; Stack = DatLen, BufAdr, VarPtr
-    push    bc                    ; Stack = RtnAdr, DatLen, BufAdr, VarPtr
-    SYNCHKT EQUATK                ; Else  Require '='
+    ex      (sp),hl               ; HL = TxtPtr; Stack = BufPtr, TxtPtr, VarAdr
+    push    af                    ; Stack = DatLen, BufPtr, VarPtr
+    push    bc                    ; Stack = RtnAdr, DatLen, BufPtr, VarPtr
+    SYNCHKT EQUATK                ; Require '='
     ret
 
+_defcopyvar
+    push    hl                    ; Stack = BufAdr, RtnAdr
+    ex      de,hl                 ; HL = VarAdr
+    call    string_addr_len       ; BE = StrAdr; BC = StrLen
+    pop     hl                    ; HL = BufAdr; Stack = RtnAdr
+    ret     z                     ; Return if Var contains empty string
+    ld      a,c                   ; A = StrLen
+    ex      de,hl                 ; HL = StrAdr, DE = BufAdr
+    ldir                          ; Copy to StrBuf
+    ex      de,hl                 ; HL = StrPtr
+    ret
 
 ; These routines must not change BC or HL
 ; On entry, Stack = RtnAdr, DatLen, BufPtr, VarPtr
@@ -969,10 +1000,16 @@ _write_byte_strbuf:
 
 
 ;-----------------------------------------------------------------------------
+; APPEND TILELIST T$ = tile#, tile#, ...
+;-----------------------------------------------------------------------------
+ST_APPEND_TILE:
+    call    _check_append_list    ; Back to APPEND if not TILELIST
+    byte    $06                   ; LD B, over RST CHRGET
+;-----------------------------------------------------------------------------
 ; DEF TILELIST T$ = tile#, tile#, ...
 ; tile# is a integer between 0 and 511
 ;-----------------------------------------------------------------------------
-ST_DEF_TILELIST:
+ST_DEF_TILE:
     rst     CHRGET                ; Skip TILE
     call    _setupdef             ; Stack = DatLen, BufPtr, VarPtr
 .loop
@@ -982,6 +1019,18 @@ ST_DEF_TILELIST:
     jr      z,_finish_def         ; If not end of statement
     SYNCHKC ','                   ;   Require comma
     jr      .loop                 ;   and get next tile#
+
+; Verify it's APPEND tokenLIST rather than APPEND token$()
+_check_append_list:
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    rst     CHRGET                ; Skip Token
+    cp      LISTK                 ; If LIST, Z set for Append
+    ex      de,hl                 ; DE = NewTxtPtr
+    pop     hl                    ; Stack = OldTxtPtr
+    jp      nz,do_append          ; If not LIST normal APPEND
+    ex      de,hl                 ; HL = NewTxtPtr
+    ret
+
 
 ;-----------------------------------------------------------------------------
 ; GETTILE Function
@@ -1005,9 +1054,14 @@ FN_GETPALETTE:
     rst     CHRGET                ; Skip PALETTE token
     SYNCHKC '$'
     SYNCHKC '('
+    call    get_byte4             ; E = Palette#
+    push    af                    ; Stack = Palette#, RtnAdr
     ld      iy,palette_get
-    call    GETBYT                ; E = Palette#
-_get_gfx
+    ld      a,(hl)
+    cp      ','
+    jr      z,_get_palette_entry
+    pop     af                    ; A = Palette#, Stack = RtnAdr
+_get_gfx:
     SYNCHKC ')'
     push    hl                    ; Stack = TxtPtr
     push    hl                    ; Stack = DummyAdr, TxtPtr
@@ -1022,6 +1076,20 @@ gfx_call_finbck:
     ld      a,1
     ld      (VALTYP),a            ; Set Type to String
     jp      FINBCK                ; Return String
+
+;; E$=GETPALETTE$(0,1)
+;; PRINT HEX$(E$)
+;; PRINT HEX$(GETPALETTE$(0))
+;; FOR I=0 TO 15:PRINT HEX$(GETPALETTE$(0,I)):NEXT
+_get_palette_entry:
+    call    get_comma_byte16      ; E = Entry Index
+    SYNCHKC ')'                   ; Require )
+    pop     af                    ; A = Palette #
+    ld      iy,palette_get_entry
+    call    gfx_call              ; DE = Palette Entry
+push_ret_str_word:
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    jp      ret_str_word          ; Return Entry as binary string
 
 ;-----------------------------------------------------------------------------
 ; DEF SPRITE sprite$ = spritle#, x-offset, y-offset; spritle#, x-offset, y-offset
@@ -1387,7 +1455,7 @@ _get_rgb:
     cp      ','
     jr      nz,.no_del            ;   and comma
     ld      de,(FACLO)            ;     DE = RgbDsc
-    push    de                    ;     Stack = RgbDsc, RtnAd
+    push    de                    ;     Stack = RgbDsc, RtnAdr
     call    skip_get_char         ;     A, C = DelChr
     pop     de                    ;     DE = RgbDsc
     ld      iy,bas_rgb_from_dec   ;     Do RGB$(string$,delimiter)
@@ -1439,13 +1507,4 @@ _rgbdechex:
     call    gfx_call              ; HL = StrPtr
     jp      TIMSTR                ; Return "red,grn,blu"
 
-test_gs_init:
-    push    hl
-    ld      iy,get_set_init
-    call    gfx_call
-    ld      a,0
-    rla                           ; A = Carry
-    ld      (BMPMODE),a           ; BMPMODE = Result
-    pop     hl
-    ret
 

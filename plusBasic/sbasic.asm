@@ -51,6 +51,7 @@ TMPSTK  equ     $38A0   ;;Temporary Stack - Set by INIT
 ENDBUF  equ     $38A9   ;[M80] PLACE TO STOP BIG LINES
 DIMFLG  equ     $38AA   ;[M80] IN GETTING A POINTER TO A VARIABLE IT IS IMPORTANT TO REMEMBER
                         ;[M80] WHETHER IT IS BEING DONE FOR "DIM" OR NOT
+                        ;; Also used as bitmap mode temporary variable by graphics kernek routines
 VALTYP  equ     $38AB   ;[M80] THE TYPE INDICATOR 0=NUMERIC 1=STRING
 DORES   equ     $38AC   ;[M80] WHETHER CAN OR CAN'T CRUNCH RES'D WORDS TURNED ON WHEN "DATA"
                         ;[M80] BEING SCANNED BY CRUNCH SO UNQUOTED STRINGS WON'T BE CRUNCHED.
@@ -562,6 +563,7 @@ TK      =            TK+1
 TK      =            TK+1
         byte    'C'+$80,"OPY"     ;;$92
 TK      =            TK+1
+DEFTK   equ     TK                ;
         byte    'D'+$80,"EF"      ;;$93
 TK      =            TK+1
         byte    'P'+$80,"OKE"     ;;$94
@@ -700,7 +702,6 @@ TK      =            TK+1
 CHRSTK  equ     TK
         byte    'C'+$80,"HR$"     ;;$C6
 TK      =            TK+1
-DEFTK   equ     TK                ;
         byte    'L'+$80,"EFT$"    ;;$C7
 TK      =            TK+1
         byte    'R'+$80,"IGHT$"   ;;$C8
@@ -1098,13 +1099,11 @@ CRDONE: ld      hl,BUF-1          ;[M80] GET POINTER TO CHAR BEFORE BUF AS "GONE
         ld      (de),a            ;[M80] ITS END MUST LOOK LIKE THE END OF A PROGRAM
         ret                       ;[M80] END OF CRUNCHING
 ;;The LLIST and LIST commands
-LLIST:  ld      a,1               ;[M80] PRTFLG=1 FOR REGULAR LIST
+LLIST:  ld      a,1               ;[M80] PRTFLG=1 FOR LLIST
         ld      (PRTFLG),a        ;[M80] SAVE IN I/O FLAG (END OF LPT)
 LIST:   ld      a,23              ;;Set line count to 23
         ld      (CNTOFL),a        ;
-;; <<
         call    SCNLBL            ; + Scan label or line number               0571  call    SCNLIN
-;; >>
         ret     nz                ;
         pop     bc                ;[M80] GET RID OF NEWSTT RETURN ADDR
         call    FNDLIN            ;[M80] DONT EVEN LIST LINE #
@@ -1609,8 +1608,10 @@ REPOUT: rst     OUTCHR            ;[M80] PRINT [A]
 NOTABR: pop     hl                ;[M80] PICK UP TEXT POINTER
         rst     CHRGET            ;[M80] AND THE NEXT CHARACTER
         jp      PRINTC            ;{M80} WE JUST PRINTED SPACES, DON'T CALL CRDO IF END OF THE LINE
-FINPRT: rst     HOOKDO            ;
-HOOK7:  byte    7                 ;
+; sbasic.inc: Cleas LPRINT Flag and return
+                                  ;                                                Original Code 
+FINPRT: nop                       ;                                                0866 rst     HOOKDO
+        nop                       ;                                                0867 byte    7
         xor     a                 ;
         ld      (PRTFLG),a        ;[M80] ZERO OUT PTRFIL
         ret                       ;
@@ -2656,7 +2657,8 @@ STROUT: call    STRLIT            ;[M80] GET A STRING LITERAL
 ; PRINT THE STRING WHOSE DESCRIPTOR IS POINTED TO BY FACLO.
 STRPRT: call    FREFAC            ;[M80] RETURN TEMP POINTER BY FACLO
         call    MOVRM             ;[M80] [D]=LENGTH [B,C]=POINTER AT DATA
-        inc     e                 ;[M80] CHECK FOR NULL STRING
+;;Output string at address BC with length D
+STRPRD: inc     e                 ;[M80] CHECK FOR NULL STRING
 STRPR2: dec     e                 ;[M80] DECREMENT THE LENGTH
         ret     z                 ;[M80] ALL DONE
         ld      a,(bc)            ;[M80] GET CHARACTER TO PRINT
@@ -3043,11 +3045,12 @@ DIMNXT: rst     SYNCHK            ;
 ;{M80} DIMENSION
 DIM:    ld      bc,DIMCON         ;[M80] PLACE TO COME BACK TO
         push    bc                ;
-        byte    $F6               ;;"OR" to skip next instruction
+DIM1:   byte    $F6               ;;"OR" to skip next instruction
 ;{M80} VARIABLE SEARCHING
 ;;Get Pointer to Variable
 PTRGET: xor      a                ;[M80] MAKE [A]=0
-        ld      (DIMFLG),a        ;[M80] FLAG IT AS SUCH
+;;If A = $FF, Search array table. return $FF if found, else 0
+PTRGT1: ld      (DIMFLG),a        ;; DIMFLG = $AF if called from DIM, else 0
         ld      c,(hl)            ;[M80] GET FIRST CHARACTER IN [C]
 ;;Get Pointer to Variable after Reading First Character
 PTRGT2: call    ISLET             ;[M80] CHECK FOR LETTER
@@ -3082,7 +3085,7 @@ NOTSTR: ld      a,(SUBFLG)        ;[M80] GET FLAG WHETHER TO ALLOW ARRAYS
         jp      p,NOARYS          ;[M80] NO ARRAYS ALLOWED
         ld      a,(hl)            ;[M80] GET CHAR BACK
         sub     '('               ;[M80] (CHECK FOR "(") WON'T MATCH IF SUBFLG SET
-        jp      z,ISARY           ;[M80] IT IS!
+        jp      isary_hook        ;; See if call from VARDEF                          jp      z,ISARY
 NOARYS: xor     a                 ;[M80]ALLOW PARENS AGAIN
         ld      (SUBFLG),a        ;[M80]SAVE IN FLAG LOCATION
         push    hl                ;[M80] SAVE THE TEXT POINTER
@@ -3204,7 +3207,7 @@ NMARY1: inc     hl                ;[M80] POINT TO SIZE ENTRY
         jr      nz,LOPFDA         ;[M80] IF NO MATCH, SKIP THIS ONE AND TRY AGAIN
         ld      a,(DIMFLG)        ;[M80] SEE IF CALLED BY "DIM"
         or      a                 ;[M80] ZERO MEANS NO
-        jp      nz,DDERR          ;[M80] "REDIMENSIONED VARIABLE" IF "DIM" CALLING PTRGET
+        jp      nz,dderr_hook     ;; Branch if called by DIM or VARDEF                11C0  jp      nz,DDERR
 ;[M80] TEMP2=THE TEXT POINTER
         pop     af                ;[M80] [A]=NUMBER OF DIMENSIONS
         ld      b,h               ;[M80] SET [B,C] TO POINT AT NUMBER OF DIMENSIONS
@@ -3215,8 +3218,8 @@ NMARY1: inc     hl                ;[M80] POINT TO SIZE ENTRY
 BSERR:  ld      de,ERRBS          ;[M80] "SUBSCRIPT OUT OF RANGE"
         jp      ERROR
 ;[M80] HERE WHEN VARIABLE IS NOT FOUND IN THE ARRAY TABLE
-NOTFDD: ld      de,4              ;[M80] [D,E]=SIZE OF ONE VALUE (VALTYP)
-        pop     af                ;[M80] [A]=NUMBER OF DIMENSIONS
+NOTFDD: jp      notfdd_hook       ;                                   `               11D3  ld      de,4
+NOTFD1: pop     af                ;[M80] [A]=NUMBER OF DIMENSIONS
         jp      z,UDERR           ;; + Undimensioned array error              11D7  jp      z,FCERR
                                   ;; +                                        11D8
                                   ;; +                                        11D9

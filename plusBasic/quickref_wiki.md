@@ -64,6 +64,12 @@ plusBASIC Quick Reference Guide
  - **[ABS(_float_)](BASIC-Math-Functions#abs)** - Return absolute value of expression.
  - **[APPEND _filespec_,^_strvar_](BASIC-SAVE-and-APPEND-Statements#append)** - Append string to file.
  - **[APPEND _filespec_,_address_,_length_](BASIC-SAVE-and-APPEND-Statements#append)** - Append memory to binary file.
+ - **[APPEND ATTRLIST _strvar_=_attr_,...](BASIC-Sprite-Statements-and-Functions#append-attrlist)** - Add to string list of sprite and/or tile attributes.
+ - **[APPEND BYTELIST _strvar_=_byte_,...](BASIC-Stringlist-Statements#append-bytelist)** - Add to a string list of bytes.
+ - **[APPEND INTLIST _strvar_=_integer_,...](BASIC-Stringlist-Statements#append-intlist)** - Add to a string list of integers.
+ - **[APPEND PALETTELIST _strvar_=_palette_,...](BASIC-Sprite-Statements-and-Functions#append-palettelist)** - Add to a string list of palette numbers.
+ - **[APPEND RGBLIST _strvar_=_r_,_g_,_b_|_rgbstr_;...](BASIC-Palette-Statements-and-Functions#append-rgblist)** - Add to a string list of RGB values.
+ - **[APPEND TILELIST _strvar_=_tileno_,...](BASIC-Sprite-Statements-and-Functions#append-tilelist)** - Add to a string list of tile indexes.
  - **ARGS  _arg_{,...} {RETURN _var_{,...}}** - Specify subroutine arguments and return variables.
  - **[ARGS](BASIC-RUN-Command-and-ARGS-Functions#args)** - Return number of RUN arguments
  - **[ARGS$(_argno_)](BASIC-RUN-Command-and-ARGS-Functions#args-1)** - Return RUN argument number _index_.
@@ -174,7 +180,8 @@ plusBASIC Quick Reference Guide
  - **[GETKEY](BASIC-KEY-Functions#getkey)** - Wait for key and return ASCII code.
  - **[GETKEY$](BASIC-KEY-Functions#getkey-1)**  - Wait for key and return as string.
  - **[GETPALETTE$(_palette_)](BASIC-Palette-Statements-and-Functions#getpalette)** - Return palette contents.
- - **GETSOUNDFAST** - Return `SOUNS FAST` status.
+ - **[GETPALETTE$(_palette_,_index_)](BASIC-Palette-Statements-and-Functions#getpalette)** - Return palette entry.
+ - **GETSOUNDFAST** - Return `SOUND FAST` status.
  - **[GETSPEED](BASIC-System-Statements-and-Functions#getspeed)** - Return current turbo setting.
  - **[GETSPRITE$(_spritedef_)](BASIC-Sprite-Statements-and-Functions#getsprite)** - Return attributes of each spritle in the spritedef.
  - **[GETTILE$(_tileno_)](BASIC-Tile-Statements-and-Functions#gettile)** - Return tile pixels.
@@ -207,8 +214,10 @@ plusBASIC Quick Reference Guide
  - **LINE stringvar** - Read an entire line of input from keyboard.
  - **[LINE INPUT #channel,stringvar](BASIC-File-IO-Statements-and-Functions#line-input)** - Read an entire line of input from keyboard or file.
  - **[LIST {_lineref_}](BASIC-LIST-Statements-and-Functions#list)** - Display program lines starting at beginning of program or specified line.
+ - **LIST \*_array_** - Display contents of specified string array.
  - **[LIST$(_lineno_|NEXT)](BASIC-LIST-Statements-and-Functions#list-1)** - Detokenize program line.
  - **[LLIST {_lineref_}](BASIC-LIST-Statements-and-Functions#llist)** - Outputs program lines to printer starting at beginning of program or specified line.
+ - **LLIST \*_array_** - Outputs contemts of specified string array to printer.
  - **[LOAD _filespec_](BASIC-LOAD-Statement#load)** - Load BASIC program into memory.
  - **[LOAD _filespec_,«!_ext_addr_»|«{@_page_,}_address_»](BASIC-LOAD-Statement#load)** - Load binary file into memory.
  - **[LOAD _filespec_,\*_array_](BASIC-LOAD-Statement#load)** - Load binary file data into numeric or string array.
@@ -401,6 +410,7 @@ plusBASIC Quick Reference Guide
  - **USE SCREEN {@_page_,}_text_mode_,_gfx_mode_** - _Not implemented._
  - **[USR(_float_)](BASIC-USR-Function#usr)** - Call user-defined machine language routine passing argument and returning result.
  - **[VAL(_string_)](BASIC-Conversion-Functions#val)** - Convert ASCII string to floating point number.
+ - **VARDEF(\*_array{$}_)** - Return True if array is defined.
  - **VARPTR(_var{$}_|\*_array{$}_)** - Return address of variable, array element, or array
  - **[VER(_expression_)](BASIC-System-Statements-and-Functions#ver)** - Return System or plusBASIC version as integer.
  - **[VER$(_expression_)](BASIC-System-Statements-and-Functions#ver-1)** - Return System or plusBASIC version as printable string.

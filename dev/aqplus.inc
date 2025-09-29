@@ -97,6 +97,20 @@ page_write_byte        equ $221D ; 221D Write Byte to Page
 page_write_word        equ $2220 ; 2220 Write Word to Page
 page_write_bytes       equ $2223 ; 2223 Write Bytes to Page
 
+; BASIC Buffers
+buffer_read_byte       equ $222C ; 222C Read byte from BASIC buffer
+buffer_read_bytes      equ $222F ; 222F Read bytes from BASIC buffer
+buffer_read_word       equ $2232 ; 2232 Read word from BASIC buffer
+buffer_write_byte      equ $2235 ; 2235 Write byte to BASIC buffer
+buffer_write_bytes     equ $2238 ; 2238 Write bytes to BASIC buffer
+buffer_write_word      equ $223B ; 223B Write word to BASIC buffer
+basbuf_read_byte       equ $223E ; 223E Read byte from BASIC buffer
+basbuf_read_bytes      equ $2241 ; 2241 Read bytes from BASIC buffer
+basbuf_read_word       equ $2244 ; 2244 Read word from BASIC buffer
+basbuf_write_byte      equ $2247 ; 2247 Write byte to BASIC buffer
+basbuf_write_bytes     equ $224A ; 224A Write bytes to BASIC buffer
+basbuf_write_word      equ $224D ; 224D Write word to BASIC buffer
+
 ; Extended ROM
 get_linbuf_addr        equ $C200 ; Get Line Buffer Address
 get_strbuf_addr        equ $C203 ; Get String Buffer Address
@@ -111,80 +125,78 @@ FLOAT_CDE              equ $C20C ; Convert CDE to unsigned float in FACC
 ; *****************
 
 ; DOS
-dos_change_dir         equ $C000 ; Change Directory
-dos_close              equ $C003 ; Close file or directory
-dos_close_all          equ $C006 ; Close all files
-dos_create_dir         equ $C009 ; Create directory
-dos_delete             equ $C00C ; Delete file/directory
-dos_stat               equ $C00F ; Return File Status
-dos_get_cwd            equ $C012 ; Get Current Directory
-dos_open               equ $C015 ; Open file
-dos_open_append        equ $C018 ; Open file for write
-dos_open_dir           equ $C01B ; Open directory for read
-dos_open_read          equ $C01E ; Open file for read
-dos_open_write         equ $C021 ; Open file for write
-dos_read_dir           equ $C024 ; Read directory entry
-dos_rename             equ $C027 ; Delete file/directory
-dos_rewind             equ $C02A ; Move to beginning of file
-dos_seek               equ $C02D ; Move to position in file
-dos_tell               equ $C030 ; Get current position in file
+dos_change_dir         equ $C000 ; C000 Change Directory
+dos_close              equ $C003 ; C003 Close file or directory
+dos_close_all          equ $C006 ; C006 Close all files
+dos_create_dir         equ $C009 ; C009 Create directory
+dos_delete             equ $C00C ; C00C Delete file/directory
+dos_stat               equ $C00F ; C00F Return File Status
+dos_get_cwd            equ $C012 ; C012 Get Current Directory
+dos_open               equ $C015 ; C015 Open file
+dos_open_append        equ $C018 ; C018 Open file for write
+dos_open_dir           equ $C01B ; C01B Open directory for read
+dos_open_read          equ $C01E ; C01E Open file for read
+dos_open_write         equ $C021 ; C021 Open file for write
+dos_read_dir           equ $C024 ; C024 Read directory entry
+dos_rename             equ $C027 ; C027 Delete file/directory
+dos_rewind             equ $C02A ; C02A Move to beginning of file
+dos_seek               equ $C02D ; C02D Move to position in file
+dos_tell               equ $C030 ; C030 Get current position in file
 
 ; File I/O
-file_get_dir           equ $C033 ; Extract path from filespec
-file_get_ext           equ $C036 ; Extract extension from filespec
-file_trim_dir          equ $C03C ; Trim path from filespec
-file_trim_ext          equ $C03F ; Trim extension from filespec
-file_load_binary       equ $C042 ; Load binary file into main memory
-file_load_chrset       equ $C045 ; Load file into alternate chrset buffer
-file_load_paged        equ $C048 ; Load binary file into paged memory
-file_load_palette      equ $C04B ; Load and set palette
-file_load_pt3          equ $C04E ; Load PT3 file into PT3 buffer
-file_load_rom          equ $C051 ; Load ROM file into page 35
-file_load_screen       equ $C054 ; Load screen image
-file_load_strbuf       equ $C057 ; Load file into BASIC string buffer
-file_save_binary       equ $C060 ; Save binary file from main memory
-file_save_paged        equ $C063 ; Save file from paged memory
-file_save_palette      equ $C066 ; Get and save palette
-file_save_screen       equ $C069 ; Save screen image
-file_save_strbuf       equ $C06C ; Save BASIC string buffer to file
-file_load_defchrs      equ $C06F ; Load file into default chrset buffer
-file_load_tilemap      equ $C072 ; Load tilemap
-file_save_tilemap      equ $C075 ; Save tilemap
-file_save_chrset       equ $C078 ;
-file_load_tileset      equ $C07B ; Load tiles
-file_save_tileset      equ $C07E ; Save tiles
-file_read_dir          equ $C081 ; Read directory entry as ASCII string
+file_get_dir           equ $C033 ; C033 Extract path from filespec
+file_get_ext           equ $C036 ; C036 Extract extension from filespec
+file_trim_dir          equ $C03C ; C03C Trim path from filespec
+file_trim_ext          equ $C03F ; C03F Trim extension from filespec
+file_load_binary       equ $C042 ; C042 Load binary file into main memory
+file_load_chrset       equ $C045 ; C045 Load file into alternate chrset buffer
+file_load_paged        equ $C048 ; C048 Load binary file into paged memory
+file_load_palette      equ $C04B ; C04B Load and set palette
+file_load_pt3          equ $C04E ; C04E Load PT3 file into PT3 buffer
+file_load_rom          equ $C051 ; C051 Load ROM file into page 35
+file_load_screen       equ $C054 ; C054 Load screen image
+file_load_strbuf       equ $C057 ; C057 Load file into BASIC string buffer
+file_save_binary       equ $C060 ; C060 Save binary file from main memory
+file_save_paged        equ $C063 ; C063 Save file from paged memory
+file_save_palette      equ $C066 ; C066 Get and save palette
+file_save_screen       equ $C069 ; C069 Save screen image
+file_save_strbuf       equ $C06C ; C06C Save BASIC string buffer to file
+file_load_defchrs      equ $C06F ; C06F Load file into default chrset buffer
+file_load_tilemap      equ $C072 ; C072 Load tilemap
+file_save_tilemap      equ $C075 ; C075 Save tilemap
+file_save_chrset       equ $C078 ; C078
+file_load_tileset      equ $C07B ; C07B Load tiles
+file_save_tileset      equ $C07E ; C07E Save tiles
+file_read_dir          equ $C081 ; C081 Read directory entry as ASCII string
 
 ; String Operations
-string_trim            equ $C090 
-string_trim_left       equ $C093 
-string_trim_right      equ $C096 
-string_search          equ $C099 
-string_search_array    equ $C09C 
+string_trim            equ $C090 ; C090
+string_trim_left       equ $C093 ; C093
+string_trim_right      equ $C096 ; C096
+string_search          equ $C099 ; C099
+string_search_array    equ $C09C ; C09C
 
 ; BASIC Line Buffer
-basbuf_read_byte       equ $C0A8 
-basbuf_read_bytes      equ $C0AB 
-basbuf_read_word       equ $C0AE 
-basbuf_write_byte      equ $C0B1 
-basbuf_write_bytes     equ $C0B4 
-basbuf_write_word      equ $C0B7 
-runarg_count           equ $C0BA 
-runarg_get             equ $C0BD 
+autokey_write_buffer   equ $C0A8 ; C0A8
+fnkey_write_buffer     equ $C0AB ; C0AB
+runarg_count           equ $C0BA ; C0BA
+runarg_get             equ $C0BD ; C0BD
 
 ; Miscellaneous
-pause_jiffies          equ $C0CC 
-read_gamepad           equ $C0CF ; Read gamepad(s)
-get_gamectrl           equ $C0D2 ; Read full Xbox controller status
-key_pressed            equ $C0D5 ; Check key matrix for key press
+pause_jiffies          equ $C0CC ; C0CC    `
+read_gamepad           equ $C0CF ; C0CF Read gamepad(s)
+get_gamectrl           equ $C0D2 ; C0D2 Read full Xbox controller status
+key_pressed            equ $C0D5 ; C0D5 Check key matrix for key press
 
 ; Sounds
-play_sample            equ $C0EA ; Play digitized sound sample
+play_sample            equ $C0EA ; C0EA Play digitized sound sample
+set_soundfast          equ $C0ED ; C0ED Set SOUND speed flag
+get_soundfast          equ $C0F0 ; C0F0 Return SOUND speed flag
 
 ; System and plusBASIC versions
-get_plusbas_version    equ $C102 ; Return plusBASIC version string
-get_system_version     equ $C105 ; Read system version string from ESP
-version_to_long        equ $C108 ; Convert string version to long int
+get_plusbas_version    equ $C102 ; C102 Return plusBASIC version string
+get_system_version     equ $C105 ; C105 Read system version string from ESP
+version_to_long        equ $C108 ; C108 Convert string version to long int
 
 ; *****************
 ; * Graphics ROM  *
@@ -210,31 +222,31 @@ colormap_fill          equ $C045 ; C045 Fill 1bpp Color Map Rectangle with Byte
 
 ; Palette and Colors
 palette_reset          equ $C054 ; C054 Reset palette to default colors
-palette_set            equ $C057 ; C057 palette_set
-palette_get            equ $C05A ; C05A Get palette
-rgb_to_asc             equ $C060 ; C060 Convert Binary RGB list to ASCII
-asc_to_rgb             equ $C063 ; C063 Convert ASCII RRGGBB to binary GB0R
+palette_set            equ $C057 ; C057 Write one or more entries to palette
+palette_get            equ $C05A ; C05A Read entire palette
+palette_get_entry      equ $C05D ; C05D Read single palette entry
 
 ; Text Screen Read and Write
 screen_clear_color     equ $C078 ; C078 Fill Color RAM with current/default colors
 screen_read_byte       equ $C084 ; C084 Read byte from screen
 screen_write_byte      equ $C087 ; C087 Write byte to screen
-screen_read_string     equ $C08A ; C08A Read string from Screen RAM
-screen_write_string    equ $C08D ; C08D Write string to Screen RAM
+screen_read_bytes      equ $C08A ; C08A Read string from Screen RAM
+screen_write_bytes     equ $C08D ; C08D Write string to Screen RAM
 screen_read_paged      equ $C096 ; C096
 screen_write_paged     equ $C099 ; C099
 screen_read_fast       equ $C09C ; C09C
 screen_write_fast      equ $C09F ; C09F
 oolor_read_byte        equ $C0A8 ; C0A8 Read byte from Color RAM
 color_write_byte       equ $C0AB ; C0AB Write byte to Color RAM
-color_read_string      equ $C0AE ; C0AE Read string from Color RAM
-color_write_string     equ $C0B1 ; C0B1 Write string to Color RAM
+color_read_bytes       equ $C0AE ; C0AE Read string from Color RAM
+color_write_bytes      equ $C0B1 ; C0B1 Write string to Color RAM
 screen_clear_cursor    equ $C0C0 ; C0C0 Remove cursor from screen
 screen_invert_color    equ $C0C6 ; C0C6
 screen_invert_cursor   equ $C0C9 ; C0C9
 screen_get             equ $C0D2 ; C0D2 Read Text Screen Section into Buffer
 screen_put             equ $C0D5 ; C0D5 Write Text Screen Section from Buffer
 screen_fill            equ $C0D8 ; C0D8 Fill Text or Color Screen Rectangle with Byte
+screen_mode            equ $C0DE ; C0DE Return current Text Screen
 
 ; Text Screen Switch and Swap
 init_screen_buffers    equ $C0E4 ; C0E4

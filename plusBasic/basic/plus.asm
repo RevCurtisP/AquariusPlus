@@ -1261,6 +1261,60 @@ ST_USE:
     jp      z,ST_USECHR           ; USE CHRSET
     jp      SNERR
 
+
+;-----------------------------------------------------------------------------
+; VARDEF Function
+; Syntax: VARDEF(*arrayname)
+; Returns: -1 if array defined, else false
+;-----------------------------------------------------------------------------
+;; PRINT VARDEF(*A)
+;;; ToDo: Add support for simple variables
+FN_VARDEF:
+    rst     CHRGET                ; Skip DEF
+    SYNCHKC '('                   ; Require (
+    SYNCHKT MULTK                 ; Require *
+    ld      a,(BASYSCTL)
+    or      BASVARDEF             ; Set Called by PTRGET flag
+    ld      (BASYSCTL),a
+    call    DIM1                  ; Search for array
+    ld      b,a                   ; B = Found
+    SYNCHKC ')'                   ; Require )
+    ld      a,(BASYSCTL)
+    and     $FF-BASVARDEF         ; Clear Called by PTRGET flag
+    ld      (BASYSCTL),a
+    ld      a,0
+    ld      (VALTYP),a
+push_hl_labbck_floats_b:
+    ld      a,b                   ; A = Found
+    jp      push_hl_labbck_float_sbyte
+
+isary_hook:
+    jp      z,ISARY
+    ld      a,(BASYSCTL)
+    and     BASVARDEF             ; If called from VARDEF
+    jp      nz,ERSFIN             ;    Search for arry
+    jp      NOARYS                ; Else continue on
+
+dderr_hook:
+    jp      z,ISARY
+    ld      a,(BASYSCTL)
+    and     BASVARDEF             ; If not called from VARDEF
+    jp      z,DDERR               ;   Redimensioned Variable Error
+    pop     hl                    ; Discard # of Dimensions
+    pop     hl                    ; Restore TxtPtr  
+    or      $FF                   ; Return $FF
+    ret
+
+notfdd_hook:
+    ld      a,(BASYSCTL)
+    and     BASVARDEF             ; f not called from VARDEF
+    ld      de,4                  ;   Replaced with JP notfdd_hook
+    jp      z,NOTFD1              ;   Dimension the variable
+    pop     hl                    ; Discard # of Dimensions
+    pop     hl                    ; Restore TxtPtr      
+    xor     a                     ; Return 0                   
+    ret      
+
 ;-----------------------------------------------------------------------------
 ; VER Function
 ; Syntax: VER$(x)
@@ -1340,6 +1394,8 @@ str_word:
     call   PARCHK
     push   hl                    ; Stack = TxtPtr. RtnAdr
     call   FRCINT                ; DE = ArgVal
+; Enter with DE = word, HL on stack
+ret_str_word:
     push   de                    ; Stack = ArgVal, TxtPtr, RtnAdr
     ld     a,2
     call   STRINI                ; Allocate 2 byte string

@@ -40,11 +40,11 @@ _jump_table:
     jp      just_ret              ; C051 
 ; color.asm <<Palette and Colors>>
     jp      palette_reset         ; C054 Reset palette to default colors
-    jp      palette_set           ; C057 palette_set
-    jp      palette_get           ; C05A Get palette
-    jp      just_ret              ; C05D 
-    jp      rgb_to_asc            ; C060 Convert Binary RGB list to ASCII
-    jp      asc_to_rgb            ; C063 Convert ASCII RRGGBB to binary GB0R
+    jp      palette_set           ; C057 Write one or more entries to palette
+    jp      palette_get           ; C05A Read entire palette
+    jp      palette_get_entry     ; C05D Read single palette entry
+    jp      just_ret              ; C060 
+    jp      just_ret              ; C063 
     jp      just_ret              ; C066 
     jp      just_ret              ; C069 
 ;; move to nybble.asm

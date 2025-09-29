@@ -1200,20 +1200,40 @@ _lookup_file:
 ;-----------------------------------------------------------------------------
 ; APPEND
 ;
-; ToDo: APPEND "filename"{,ASC|CAQ|TOK)       Append paged binary data
-; APPEND "filename",addr,len                  Append binary data
+; ToDo: APPEND "filename",addr,len            Append binary data
 ; ToDo: APPEND "filename",@page,addr,len      Append paged binary data
 ; ToDo: APPEND "filename",!extaddr,addr,len   Append paged binary data
 ; ToDo: APPEND "filename",*a                  Append numeric array a
 ; APPEND "filename",^a$                       Append string array a
 ;-----------------------------------------------------------------------------
 ST_APPEND:
-    call    chrget_strdesc_arg    ; Get FileSpec pointer in HL
+    rst     CHRGET                ; Skip APPEND token
+    cp      INTTK
+    jp      z,ST_APPEND_INT
+    cp      RGBTK
+    jp      z,ST_APPEND_RGB
+    cp      TILETK
+    jp      z,ST_APPEND_TILE
+    cp      XTOKEN
+    jr      nz,do_append          ; If Extended Token
+    inc     hl
+    ld      a,(hl)                ;   Skip XTOKEN
+    cp      ATTRTK
+    jp      z,ST_APPEND_ATTR
+    cp      BYTETK
+    jp      z,ST_APPEND_ATTR
+    cp      PALETK
+    jp      z,ST_APPEND_PALETTE
+    jp      SNERR
+do_append:
+    call    get_strdesc_arg       ; HL = FileSpec
     ex      (sp),hl               ; HL = TxtPtr, Stack = StrDsc, RtnAdr
     call    get_comma
     cp      EXPTK                 ; If ^
     jp      z,append_string       ;   Append to binary file
     jp      SNERR
+
+_append_list:
 
 ;-----------------------------------------------------------------------------
 ; SAVE
@@ -1303,7 +1323,7 @@ ST_SAVE:
 
     ; Save array
 .array:
-    call    skip_star_array
+    call    skip_star_array     ; A = AryTyp, BC = AryLen, DE = AryPtr
     jp      save_caq_array
 
 
@@ -1475,7 +1495,27 @@ save_caq_program:
 ;-----------------------------------------------------------------------------
 ; DIM A(99)
 ; SAVE "/t/array.caq",*A
+
+; A = AryTyp, BC = AryLen, DE = AryPtr
 save_caq_array:
+    jr      nz,.not_string
+    ex      af,af'                ; F' = IsString
+    ld      a,(hl)                ; 
+    cp      ','                   ; Set NZ if no comma
+    jr      nz,.not_asc           ; If Comma
+    rst     CHRGET                ;   Skip comma
+    SYNCHKT ASCTK                 ;   Require ASC
+    cp      'X'
+    jr      nz,.not_ascx          ;   If ASCX
+    rst     CHRGET                ;     Skip X
+    xor     a                     ;     Set Zero,     
+    scf                           ;     Set Carry for ASCX
+    jr      .not_asc
+.not_ascx
+    xor     a                     ; Set Zero, Clear Carry for ASC
+.not_asc
+    ex      af,af'                ; F = IsString, F' = AscFlag
+.not_string
     ex      (sp),hl               ; HL = StrDsc, Stack = TxtPtr, RtnAdr
     push    bc                    ; Stack = AryLen, TxtPtr, RtnAdr
     push    de                    ; Stack = AryAdr, AryLen, TxtPtr, RtnAdr
@@ -1512,14 +1552,36 @@ _array_filename: db "######"
 ; DIM A$(9)
 ; SAVE "/t/sa.sta",*A$
 save_string_array:
+    ex      af,af'                ; F = AscFlg
+    push    af                    ; Stack = Stack = AscFlg, AryPtr, AryLen, TxtPtr, RtnAdr
     call    _open_write           ; Create file
+    pop     af                    ; F = AscFlg, Stack = AryPtr, AryLen, TxtPtr, RtnAdr
     pop     hl                    ; HL = AryPtr; Stack = AryLen, TxtPtr, RtnAdr
+    pop     bc                    ; BC = AryLen; Stack = TxtPtr
+    ld      iy,bas_save_string_array
+    call    aux_call              ; Save the array
+    jr      _close_pop_ret        ; Close file, restore TxtPtr, and return
+    
 .strloop
+    push    af                    ; Stack = AscFlg, AryLen, TxtPtr, RtnAdr
     call    string_addr_len       ; DE = StrAdr, BC = StrLen
+    pop     af                    ; F = AscFlag; Stack = AryLen, TxtPtr, RtnAdr
     push    hl                    ; Stack = AryPtr, AryLen, TxtPtr, RtnAdr
-    ld      a,c
-    call    esp_write_byte        ; Write string length
+    push    af                    ; Stack = AscFlag, AryPtr, AryLen, TxtPtr, RtnAdr
+    jr      z,.skip_len           ; If Not ASCII mode
+    ld      a,c                   ;   A = StraLen
+    call    esp_write_byte        ;   Write string length
+.skip_len
     call    esp_write_bytes       ; Write string data
+    pop     af                    ; F = AscFlag; Stack = AryPtr, AryLen, TxtPtr, RtnAdr
+    push    af                    ; Stack = AscFlag, AryPtr, AryLen, TxtPtr, RtnAdr
+    jr      nz,.skip_crlf         ; If ASCII mode
+    ld      a,13                  
+    call    esp_write_byte        ; Write CR
+    ld      a,10                  
+    call    esp_write_byte        ; Write LF
+.skip_crlf
+    pop     af                    ; F = AscFlag; Stack = AryPtr, AryLen, TxtPtr, RtnAdr
     pop     hl                    ; HL = AryPtr; Stack = AryLen, TxtPtr, RtnAdr
     pop     de                    ; DE = AryLen; Stack = TxtPtr, RtnAdr
     ld      b,4
@@ -1527,9 +1589,11 @@ save_string_array:
     inc     hl
     dec     de
     djnz    .nextloop
+    ex      af,af'                ; F' = AscFlg
     ld      a,d
     or      e
     jr      z,_close_pop_ret
+    ex      af,af'                ; F = AscFlg
     push    de                    ; Stack = AryLen, TxtPtr, RtnAdr
     jr      .strloop
 

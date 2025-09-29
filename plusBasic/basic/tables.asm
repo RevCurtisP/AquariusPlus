@@ -37,8 +37,8 @@ STJUMPS:
     dw      ST_POKE               ;$94 POKE              
     dw      $07BC                 ;$95 PRINT             
     dw      $0C4B                 ;$96 CONT              
-    dw      $056C                 ;$97 LIST              
-    dw      $0567                 ;$98 LLIST             
+    dw      ST_LIST               ;$97 LIST              
+    dw      ST_LLIST              ;$98 LLIST             
     dw      $0CCD                 ;$99 CLEAR             
     dw      $1C2C                 ;$9A CLOAD             
     dw      $1C08                 ;$9B CSAVE             

@@ -17,6 +17,8 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
     <h1 id="plusbasic-release-history">plusBASIC Release History</h1>
     <!--ToDo: Add entries between v0.18x and v0.13h-->
     <ul>
+      <li>v0.27i (2025-09-??)
+<ul><li>Fixed assignment of sysvar <code>DEFTK</code> in <em>sbasic.asm</em> and added <code>VARDEF(*array)</code></li><li>Added <code>,ASC</code> opttion to <code>SAVE filespec$,*array$</code></li><li>Replaced <code>SRA</code> with <code>SRL</code> in <em>div_a_16</em>, <em>div_a_8</em>, and <em>div_a_4</em> to fix <code>RGB(rgb$,delimiter)</code></li><li>Added <code>LIST *array$</code> and <code>LLIST array$</code> ro print contents of a string array.</li><li>Added new syntax <code>GETPALETTE$(palnum,index)</code> to return a single palette entry</li><li>Added <code>APPEND INTLIST</code>, <code>APPEND RGBLIST</code>, <code>APPEND TILELIST</code>, <code>APPEND ATTRLIST</code>, <code>APPEND BYTELIST</code>, and <code>APPEND PALETTELIST</code></li></ul></li>
       <li>v0.27h (2025-09-21)
 <ul><li>Printing <code>CHR$(11)</code> now disables color printing mode.</li><li>Moved <em>buffer_read</em> and <em>buffer_write</em> routines from <code>aqplusbas.asm</code> to new file <code>buffer.asm</code></li><li>Moved <em>basbuf_read</em> and <em>basbuf_write</em> routines from <code>basbuf.asm</code> to 0<code>buffer.asm</code></li><li><code>NEW</code> and <code>LOAD</code> basic progran clear run arguments returned by <code>ARGS</code> and <code>ARGS$</code></li><li>Added parsing of delimited decimal RGB string to <code>RGB()</code> and <code>RGB$</code></li></ul></li>
       <li>v0.27g (2025-09-12)

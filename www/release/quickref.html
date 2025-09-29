@@ -76,6 +76,24 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" checked="checked" />
         <strong>APPEND <em>filespec</em>,<em>address</em>,<em>length</em></strong> - Append memory to binary file.<!--SAVE--></li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>APPEND ATTRLIST <em>strvar</em>=<em>attr</em>,...</strong> - Add to string list of sprite and/or tile attributes.<!--sprites--></li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>APPEND BYTELIST <em>strvar</em>=<em>byte</em>,...</strong> - Add to a string list of bytes.<!--defstrlist--></li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>APPEND INTLIST <em>strvar</em>=<em>integer</em>,...</strong> - Add to a string list of integers.<!--defstrlist--></li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>APPEND PALETTELIST <em>strvar</em>=<em>palette</em>,...</strong> - Add to a string list of palette numbers.<!--sprites--></li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>APPEND RGBLIST <em>strvar</em>=<em>r</em>,<em>g</em>,<em>b</em>|<em>rgbstr</em>;...</strong> - Add to a string list of RGB values.<!--palette--></li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>APPEND TILELIST <em>strvar</em>=<em>tileno</em>,...</strong> - Add to a string list of tile indexes.<!--sprites--></li>
       <li>[-] <strong>ARGS  <em>arg</em>{,...} {RETURN <em>var</em>{,...}}</strong> - Specify subroutine arguments and return variables.</li>
       <li>[-] <strong>ARGS</strong> - Return number of RUN arguments<!--runargs--></li>
       <li class="task-list-item">
@@ -381,8 +399,11 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <input disabled="disabled" type="checkbox" checked="checked" />
         <strong>GETPALETTE$(<em>palette</em>)</strong> - Return palette contents.<!--palette--></li>
       <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" checked="checked" />
+        <strong>GETPALETTE$(<em>palette</em>,<em>index</em>)</strong> - Return palette entry.<!--palette--></li>
+      <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>GETSOUNDFAST</strong> - Return <code>SOUNS FAST</code> status.</li>
+        <strong>GETSOUNDFAST</strong> - Return <code>SOUND FAST</code> status.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>GETSPEED</strong> - Return current turbo setting.<!--system--></li>
@@ -477,8 +498,12 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <input disabled="disabled" type="checkbox" />
         <strong>LINE INPUT #channel,stringvar</strong> - Read an entire line of input from keyboard or file.<!--fileio--></li>
       <li>[-] <strong>LIST </strong> - Display program lines starting at beginning of program or specified line.<!--list--></li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>LIST *<em>array</em></strong> - Display contents of specified string array.</li>
       <li>[.] <strong>LIST$(<em>lineno</em>|NEXT)</strong> - Detokenize program line.<!--list--></li>
       <li>[.] <strong>LLIST </strong> - Outputs program lines to printer starting at beginning of program or specified line.<!--list--></li>
+      <li>[.] <strong>LLIST *<em>array</em></strong> - Outputs contemts of specified string array to printer.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>LOAD <em>filespec</em></strong> - Load BASIC program into memory.<!--LOAD--></li>
@@ -1011,6 +1036,9 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" checked="checked" />
         <strong>VAL(<em>string</em>)</strong> - Convert ASCII string to floating point number.<!--convert--></li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>VARDEF(*<em>array{$}</em>)</strong> - Return True if array is defined.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>VARPTR(<em>var{<span class="math">}_|\*_array{</span>}</em>)</strong> - Return address of variable, array element, or array</li>

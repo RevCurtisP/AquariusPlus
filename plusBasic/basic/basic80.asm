@@ -455,10 +455,15 @@ ST_TRO:
     ret
 
 ;----------------------------------------------------------------------------
-; VARPTR
+; VARPTR() and VARDEF()
 ;----------------------------------------------------------------------------
 FN_VAR:
-    call    get_ptrtk             ; Skip VAR and require PTR
+    inc     hl                    ; Skip VAR
+    ld      a,(hl)                ; A = NxtChr
+    cp      DEFTK                 ; If VARDEF
+    jp      z,FN_VARDEF           ;   Go do it
+    SYNCHKT XTOKEN                ; Else
+    SYNCHKT PTRTK                 ;  Require PTR
     SYNCHKC '('
     cp      MULTK                 ; Check Next Character
     push    af                    ; Stack = VarPfx, RtnAdr
