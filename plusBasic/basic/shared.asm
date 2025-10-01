@@ -797,6 +797,7 @@ get_screen_colors_bc:
 ;-----------------------------------------------------------------------------
 get_on_off:
     rst     CHRGET                ; Get argument
+    jp      z,MOERR               ; Missing operand error if end of statement
 check_on_off:
     cp      ONTK                  ;  
     jr      nz,.not_on            ; If ON
@@ -825,16 +826,6 @@ get_stringvar:
     call    PTRGET                ; DE = Pointer to variable
     call    CHKSTR                ; If not a string
     jp      CHRGT2                ; Reget Character and Return
-
-; ------------------------------------------------------------------------------
-; Increment XTEMP0
-; Clobbered: A
-; ------------------------------------------------------------------------------
-inc_xtemp0:
-    ld      a,(XTEMP0)
-    inc     a                     ; SptlCnt += 1
-    ld      (XTEMP0),a            ; XTEMP0 = SptlCnt
-    ret
 
 pars_string_labbck:
     rst     CHRGET                ; Skip token

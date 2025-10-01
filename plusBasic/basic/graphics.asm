@@ -154,7 +154,7 @@ ST_SETCOLOR:
     SYNCHKT ORTK                  ; Require OR
     cp      XTOKEN
     jr      z,.extended
-    call    get_screen_colors
+    call    get_screen_colors     ; A,E = Colors
     ld      (SCOLOR),a
     ld      a,(SCREENCTL)
     or      SCRCOLOR
@@ -538,7 +538,7 @@ ST_FILL_TILE:
 ST_GET_SCREEN:
     rst     CHRGET                ; Skip SCREEN
     call    screen_suffix         ; Check for CHR and ATTR
-    ld      (XTEMP0),bc           ; XTEMP = Mode
+    ld      (GPSCMODE),bc         ; XTEMP = Mode
     call    scan_rect             ; B = BgnCol, C = EndCol, D = BgnRow, E = EndRow
     ld      iy,screen_get
     jr      _do_get
@@ -625,7 +625,7 @@ ST_PUT_CHR:
 ST_PUT_SCREEN:
     rst     CHRGET                ; Skip SCREEN
     call    screen_suffix         ; B: 1 = CHR, 2 = ATTR, 3 = Neither
-    ld      (XTEMP0),bc           ; XTEMP0 = Mode
+    ld      (GPSCMODE),bc         ; XTEMP0 = Mode
     call    SCAND                 ; C = Col, E = Row
     ld      iy,screen_put
     jr      _do_put
@@ -681,7 +681,7 @@ _get_put:
     pop     bc                    ; C = Col; Stack = Row, RtnAdr
     ex      (sp),hl               ; HL = Row; Stack = TxtPtr, RtnAdr
     ex      de,hl                 ; E = Row, HL = AryAdr
-    ld      a,(XTEMP0+1)          ; A = Mode (GET/PUT SCREEN)
+    ld      a,(GPSCMODE+1)        ; A = Mode (GET/PUT SCREEN)
     jp      gfx_call_fc_popret
 
 
@@ -1107,7 +1107,7 @@ ST_DEF_SPRITE:
     xor     a                     ; A = SptlCnt (0)
     ld      b,a                   ; B = MaxYoffset (0)
     ld      c,a                   ; C = MaxXoffset (0)
-    ld      (XTEMP0),a            ; XTEMP0 = SptlCnt
+    ld      (SPRTLCNT),a          ; 
     call    _write_byte_strbuf    ; Write E to string buffer
     call    _write_bc_strbuf      ; Write BC to string buffer
     ld      a,(hl)
@@ -1128,7 +1128,7 @@ ST_DEF_SPRITE:
     ld      b,a                   ;   MaxXoffset = Xoffset
 .skipy
     call    _write_byte_strbuf    ; Write E to string buffer
-    call    inc_xtemp0            ; Increment SptlCnt
+    call    _inc_sprtlcnt            ; Increment SptlCnt
     call    CHRGT2
     jr      z,_sprite_done
     SYNCHKC ';'
@@ -1138,7 +1138,7 @@ _sprite_done
     push    bc                    ; Stack = MaxOfs, TxtPtr, Datlen, BufPtr, VarPtr, RtnAdr
     call    get_strbuf_addr       ; HL = BufAdr
     pop     bc                    ; BC = MaxOfs; Stack = TxtPtr, Datlen, BufPtr, VarPtr, RtnAdr
-    ld      a,(XTEMP0)
+    ld      a,(SPRTLCNT)
     ld      (hl),a                ; Write SptlCnt to string buffer
     inc     hl
     ld      a,c                   ;
@@ -1156,6 +1156,13 @@ _get_byte:
     call    get_byte64            ; Get spritle#
     pop     bc                    ; BC = MaxOfs
     ret
+
+_inc_sprtlcnt:
+    ld      a,(SPRTLCNT)
+    inc     a                     ; SptlCnt += 1
+    ld      (SPRTLCNT),a          ; 
+    ret
+
 
 ; DEF SPRITE var$ = (width,height),spritle#
 ; Stack = DatLen, BufPtr, VarPtr, RtnAdr

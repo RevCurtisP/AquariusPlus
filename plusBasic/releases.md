@@ -1,5 +1,9 @@
 # plusBASIC Release History
 <!--ToDo: Add entries between v0.18x and v0.13h-->
+  - v0.27j (2025-10-01)
+    - Moved temporary sysvars from `RNDTAB` to `FILNAM`+`FILNAF`, `RESMO`-`RESLO`
+    - Moved PT3 control routines from _util.asm_ (SysROM) to _sound.asm_ (AuxROM) and renamed from _pt3..._ to _track..._
+    - Added system variable `TMPBUFTOP` and routines _alloc_temp_buffer_ and _free_temp_buffer_
   - v0.27i (2025-09-28)
     - Fixed assignment of sysvar `DEFTK` in _sbasic.asm_ and added `VARDEF(*array)`
     - Added `,ASC` opttion to `SAVE filespec$,*array$`

@@ -139,7 +139,7 @@ XINIT   equ     $E010   ;;ROM Cartridge Initialization Entry Point
 
         org     $0000   ;;Starting Address of Standard BASIC
 
-;;RST 0 - Startup
+;; sbasic,inc: RST 0 - Startup
 START:
 ;;; Instead of checking for the Extended BASIC signature
 ;;; jump straight into Extended BASIC init                                    Original Code
@@ -152,24 +152,24 @@ BASSIG: byte    $82,$06,$22       ;;Revision Date 1982-06-22
 ;;; Code Change: Aquarius+ only
 ;;; 4th byte of signaure is '+' if plusBASIC, NUL if 8k/12k BASIC             0007  nop
         byte    '+'               ;;                                          
-;;RST 1 - Syntax Check
+;; sbasic,inc: RST 1 - Syntax Check
 SYNCHK: ld      a,(hl)
         ex      (sp),hl
         cp      (hl)              ;[M65] CHARACTERS EQUAL?
         inc     hl
         ex      (sp),hl
         jp      nz,SNERR          ;[M65] "SYNTAX ERROR"
-;;RST 2 - Get Next Character
+;; sbasic,inc: RST 2 - Get Next Character
 CHRGET: inc     hl                ;[M65] INCREMENT THE TEXT PNTR
         ld      a,(hl)            ;;Entry point to get current character
         cp      ':'               ;[M65] IS IT A ":"?
         ret     nc                ;[M65] IT IS .GE. ":"
         jp      CHRCON            ;;Continue in CHRGTR
-;;RST 3 - Output Character
+;; sbasic,inc: RST 3 - Output Character
 OUTCHR: jp      OUTDO             ;;Execute print character routine           
         byte    0,0,0,0,0         ;;Pad out the RST routine
 
-;;RST 4 - Integer Compare
+;; sbasic,inc: RST 4 - Integer Compare
 COMPAR: ld      a,h               ;;Compare [DE] to [HL]
         sub     d                 ;;Sets Z flag if equal
         ret     nz                ;;Sets Carry if [DE] > [HL]
@@ -177,7 +177,7 @@ COMPAR: ld      a,h               ;;Compare [DE] to [HL]
         sub     e                 ;
         ret                       ;
         byte    0,0               ;;Pad out the RST routine
-;;RST 5 - Get sign of Floating Point Argument
+;; sbasic,inc: RST 5 - Get sign of Floating Point Argument
 FSIGN:  ld      a,(FAC)           ;
         or      a                 ;[M65] IF NUMBER IS ZERO, SO IS RESULT
         jp      nz,SIGNC          ;;Check sign of mantissa if not 0
@@ -189,6 +189,7 @@ JUMPIX: jp      (ix)              ;;and jump to it
         byte    0,0               ;;Pad out RST routine
 ;;RST 7 - Execute USR Routine
 ;;;Code change: Jump to new Interrupt Vector instead of USRPOK
+;; sbasic,inc: RST 7 - Interrupt
 USRFN:  jp      INTJMP            ;;Execute Interrupt routine
 ;;Default Extended BASIC Hook Routine
 NOHOOK: exx                       ;;Save BC, DE, and HL
@@ -299,7 +300,6 @@ COLDST: ld      hl,DEFALT         ;Set System Variable Default Values
 ;;; In plusBASIC and SD-BASIC from MEMTST to before INITFF is unused          Original Code
         jp      XCOLD             ;; + Do Extended BASIC Cold Start           010F  ld      hl,BASTXT+99
 ;; Evaluate Formula and Return Type  +
-MEMTST
 FRMTYP: call    FRMEVL            ;; + Evaluate the formula                   0112  inc     hl    
                                   ;; +                                        0113  ld      c,(hl)
                                   ;; +                                        0114  ld      a,h   
@@ -341,6 +341,7 @@ PARSTR: call    PARCHK            ;; +                                        01
                                   ;; +                                        0132  ld      (TOPMEM),hl
         jr      _chkstr           ;; +                                        0133  
                                   ;; +                                        0134
+;;; AqPlus deprecated code
         call    SCRTCH            ;;Perform NEW
 ; Continue Cold Boot if not booting into plusBASIC
 CLDCON: call    PRNTIT            ;;Print copyright message
@@ -439,8 +440,9 @@ STMDSP: ;MARKS START OF STATEMENT LIST
                                   ;; +                                                01E6              
         word    RUN               ;;$06BE                                             01E7
                                   ;; +                                                01E8              
-        word    IFS               ;;$079C                                             01E9
-        nop                       ;; +                                                01EB  word    RESTOR
+LSERR:  ld      e,ERRLS           ;; + 28                                             01E9  word    IFS
+                                  ;; +                                                01EA
+        byte    $01               ;; +                                                01EB  word    RESTOR
 SLERR:  ld      e,ERRSL           ;; + 32 String length                               01FC
                                   ;; +                                                01ED  word    GOSUB
         byte    $01               ;; +                                                01FE                
@@ -1608,10 +1610,9 @@ REPOUT: rst     OUTCHR            ;[M80] PRINT [A]
 NOTABR: pop     hl                ;[M80] PICK UP TEXT POINTER
         rst     CHRGET            ;[M80] AND THE NEXT CHARACTER
         jp      PRINTC            ;{M80} WE JUST PRINTED SPACES, DON'T CALL CRDO IF END OF THE LINE
-; sbasic.inc: Cleas LPRINT Flag and return
-                                  ;                                                Original Code 
-FINPRT: nop                       ;                                                0866 rst     HOOKDO
-        nop                       ;                                                0867 byte    7
+;; sbasic.inc: Cleas LPRINT Flag and return
+FINPRT: nop                       ;                                                 0866 rst     HOOKDO
+        nop                       ;                                                 0867 byte    7
         xor     a                 ;
         ld      (PRTFLG),a        ;[M80] ZERO OUT PTRFIL
         ret                       ;
@@ -2672,7 +2673,7 @@ GETSPA: or      a                 ;[M80] MUST BE NON ZERO. SIGNAL NO GARBAG YET
         byte    $0E               ;[M80] "MVI C" AROUND THE NEXT BYTE
 TRYGI2: pop     af                ;[M80] IN CASE COLLECTED WHAT WAS LENGTH?
         push    af                ;[M80] SAVE IT BACK
-        ld      hl,(STRSPC)       ;; + Bottom of String Space                 0EB7  ld      hl,(TOPMEM)
+        ld      hl,(TMPBUFTOP)    ;; + Top of temp buffers                        0EB7  ld      hl,(TOPMEM)
         ex      de,hl             ;[M80] IN [D,E]
         ld      hl,(FRETOP)       ;[M80] GET TOP OF FREE SPACE IN [H,L]
         cpl                       ;[M80] -# OF CHARS

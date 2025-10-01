@@ -344,65 +344,6 @@ aux_str_literal:
     ld      (FACLO),bc            ; Srore in StrDsc
     ret
 
-; Populate array from comma separated text
-; (ARRAYPTR) = Pointer into array data
-; (ARRAYLEN) = Bytes left in array data
-; HL = TxtPtr (next literal to read)
-_array_read:
-    call    GETYPE                ; A = 0: String, 1: Numeric
-    ld      (ARRAYTYP),a          ; Save arraytype
-_array_reader:
-    ld      a,(ARRAYTYP)
-    or      a
-    jr      z,.string             ; If numeric array
-    call    fin_extension         ;   Read number into FACC
-    push    hl                    ;   Stack = TxtPtr, RtnAdr
-    ld      hl,FACLO              ;   HL = FACC
-    jr      .next                 ; Else
-.string
-    call    CHRGT2                ;   A = First character
-    cp      ','
-    jr      z,.comma
-    ld      d,a                   ;   If it's a quote, terminators will be quote
-    ld      e,a                   ;   
-    cp      '"'
-    jr      z,.parse              ;   If not quoted
-    ld      a,(ARRAYREQ)
-    or      a                     ;     If quotes required
-    jp      nz,TMERR              ;       Type mismatch error
-.comma
-    ld      d,':'                 ;     Terminators are colon and comms
-    ld      b,','                 ;    
-    dec     hl                    ;     Back up TxtPtr
-.parse
-    call    STRLT2                ;   Parse string literal
-    push    hl                    ;   Stack = TxtPtr, RtnAdr
-    call    FREFAC                ;   HL = StrDsc 
-    ex      de,hl                 ;   DE = StrDsc
-    call    copy_literal_string
-    ex      de,hl                 ;   HL = StrDsc
-.next
-    ld      de,(ARRAYPTR)         ; HL = AryPtr
-    ld      bc,4
-    ldir                          ; Copy to Array
-    ld      (ARRAYPTR),de         ; ARRAYPTR = AryPtr
-    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
-    ld      bc,(ARRAYLEN)         ; BC = AryLen
-    dec     bc                    ; Count down
-    dec     bc
-    dec     bc
-    dec     bc
-    ld      (ARRAYLEN),bc         ; BC = AryLen
-    ld      a,b
-    or      c                     ; If end of array
-    ret     z                     ;   Return
-    call    CHRGT2                ; If terminator
-    scf                           ;   Return Carry Set
-    ret     z
-.noteol
-    SYNCHKC ','                   ; Else require comma
-    jr      _array_reader         ;   and get next item
-
 ; Called from ST_JOIN
 bas_join:
     call    get_strbuf_addr       ; HL = StrBuf
@@ -449,6 +390,7 @@ aux_movvfm:
     ret
 
 ; Called from ST_SPLIT
+; (SPLITSEG) = String segment count
 bas_split:
     ld      hl,(SPLITDSC)         ; HL = SrcDsc
     call    free_hl_addr_len      ; DE = SrcAdr, BC = SrcLen, HL = SrcDsc
@@ -464,12 +406,13 @@ bas_split:
     ld      (SPLITSEG),a          ; SPLITSEG = SegCnt
     pop     hl                    ; HL = BufPtr; Stack = TxtPtr, RtnAdr
 ; Populate array from comma separated text
-; Input: HL: BufPtr
-; (SPLITDSC) = String descriptor of string to split
-; (ARRAYADR) = Address of first array element
-; (ARRAYLEN) = Length of array data
-; (SPLITDEL) = Delimiter to split on 
-; (SPLITSEG) = String segment count
+;  Input: HL: BufPtr
+; (SPLITDSC): String descriptor of string to split
+; (ARRAYADR): Address of first array element
+; (ARRAYLEN): Length of array data
+; (ARRAYPTR): Pointer to current array element
+; (SPLITDEL): Delimiter to split on 
+; (SPLITSEG): String segment count
 aux_split_array:
     call    _skipone              ; Skip first array element
 .loop
@@ -550,7 +493,7 @@ aux_split_fill:
     ret     z                     ;   Return
     jp      sys_fill_zero         ; Fill to end with 0 bytes
 
-_skipone
+_skipone:
     ld    de,(ARRAYPTR)
     ld    bc,(ARRAYLEN)
 bas_skipfirst
@@ -558,7 +501,7 @@ bas_skipfirst
     inc   de
     inc   de
     inc   de
-    jr    _ARRAYPTR
+    jr    _arrayptr
 _clearfirst
     xor     a
     ld      b,4
@@ -566,7 +509,7 @@ _clearfirst
     ld      (de),a
     inc     de
     djnz    .skiploop
-_ARRAYPTR
+_arrayptr
     ld      (ARRAYPTR),de         ; ARRAYPTR = AryPtr
 _countdown:
     dec     bc

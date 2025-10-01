@@ -620,8 +620,8 @@ ST_JOIN:
     call    parse_delimiter       ; A = DelChr
     ld      (SPLITDEL),a          ; SPLITDEL = DelChr
     push    hl                    ; Stack = TxtPtr, RtnAdr
-    call    aux_call_inline
-    word    bas_join
+    ld      iy,bas_join
+    call    aux_call
     pop     hl
     ret
 
@@ -642,6 +642,7 @@ FN_OFF:
 ; SPLIT Statement
 ; Syntax: SPLIT string$ INTO *array$ DEL delimiter
 ;-----------------------------------------------------------------------------
+; CLEAR:DIM A$(5):SPLIT "Foo|Bar|Baz" INTO *A$ DEL '|'
 ST_SPLIT:
     rst     CHRGET                ; Skip SPLIT
     call    FRMSTR                ; Parse SrcStr
@@ -658,8 +659,8 @@ ST_SPLIT:
     call    parse_delimiter       ; A = DelChr
     ld      (SPLITDEL),a          ; SPLITDEL = DelChr
     push    hl
-    call    aux_call_inline
-    word    bas_split
+    ld      iy,bas_split
+    call    aux_call
     pop     hl
     ret
 
@@ -803,7 +804,7 @@ FN_EVAL:
     call    string_addr_len   ; Get Argument String Length in BC, Address in HL
     ld      a,ENDBUF-BUF      ;
     cp      c
-    jr      c,LSERR           ; Error if longer than 127 bytes
+    jp      c,LSERR           ; Error if longer than 127 bytes
     ex      de,hl             ; Text address into HL
     ld      de,BUF            ;
     ldir                      ; Copy String to Buffer
@@ -822,11 +823,6 @@ FN_EVAL:
     call    FRMEVL            ; Evaluate Formula
     pop     hl                ; Restore Text Pointer
     ret
-
-LSERR:
-    ld      e,ERRLS
-    jp      ERROR
-
 
 ;-----------------------------------------------------------------------------
 ; FILL Statement stub
@@ -1224,6 +1220,8 @@ ST_RESET:
     jr      z,_reset_array
     cp      SCRNTK
     jp      z,ST_RESET_SCREEN
+    cp      USRTK
+    jr      z,reset_usrdef
     SYNCHKT XTOKEN
     cp      PALETK
     jp      z,ST_RESET_PALETTE
@@ -1232,6 +1230,17 @@ ST_RESET:
     cp      SPRITK
     jp      z,ST_RESET_SPRITE
     jp      SNERR
+
+
+;-----------------------------------------------------------------------------
+; RESET USRDEF
+;-----------------------------------------------------------------------------
+reset_usrdef:
+    inc     hl                    ; Skip USR
+    SYNCHKT DEFTK                 ; Require DEF
+    ld      de,USRDO              ; DE = DefAdr
+    ld      (USRADD),de           ; UsrAdd = DefAdr
+    ret
 
 ;-----------------------------------------------------------------------------
 ; Set all array elements to 0 or empty string

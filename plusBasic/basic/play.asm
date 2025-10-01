@@ -96,11 +96,12 @@ ST_RESUME_TRACK:
 ST_STOP_TRACK:
     rst     CHRGET                ; Skip TRACK
     push    hl
-    call    pt3_reset
+    ld      iy,track_reset
+    call    aux_call
     pop     hl
     xor     a
-    jp      pt3_loop
-    ret
+    ld      iy,track_loop
+    jp      aux_call
 
 ;-----------------------------------------------------------------------------
 ; TRACKFAST, TRACKLOOP, TRACKSTATUS, and TRACKPEED Functions
@@ -108,7 +109,8 @@ ST_STOP_TRACK:
 ;-----------------------------------------------------------------------------
 FN_TRACK:
     rst     CHRGET                ; Skip TRACK
-    call    pt3_status            ; B = Active, C = Looped, E = Fast
+    ld      iy,track_status
+    call    aux_call              ; B = Active, C = Looped, E = Fast
     SYNCHKT XTOKEN
     call    push_hlinc_labbck
     cp      FASTK
@@ -122,7 +124,8 @@ FN_TRACK:
     jr      z,.retstat
     cp      SPEEDTK
     jp      nz,SNERR
-    call    track_speed
+    ld      iy,track_speed
+    call    aux_call
     jp      SNGFLT
 .retstat
     ld      a,l
@@ -139,25 +142,21 @@ ST_SET_TRACK:
     rst     CHRGET                ; Skip TRACK
     SYNCHKT XTOKEN
     cp      SPEEDTK
-    jr      z,_pt3_speed
-    ld      ix,pt3_setmode
+    jr      z,_track_speed
+    ld      iy,track_setmode
     cp      FASTK
     jr      z,.set
-    ld      ix,pt3_loop
+    ld      iy,track_loop
     cp      LOOPTK                
     jp      nz,SNERR
 .set
     call    get_on_off          ; A = $FF if ON, 0 if OFF
-    ld      e,a                 ; For pt3_setmode
-    jr      call_ix
-call_ix:
-    push    hl
-    call    jump_ix
-    pop     hl
-    ret
-_pt3_speed
+    ld      e,a                 ; For track_setmode
+    jp      aux_call_preserve_hl
+_track_speed
     call    skip_get_byte       ; A = Speed
-    ld      ix,pt3_setspeed
-    call    call_ix
+    ld      iy,track_setspeed
+    call    aux_call
     jp      c,FCERR
     ret
+

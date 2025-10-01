@@ -74,7 +74,7 @@ bool_checkbit_string:
 ;-----------------------------------------------------------------------------
 bool_setbit_long:
     ld      b,0
-    ld      hl,0                  ; BHL = 1
+    ld      hl,1                  ; BHL = 1
     or      a                     ; Clear Carry, set Zero flags
 .loop
     jr      z,bool_or_long        ; If Not 0

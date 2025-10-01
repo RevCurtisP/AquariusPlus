@@ -415,41 +415,13 @@ userint_disable:
     jr      _clear_irq
 
 ;----------------------------------------------------------------------------
-; Set Tracker Mode
-;----------------------------------------------------------------------------
-track_speed:
-    ld      a,e      
-    or      a
-    ld      a,50
-    ret     z
-    ld      a,60
-    ret
-pt3_setspeed:
-    ld      e,$FF
-    cp      60
-    jr      z,pt3_setmode
-    inc     e
-    cp      50
-    jp      nz,ret_c
-pt3_setmode:
-    ld      iy,pt3fast
-    jr      _pt3call
-pt3_getmode:
-    ld      iy,pt3mode
-    jr      _pt3call
-pt3_reset:
-    call    pt3_disable
-    ld      iy,pt3init
-_pt3call
-    jp      pt3call
-
-;----------------------------------------------------------------------------
 ; Start background PT3 player
 ; Input C,DE = Timer count
 ; Clobbers: A,B
 ;----------------------------------------------------------------------------
 pt3_start:
-    call    pt3_reset
+    ld      iy,track_reset
+    call    aux_call
 pt3_enable:
     ld      b,IRQ_TRACKER
 _enable_irq:
@@ -464,45 +436,7 @@ pt3_disable:
 _clear_irq:
     jp      clear_vblank_irq
 
-;----------------------------------------------------------------------------
-; Set PT3 loop status
-; Input: A: $FF = On, 0 = Off
-; Clobbered: B
-;----------------------------------------------------------------------------
-pt3_loop:
-    and     TRK_LOOPS             ; Isolate repeat flah bit
-    ld      b,a                   ; B = LoopFlag
-    ld      a,(EXT_FLAGS)
-    and     $FF-TRK_LOOPS         ; Clear LoopBit
-    or      b                     ; Or in new LoopBit
-    ld      (EXT_FLAGS),a
-    ret
       
-;----------------------------------------------------------------------------
-; Get PT3 player status
-; Output: B: -1 if PT3 interrupt is active
-;         C: -1 if PT3 looped
-; Clobbered: A
-;----------------------------------------------------------------------------
-pt3_status:
-    call   pt3_getmode            ; E = Mode
-    call    .active
-    ld      b,a
-    call    .looped
-    ld      c,a
-    ret
-.active
-    ld      a,(IRQACTIVE)
-    and     IRQ_TRACKER
-    jr      .retstat
-.looped
-    ld      a,(EXT_FLAGS)
-    and     TRK_LOOPS
-.retstat
-    ret     z
-    or      255
-    ret
-
 ;-----------------------------------------------------------------------------
 ; Look up byte in table
 ; Input: A: Offset

@@ -297,7 +297,7 @@ file_load_pt3:
     ld      bc,$4000-pt3song
     call    file_load_buffer
     push    af
-    call    pt3_reset
+    call    track_reset
     pop     af
     ret
 

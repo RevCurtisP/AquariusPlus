@@ -184,6 +184,8 @@ clear_extension:
     call    esp_close_all         ; Close all files
     xor     a
     ld      (BAS_FDESC),a         ; Clear currently open file
+    ld      hl,(STRSPC)           ; Set temp buffer pointer
+    ld      (TMPBUFTOP),hl        ; to start of string space
     ld      hl,(VARTAB)
     jp      CLEARV
 

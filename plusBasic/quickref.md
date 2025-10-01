@@ -305,6 +305,7 @@ plusBASIC Quick Reference Guide
  - **RESET PALETTE _palette_** - Reset palette to default RGB values.
  - **RESET SCREEN** - Reset current text screen to default settings.
  - **RESET SPRITE _spritedef_|#_spritle_|\*** - Reset all spritle properties.
+ - **RESET USRDEF** - Reset `USR()` vector to default address
  - **RESTORE {_lineref_}** - Reset READ/DATA pointer to beginning of program or specified line.
  - **RESTORE BITMAP|TILEMAP** - _Not implemented._
  - **RESTORE SCREEN** - Copy respective screen buffer to current text screen.

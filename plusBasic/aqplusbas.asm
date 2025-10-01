@@ -134,7 +134,7 @@ null_desc:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.27i"
+    db "v0.27j"
     db 0
 plusver_len equ $ - plus_version
 plus_len   equ   $ - plus_text
@@ -251,7 +251,8 @@ _pt3tick
     ld      iy,pt3tick
     call    pt3call
     ret     z
-    call    pt3_reset
+    ld      iy,track_reset
+    call    aux_call
     ld      a,(EXT_FLAGS)
     and     TRK_LOOPS
     ret     z
@@ -948,9 +949,6 @@ page_call:
     ld      iyh,a
     jr      _jumpiy
 
-
-    free_rom_sys = $2F00 - $
-
 ; Run M/L Executable
 run_exec:
     call    page_set_plus         ; Put extended ROM back
@@ -978,6 +976,48 @@ _eat_suffix
     call    aux_call
     jp      NOSEC
 
+; Allocate a 256 byte temporary string buffer
+; Output: HL: Buffer Address
+alloc_temp_buffer:
+    push    de
+    ld      hl,(TMPBUFTOP)        ; HL = TempBufPtr
+    inc     h                     ; Add 256
+    ld      de,(FRETOP)           ; DE = Bottom of String Data
+    rst     COMPAR                ; If new pointer in string space
+    jr      nz,OSERR              ;   Out of string space error
+    ld      (TMPBUFTOP),hl        ; Set new pointer address
+    dec     h                     ; Back to current pointer address
+    pop     de
+    ret
+
+; Get address of most recently allocated temp buffer
+; Output: HL: Buffer Address
+get_temp_buffer:
+    ld      hl,(TMPBUFTOP)        ; HL = TempBufPtr
+    dec     h                     ; Add 256
+    ret
+
+; Deallocate most recent temporary string buffer
+free_temp_buffer:
+    push    hl
+    push    de
+    ld      hl,(TMPBUFTOP)        ; HL = TempBufPtr
+    dec     h                     ; Subtract 256
+    ld      de,(STRSPC)           ; DE = Bottom of String Space
+    rst     COMPAR
+    jr      nc,.set               ; If Pointer < TOPMEM
+    ex      de,hl                 ;   Pointer = TOPMEM
+.set
+    ld      (TMPBUFTOP),hl        ; Update it
+    pop     de
+    pop     hl
+    ret
+
+OSERR:
+    ld      e,ERROS
+    jp      ERROR
+
+    free_rom_sys = $2F00 - $
 
 ; ------------------------------------------------------------------------------
 ;  Hook Jump Table

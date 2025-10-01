@@ -130,3 +130,73 @@ _delay_table:
     byte     9                    ; 5 14000   13928.2
     byte     6                    ; 6 16000   16419.9
     byte     3                    ; 7 20000   19997.5
+
+;----------------------------------------------------------------------------
+; Set TRACK loop status
+; Input: A: $FF = On, 0 = Off
+; Clobbered: B
+;----------------------------------------------------------------------------
+track_loop:
+    and     TRK_LOOPS             ; Isolate repeat flah bit
+    ld      b,a                   ; B = LoopFlag
+    ld      a,(EXT_FLAGS)
+    and     $FF-TRK_LOOPS         ; Clear LoopBit
+    or      b                     ; Or in new LoopBit
+    ld      (EXT_FLAGS),a
+    ret
+
+
+;----------------------------------------------------------------------------
+; Set Tracker Mode
+;----------------------------------------------------------------------------
+track_speed:
+    ld      a,e      
+    or      a
+    ld      a,50
+    ret     z
+    ld      a,60
+    ret
+track_setspeed:
+    ld      e,$FF
+    cp      60
+    jr      z,track_setmode
+    inc     e
+    cp      50
+    jp      nz,ret_c
+track_setmode:
+    ld      iy,pt3fast
+    jr      _pt3call
+track_getmode:
+    ld      iy,pt3mode
+    jr      _pt3call
+track_reset:
+    call    pt3_disable
+    ld      iy,pt3init
+_pt3call
+    jp      pt3call
+
+;----------------------------------------------------------------------------
+; Get PT3 player status
+; Output: B: -1 if PT3 interrupt is active
+;         C: -1 if PT3 looped
+; Clobbered: A
+;----------------------------------------------------------------------------
+track_status:
+    call   track_getmode          ; E = Mode
+    call    .active
+    ld      b,a
+    call    .looped
+    ld      c,a
+    ret
+.active
+    ld      a,(IRQACTIVE)
+    and     IRQ_TRACKER
+    jr      .retstat
+.looped
+    ld      a,(EXT_FLAGS)
+    and     TRK_LOOPS
+.retstat
+    ret     z
+    or      255
+    ret
+

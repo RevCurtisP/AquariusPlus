@@ -82,12 +82,6 @@ BORDERCHR   equ $33FF   ; Border character alternate memory location (40 column 
 BORDERCLR   equ $37FF   ; Border color alternate memory location
 
 ; plusBASIC temporary sysvars
-; FILNAM ($3851-$3856) - CLOAD/CSAVE File Name
-; FILNAF ($3857-$385C) - File Name on Tape
-BUFADR      equ $3857   ; Unpack buffer address
-BUFPTR      equ $3859   ; Pointer into unpacking buffer
-BUFRET      equ $385B   ; unpack_line return address
-BUFLEN      equ $385B   ; Buffer length
 
 ; RNDTAB ($3821-$3840) - Deprecated RND Permutation Table
 BASINTPG    equ $3821   ; BASIC Interrupt Routine Page, 0=None (swapped into BANK 3)
@@ -106,61 +100,56 @@ EXT_FLAGS   equ $3830   ; Extended BASIC flags
 BAS_FDESC   equ $3831   ; ESP file descriptor to close on Error or Ctrl-C
 IEND_KEY    equ $3832   ; Key pressed to end input
 SCREENCTL   equ $3833   ; Text Screen flags
-GFX_FLAGS   equ $3834
-;               $3835   ; unused (1 bytes)
-; SPLIT statement
-SPLITDSC    equ $3838   ; String descriptor 
-SPLITTRM    equ $3838   ; Segment terminator  (overwrites LSB of SPLITDSC)
-SPLITSEG    equ $3839   ; Segment counter (overwrites MSB of SPLITDSC)
-ARRAYREQ    equ $3839   ; String must be quoted
-ARRAYADR    equ $383A   ; Array data start address 
-SPLITDEL    equ $383C   ; Delimiter character
-ARRAYTYP    equ $383C   ; Array Type
-ARRAYPTR    equ $383D   ; Pointer into array data
-ARRAYLEN    equ $383F   ; Array data length
-;; ToDo: Make $3836-$383 End of Temp String buffer after temp vars are moved to FBUFFR
-; bitmap_get and bitmap_set
-BMPMODE     equ $3837   ; Bitmap Mode 0=1bpp, 2=4bpp
-STARTCOL    equ $3838
-ENDCOL      equ $383A
-RECTWIDTH   equ $383A
-STARTROW    equ $383C
-ENDROW      equ $383E
-RECTHEIGHT  equ $383E
-; DEF SPRITE
-XTEMP0      equ $3836   ; Used by DEF SPRITE
-XTEMP1      equ $3837   ; Used by DEF SPRITE
-SPRTLNUM    equ $3838   ; Spritle number
-SPRTCOLS    equ $383A   ; Width in spritles
-SPRTROWS    equ $383C   ; Height in spritles
-; SET SPRITE
-SPARGVAL    equ $383E   ; Sprite argument value/string address
-SPARGTYP    equ $3840   ; Sprite argument type 
+GFX_FLAGS   equ $3834   
+BAS_FLAGS   equ $3835   ; Temporary BASIC Flags
+TMPBUFTOP   equ $3836
 
 ; enhance editor
-RIGHTCOL    equ $3838   ; Right bound (LINELEN-1)
-LEFTCOL     equ $3839   ; Left bound (1)
-BOTLINE     equ $383A
-TOPLINE     equ $383B
-LINEDELTA   equ $383C   ; LINELEN - RIGHTCOL + LEFTCOL
+;RIGHTCOL    equ $3838   ; Right bound (LINELEN-1)
+;LEFTCOL     equ $3839   ; Left bound (1)
+;BOTLINE     equ $383A
+;TOPLINE     equ $383B
+;LINEDELTA   equ $383C   ; LINELEN - RIGHTCOL + LEFTCOL
+
+; Temporary Variables stored in FILNAM+FILNAM ($3851-$385C), RESMO-RESLO ($38F7-$38F8)
+; bitmap_get and bitmap_set
+BMPMODE     equ $3851   ; Bitmap Mode 0=1bpp, 2=4bpp
+STARTCOL    equ $3852
+ENDCOL      equ $3854
+STARTROW    equ $3856
+ENDROW      equ $3858
 
 ; CALL ARGS
-SAVEHL      equ $383A
-SAVEDE      equ $383C
-SAVEBC      equ $383E
+SAVEHL      equ $3852   ; [word] 
+SAVEDE      equ $3854   ; [word]
+SAVEBC      equ $3856   ; [word]
 
-;;; ToDo: Debug and implement
-BAS_FLAGS   equ $3835; Temporary Variables stored in FBUFFR (for statements that don't call FLOAT)
-; SPLIT, JOIN, READ *array statements
-;SPLITDSC    equ FBUFFR+1 ; String descriptor [bas_join, bas_split]
-;SPLITSEG    equ FBUFFR+3 ; Segment counter [bas_split]
-;ARRAYTYP    equ FBUFFR+3 ; Array Type [array_read]
-;SPLITDEL    equ FBUFFR+4 ; Delimiter character [bas_join, bas_split]
-;ARRAYREQ    equ FBUFFR+4 ; String must be quoted [_array_read]
-;ARRAYADR    equ FBUFFR+5 ; Array data start address 
-;ARRAYPTR    equ FBUFFR+7 ; Pointer into array data
-;ARRAYLEN    equ FBUFFR+9 ; Array data length
+; DEF SPRITE
+SPRTLCNT    equ $3851   ; Spritle Count
+SPRTLNUM    equ $3852   ; Spritle number
+SPRTCOLS    equ $3854   ; Width in spritles
+SPRTROWS    equ $3856   ; Height in spritles
 
+; GET/PUT SCREEN
+GPSCMODE    equ $3851   ; GET/PUT screen mode (CHR/ATTR/both)
+
+                        ;            SPLIT           DIM         JOIN       READ           LIST$()
+                        ;          bas_split    dim_extension  bas_join read_extension   unpack_line
+                        ;       aux_split_array   array_read  _ skipone                output_to_buffer
+; FILNAM+FILNAF ($3851-$385C) - CLOAD/CSAVE File Name
+ARRAYPTR    equ $3851   ; 383D         *               *           *         &
+ARRAYADR    equ $3853   ; 383A         *
+BUFADR      equ $3853   ; 3857                                     *
+ARRAYLEN    equ $3855   ; 383F         *               *           *         *
+BUFLEN      equ $3857   ; 385B                                     *
+BUFRET      equ $3857   ; 385B                                                                *
+BUFPTR      equ $3859   ; 3859                                     *                          *
+SPLITDSC    equ $385B   ; 3838         *                           *
+; RESMO+RESLO ($38F7-$38F8) - FMULT/FDIV Result
+SPLITSEG    equ $38F7   ; 3839         *         
+ARRAYREQ    equ $38F7   ; 3839                         *                     *
+ARRAYTYP    equ $38F8   ; 383C                         *                     *
+SPLITDEL    equ $38F8   ; 383C         *                           *
 
 ;-----------------------------------------------------------------------------
 ; Variables
