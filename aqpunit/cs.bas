@@ -1,5 +1,5 @@
 100 REM Unit Tests for COPY SCREEN
-110 QG$="cv"
+110 QG$="cu"
 120 GOSUB _init
 
 200 GOSUB _title:ARGS "COPY SCREEN"

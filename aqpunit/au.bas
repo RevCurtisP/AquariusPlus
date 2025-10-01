@@ -1,6 +1,6 @@
 100 REM Run unit tests
 105 SET SPEED 3
-110 CLEAR 4096,$BFF5:POKE $BFF8,STRING$(8,0)
+110 CLEAR 4096,$BEFF:POKE $BFF8,STRING$(8,0)
 111 '$BFF6 - Chain Test
 112 '$BFF7 - Run Continuous
 113 '$BFF8 - Total Passed

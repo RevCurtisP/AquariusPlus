@@ -13,8 +13,10 @@
 314 GOSUB _assert:ARGS F$ % (N,C-1)
 315 GOSUB _assert:ARGS T$ % (N,C)
 316 GOSUB _assert:ARGS F$ % (N,C+1)
-318 N=N+N:B=B+1:C=C+1
-319 NEXT
+320 N=N+N:B=B+1:C=C+1
+322 IF QU THEN PRINT ".";
+324 NEXT
+326 IF QU THEN PRINT
 
 330 GOSUB _title:ARGS "BIT string"
 335 T$=\"BIT(\"%%\",%%)=-1":F$=\"BIT(\"%%\",%%)=0"

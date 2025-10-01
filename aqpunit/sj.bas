@@ -9,7 +9,7 @@
 203 SF$="S$="+F$:'String to split
 204 DF$="D$="+F$:'Delimiter
 205 JF$="J$="+F$:'Format JOIN target
-206 NF$=SF$+":"+"D=%%:C=%%"
+206 NF$=SF$+":"+"D=%%:C=%%:"
 207 PF$=SF$+":"+DF$+":C=%%:":'SPLIT listing prefix
 208 AF$=F$+"="+F$:CF$="%%=%%":'Assert arguments
 209 GOTO _start

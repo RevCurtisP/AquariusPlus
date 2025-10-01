@@ -5,10 +5,11 @@ Run the .baq file to run the associated tests.
 ## Unit Tests
 
 | Program | Tests              |
-| :------ | :----------------  |
+| :------ | :----------------- |
 | bt.baq  | BIT                |
 | cp.baq  | COPY and COMPARE   |
 | cs.baq  | COPY SCREEN        |
+| cu.baq  | CALL and USR       |
 | cv.baq  | Convert functions  |
 | dr.baq  | DIM and READ       |
 | pp.baq  | POKE and PEEK      |
@@ -47,6 +48,15 @@ Run the .baq file to run the associated tests.
   - COPY @_page_,_offset_ TO SCREEN CHR
   - COPY SCREEN ATTR TO @_page_,_offset_
   - COPY @_page_,_offset_ TO SCREEN ATTR
+- cu.baq
+  - CALL _addr_
+  - CALL _addr_ ARGS _hl_
+  - CALL _addr_ ARGS _hl_,_de_
+  - CALL _addr_ ARGS _hl_,_de_,_bc_
+  - CALL @_page_,_addr_
+  - CALL !_ext_addr_ ARGS _hl_
+  - CALL @_page_,_addr_ ARGS _hl_,_de_
+  - CALL !_ext_addr_ ARGS _hl_,_de_,_bc_
 - cv.baq
   - ASC(_string_)
   - ASC$(_string_)
@@ -87,7 +97,7 @@ Run the .baq file to run the associated tests.
     - POKE @_page_,_addr,_string_
     - PEEK(!_ext_addr_)
     - PEEK$(!_ext_addr_,_len_)
-    - DOKE !_ext_addr,_int_
+    - DOKE !_ext_addr_,_int_
     - DEEK(!_ext_addr_)
 - ps.baq
   - POKE SCREEN _offset_,_byte_
@@ -106,21 +116,23 @@ Run the .baq file to run the associated tests.
   - SET PALETTE _palette_ TO _rgb_list_
   - RESET PALETTE
   - GETPALETTE$(_palette_)
-
 - sb.baq
   - _string_\[_index_\]
   - _string_\[_index_ TO _index_\]
   - MID$(_strvar_,_pos_,_len_)=_string_
 - sg.baq
-   - FILL SCREEN CHR _char_
-   - RESET BORDER
-   - SET BORDER CHR _char_
-   - SET BORDER COLOR _fg_, _bg
-   - SET BORDER CHR _char_ COLOR _fg_, _bg
-   - SET CURSOR ON
-   - SET CURSOR OFF
-   - CLEAR CURSOR
- - sl.baq
+  - FILL SCREEN CHR _char_
+  - RESET BORDER
+  - SET BORDER CHR _char_
+  - SET BORDER COLOR _fg_, _bg
+  - SET BORDER CHR _char_ COLOR _fg_, _bg
+  - SET CURSOR ON
+  - SET CURSOR OFF
+  - CLEAR CURSOR
+- sj.baq
+  - JOIN \*_array_$ INTO _var_$ DEL _delimiter_
+  - SPLIT _var_$ INTO  \*_array_$ DEL _delimiter_
+- sl.baq
   - SAVE/LOAD binary
   - SAVE/LOAD paged
   - SAVE/LOAD page
