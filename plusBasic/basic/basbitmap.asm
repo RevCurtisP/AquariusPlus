@@ -156,10 +156,7 @@ FN_POINT:
 _point:
     ld      de,bitmap_getpixel
     call    _set
-    push    hl
-    ld      bc,LABBCK
-    push    bc
-    jp      SNGFLT
+    jp      push_hl_labbck_float_a
 
 ;-----------------------------------------------------------------------------
 ; Bloxel PRESET and PRESET with the EX AF,AF' factored out

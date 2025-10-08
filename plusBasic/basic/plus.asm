@@ -126,10 +126,11 @@ FN_DATE:
     rst     CHRGET                ;   Skip TIME token
     dec     c                     ;   Return Date and Time
 .notime
+    ld      iy,bas_date 
+_datetime:
     SYNCHKC '$'                   ; Require Dollar Sign
     call    push_hl_labbck
-    call    aux_call_inline
-    word    bas_date
+    call    aux_call              ; Read DATE/TINE into FBUFFR
     jp      TIMSTR                ; Create and return temporary string
 
 ;-----------------------------------------------------------------------------
@@ -163,9 +164,7 @@ ST_DUMP:
     ex      de,hl                 ; DE = StrBuf
     ld      hl,FACLO              ; HL = FilNam
     ld      iy,dump_vars
-    call    aux_call              ; Do the dump
-    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
-    ret
+    jp      aux_call_popret       ; Do the dump, pop TxtPtr, and return
 
 ;-----------------------------------------------------------------------------
 ; GET functions stub
@@ -216,9 +215,7 @@ FN_GETKEY:
     push    af                    ; Save Flags
     call    z,CHRGTR              ; If GETKEY$, skip $
     pop     af                    ; Restore Flags
-    push    hl                    ; Do the function stuff
-    ld      bc,LABBCK
-    push    bc
+    call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
     ld      a,e                   ; Get ASCII back, Flags are from CP '$'
     jp      nz,SNGFLT             ; If not GETKEY$, Float it
     pop     bc                    ; Get rid of dummy return address
@@ -235,7 +232,7 @@ FN_GETSOUND:
 FN_GETSPEED:
     rst     CHRGET                ; Skip SPEED
     call    get_turbo_mode
-push_hl_labbck_floata:
+push_hl_labbck_float_a:
     call    push_hl_labbck
     jp      SNGFLT
 
@@ -252,7 +249,7 @@ push_hl_labbck_float_sbyte:
 ;----------------------------------------------------------------------------
 ST_DEC:
     ld      iy,bas_dec
-    jr      _inc_dec
+    jr      ptrget_aux_call
 
 ;----------------------------------------------------------------------------
 ; Increment variable
@@ -261,7 +258,7 @@ ST_DEC:
 ST_INC:
     SYNCHKC 'C'                   ; Must be IN + C
     ld      iy,bas_inc
-_inc_dec
+ptrget_aux_call:
     CALL    PTRGET
     jp      aux_call
 
@@ -405,14 +402,8 @@ _first_long:
     cp      l                     ; If BinPos > StrLen-3
     jp      c,FCERR               ;   Illegal quantity
     dec     hl                    ; Adjust BinPos for add
-    add     hl,de                 ; HL = WrdAdr
-    ld      e,(hl)
-    inc     hl
-    ld      d,(hl)                ; DE = WrdVal
-    inc     hl
-    ld      c,(hl)                ; DE = WrdVal
-    inc     hl
-    ld      b,(hl)                ; DE = WrdVal
+    add     hl,de                 ; HL = LongAdr
+    call    MOVRM                 ; BCDE = LongVal
     jp      (iy)                  ; Float it
 
 str_long:
@@ -557,8 +548,8 @@ FN_MOUSE:
     ex      (sp),hl               ; HL = SfxChr, Stack = TxtPtr, RtnAdr
     ld      bc,LABBCK
     push    bc                    ; Stack = LABBCK, TxtPtr, RtnAdr
-    call    aux_call_inline
-    word    bas_mouse             ; A or BC = Result
+    ld      iy,bas_mouse
+    call    aux_call              ; A or BC = Result
     jp      c,FLOAT_BC
     jp      m,FLOAT               
     jp      SNGFLT
@@ -568,9 +559,7 @@ FN_MOUSE:
 ;-----------------------------------------------------------------------------
 FN_INKEY:
     rst     CHRGET                ; Skip KEY Token
-    push    hl                    ; Do the function stuff
-    ld      bc,LABBCK
-    push    bc
+    call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
     call    in_key                ; Get Keypress
     jp      SNGFLT                ; and Float it
 
@@ -586,8 +575,8 @@ FN_KEY:
     rst     CHRGET                ; Skip KEY Token
     call    PARTYP                ; Evaluate argument in parens
     call    push_hl_labbck
-    call    aux_call_inline
-    word    bas_key
+    ld      iy,bas_key
+    call    aux_call              ; BC/DE = Result, HL = JmpAdr
     jp      (hl)
 
 ;-----------------------------------------------------------------------------
@@ -599,8 +588,8 @@ FN_KEY:
 ST_JOIN:
     rst     CHRGET                ; Skip JOIN
     call    get_star_array        ; DE = AryAdr, BC = AryLen
-    call    aux_call_inline
-    word    bas_skipfirst         ; ARRAYPTR = AryPtr, ARRAYLEN = AryLen
+    ld      iy,bas_skipfirst
+    call    aux_call              ; ARRAYPTR = AryPtr, ARRAYLEN = AryLen
     jp      z,BSERR               ; If only one element, Bad subscript error
     SYNCHKT INTTK
     SYNCHKC 'O'                   ; Require INTO
@@ -619,11 +608,8 @@ ST_JOIN:
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     call    parse_delimiter       ; A = DelChr
     ld      (SPLITDEL),a          ; SPLITDEL = DelChr
-    push    hl                    ; Stack = TxtPtr, RtnAdr
     ld      iy,bas_join
-    call    aux_call
-    pop     hl
-    ret
+    jp      aux_call_preserve_hl
 
 ;-----------------------------------------------------------------------------
 ; OFFSET Function
@@ -633,9 +619,11 @@ FN_OFF:
     inc     hl                    ; Skip OFF
     SYNCHKT SETTK                 ; Require SET
     call    SCAND                 ; C = Column, E = Row
+    ld      iy,bas_offset
+push_aux_call_float_de:
     call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
-    call    aux_call_inline
-    word    bas_offset            ; DE = Offset
+aux_call_float_de:
+    call    aux_call              ; DE = Offset
     jp      FLOAT_DE
 
 ;-----------------------------------------------------------------------------
@@ -691,22 +679,17 @@ FN_TIME:
     rst     CHRGET                ; Skip Token
     cp      'R'                   ; If TIMER
     jr      z,FN_TIMER            ;   Read Countdown Timer
-    SYNCHKC '$'                   ; Require dollar sign
-    call    push_hl_labbck
-aux_call_timstr:
-    call    aux_call_inline
-    word    bas_time
-    jp      TIMSTR
+    ld      iy,bas_time
+    jp      _datetime
 
 ;-----------------------------------------------------------------------------
 ; TIMER - Get Timer Count
 ;-----------------------------------------------------------------------------
 FN_TIMER:
     rst     CHRGET                ; Skip 'R'
-    push    hl                    ; Text Pointer on Stack
-    ld      hl,LABBCK
-    push    hl                    ; Return to LABBCK
-    call    timer_read            ; Read timer
+    call    timer_read            ; CDE = Timer
+push_hl_labbck_float_cde:
+    call    push_hl_labbck
     jp      FLOAT_CDE             ; Return as 23 bit integer
 
 ;-----------------------------------------------------------------------------
@@ -786,17 +769,21 @@ FN_COMPARE:
 .badlen
     pop     hl                    ; HL = TxtPtr; Stack = Addr1, RtnAdr
     pop     de                    ; Stack = RtnAdr
-    push    hl                    ; Stack = TxtPtr, RtnAdr
-    ld      hl,LABBCK
-    push    hl                    ; Stack = LABBCK, TxtPtr, RtnAdr
-    xor     a
-    jp      SNGFLT                ; Return 0
+    xor     a                     ; Return 0
+    jp      push_hl_labbck_float_a
 
 ;----------------------------------------------------------------------------
 ; EVAL - Evaluate string
 ;----------------------------------------------------------------------------
 FN_EVAL:
     call    ERRDIR            ; Issue Error if in Direct Mode
+    ld      a,(BAS_FLAGS)
+    ld      b,a
+    and     INEVALFLG         ; If already in EVAL
+    jp      nz,STERR          ;   Srting too complex error
+    ld      a,b
+    or      INEVALFLG         ; Set In EVAL Flag
+    ld      (BAS_FLAGS),a     ; and save it
     rst     CHRGET            ; Skip Token
     call    PARCHK            ; Get Argument
     push    hl                ; Save Text Pointer
@@ -822,6 +809,10 @@ FN_EVAL:
     ld      hl,BUF            ; Point to Line Buffer
     call    FRMEVL            ; Evaluate Formula
     pop     hl                ; Restore Text Pointer
+clear_inevalflg:
+    ld      a,(BAS_FLAGS)
+    and     $FF-INEVALFLG
+    ld      (BAS_FLAGS),a
     ret
 
 ;-----------------------------------------------------------------------------
@@ -1282,15 +1273,15 @@ FN_VARDEF:
     rst     CHRGET                ; Skip DEF
     SYNCHKC '('                   ; Require (
     SYNCHKT MULTK                 ; Require *
-    ld      a,(BASYSCTL)
+    ld      a,(BAS_FLAGS)
     or      BASVARDEF             ; Set Called by PTRGET flag
-    ld      (BASYSCTL),a
+    ld      (BAS_FLAGS),a
     call    DIM1                  ; Search for array
     ld      b,a                   ; B = Found
     SYNCHKC ')'                   ; Require )
-    ld      a,(BASYSCTL)
+    ld      a,(BAS_FLAGS)
     and     $FF-BASVARDEF         ; Clear Called by PTRGET flag
-    ld      (BASYSCTL),a
+    ld      (BAS_FLAGS),a
     ld      a,0
     ld      (VALTYP),a
 push_hl_labbck_floats_b:
@@ -1299,14 +1290,14 @@ push_hl_labbck_floats_b:
 
 isary_hook:
     jp      z,ISARY
-    ld      a,(BASYSCTL)
+    ld      a,(BAS_FLAGS)
     and     BASVARDEF             ; If called from VARDEF
     jp      nz,ERSFIN             ;    Search for arry
     jp      NOARYS                ; Else continue on
 
 dderr_hook:
     jp      z,ISARY
-    ld      a,(BASYSCTL)
+    ld      a,(BAS_FLAGS)
     and     BASVARDEF             ; If not called from VARDEF
     jp      z,DDERR               ;   Redimensioned Variable Error
     pop     hl                    ; Discard # of Dimensions
@@ -1315,7 +1306,7 @@ dderr_hook:
     ret
 
 notfdd_hook:
-    ld      a,(BASYSCTL)
+    ld      a,(BAS_FLAGS)
     and     BASVARDEF             ; f not called from VARDEF
     ld      de,4                  ;   Replaced with JP notfdd_hook
     jp      z,NOTFD1              ;   Dimension the variable
@@ -1438,5 +1429,4 @@ ST_WRITE_KEYS:
     SYNCHKC  'S'                   ; Require S
     call     get_free_string       ; DE = StrAdr, BC = StrLen
     ld       iy,autokey_write_buffer
-    call     aux_call
     jp       aux_call_popret       ; Write to auto-key buffer

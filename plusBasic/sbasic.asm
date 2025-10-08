@@ -2672,7 +2672,7 @@ STRPR2: dec     e                 ;[M80] DECREMENT THE LENGTH
 GETSPA: or      a                 ;[M80] MUST BE NON ZERO. SIGNAL NO GARBAG YET
         byte    $0E               ;[M80] "MVI C" AROUND THE NEXT BYTE
 TRYGI2: pop     af                ;[M80] IN CASE COLLECTED WHAT WAS LENGTH?
-        push    af                ;[M80] SAVE IT BACK
+        push    af                ;[M80] SAVE IT BACK                             Original Code
         ld      hl,(TMPBUFTOP)    ;; + Top of temp buffers                        0EB7  ld      hl,(TOPMEM)
         ex      de,hl             ;[M80] IN [D,E]
         ld      hl,(FRETOP)       ;[M80] GET TOP OF FREE SPACE IN [H,L]

@@ -73,10 +73,8 @@ FN_CURSOR:
     SYNCHKT OFFTK
     SYNCHKT SETTK                 ;   Require OFFSET
 .not_xtoken
-    call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RrnAdr
-    ld      iy,bas_cursor
-    call    aux_call              ; DE = Offset/Xpos/Ypos
-    jp      FLOAT_DE
+    ld      iy,bas_cursor         ; Return Offset/Xpos/Ypos
+    jp      push_aux_call_float_de
 
 ;-----------------------------------------------------------------------------
 ; GETATTR(X,Y) - Get Colors at (X,Y)
@@ -112,8 +110,7 @@ FN_GETCHRDEF:
     SYNCHKC ')'                   ; Require )
     push    hl                    ; Stack = TxtPtr, RtnAdr
     ld      iy,bas_getchrdef
-    call    gfx_call
-    jp      PUTNEW
+    jp      gfx_call_putnew
 
 ;-----------------------------------------------------------------------------
 ; GETCHRSET - Return Corrent Character Set
@@ -122,9 +119,7 @@ FN_GETCHRDEF:
 ; USE CHRSET 0:PRINT GETCHRSET
 FN_GETCHRSET:
     rst     CHRGET                ; Skip SET
-    push    hl                    ; Stack = TxtPtr, RtnAdr
-    ld      hl,LABBCK
-    push    hl                    ; Stack = LABBCK, TxtPtr, RtnAdr
+    call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAd
     ld      iy,bas_get_chrset
     call    gfx_call
     jp      FLOAT                 ; Float an return result

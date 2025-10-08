@@ -1,5 +1,10 @@
 # plusBASIC Release History
 <!--ToDo: Add entries between v0.18x and v0.13h-->
+  - v0.27k (2025-10-08)
+    - Replaced calls to _aux_call_inline_ with _aux_call_ and removed _aux_call_inline_
+    - Replaced occurances of `push hl:ld bc,LABBCK:push bc` with `call push_hl_labbck`
+    - Debugged _alloc_temp_buffer_, replaced _get_strbuf_addr_ calls in _FN_ARG_, _FN_CD_, _eval_list_, _\_escaped_, and _oper_stringsub_
+    - Added `String formula too complex` error on nested `EVAL()`
   - v0.27j (2025-10-01)
     - Moved temporary sysvars from `RNDTAB` to `FILNAM`+`FILNAF`, `RESMO`-`RESLO`
     - Moved PT3 control routines from _util.asm_ (SysROM) to _sound.asm_ (AuxROM) and renamed from _pt3..._ to _track..._

@@ -100,9 +100,8 @@ FN_ERR: rst     CHRGET            ; Skip ERR Token
         jr      z,.err_line       ;   Do ERRLINE
 ;        jp      SNERR
 .err_no:
-        call    push_hl_labbck
-        ld      a,(ERRFLG)        ; Get Error Number
-        jp      SNGFLT            ; and Float it
+        ld      a,(ERRFLG)        ; Get Error Number and float it
+        jp      push_hl_labbck_float_a
 .err_desc:
         call    push_hlinc_labbck
         ld      a,(ERRFLG)        ; Get Error Number
@@ -122,12 +121,12 @@ ST_ERASE:
 _erase:
     call    get_star_array_pointer  ; BC = NumDim, DE = NxtAry
     push    hl
-    call    aux_call_inline
-    word    bas_erase_array         ; Remove array from variable space
+    ld      iy,bas_erase_array
+    call    aux_call              ; Remove array from variable space
     pop     hl
-    ld      a,(hl)            ;SEE IF MORE ERASURES NEEDED
-    cp      ','               ;ADDITIONAL VARIABLES DELIMITED BY COMMA
-    ret     nz                ;ALL DONE IF NOT
+    ld      a,(hl)                ;SEE IF MORE ERASURES NEEDED
+    cp      ','                   ;ADDITIONAL VARIABLES DELIMITED BY COMMA
+    ret     nz                    ;ALL DONE IF NOT
     rst     CHRGET
     jr      _erase
 
@@ -339,9 +338,7 @@ FN_STR:
     jp      nz,FCERR              ; FC Error if Not There
     SYNCHKC ')'                   ; Require ')'
     call    CHKSTR                ; Make sure variable is a string
-    push    hl                    ; Stack = TxtPtr, RtnAdr
-    ld      hl,LABBCK             ; HL = Return address for FLOAT_xx
-    push    hl                    ; Stack = FltRtn, TxtPtr, RtnAdr
+    call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
     ex      de,hl                 ; HL = VarAdr
     call    string_addr_len       ; DE = StrAdr, BC = StrLen
     jp      FLOAT_DE              ; Float StrAdr and return
@@ -481,9 +478,7 @@ FN_VAR:
     xor     a
     ld      (SUBFLG),a            ; Reset Sub Flag
     pop     af                    ; A = VarPfx; Stack = RtnAdr
-    push    hl                    ; Stack = TxtPtr, RtnAdr
-    ld      hl,LABBCK             ; HL = Return address for FLOAT_xx
-    push    hl                    ; Stack = FltRtn, TxtPtr, RtnAdr
+    call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
     jp      nz,FLOAT_DE           ; If not *, Return variable address
     dec     bc                    ; Else
     dec     bc                    ;   Back up to beginning of array definition

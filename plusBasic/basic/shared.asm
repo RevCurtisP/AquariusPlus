@@ -261,13 +261,6 @@ close_paren:
     ret
 
 ;-----------------------------------------------------------------------------
-; Force FACC to an integer
-;-----------------------------------------------------------------------------
-;force_integer:
-    call    CHKNUM
-    jp      FRCINT
-
-;-----------------------------------------------------------------------------
 ; If next character is a comma, Too many operands error
 ;-----------------------------------------------------------------------------
 no_more:
@@ -907,6 +900,8 @@ strbuf_temp_str_c:
 ; Clobbers: A
 ;-----------------------------------------------------------------------------
 strbuf_temp_str:
+    ld      ix,get_strbuf_addr
+buf_temp_str:
     or      a                     ; If length = 0 
     jr      z,ret_nullstr         ;   Return null string           
     call    STRINI                ; Create temporary string
@@ -917,7 +912,7 @@ strbuf_temp_str:
     push    bc                    ; Stack = StrLen, StrAdr, StrDsc, RtnAdr
     push    bc                    ; Stack = StrLen, StrLen, StrAdr, StrDsc, RtnAdr
 copy_strbuf:
-    call    get_strbuf_addr       ; HL = StrBuf
+    call    jump_ix               ; HL = StrBuf
     pop     bc                    ; BC = StrLen; Stack = StrLen, StrAdr, StrDsc, RtnAdr
     ldir                          ; Copy BC bytes from StrBuf to StrAdr
     pop     bc                    ; BC = StrLen; Stack = StrAdr, StrDsc

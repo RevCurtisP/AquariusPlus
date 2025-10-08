@@ -134,7 +134,7 @@ null_desc:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.27j"
+    db "v0.27k"
     db 0
 plusver_len equ $ - plus_version
 plus_len   equ   $ - plus_text
@@ -305,8 +305,8 @@ _check_cart:
 _start_screen:
     ld      hl,.skipsplash_desc
     ld      de,BUF
-    call    aux_call_inline
-    word    dos_stat
+    ld      iy,dos_stat
+    call    aux_call              ; NZ if file exists
     jp      z,COLDST
     jp      RESET 
 
@@ -902,20 +902,6 @@ gfx_call:
 ; - Restores Bank 3 and returns all registers exoept AF'
 ; Input: IY = Routine address
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-aux_call_inret:
-    inc     sp                    ; Discard return address
-    inc     sp
-aux_call_inline:
-    ex      af,af'
-    ex      (sp),hl               ; HL = RtnAdr
-    ld      a,(hl)
-    ld      iyl,a
-    inc     hl
-    ld      a,(hl)
-    ld      iyh,a
-    inc     hl
-    ex      (sp),hl               ; Stack = RtnAdr
-    ex      af,af'
 aux_call:
     call    page_map_auxrom
 _jumpiy:
@@ -984,10 +970,18 @@ alloc_temp_buffer:
     inc     h                     ; Add 256
     ld      de,(FRETOP)           ; DE = Bottom of String Data
     rst     COMPAR                ; If new pointer in string space
-    jr      nz,OSERR              ;   Out of string space error
+    push    hl
+    call    nc,GARBA2             ;   Collect garbage
+    pop     hl
+    ld      de,(FRETOP)           ; Try again
+    rst     COMPAR                ; If new pointer in string space
+    jr      nc,OSERR              ;   Out of string space error
     ld      (TMPBUFTOP),hl        ; Set new pointer address
     dec     h                     ; Back to current pointer address
     pop     de
+    ret
+
+_garbage_collect:
     ret
 
 ; Get address of most recently allocated temp buffer
@@ -1141,7 +1135,8 @@ _skip_on_label:
     jp      skip_on_label
 
 error_ext:
-    call    page_set_plus         ; Bank 3 could be mapped to any page at this point,
+    call    page_set_plus         ; Bank 3 could be mapped to any page at this point.
+    call    clear_inevalflg       ; Clear In EVAL Flag
     jp      trap_error            ; so map to Extended ROM, before continuing
 
 ;-----------------------------------------------------------------------------

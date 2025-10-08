@@ -261,7 +261,9 @@ BASSAVASC   equ $02     ; BASYSCTL: Default SAVe to ASC
 BASKEYRPT   equ $04     ; BASYSCTL: KEY RePeaT on
 BASBRKOFF   equ $20     ; BASYSCTL: BReak OFF (Disable Ctrl-C)
 BASLPRNTR   equ $40     ; BASYSCTL: LPRINT device: (0 = Serial, 1 = ESP)
-BASVARDEF   equ $80     ; PTRGET called from VARDEF
+; Temporary BASIC control flags
+BASVARDEF   equ $02     ; BAS_FLAGS: PTRGET called from VARDEF
+INEVALFLG   equ $04     ; BAS_FLAGS: Currently in EVAL function
 ; Screen Control Bitmask
 ; Screen printing control flags
 CRSR_OFF    equ $40     ; SCREENCTL: Display cursor (1 = No)

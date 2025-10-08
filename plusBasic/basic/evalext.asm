@@ -131,8 +131,9 @@ hex_to_asc:
     inc     de              ; Bump Result Pointer
     djnz    .asc_loop
     pop     de                    ; DE = ArgDsc; Stack = RtnAdr
-    call    FRETMP                ; Free ArgDsc
-    jp      PUTNEW          ; Return NewStr
+fretmp_putnew:
+    call    FRETMP                ; Free the temporary
+    jp      PUTNEW                ; and Return it
 
 get_hex:
     ld      a,(hl)          ; Get Hex Digit
@@ -212,7 +213,7 @@ _escaped:
     jp      nz,SNERR        ;   Syntax error
     inc     hl              ; Skip quotes
     ex      de,hl           ; DE = TxtPtr
-    call    get_strbuf_addr ; HL = StrBuf
+    call    alloc_temp_buffer     ; HL = StrBuf
     ex      de,hl           ; DE = StrBuf, HL = TxtPtr
 .escape_loop
     ld      a,(hl)          ; A = NxtChr
@@ -285,8 +286,10 @@ _escaped:
     ld      (de),a          ; Terminate string
     dec     hl
     rst     CHRGET          ; Skip trailing spaces
-    push    hl              ; Save TxtPtr
-    jp      return_strbuf
+    ld      bc,free_temp_buffer
+    push    bc              ; Stack = FunRtn, RtnAdr
+    push    hl              ; Stack = TxtPtr, FunRtn, RtnAdr
+    jp      return_tmpbuf
 
 ;-------------------------------------------------------------------------
 ; RETAOP Extension - Hook 29
@@ -361,8 +364,10 @@ oper_xor:
 
 ;? "%%" % (1)
 oper_stringsub:
+    ld      bc,free_temp_buffer
+    push    bc                  ; Stack = FunRtn, RtnAdr
     push    hl                  ; Stack = TxtPtr, RtnAdr
-    call    get_strbuf_addr     ; HL = BufAdr
+    call    alloc_temp_buffer   ; HL = BufAdr
     ex      (sp),hl             ; HL = TxtPtr; Stack = BufPtr, RtnAdr
     call    GETYPE              ; If expression is not a string
     jp      nz,TMERR            ;   Type mismatch error
@@ -401,15 +406,15 @@ oper_stringsub:
     jr      .loop               ;   Check next character
 .done:
     pop     af                    ; A = DatLen; Stack = TxtPtr, RtnAdr
-    call    strbuf_temp_str       ; HL = StrDsc
+    ld      ix,get_temp_buffer
+    call    buf_temp_str          ; HL = StrDsc
     ex      (sp),hl               ; HL = TxtPtr; Stack = StrDsc, RtnAdr
     ld      a,(hl)                ; A = NxtChr
     cp      ','                   ; If it's a comma
     jp      z,no_more             ;   Too many operands
     SYNCHKC ')'                   ; Require )
     ex      (sp),hl               ; HL = StrDsc; Stack = TxtPtr, RtnAdr
-    call    FRETMP                ; Free the temporary
-    jp      PUTNEW                ; and Return it
+    jp      fretmp_putnew         ; Free ArgDsc and return NewStr
 
 .substitute:
     pop     af                  ; A = DatLen; Stack = TxtPtr, RtnAdr
@@ -469,7 +474,7 @@ oper_stringsub:
     pop     de                  ; DE = StrPtr; Stack = ReqCnt, TxtPtr, RtnAdr
     pop     bc                  ; BC = ReqCnt; Stack = TxtPtr, RtnAdr
     push    af                  ; Stack = DatLen, TxtPtr, RtnAdr
-    jr      .loop               ; Do next StrChr
+    jp      .loop               ; Do next StrChr
 
 ; clear:s$="abcd":s$[2]="x":?s$
 ; clear:s$="abcd":s$[1,1]="x":?s$
@@ -685,16 +690,18 @@ eval_list:
     rst     CHRGET                ; Skip LIST
     SYNCHKC '$'                   ; Require $
     SYNCHKC '('                   ; Requite (
+    ld      bc,free_temp_buffer
+    push    bc                    ; Stack = FunRtn, RtnAdr
     cp      NEXTK
     jr      nz,.not_next          ; If NEXT
     rst     CHRGET                ;   Skip NEXT
-    push    hl                    ;   Stack = TxtPtr, RtnAdr
+    push    hl                    ;   Stack = TxtPtr, FunRtn, RtnAdr
     call    REM                   ;   HL = End of BASIC line
     inc     hl                    ;   HL = LinLnk of next line
-    ex      (sp),hl               ;   HL = TxtPtr; Stack = LinLnk, RtnAdr
+    ex      (sp),hl               ;   HL = TxtPtr; Stack = LinLnk, FunRtn, RtnAdr
     SYNCHKC ')'                   ;   Require )
-    ex      (sp),hl               ;   HL = LinLnk; Stack = TxtPtr, RtnAdr
-    push    hl                    ;   Stack = LinLnk, TxtPtr, RtnAdr
+    ex      (sp),hl               ;   HL = LinLnk; Stack = TxtPtr, FunRtn, RtnAdr
+    push    hl                    ;   Stack = LinLnk, TxtPtr, FunRtn, RtnAdr
     ld      a,(hl)
     inc     hl
     or      (hl)                  ;   If end of program
@@ -703,22 +710,22 @@ eval_list:
 .not_next
     call    GETINT                ;   DE = LinNum
     SYNCHKC ')'                   ;   Require )
-    push    hl                    ;   Stack = TxtPtr, RtnAdr
+    push    hl                    ;   Stack = TxtPtr, FunRtn, RtnAdr
     call    FNDLIN                ;   BC = LinLnk
     jp      nc,USERR              ;   No Carry = Line not found
-    push    bc                    ;   Stack = LinLnk, TxtPtr, RtnAdr
+    push    bc                    ;   Stack = LinLnk, TxtPtr, FunRtn, RtnAdr
 .list_line
-    call    get_strbuf_addr       ; HL = StrBuf
-    ex      de,hl                 ; DE = StrBuf
-    pop     hl                    ; HL = LinLnk; Stack = TxtPtr, RtnAdr
+    call    alloc_temp_buffer     ; HL = TmpBuf
+    ex      de,hl                 ; DE = TmpBuf
+    pop     hl                    ; HL = LinLnk; Stack = TxtPtr, FunRtn, RtnAdr
     inc     hl
     inc     hl                    ; Skip Line Link
     inc     hl
     inc     hl                    ; Skip Line Number
     call    unpack_line           ; Unpack the line
-return_strbuf:
-    call    get_strbuf_addr       ; HL = StrBuf
-    push    hl                    ; Push Dummy Return Address
+return_tmpbuf:
+    call    get_temp_buffer       ; HL = TmpBuf
+    push    hl                    ; Stack = Dummy, TxtPtr, FunRtn, RtnAdr
 return_strlit:
     dec     hl                    ; Back up to before string
     ld      b,0                   ; NUL is the only teminator

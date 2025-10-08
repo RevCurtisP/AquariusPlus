@@ -17,6 +17,7 @@ ST_CD:
     call    _clear_errflag
     jr      nz, .change_dir       ; If no argument
     push    hl                    ;   Stack = TxtPtr, RtnAdr
+    call    get_strbuf_addr       ;   HL = StrBuf
     call    _get_cd               ;   StrBuf = DirName
     call    print_c_string        ;   Print StrBuf
     pop     hl                    ;   HL = TxtPtr; Stack = RtnAdr
@@ -73,15 +74,16 @@ _read_error:
 FN_CD:
     rst     CHRGET                ; Skip Token
     SYNCHKC '$'                   ; Require Dollar Sign
+    ld      bc,free_temp_buffer
+    push    bc                    ; Stack = FunRtn, TxtPtr, RtnAdr
     push    hl                    ; Stack = TxtPtr, RtnAdr
+    call    alloc_temp_buffer     ; HL = TmpBuf
     call    _get_cd
-    ld      bc,LABBCK
-    push    bc                    ; Stack = LABBCK, TxtPtr, RtnAdr
+    push    bc                    ; Stack = Dummy, FunRtn, TxtPtr, RtnAdr
     jp      TIMSTR
 
 ; Read current directory into string buffer
 _get_cd:
-    call    get_strbuf_addr       ; HL = StrBuf
     ld      iy,dos_get_cwd        ; Read current directory into buffer
 _aux_call_doserror:
     call    aux_call
@@ -215,6 +217,7 @@ FN_FILEPOS:
     call    CONINT                ; A = FilChn
     dec     a                     ; A = FilDsc
     ld      iy,dos_tell           ; DEBC = FilPos
+_aux_call_doserror_debc:
     call    _aux_call_doserror
     jp      FLOAT_DEBC            ; Float FilPos and return
 
@@ -265,9 +268,8 @@ FN_FILEDIR:
 FN_FILELEN:
     call    pars_string_labbck    ; FACC = ArgDsc; Stack = LABBCK, TxtPtr, RtnAdr
     call    FRESTR                ; HL = StrDsc
-    ld      iy,file_size
-    call    _aux_call_doserror    ; Get FilSiz
-    jp      FLOAT_DEBC            ; Float it and return
+    ld      iy,file_size          ; Get FilSiz, float it, and return
+    jp      _aux_call_doserror_debc    
 
 ;-----------------------------------------------------------------------------
 ; FILEATTR(filespec$)

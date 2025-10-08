@@ -548,9 +548,7 @@ FN_PEEK:
     push    af                    ; Save it
     SYNCHKC ')'                   ; Require close paren
     pop     af                    ; Get page
-    push    hl                    ; Save text pointer
-    ld      bc,LABBCK             ; Return address for SNGFLT
-    push    bc
+    call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
     jp      c,.get_page_byte      ; If page not specified
     ld      a,(de)                ;   Get Byte
 .float_it
@@ -643,10 +641,10 @@ FN_PEEK:
     ex      de,hl                 ; DE = ScrOfs, HL = StrPtr
     jr      z,.colorstring
     ld      iy,screen_read_bytes ; Read string
-    jr      .gfx_call_putnew
+    jr      gfx_call_putnew
 .colorstring
     ld      iy,color_read_bytes
-.gfx_call_putnew
+gfx_call_putnew:
     call    gfx_call
     jp      c,FCERR
     jp      PUTNEW                ; and return it
@@ -662,9 +660,7 @@ FN_DEEK:
     push    af                    ; Save it
     SYNCHKC ')'                   ; Require close paren
     pop     af                    ; Get page
-    push    hl                    ; Save text pointer
-    ld      bc,LABBCK             ; Return address for FLOAT_BC
-    push    bc
+    call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAd
     jr      c,.read_page_word     ; If not specified
     ld      a,(de)                ;   Get LSB
     ld      c,a
@@ -679,10 +675,6 @@ FN_DEEK:
     jp      z,FCERR               ; FC error if illegal page
     jp      c,OVERR               ; Return overflow error if end of RAM
     jp      FLOAT_BC
-
-_null_string:
-    ld      hl,REDDY-1    ; Point at null terminator
-    jp      TIMSTR        ; and return null string
 
 paren_page_arg:
     SYNCHKC '('
@@ -713,8 +705,8 @@ ST_READ_KEYS:
     push    hl                    ; Stack = TxtPtr, RtnAdr
     push    de                    ; Stack = VarPtr, TxtPtr, RtnAdr
     call    get_strbuf_addr       ; HL = BufAdr, BC = BufLen
-    call    aux_call_inline
-    word    read_keys             ; C = StrLen
+    ld      iy,read_keys
+    call    aux_call              ; C = StrLen
     call    strbuf_temp_str_c     ; Copy Buffer to Temporary. Return HL = StrDsc
     push    hl                    ; Stack = StrDsc, VarPtr, TxtPtr, RtnAdr
     jp      INBUFC                ; Copy Temporary to Variable and return

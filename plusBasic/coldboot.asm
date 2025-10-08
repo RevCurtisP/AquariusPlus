@@ -45,7 +45,7 @@ do_coldboot:
 
     ; Zero out plusBASIC system vars
     xor     a
-    ld      b,BAS_FDESC-RNDTAB
+    ld      b,RNDX-RNDTAB
     ld      hl,RNDTAB
 .sysvar_loop
     ld      (hl),a

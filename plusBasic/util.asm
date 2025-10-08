@@ -501,19 +501,19 @@ _stop_timer:
 ;----------------------------------------------------------------------------
 ; Read Timer
 ; Output: C,DE = Timer count
-; Flags: N if stopped 
+; Flags: NZ if stopped 
 ; Clobbers: A
 ;----------------------------------------------------------------------------
 timer_read:
     ld      de,(TIMERCNT)         ; E = LoByt, D = MdByt
     ld      a,(TIMERCNT+2)        ; A = HiByt
-    or      a                     ; If count < 0
-    ld      c,a                   ; C = HiByt
-    ret     p
+    or      a                     ; If Timer >= 0
+    ld      c,a                   ;  
+    ret     p                     ; Return CDE = Timer
 _tstopped:
-    ld      a,0
+    ld      a,0                   
     ld      c,a
     ld      d,a
-    ld      e,a
+    ld      e,a                   ; Return S, NZ, CDE = 0 
     ret
 

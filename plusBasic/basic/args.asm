@@ -172,19 +172,21 @@ FN_ARGS:
     rst     CHRGET                ; Skip ARGS
     cp      '$'
     jr      z,.get_arg            ; If not $
-    call    push_hl_labbck        ;   Stack = LABBCK, TxtPtr,RtnAdr
+    call    push_hl_labbck        ;   Stack = LABBCK, TxtPtr, RtnAdr
     ld      iy,runarg_count
     call    aux_call              ; BC = ArgCnt
     jp      FLOAT_BC              ;   Return ArgCnt
 .get_arg
     rst     CHRGET                ; Skip $
     call    PARCHK                ; Evaluate argument
-    push    hl                    ; Stack = TxtPtr, RtnAdr
+    ld      bc,free_temp_buffer   ; Stack = FunRtn, RtnAdr
+
+    push    hl                    ; Stack = TxtPtr, FunRtn, RtnAdr
     call    CONINT                ; A, DE = ArgNum
-    call    get_strbuf_addr       ; HL = StrBuf
+    call    alloc_temp_buffer     ; HL = TmpBuf
     ld      b,d
     ld      c,e                   ; BC = Argum
     ld      iy,runarg_get
     call    aux_call              ; BC = ArgCnt
     jp      c,FCERR
-    jp      return_strbuf         ; and return it
+    jp      return_tmpbuf         ; and return it

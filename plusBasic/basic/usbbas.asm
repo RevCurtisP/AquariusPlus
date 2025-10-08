@@ -93,7 +93,7 @@ HEX_STRING:
     ex      de,hl                 ; DE = ArgDsc, HL = ArgAdr
     ld      a,c                   ; A = ArgLen
     or      a                     ; If Length is 0
-    jr      z,_null_string        ;   Return Null String
+    jp      z,null_string         ;   Return Null String
     push    de                    ; Stack = ArgDsc, DmyRtn, TxtPtr
     push    hl                    ; Stack = ArgAdr, ArgDsc, DmyRtn, TxtPtr
     push    af                    ; Stack = ArgLen, ArgAdr, ArgDsc, DmyRtn, TxtPtr
@@ -132,11 +132,6 @@ _hexbyte:
     inc     hl
     ret
 
-_null_string:
-    ld      hl,REDDY-1    ; Point at null terminator
-    jp      TIMSTR        ; and return null string
-
-
 ;-----------------------------------------------------------------------------
 ; IN() function
 ; syntax: var = IN(port)
@@ -149,9 +144,7 @@ FN_IN:
     cp      XTOKEN                ; If followed by extended token
     jr      z,.extended           ;   Handle it
     call    PARCHK
-    push    hl
-    ld      bc,LABBCK
-    push    bc
+    call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
     call    FRCINT           ; Evaluate formula pointed by HL, result in DE
     ld      b, d
     ld      c, e             ; BC = port
@@ -246,8 +239,8 @@ FN_JOY:
     call    PARCHK                ; Parse Argument
     pop     bc                    ; A = FnSfx; Stack = RtnAdr
     call    push_hl_labbck
-    call    aux_call_inline       ; A = PortVal 
-    word    bas_joy            ;
+    ld      iy,bas_joy
+    call    aux_call              ; A = PortVal 
     jr      c,_joy_string         ; If JOY$, go do it
     jp      m,FLOAT
     jp      SNGFLT                ; Float it
@@ -289,8 +282,8 @@ FN_JOY:
 ;           7  Share (Xbox Series S/X controller only)
 ;-----------------------------------------------------------------------------
 _joy_string:
-    call    aux_call_inline       ; Read controller status into temp string
-    word    bas_joy_string
+    ld      iy,bas_joy_string
+    call    aux_call              ; Read controller status into temp string
     jp      p,FINBCK              ; Pop LABBCK and do PUTNEW
     xor     a
     ld      (FACLO),a             ; Return null string
@@ -304,8 +297,8 @@ _joy_string:
 ST_LOCATE:
     call    parse_screen_coord
     ex      de, hl              ; Switch DE with HL
-    call    aux_call_inline
-    word    move_cursor         ; Cursor to screen location HL (H=col, L=row)
+    ld      iy,move_cursor
+    call    aux_call            ; Cursor to screen location HL (H=col, L=row)
     ex      de, hl
     ret
 
