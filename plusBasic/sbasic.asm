@@ -2951,8 +2951,8 @@ ALLSTR: ld      c,0               ;[M80] MAKE OFFSET ZERO
         call    STRAD2            ;[M80] SAVE INFO IN DSCTMP
         ld      l,a               ;[M80] GET#  OF CHARS TO  MOVE IN L
         call    MOVSTR            ;[M80] MOVE THEM IN
-        pop     de                ;[M80] GET BACK DESC. POINTER
-        call    FRETMP            ;[M80] FREE IT UP.
+PFRNEW: pop     de                ;[M80] GET BACK DESC. POINTER
+FRENEW: call    FRETMP            ;[M80] FREE IT UP.
         jp      PUTNEW            ;[M80] PUT TEMP IN TEMP LIST
 RIGHT:  call    PREAM             ;[M80] CHECK ARG
         pop     de                ;[M80] GET DESC. POINTER

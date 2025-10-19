@@ -16,8 +16,32 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
       </head>
     <body>
         <h1 id="plusbasic-release-history">plusBASIC Release History</h1>
-<!--ToDo: Add entries between v0.18x and v0.13h-->
+<!--ToDo: Add entries between v0.18f and v0.13h-->
 <ul>
+<li>v0.27l (2025-10-19)
+<ul>
+<li>Added <code>SET KEY REPEAT ON/OFF</code> to enable/disable Direct Mode key repeat, <code>GETKEYRPEAT</code> to return status</li>
+<li>Key repeat now disabled on cold or warm boot</li>
+<li>Added <code>KEY REPEAT ON/OFF</code> to enable/disable key repeat during program execution</li>
+<li><code>^K</code>, <code>^L</code>, <code>^N</code>, <code>^O</code> now ignored during <code>INPUT</code></li>
+<li><em>pause_jiffies</em> returns Carry Set if interrupted by Ctrl-C</li>
+<li><code>PAUSE jiffies</code> clears key buffer only if interrupted by Ctrl-C</li>
+<li>Internal code changes
+<ul>
+<li>Consolidated all <code>__</code> and <code>_</code> routines in <em>paged.asm</em></li>
+<li>Moved <code>HEX$()</code> core code, <em>scale_xy</em> into AuxROM</li>
+<li>Removed orphan code from <em>basfile.bas</em></li>
+<li>Replaced occurances of <code>call aux_call:pop hl:ret</code> with <code>jp aux_call_popret</code></li>
+<li>Replaced occurances of <code>call aux_call:jp _pop_hl_doserror</code> with <code>jp _aux_call_hl_error</code></li>
+<li>Replaced occurances of <code>ld hl,(FACLO):call string_addr_len</code> with <code>call faclo_addr_len</code></li>
+<li>Replaced occurances of <code>rst CHRGET:call GETBYT</code> with <code>call skip_get_byte</code></li>
+<li>Added label <code>PFRNEW</code> to sbasic.asm, replaced <code>pop de:call FRETMP:jp PUTNEW</code> with <code>jp PFRNEW</code></li>
+<li>Added label <code>FRENEW</code> to sbasic.asm, replaced <code>call FRETMP:jp PUTNEW</code> with <code>jp FRENEW</code></li>
+<li>Replaced reference to bit flag <code>BASCRNCLR</code> in <code>BASYSCTL</code> with <code>SCRCOLOR</code> in <code>SCREENCTL</code> in <code>FN_GETCOLOR</code></li>
+</ul>
+</li>
+</ul>
+</li>
 <li>v0.27k (2025-10-08)
 <ul>
 <li>Replaced calls to <em>aux_call_inline</em> with <em>aux_call</em> and removed <em>aux_call_inline</em></li>
@@ -1034,13 +1058,82 @@ v0.22v (2024-05-19)</li>
 <li>Added SAVE file$,ASC</li>
 </ul>
 </li>
-<li></li>
-<li></li>
-<li></li>
-<li></li>
+<li>v0.18w
+<ul>
+<li>Added <em>unpack_line</em>, <code>OUTDO</code> hooks and <code>LINE$()</code> function</li>
+</ul>
+</li>
+<li>v0.18v
+<ul>
+<li><code>LOAD prog$,ASC</code> allows empty lines, requires line numbers, enforces line number order</li>
+</ul>
+</li>
+<li>v0.18u
+<ul>
+<li>Renamed <em>play_raw</em> to <em>play_paged</em>, then <em>play_sample</em></li>
+<li>Added <code>PLAY SAMPLE</code> command, <em>raw2saq.py</em>, and example directory /play_</li>
+</ul>
+</li>
+<li>v0.18t
+<ul>
+<li>Fixed CD and CD$ crash</li>
+<li>Added preliminary digital sample routine <em>play_raw</em></li>
+</ul>
+</li>
+<li>v0.18s
+<ul>
+<li>Moved routines into Aux ROM to make more room in System ROM</li>
+</ul>
+</li>
+<li>v0.18r
+<ul>
+<li>Call clear_all_errvars during <code>RUN</code> [Issue #55]</li>
+</ul>
+</li>
+<li>v0.18q
+<ul>
+<li>Added <code>LOAD filnam$,ASC</code> and incomplete <code>OPEN()</code> and <code>LINE INPUT #</code></li>
+</ul>
+</li>
+<li>v0.18p
+<ul>
+<li>Made <code>CHEAD</code> callable.  At end of <em>init_basic_program</em>, jump through <em>basic_link_lines</em> to <code>CHEAD</code></li>
+</ul>
+</li>
+<li>v0.18o
+<ul>
+<li>Added pair of 256 bytes buffer between stack and string space</li>
+<li>Fixed CLS in 80 column mode after Ctrl-W</li>
+</ul>
+</li>
+<li>v0.18m
+<ul>
+<li>Added <code>PEEKSCREEN</code>, <code>PEEKSCREEN$</code>, <code>PEEKCOLOR</code>, and <code>PEEKCOLOR$</code> functions</li>
+</ul>
+</li>
+<li>v0.18k
+<ul>
+<li>Added <code>SAVE FNKEYS</code>, <code>LOAD FNKEYS</code>, and <code>PAUSE string</code></li>
+</ul>
+</li>
+<li>v0.18j
+<ul>
+<li>Added <code>POKE SCREEN</code> and <code>POKE COLOR</code> statements</li>
+</ul>
+</li>
+<li>v0.18h
+<ul>
+<li>Added <code>Ctrl-T</code>, <code>Ctrl-Y</code>, and <code>Ctrl-W</code> to switch between 40 column screens and 80 column screen in direct mode</li>
+</ul>
+</li>
+<li>v0.18g
+<ul>
+<li>Implemented color printing and scrolling in 80 column mode</li>
+</ul>
+</li>
 <li>v0.18f (2023-11-14)
 <ul>
-<li>Added SET COLOR statement, printing and scrolling color text</li>
+<li>Added <code>SET COLOR</code> statement, printing and scrolling color text</li>
 </ul>
 </li>
 <li></li>

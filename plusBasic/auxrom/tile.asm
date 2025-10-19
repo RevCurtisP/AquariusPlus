@@ -167,7 +167,7 @@ tilemap_set_tile:
     ld      b,h
     ld      c,l                   ; BC = TilPrp
     ld      a,VIDEO_RAM
-    jp      page__write_word      ; Write to Video RAM and return
+    jp      page_write_word      ; Write to Video RAM and return
 
 ;-----------------------------------------------------------------------------
 ; Get tile from tilemap

@@ -396,6 +396,9 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <input disabled="disabled" type="checkbox" />
         <strong>GETKEY$</strong>  - Wait for key and return as string.<!--key--></li>
       <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>GETKEYREPEAT</strong> - Return Direct mode key repeat status.<!--system--></li>
+      <li class="task-list-item">
         <input disabled="disabled" type="checkbox" checked="checked" />
         <strong>GETPALETTE$(<em>palette</em>)</strong> - Return palette contents.<!--palette--></li>
       <li class="task-list-item">
@@ -445,7 +448,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>INMEM({@<em>page</em>,}<em>address</em>,<em>string</em>)</strong> - Search for string in memory.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" checked="checked" />
-        <strong>INT(<em>expression</em>)</strong> - Return expression rounded down to nearest integer.<!--math--></li>
+        <strong>INT(<em>number</em>)</strong> - Return expression rounded down to nearest integer.<!--math--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" checked="checked" />
         <strong>INT(<em>string</em>{,<em>offset</em>})</strong> - Convert two consecutive bytes in string to signed integer.<!--convert--></li>
@@ -476,6 +479,9 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>KEY({<em>keycode</em>|<em>string</em>})</strong> - Check if key is currently pressed.<!--key--></li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>KEY REPEAT ON|OFF</strong> - Temporarily enable or disable key repeat during program execution.<!--system--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" checked="checked" />
         <strong>LEFT$(<em>string</em>,<em>len</em>)</strong> - Return the first up to <em>len</em> characters of string.<!--string--></li>
@@ -867,7 +873,10 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>SET FNKEY <em>key</em> TO <em>string</em></strong> - Set auto-typed text when function key is pressed.<!--SETFNKY--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>SET KEY <em>mode</em></strong> - Set alternate keyboard port mode.</li>
+        <strong>SET KEY <em>byte</em></strong> - Temporarily change keyboard buffer settings.<!--system--></li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>SET KEY REPEAT ON|OFF</strong> - Enable or disable key repeat in direct mode.<!--system--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>SET PALETTE <em>palette</em>  TO <em>rgblist</em></strong> - Set palette entries.<!--palette--></li>

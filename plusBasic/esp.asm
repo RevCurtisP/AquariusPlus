@@ -396,8 +396,6 @@ esp_send_bytes:
 ; Clobbered registers: A,AF',IX
 ;-----------------------------------------------------------------------------
 esp_write_paged:
-    ld      l,0                   ; Default FilDsc to 0
-esp__write_paged:
     call    page_check_read       ; If illegal page       
     ret     z                     ;   Return error
     call    page_map_bank3        ; Map page into bank 3

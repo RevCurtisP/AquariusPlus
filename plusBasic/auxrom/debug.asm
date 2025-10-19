@@ -277,7 +277,7 @@ _out_byte:
     push    bc                    ; Stack = BufPtr, RtnAdr
     push    hl                    ; Stack = VarPtr, BufPtr, RtnAdr
     call    SNGFLT                ; FACC = Floated A
-    jr      __out_facc            ; Output FACC
+    jr      _out_facc             ; Output FACC
 
 _out_word:
     push    bc                    ; Stack = BufPtr, RtnAdr
@@ -285,14 +285,14 @@ _out_word:
     ld      a,d
     ld      d,e
     call    FLOATD                ; FACC = Floated AD
-    jr      __out_facc            ; Output FACC
+    jr      _out_facc             ; Output FACC
 
 ; Updates: BC: BufPtr, HL: VarPtr; Clobbers: AF, DE
 _out_float_hl:
     push    bc                    ; Stack = BufPtr, RtnAdr
     call    MOVFM                 ; Copy float from [HL] to FACC
     push    hl                    ; Stack = VarPtr, BufPtr, RtnAdr
-__out_facc:
+_out_facc:
     call    FOUT                  ; Convert FACC to string in FBUFFR
     pop     hl                    ; HL = VarPtr; Stack = BufPtr, RtnAdr
     pop     bc                    ; BC = BufPtr; Stack = RtnAdr

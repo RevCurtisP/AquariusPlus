@@ -205,7 +205,8 @@ FN_GET:
 ; GETKEY$  - Wait for key and return as string
 ;-----------------------------------------------------------------------------
 FN_GETKEY:
-    rst     CHRGET                ; Skip KEY
+    call    check_repeat          ; Skips KEY token
+    jr      z,FN_GETKEYREPEAT
     push    hl
     call    get_key               ; Wait for keypress
     pop     hl
@@ -221,6 +222,23 @@ FN_GETKEY:
     pop     bc                    ; Get rid of dummy return address
     jp      BUFCIN                ; Else Return String
 
+;-----------------------------------------------------------------------------
+; GETKEYREPEAT - Returns Direct Mode key repeat status
+;-----------------------------------------------------------------------------
+FN_GETKEYREPEAT:
+    rst     CHRGET
+    ld      a,(BASYSCTL)
+    and     KB_REPEAT
+return_true_false:
+    ld      a,0
+    jr      z,.float_it
+    dec     a
+.float_it    
+    jp      push_hl_labbck_float_sbyte
+
+;-----------------------------------------------------------------------------
+; GETSOUNDFAST
+;-----------------------------------------------------------------------------
 FN_GETSOUND:
     rst     CHRGET                ; Skip SOUND
     SYNCHKT XTOKEN
@@ -232,7 +250,7 @@ FN_GETSOUND:
 FN_GETSPEED:
     rst     CHRGET                ; Skip SPEED
     call    get_turbo_mode
-push_hl_labbck_float_a:
+push_hl_labbck_sngflt:
     call    push_hl_labbck
     jp      SNGFLT
 
@@ -384,8 +402,7 @@ float_str:
     ld      a,(hl)
     cp      ','
     jr      nz,_first_long
-    rst     CHRGET                ; Skip Comma
-    call    GETBYT                ; DE = BinPos
+    call    skip_get_byte         ; DE = BinPos
     or      a
     jp      z,FCERR
 _first_long:
@@ -501,10 +518,9 @@ FN_LWR:
     pop     bc                    ; BC = ArgLen; Stack = ArgAdr, ArgDsc, DmyRtn, TxtPtr
     pop     hl                    ; HL = ArgAdr; Stack = ArgDsc, DmyRtn, TxtPtr
     ld      iy,uprlwr_string
-    call    aux_call               ; Convert the string
+    call    aux_call              ; Convert the string
     pop     de                    ; DE = ArgDsc; Stack = DmyRtn, TxtPtr
-    call    FRETMP                ; Free ArgStr
-    jp      FINBCK                ; Return Result String
+    jp      fretmp_finbck         ; Free ArgStr and return Result String
 
 ; 10 IF K=UPRKEY:ON -(K=0) GOTO 10:? K: GOTO 10
 
@@ -770,7 +786,7 @@ FN_COMPARE:
     pop     hl                    ; HL = TxtPtr; Stack = Addr1, RtnAdr
     pop     de                    ; Stack = RtnAdr
     xor     a                     ; Return 0
-    jp      push_hl_labbck_float_a
+    jp      push_hl_labbck_sngflt
 
 ;----------------------------------------------------------------------------
 ; EVAL - Evaluate string
@@ -897,6 +913,28 @@ ST_GET:
     cp      ARGSTK
     jp      z,ST_GETARGS
     jp      SNERR
+
+;-----------------------------------------------------------------------------
+; Endable/Disable Kay Repeat in Running Program
+; Syntax: KEY REPEAT ON/OFF
+;-----------------------------------------------------------------------------
+ST_KEY:
+    call    check_repeat
+    jp      nz,SNERR
+    jp      key_set_repeat
+
+check_repeat:
+    rst     CHRGET
+    ld      b,REPEATK
+check_exttok:
+    cp      XTOKEN                ; If Not Extended Token
+    ret     nz                    ;   Return NZ
+    inc     hl                    ; Else
+    ld      a,(hl)                ;   A = TknSfx
+    cp      b                     ;   If specfied TknSfx
+    ret     z                     ;     Return Z  
+    dec     hl                    ;   Else BACK up to XTOKEN
+    ret
 
 ;----------------------------------------------------------------------------
 ; LINE Statement stub
@@ -1025,17 +1063,22 @@ ST_SET_CHR:
     ret
 
 ;-----------------------------------------------------------------------------
-; Set keybuffer mode
-; Syntax: SET KEY mode
+; Set Direct Mode Kay Repeat
+; Syntax: SET KEY REPEAT ON/OFF
 ;-----------------------------------------------------------------------------
 ST_SET_KEY:
-    rst     CHRGET                ; Skip KEY
+    call    check_repeat          ; Skips KEY
+    jr      z,ST_SET_KEY_REPEAT
     call    GETBYT                ; Get key mode
     push    hl
     call    key_set_keymode       ; Set the mode
     jp      m,FCERR
     pop     hl
     ret
+
+ST_SET_KEY_REPEAT:
+    call    get_on_off
+    jp      key_save_repeat       ; Set BASYSCTL, ESP Keymode and return
 
 ;-----------------------------------------------------------------------------
 ; Set Z80 Clock Speed
@@ -1119,9 +1162,7 @@ ST_SET_FNKEY:
     ex      (sp),hl               ; H = FnkNum; Stack = TxtPtr, RtnAdr
     ld      a,h                   ; A = FnkNum
     ld      iy,fnkey_write_buffer ; Write to the buffer
-    call    aux_call
-    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
-    ret
+    jp      aux_call_popret
 
 ;-----------------------------------------------------------------------------
 ; Set SOUND turbo mode (defaults to ON)
@@ -1155,8 +1196,6 @@ ST_SET_USR:
 ;-----------------------------------------------------------------------------
 ; PAUSE Statement
 ;-----------------------------------------------------------------------------
-;; ToDo: make pause_jiffies return carry set if ctrl-c was pressed
-;;       and clear keybuffer if it was
 ST_PAUSE:
     jp      z,.tryin              ; If no argument, wait for key and return
     jp      p,.notxtoken          ; If followed by token
@@ -1176,9 +1215,10 @@ ST_PAUSE:
     ld      a,(BASYSCTL)
     and     BASBRKOFF
     ld      iy,pause_jiffies
-    call    aux_call
-    pop     hl
-    jp      key_clear_fifo
+    call    aux_call              ; If Ctrl-C
+    call    c,key_clear_fifo      ;   Clear keybaord buffer
+    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
+    ret
 .string
     call    STRPRT
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr

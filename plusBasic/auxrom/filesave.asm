@@ -83,7 +83,7 @@ file_save_paged:
     jp      m,discard_ret
     ld      l,a                   ; L = FilDsc
     pop     af                    ; A = Page
-    call    esp__write_paged
+    call    esp_write_paged
 _close:
     push    af
     ld      a,l

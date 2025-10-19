@@ -10,66 +10,58 @@
 ; On entry: A,C = character typed, B = input buffer character count
 ;-----------------------------------------------------------------------------
 s3_ctrl_keys:
-    push    bc                    ; Stack = ChrCnt+ChrTyp
-    call    in_direct
-    pop     bc                    ; B = ChrCnt, C = ChrTyp
-    jr      c,.dontscreen         ; If Not in Direct Mode
-    ld      a,c
+    ld      a,c                   ; A = Key
     or      a
-    jp      m,.extended
+    jp      p,.not_extended       ; If Key > 127
+    cp      $A0                   ;   If international character
+    jr      nc,.notrub            ;     use it
+    call    fnkey_get_buff_addr   ;   DE = Key Buffer Address
+    jr      nz,.inlinc            ;   If Function Key
+    dec     de                    ;     Back up for autotype
+    ld      (RESPTR),de           ;     Set pointer to buffer
+    jr      .inlinc               ; Else
+.not_extended
+    push    bc                    ;   Stack = ChrCnt+ChrTyp
+    call    in_direct
+    pop     bc                    ;   B = ChrCnt, C = ChrTyp
+    jr      c,.notrub             ;   If in Direct Mode
     dec     b
-    jr      nz,.dontscreen        ; and Input Buffer is empty
-    ld      a,c
+    jr      nz,.dontscreen        ;     If Input Buffer is empty
+    ld      a,c                   ;       A = Key
     ld      b,1
-    cp      'T'-64
-    jr      z,.switch_screen
+    cp      'T'-64                ;       If ^2
+    jr      z,.switch_screen      ;         Switch to Screen 1
     inc     b
-    cp      'Y'-64
-    jr      z,.switch_screen
+    cp      'Y'-64                ;       If ^Y
+    jr      z,.switch_screen      ;         Switch to Screen 2
     inc     b
-    cp      'W'-64
-    jr      z,.switch_screen
+    cp      'W'-64                ;       If ^W
+    jr      z,.switch_screen      ;         Switch to Screen 3 
 .dontscreen
-    ld      a,c                   ; Get typed character
-    sub     a,'K'-64              ;
+    ld      a,c                   ;       A = Key
+    sub     a,'K'-64              ;       A = 0 if ^K, 1 if ^L, etc...
     jr      c,.notrub             ;
     cp      'M'-'K'               ;
     jr      z,.notrub             ;
-    jr      nc,.notrepeat         ; If ^K or ^L
-    dec     a                     ;   ^K = $FF, ^L = 0
-    and     KB_REPEAT             ;   ^K = Repeat on, ^L = off
-    ld      b,a                   ;   Save it
-    ld      a,(BASYSCTL)          ;   Get current Flags
-    and     $FF-KB_REPEAT         ;   Mask out Repeat Bit
-    or      b                     ;   OR new value back in
-    ld      (BASYSCTL),a          ;   And write it back out
-    ld      a,KB_ENABLE | KB_ASCII
-    or      b                     ;
-    call    key_set_keymode       ;   Now set new keybuffer mode
-    jr      .inlinc               ;   Wait for next key
+    jr      nc,.notrepeat         ;       If ^K or ^L
+    dec     a                     ;         ^K = $FF, ^L = 0
+    call    key_save_repeat       ;         Update BASYSCTL and ESP Keymode
+    jr      .inlinc               ;       Else
 .notrepeat:
-    cp      'P'-'K'               ; If not ^N through ^P
+    cp      'P'-'K'               ;         If not ^N OR ^O
     jr      c,.charset
 .notrub
-    ld      ix,NOTRUB             ;   Continue standard Ctrl-key check
+    ld      ix,NOTRUB             ;           Continue standard Ctrl-key check
     ret
 .charset
-    sub     a,'N'-'K'             ; ^N = 0, ^O = 1, ^P = 2
-    xor     1                     ; ^O = 1, ^O = 0, ^P = 2
+    sub     a,'N'-'K'             ;         ^N = 0, ^O = 1
+    xor     1                     ;         ^O = 1, ^O = 0
     push    hl                    ;
-    call    select_chrset         ; Select the character set
+    call    select_chrset         ;         Select the character set
     pop     hl
 .inlinc
-    ld      ix,INLINC             ;   Wait for next key
+    ld      ix,INLINC             ; Wait for next key
     ret
-.extended
-    cp      $A0                   ; If international character
-    jr      nc,.notrub            ;   use it
-    call    fnkey_get_buff_addr   ; DE = Key Buffer Address
-    jr      nz,.inlinc            ; If Function Key
-    dec     de                    ;   Back up for autotype
-    ld      (RESPTR),de           ;   Set pointer to buffer
-    jr      .inlinc               ;   and return
 .switch_screen
     ld      a,b                   ; A = Screen#
     push    de

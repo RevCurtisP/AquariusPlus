@@ -32,12 +32,11 @@ ST_PLAY:
 ST_PLAY_SAMPLE:
     rst     CHRGET                ; Skip SAMPLE
     call    require_page_addr     ; AF = PgFlg, DE = Addr
+    ld      iy,play_sample
     push    hl                    ; Stack = TxtPtr, RtnAdr
     ex      de,hl                 ; HL = Address
-    ld      iy,play_sample
-    call    aux_call              ; Play the sample
-    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
-    ret
+    jp      aux_call_popret       ; Play sample, pop TxtPtr, and return
+
 
 ;-----------------------------------------------------------------------------
 ; PLAY TRACK Statement
@@ -95,10 +94,8 @@ ST_RESUME_TRACK:
 ;-----------------------------------------------------------------------------
 ST_STOP_TRACK:
     rst     CHRGET                ; Skip TRACK
-    push    hl
     ld      iy,track_reset
-    call    aux_call
-    pop     hl
+    call    aux_call_preserve_hl
     xor     a
     ld      iy,track_loop
     jp      aux_call
@@ -115,19 +112,19 @@ FN_TRACK:
     call    push_hlinc_labbck
     cp      FASTK
     ld      l,e
-    jr      z,.retstat
+    jr      z,FLOAT_L
     cp      LOOPTK
     ld      l,c
-    jr      z,.retstat
+    jr      z,FLOAT_L
     cp      STATK
     ld      l,b
-    jr      z,.retstat
+    jr      z,FLOAT_L
     cp      SPEEDTK
     jp      nz,SNERR
     ld      iy,track_speed
     call    aux_call
     jp      SNGFLT
-.retstat
+FLOAT_L:
     ld      a,l
     jp      FLOAT
 
@@ -156,7 +153,5 @@ ST_SET_TRACK:
 _track_speed
     call    skip_get_byte       ; A = Speed
     ld      iy,track_setspeed
-    call    aux_call
-    jp      c,FCERR
-    ret
+    jp      aux_call_fcerr
 

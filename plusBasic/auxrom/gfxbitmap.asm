@@ -633,7 +633,7 @@ _calc_4bpp_addr:
     ld      d,high(BANK1_BASE)    ; DE = VidRAM + BytOfs
     call    _mult40c              ; HL = RowAdr
     add     hl,hl                 ; HL = Y * 80
-    jr      __calc_1bpp_addr
+    jr      _calc_byte_addr
 
 ;-----------------------------------------------------------------------------
 ; Calculate 1bpp bitmap coordinate address
@@ -653,7 +653,7 @@ _calc_1bpp_addr:
     srl     e                     ; E = BytOfs
     ld      d,high(BANK1_BASE)    ; DE = VidRAM + BytOfs
     call    _mult40c              ; HL = RowAdr
-__calc_1bpp_addr:
+_calc_byte_addr:
     add     hl,de                 ; HL = BytAdr, B = 0
     ex      de,hl                 ; DE = BytAdr
     ex      af,af'

@@ -94,43 +94,11 @@ HEX_STRING:
     ld      a,c                   ; A = ArgLen
     or      a                     ; If Length is 0
     jp      z,null_string         ;   Return Null String
-    push    de                    ; Stack = ArgDsc, DmyRtn, TxtPtr
-    push    hl                    ; Stack = ArgAdr, ArgDsc, DmyRtn, TxtPtr
-    push    af                    ; Stack = ArgLen, ArgAdr, ArgDsc, DmyRtn, TxtPtr
-    add     a,a                   ; NewLen = ArgLen * 2
-    jp      c,LSERR               ; LS Error if greater than 255
-    call    STRINI                ; DE = NewAdr
-    pop     af                    ; A = ArgLen; Stack = ArgAdr, ArgDsc, DmyRtn, TxtPtr
-    pop     hl                    ; HL = ArgAdr; Stack = ArgDsc, DmyRtn, TxtPtr
-    ex      de,hl                 ; DE = ArgAdr, HL = NewAdr
-    ld      b,a                   ; Loop through Arg String Text
-.hexloop:
-    ld      a,(de)                ; Get Arg String Character
-    inc     de                    ; and Bump Pointer
-    call    _hexbyte              ; Convert to Hex in Result String
-    djnz    .hexloop              ; Loop until B=0
-    pop     de                    ; DE = ArgDsc; Stack = DmyRtn, TxtPtr
+    ld      iy,bas_hex_string
+    call    aux_call
+fretmp_finbck:
     call    FRETMP                ; Free ArgStr
     jp      FINBCK                ; Return Result String
-
-_hexbyte:
-    ld      c,a
-    rra
-    rra
-    rra
-    rra
-    call    .hex
-    ld      a,c
-.hex:
-    and     $0f
-    cp      10
-    jr      c,.chr
-    add     7
-.chr:
-    add     '0'
-    ld      (hl),a
-    inc     hl
-    ret
 
 ;-----------------------------------------------------------------------------
 ; IN() function
@@ -296,8 +264,8 @@ _joy_string:
 ;-----------------------------------------------------------------------------
 ST_LOCATE:
     call    parse_screen_coord
-    ex      de, hl              ; Switch DE with HL
     ld      iy,move_cursor
+    ex      de, hl              ; Switch DE with HL
     call    aux_call            ; Cursor to screen location HL (H=col, L=row)
     ex      de, hl
     ret

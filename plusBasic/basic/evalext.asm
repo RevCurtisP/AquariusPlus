@@ -104,9 +104,9 @@ eval_hex:
     ld      e,$CD             ; Make LSB CD
     jr      .hex_loop
 
+;; ToDo: call aux_hex_to_asc
 hex_to_asc:
-    ld      hl,(FACLO)            ; HL = ArgDsc
-    call    string_addr_len       ; BC = ArgLen, DE = ArgAdr
+    call    faclo_addr_len        ; BC = ArgLen, DE = ArgAdr, HL = ArgDsc
     ld      a,c                   ; A = ArgLen
     srl     a                     ; NewLen = ArgLen / 2
     jp      c,FCERR               ; Error if ArgLen was Odd
@@ -130,10 +130,7 @@ hex_to_asc:
     ld      (de),a          ; Store in Result String
     inc     de              ; Bump Result Pointer
     djnz    .asc_loop
-    pop     de                    ; DE = ArgDsc; Stack = RtnAdr
-fretmp_putnew:
-    call    FRETMP                ; Free the temporary
-    jp      PUTNEW                ; and Return it
+    jp      PFRNEW           ; Pop ArgDsc, Free It, and Return NewStr
 
 get_hex:
     ld      a,(hl)          ; Get Hex Digit
@@ -414,7 +411,7 @@ oper_stringsub:
     jp      z,no_more             ;   Too many operands
     SYNCHKC ')'                   ; Require )
     ex      (sp),hl               ; HL = StrDsc; Stack = TxtPtr, RtnAdr
-    jp      fretmp_putnew         ; Free ArgDsc and return NewStr
+    jp      FRENEW                ; Free ArgDsc and return NewStr
 
 .substitute:
     pop     af                  ; A = DatLen; Stack = TxtPtr, RtnAdr

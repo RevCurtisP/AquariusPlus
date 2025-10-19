@@ -179,6 +179,7 @@ plusBASIC Quick Reference Guide
  - [ ] **GETCURSOR** - Return cursor display mode.
  - [ ] **GETKEY** - Wait for key and return ASCII code.<!--key-->
  - [ ] **GETKEY$**  - Wait for key and return as string.<!--key-->
+ - [ ] **GETKEYREPEAT** - Return Direct mode key repeat status.<!--system-->
  - [x] **GETPALETTE$(_palette_)** - Return palette contents.<!--palette-->
  - [x] **GETPALETTE$(_palette_,_index_)** - Return palette entry.<!--palette-->
  - [ ] **GETSOUNDFAST** - Return `SOUND FAST` status.
@@ -195,7 +196,7 @@ plusBASIC Quick Reference Guide
  - [ ] **INC _numvar_** - Increment numeric variable.
  - [ ] **INDEX(\*_array_,_string_)** - Search for string in element of array
  - [ ] **INMEM({@_page_,}_address_,_string_)** - Search for string in memory.
- - [x] **INT(_expression_)** - Return expression rounded down to nearest integer.<!--math-->
+ - [x] **INT(_number_)** - Return expression rounded down to nearest integer.<!--math-->
  - [x] **INT(_string_{,_offset_})** - Convert two consecutive bytes in string to signed integer.<!--convert-->
  - [ ] **INKEY** - Return ASCII code of most recently pressed key.<!--KEY-->
  - [ ] **INKEY$** - Return most recently pressed key as string.<!--KEY-->
@@ -206,6 +207,7 @@ plusBASIC Quick Reference Guide
  - [ ] **JOY(_stick_)** - Read one or both game controllers.<!--JOY-->
  - [ ] **JOY$(_id_)** - Read wireless game controller.<!--JOY-->
  - [ ] **KEY({_keycode_|_string_})** - Check if key is currently pressed.<!--key-->
+ - [ ] **KEY REPEAT ON|OFF** - Temporarily enable or disable key repeat during program execution.<!--system-->
  - [x] **LEFT$(_string_,_len_)** - Return the first up to _len_ characters of string.<!--string-->
  - [x] **LEN(_string_)** - Return length of string.
  - [x] **LEN(\*_array_)** - Return total length of array data.
@@ -347,7 +349,8 @@ plusBASIC Quick Reference Guide
  - [.] **SET FILE _channel_ POS TO _long_** - Set current position in opened file.<!--fileio-->
  - [ ] **SET FILE ERROR ON|OFF** - Enable or disable file operations generating BASIC errors.
  - [ ] **SET FNKEY _key_ TO _string_** - Set auto-typed text when function key is pressed.<!--SETFNKY-->
- - [ ] **SET KEY _mode_** - Set alternate keyboard port mode.
+ - [ ] **SET KEY _byte_** - Temporarily change keyboard buffer settings.<!--system-->
+ - [ ] **SET KEY REPEAT ON|OFF** - Enable or disable key repeat in direct mode.<!--system-->
  - [ ] **SET PALETTE _palette_ {INDEX _index_} TO _rgblist_** - Set palette entries.<!--palette-->
  - [ ] **SET SAVE ASC ON|OFF** - Enable or disable forced saving of BASIC programs in ASCII format.<!--save-->
  - [ ] **SET SOUND FAST ON|OFF_** - Set whether SOUND is affected by turbo mode.<!--system-->

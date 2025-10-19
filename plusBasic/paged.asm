@@ -2,8 +2,6 @@
 ; Paged Memory Management routines
 ;=============================================================================
 
-;; ToDo: Consolidate all __ and _ routines
-
 ;-----------------------------------------------------------------------------
 ; Compare paged memory to main memory
 ; Input: A: Page
@@ -20,7 +18,7 @@ page_mem_compare:
     ret     c                   ;   Return error
     ex      af,af'
     ex      de,hl               ; DE = PgAdr, HL = MemAdr
-    call    page__set4read_coerce
+    call    page_set4read_coerce
     ret     z
     dec     de
 .loop
@@ -256,7 +254,7 @@ xpage_fill_all_byte:
     ld      de,0
     ld      bc,$4000
     call    page_coerce_de_addr
-    call    __set_page
+    call    _set_page
     jr      _fill_byte
 page_fill_all_byte:
     ld      de,0
@@ -272,7 +270,7 @@ page_fill_all_byte:
 ; Clobbers: A, BC, DE
 ;-----------------------------------------------------------------------------
 page_fill_byte:
-    call    page__set4write_coerce ; DE = Coerced Start Address
+    call    page_set4write_coerce ; DE = Coerced Start Address
     ret     z                     ; If invalid page, return error
 _fill_byte:
     ld      a,b
@@ -306,7 +304,7 @@ page_fill_all_word:
 ; Clobbers: A, BC, DE
 ;-----------------------------------------------------------------------------
 page_fill_word:
-    call    page__set4write_coerce
+    call    page_set4write_coerce
     ret     z                     ; If invalid page, return error
 .loop
     ld      a,b
@@ -337,7 +335,7 @@ _success:
 ;-----------------------------------------------------------------------------
 page_find_string:
     ex      de,hl                 ; HL = StrAdr, DE = MemAdr
-    call    page__set4read_coerce
+    call    page_set4read_coerce
     ret     z                     ; If invalid page, return error
     ex      de,hl                 ; DE = StrAdr, HL = MemAdr
     call    string_find           ; Search for string
@@ -401,7 +399,7 @@ page_restore_two:
 ;      Zero: Cleared if succesful, set if invalid page
 ;-----------------------------------------------------------------------------
 page_read_byte:
-    call    page__set4read_coerce
+    call    page_set4read_coerce
     ret     z                     ; Return if illegal page
     ld      a,(de)
     ld      c,a
@@ -421,7 +419,7 @@ page_write_byte_sys:
     call    page_coerce_de_addr
     jr      _write_byte
 page_write_byte:
-    call    page__set4write_coerce
+    call    page_set4write_coerce
     ret     z                     ; Return if illegal page
 _write_byte:
     ld      a,c
@@ -438,7 +436,7 @@ _write_byte:
 ;      Carry: Cleared if succesful, Set if overflow
 ;-----------------------------------------------------------------------------
 page_read_word:
-    call    page__set4read_coerce
+    call    page_set4read_coerce
     ret     z
     ld      a,(de)
     ld      c,a
@@ -455,26 +453,6 @@ page_read_word:
 .done
     jp      page_restore_bank3
 
-page__write_word:
-    call    page__set_for_write
-    ret     z
-    call    page_coerce_de_addr
-    ld      a,c
-    ld      (de),a
-    inc     de
-    ld      a,d
-    or      e 
-    jr      nz,.not_end
-    call    page_next_de_address
-    jr      c,.done               ; Return if overflow
-.not_end
-    ld      a,b
-    ld      (de),a
-    dec     de                    ; Restore DE and fall into page_restore
-.done
-    jp      page_restore_bank3
-
-
 ;-----------------------------------------------------------------------------
 ; Write Word to Page - wraps to next page if address is 16383
 ; Input: A: Page
@@ -487,7 +465,7 @@ page__write_word:
 ; Clobbered: A
 ;-----------------------------------------------------------------------------
 page_write_word:
-    call    page__set4write_coerce
+    call    page_set4write_coerce
     ret     z                     ; Return if illegal page
     ld      a,c
     ld      (de),a
@@ -680,7 +658,7 @@ page_set_basbuf:
 ; Clobbers: A, AF', BC
 ;-----------------------------------------------------------------------------
 page_write_bytes:
-    call    page__set4write_coerce
+    call    page_set4write_coerce
     ret     z
     dec     de
 .loop
@@ -745,7 +723,7 @@ page_skip_write:
 page_read_bytes:
     ex      de,hl                 ; DE = SrcAdr, HL = Dst Adr
 page_read_bytes_ex:
-    call    page__set_for_read
+    call    page_set_for_read
     ret     z
     call    page_coerce_de_addr
     dec     de
@@ -769,16 +747,6 @@ page_read_bytes_ex:
     jp      page_restore_bank3    ; Restore BANK3 page and return
 
 ;-----------------------------------------------------------------------------
-; Map Page into Bank 3 and coerce address to bank 3
-; Input: A: Bank to map into bank 3
-;       DE: Address to coerce
-; Zero Flag: Set if trying to page into bank that isn't ram
-;-----------------------------------------------------------------------------
-page_set4read_coerce:
-    call    page_set_for_read
-    jr      page_coerce_de_addr
-
-;-----------------------------------------------------------------------------
 ; Map Page into valid Bank 3 and coerce address to bank 3
 ; Input: A: Bank to map into bank 3
 ;       DE: Address to coerce
@@ -786,9 +754,9 @@ page_set4read_coerce:
 ; Flags Set: Z if page not RAM
 ; Clobbers: AF'
 ;-----------------------------------------------------------------------------
-page_set4write_coerce:
-    call    page_set_for_write
-    jr      page_coerce_de_addr
+;page_set4write_coerce:
+;    call    page_set_for_write
+;    jr      page_coerce_de_addr
 
 ;-----------------------------------------------------------------------------
 ; Increment Bank 3 Write Address in DE
@@ -862,19 +830,19 @@ page_coerce_hl_addr:
     ex      af,af'                ; Restore page and flags
     ret
 
-page__set4read_coerce:
+page_set4read_coerce:
     call    page_coerce_de_addr
-    jr      page__set_for_read
-page__set4write_coerce:
+    jr      page_set_for_read
+page_set4write_coerce:
     call    page_coerce_de_addr
-page__set_for_write:
+page_set_for_write:
     call    page_check_write
     ret     z
-    jr      __set_page
-page__set_for_read:
+    jr      _set_page
+page_set_for_read:
     call    page_check_read
     ret     z
-__set_page
+_set_page:
     pop     ix
     ex      af,af'
     in      a,(IO_BANK3)
@@ -889,16 +857,16 @@ __set_page
 ; Input: A: Bank to map into bank 3
 ; Zero Flag: Set if trying to page into bank that isn't ram
 ;-----------------------------------------------------------------------------
-page_set_for_write:
-    call    page_check_write
-    ret     z
-    jr      _set_page
-page_set_for_read:
-    call    page_check_read
-    ret     z
-_set_page
-    out     (IO_BANK3),a          ; Map page into bank 3
-    ret
+;page_set_for_write:
+;    call    page_check_write
+;    ret     z
+;    jr      _set_page
+;page_set_for_read:
+;    call    page_check_read
+;    ret     z
+;_set_page
+;    out     (IO_BANK3),a          ; Map page into bank 3
+;    ret
 
 ;-----------------------------------------------------------------------------
 ; page_check_read_write

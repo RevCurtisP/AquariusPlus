@@ -5,16 +5,13 @@
 ;-----------------------------------------------------------------------------
 ; Hook 2 - READY (Enter Direct Mode
 ;-----------------------------------------------------------------------------
-;; ToDo: Always enable key repeat in direct mode?
 direct_mode:
     call    text_screen
 
     ld      a,(BASYSCTL)
     and     ~BASBRKOFF            ; Enable Ctrl-C break
     ld      (BASYSCTL),a
-    and     KB_REPEAT
-    or      KB_ENABLE | KB_ASCII
-    call    key_set_keymode       ; Turn on keybuffer, ASCII mode, no repeat
+    call    key_set_repeat        ; Turn on keybuffer in ASCII mode, KB_REPEAT in BASYSCTL
     call    set_cursor_on
     call    ferr_flag_on
     call    close_bas_fdesc       ; Clean up after aborted file commnds

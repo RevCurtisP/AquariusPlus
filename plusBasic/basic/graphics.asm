@@ -131,8 +131,6 @@ FN_GETCOLOR:
     inc     hl                    ; Skip COL
     SYNCHKT ORTK                  ; Require OR
     call    push_hl_labbck
-;    ld      a,(BASYSCTL)
-;    and     a,BASCRNCLR           ; If not in Color Print mode
     ld      a,(SCREENCTL)         ; 
     rla                           ; Carry = SCRCOLOR
     jp      nc,float_minus_one    ; If Color Print disabled Return -1
@@ -143,7 +141,6 @@ FN_GETCOLOR:
 ; SET COLOR statements
 ; SET COLOR foreground, background
 ;-----------------------------------------------------------------------------
-;;; ToDo: BUG FIX - Make PRRINT CHR$(11) do SET COLOR OFF
 ST_SETCOLOR:
     rst     CHRGET                ; Skip CHR
     SYNCHKT ORTK                  ; Require OR
@@ -1486,7 +1483,6 @@ _rgbhex:
     ld      bc,bas_rgbhex
     jr      _rgbdechex
 
-;; ToDo: Add unit tests
 ; PRINT RGBDEC$($"2301")
 ; PRINT RGBDEC$($"2301",9)
 ; PRINT RGBDEC$($"2301"," ")

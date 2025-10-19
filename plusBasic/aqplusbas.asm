@@ -134,7 +134,7 @@ null_desc:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.27k"
+    db "v0.27l"
     db 0
 plusver_len equ $ - plus_version
 plus_len   equ   $ - plus_text
@@ -800,6 +800,21 @@ key_read:
     or        a
     ret
 
+;-----------------------------------------------------------------------------
+; Set keyboard repeat
+;  Input: A: Repeat ($FF = On, $00 = False) 
+; Output: A: 0 if succesful, else error code
+;-----------------------------------------------------------------------------
+key_save_repeat:
+    and     KB_REPEAT             ; Isolate Repeat bit
+    ld      b,a                   ; B = RptBit
+    ld      a,(BASYSCTL)
+    and     ~KB_REPEAT
+    or      b
+    ld      (BASYSCTL),a
+key_set_repeat:
+    and     KB_REPEAT             ; Isolate Repeat bit
+    or      KB_ENABLE | KB_ASCII
 ;-----------------------------------------------------------------------------
 ; Set keyboard mode
 ;  Input: A: Mode (KB_ENABLE | KB_ASCII | KB_REPEAT) 

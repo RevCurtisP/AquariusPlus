@@ -179,6 +179,7 @@ plusBASIC Quick Reference Guide
  - **GETCURSOR** - Return cursor display mode.
  - **GETKEY** - Wait for key and return ASCII code.
  - **GETKEY$**  - Wait for key and return as string.
+ - **GETKEYREPEAT** - Return Direct mode key repeat status.
  - **GETPALETTE$(_palette_)** - Return palette contents.
  - **GETPALETTE$(_palette_,_index_)** - Return palette entry.
  - **GETSOUNDFAST** - Return `SOUND FAST` status.
@@ -195,7 +196,7 @@ plusBASIC Quick Reference Guide
  - **INC _numvar_** - Increment numeric variable.
  - **INDEX(\*_array_,_string_)** - Search for string in element of array
  - **INMEM({@_page_,}_address_,_string_)** - Search for string in memory.
- - **INT(_expression_)** - Return expression rounded down to nearest integer.
+ - **INT(_number_)** - Return expression rounded down to nearest integer.
  - **INT(_string_{,_offset_})** - Convert two consecutive bytes in string to signed integer.
  - **INKEY** - Return ASCII code of most recently pressed key.
  - **INKEY$** - Return most recently pressed key as string.
@@ -206,6 +207,7 @@ plusBASIC Quick Reference Guide
  - **JOY(_stick_)** - Read one or both game controllers.
  - **JOY$(_id_)** - Read wireless game controller.
  - **KEY({_keycode_|_string_})** - Check if key is currently pressed.
+ - **KEY REPEAT ON|OFF** - Temporarily enable or disable key repeat during program execution.
  - **LEFT$(_string_,_len_)** - Return the first up to _len_ characters of string.
  - **LEN(_string_)** - Return length of string.
  - **LEN(\*_array_)** - Return total length of array data.
@@ -347,7 +349,8 @@ plusBASIC Quick Reference Guide
  - **SET FILE _channel_ POS TO _long_** - Set current position in opened file.
  - **SET FILE ERROR ON|OFF** - Enable or disable file operations generating BASIC errors.
  - **SET FNKEY _key_ TO _string_** - Set auto-typed text when function key is pressed.
- - **SET KEY _mode_** - Set alternate keyboard port mode.
+ - **SET KEY _byte_** - Temporarily change keyboard buffer settings.
+ - **SET KEY REPEAT ON|OFF** - Enable or disable key repeat in direct mode.
  - **SET PALETTE _palette_ {INDEX _index_} TO _rgblist_** - Set palette entries.
  - **SET SAVE ASC ON|OFF** - Enable or disable forced saving of BASIC programs in ASCII format.
  - **SET SOUND FAST ON|OFF_** - Set whether SOUND is affected by turbo mode.

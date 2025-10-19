@@ -1,5 +1,23 @@
 # plusBASIC Release History
-<!--ToDo: Add entries between v0.18x and v0.13h-->
+<!--ToDo: Add entries between v0.18f and v0.13h-->
+  - v0.27l (2025-10-19)
+    - Added `SET KEY REPEAT ON/OFF` to enable/disable Direct Mode key repeat, `GETKEYRPEAT` to return status
+    - Key repeat now disabled on cold or warm boot
+    - Added `KEY REPEAT ON/OFF` to enable/disable key repeat during program execution
+    - `^K`, `^L`, `^N`, `^O` now ignored during `INPUT`
+    - _pause_jiffies_ returns Carry Set if interrupted by Ctrl-C 
+    - `PAUSE jiffies` clears key buffer only if interrupted by Ctrl-C
+    - Internal code changes
+      - Consolidated all `__` and `_` routines in _paged.asm_
+      - Moved `HEX$()` core code, _scale_xy_ into AuxROM
+      - Removed orphan code from _basfile.bas_
+      - Replaced occurances of `call aux_call:pop hl:ret` with `jp aux_call_popret`
+      - Replaced occurances of `call aux_call:jp _pop_hl_doserror` with `jp _aux_call_hl_error`
+      - Replaced occurances of `ld hl,(FACLO):call string_addr_len` with `call faclo_addr_len`
+      - Replaced occurances of `rst CHRGET:call GETBYT` with `call skip_get_byte`
+      - Added label `PFRNEW` to sbasic.asm, replaced `pop de:call FRETMP:jp PUTNEW` with `jp PFRNEW`
+      - Added label `FRENEW` to sbasic.asm, replaced `call FRETMP:jp PUTNEW` with `jp FRENEW`
+      - Replaced reference to bit flag `BASCRNCLR` in `BASYSCTL` with `SCRCOLOR` in `SCREENCTL` in `FN_GETCOLOR`
   - v0.27k (2025-10-08)
     - Replaced calls to _aux_call_inline_ with _aux_call_ and removed _aux_call_inline_
     - Replaced occurances of `push hl:ld bc,LABBCK:push bc` with `call push_hl_labbck`
@@ -559,12 +577,39 @@
     - LOAD and RUN now autodect CAQ vs ASCII when loading BASIC programs. Removed ,ASC option from LOAD.
  - v0.18x (2023-11-24) 
     - Added SAVE file$,ASC
- -  
- - 
- - 
- - 
+ - v0.18w 
+    - Added _unpack_line_, `OUTDO` hooks and `LINE$()` function
+ - v0.18v 
+    - `LOAD prog$,ASC` allows empty lines, requires line numbers, enforces line number order
+ - v0.18u 
+    - Renamed _play_raw_ to _play_paged_, then _play_sample_  
+    - Added `PLAY SAMPLE` command, _raw2saq.py_, and example directory /play_
+ - v0.18t 
+    - Fixed CD and CD$ crash
+    - Added preliminary digital sample routine _play_raw_
+ - v0.18s 
+    - Moved routines into Aux ROM to make more room in System ROM
+ - v0.18r 
+    - Call clear_all_errvars during `RUN` [Issue #55]
+ - v0.18q 
+    - Added `LOAD filnam$,ASC` and incomplete `OPEN()` and `LINE INPUT #`
+ - v0.18p 
+    - Made `CHEAD` callable.  At end of _init_basic_program_, jump through _basic_link_lines_ to `CHEAD`
+ - v0.18o 
+    - Added pair of 256 bytes buffer between stack and string space
+    - Fixed CLS in 80 column mode after Ctrl-W
+ - v0.18m 
+    - Added `PEEKSCREEN`, `PEEKSCREEN$`, `PEEKCOLOR`, and `PEEKCOLOR$` functions
+ - v0.18k 
+    - Added `SAVE FNKEYS`, `LOAD FNKEYS`, and `PAUSE string`
+ - v0.18j 
+    - Added `POKE SCREEN` and `POKE COLOR` statements
+ - v0.18h 
+    - Added `Ctrl-T`, `Ctrl-Y`, and `Ctrl-W` to switch between 40 column screens and 80 column screen in direct mode
+ - v0.18g 
+    - Implemented color printing and scrolling in 80 column mode
  - v0.18f (2023-11-14)
-    - Added SET COLOR statement, printing and scrolling color text 
+    - Added `SET COLOR` statement, printing and scrolling color text 
  - 
  - 
  - 
@@ -602,4 +647,3 @@
     - Added ASC$(hex$)
  - 0.12k (2023-09-23)
     - Added PEEK$([@page], addr, len)
-    

@@ -45,7 +45,9 @@ execute_function:
     jp      (ix)                ; Go Do It
 
 extended_statement:
-    sub     RESETK              ; $90 RESET
+    sub     KEYTK               ; $86 KEY
+    jp      z,ST_KEY
+    sub     RESETK-KEYTK        ; $90 RESET
     jp      z,ST_RESET
     dec     a                   ; $91
     dec     a                   ; $92 VER

@@ -175,9 +175,7 @@ _file_from_to:
     push    de                    ; Stack = NewDsc, TxtPtr, RtnAdr
     call    FRETM2                ; HL = OldDsc
     pop     de                    ; DE = NewDsc, Stack = TxtPtr, RtnAdr
-    call    aux_call
-    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
-    ret
+    jp      aux_call_popret
 
 ;-----------------------------------------------------------------------------
 ; FILE Functions stub
@@ -546,8 +544,12 @@ _load_string:
 ;; RUN "/t/ascbad.bas
 ;; RUN "/t/ascdup.bas
 ;; RUN "/t/ascsnerr.bas
+;; load "/u/test/apos.bas"
+;; run "/u/test/oneline.bas"
+;;; ToDo: Move text prporgams abouve into /u/test/ascprog
 ;;; ToDo: Check for Valid ASCII BASIC file (1st char is CR, LF, Space, 0-9, or ')
-;;;       Modift .lineloop to skip lines beginnning with '
+;;; ToDo: Debug skip lines beginning with apostrophe
+
 _load_ascii:
     ld      hl,(TXTTAB)
     inc     hl
@@ -560,6 +562,9 @@ _load_ascii:
     call    get_strbuf_addr       ; HL = StrBuf
     call    esp_read_line         ; BC = LinLen
     jp      m,.done
+    ld      a,(hl)
+    cp      39                    ; If first character is '
+    jr      z,.lineloop           ;   Skip line
     ld      d,h                   ; DE = StrBuf
     ld      e,l
     call    tokenize_line         ; BC = LinNum
@@ -717,8 +722,7 @@ load_array:
     ld      iy,aux_load_asc_array
 .load_array
     ex      (sp),hl               ; HL = StrDsc, Stack = TxtPtr, RtnAdr
-    call    aux_call
-    jp      _pop_hl_doserror      ; Pop TxtPtr and check for error
+    jp      _aux_call_hl_error
 
 load_dir_array:
     rst     CHRGET                ; Skip DIR
@@ -750,8 +754,7 @@ load_dir_array:
     rst     CHRGET                ; Skip ASC or BIN
 .load_dir
     ex      (sp),hl               ; HL = StrDsc, Stack = TxtPtr, RtnAdr
-    call    aux_call              ; Open directory
-    jp      _pop_hl_doserror      ; Pop TxtPtr and check for error
+    jp      _aux_call_hl_error
 
 _load_fnkeys:
     call    _set_up_fnkeys
@@ -912,7 +915,7 @@ _save_bitmap:
     jr      _aux_call_bdf
 _load_bitmap:
     ld      iy,file_load_bitmap
-_load__map:
+_load_map:
     rst     CHRGET                ; Skip BIT
     SYNCHKT MAPTK                 ; Require MAP
     jr      _strdesc_auxcall
@@ -1384,7 +1387,7 @@ _file_string:
     ex      de,hl                 ; HL = VarAdr
     call    string_addr_len       ; BC = StrLen, DE = StrAdr
     pop     hl                    ; HL = NamDsc; Stack = TxtPtr, RtnAdr
-    jr      _save_append_bin      ; Save it
+    jr      _save_append_bin
 
 _pop_save_bin:
     pop     af                    ; AF = Page, Stack = StrDsc, RtnAdr
@@ -1393,8 +1396,7 @@ _save_bin:
     ex      (sp),hl               ; HL = StrDsc, Stack = TxtPtr
     jr      c,_save_paged
 _save_append_bin:
-    call    aux_call
-    jp      _pop_hl_doserror
+    jp      _aux_call_hl_error
 
 ;-----------------------------------------------------------------------------
 ; Save basic program in ASCII format
@@ -1564,41 +1566,6 @@ save_string_array:
     call    aux_call              ; Save the array
     jr      _close_pop_ret        ; Close file, restore TxtPtr, and return
     
-.strloop
-    push    af                    ; Stack = AscFlg, AryLen, TxtPtr, RtnAdr
-    call    string_addr_len       ; DE = StrAdr, BC = StrLen
-    pop     af                    ; F = AscFlag; Stack = AryLen, TxtPtr, RtnAdr
-    push    hl                    ; Stack = AryPtr, AryLen, TxtPtr, RtnAdr
-    push    af                    ; Stack = AscFlag, AryPtr, AryLen, TxtPtr, RtnAdr
-    jr      z,.skip_len           ; If Not ASCII mode
-    ld      a,c                   ;   A = StraLen
-    call    esp_write_byte        ;   Write string length
-.skip_len
-    call    esp_write_bytes       ; Write string data
-    pop     af                    ; F = AscFlag; Stack = AryPtr, AryLen, TxtPtr, RtnAdr
-    push    af                    ; Stack = AscFlag, AryPtr, AryLen, TxtPtr, RtnAdr
-    jr      nz,.skip_crlf         ; If ASCII mode
-    ld      a,13                  
-    call    esp_write_byte        ; Write CR
-    ld      a,10                  
-    call    esp_write_byte        ; Write LF
-.skip_crlf
-    pop     af                    ; F = AscFlag; Stack = AryPtr, AryLen, TxtPtr, RtnAdr
-    pop     hl                    ; HL = AryPtr; Stack = AryLen, TxtPtr, RtnAdr
-    pop     de                    ; DE = AryLen; Stack = TxtPtr, RtnAdr
-    ld      b,4
-.nextloop
-    inc     hl
-    dec     de
-    djnz    .nextloop
-    ex      af,af'                ; F' = AscFlg
-    ld      a,d
-    or      e
-    jr      z,_close_pop_ret
-    ex      af,af'                ; F = AscFlg
-    push    de                    ; Stack = AryLen, TxtPtr, RtnAdr
-    jr      .strloop
-
 ;-----------------------------------------------------------------------------
 ; Check for sync sequence (12x$FF, 1x$00)
 ;-----------------------------------------------------------------------------

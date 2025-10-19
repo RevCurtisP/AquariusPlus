@@ -122,8 +122,6 @@ _to_dec:
     pop     bc                    ; Stack = RtnAdr
     ret
 
-
-
 ;-----------------------------------------------------------------------------
 ; Pause program execution
 ; Input: A: Diaable Ctrl-C 
@@ -135,14 +133,15 @@ pause_jiffies:
     ld        bc,$00FF
 .loop
     ld        a,d                 ; If DE = 0
-    or        e                   ;   Return  
+    or        e                   ;   Return Carry Clear
     ret       z                   
     ld        a,l                 ; A = NoCtrl
     or        a
     jr        nz,.wait            ; Ctrl-C enabled
     in        a,(c)               ;   Poll keyboard
     cp        $CF                 ;   If Ctrl-C
-    ret       z                   ;     Return
+    scf                           ;     Return Carry Set
+    ret       z
 .wait
     in        a,(IO_VLINE)        
     inc       a                   ; Wait for video line 255

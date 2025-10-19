@@ -101,7 +101,7 @@ FN_ERR: rst     CHRGET            ; Skip ERR Token
 ;        jp      SNERR
 .err_no:
         ld      a,(ERRFLG)        ; Get Error Number and float it
-        jp      push_hl_labbck_float_a
+        jp      push_hl_labbck_sngflt
 .err_desc:
         call    push_hlinc_labbck
         ld      a,(ERRFLG)        ; Get Error Number

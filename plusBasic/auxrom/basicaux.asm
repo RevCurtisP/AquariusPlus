@@ -523,6 +523,22 @@ _array_len
     ret
 
 
+; HEX$(string$) core code
+bas_hex_string:
+    push    de                    ; Stack = ArgDsc, DmyRtn, TxtPtr
+    push    hl                    ; Stack = ArgAdr, ArgDsc, DmyRtn, TxtPtr
+    push    af                    ; Stack = ArgLen, ArgAdr, ArgDsc, DmyRtn, TxtPtr
+    add     a,a                   ; NewLen = ArgLen * 2
+    jp      c,LSERR               ; LS Error if greater than 255
+    call    STRINI                ; DE = NewAdr
+    pop     af                    ; A = ArgLen; Stack = ArgAdr, ArgDsc, DmyRtn, TxtPtr
+    pop     hl                    ; HL = ArgAdr; Stack = ArgDsc, DmyRtn, TxtPtr
+    ex      de,hl                 ; DE = ArgAdr, HL = NewAdr
+    ld      c,a                   ; A = StrLen
+    call    aux_asc_to_hex
+    pop     de                    ; DE = ArgDsc; Stack = DmyRtn, TxtPtr
+    ret
+
 ;-----------------------------------------------------------------------------
 ; Convert Binary String to Hexadecimal String
 ; Input: BC: Binary string length
