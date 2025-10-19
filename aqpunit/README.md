@@ -22,6 +22,7 @@ Run the .baq file to run the associated tests.
 | sp.baq  | SAVE/LOAD PALETTE  |
 | ss.baq  | SAVE/LOAD SCREEN   |
 | sx.baq  | SAVE/LOAD extended |
+| sy.baq  | System functions   |
 | tf.baq  | FILL TILE          |
 | tr.baq  | TRIM functions     |
 | ts.baq  | Tiles and Sprites  |
@@ -113,6 +114,12 @@ Run the .baq file to run the associated tests.
   - RGB$(_red_,_green_,_blue_)
   - RGB("RGB")
   - RGB$("RGB")
+  - RGB(_string_,_delimiter_)
+  - RGB$(_string_,_delimiter_)
+  - RGBDEC$(_rgbstr_)
+  - RGBDEC$(_rgbstr_,_delimiter_)
+  - RGBHEX$(_rgbstr_)
+  - RGBHEX$(_rgbstr_,_prefixchar_)
   - SET PALETTE _palette_ TO _rgb_list_
   - RESET PALETTE
   - GETPALETTE$(_palette_)
@@ -161,6 +168,9 @@ Run the .baq file to run the associated tests.
   - SAVE/LOAD FNKEYS
   - **_ToDo:_**
     - LOAD TILESET
+- sy.baq
+  - SET KEY REPEAT ON/OFF
+  - GETKEYREPEAT
 - tf.baq
   - DEF RGBLIST _var_$ = _r_,_g_,_b_; ...
   - SET PALETTE _palette_ TO _rgb_list_

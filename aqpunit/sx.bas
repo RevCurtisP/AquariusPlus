@@ -1,6 +1,6 @@
 100 REM Test Save and Load Extensions
 
-110 QG$="tf"
+110 QG$="sy"
 120 GOSUB _init
 
 200 GOSUB _title:ARGS "SAVE and LOAD Extensions"
