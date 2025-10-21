@@ -125,14 +125,7 @@ SKPLBL  equ     $204E   ;; | Skip label at beginning of line
 SKPLOG  equ     $2051   ;; | Skip Label in ON GOTO/GOSUB
 STRNGX  equ     $2054   ;; | Don't capitalize letters between single quotes
 CHKCMT  equ     $2057   ;; | Check for ' and treat as REM
-ISVARX  equ     $205A   ;; | Variable evaluation extension
-LETEXT  equ     $205D   ;; | LET extension
-DIMEXT  equ     $2060   ;; | DIM extension
-READX   equ     $2063   ;; | READ extension
-FINEXT  equ     $2066   ;; | FIN extension 
-CLEARX  equ     $2069   ;; | CLEAR extension
-OUTDOX  equ     $206C   ;; | OUTDO hook
-ATNHK   equ     $206F   ;; | ATN hook
+
 EXTBAS  equ     $2000   ;;Start of Extended Basic
 XSTART  equ     $2010   ;;Extended BASIC Startup Routine
 XINIT   equ     $E010   ;;ROM Cartridge Initialization Entry Point
@@ -873,9 +866,9 @@ EDENT:  push    de                ;[M80] SAVE LINE #
         call    CRUNCH            ;[M80] CRUNCH THE LINE DOWN
         ld      b,a               ;[M65] RETAIN CHARACTER COUNT.
         pop     de                ;[M80] RESTORE LINE #
-        pop     af                ;[M80] WAS THERE A LINE #?
-        rst     HOOKDO            ;;Call Hook Dispatch Routine
-HOOK3:  byte    3                 ;
+        pop     af                ;[M80] WAS THERE A LINE #?                  Original Code
+        nop                       ;                                           042F  rst     HOOKDO
+        nop                       ;                                           0430  byte    3
         jp      nc,GONE           ;
         push    de                ;
         push    bc                ;[M80] SAVE LINE # AND CHARACTER COUNT
@@ -930,9 +923,9 @@ MLOOPR: ld      a,(de)            ;[M80] NOW TRANSFERING LINE IN FROM BUF
         inc     hl                ;
         inc     de                ;
         or      a                 ;;If not line terminator, keep going
-        jr      nz,MLOOPR         ;
-FINI:   rst     HOOKDO            ;
-HOOK4:  byte    4                 ;
+        jr      nz,MLOOPR         ;                                           Original Code
+FINI:   nop                       ;                                           0480  rst     HOOKDO
+        nop                       ;                                           0481  byte    4     
         call    RUNC              ;[M80] DO CLEAR & SET UP STACK
 LINKER: rst     HOOKDO            ;
 HOOK5:  byte    5                 ;
@@ -1257,7 +1250,7 @@ GONE3:  ret     z                 ;[M80] IF A TERMINATOR TRY AGAIN
 ;[M80] "IF" COMES HERE
 GONE2:
 ;; <<
-        jp      CHKCMT            ;; + Check for ' and treat as REM           0651  sub     $80
+        jp      check_for_comment ;; + Check for ' and treat as REM           0651  sub     $80
                                   ;; +                                        0652
                                   ;; +                                        0653  jp      c,LET
         byte    $31               ;; +                                        0654
@@ -1377,6 +1370,7 @@ RUNC2:  push    bc                ;[M80] RESTORE RETURN ADDRESS OF "NEWSTT"
 ;; <<
 ;; + Allow GOTO and GOSUB to line label
 GOTO:   call    SCNLBL            ; + Scan label or line number               06DC  call    SCNLIN
+;; >>
 GOTOLN: call    REM               ;[M80] SKIP TO THE END OF THIS LINE
         inc     hl                ;[M80] POINT AT THE LINK BEYOND IT
         push    hl                ;[M80] SAVE THE POINTER
@@ -1434,7 +1428,7 @@ REMER:  ld      a,(hl)            ;[M80] GET A CHAR
         jr      REMER             ;
 
                                   ;; + Allow string splicing in LET
-LET:    jp      LETEXT            ;; + LET extension                          0731  call    PTRGET
+LET:    jp      let_extension     ;; + LET extension                          0731  call    PTRGET
 LETEQ:  rst     SYNCHK            ; Require '='
         byte    EQUATK            ;
 LETDO:  push    de                ; Stack = VarPtr
@@ -1654,7 +1648,7 @@ NOTQTI: push    hl                ;{M80} SAVE TEXT POINTER
         jr      INPCON            ;
 ;[M80] READ STATEMENT
 READ:   push    hl                ;[M80] SAVE THE TEXT POINTER
-        jp      READX             ;; + READ extensions                        08BF  ld      hl,(DATPTR)
+        ld      hl,(DATPTR)       ;[M80] GET LAST DATA LOCATION
 READC:  byte    $F6               ;[M80] "ORI" TO SET [A] NON-ZERO
 INPCON: xor     a                 ;[M80] SET FLAG THAT THIS IS AN INPUT
         ld      (FLGINP),a        ;[M80] STORE THE FLAG
@@ -1710,7 +1704,7 @@ NOWGET: call    STRLT2            ;[M80] MAKE STRING DESCRIPTOR FOR VALUE AND CO
         push    de                ;[M80] TEXT POINTER GOES ON
         jp      INPCOM            ;[M80] DO ASSIGNMENT
 NUMINS: rst     CHRGET            ;
-        call    FINEXT            ;; + Extended Number input                  0918  call    FIN
+        call    fin_extension     ;; + Extended Number input                  0918  call    FIN
         ex      (sp),hl           ;*** tail end of [M80] FIN?
         call    MOVMF             ;
         pop     hl                ;
@@ -1887,7 +1881,7 @@ LABBCK: call    CHKNUM            ;[M80] FUNCTIONS THAT DON'T RETURN
         pop     hl                ;[M80] STRING VALUES COME BACK HERE
         ret                       ;
 ;;Get Variable Value or String Pointer
-ISVAR:  jp      ISVARX            ;; +                                        0A4E  call    PTRGET
+ISVAR:  jp      isvar_extension   ;; +                                        0A4E  call    PTRGET
 RETVAR: push    hl                ;[M80] SAVE THE TEXT POINTER
         ex      de,hl             ;{M80} PUT THE POINTER TO THE VARIABLE OR STRING DESCRIPTOR
         ld      (FACLO),hl        ;[M80]IN CASE IT'S STRING STORE POINTER TO THE DESCRIPTOR IN FACLO.
@@ -2062,9 +2056,11 @@ SNGFLT: ld      b,a               ;[M80] MAKE [A] AN UNSIGNED INTEGER
         xor     a                 ;
         jp      FLOATB            ;
 ;;DEF FNx Stub
-DEF:    rst     HOOKDO            ;;If not hooked
-HOOK15: byte    15
-        jp      SNERR             ;;Syntax Error
+        nop                       ;                                           0B3B  rst     HOOKDO
+        nop                       ;                                           0B3C  byte    15
+        nop                       ;                                           0B3D  jp      SNERR
+        nop                       ;                                           0B3E
+        nop                       ;                                           0B3F
 ;;FNx Stub
 FNDOER: rst     HOOKDO            ;;If not hooked
 HOOK16: byte    16
@@ -2172,9 +2168,11 @@ OMERR:  ld      de,ERROM          ;;"OUT OF MEMORY" Error
 ;;SCRTCH is the entry point from an aborted CLOAD command
 SCRATH: ret     nz                ;[M80] MAKE SURE THERE IS A TERMINATOR
 ;;Execute NEW Command
-SCRTCH: rst     HOOKDO            ;Call Hook Dispatch Routine
-HOOK12: byte    12                ;
-        ld      hl,(TXTTAB)       ;[M80] GET POINTER TO START OF TEXT
+SCRTCH: nop                       ;                                           ; 0BBE  rst     HOOKDO
+        nop                       ;                                           ; 0BBF  byte    12    
+        call    new_hook          ;                                           ; 0BC0  ld      hl,(TXTTAB)
+                                                                              ; 0BC1
+                                                                              ; 0BC2
         xor     a                 ;[M80] SET [A]=0
         ld      (hl),a            ;[M80] SAVE AT END OFF TEXT
         inc     hl                ;[M80] BUMP POINTER
@@ -2190,7 +2188,7 @@ CLEARC: ld      (SAVTXT),hl       ;
         ld      (FRETOP),hl       ;
         xor     a                 ;
         call    RESTOR            ;[M65] RESTOR DATA
-        jp      CLEARX            ;; + Do RESTORE then CLEAR hook             0BDC  ld      hl,(VARTAB)
+        call    clear_extension   ;; + Do RESTORE then CLEAR hook             0BDC  ld      hl,(VARTAB)
 CLEARV: ld      (ARYTAB),hl       ;[M65] VARIABLES AND
         ld      (STREND),hl       ;[M65] ARRAYS
 ;; Reset Stack Pointer
@@ -2334,10 +2332,10 @@ ISLETC: cp      'A'
         ret
 ;
 ;[M80] THIS CODE IS FOR THE "CLEAR" COMMAND WITH AN ARGUMENT
-CLEAR:  rst     HOOKDO            ;;Call Hook Dispatch Routine
-HOOK11: byte    11                ;
+CLEAR:  nop                       ;                                           ; 0CCD  rst     HOOKDO
+        nop                       ;                                           ; 0CCE  byte    11    
         jp      z,CLEARC          ;[M80] IF NO FORMULA JUST CLEAR
-        call    INTID2            ;[M80] GET AN INTEGER INTO [D,E]
+CLRCNT: call    INTID2            ;[M80] GET AN INTEGER INTO [D,E]
         dec     hl                ;;Back up text pointer
         rst     CHRGET            ;[M80] SEE IF ITS THE END
         push    hl                ;;Save text pointer
@@ -3010,7 +3008,7 @@ VAL:    call    LEN1              ;[M80] DO SETUP, SET RESULT=REAL
         push    bc                ;[M80] THE FIRST CHARACTER OF THE NEXT STRING
         dec     hl                ;[M80] ***CALL CHRGET TO MAKE SURE
         rst     CHRGET            ;[M80] VAL(" -3")=-3
-        call    FINEXT            ;; + Extended Number input                  1099  call    FIN
+        call    fin_extension     ;; + Extended Number input                  1099  call    FIN
         pop     bc                ;[M80] GET THE MODIFIED CHARACTER OF THE NEXT STRING INTO [B]
         pop     hl                ;[M80] GET THE POINTER TO THE MODIFIED CHARACTER
         ld      (hl),b            ;[M80] RESTORE THE CHARACTER
@@ -3038,7 +3036,7 @@ FRE:    ld      hl,(STREND)       ;
         ld      de,(STRSPC)       ;; + End of String Space                    10BD  ld      de,(TOPMEM)
         ld      hl,(FRETOP)       ;[M80] TOP OF FREE AREA
         jp      GIVFLT            ;[M80] RETURN [H,L]-[D,E]
-DIMCON: jp      DIMEXT            ;; + Dim Extesion hook                      10C7  dec     hl
+DIMCON: jp      dim_extension     ;; + Dim Extesion hook                      10C7  dec     hl
                                   ;; +                                        10C8  rst     CHRGET
                                   ;; +                                        10C9  ret     z
 DIMNXT: rst     SYNCHK            ;
@@ -4516,13 +4514,13 @@ TAN:    call    PUSHF             ;[M80] SAVE ARG
         jp      TANX              ;; +                                        197F  call    COS
                                   ;; +                                        1980
                                   ;; +                                        1981
-OUTDOH: jp      OUTDOX            ;; +                                        1982  jp      FDIVT
+OUTDOH: jp      outdo_hook        ;; +                                        1982  jp      FDIVT
                                   ;; +                                        1983
                                   ;; +                                        1984
 ;ARCTANGENT FUNCTION
 ATN:    nop                       ;; +                                        1985  rst     HOOKDO
         nop                       ;; +                                        1986  byte    14
-        jp      ATNHK             ;; +                                        1987  jp      SNERR
+        jp      FN_ATN            ;; +                                        1987  jp      SNERR
                                   ;; +                                        1988
                                   ;; +                                        1989
 ;;Execute OUTCHR

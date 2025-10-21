@@ -67,21 +67,10 @@ dim_extension:
 ; 30 FOR I=0 TO 9:PRINT I,A$(I):NEXT
 ; 40 DATA A,B,C,D,E
 ; 50 DATA F,G,H,I,J
-read_extension:
-    pop     hl                    ; HL = TxtPtr, Stack = RtnAdr
-    cp      '#'                   ; If #
-    jp      z,read_file           ;   Read from File
-    cp      MULTK                 
-    jr      z,.read_array         ; If not *
-    cp      XTOKEN
-    jp      z,read_xtoken
-    push    hl                    ;   Stack = TxtPtr, RtnAdr
-    ld      hl,(DATPTR)           ;   Reget DATA Pointer
-    jp      READC                 ;   and continue normal read
-.read_array
+read_array
     xor     a
     ld      (ARRAYREQ),a          ; Unquoted strings allowed
-    call    get_star_array        ; DE = AryAdr, BC = AryLen
+    call    get_star_array        ; DE = AryAdr, BC = AryLen    
     push    hl                    ; Stack = TxtPtr, RtnAdr
     ld      (ARRAYPTR),de
     ld      (ARRAYLEN),bc
@@ -111,10 +100,10 @@ read_extension:
     ld      d,(hl)                ;
     ld      (DATLIN),de           ;
 .next_st
-    rst     CHRGET                ;[M80] GET THE STATEMEN
-    cp      DATATK                ;[M80] IS IS "DATA"?
+    rst     CHRGET                ;[M80] GET THE STATEMENT
+    cp      DATATK                ;[M80] IS IT "DATA"?
     jr      nz,.more_data         ;[M80] NOT DATA SO LOOK
-    jr      .read_loop                 ;[M80] CONTINUE READING
+    jr      .read_loop            ;[M80] CONTINUE READING
 
 ; Populate array from comma separated text
 ; (ARRAYPTR) = Pointer into array data

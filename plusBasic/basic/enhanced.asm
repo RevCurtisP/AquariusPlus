@@ -56,6 +56,68 @@ _asc_char:
     jp      (iy)                  ; FloatIt
 
 ;-----------------------------------------------------------------------------
+; CLEAR *array
+; CLEAR BITMAP [fgcolor, bgcolor]
+; CLEAR CURSOR
+; CLEAR KEYS
+;-----------------------------------------------------------------------------
+ST_CLEAR:
+    jp      z,CLEARC              ; If no operands just CLEAR
+    cp      BITTK
+    jp      z,ST_CLEAR_BITMAP
+    cp      MULTK                 ;
+    jr      z,ST_CLEAR_ARRAY
+    cp      XTOKEN                ; If not extended token
+    jp      nz,CLRCNT             ;   Do standard CLEAR with arguments
+    inc     hl                    ; Skip XTOKEN
+    ld      a,(hl)
+    ld      iy,bas_clear_keys     ; If KEY
+    cp      KEYTK                 ;   Do CLEAR KEYS
+    jp      z,aux_call            ; Else
+    ld      iy,screen_clear_cursor
+    call    require_cursor        ; Require CURSOR
+    jp      gfx_call_preserve_hl  ; and do CLEAR CURSOR
+
+;-----------------------------------------------------------------------------
+; Called from CLEAR in sbasic.asm
+;-----------------------------------------------------------------------------
+clear_extension:
+    call    esp_close_all         ; Close all files
+    xor     a
+    ld      (BAS_FDESC),a         ; Clear currently open file
+    ld      hl,(STRSPC)           ; Set temp buffer pointer
+    ld      (TMPBUFTOP),hl        ; to start of string space
+    ld      hl,(VARTAB)
+    ret
+
+ST_CLEAR_ARRAY:
+    call    get_star_array        ; DE = AryAdr, BC = AryLen
+    call    clear_array
+    ld      a,(hl)
+    cp      ','
+    ret     nz
+    rst     CHRGET
+    jp      ST_CLEAR_ARRAY
+
+;;; ToDo: Move to AuxROM
+; Input: A: Type, DE: Array Start, BC = Array Length
+clear_array:
+    call    GETYPE                ; A = AryTyp
+    push    hl                    ; Stack = TxrPtr, RtnAdr
+    push    de                    ; Stack = AryAdr, TxtPtr, RtnAdr
+    push    bc                    ; Stack = AryLen, AryAdr, TxtPtr, RtnAdr
+    push    af                    ; Stack = AryTyp, AryLen, AryAdr, TxtPtr, RtnAdr
+    ex      de,hl                 ; HL = AryAdr
+    call    sys_fill_zero         ; Fill array data with 0
+    pop     af                    ; AF = AryTyp; Stack = AryLen, AryAdr, TxtPtr, RtnAdr
+    call    z,GARBA2              ; If string, do garbage collection
+    pop     bc                    ; BC = AryLen; Stack = AryLen, AryAdr, TxtPtr, RtnAdr
+    pop     de                    ; DE = AryAdr; Stack = AryAdr, TxtPtr, RtnAdr
+    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
+    ret
+
+
+;-----------------------------------------------------------------------------
 ; Enhanced COPY
 ; COPY @page TO @page
 ; COPY [@page,] source, length TO [@page,] destination [FAST]
@@ -694,7 +756,16 @@ parse_page_arg:
     or      a                     ; Clear Carry Flag
     ret
 
-
+;-----------------------------------------------------------------------------
+; Enhanced READ statement
+;-----------------------------------------------------------------------------
+ST_READ:
+    cp      '#'                   ; If #
+    jp      z,read_file           ;   Read from File
+    cp      MULTK                 ; If *         
+    jp      z,read_array          ;   READ into array
+    cp      XTOKEN                ; If not Extended Token
+    jp      nz,READ               ;   Do normal READ
 ; WRITE KEYS "123":READ KEYS K$:PRINT K$
 read_xtoken:
     inc     hl                    ; Skip XTOKEN

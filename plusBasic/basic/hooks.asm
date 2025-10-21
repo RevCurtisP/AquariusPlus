@@ -62,17 +62,20 @@ linker_hook:
     push  de                      ; Make MAIN the return address
     jp    LINKIT                  ; Link the lines
     
+
+
+
     
 ;-----------------------------------------------------------------------------
-; Hook 12 - SCRTCH (Execute NEW statement)
+; Called from SCRTCH (Execute NEW statement) - originally UDF Hook 12
 ;-----------------------------------------------------------------------------
 new_hook:
-	  call    page_set_plus
     call    clear_run_args
-	  call    clear_all_errvars
-	  ld      c,0
-	  call    spritle_toggle_all    ; Disable all sprite
-	  jp      HOOK12+1
+ 	  call    clear_all_errvars
+ 	  ld      c,0
+ 	  call    spritle_toggle_all    ; Disable all sprite
+ 	  ld      hl,(TXTTAB)           ;[M80] GET POINTER TO START OF TEXT
+    ret
 
 close_bas_fdesc:
     ld      a,(BAS_FDESC)         ; Get File Descriptor in Use
@@ -89,6 +92,17 @@ init_bas_fdesc:
     xor     a
     ld      (BAS_FDESC),a         ;   Set to No File
     ret
+
+;-----------------------------------------------------------------------------
+; Called from OUTDO through OUTDOH in sbasic.asm
+;-----------------------------------------------------------------------------
+outdo_hook:
+  push    af                
+  ld      a,(BASYSCTL)            ; Get System Control Bits
+  rra                             ; Carry = BASOUTBUF
+  jp      c,output_to_buffer      ; If bit set, write to buffer 
+  pop     af
+  jp      OUTCON
 
 ;-----------------------------------------------------------------------------
 ; Hook 30 - Check for label at beginning of line, then search for it's line
@@ -173,18 +187,6 @@ scan_label:
 .ret_zero
     xor     a                     ;   Treat like terminator
     ret
-
-;-----------------------------------------------------------------------------
-; Extension to CLEAR command
-;-----------------------------------------------------------------------------
-clear_extension:
-    call    esp_close_all         ; Close all files
-    xor     a
-    ld      (BAS_FDESC),a         ; Clear currently open file
-    ld      hl,(STRSPC)           ; Set temp buffer pointer
-    ld      (TMPBUFTOP),hl        ; to start of string space
-    ld      hl,(VARTAB)
-    jp      CLEARV
 
 ;-----------------------------------------------------------------------------
 ; Hook 33: Save MAIN Line Number Flag

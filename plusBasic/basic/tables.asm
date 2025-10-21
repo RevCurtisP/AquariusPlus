@@ -20,7 +20,7 @@ STJUMPS:
     dw      $071C                 ;$83 DATA              
     dw      ST_INPUT              ;$84 INPUT             
     dw      $10CC                 ;$85 DIM               
-    dw      $08BE                 ;$86 READ
+    dw      ST_READ               ;$86 READ
     dw      $0731                 ;$87 LET               
     dw      $06DC                 ;$88 GOTO              
     dw      $06BE                 ;$89 RUN               
@@ -39,7 +39,7 @@ STJUMPS:
     dw      $0C4B                 ;$96 CONT              
     dw      ST_LIST               ;$97 LIST              
     dw      ST_LLIST              ;$98 LLIST             
-    dw      $0CCD                 ;$99 CLEAR             
+    dw      ST_CLEAR              ;$99 CLEAR             
     dw      $1C2C                 ;$9A CLOAD             
     dw      $1C08                 ;$9B CSAVE             
     dw      ST_PSET               ;$9C PSET              

@@ -1,5 +1,12 @@
 # plusBASIC Release History
-<!--ToDo: Add entries between v0.17v and v0.13h-->
+ - v0.27m (2025-10-21)
+   - Moved _outdo_hook_ from _text80.asm_ to _hooks.asm_, jump directly to it instead of through table
+   - Moved _clear_hook_ in _extended.asm_ to _ST_NEW_ in _enhanced.asm_, jump through _exec_next_statement_ instead of UDF hook
+   - Moved _clear_extension_ from _hooks.asm_ to _enhanced.asm_, and `CALL` directly instead of jumping through table
+   - Jump directly to _FN_ATN_ instead of through table from _ATN_ in _sbasic.asm_
+   - Move _read_extension_ from _arrays.asm_ to _ST_READ_ in _enhanced.asm_, removes jump through table
+   - Jump directly to _dim_extension_, isvar_extension,  _let_extension_ instead of through table.
+   - Renamed _\_check_comment_ to _check_for_comment_ and jump to directly instead of through table
  - v0.27l (2025-10-19)
    - Added `SET KEY REPEAT ON/OFF` to enable/disable Direct Mode key repeat, `GETKEYRPEAT` to return status
    - Key repeat now disabled on cold or warm boot

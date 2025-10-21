@@ -2,65 +2,6 @@
 ; Statements and Functions from Aquarius Extended BASIC
 ;====================================================================
 
-;-----------------------------------------------------------------------------
-; CLEAR statement extension (Hook 11)
-; CLEAR *array
-; CLEAR BITMAP [fgcolor, bgcolor]
-; CLEAR CURSOR
-; CLEAR KEYS
-;-----------------------------------------------------------------------------
-; CLEAR CURSOR:PAUSE
-clear_hook:
-    jp      z,CLEARC              ; If no operands just CLEAR
-    cp      BITTK
-    jp      z,ST_CLEAR_BITMAP
-    cp      MULTK                 ;
-    jr      z,ST_CLEAR_ARRAY
-    cp      XTOKEN                ; If not extended token
-    jp      nz,HOOK11+1           ;   Continue with CLEAR
-    inc     hl                    ; Skip XTOKEN
-    ld      a,(hl)
-.clear_keys
-    ld      iy,bas_clear_keys
-    cp      KEYTK
-    jp      z,aux_call
-    ld      iy,screen_clear_cursor
-.clear_cursor
-    call    require_cursor
-    jp      gfx_call_preserve_hl
-
-aux_call_preserve_hl:
-    push    hl
-aux_call_popret:
-    call    aux_call
-    pop     hl
-    ret
-
-ST_CLEAR_ARRAY:
-    call    get_star_array        ; DE = AryAdr, BC = AryLen
-    call    clear_array
-    ld      a,(hl)
-    cp      ','
-    ret     nz'
-    rst     CHRGET
-    jp      ST_CLEAR_ARRAY
-
-; Input: A: Type, DE: Array Start, BC = Array Length
-clear_array:
-    call    GETYPE                ; A = AryTyp
-    push    hl                    ; Stack = TxrPtr, RtnAdr
-    push    de                    ; Stack = AryAdr, TxtPtr, RtnAdr
-    push    bc                    ; Stack = AryLen, AryAdr, TxtPtr, RtnAdr
-    push    af                    ; Stack = AryTyp, AryLen, AryAdr, TxtPtr, RtnAdr
-    ex      de,hl                 ; HL = AryAdr
-    call    sys_fill_zero         ; Fill array data with 0
-    pop     af                    ; AF = AryTyp; Stack = AryLen, AryAdr, TxtPtr, RtnAdr
-    call    z,GARBA2              ; If string, do garbage collection
-    pop     bc                    ; BC = AryLen; Stack = AryLen, AryAdr, TxtPtr, RtnAdr
-    pop     de                    ; DE = AryAdr; Stack = AryAdr, TxtPtr, RtnAdr
-    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
-    ret
-
 print_hook:
     cp      '@'
     jr      nz,.not_at            ; If '@'

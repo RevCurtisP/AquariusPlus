@@ -53,22 +53,13 @@
     jp      _skip_label     ; $204E SKPLBL Skip label at beginning of line
     jp      _skip_on_label  ; $2051 SKPLOG Skip label in ON GOTO
     jp      just_ret        ; $2054
-    jp      _check_comment  ; $2057 CHKCMT Check for ' and treat as REM
-    jp      _isvar_ext      ; $205A ISVARX Variable evaluation extension - string splicing
-    jp      _let_ext        ; $205D LETEXT Variable assignment extension - string splicing
-    jp      dim_extension   ; $2060 DIMEXT DIM extension - Populate array from list
-    jp      _read_ext       ; $2063 REEADX READ extension - READ DATA into array
-    jp      _fin_ext        ; $2066 FINEXT Extensions to FIN routine
-    jp      _clear_ext      ; $2069 CLEARX CLEAR extension - Close files
-    jp      outdo_hook      ; $206C OUTDOX Redirect output to buffer
-    jp      _atn            ; $206F ATNHK  ATN hook
 
 just_ret:
     ret
 
 ;-----------------------------------------------------------------------------
 ; Reset vector
-;-----------------------------------------------------------------------------5
+;-----------------------------------------------------------------------------
 _reset:
     ; Disable interrupts and turbo mode
     di
@@ -134,7 +125,7 @@ null_desc:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.27l"
+    db "v0.27m"
     db 0
 plusver_len equ $ - plus_version
 plus_len   equ   $ - plus_text
@@ -1041,19 +1032,19 @@ hook_table:                     ; ## caller   addr  performing function
     dw      0                   ;  0                Deprecated
     dw      force_error         ;  1 ERRCRD   03E0  Print Error Message
     dw      direct_mode         ;  2 READY    0402  BASIC command line (immediate mode)
-    dw      HOOK3+1             ;  3 EDENT    0428  Save Tokenized Line
-    dw      HOOK4+1             ;  4 FINI     0480  Finish Adding/Removing Line or Loading Program
+    dw      0                   ; 13                Deprecated
+    dw      0                   ;  7                Deprecated
     dw      linker_hook         ;  5 LINKER   0485  Update BASIC Program Line Links
     dw      print_hook          ;  6 PRINT    07BC  Execute PRINT Statement
     dw      0                   ;  7                Deprecated
     dw      HOOK8+1             ;  8 TRMNOK   0880  Improperly Formatted INPUT or DATA handler
     dw      eval_extension      ;  9 EVAL     09FD  Evaluate Number or String
     dw      keyword_to_token    ; 10 NOTGOS   0536  Converting Keyword to Token
-    dw      clear_hook          ; 11 CLEAR    0CCD  Execute CLEAR Statement
-    dw      new_hook            ; 12 SCRTCH   0BBE  Execute NEW Statement
+    dw      0                   ; 11                Deprecated
+    dw      0                   ; 12                Deprecated
     dw      0                   ; 13                Deprecated
     dw      0                   ; 14                Deprecated
-    dw      HOOK15+1            ; 15 DEF      0B3B  DEF statement
+    dw      0                   ; 14                Deprecated
     dw      FN_FN               ; 16 FNDOER   0B40  FNxx() call
     dw      HOOK17+1            ; 17 LPTOUT   1AE8  Print Character to Printer
     dw      _read_key           ; 18 INCHRH   1E7E  Read Character from Keyboard
@@ -1096,38 +1087,9 @@ fast_hook_handler:
 ; S3 BASIC extensions routines in Extended ROM Page
 ;-----------------------------------------------------------------------------
 
-_atn:
-    call    page_set_plus
-    jp      FN_ATN
-
-_clear_ext:
-    call    page_set_plus
-    jp      clear_extension  
-
-_dim_ext:
-    call    page_set_plus
-    jp      dim_extension  
-
-_isvar_ext:
-    call    page_set_plus
-    jp      isvar_extension
-
-_let_ext:
-    call    page_set_plus
-    jp      let_extension
-
 _main_ext:
     call    page_set_plus
     jp      main_ext
-
-
-_read_ext:
-    call    page_set_plus
-    jp      read_extension 
-
-_fin_ext:
-    call    page_set_plus
-    jp      fin_extension  
 
 _next_statement:
     call    page_set_plus
@@ -1173,7 +1135,7 @@ _then_hook:
 
 ; 10 _label:PRINT "testing":'comment
 ; 20 'comment
-_check_comment:
+check_for_comment:
     cp      39                    ; If '
     jr      z,.rem                ;   Treat as REM
     sub     $80                   ; If not token

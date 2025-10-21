@@ -233,17 +233,6 @@ set_linlen_a:
     ret
 
 ;-----------------------------------------------------------------------------
-; Hook 13 - OUTDO 
-;-----------------------------------------------------------------------------
-outdo_hook:
-  push    af                
-  ld      a,(BASYSCTL)            ; Get System Control Bits
-  rra                             ; Carry = BASOUTBUF
-  jp      c, output_to_buffer     ; If bit set, write to buffer 
-  pop     af
-  jp      OUTCON
-
-;-----------------------------------------------------------------------------
 ; Hook 19 - TTYCHR (Print Character to Screen)
 ;-----------------------------------------------------------------------------
 ttychr_hook:

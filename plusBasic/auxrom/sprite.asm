@@ -278,6 +278,8 @@ spritle_set_tile:
 ;        HL: spritedef address
 ; Clobbered: A,BC,HL
 ;-----------------------------------------------------------------------------
+;; ToDo: Move toggle routines to GfxROM
+
 sprite_toggle:
     or      a
     jr      z,.zero
@@ -318,6 +320,8 @@ spritle_toggle:
 ; Input: C: 128 = Enable, $0 = Disable
 ; Clobbers: A
 ;-----------------------------------------------------------------------------
+spritle_clear_all:
+    ld      c,0
 spritle_toggle_all:
     ld      a,63
 spritle_toggle_a2z:

@@ -1021,7 +1021,13 @@ _set_reset_bit:
     pop     bc                    ; BC = VarPtr; Stack = VarTyp, AuxRtn, RtnAdr
     pop     af                    ; AF = VarTyp; Stack = AuxRtn, RtnAdr
     pop     iy                    ; IY = AuxRtn; Stack = RtnAdr
-    jp      aux_call_preserve_hl  ; Execute core code and return
+aux_call_preserve_hl:
+    push    hl
+aux_call_popret:
+    call    aux_call
+    pop     hl
+    ret
+
 
 
 ;-----------------------------------------------------------------------------
