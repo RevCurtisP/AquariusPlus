@@ -122,6 +122,60 @@ _to_dec:
     pop     bc                    ; Stack = RtnAdr
     ret
 
+;; Input: A: Byte, HL: TxtPtr; Clobbered: AF, BC, DE
+;; Does not generate leading spaces
+byte_to_dec_fast:
+    ld      e,'0'
+    ld      d,100
+    call    .digit
+    ld      d,10
+    call    .digit
+    dec     e
+    ld      d,1
+.digit
+    ld      b,-1
+.loop
+    inc     b
+    sub     a,d
+    jr      nc,.loop
+    add     a,d
+    ld      c,a
+    ld      a,'0'
+    add     b
+    cp      e
+    jr      z,.ret
+    ld      (hl),a
+    inc     hl
+    ex      af,af'
+    dec     e
+.ret
+    ld      a,c
+    ret
+
+div_a_16:
+    srl     a                     ; A = A / 2
+div_a_8:
+    srl     a                     ; A = A / 4
+div_a_4:
+    srl     a                     ; A = A / 8
+    srl     a                     ; A = A / 16
+    ret
+
+; Clobbers B
+mult_c_10:
+    ld      b,a                   ; Save A
+    ld      a,c                   ; A = Num
+    add     a                     ; A = Num * 2
+    ret     c                     ; Return if overflow
+    add     a                     ; A = Num * 4
+    ret     c                     ; Return if overflow
+    add     c                     ; A = Num * 5
+    ret     c                     ; Return if overflow
+    add     a,a                   ; A = Num * 10 (Carry set if overflow)
+    ld      c,a                   ; C = Num * 10
+    ld      a,b                   ; Restore A
+    ret
+
 ;-----------------------------------------------------------------------------
 ; Pause program execution
 ; Input: A: Diaable Ctrl-C 

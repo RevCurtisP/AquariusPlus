@@ -17,6 +17,19 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
     <body>
         <h1 id="plusbasic-release-history">plusBASIC Release History</h1>
 <ul>
+<li>v0.27n (2025-10-23)
+<ul>
+<li>Moved  <em>byte_to_dec_fast</em>, <em>div_a_16</em>, <em>div_a_8</em>, <em>div_a_4</em>, and <em>mult_c_10</em> from <em>color.asm</em> to <em>misc.asm</em></li>
+<li>Deleted orphaned routines <em>rgb_to_asc</em> and <em>rgb_to_dec</em> ftom <em>color.asm</em></li>
+<li>Moved <em>clear_array</em> from <em>enhanced,asm</em> to <em>arrayaux.asm</em></li>
+<li>In <em>evalext.asm</em>, replaced conversiop loop in <em>hex_to_asc</em> with call to <em>aux_eval_hex</em></li>
+<li>In <em>evalext.asm</em>, replaced <em>get_hex</em> call in , with <em>aux_hex_to_byte</em> call and removed routine _get_hex_</li>
+<li>Moved core code from <em>_escaped</em> in <em>evalext.asm</em> to <em>aux_escaped_string</em> in <em>evalaux,asm</em></li>
+<li>Moved <em>aux_asc_to_hex</em>, <em>aux_byte_to_hex</em>, <em>aux_hex_to_asc</em>, <em>aux_hex_to_byte</em>, and <em>aux_get_hex</em> from <em>basicaux.asm</em> to _evalaux.asm</li>
+<li>Moved <em>VMOVE</em> from <em>basic80.asm</em> to <em>aqplusbas.asm</em></li>
+<li>Moved <em>copy_literal_string</em> from <em>evalext.asm</em> to evalaux.asm_</li>
+</ul>
+</li>
 <li>v0.27m (2025-10-21)
 <ul>
 <li>Moved <em>outdo_hook</em> from <em>text80.asm</em> to <em>hooks.asm</em>, jump directly to it instead of through table</li>

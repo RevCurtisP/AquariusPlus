@@ -92,30 +92,13 @@ clear_extension:
 
 ST_CLEAR_ARRAY:
     call    get_star_array        ; DE = AryAdr, BC = AryLen
-    call    clear_array
+    ld      iy,clear_array
+    call    aux_call
     ld      a,(hl)
     cp      ','
     ret     nz
     rst     CHRGET
     jp      ST_CLEAR_ARRAY
-
-;;; ToDo: Move to AuxROM
-; Input: A: Type, DE: Array Start, BC = Array Length
-clear_array:
-    call    GETYPE                ; A = AryTyp
-    push    hl                    ; Stack = TxrPtr, RtnAdr
-    push    de                    ; Stack = AryAdr, TxtPtr, RtnAdr
-    push    bc                    ; Stack = AryLen, AryAdr, TxtPtr, RtnAdr
-    push    af                    ; Stack = AryTyp, AryLen, AryAdr, TxtPtr, RtnAdr
-    ex      de,hl                 ; HL = AryAdr
-    call    sys_fill_zero         ; Fill array data with 0
-    pop     af                    ; AF = AryTyp; Stack = AryLen, AryAdr, TxtPtr, RtnAdr
-    call    z,GARBA2              ; If string, do garbage collection
-    pop     bc                    ; BC = AryLen; Stack = AryLen, AryAdr, TxtPtr, RtnAdr
-    pop     de                    ; DE = AryAdr; Stack = AryAdr, TxtPtr, RtnAdr
-    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
-    ret
-
 
 ;-----------------------------------------------------------------------------
 ; Enhanced COPY

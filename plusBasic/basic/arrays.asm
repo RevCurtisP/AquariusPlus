@@ -140,7 +140,8 @@ _array_read:
     push    hl                    ;   Stack = TxtPtr, RtnAdr
     call    FREFAC                ;   HL = StrDsc 
     ex      de,hl                 ;   DE = StrDsc
-    call    copy_literal_string
+    ld      iy,copy_literal_string
+    call    aux_call
     ex      de,hl                 ;   HL = StrDsc
 .next
     ld      de,(ARRAYPTR)         ; HL = AryPtr

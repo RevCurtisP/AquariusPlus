@@ -2436,7 +2436,6 @@ QINLIN: ld      a,'?'             ;
         rst     OUTCHR            ;
         jp      INLIN             ;;;For relative jumps
 
-RUBOUT:                           ;;So deprecated code will compile
 ;;; Code Change: Replace Ancient DELETE code with improve backspace code
 BSFIX:  or      a                 ;;If not at position 0                      ; 0D64
         jr      nz,BSFIN          ;;Do the backspace                          ; 0D65  
@@ -2477,7 +2476,7 @@ INLNC1: ld      c,a               ;[M80] SAVE CURRENT CHAR IN [C]
                                   ;; +                                         0D93    
                                   ;; +                                         0D94  jr      z,RUBOUT          
 ;; Set VALTYP to 1 (string) or 0 (number)
-VALSTR: byte    $3E               ;; + LD A,$AF                               0D95
+VALSTR: byte    $3E               ;; + LD A,$AF                                0D95
 VALNUM: xor     a                 ;; + A = 0                                   0D96  ld      a,(RUBSW)
         and     1                 ;; + Convert $AF to 1                        0D97
                                   ;; +                                         0D98

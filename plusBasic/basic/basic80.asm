@@ -426,11 +426,6 @@ ST_SWAP_VARS:
     pop     hl                ;GET THE TEXT POINTER BACK
     ret
 
-VMOVE:  ex      de,hl             ;MOVE VALUE FROM (DE) TO (HL). ALTERS B,C,D,E,H,L
-MOVVFM: ld      bc,4              ;MOVE VALUE FROM (HL) TO (DE)
-        ldir
-        ret
-
 ;----------------------------------------------------------------------------
 ; TRON/TROFF
 ;----------------------------------------------------------------------------

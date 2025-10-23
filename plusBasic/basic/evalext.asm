@@ -109,50 +109,19 @@ hex_to_asc:
     call    faclo_addr_len        ; BC = ArgLen, DE = ArgAdr, HL = ArgDsc
     ld      a,c                   ; A = ArgLen
     srl     a                     ; NewLen = ArgLen / 2
-    jp      c,FCERR               ; Error if ArgLen was Odd
+    jp      c,SLERR               ; String length error if ArgLen was Odd
     jr      z,push_null_string    ; If NewLen = 0 Return Null String
     push    hl                    ; Stack = ArgDsc, RtnAdr
-    push    af                    ; Stack = NewLen, ArgDsc, RtnAdr
+    push    bc                    ; Stack = ArgLen, ArgDsc, RtnAdr
     push    de                    ; Stack = ArgAdr, NewLen, ArgDsc, RtnAdr
     call    STRINI                ; DE = NewAdr
     pop     hl                    ; HL = ArgAdr; Stack = NewLen, ArgDsc, RtnAdr
-    pop     af                    ; A = NewLen; Stack = ArgDsc, RtnAdr
-    ld      b,a                   ; LopCnt = NewLen
-.asc_loop:
-    call    get_hex         ; Get Hex Digit from Argument
-    sla     a               ; Shift to High Nybble
-    sla     a
-    sla     a
-    sla     a
-    ld      c,a             ; and Save in C
-    call    get_hex         ; Get Next Hex Digit from Argument
-    or      c               ; Combine with High Nybble
-    ld      (de),a          ; Store in Result String
-    inc     de              ; Bump Result Pointer
-    djnz    .asc_loop
-    jp      PFRNEW           ; Pop ArgDsc, Free It, and Return NewStr
-
-get_hex:
-    ld      a,(hl)          ; Get Hex Digit
-    inc     hl              ; Bump Pointer
-cvt_hex:
-    cp      '.'
-    jr      nz,.not_dot     ; If dot
-    add     '0'-'.'         ;   Convert to 0
-.not_dot
-    cp      ':'             ; Test for Digit
-    jr      nc,.not_digit   ; If A <= '9'
-    sub     '0'             ;   Convert Digit to Binary
-    jr      c,.fcerr        ;   If it was less than '0', Error
-    ret                     ;   Else Return
-.not_digit
-    and     $5F             ; Convert to Upper Case
-    sub     'A'-10          ; Make 'A' = 10
-    jr      c,.fcerr        ; Error if it was less than 'A'
-    cp      16              ; If less than 16
-    ret     c               ;   Return
-.fcerr                      ; Else
-    jp      FCERR           ;   Error
+    pop     bc                    ; A = ArgLen; Stack = ArgDsc, RtnAdr
+    ex      de,hl                 ; DE = ArgAdr, HL = NewAdr
+    ld      iy,aux_hex_to_asc
+    call    aux_call
+    jp      c,FCERR
+    jp      PFRNEW                ; Pop ArgDsc, Free It, and Return NewStr
 
 pop_null_string:
     pop     bc
@@ -204,89 +173,21 @@ eval_binary:
 ;; \I Insert, \J Delete, \M Menu, \K BckTab, \1 F1, ... \0 F10, \- F11, \= F12
 ;; \e $1B Escape, \l LineFeed
 _escaped:
-    inc     hl              ; Skip backslash
-    ld      a,(hl)          ;
-    cp      '"'             ; If not followed by quotes
-    jp      nz,SNERR        ;   Syntax error
-    inc     hl              ; Skip quotes
-    ex      de,hl           ; DE = TxtPtr
+    inc     hl                    ; Skip backslash
+    ld      a,(hl)                ;
+    cp      '"'                   ; If not followed by quotes
+    jp      nz,SNERR              ;   Syntax error
+    inc     hl                    ; Skip quotes
+    ex      de,hl                 ; DE = TxtPtr
     call    alloc_temp_buffer     ; HL = StrBuf
-    ex      de,hl           ; DE = StrBuf, HL = TxtPtr
-.escape_loop
-    ld      a,(hl)          ; A = NxtChr
-    or      a               ; If EOL
-    jr      z,.done         ;   Finish up
-    inc     hl              ; Bump to NxtChr
-    cp      '"'             ; If double quote
-    jr      z,.done         ;   Finish up
-    cp      $5C
-    jr      nz,.no_escape   ; If backslash
-    ld      a,(hl)
-    inc     hl              ;   Eat it
-    cp      'a'             ;   If >= 'a'
-    jr      c,.no_escape
-    cp      'y'             ;   or <= 'x'
-    jr      c,.sequence     ;     Interpret escape sequence
-.no_escape
-    ld      (de),a          ;
-    inc     de
-    jr      .escape_loop
-.sequence
-    ld      c,a             ; Save character
-    ld      b,7             ; ^G
-    sub     'a'             ;
-    jr      z,.buff_it      ;   Ring the bell like Bob Dobbs
-    inc     b               ; ^H
-    dec     a               ; \b is for Backspace
-    jr      z,.buff_it      ;
-    ld      b,12            ; ^L
-    sub     'f'-'b'         ; If \f
-    jr      z,.buff_it      ;   Feed the form
-    sub     'n'-'f'         ; If \n
-    jr      z,.crlf         ;   It's a new line
-    inc     b               ; ^M
-    sub     'r'-'n'         ; If \r
-    jr      z,.buff_it      ;   Make it clear screen
-    ld      b,9             ; ^I
-    dec     a               ; \s
-    dec     a               ; If \t
-    jr      z,.buff_it      ;   Just a step to the right
-    ld      b,11            ; ^K
-    dec     a               ; \u
-    dec     a               ; If \v
-    jr      z,.buff_it      ;   Make it clear
-    dec     a               ; Wumbo
-    dec     a               ; If \x
-    jr      z,.hexit        ;   Do hex to ascii
-    ld      b,c             ; No map - write character
-.buff_it
-    ld      a,b             ; Write mapped character to buffer
-    jr      .no_escape      ; and loop
-.crlf
-    ld      a,13            ; C/R
-    ld      (de),a          ;  in the buffer
-    inc     de
-    ld      a,10            ; L/F
-    jr      .no_escape      ;  in and loop
-.hexit
-    call    get_hex
-    sla     a               ; Shift to High Nybble
-    sla     a
-    sla     a
-    sla     a
-    ld      b,a
-    call    get_hex
-    or      b
-    jr      .no_escape
-.done:
-    xor     a
-    ld      (de),a          ; Terminate string
-    dec     hl
-    rst     CHRGET          ; Skip trailing spaces
-    ld      bc,free_temp_buffer
-    push    bc              ; Stack = FunRtn, RtnAdr
-    push    hl              ; Stack = TxtPtr, FunRtn, RtnAdr
-    jp      return_tmpbuf
+    ex      de,hl                 ; DE = StrBuf, HL = TxtPtr
+    ld      iy,aux_escaped_string 
+    call    aux_call              
+    ld      de,free_temp_buffer
+    push    de                    ; Stack = FunRtn, RtnAdr
+    push    hl                    ; Stack = TxtPtr, FunRtn, RtnAdr
+    call    tmpbuf_temp_string    ; HL = StrDsc
+    jp      FRENEW                ; Free ArgDsc and return NewStr
 
 ;-------------------------------------------------------------------------
 ; RETAOP Extension - Hook 29
@@ -403,8 +304,7 @@ oper_stringsub:
     jr      .loop               ;   Check next character
 .done:
     pop     af                    ; A = DatLen; Stack = TxtPtr, RtnAdr
-    ld      ix,get_temp_buffer
-    call    buf_temp_str          ; HL = StrDsc
+    call    tmpbuf_temp_string    ; HL = StrDsc
     ex      (sp),hl               ; HL = TxtPtr; Stack = StrDsc, RtnAdr
     ld      a,(hl)                ; A = NxtChr
     cp      ','                   ; If it's a comma
@@ -494,7 +394,8 @@ let_extension:
     cp      '['                   ; If not followed by '['
     jp      nz,LETEQ              ;   Continue LET
     rst     CHRGET                ; Skip '['
-    call    copy_literal_string   ; If literal string, copy to string space
+    ld      iy,copy_literal_string
+    call    aux_call              ; If literal string, copy to string space
     push    de                    ; Stack = VarPtr, RtnAdr
     call    get_substring_range   ; DE = StrAdr, A,BC = StrLen, H = FrmPos, L = ToPos; Stack = TxtPtr, RtnAdr
     cp      h                     ; If FrmPos > StrLen
@@ -534,32 +435,6 @@ pop2hl_ret:
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     ret
 
-; In: DE = VarPtr
-; CLobbers: A,BC
-copy_literal_string:
-    push    hl                    ; Stack = TxtPtr, RtnAdr
-    push    de                    ; Stack = VarPtr, TxtPtr, RtnAdr
-    ex      de,hl                 ; HL = VarPtr
-    call    string_addr_len       ; DE = StrAdr, BC = StrLen
-    jr      z,_no_copy            ; If StrLen = 0, pop VarPtr & TxtPtr and return
-    ex      de,hl                 ; HL = StrAdr
-    ld      DE,(STRSPC)           ; DE = Bottom of String Space
-    rst     COMPAR                ; If StrAdr >= StrSpc
-    jr      nc,_no_copy           ;   Pop VarPtr & TxtPtr and return
-    pop     hl                    ; HL = VarPtr; Stack = TxtPtr, RtnAdr
-    push    hl                    ; Stack = VarPtr, TxtPtr, RtnAdr
-    call    STRCPY                ; DE = DSCTMP
-    pop     hl                    ; HL = VarPtr; Stack = TxtPtr, RtnAdr
-    push    hl                    ; Stack = VarPtr, TxtPtr, RtnAdr
-; Copy (DSCTMP) to (HL)
-copy_dsctmp:
-    ld      de,DSCTMP
-    call    VMOVE                 ; Copy (DSCTMP) to (VarPtr)
-_no_copy:
-    pop     de                    ; DE = VarPtr; Stack = TxtPtr, RtnAdr
-    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
-    ret
-    
 ; var$[p] evaluates to character p of var$
 ; var$[f TO t] evaluates to characters f through t of var$
 isvar_extension:

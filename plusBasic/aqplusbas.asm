@@ -125,7 +125,7 @@ null_desc:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.27m"
+    db "v0.27n"
     db 0
 plusver_len equ $ - plus_version
 plus_len   equ   $ - plus_text
@@ -1145,6 +1145,11 @@ check_for_comment:
     rst     CHRGET                ; Skip '
     jp      REM                   ;   and do REM
 
+VMOVE:  ex      de,hl             ;MOVE VALUE FROM (DE) TO (HL). ALTERS B,C,D,E,H,L
+MOVVFM: ld      bc,4              ;MOVE VALUE FROM (HL) TO (DE)
+        ldir
+        ret
+
 ;-----------------------------------------------------------------------------
 ; SysROM File Name
 ;-----------------------------------------------------------------------------
@@ -1239,6 +1244,7 @@ check_for_comment:
     include "debug.asm"           ; Debugging routines
     include "dos.asm"             ; DOS routines
     include "esp_aux.asm"         ; ESP routines in auxiliary ROM
+    include "evalaux.asm"         ; Core routine for evalext.asm
     include "fileaux.asm"         ; Disk and File BASIC auxilarry routines 
     include "fileio.asm"          ; Disk and File I/O kernel routines
     include "fileload.asm"        ; File LOAD I/O routines

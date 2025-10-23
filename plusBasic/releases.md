@@ -1,4 +1,14 @@
 # plusBASIC Release History
+ - v0.27n (2025-10-23)
+   - Moved  _byte_to_dec_fast_, _div_a_16_, _div_a_8_, _div_a_4_, and _mult_c_10_ from _color.asm_ to _misc.asm_ 
+   - Deleted orphaned routines _rgb_to_asc_ and _rgb_to_dec_ ftom _color.asm_
+   - Moved _clear_array_ from _enhanced,asm_ to _arrayaux.asm_
+   - In _evalext.asm_, replaced conversiop loop in _hex_to_asc_ with call to _aux_eval_hex_
+   - In _evalext.asm_, replaced _get_hex_ call in , with _aux_hex_to_byte_ call and removed routine _get_hex_
+   - Moved core code from _\_escaped_ in _evalext.asm_ to _aux_escaped_string_ in _evalaux,asm_
+   - Moved _aux_asc_to_hex_, _aux_byte_to_hex_, _aux_hex_to_asc_, _aux_hex_to_byte_, and _aux_get_hex_ from _basicaux.asm_ to _evalaux.asm
+   - Moved _VMOVE_ from _basic80.asm_ to _aqplusbas.asm_
+   - Moved _copy_literal_string_ from _evalext.asm_ to evalaux.asm_
  - v0.27m (2025-10-21)
    - Moved _outdo_hook_ from _text80.asm_ to _hooks.asm_, jump directly to it instead of through table
    - Moved _clear_hook_ in _extended.asm_ to _ST_NEW_ in _enhanced.asm_, jump through _exec_next_statement_ instead of UDF hook

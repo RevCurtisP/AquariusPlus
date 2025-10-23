@@ -889,6 +889,18 @@ str_literal:
     ld      (FACLO),bc            ; Srore in StrDsc
     ret
 
+;-----------------------------------------------------------------------------
+; Create temporary string from temportary buffer
+;  Input: A = Buffer data length
+; Output: BC = StrLen
+;         DE = StrAdr
+;         HL = StrDsc
+; Clobbers: A
+;-----------------------------------------------------------------------------
+tmpbuf_temp_string
+    ld      ix,get_temp_buffer
+    jr      buf_temp_str
+
 strbuf_temp_str_c:
     ld      a,c
 ;-----------------------------------------------------------------------------

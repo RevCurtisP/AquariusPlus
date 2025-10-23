@@ -2,6 +2,22 @@
 ; Array Auxillary ROM Routines
 ;=====================================================================================
 
+; Input: A: Type, DE: Array Start, BC = Array Length
+clear_array:
+    call    GETYPE                ; A = AryTyp
+    push    hl                    ; Stack = TxrPtr, RtnAdr
+    push    de                    ; Stack = AryAdr, TxtPtr, RtnAdr
+    push    bc                    ; Stack = AryLen, AryAdr, TxtPtr, RtnAdr
+    push    af                    ; Stack = AryTyp, AryLen, AryAdr, TxtPtr, RtnAdr
+    ex      de,hl                 ; HL = AryAdr
+    call    sys_fill_zero         ; Fill array data with 0
+    pop     af                    ; AF = AryTyp; Stack = AryLen, AryAdr, TxtPtr, RtnAdr
+    call    z,GARBA2              ; If string, do garbage collection
+    pop     bc                    ; BC = AryLen; Stack = AryLen, AryAdr, TxtPtr, RtnAdr
+    pop     de                    ; DE = AryAdr; Stack = AryAdr, TxtPtr, RtnAdr
+    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
+    ret
+
 ; ------------------------------------------------------------------------------
 ; Print String Array contents to Screen with LIST style pausing
 ; Input: A = Array Type

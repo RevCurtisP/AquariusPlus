@@ -47,10 +47,6 @@ _jump_table:
     jp      just_ret              ; C063 
     jp      just_ret              ; C066 
     jp      just_ret              ; C069 
-;; move to nybble.asm
-;;    jp      read_nybbles
-;;    jp      read_hex_nybble
-;;    jp      hex_to_nybble
     jp      just_ret              ; C06C 
     jp      just_ret              ; C06F 
     jp      just_ret              ; C072 

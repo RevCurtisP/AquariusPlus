@@ -108,28 +108,6 @@ palette_get_entry:
     ld      d,a                   ; DE = RGB
     ret
 
-;-----------------------------------------------------------------------------
-; Convert Binary RGB list to ASCII
-; Input: B: (ToDo) Prefix
-;        C: Entry Count
-;       DE: Binary Data Address
-;       HL: ASCII Buffer Address
-; Output: A: ASCII data length
-; Clobbered: A,BC,DE,HL
-;-----------------------------------------------------------------------------
-;rgb_to_asc:
-    xor     a                     ; AscLen = 0
-    inc     c                     ; Bump for countdown
-.loop
-    dec     c
-    ret     z
-    call    rgb_hex
-    ex      af,af'                ; A = AscLen
-    call    _crlf                 ; Write CR+LF
-    ex      af,af'                ; A = AscLen
-    add     a,2
-    jr      .loop
-
 ; Convert Palette entry to "RRGGBB"
 ; Input: B: Prefix (ToDo)
 ;       DE: BinPtr, HL: BufPtr
@@ -190,31 +168,6 @@ _crlf:
     inc     hl    
     ret
 
-;-----------------------------------------------------------------------------
-; Convert Binary RGB value to Decimal triplet
-; Input: B: Delimiter
-;        C: Entry Count
-;       DE: Binary Data Address
-;       HL: ASCII Buffer Address
-; Output: A: ASCII String length
-; Clobbered: A,BC,DE,HL
-;-----------------------------------------------------------------------------
-rgb_to_dec:
-    push    hl                    ; Stack = BufAdr
-    inc     c                     ; Bump for countdown
-.loop
-    dec     c
-    jr      z,.done
-    call    rgb_dec               ; Write red,grn,blu
-    call    _crlf                 ; Write CR/LF
-    jr      .loop
-.done
-    or      a                     ; Clear carry
-    pop     de                    ; DE = BufAdr
-    sbc     hl,de                 ; HL = StrLen
-    ld      a,l                   ; A = StrLen
-    ret
-
 ; Convert $GB0R to "red,green,blue"
 ; Input: B: Delmtr, DE: BinPtr, HL: BufPtr
 rgb_dec:
@@ -253,95 +206,6 @@ rgb_dec:
     call    byte_to_dec_fast
     pop     de                    ; DE = BinPtr; Stack = Del+Cnt, RtnAdr
     pop     bc                    ; BC = Del+Cnt; Stack = RtnAdr
-    ret
-
-;; Input: A: Byte, HL: TxtPtr; Clobbered: AF, BC, DE
-;; Does not generate leading spaces
-;; ToDo: (after release) move to auxrom/misc.asm
-byte_to_dec_fast:
-    ld      e,'0'
-    ld      d,100
-    call    .digit
-    ld      d,10
-    call    .digit
-    dec     e
-    ld      d,1
-.digit
-    ld      b,-1
-.loop
-    inc     b
-    sub     a,d
-    jr      nc,.loop
-    add     a,d
-    ld      c,a
-    ld      a,'0'
-    add     b
-    cp      e
-    jr      z,.ret
-    ld      (hl),a
-    inc     hl
-    ex      af,af'
-    dec     e
-.ret
-    ld      a,c
-    ret
-
-    
-    
-;-----------------------------------------------------------------------------
-; Convert ASCII RRGGBB to binary GB0R
-; Input: DE: Binary Data Pointer
-;        HL: ASCII Buffer Address
-; Output: DE: Updated Binary Data Pointer
-; Flags: Carry set if invalid line
-; Clobbered: BC, HL
-;-----------------------------------------------------------------------------
-;asc_to_rgb:
-    call    read_nybbles          ; B,C = hiRed,lowRed
-    ret     c
-    push    bc                    ; Stack = Red, RtnAdr
-    call    read_nybbles          ; B,C = hiGreen, lowGreen
-    jp      c,discard_ret
-    ld      a,b                   ; A = hiGreen
-    rla
-    rla
-    rla
-    rla                           
-    ld      c,a                   ; C = G0
-    call    read_nybbles          ; B,C = hiBlue, lowBlue
-    jp      c,discard_ret
-    ld      a,b                   ; A = hiBlue
-    or      c                     ; A = GB
-    ld      (de),a
-    inc     de
-    pop     bc                    ; BC = Red; Stack = RtnAdr
-    ld      a,b                   ; A = hiRed
-    ld      (de),a
-    inc     de
-    ret
-
-; HL = AscPtr; Output: B: First nybble, A: Second nybble    
-read_nybbles:
-    call    read_hex_nybble
-    ld      b,a                   
-    call    nc,read_hex_nybble
-    ret
-
-read_hex_nybble:    
-    ld      a,(hl)                ; A = First hex digit
-    inc     hl
-hex_to_nybble:
-    call    uppercase_char
-    sub    '0'                    ; Convert digit to bytes
-    ret     c                     ; Return carry set if < 0
-    cp      10                    ; If <= 9
-    ccf
-    ret     nc                    ;   Return it
-    sub    'A'-'0'                ; Convert A-F to 0-5
-    ret     c                     ; Return carry set if < 0
-    add     10                    ; Convert A-F to 10-15
-    cp      16                    ; Return carry if > 15
-    ccf
     ret
 
 ;-----------------------------------------------------------------------------
@@ -446,27 +310,3 @@ get_dec_digit:
     inc     hl                    ; Bump Pointer
     dec     e
     ret
-div_a_16:
-    srl     a                     ; A = A / 2
-div_a_8:
-    srl     a                     ; A = A / 4
-div_a_4:
-    srl     a                     ; A = A / 8
-    srl     a                     ; A = A / 16
-    ret
-
-; Clobbers B
-mult_c_10:
-    ld      b,a                   ; Save A
-    ld      a,c                   ; A = Num
-    add     a                     ; A = Num * 2
-    ret     c                     ; Return if overflow
-    add     a                     ; A = Num * 4
-    ret     c                     ; Return if overflow
-    add     c                     ; A = Num * 5
-    ret     c                     ; Return if overflow
-    add     a,a                   ; A = Num * 10 (Carry set if overflow)
-    ld      c,a                   ; C = Num * 10
-    ld      a,b                   ; Restore A
-    ret
-    
