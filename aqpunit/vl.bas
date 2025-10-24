@@ -1,7 +1,8 @@
 100 REM Variables and Literals
+120 IF FRE(2)<>$BEFF THEN CLEAR 4096
 130 GOSUB _init
 
-190 goto 400
+190 goto 520
 
 200 GOSUB _title:ARGS "Variables and Literals"
 
@@ -71,3 +72,36 @@
 417 GOSUB _assert_nq:ARGS "'a'=97"
 418 GOSUB _assert_nq:ARGS "'z'=122"
 419 GOSUB _assert_nq:ARGS "'{'=123"
+
+500 GOSUB _title:ARGS "Escaped Strings"
+501 GOSUB _output:ARGS LIST$(NEXT)
+502 E$=\"\"\a\b\f\n\r\t\v\"\\":rem Valid escape sequences
+504 GOSUB _assert:ARGS "E$=$`2207080C0D0A0D090B225C`"
+
+511 GOSUB _output:ARGS LIST$(NEXT)
+512 H$=\"\x00\x0d\x1A\x34\x41\x4e\x5B\x68\x82\x8F\xA9\xb6\xC3\xd0\xdd\xEF\xf7"
+514 GOSUB _assert:ARGS "H$=$`000D1A34414E5B68828FA9B6C3D0DDEFF7`"
+
+520 GOSUB _pause
+521 GOSUB _output:ARGS LIST$(NEXT):SCREEN 1
+522 E1$=\"\vClear Screen\nNewline":PRINT E1$:P1$=PEEKSCREEN$(40,80)
+523 SCREEN 3:GOSUB _output:ARGS LIST$(NEXT):SCREEN 1
+524 E2$=\"*****\rReturn\tTab":PRINT E2$:P2$=PEEKSCREEN$(120,40)
+525 SCREEN 3:GOSUB _output:ARGS LIST$(NEXT):SCREEN 1
+526 E3$=\"Backspace*\b":PRINT E3$:P3$=PEEKSCREEN$(160,40)
+527 SCREEN 3:GOSUB _output:ARGS LIST$(NEXT):SCREEN 1
+528 E4$=\"\aBell\fForm Feed":PRINT E4$:P4$=PEEKSCREEN$(200,40)
+529 GOSUB _pause:SCREEN 3
+
+530 GOSUB _outnewline
+532 GOSUB _assert:ARGS "P1$[1 TO 40]=` Clear Screen`+STRING$(27)"
+533 GOSUB _assert:ARGS "P1$[41 TO 80]=` Newline`+STRING$(32)"
+534 GOSUB _assert:ARGS "P2$=` Return`+$`09`+`Tab`+STRING$(29)"
+536 GOSUB _assert:ARGS "P3$=` Backspace`+STRING$(30)"
+538 GOSUB _assert:ARGS "P4$=` Bell`+$`0C`+`Form Feed`+STRING$(25)"
+
+540 GOSUB _outnewline
+542 GOSUB _assert:ARGS "E1$=$`0B`+`Clear Screen`+$`0D0A`+`Newline`" 
+544 GOSUB _assert:ARGS "E2$=`*****`+$`0D`+`Return`+$`09`+`Tab`"
+546 GOSUB _assert:ARGS "E3$=`Backspace*`+$`08`"
+548 GOSUB _assert:ARGS "E4$=$`07`+`Bell`+$`0C`+`Form Feed`"

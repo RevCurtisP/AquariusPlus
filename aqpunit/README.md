@@ -220,6 +220,7 @@ Run the .baq file to run the associated tests.
 - vl.baq
   - Extended variable names (tilde)
   - Character literals (single quote)
+  - Backslash escaped strings
 
 ## Asset Files
 

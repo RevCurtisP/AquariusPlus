@@ -4,14 +4,9 @@
 120 GOSUB _init
 
 200 GOSUB _title:ARGS "SPLIT and JOIN":GOSUB _outnewline
-201 DIM A$(5)
-202 F$=\"\"%%\"":'Quote a string
-203 SF$="S$="+F$:'String to split
-204 DF$="D$="+F$:'Delimiter
-205 JF$="J$="+F$:'Format JOIN target
-206 NF$=SF$+":"+"D=%%:C=%%:"
-207 PF$=SF$+":"+DF$+":C=%%:":'SPLIT listing prefix
-208 AF$=F$+"="+F$:CF$="%%=%%":'Assert arguments
+202 DIM A$(5)
+204 NF$=\"S$=\"%%\":D=%%:C=%%:"
+206 PF$=\"S$=\"%%\":D$=\"%%\":C=%%:":'SPLIT listing prefix
 209 GOTO _start
 
 210 _out_array:P$="A$()="
@@ -19,23 +14,23 @@
 214 GOSUB _output: ARGS P$:RETURN 
 
 220 _test_s:
-221 GOSUB _outpart:ARGS PF$%(S$,D$,C):GOSUB _output:ARGS LIST$(NEXT)
+221 GOSUB _outpart:ARGS PF$ % (S$,D$,C):GOSUB _output:ARGS LIST$(NEXT)
 222 SPLIT S$ INTO *A$ DEL D$
-223 GOSUB _out_array:GOSUB _assert:ARGS CF$ % (C,VAL(A$(0)))
+223 GOSUB _out_array:GOSUB _assert:ARGS "VAL(A$(0))=%%" % (C)
 224 PRINT LIST$(NEXT)
 225 JOIN *A$ INTO J$ DEL D$
-226 GOSUB _output:ARGS JF$%(J$) 
-228 T$=TRIMR$(S$,"|"):GOSUB _assert: ARGS AF$%(S$,T$)
+226 GOSUB _output:ARGS \"J$=\"%%\"" % (J$) 
+228 T$=TRIMR$(S$,"|"):GOSUB _assert: ARGS "`%%`=`%%`" % (S$,T$)
 229 GOSUB _outnewline:RETURN
 
 230 _test_n:
 231 GOSUB _outpart:ARGS NF$%(S$,D,C):GOSUB _output:ARGS LIST$(NEXT)
 232 SPLIT S$ INTO *A$ DEL D
-233 GOSUB _out_array:GOSUB _assert:ARGS CF$ % (C,VAL(A$(0)))
+233 GOSUB _out_array:GOSUB _assert:ARGS "VAL(A$(0))=%%" % (C)
 234 PRINT LIST$(NEXT)
 235 JOIN *A$ INTO J$ DEL D
-236 GOSUB _output:ARGS JF$%(J$) 
-238 T$=TRIMR$(S$,"|"):GOSUB _assert: ARGS AF$%(S$,T$)
+236 GOSUB _output:ARGS \"S$=\"%%\":D$=\"%%\":C=%%" % (J$,D$,C) 
+238 T$=TRIMR$(S$,"|"):GOSUB _assert: ARGS "`%%`=`%%`" % (S$,T$)
 239 GOSUB _outnewline:RETURN
 
 300 _start

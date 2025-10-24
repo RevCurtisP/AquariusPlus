@@ -317,6 +317,7 @@ for idx, line in enumerate(input_file.readlines()):
     buf += struct.pack("<H", linenr)
     
     in_chr = False
+    in_esc = False
     in_str = False
     in_rem = False
     
@@ -330,13 +331,19 @@ for idx, line in enumerate(input_file.readlines()):
             line = ""
             continue
 
-        if line[0] == '"' and not in_chr:
-            in_str = not in_str
+        if line[0] == '"' and not (in_chr):
+            if in_esc: in_esc = False
+            else: in_str = not in_str
 
-        if line[0] == "'" and not in_str:
+        if line[0] == "'" and not (in_str or in_esc):
             in_chr = not in_chr
 
-        if not (in_str or in_chr or in_rem) and line[0] != " ":
+        if line[0] == '\\' and len(line) > 1 and not (in_str or in_chr or in_rem):
+            in_esc = True
+            buf.append(line[0].encode()[0])
+            line = line[1:]
+
+        if not (in_str or in_esc or in_chr or in_rem) and line[0] != " ":
             found = False
             for (token, keyword) in tokens.items():
                 if upper.startswith(keyword):
@@ -377,11 +384,10 @@ for idx, line in enumerate(input_file.readlines()):
             buf.append(line[0].encode()[0])
             if line[0] != ' ':
                 lastcln = 0
+            
 
         line = line[1:]
         
-        #print(buf, lastcln)
-
     buf.append(0)
 
     buf = struct.pack("<H", addr + len(buf)) + buf
