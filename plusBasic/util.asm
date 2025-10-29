@@ -26,11 +26,20 @@ find_var:
 
 ;-----------------------------------------------------------------------------
 ; Get Line Buffer Address
-; Output: HL: String Buffer Address
-;         BC: Buffer Length minus 1
+; Output: HL: Line Buffer Address
 ;-----------------------------------------------------------------------------
 get_linbuf_addr:
     ld      hl,(TOPMEM)
+    ret
+
+get_linbuf_de:
+    ld      de,(TOPMEM)
+    inc     de
+    ret
+
+get_linbuf_hl:
+    ld      hl,(TOPMEM)
+    inc     hl
     ret
 
 

@@ -245,12 +245,17 @@ FKEYDEFS    equ $0200   ; Function Key Definitions (32 bytes each)
 FKEYBASE    equ BASBUF_BASE + FKEYDEFS
 LPRFILSPC   equ $0500   ; LPRINT File Spec (32 byte)
 MOUSEWDLT   equ $0520   ; Accumulated change in mouse delta
-;         $0521-$07FF   ; Unused
+;               $0521   ; Unused
+LINHSTPTR   equ $0522   ; Bottom entry of line history buffer
+;         $0524-$07FF   ; Unused
 RUNARGS     equ $0800   ; RUN arguments (see run_args in args.asm)
 RUNARGEND   equ $08FF   ; End of RUN arguments
 RUN_PATH    equ $0900   ; Search path for RUN programs
 WRTKEYBUF   equ $0A00   ; user autotype buffer
-;         $0B00-$2FFF   ; Unused
+;         $0B00-$1EFF   ; Unused
+PRVDIRLIN   equ $1F00   ; Previous direct mode line entered
+LINHSTBOT   equ $2000   ; Bottom of line history buffer
+LINHSTTOP   equ $2FFF   ; Top of line history buffer
 DEFCHRSET   equ $3000   ; Page Offset: Default Character Set Buffer
 ALTCHRSET   equ $3800   ; Page Offset: Custom Character Set Buffer
 CHRSETLEN   equ 2048    ; Size of character set ROM

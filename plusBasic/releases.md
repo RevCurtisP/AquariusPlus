@@ -1,4 +1,11 @@
 # plusBASIC Release History
+ - v0.27o (2025-10-??)
+    - Moved _lookup_file_ in _basfile.asm_ from to _bas_lookup_prog_ in _fileaux.asm_
+    - Jump directly to _main_ctrl_c, _skip_label_, _skip_on_label_ instead of through jump table
+    - Directly call _main_ext_, _wait_key_, instead of through jump table
+    - Modified _INPCOM_, _INLIN_, _EDENT_, and _CRUNCH_ to check for/use 256 byte input buffer
+    - Ignore Delete key in direct mode and `INPUT`
+    - Write direct mode commands to command line history buffers.
  - v0.27n (2025-10-23)
    - Moved  _byte_to_dec_fast_, _div_a_16_, _div_a_8_, _div_a_4_, and _mult_c_10_ from _color.asm_ to _misc.asm_ 
    - Deleted orphaned routines _rgb_to_asc_ and _rgb_to_dec_ ftom _color.asm_

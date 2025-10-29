@@ -28,6 +28,8 @@ do_coldboot:
     ; ld      a,KB_REPEAT
     ; ld      (BASYSCTL),a
 
+    ld      iy,init_basbuf_vars
+    call    aux_call
     ld      iy,init_screen_buffers
     call    gfx_call
     ld      iy,init_screen_vars

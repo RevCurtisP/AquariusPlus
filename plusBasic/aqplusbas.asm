@@ -37,22 +37,18 @@
     jp      in_key          ; $201E XINKEY Read key and check Ctrl-C if BREAK is ON
     jp      _incntc_hook    ; $2021 INCNTX Patch to INCNTC
     jp      _input_ctrl_c   ; $2024 INPUTC Handle Ctrl-C in INPUT
-    jp      _wait_key       ; $2027 INCHRX Wait for character, don't BREAK on Ctrl-C
-    jp      _main_ctrl_c    ; $202A MAINCC Handle Ctrl-c in MAIN
+    jp      just_ret        ; $2027
+    jp      just_ret        ; $202A 
     jp      _finish_input   ; $202D FININX C/R in INPUT patch
     jp      _scan_label     ; $2030 SCNLBL Scan line label or line number
     jp      just_ret        ; $2033
     jp      just_ret        ; $2036
     jp      _then_hook      ; $2039 THENHK *Not Implemented* Check for ELSE after IF ... THEN
     jp      just_ret        ; $203C 
-    jp      _main_ext       ; $203F XMAIN  Save Line# Flag in TEMP3
+    jp      just_ret        ; $203F
     jp      just_ret        ; $2042
     jp      _read_key       ; $2045 INCHRA Read alt keyboard port instead of matrix
     jp      _check_topmem   ; $2048 XCLEAR Verify TOPMEM is in Bank 2
-    jp      just_ret        ; $204B
-    jp      _skip_label     ; $204E SKPLBL Skip label at beginning of line
-    jp      _skip_on_label  ; $2051 SKPLOG Skip label in ON GOTO
-    jp      just_ret        ; $2054
 
 just_ret:
     ret
@@ -125,7 +121,7 @@ null_desc:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.27n"
+    db "v0.27o"
     db 0
 plusver_len equ $ - plus_version
 plus_len   equ   $ - plus_text
@@ -313,9 +309,10 @@ _start_screen:
 ;-----------------------------------------------------------------------------
 ctrl_keys:
     cp      ' '                   ;
-    jr      c,.is_ctrl            ; If >= ' ' and and < DEL
-    cp      $7F
-    jp      c,GOODCH              ;    Stuff in Input Buffer
+    jr      c,.is_ctrl            ; If >= ' ' and and <= DEL
+    cp      $7F                   ;    If DEL
+    jp      z,INLINC              ;      Ignore it
+    jp      c,GOODCH              ;    Else Stuff in Input Buffer
 .is_ctrl
     push    bc
     ld      iy,s3_ctrl_keys
@@ -336,10 +333,10 @@ in_direct:
     cp      $FE
     ret
 
-_wait_key:
+wait_key:
     call    _read_key
     or       a
-    jr       z,_wait_key
+    jr       z,wait_key
     ret
 
 _input_ctrl_c:
@@ -351,7 +348,7 @@ _input_ctrl_c:
     push    bc                    ; Stack = TxtPtr, RtnAdr
     jp      DATAH                 ; Skip to end of INPUT statement
 
-_main_ctrl_c:
+main_ctrl_c:
     jp      c,STPEND
     rst     CHRGET
     jp      MAIN0
@@ -1087,10 +1084,6 @@ fast_hook_handler:
 ; S3 BASIC extensions routines in Extended ROM Page
 ;-----------------------------------------------------------------------------
 
-_main_ext:
-    call    page_set_plus
-    jp      main_ext
-
 _next_statement:
     call    page_set_plus
     jp      exec_next_statement   ; Go do the Statement
@@ -1103,13 +1096,7 @@ _scan_label
     call    page_set_plus
     jp      scan_label
 
-_skip_label:
-    call    page_set_plus
     jp      skip_label
-
-_skip_on_label:
-    call    page_set_plus
-    jp      skip_on_label
 
 error_ext:
     call    page_set_plus         ; Bank 3 could be mapped to any page at this point.
@@ -1149,6 +1136,20 @@ VMOVE:  ex      de,hl             ;MOVE VALUE FROM (DE) TO (HL). ALTERS B,C,D,E,
 MOVVFM: ld      bc,4              ;MOVE VALUE FROM (HL) TO (DE)
         ldir
         ret
+
+; Return Carry Clear if string address is in an input buffer
+; On entry DE = String Address
+in_buffer:
+    ld      hl,(TXTTAB)
+    rst     COMPAR            ; If String is below Program Text 
+    ret     nc                ;   Return Carry Clear
+    ld      hl,(TOPMEM)       
+    rst     COMPAR
+    ccf                       ; If String is below Buffers
+    ret     c                 ;   Return Carry Set
+    ld      hl,(STRSPC)       ; If String is below String Space
+    rst     COMPAR            ;   Return Carry Clear
+    ret
 
 ;-----------------------------------------------------------------------------
 ; SysROM File Name

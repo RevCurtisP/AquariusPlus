@@ -251,10 +251,9 @@ bas_mouse:
     scf
     ret
 .wheel
-    call    .read_wdelt           ; A = WheelDelt
+    call    read_mousewdlt        ; A = WheelDelt
     push    af                    ; Stack = WheelDelt, RtnAdr
-    xor     a
-    call    .write_wdelt
+    call    clear_mousedlt
     pop     af
 .signed_byte
     or      a                     ; Signed result
@@ -263,23 +262,13 @@ bas_mouse:
 .update_wdelt
     push    bc
     push    de
-    call    .read_wdelt
+    call    read_mousewdlt
     add     l                     ; Accumulate mouse wheel delta
-    call    .write_wdelt
+    call    write_mousewdlt
     pop     de
     pop     bc
     ret
 
-.read_wdelt
-    ld      de,MOUSEWDLT
-    call    basbuf_read_byte
-    ld      a,c                   ; C = WheelDelt
-    ret  
-
-.write_wdelt
-    dec     de                    ; DE = MOUSEWDLT
-    ld      c,a
-    jp      basbuf_write_byte
 
       
 ; Called from FN_OFF

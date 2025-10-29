@@ -17,6 +17,16 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
     <body>
         <h1 id="plusbasic-release-history">plusBASIC Release History</h1>
 <ul>
+<li>v0.27o (2025-10-??)
+<ul>
+<li>Moved <em>lookup_file</em> in <em>basfile.asm</em> from to <em>bas_lookup_prog</em> in <em>fileaux.asm</em></li>
+<li>Jump directly to _main_ctrl_c, <em>skip_label</em>, <em>skip_on_label</em> instead of through jump table</li>
+<li>Directly call <em>main_ext</em>, <em>wait_key</em>, instead of through jump table</li>
+<li>Modified <em>INPCOM</em>, <em>INLIN</em>, <em>EDENT</em>, and <em>CRUNCH</em> to check for/use 256 byte input buffer</li>
+<li>Ignore Delete key in direct mode and <code>INPUT</code></li>
+<li>Write direct mode commands to command line history buffers.</li>
+</ul>
+</li>
 <li>v0.27n (2025-10-23)
 <ul>
 <li>Moved  <em>byte_to_dec_fast</em>, <em>div_a_16</em>, <em>div_a_8</em>, <em>div_a_4</em>, and <em>mult_c_10</em> from <em>color.asm</em> to <em>misc.asm</em></li>

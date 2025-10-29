@@ -93,3 +93,57 @@ bas_save_string_array:
     ex      af,af'                ; F = AscFlg
     push    de                    ; Stack = AryLen, RtnAdr
     jr      .strloop
+
+
+bas_lookup_prog:
+    push    hl                    ; Stack = StrDsc, RtnAdr
+    call    string_addr_len       ; DE = StrAdr, BC = StrLen
+    call    file_get_ext          ; DE = ExtAdr, A = ExtLen
+    pop     hl                    ; HL = StrDsc; Stack = RtnAdr
+    ret     nz                    ; Return if extension specified
+; Add wildcard
+    call    string_addr_len       ; DE = StrAdr, BC = StrLen
+    push    bc                    ; Stack = StrLen, RtnAdr
+    push    bc                    ; Stack = StrLen, StrLen, RtnAdr
+    call    get_strbuf_addr       ; HL = StrBuf
+    pop     bc                    ; BC = StrLen; Stack = StrLen, RtnAdr
+    push    hl                    ; Stack = StrBuf, StrLen, RtnAdr
+    ex      de,hl                 ; DE = StrBuf, HL = StrAdr
+    ldir                          ; DE = StrEnd
+    pop     hl                    ; HL = StrBuf; Stack = StrLen, RtnAdr
+    pop     bc                    ; BC = StrLen; Stack = RtnAdr
+    ld      a,'.'
+    call    .add_char
+    ld      a,'*'                 ; Add .* to filename
+    call    .add_char
+    ex      de,hl                 ; DE = StrBuf
+    call    dos_open_dir
+    ret     m
+    call    get_strbuf_addr       ; HL = BufAdr
+.read_loop:
+    push    af                    ; Stack = FilDsc, RtnAdr
+    call    dos_read_dir          ; A = Result, B = NamLen, C = EntLen, DE = NamAdr, HL = BufAdr
+    jp      c,LSERR               ; Error if overflow
+    ret     m
+
+.ret_filename
+    pop     af                    ; A = FilDsc
+    call    dos_close             ; Close file
+    ld      a,b                   ; A = NamLen, DE = NamAdr
+    jp      STRAD2                ; Build string descriptor and return
+
+.error
+    cp      ERR_EOF               ; If not EOF
+    ret     m                     ;   Error out
+    pop     af                    ; A = FilDsc
+    call    dos_close             ; Close file
+    pop     hl                    ; HL = FilDsc; Stack = RtnAdr
+    ret
+
+.add_char:
+    inc     c                     ; Bump StrLen for *
+    jp      z,LSERR               ; Error if > 255
+    ld      (de),a                ; Append character to filename
+    inc     de                    ; Bump BufPtr
+    ret
+

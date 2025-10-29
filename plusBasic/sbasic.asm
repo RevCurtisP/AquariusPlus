@@ -110,21 +110,14 @@ RESETX  equ     $201B   ;; + Skip start screen, cold boot if ':' pressed
 XINKEY  equ     $201E   ;  + Read buffered key and check for Ctrl-C
 INCNTX  equ     $2021   ;; + INCNTC control keys patch
 INPUTC  equ     $2024   ;; + INPUT Ctrl-C patch
-INCHRX  equ     $2027   ;; + Wait for character, don't BREAK on Ctrl-C
-MAINCC  equ     $202A   ;; + Handle Ctrl-C in direct mode
 FININX  equ     $202D   ;; + Finish INPUT
 ;;plusBASIC specific hooks
 SCNLBL  equ     $2030   ;; | Scan line label or line number
 THENHK  equ     $2039   ;; | Scan for ELSE after IF THEN
 XERROR  equ     $203C   ;; | Restore Stack, Display Error, and Stop Program
-XMAIN   equ     $203F   ;; | Line Crunch Hook
 INCHRA  equ     $2045   ;; | Read alt keyboard port instead of matrix
 XCLEAR  equ     $2048   ;; | Issue Error if TOPMEM too low
 XPTRGT  equ     $204B   ;; | PTRGET Hook
-SKPLBL  equ     $204E   ;; | Skip label at beginning of line
-SKPLOG  equ     $2051   ;; | Skip Label in ON GOTO/GOSUB
-STRNGX  equ     $2054   ;; | Don't capitalize letters between single quotes
-CHKCMT  equ     $2057   ;; | Check for ' and treat as REM
 
 EXTBAS  equ     $2000   ;;Start of Extended Basic
 XSTART  equ     $2010   ;;Extended BASIC Startup Routine
@@ -853,14 +846,14 @@ MAIN:   ld      hl,$FFFF          ;
         ld      (CURLIN),hl       ;[M80] SETUP CURLIN FOR DIRECT MODE
         call    INLIN             ;[M80] GET A LINE FROM TTY
 ;; Break if INLIN exited with Ctrl-C                                          Original Code
-        jp      MAINCC            ;; + If Ctrl-C, do BREAK                    041D  jr      c,MAIN
+        jp      main_ctrl_c       ;; + If Ctrl-C, do BREAK                    041D  jr      c,MAIN
                                   ;; +                                        041E
                                   ;; +                                        041F  rst     CHRGET
 MAIN0:  inc     a                 ;[M80] SEE IF 0 SAVING THE CARRY FLAG
         dec     a                 ;
         jr      z,MAIN            ;[M80] IF SO, A BLANK LINE WAS INPUT
         push    af                ;[M80] SAVE STATUS INDICATOR FOR 1ST CHARACTER
-MAIN1:  call    XMAIN       ;; +                                        0425  call SCNLIN
+MAIN1:  call    main_ext          ;; +                                        0425  call SCNLIN
 ;;Tokenize Entered Line
 EDENT:  push    de                ;[M80] SAVE LINE #
         call    CRUNCH            ;[M80] CRUNCH THE LINE DOWN
@@ -916,8 +909,10 @@ LEVFRE: ld      hl,(VARTAB)       ;[M80] CURRENT END
         ld      (hl),e            ;
         inc     hl                ;[M80] PUT DOWN LINE #
         ld      (hl),d            ;
-        inc     hl                ;
-        ld      de,BUF            ;[M80] MOVE LINE FRM BUF TO PROGRAM AREA
+        inc     hl                ;                                           Original Code
+        call    get_linbuf_de     ;[M80] MOVE LINE FRM BUF TO PROGRAM AREA    0476  ld      de,BUF
+                                  ;                                           0477
+                                  ;                                           0478
 MLOOPR: ld      a,(de)            ;[M80] NOW TRANSFERING LINE IN FROM BUF
         ld      (hl),a            ;
         inc     hl                ;
@@ -982,7 +977,9 @@ LOOP:   ld      b,h               ;[M80] IF EXITING BECAUSE OF END OF PROGRAM,
 CRUNCH: xor     a                 ;SAY EXPECTING FLOATING NUMBERS
         ld      (DORES),a         ;ALLOW CRUNCHING
         ld      c,5               ;LENGTH OF KRUNCH BUFFER
-        ld      de,BUF            ;SETUP DESTINATION POINTER
+        call    get_linbuf_de     ;SETUP DESTINATION POINTER                  04C2  ld      de,BUF
+                                  ;                                           04C3
+                                  ;                                           04C4
 KLOOP:  ld      a,(hl)            ;GET CHARACTER FROM BUF
         cp      ' '               ;SPACE?
         jp      z,STUFFH          ;JUST STUFF AWAY
@@ -1086,7 +1083,9 @@ STRNG:  inc     hl                ;[M80] INCREMENT TEXT POINTER
         inc     c                 ;;Increment buffer count
         inc     de                ;[M65] INCREMENT BUFFER POINTER.
         jr      STR1              ;[M80] KEEP LOOPING
-CRDONE: ld      hl,BUF-1          ;[M80] GET POINTER TO CHAR BEFORE BUF AS "GONE" DOES A CHRGET
+CRDONE: call    get_linbuf_addr   ;                                           055E  ld      hl,BUF-1          
+                                  ;                                           055F
+                                  ;                                           0560
         ld      (de),a            ;[M80] NEED THREE 0'S ON THE END
         inc     de                ;[M80] ONE FOR END-OF-LINE
         ld      (de),a            ;[M80] AND 2 FOR A ZERO LINK
@@ -1239,7 +1238,7 @@ GONE4:  ld      a,(hl)            ;[M80] IF POINTER IS ZERO, END OF PROGRAM
         ld      d,(hl)            ;[M80] GET LINE # IN [D,E]
         ex      de,hl             ;[M80] [H,L]=LINE #
 ;; <<
-        jp      SKPLBL            ;; + Skip label at beginning of line        0647  ld      (CURLIN),hl
+        jp      skip_label        ;; + Skip label at beginning of line        0647  ld      (CURLIN),hl
 ;; >>
 GONCON: ex      de,hl             ;;DE=Line#, HL=Text Pointer
 
@@ -1446,12 +1445,15 @@ INPCOM: push    hl                ; Stack = VarPtr, TxtPtr
         push    hl                ; Stack = StrDsc, VarPtr, TxtPtr
         inc     hl                ;
         inc     hl                ;
-        ld      e,(hl)            ; 
+        ld      e,(hl)            ; DE = TxtAdr
         inc     hl                ;
-        ld      d,(hl)            ; DE = TxtAdr
-        ld      hl,(TXTTAB)       ; HL = Start of BASIC Program
-        rst     COMPAR            ; If TxtAdr < BASIC Start
-        jr      nc,INBUFC         ;   Copy String to Buffer
+        ld      d,(hl)            ;                                           Original Code
+        call    in_buffer         ; If TxtAdr is in a buffer                  0754  ld      hl,(TXTTAB)
+                                  ;                                           0755
+                                  ;                                           0756
+        jp      nc,INBUFC         ;   Force copy of literals                  0757  rst     COMPAR
+                                  ;                                           0758  jr      nc,INBUFC
+                                  ;                                           0759
         ld      hl,(STREND)       ; HL = End of Arrays
         rst     COMPAR            ; 
         pop     de                ; DE = StrDsc; Stack = VarPtr, TxtPtr
@@ -1460,6 +1462,7 @@ INPCOM: push    hl                ; Stack = VarPtr, TxtPtr
         rst     COMPAR            ;[M80] IS IN THE TEMPORARY STORAGE AREA (BELOW DSCTMP)
         jr      nc,DNTCPY         ;[M80] DON'T COPY IF ITS NOT A VARIABLE
         byte    $3E               ;[M80] SKIP THE NEXT BYTE WITH A "MVI A,"
+        ;; To assign a temporary string to a string variable
         ;; JP here with Stack = StrDsc, VarPtr, TxtPtr
 INBUFC: pop     de                ; DE = StrDsc; Stack = VarPtr, TxtPtr
         call    FRETMS            ; Free Temporary, but no StringSpace
@@ -1491,7 +1494,7 @@ ISGOSU: ld      c,e               ;[M80] GET COUNT INTO [C]
 LOOPON: dec     c                 ;[M80] SEE IF ENOUGH SKIPS
         ld      a,b               ;[M80] PUT DISPATCH CHARACTER IN PLACE
         jp      z,GONE2           ;[M80] IF DONE, GO OFF
-        call    SKPLOG            ;; + Skip Label or Line#                    0794  call    LINGET
+        call    skip_on_label     ;;  Skip Label or Line#                     0794  call    LINGET
         cp      ','               ;[M80] IS IT A COMMA?
         ret     nz                ;{M80} NO COMMA MUST BE THE END OF THE LINE
         jr      LOOPON            ;[M80] CONTINUE GOBBLING LINE #S
@@ -1505,7 +1508,7 @@ IFGOTO: cp      GOTOTK            ;[M80] ALLOW "GOTO" AS WELL
         dec     hl                ;
 OKGOTO: call    CHKNUM            ;[M65] 0=FALSE. ALL OTHERS TRUE
         rst     FSIGN             ;
-        jp      z,THENHK          ;; + Scan for ELSE                          07AB  jp      z,REM
+        jp      z,THENHK          ;; Scan for ELSE                            07AB  jp      z,REM
         rst     CHRGET            ;[M80] PICK UP THE FIRST LINE # CHARACTER
         jp      c,GOTO            ;[M80] DO A "GOTO"
         jp      GONE3             ;[M80] EXECUTE STATEMENT, NOT GOTO
@@ -2436,7 +2439,7 @@ QINLIN: ld      a,'?'             ;
         rst     OUTCHR            ;
         jp      INLIN             ;;;For relative jumps
 
-;;; Code Change: Replace Ancient DELETE code with improve backspace code
+;;; Code Change: Replace Ancient DELETE code with improved backspace code
 BSFIX:  or      a                 ;;If not at position 0                      ; 0D64
         jr      nz,BSFIN          ;;Do the backspace                          ; 0D65  
                                                                               ; 0D66   
@@ -2463,14 +2466,18 @@ LINLIN: dec     b                 ;[M80] AT START OF LINE?
         jr      nz,INLINC         ;
 INLINN: rst     OUTCHR            ;
 INLINU: call    CRDO              ;[M80] TYPE A CRLF
-INLIN:  ld      hl,BUF            ;
+INLIN:  call    get_linbuf_hl     ;                                           0D85  ld      hl,BUF
+                                  ;                                           0D86
+                                  ;                                           0D87
         ld      b,1               ;[M80] CHARACTER COUNT
         xor     a                 ;[M80] CLEAR TYPE AHEAD CHAR
 ;;;Code change: RUBSW no longer used
-        nop                                                                   ;       ld      (RUBSW),a
-        nop
-        nop
-INLINC: call    INCHRX            ; + Bypasss Ctrl-C check                    0D8E  call    INCHR
+        nop                       ;                                           0D8B  ld      (RUBSW),a
+        nop                       ;                                           0D8C
+        nop                       ;                                           0D8D
+INLINC: call    wait_key          ;; Bypasss Ctrl-C check                     0D8E  call    INCHR
+                                  ;                                           0D8F
+                                  ;                                           0D90
 INLNC1: ld      c,a               ;[M80] SAVE CURRENT CHAR IN [C]
         jp      ctrl_keys         ;; + Check for Extended Ctrl-Keys            0D92  cp      127 
                                   ;; +                                         0D93    
@@ -2519,7 +2526,9 @@ NTCTLX: cp      18                ;[M80] CONTROL-R?
         push    hl                ;[M80] SAVE [H,L]
         ld      (hl),0            ;[M80] STORE TERMINATOR
         call    CRDO              ;[M80] DO CRLF
-        ld      hl,BUF            ;[M80] POINT TO START OF BUFFER
+        call    get_linbuf_hl     ;[M80] POINT TO START OF BUFFER             0DDA  ld      hl,BUF
+                                  ;;                                          0DDB
+                                  ;;                                          0DDC
         call    STROUT            ;;Print It
         pop     hl                ;[M80] RESTORE [H,L]
         pop     de                ;[M80] RESTORE [D,E]
@@ -2528,7 +2537,7 @@ NTCTLX: cp      18                ;[M80] CONTROL-R?
 NTCTLR: cp      ' '               ;[M80] CHECK FOR FUNNY CHARACTERS
         jp      c,INLINC          ;
 GOODCH: ld      a,b               ;[M80] GET CURRENT LENGTH
-        cp      ENDBUF-BUF        ;[M80] ;Set Carry if longer than Buffer
+        cp      240               ;[M80] ;Set Carry if longer than Buffer     0DEA  cp      ENDBUF-BUF
         ld      a,7               ;[M80] GET BELL CHAR
         jp      nc,OUTBEL         ;[M80] NO CAUSE FOR BELL
         ld      a,c               ;[M80] RESTORE  CURRENT CHARACTER INTO [A]
@@ -4579,7 +4588,7 @@ CRDONZ: ld      a,(TTYPOS)        ;[M80] GET CURRENT TTYPOS
         jr      CRDO              ;[M80] DO CR
 ;;Terminate BUF and Print CR
 FININL: ld      (hl),0            ;[M80] PUT A ZERO AT THE END OF BUF
-        ld      hl,BUFMIN         ;[M80] SETUP POINTER
+        call    get_linbuf_addr   ;                                            19E5 ld      hl,BUFMIN
 CRDO:   ld      a,13              ;;Print Carriage Return
         rst     OUTCHR            ;
         ld      a,10              ;;Print Line Feed
