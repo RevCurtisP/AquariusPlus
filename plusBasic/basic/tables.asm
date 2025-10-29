@@ -242,12 +242,19 @@ FNJUMPS:
     dc $C200-$,$76
 
 _jump_table:
+; .
+; ******************************************************
+; * Extended ROM                                       *
+; * Running from paged memoty in bank 3 ($C000-$FFFF): *
+; *   LD   IY,label                                    *
+; *   CALL ext_call                                    *
+; ******************************************************
 ; <<Extended ROM>>
-    jp      get_linbuf_addr       ; Get Line Buffer Address
-    jp      get_strbuf_addr       ; Get String Buffer Address
-    jp      FLOAT_BC              ; Convert BC to unsigned float in FACC
-    jp      FLOAT_DE              ; Convert DE to unsigned float in FACC
-    jp      FLOAT_CDE             ; Convert CDE to unsigned float in FACC
+    jp      just_ret              ; C200 
+    jp      just_ret              ; C203 
+    jp      FLOAT_BC              ; C206 Convert BC to unsigned float in FACC
+    jp      FLOAT_DE              ; C209 Convert DE to unsigned float in FACC
+    jp      FLOAT_CDE             ; C20C Convert CDE to unsigned float in FACC
 _end_jump_table:
 
 ;===========================================================================

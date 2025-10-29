@@ -107,11 +107,19 @@ asm_basbuf_write_byte      equ $2247 ; 2247 Write byte to BASIC buffer
 asm_basbuf_write_bytes     equ $224A ; 224A Write bytes to BASIC buffer
 asm_basbuf_write_word      equ $224D ; 224D Write word to BASIC buffer
 
-asm_get_linbuf_addr        equ $C200 ; Get Line Buffer Address
-asm_get_strbuf_addr        equ $C203 ; Get String Buffer Address
-asm_FLOAT_BC               equ $C206 ; Convert BC to unsigned float in FACC
-asm_FLOAT_DE               equ $C209 ; Convert DE to unsigned float in FACC
-asm_FLOAT_CDE              equ $C20C ; Convert CDE to unsigned float in FACC
+asm_get_linbuf_addr        equ $2256 ; 2256 Get Line Buffer Address
+asm_get_strbuf_addr        equ $2259 ; 2259 Get String Buffer Address
+
+; ******************************************************
+; * Extended ROM                                       *
+; * Running from paged memoty in bank 3 ($C000-$FFFF): *
+; *   LD   IY,label                                    *
+; *   CALL ext_call                                    *
+; ******************************************************
+
+asm_FLOAT_BC               equ $C206 ; C206 Convert BC to unsigned float in FACC
+asm_FLOAT_DE               equ $C209 ; C209 Convert DE to unsigned float in FACC
+asm_FLOAT_CDE              equ $C20C ; C20C Convert CDE to unsigned float in FACC
 
 ; *****************
 ; * Auxiliary ROM *

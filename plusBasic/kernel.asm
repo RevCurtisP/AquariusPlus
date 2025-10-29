@@ -124,4 +124,8 @@ _jump_table:
     jp      just_ret              ; 2250
     jp      just_ret              ; 2253
 
+; <<Utility routines>>
+    jp      get_linbuf_addr       ; 2256 Get Line Buffer Address
+    jp      get_strbuf_addr       ; 2259 Get String Buffer Address
+
 _end_jump_table:

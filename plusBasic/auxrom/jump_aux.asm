@@ -1,7 +1,6 @@
 ;=====================================================================================
 ; Auxiliary ROM jump table - Starts at $C000
 ;=====================================================================================
-;;;ToDo: Add comments re: aux_call and update makeinc.py to parse them
 
 _jump_table:
 ; .
