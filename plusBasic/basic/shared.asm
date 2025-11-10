@@ -246,6 +246,12 @@ get_array_pointer:
     ld      (SUBFLG),a            ; Clear Arrays only flag
     ret
 
+
+paren_addr_len:
+    SYNCHKC '('
+    call    get_addr_len
+    jr      close_paren
+
 ; Returns C = Character
 get_char_parens:
     SYNCHKC '('
@@ -254,9 +260,7 @@ get_char_parens:
 ; Require Close Paren on Function
 ;-----------------------------------------------------------------------------
 close_paren:
-    ld      a,(hl)
-    cp      ','
-    jp      z,TOERR
+    call    no_more               ; TO Error if comma
     SYNCHKC ')'
     ret
 
@@ -319,7 +323,7 @@ get_byte:
     or      a                     ; Set Flags
     ret
 
-;-----------------------------------------------------------------------------
+;------------------------------------------------------11-----------------------
 ; Require comma, then parse integer
 ;-----------------------------------------------------------------------------
 get_comma_int:
@@ -445,17 +449,12 @@ get_par_page_addr_len:
 ;         Carry Set if page specified
 ;-----------------------------------------------------------------------------
 get_page_addr_len:
-    call    get_page_addr         ; Get Page and Address
+    call    get_page_addr         ; AF = Page, DE = Address
     push    af                    ; Stack = Page+Flag
-    push    de                    ; Stack = Address, Page+Flag
-    SYNCHKC   ','                 ; Require Comma
-    call    GETINT                ; Get Length
-    ld      b,d
-    ld      c,e                   ; BC = Length
-    pop     de                    ; DE = Address, Stack = Page+Flag
+    call    get_comma_len         ; BC = Len
     pop     af                    ; AF = Page+Flag
     ret
-    
+
 ;-----------------------------------------------------------------------------
 ; Parse Address, Length
 ; Output: BC = Length
@@ -464,13 +463,13 @@ get_page_addr_len:
 ;-----------------------------------------------------------------------------
 get_addr_len:
     call    GET_POS_INT           ; DE = Address
+get_comma_len:
     push    de                    ; Stack = Address, Page+Flag
     call    get_comma_byte        ; DE = Length
     ld      b,d
     ld      c,e                   ; BC = Length
     pop     de                    ; DE = Address, Stack = Page+Flag
     ret
-
 
 ;-----------------------------------------------------------------------------
 ; Parse Byte Operand followed by optional TO and second operand
@@ -604,6 +603,8 @@ get_byte32:
     or      a
     ret
 
+skip_get_byte64:
+    rst     CHRGET
 ;-----------------------------------------------------------------------------
 ; Parse Byte 0 - 15
 ; Output: A,E = Nybble
@@ -680,6 +681,8 @@ get_char:
     ld      c,a
     ret
 
+skip_get_int512:
+    rst     CHRGET
 ;-----------------------------------------------------------------------------
 ; Parse 9 bit Integer
 ; Output: DE = Integer
@@ -700,7 +703,7 @@ get_int512:
 get_int4096:
     call    GET_POS_INT           ; DE = Integer
     ld      a,d
-    cp      16                     ; If not 0-4095
+    cp      16                    ; If not 0-4095
     ret     c
     jp      FCERR
 
@@ -738,8 +741,6 @@ parse_color:
     SYNCHKT COLTK
     SYNCHKT ORTK                  ; Require COLOR
     jp      get_byte16
-
-
 
 ; Parse COLOR fgcolor,bgcolor
 parse_colors:
@@ -802,7 +803,6 @@ check_on_off:
     SYNCHKT OFFTK                 ;   Require OFF
     xor     a                     ;   Return 0 with flags set
     ret
-
 
 get_comma_stringvar:
     call    get_comma
@@ -947,4 +947,10 @@ write_bcde2hl:
     inc     hl
     ld      (hl),d                ; Write StrAdr to array entry
     inc     hl
+    ret
+
+skip_dollar_paren:
+    rst     CHRGET
+    SYNCHKC '$'   
+    SYNCHKC '('
     ret

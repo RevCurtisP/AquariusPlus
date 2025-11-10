@@ -1,182 +1,93 @@
 # plusBASIC Release History
- - v0.27o (2025-10-??)
-    - Moved _lookup_file_ in _basfile.asm_ from to _bas_lookup_prog_ in _fileaux.asm_
-    - Jump directly to _main_ctrl_c, _skip_label_, _skip_on_label_ instead of through jump table
-    - Directly call _main_ext_, _wait_key_, instead of through jump table
-    - Modified _INPCOM_, _INLIN_, _EDENT_, and _CRUNCH_ to check for/use 256 byte input buffer
+ - v0.27p (2025-11-09)
+   - Added `SET SPRITE #spritlenum ...`, `GETSPRITE()`, `GETSPRITEX()`, `GETSPRITEY()`
+ - v0.27o (2025-10-29)
     - Ignore Delete key in direct mode and `INPUT`
-    - Write direct mode commands to command line history buffers.
  - v0.27n (2025-10-23)
-   - Moved  _byte_to_dec_fast_, _div_a_16_, _div_a_8_, _div_a_4_, and _mult_c_10_ from _color.asm_ to _misc.asm_ 
-   - Deleted orphaned routines _rgb_to_asc_ and _rgb_to_dec_ ftom _color.asm_
-   - Moved _clear_array_ from _enhanced,asm_ to _arrayaux.asm_
-   - In _evalext.asm_, replaced conversiop loop in _hex_to_asc_ with call to _aux_eval_hex_
-   - In _evalext.asm_, replaced _get_hex_ call in , with _aux_hex_to_byte_ call and removed routine _get_hex_
-   - Moved core code from _\_escaped_ in _evalext.asm_ to _aux_escaped_string_ in _evalaux,asm_
-   - Moved _aux_asc_to_hex_, _aux_byte_to_hex_, _aux_hex_to_asc_, _aux_hex_to_byte_, and _aux_get_hex_ from _basicaux.asm_ to _evalaux.asm
-   - Moved _VMOVE_ from _basic80.asm_ to _aqplusbas.asm_
-   - Moved _copy_literal_string_ from _evalext.asm_ to evalaux.asm_
+    - Various internal code changes
  - v0.27m (2025-10-21)
-   - Moved _outdo_hook_ from _text80.asm_ to _hooks.asm_, jump directly to it instead of through table
-   - Moved _clear_hook_ in _extended.asm_ to _ST_NEW_ in _enhanced.asm_, jump through _exec_next_statement_ instead of UDF hook
-   - Moved _clear_extension_ from _hooks.asm_ to _enhanced.asm_, and `CALL` directly instead of jumping through table
-   - Jump directly to _FN_ATN_ instead of through table from _ATN_ in _sbasic.asm_
-   - Move _read_extension_ from _arrays.asm_ to _ST_READ_ in _enhanced.asm_, removes jump through table
-   - Jump directly to _dim_extension_, isvar_extension,  _let_extension_ instead of through table.
-   - Renamed _\_check_comment_ to _check_for_comment_ and jump to directly instead of through table
+    - Various internal code changes
  - v0.27l (2025-10-19)
    - Added `SET KEY REPEAT ON/OFF` to enable/disable Direct Mode key repeat, `GETKEYRPEAT` to return status
    - Key repeat now disabled on cold or warm boot
    - Added `KEY REPEAT ON/OFF` to enable/disable key repeat during program execution
    - `^K`, `^L`, `^N`, `^O` now ignored during `INPUT`
-   - _pause_jiffies_ returns Carry Set if interrupted by Ctrl-C 
    - `PAUSE jiffies` clears key buffer only if interrupted by Ctrl-C
-   - Internal code changes
-     - Consolidated all `__` and `_` routines in _paged.asm_
-     - Moved `HEX$()` core code, _scale_xy_ into AuxROM
-     - Removed orphan code from _basfile.bas_
-     - Replaced occurances of `call aux_call:pop hl:ret` with `jp aux_call_popret`
-     - Replaced occurances of `call aux_call:jp _pop_hl_doserror` with `jp _aux_call_hl_error`
-     - Replaced occurances of `ld hl,(FACLO):call string_addr_len` with `call faclo_addr_len`
-     - Replaced occurances of `rst CHRGET:call GETBYT` with `call skip_get_byte`
-     - Added label `PFRNEW` to sbasic.asm, replaced `pop de:call FRETMP:jp PUTNEW` with `jp PFRNEW`
-     - Added label `FRENEW` to sbasic.asm, replaced `call FRETMP:jp PUTNEW` with `jp FRENEW`
-     - Replaced reference to bit flag `BASCRNCLR` in `BASYSCTL` with `SCRCOLOR` in `SCREENCTL` in `FN_GETCOLOR`
  - v0.27k (2025-10-08)
-   - Replaced calls to _aux_call_inline_ with _aux_call_ and removed _aux_call_inline_
-   - Replaced occurances of `push hl:ld bc,LABBCK:push bc` with `call push_hl_labbck`
-   - Debugged _alloc_temp_buffer_, replaced _get_strbuf_addr_ calls in _FN_ARG_, _FN_CD_, _eval_list_, _\_escaped_, and _oper_stringsub_
    - Added `String formula too complex` error on nested `EVAL()`
  - v0.27j (2025-10-01)
-   - Moved temporary sysvars from `RNDTAB` to `FILNAM`+`FILNAF`, `RESMO`-`RESLO`
-   - Moved PT3 control routines from _util.asm_ (SysROM) to _sound.asm_ (AuxROM) and renamed from _pt3..._ to _track..._
-   - Added system variable `TMPBUFTOP` and routines _alloc_temp_buffer_ and _free_temp_buffer_
+    - Various internal code changes
  - v0.27i (2025-09-28)
-   - Fixed assignment of sysvar `DEFTK` in _sbasic.asm_ and added `VARDEF(*array)`
+   - Added `VARDEF(*array)`
    - Added `,ASC` opttion to `SAVE filespec$,*array$`
-   - Replaced `SRA` with `SRL` in _div_a_16_, _div_a_8_, and _div_a_4_ to fix `RGB(rgb$,delimiter)`
    - Added `LIST *array$` and `LLIST array$` ro print contents of a string array.
    - Added new syntax `GETPALETTE$(palnum,index)` to return a single palette entry
    - Added `APPEND INTLIST`, `APPEND RGBLIST`, `APPEND TILELIST`, `APPEND ATTRLIST`, `APPEND BYTELIST`, and `APPEND PALETTELIST`
  - v0.27h (2025-09-21)
    - Printing `CHR$(11)` now disables color printing mode.
-   - Moved _buffer_read_ and _buffer_write_ routines from `aqplusbas.asm` to new file `buffer.asm`
-   - Moved _basbuf_read_ and _basbuf_write_ routines from `basbuf.asm` to 0`buffer.asm`
    - `NEW` and `LOAD` basic progran clear run arguments returned by `ARGS` and `ARGS$`
    - Added parsing of delimited decimal RGB string to `RGB()` and `RGB$`
  - v0.27g (2025-09-12)
    - `SAVE SCREEN` _file_save_screen_ now defaults to writing only Screen RAM and Color RAM.
    - Added trailing options `PALETTE` and `BORDERMAP` to `SAVE SCREEN` and write options parameter to _file_save_screen_
-   - Remap border byte is now written as either `$00` or `$FF`
-   - Add unit tests to _ss.bas_
  - v0.27f (2025-09-09)
    - Added `SET SOUND FAST ON/OFF`, `GETSOUNDFAST`, _set_soundfast_, and _get_soundfast_
-   - Deleted deprecated include file _sbasic.inc_
-   - Removed spurious label _gfx_jump_table_ causing corrupted _aqplus.inc_ and _aqplus_asm.inc_ to be generated
-   - Renamed _screen_read_string_ and _screen_write_string_ to _screen_read_bytes_, _screen_write_bytes_
-   - Renamed _color_read_string_ and _color_write_string_ to _color_read_bytes_, _color_write_bytes_
  - v0.27e (2025-08-31)
-   - Moved bit flags `GFXM_TEXT`,`GFXM_WIDE`,`GFXM_1BPP`, and`GFXM_4BPP` to new system variable `GFX_FLAGS`
+    - Various internal code changes
  - v0.27d (2025-08-21)
    - Fixed Ctrl-C during `INPUT` not causing `BREAK`
  - v0.27c (2025-08-21)
-   - Added _page_call_ to kernel jump table
    - Removed extended palette modes from _file_load_palette_ and _file_save_palette_
-   - Removed `ASC`/`HEX`/`RGB` mode from `SAVE PALETTE` and `LOAD PALETTE`\
+   - Removed `ASC`/`HEX`/`RGB` mode from `SAVE PALETTE` and `LOAD PALETTE`
    - Added argument format `RRGGBB`  to `RGB$()`
  - v0.27b (2025-07-07)
    - Added file types `hex` and `rgb` to _file_load_palette_ and _file_save_palette_
    - Added `,HEX` and `,RGB` options to `LOAD PALETTE` and `SAVE PALETTE`
    - Added function `FGBDEC$()`
    - Moved `LOAD PALETTE` and `SAVE PALETTE` to _sp.baq_ and added tests for `HEX`, `ASC`, and `RGB`
-   - Refactored only `call gfx_call_inline` and removed routine _gfx_call_inline_
  - v0.27a (2025-05-25)
-   - Renamed _ptrget_hook_ to _ptrget_ext_ and moved to AuxROM, with stub in SysROM
-   - Changed _trap_error_ and _ptrget_ext_ from jump table entries to direct calls
-   - Added tokens `RAN` and `DOM`
    - Changed `OPEN var TO filespec$ FOR mode` to `OPEN filespec$ FOR mode AS var`
-   - Debugged _dos_open_random_, _write_file_, 
    - Implemented _dos_tell_, `FILEPOS()`, and `SET FILE .. POS TO ...`
-   - Moved `OPEN` core code to AuxROM and implemented mode `RANDOM` in `OPEN`
+   - Added mode `RANDOM` to `OPEN`
    - Added (not debugged) statement `PUT CHR` and kernel routine _page_skip_write_
-   - Moved plusBASIC extended error calls to now deprecated `STMDSP`
-   - Fixed error on hex digits `A`-`F` in aux_cvt_hex
  - v0.25e (2025-05-19)
-   - Fixed ".dev" minor version evaluation in _version_to_long_
-   - Moved `VER()` and `VER$()` core code to auxiliary ROM
-   - Modified _s3_string_ext_ and wrapped in _aux_call_
+    - Various internal code changes
  - v0.25d (2025-05-18)
    - Fixed _Type mismatch error_ in `BYTE()`
    - Added function `CHECKDIR()` and kernel routine _file_check_ver_
    - Hex literals, `DEC()` and `HEX$()` now support longs
    - Added statement `CHECK VER`
    - `VER()` evaluates `.dev` as higher than `.99` (the current highest major or minor version number)
-   - Renamed kernel routines and moved to Auxiliary ROM
-     - _esp_get_version_ to _get_system_version_
-     - _sys_ver_plusbasic_ to get_plusbas_version
-     - _sys_num_ver_ to _version_to_long_
-   - Moved utility routines _asc_to_bcd_, _bcd_to_bin_, and _mult_hl_10_  from System ROM to Auxiliary
-   - Refactored routines _s3_ctrl_keys_, s3_stuffh_ext_, _s3_string_ext_ to be used with _aux_call_
-   - Added jump table address to comments in _kernel.asm_ to verify that the jump points don't accidentally change
  - v0.25c (2025-05-04)
-   - Replaced bit flags `BASCHRMOD` and `BASCHRMOD` in `BASYSCTL` with `SCRCHRMOD` and `SCRCHRMOD` in `SCREENCTL`
+    - Various internal code changes
  - v0.25b (2025-05-03)
-   - Replaced all calls to _float_signed_byte_ with calls to _FLOAT_, removed _float_signed_byte_
-   - Renamed labels `FN_PT3`, `PT3_BUFFR`, `PT3_LOOPS`, `PT3TK`, `ST_LOOP_PT3`, `ST_PAUSE_PT3`, `ST_PLAY_PT3`, `ST_RESUME_PT3`,
-      `ST_SET_PT3`, `ST_STOP_PT3`, and `_play_pt3` 
-      with `FN_TRACK`, `TRK_BUFFR`, `TRK_LOOPS`, `TRKTK`, `ST_LOOP_TRACK`, `ST_PAUSE_TRACK`, `ST_PLAY_TRACK`, `ST_RESUME_TRACK`,
-      `ST_SET_TRACK`, `ST_STOP_TRACK`, `__play_track`
+    - Various internal code changes
  - v0.25a (2025-04-30)
    - Fixed `Illegal quantity error` in `DEF SPRITE (rows,columns),spritle`
    - Added functions `CURSOROFFSET`, `CURSORX`, `CURSORY`
-   - Moved bit flag _SCRCOLOR_ from _BASYSCTL_ to _SCREENCTL_
-   - Added unit tests to _sg.bas_ (screen graphics)
  - v0.25 (2025-04-23)
-   - Forked _s3basic.asm_ to plusBASIC specific _sbasic.asm_ and inlined into _aqplusbas.asm_
-   - Renamed macro `SYNCHK` to `SYNCHKC`, added `SYNCHKT`
-   - Refactored `rst SYNCHKC` calls to `SYNCHKC` or `SYNCHKT`
+    - Various internal code changes
  - v0.24l (2025-04-15)
    - Implemented AqExec load to and run from paged RAM 
    - Added paged RAM destination to `CALL`
    - Fixed `PUT SCREEN` generating _Illegal quantity error_
-   - Replaced UDF hook in `ATN` with direct jump
-   - Replaced UDF hooks in `OUTDO` and `TTYCHR`/`TTYCH` with direct jump. Moved hook code from AuxROM to SysROM
-   - Ensured that Extended ROM is paged in for direct jumps that replaced UDF hooks
  - v0.24k (2025-04-07)
-   - Updated `AQPLUS` Resource file chunk header formet and AqExec example _asm/hello.asm_
-   - Implemented RUNing AqExec programs
-   - Refactored `LINE INPUT` code
    - Fixed `PLAY SAMPLE` and ^G warm boot infinite loop
    - `print_string_immd` now preserves HL
-   - Updated _makeinc.py_ and regenerated assembly include files
  - v0.24j (2025-03-28)
    - SAVE routines no longer close all files
    - Fixed `OPEN`, `FILEATTR()`, `READ KEYS`
    - Added `OPEN ... APPEND`, `CLOSE #channel`, `READ #channel,var$,length`, `WRITE #channel,^var$`
-   - Moved `play_sample` to auxiliary ROM, add `play_sample` to kernel jump table
    - Temporarily disable turbo mode during `Ctrl-G` beep and `PLAY SAMPLE`
-   - Replaced assembly routine `GET_STRING` with `FRMSTR`, added routine `PARSTR`
-   - Replaced calls to:
-     - `FRMEVL`+`CHKSTR` with `FRMSTR`
-     - `FRMPRN`+`GETYPE` with `FRMPRT`
-     - `PARCHK`+`CHKSTR` with `PARSTR`
-   - Renamed _fileaux.asm_ to _filemisc.asm_
  - v0.24i (2025-03-27)
-   - Replaced UDF hooks 0, 35 through 45 with direct jumps
-   - Deleted deprecated routine `aux_rom_call`
+    - Various internal code changes
  - v0.24h (2025-03-26)
-   - Moved `FN_KEY` and `FN_MOUSE` core code into auxiliary ROM
-   - Renamed kernel routine `key_read_ascii` to `key_read` and removed kernel routine stub `key_read_scan_code`
-   - Moved kernel routines `key_clear_fifo`, `key_read`, and `key_set_keymode` from _keyread.asm_ to _aqplusbas.asm_
-   - Moved kernel routine `key_pressed` from _keyread.asm_ to _auxrom/misc.asm_ and deleted file _keyread.asm_
    - Modified `FN_KEY` to take string of keycodes instead of ASCII codes and return position in string of key pressed
    - Added `REPEAT` and `UNTIL` tokens, `PAUSE UNTIL` statement, kernel routine `bool_setbit_long`
  - v0.24g (2025-03-16)
    - Renamed and added `JOYx()` functions. Allowed controller id as argument to `JOYxx()` functions
  - v0.24f (2025-03-10)
    - Added `OFFSET()`
-   - Moved `move_cursor` into AuxROM, split screen offset calculation code into `cursor_offset`.
-   - Moved `DATE`+`TIME`, `MOUSEx`, `JOIN`, and `SPLIT` core code into AuxROM.
  - v0.24e (2025-03-08)
    - Key read logic rewritten to mimic original INKEY$ logic
    - Added `CLEAR KEYS` statement, `%` binary numeric literals
@@ -188,36 +99,27 @@
    - Added `String length` error
    - Added `RESET SPRITE` with `Empty string` and `String length` errors
    - Fixed `Syntax arror` on negative numbers after `DIM var()=`
-   - Moved `_get_rgb` core code and `sprite_set_pos` from Extended ROM to Auxiliary ROM
  - v0.24c (2025-02-17)
    - Added `DEF SPRITE def$=(cols,rows),spritle`
-   - Fixed SET FNKEY rebooting when string is too long
+   - Fixed `SET FNKEY` rebooting when string is too long
  - v0.24b (2025-02-16)
    - Fixed `SET TILE TO CHR` statement
    - Added `SET TILE *array$`
    - Added `DEF SPRITE def$=^var$`, unimplemented `DEF SPRITE def$=(w,h),s`
    - `SET SPRITE` generates _Empty string error_ if spritedef = ""
    - Removed undocumented `OPEN()` function
-   - Moved _GETYPE_ into, added _FRMTYP_, _FRMPRS_, _FRMPRT_, _PARTYP_, _FRMSTR_ to S3BASIC
-   - Removed routines _parchk_getype_, _frmeval_getype_, _skip_frmprn_getype_, _skip_frmprn_getyp_, _frmprn_getype_
-   - `parse_colors` generates _Missing Operand_ error instead of _Syntax error_
-   - Added routines _get_strbuf_addr_no_bc_, _fretms_addr_len_
  - v0.24a (2025-02-09)
     -Fixed display of plusBASIC version on boot screen
  - v0.24 (2025-02-09)
    - Color cycle screen skipped if `/system/plusbasic/_skipsplash` exists
    - `DEF ATTRLIST` now allows string operands.
-   - Changed all internal graphic kernel calls to use gfx_call instead of aux_call
-   - Moved ST_SPLIT core code into `basicaux.asm`
-   - Added tests to aqpunit/sg.bas and linked into test chain
-   - Changed aqpunit/sx.bas to match plusBASIC last user page change
  - v0.23u (2025-02-02)
-   - Fixed PAD$() overwriting string variables
+   - Fixed `PAD$()` overwriting string variables
    - Added `PRINT @()`, `SET CURSOR ON/OFF`, `GETCURSOR`
    - Added `SET BORDER CHR/COLOR`, `RESET BORDER`
    - Added `GETBORDERCHR`, `GETBORDERCHR$`, `GETBORDERCOLOR`, `GETBORDERCOLOR$`
  - v0.23t (2025-02-01)
-   - Added DUMP VARS
+   - Added `DUMP VARS`
  - v0.23s (2025-01-26)
    - Implemented `UPR()`, `UPR$()`, `LWR()`, `LWR$()`, `UPRKEY`, `UPRKEY$`, `LWRKEY`, `LWRKEY$`
    - Implemented `BIT(string,bit#)`
@@ -230,7 +132,6 @@
    - `DEF RGBLIST`, `RGB()`, and `RGB$()` now accept 3 byte binary string of 8-bit R,G,B values
    - Added `LEN(*array)` which returns length in bytes of data portion of array.
    - Added `COPY *array TO ...`, `COPY ... TO *array`, and `COPY *array TO *array`
-   - ROM load routine executes `esp:boot.bin` instead of `/boot/bin`
  - v0.23q (2024-11-29)
    - Removed `SGNINT()`, added `INT(string$)` and `INT(string$,offset)`
    - `RGB()`, `RGB$()`, and `DEF RGBLIST` now accept 8-bit RGB binary string operands
@@ -248,7 +149,6 @@
  - v0.23n (2024-10-25)
   - Added statement `SET TRACK SPEED herz` and function `TRACKSPEED`
   - Added Ctrl-U sets Unlimited Turbo while program is running
-  - Copied JOY() assembly code to AuxROM routine `read_gamepad`
   - Embedded SYSROM filename at $2FF0
  - v0.23m (2024-10-21)
    - Implemented `PAUSE jiffies`
@@ -259,63 +159,50 @@
    - Breaking change
      - Keyword `PT3` has been changed to `TRACK`
    - `READ *var$` now parses quoted strings correctly.
-   - DIM `var$(...)=` requires quoted strings unless string is empty
+   - `DIM var$(...)=` requires quoted strings unless string is empty
  - v0.23j (2024-10-18)
    - Breaking changes
      - `FILL BITMAP BYTE` is now `FILL BITMAP BYTES`
      - `FILL BYTE` is now `FILL BYTES`
      - `FILL WORD` is now `FILL WORDS`
-   - Added BYTE(), WORD(), and WORD$() functions
-   - S3 BASIC CONINT routine now allows signed numbers (-256 through 255)
-   - Fixed DEC() Overflow error when argument is not a literal string
-   - Fixed ASC$() corrupting argument contents
-   - var$[...] now returns a temporary so that FRETOP won't get clobbered
+   - Added `BYTE()`, `WORD()`, and `WORD$()` functions
+   - Fixed `DEC() `Overflow error when argument is not a literal string
+   - Fixed `ASC$()` corrupting argument contents
  - v0.23i (2024-10-09)
-   - Added ATTR(), ATTR$()
-   - Implemented GETCOLOR
+   - Added `ATTR()`, `ATTR$()`
+   - Implemented `GETCOLOR`
  - v0.23h (2024-09-23)
-   - Added ENDKEY, FILESTATUS$(), FILEDATETIME$(), FILEATTR(), and FILELEN()
-   - Added optional position argument to ASC()
-   - Modified enhanced INPUT to exit on Ctrl-X, Tab, Back-Tab, Cursor-Up, and Cursor-Down
+   - Added `ENDKEY`, `FILESTATUS$()`, `FILEDATETIME$()`, `FILEATTR()`, and `FILELEN()`
+   - Added optional position argument to` ASC()`
+   - Modified enhanced `INPUT` to exit on Ctrl-X, Tab, Back-Tab, Cursor-Up, and Cursor-Down
  - v0.23g (2024-09-18)
-   - Fixed get_byte 64 which was causing DEF SPRITE to error on spritle 63 
-   - Added PAD token to bas2baq.py and baq2bas.py
-   - Added AqExec file support to RUN file
+   - Fixed `DEF SPRITE` to error on spritle 63 
+   - Added `AqExec` file support to `RUN file`
  - v0.23f (2024-09-13)
-   - Added TILEOFFSET()
-   - Changed `get_color_args` calls to `get_screen_colors` and remove `get_color_args` routine
+   - Added `TILEOFFSET()`
    - Changed `CLEAR COLOR` to `CLS COLOR {_fg_,_bg_}`
-   - `CHR` and `ATTR` options to `COPY SCREEN TO...` and `COPY ... TO SCREEN`
-   - Wrote unit test `cs.baq` to test COPY SCREEN statements
-   - Modified `ss.baq` to use COPY SCREEN and enabled `OUT` port restrictions
+   - Added `CHR` and `ATTR` options to `COPY SCREEN TO...` and `COPY ... TO SCREEN`
+   - Enabled `OUT` port restrictions
  - v0.23e (2024-09-07)
-   - Fixed file_load_paged executing random code when loading files over 65535 bytes
-   - Added test to sl.baq for loading large files to paged RAM
+   - Various internal code changes
  - v0.23d (2024-09-06)
-   - Fixed PEEKSCREEN() and PEEKCOLOR() for both 40 and 80 column mode
-   - Refactored screen_read_byte, screen_write_byte, color_read_byte, and color_write_byte
-   - Rewrote PEEKSCREEN$() PEEKCOLOR$(), color_read_string, and color_write_string
-   - Added unit tests front end `au.baq` and unit test program `ps.baq`
+   - Fixed `PEEKSCREEN()` and `PEEKCOLOR()` for both 40 and 80 column mode
  - v0.23c (2024-09-01)
-   - Enabled SET BREAK ON/OFF
-   - Fixed PEEK$ Syntax error
-   - Added ASC option to SAVE/LOAD PALETTE.
-   - Added FAST option to COPY SCREEN TO ... and COPY ... TO SCEEN
+   - Enabled `SET BREAK ON/OFF`
+   - Fixed `PEEK$()` Syntax error
+   - Added `ASC` option to `SAVE/LOAD PALETTE.`
+   - Added `FAST` option to `COPY SCREEN TO ...` and `COPY ... TO SCEEN`
    - Added `CLEAR COLOR`
-   - Fixed page_read_paged and page_write_paged to return next paged address
-   - Fixed FILL TILEMAP out of bounds error checking
-   - Added continuous chain option to unit tests
  - v0.23b (2024-08-28)
-   - Added extended memory addressing (!long) to 
-     - COPY, COMPARE()
-     - FILL BYTE, FILL WORD, 
-     - LOAD, SAVE
-     - POKE, PEEK(), PEEK$(), DOKE, DEEK
-     - PLAY SAMPLE
-   - Moved gfx/screen.asm to auxrom/screen.asm
-   - Implemented COPY @page,address TO SCREEN
-   - Fixed ARGS always returning 0,ARGS$() crashing system.
-   - Fixed DIR returning wrong file size
+   - Added extended memory addressing `!long` to 
+     - `COPY`, `COMPARE()`
+     - `FILL BYTE`, `FILL WORD`
+     - `LOAD`, `SAVE`
+     - `POKE`, `PEEK()`,`PEEK$()`,`DOKE`, `DEEK`
+     - `PLAY SAMPLE`
+   - Implemented `COPY @page,address TO SCREEN`
+   - Fixed `ARGS` always returning 0, `ARGS$()` crashing system.
+   - Fixed `DIR` returning wrong file size
  - v0.23a (2024-08-26)
    - Fixed LOAD BITMAP incorrectly loading 9192 byte legacy bitmaps.
    - Fixed unit test for legacy bitmaps

@@ -58,8 +58,8 @@ _jump_table:
     jp      just_ret              ; C081 
     jp      screen_read_byte      ; C084 Read byte from screen
     jp      screen_write_byte     ; C087 Write byte to screen
-    jp      screen_read_bytes    ; C08A Read string from Screen RAM
-    jp      screen_write_bytes   ; C08D Write string to Screen RAM
+    jp      screen_read_bytes     ; C08A Read string from Screen RAM
+    jp      screen_write_bytes    ; C08D Write string to Screen RAM
     jp      just_ret              ; C090 
     jp      just_ret              ; C093 
     jp      screen_read_paged     ; C096 
@@ -70,8 +70,8 @@ _jump_table:
     jp      just_ret              ; C0A5 
     jp      oolor_read_byte       ; C0A8 Read byte from Color RAM
     jp      color_write_byte      ; C0AB Write byte to Color RAM
-    jp      color_read_bytes     ; C0AE Read string from Color RAM
-    jp      color_write_bytes    ; C0B1 Write string to Color RAM
+    jp      color_read_bytes      ; C0AE Read string from Color RAM
+    jp      color_write_bytes     ; C0B1 Write string to Color RAM
     jp      just_ret              ; C0B4 
     jp      just_ret              ; C0B7 
     jp      just_ret              ; C0BA 
@@ -122,16 +122,16 @@ _jump_table:
     jp      just_ret              ; C138 
     jp      just_ret              ; C13B 
     jp      just_ret              ; C13E 
-; sprite_aux.asm
-; currently subject to change
-; in auxrom
+; sprite_aux.asm <<Sprite Definition and Manipulation>>
     jp      sprite_define         ; C141 
     jp      sprite_defrect        ; C144 
     jp      sprite_set_attrs      ; C147 
     jp      sprite_get_attrs      ; C14A 
     jp      spritle_set_pos       ; C14D 
     jp      spritle_get_pos       ; C150 
-    jp      spritle_string_attrs  ; C153 
+    jp      spritle_set_props     ; C153 
+    jp      spritle_get_props     ; C153 
+    jp      spritle_string_attrs  
     jp      spritle_reset         ; C156 
     jp      spritle_reset_all     ; C159 
 ; in extrom

@@ -1,5 +1,5 @@
 ;~===========================================================================~
-; Text Screen Auxilliary ROM Routines
+; Text Screen Auxiliary ROM Routines
 ;
 ; LD IY,_routine_name_
 ; CALL AUX_CALL

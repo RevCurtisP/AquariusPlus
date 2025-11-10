@@ -411,8 +411,17 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <input disabled="disabled" type="checkbox" />
         <strong>GETSPEED</strong> - Return current turbo setting.<!--system--></li>
       <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>GETSPRITE(<em>spritle</em>)</strong> - Return spritle properties.<!--sprites--></li>
+      <li class="task-list-item">
         <input disabled="disabled" type="checkbox" checked="checked" />
-        <strong>GETSPRITE$(<em>spritedef</em>)</strong> - Return attributes of each spritle in the spritedef.<!--sprites--></li>
+        <strong>GETSPRITE$(<em>spritedef</em>)</strong> - Return properties of each spritle in the spritedef.<!--sprites--></li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>GETSPRITEX(<em>spritedef</em>|<em>spritle</em>)</strong> - Return sprite or spritle x-position.<!--sprites--></li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>GETSPRITEY(<em>spritedef</em>|<em>spritle</em>)</strong> - Return sprite or spritle y-position.<!--sprites--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" checked="checked" />
         <strong>GETTILE$(<em>tileno</em>)</strong> - Return tile pixels.<!--tile--></li>
@@ -891,7 +900,10 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>SET SPEED <em>speed</em></strong> - Set turbo mode.<!--system--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>SET SPRITE <em>spritedef</em> {ON|OFF} {POS <em>x</em>,<em>y</em>}   </strong> - Set sprite properties.<!--sprites--></li>
+        <strong>SET SPRITE #<em>spritle</em> {ON|OFF} {POS <em>x</em>,<em>y</em>}   </strong> - Set spritle properties.<!--sprites--></li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>SET SPRITE #<em>spritle</em> TO <em>props</em></strong> - Set combined spritle properties.<!--sprites--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" checked="checked" />
         <strong>SET SPRITE <em>spritedef</em> TILECLIP *<em>array</em>|^<em>strvar</em></strong> - Set sprite to tile indexes and properties in tilemap clip.<!--sprites--></li>

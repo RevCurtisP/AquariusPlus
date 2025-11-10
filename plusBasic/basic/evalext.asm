@@ -104,7 +104,6 @@ eval_hex:
     ld      e,$CD             ; Make LSB CD
     jr      .hex_loop
 
-;; ToDo: call aux_hex_to_asc
 hex_to_asc:
     call    faclo_addr_len        ; BC = ArgLen, DE = ArgAdr, HL = ArgDsc
     ld      a,c                   ; A = ArgLen
@@ -512,8 +511,7 @@ eval_dim:
     ld      a,(hl)
     cp      ','                   ; If Comma
     jr      nz,.no_dimnum
-    rst     CHRGET                ; Skip comma
-    call    GETBYT                ; E = DimNum
+    call    skip_get_byte         ; E = DimNum
 .no_dimnum
     SYNCHKC ')'                   ; No comma for now
     ld      a,e                   ; A = DimNum
@@ -559,9 +557,7 @@ eval_end:
 ; LIST(NEXT) - Detokenize following Line
 ;-----------------------------------------------------------------------------
 eval_list:
-    rst     CHRGET                ; Skip LIST
-    SYNCHKC '$'                   ; Require $
-    SYNCHKC '('                   ; Requite (
+    call    skip_dollar_paren     ; Require $(
     ld      bc,free_temp_buffer
     push    bc                    ; Stack = FunRtn, RtnAdr
     cp      NEXTK

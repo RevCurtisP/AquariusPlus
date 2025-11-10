@@ -102,9 +102,7 @@ FN_GETCHR:
 ; PRINT HEX$(GETCHRDEF$(127))
 ; PRINT HEX$(GETCHRDEF$('@'))
 FN_GETCHRDEF:
-    rst     CHRGET                ; Skip DEF
-    SYNCHKC '$'                   ; Require '$'
-    SYNCHKC '('                   ; Require (
+    call    skip_dollar_paren   ; Require $(
     call    get_char              ; A = ChrASC
     ld      b,a                   ; B = ChrASC
     SYNCHKC ')'                   ; Require )
@@ -119,7 +117,7 @@ FN_GETCHRDEF:
 ; USE CHRSET 0:PRINT GETCHRSET
 FN_GETCHRSET:
     rst     CHRGET                ; Skip SET
-    call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAd
+    call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
     ld      iy,bas_get_chrset
     call    gfx_call
     jp      FLOAT                 ; Float an return result
@@ -321,14 +319,6 @@ _copy_screen
     pop     af                    ; A = PgFlg; Stack = ScrSfx, RtnAdr
     pop     bc                    ; B = ScrSfx; Stack = RtnAdr
     jr      gfx_call_preserve_hl
-
-;-----------------------------------------------------------------------------
-; COPY TO SCREEN - Copy Screen RAM to paged memory
-; COPY @page,address TO SCREEN
-;-----------------------------------------------------------------------------
-;; ToDo: Implement this (will need to mod ST_COPY in enhanced.asm)
-; COPY @32,0 TO SCREEN
-    ret
 
 ;-----------------------------------------------------------------------------
 ; RESET SCREEN - Reset current text screen to default settings
@@ -548,7 +538,7 @@ ST_GET_TILEMAP:
     call    scan_rect             ; B = BgnCol, C = EndCol, D = BgnRow, E = EndRow
     ld      iy,tilemap_get
 _do_get:
-    SYNCHKC ','                   ; Require comma
+    call    get_comma             ; Require comma
     push    de                    ; Stack = Rows, RtnAdr
     push    bc                    ; Stack = Cols, Rows, RtnAdr
     cp      MULTK                 ; If *
@@ -649,7 +639,7 @@ ST_PUT_TILEMAP:
     call    SCAND                 ; C = Col, E = Row
     ld      iy,tilemap_put
 _do_put:
-    SYNCHKC ','                   ; Require comma
+    call    get_comma             ; Require comma
     push    de                    ; Stack = Row, RtnAdr
     push    bc                    ; Stack = Col, Row, RtnAdr
     cp      MULTK                 ; If *
@@ -752,8 +742,7 @@ _tilemap_offset:
     SYNCHKT SETTK                 ; Require SET
     call    get_int512            ; DE = X-position
     push    de                    ; Stack = X-position, RtnAdr
-    SYNCHKC ','                   ; Require comma
-    call    GETBYT                ; E = Y-position
+    call    get_comma_byte        ; E = Y-position
     pop     bc                    ; BC = X-position, Stack = RtnAdr
     ld      iy,tilemap_set_offset ; Set Offset and return
     jp      gfx_call
@@ -838,15 +827,19 @@ ST_DEF_ATTR:
     rst     CHRGET                ; Skip ATTR/BYTE
     call    _setupdef             ; DatLen, BufAdr, VarPtr
 .loop
-    call    FRMEVL
-    ld      iy,bas_parse_attr
-    call    gfx_call              ; A = Attributes
+    call    _parse_attr
     call    _write_byte_strbuf    ; Write it to string buffer
     call    CHRGT2                ; Reget next character
     jr      z,_finish_def         ; If not end of statement
     SYNCHKC ','                   ;   Require comma
     jr      .loop                 ;   and get next tile#
 
+_skip_parse_attr:
+    rst     CHRGET
+_parse_attr:
+    call    FRMEVL
+    ld      iy,bas_parse_attr
+    jp      gfx_call              ; A = Attributes
 ;-----------------------------------------------------------------------------
 ; DEF PALETTELIST P$ = palette#, palette#, ...
 ; APPEND PALETTELIST P$ = palette#, palette#, ...
@@ -1030,9 +1023,7 @@ _check_append_list:
 ; tile# is a integer between 0 and 511
 ;-----------------------------------------------------------------------------
 FN_GETTILE:
-    rst     CHRGET                ; Skip Tile token
-    SYNCHKC '$'
-    SYNCHKC '('
+    call    skip_dollar_paren     ; Require $(
     call    get_int512            ; DE = Tile#
     ld      iy,tile_get
     jr      _get_gfx
@@ -1043,9 +1034,7 @@ FN_GETTILE:
 ; palette# is a integer between 0 and 3
 ;-----------------------------------------------------------------------------
 FN_GETPALETTE:
-    rst     CHRGET                ; Skip PALETTE token
-    SYNCHKC '$'
-    SYNCHKC '('
+    call    skip_dollar_paren     ; Require $(
     call    get_byte4             ; E = Palette#
     push    af                    ; Stack = Palette#, RtnAdr
     ld      iy,palette_get
@@ -1104,23 +1093,23 @@ ST_DEF_SPRITE:
     call    _write_bc_strbuf      ; Write BC to string buffer
     ld      a,(hl)
 .loop
-    call    _get_byte             ; A,E = Spritle#
+    call    _get_spritle          ; A,E = Spritle#
     call    _write_byte_strbuf    ; Write E to string buffer
-    SYNCHKC ','
-    call    _get_byte             ; A,E = Xoffset
+    call    get_comma
+    call    _get_spritle           ; A,E = Xoffset
     cp      c
     jr      c,.skipx              ; If Xoffset > MaxXoffset
     ld      c,a                   ;   MaxXoffset = Xoffset
 .skipx
     call    _write_byte_strbuf    ; Write E to string buffer
-    SYNCHKC ','
-    call    _get_byte             ; A,E Yoffset
+    call    get_comma
+    call    _get_spritle           ; A,E Yoffset
     cp      b
     jr      c,.skipy              ; If Xoffset > MaxXoffset
     ld      b,a                   ;   MaxXoffset = Xoffset
 .skipy
     call    _write_byte_strbuf    ; Write E to string buffer
-    call    _inc_sprtlcnt            ; Increment SptlCnt
+    call    _inc_sprtlcnt         ; Increment SptlCnt
     call    CHRGT2
     jr      z,_sprite_done
     SYNCHKC ';'
@@ -1143,7 +1132,7 @@ _sprite_done
     pop     hl                    ; HL = TxtPtr; Stack = Datlen, BufPtr, VarPtr, RtnAdr
     jp      _finish_def          ;
 
-_get_byte:
+_get_spritle:
     push    bc                    ; Stack = MaxOfs
     call    get_byte64            ; Get spritle#
     pop     bc                    ; BC = MaxOfs
@@ -1218,12 +1207,12 @@ _parse_sprite_star:
     ex      af,af'
     rst     CHRGET                ;   Skip it
     ex      af,af'
-    or      a                     ;   Set flags
+    or      a                     ;   Set NZ
     ret                           ; Else
 _parse_sprite_arg:
     cp      '#'
     jr      nz,.string            ; If #
-    call    GETBYT                ;   E = SptNum
+    call    skip_get_byte64       ;   E = SptNum
     jr      .valtype              ; Else
 .string
     call    get_stringvar         ;   DE = VarPtr
@@ -1237,13 +1226,16 @@ _parse_sprite_arg:
 ; SET SPRITE spritedef$ TILECLIP tileclip$
 ; SET SPRITE spritedef$ TO proplist$
 ; SET SPRITE * OFF|CLEAR
+; SET SPRITE # spritlenum [ON|OFF] [POS x,y] [TILE tilenum] [PALETTE palettenum] [ATTR attributes]
+; SET SPRITE # spritlenum TO properties
 ; Attributes: Priority (64), Double-Height (8), Vertical Flip (4), Horizontal Flip (2)
-; ToDo: SET SPRITE # spritle ...
 ;-----------------------------------------------------------------------------
 ST_SET_SPRITE:
     rst     CHRGET                ; Skip SPRITES
     cp      MULTK                 ; If *
     jp      z,.all                ;   Set all Sprites
+    cp      '#'                   ; If #
+    jp      z,_set_spritle
     call    get_stringvar         ; DE = SprPtr
     jp      z,MOERR               ; Missing Operand Error
     push    hl                    ; Stack = TxtPtr, RtnAdr
@@ -1280,30 +1272,29 @@ ST_SET_SPRITE:
     jr      ST_SET_SPRITE
 
 .palette
-    rst     CHRGET                ; Skip PALETTE
-    ld      ix,sprite_set_palettes; IX = jump address
-    jr      .string_arg
+    ld      bc,sprite_set_palettes; IX = jump address
+    jr      .skip_string_arg
 
 .tiles
     rst     CHRGET                ; Skip TILE
     cp      XTOKEN                ; If followed by extended token
     jr      z,.tilex              ;   Go handle it
-    ld      ix,sprite_set_tiles   ; IX = jump address
+    ld      bc,sprite_set_tiles   ; IX = jump address
     jr      .string_arg
 
 .attrs
+    ld      bc,sprite_set_attrs   ; IX = jump address
+.skip_string_arg
     rst     CHRGET                ; Skip ATTR
-    ld      ix,sprite_set_attrs   ; IX = jump address
-
 .string_arg
-    push    ix                    ; Stack = JmpOfs, SprAdr, RtnAdr
+    push    bc                    ; Stack = JmpOfs, SprAdr, RtnAdr
     call    get_string_arg        ; BC = StrLen, DE = StrAdr, HL = StrDsc; Stack = TxtPtr, JmpOfs, SprAdr, RtnAdr
 
     pop     hl                    ; HL = TxtPtr; Stack = JmpOfs, SprAdr, RtnAdr
-    pop     ix                    ; IX = JmpOfs; Stack = SprAdr, RtnAdr
+    pop     iy                    ; IX = JmpOfs; Stack = SprAdr, RtnAdr
 .do_gfx
     ex      (sp),hl               ; HL = SprAdr; Stack = TxtPtr, RtnAdr
-    call    jump_ix               ; HL = SprAdr; Stack = TxtPtr, RtnAdr
+    call    gfx_call              ; HL = SprAdr; Stack = TxtPtr, RtnAdr
 .done_gfx
     jp      nz,FCERR
     ex      (sp),hl               ; HL = TxtPtr; Stack = SprAdr, RtnAdr
@@ -1319,17 +1310,16 @@ ST_SET_SPRITE:
     ex      af,af'
     rst     CHRGET                ; Skip ON/OFF
     ex      af,af'
-    ld      ix,sprite_toggle      ; IX = jump address
+    ld      iy,sprite_toggle      ; IX = jump address
     jr      .do_gfx
 
 .pos
     rst     CHRGET                ; Skip POS
     call    GETINT                ; DE = X-pos
     push    de                    ; Stack = X-pos, SprAdr, RtnAdr
-    SYNCHKC ','                   ; Require Comma
-    call    GETINT                ; DE = Y-pos
+    call    get_comma_int         ; DE = Y-pos
     pop     bc                    ; BC = X-pos; Stack = SprAdr, RtnAdr
-    ld      ix,_sprite_set_pos    ; IX = jump address
+    ld      iy,sprite_set_pos     ; IX = jump address
     jr      .do_gfx
 
 .all
@@ -1339,11 +1329,12 @@ ST_SET_SPRITE:
     SYNCHKT XTOKEN                ; Else
     SYNCHKT OFFTK                 ;   SNERR if not OFF
 .alloff
-    ld      c,0
-    jp      spritle_toggle_all    ; Disable all off and return
+    ld      iy,spritle_toggle_all ; Disable all off and return
+    jr      .gfx_call
 .allreset
     rst     CHRGET                ; Skip CLEAR
     ld      iy,spritle_reset_all
+.gfx_call
     jp      gfx_call
 
 ; On entry: HL = TxtPtr; Stack = SprAdr, RtnAdr
@@ -1366,32 +1357,116 @@ ST_SET_SPRITE:
     dec     bc                    ;   Adjust string length
 .notclip
     ex      (sp),hl               ; HL = SprAdr; Stack = TxtPtr, RtnAdr
-    call    sprite_set_props
+    ld      iy,sprite_set_props
     jp      nz,FCERR
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     ret
 
-_sprite_set_pos:
-    ld      iy,sprite_set_pos
-    jp      gfx_call
+;; SET SPRITE #2 TO $FFFF
+;; SET SPRITE #3 POS 333,222
+;; SET SPRITE #4 PALETTE 3
+;; SET SPRITE #5 ATTR 255
+;; SET SPRITE #6 ON
+;; SET SPRITE #6 OFF
 
+
+;; SET SPRITE #9 TILE 456 POS 333,222
+
+_set_spritle:
+    rst     CHRGET                ; Skip #
+    call    _get_spritle          ; A = SptNum
+    push    af                    ; Stack = SptNum, RtnAdr
+    ld      a,(hl)                ; A = Token
+    cp      TOTK
+    jr  nz,.loop                  ; If TO
+    
+    call    skip_get_int          ; DE = Props
+    pop     af                    ; A = SptNum, Stack = RtnAdr
+    ld      iy,spritle_set_props
+    jp      gfx_call
+.loop
+    cp      POSTK
+    jr      nz,.notpos
+    call    _skip_parse_pos
+    ld      iy,spritle_set_pos
+    jr      .do_gfx
+.notpos
+    cp      TILETK
+    jr      nz,.nottile
+    call    skip_get_int512        ; DE = Tile#
+    ld      iy,spritle_set_tile
+    jr      .do_gfx
+.nottile
+    cp      XTOKEN
+    jr      z,.extended
+    SYNCHKT ONTK
+    ld      a,128
+    jr      .toggle
+.extended
+    rst     CHRGET                 
+    cp      ATTRTK
+    jr      nz,.notattr
+    call    _skip_parse_attr
+    ld      c,a
+    ld      iy,spritle_set_attr
+    jr      .do_gfx_c
+.notattr
+    cp      PALETK                 
+    jp      nz,.not_palette
+    call    skip_get_byte4
+    ld      iy,spritle_set_palette
+    jr      .do_gfx_c
+.not_palette
+    SYNCHKT OFFTK
+    xor     a
+.toggle
+    ld      iy,spritle_toggle
+.do_gfx_c:
+    ld      c,a
+.do_gfx
+    pop     af                    ; A = SptNum; Stack = RtnAdr
+    call    gfx_call
+    push    af                    ; Stack = SptNum, RtnAdr
+    call    CHRGT2                ; If Terminator
+    jp      z,pop_de_ret          ;   Do next statement
+    jr      .loop
+ 
+_skip_parse_pos:
+    rst     CHRGET
+_parse_pos:
+    call    GETINT                ; DE = X-pos
+    push    de                    ; Stack = X-pos, SprAdr, RtnAdr
+    call    get_comma_int         ; DE = Y-pos
+    pop     bc                    ; BC = X-pos; Stack = SprAdr, RtnAdr
+    ret
+    
+    
 ;-----------------------------------------------------------------------------
-; GETSPRITE Attributes
+; Return Sprite Attributes
 ; GETSPRITE$(SpriteDef$)
-; Data Format: 5 characters for each spritle
-;          X-position - 1-2
-;          Y-position -  3
-;          Attrs+Tile - 4-5
+;   Returns 5 characters for each spritle
+;     X-position - 1-2
+;     Y-position -  3
+;     Attrs+Tile - 4-5
+; GETSPRITE(Spritle#) - Returns Attrs+Tile
+; GETSPRITEX(Spritle#) - Returns X-Position
+; GETSPRITET(Spritle#) - Returns Y-Position 
 ;-----------------------------------------------------------------------------
+;; DEF SPRITE S$=1,0,0:SET SPRITE S$ TILE $"3303" POS 11,12:PRINT HEX$(GETSPRITE$(S$))
+;; SET SPRITE #3 POS 333,222:PRINT GETSPRITEX(3),GETSPRITEY(3)
+;; SET SPRITE #4 TILE 456 PALETTE 3 ATTR 255:PRINT HEX$(GETSPRITE(4))
+;; DEF SPRITE S$=0,4,8:SET SPRITE S$ POS 10,12:PRINT GETSPRITEX(S$);GETSPRITEY(S$)
 FN_GETSPRITE:
     rst     CHRGET                ; Skip SPRITE token
-    SYNCHKC '$'
+    push    af                    ; Stack = FncSfx, RtnAdr
+    cp      '('                   ; If not (
+    call    nz,CHRGTR             ;   Skip it
     call    PARCHK                ; FACLO = Arg
-    push    hl                    ; Stack = TxtPtr, RtnAdr
-    push    hl                    ; Stack = DummyAdr, TxtPtr, RtnAdr
-    ld      iy,bas_getsprite      ; Init string and fill with sprite attrs
-    call    gfx_call              ; HL = StrDsc
-    jp      FINBCK                ; Return String
+    pop     af                    ; A = FncSfx
+    call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
+    ld      iy,bas_getsprite      ; Get Int or StrzDsc  in HL
+    call    gfx_call              ; IX = FLOAT_HL or FINBCK
+    jp      (ix)                  ; Return String
 
 ;-----------------------------------------------------------------------------
 ; RGB(r,g,b)

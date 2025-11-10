@@ -2,7 +2,6 @@
 ; Statements and Functions from USB BASIC
 ;====================================================================
 
-
 ;-----------------------------------------------------------------------------
 ; Syntax: CALL address
 ; on entry to user code, HL = text after address
@@ -66,24 +65,8 @@ FN_HEX:
     push    hl                    ; Stack = TxtPtr
     push    bc                    ; Stack = DummyRtn, TxtPtr
     call    FRC_LONG              ; CDE = Arg
-    ld      hl,FBUFFR+1           ; HL = temp string
-    ld      a,c
-    or      a                     ; If high byte <> 0
-    jr      z,.middle_byte
-    call    byte_to_hex           ;   Convert to hex string
-    ld      a,d
-    jr      .force_middle
-.middle_byte
-    ld      a,d
-    or      a                     ; If middle byte <> 0
-    jr      z,.lower_byte
-.force_middle
-    call    byte_to_hex           ;   Convert to hex string
-.lower_byte
-    ld      a,e
-    call    byte_to_hex           ; Convert low byte to hex string
-    ld      (hl),0                ; Null-terminate string
-    ld      hl,FBUFFR+1
+    ld      iy,bas_hex_long
+    call    aux_call
     jp      TIMSTR                ; Create BASIC string
 
 HEX_STRING:
@@ -280,10 +263,7 @@ parse_screen_coord:
     cp      e                   ; If less than screen position
     jp      c, FCERR            ; If w, Illegal Quantity
 
-    ; Expect comma
-    SYNCHKC ','
-
-    call    GETBYT              ; Read number from command line (row). Stored in A and E
+    call    get_comma_byte      ; Read number from command line (row). Stored in A and E
     cp      24                  ; Compare with 24 decimal (max rows on screen)
     jp      nc,FCERR            ; If higher then 24 goto FC error
 
@@ -373,11 +353,8 @@ ST_PSG:
 
     out     (IO_PSG1ADDR), a ; Set the PSG register
 
-    ; Expect comma
-    SYNCHKC   ','
-
     ; Get value to write to PSG register
-    call    GETBYT           ; Get/evaluate value
+    call    get_comma_byte        ; Get/evaluate value
     out     (IO_PSG1DATA), a ; Send data to the selected PSG register
 
 .check_comma:
@@ -393,11 +370,8 @@ ST_PSG:
     sub     16
     out     (IO_PSG2ADDR), a ; Set the PSG register
 
-    ; Expect comma
-    SYNCHKC   ','
-
     ; Get value to write to PSG register
-    call    GETBYT           ; Get/evaluate value
+    call    get_comma_byte   ; Get/evaluate value
     out     (IO_PSG2DATA), a ; Send data to the selected PSG register
 
     jr      .check_comma

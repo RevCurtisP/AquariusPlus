@@ -69,31 +69,6 @@ tokenize:
     jp      page_set_plus
 
 ;-----------------------------------------------------------------------------
-; Convert byte to two digit number
-;  Input: A: byte
-;        HL: Address to write digits to
-; Clobbers: A,B,HL
-;-----------------------------------------------------------------------------
-byte_to_hex:
-    ld      b, a
-    rra
-    rra
-    rra
-    rra
-    call    nybble_to_hex
-    ld      a, b
-nybble_to_hex:
-    and     $0F
-    cp      10
-    jr      c, .chr
-    add     7
-.chr:
-    add     '0'
-    ld      (hl), a
-    inc     hl
-    ret
-
-;-----------------------------------------------------------------------------
 ; Multiply A * DE
 ; Input: A: Multiplier
 ;       DE: Multiplicand

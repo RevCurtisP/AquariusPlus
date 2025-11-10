@@ -345,7 +345,7 @@ FN_INDEX:
     rr      c                     ; ArySiz = AryLen / 4
     push    de                    ; Stack = AryAdr, RtnAdr
     push    bc                    ; Stack = ArySiz, AryAdr, RtnAdr
-    SYNCHKC ','                   ; Require ,
+    call    get_comma             ; Require ,
     call    FRMEVL                ; Evaluate search arg
     SYNCHKC ')'                   ; Require (
     push    hl                    ; Stack = TxtPtr, ArySiz, AryAdr, RtnAdr
@@ -1028,8 +1028,6 @@ aux_call_popret:
     pop     hl
     ret
 
-
-
 ;-----------------------------------------------------------------------------
 ; Toggle control-c checking
 ; Syntax: SET BREAK ON/OFF
@@ -1405,8 +1403,7 @@ word_str:
     ld      a,(hl)
     cp      ','
     jr      nz,_first_word
-    rst     CHRGET                ; Skip Comma
-    call    GETBYT                ; DE = WrdPos
+    call    skip_get_byte         ; DE = WrdPos
     or      a
     jp      z,FCERR
 _first_word:

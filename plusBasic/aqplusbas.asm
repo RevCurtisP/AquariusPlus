@@ -121,7 +121,7 @@ null_desc:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.27o"
+    db "v0.27p"
     db 0
 plusver_len equ $ - plus_version
 plus_len   equ   $ - plus_text
@@ -1208,9 +1208,6 @@ in_buffer:
     include "tokens.asm"          ; Keyword lists and tokenize/expand routines
     include "usbbas.asm"          ; Statements and functions from USB BASIC
 
-    ; Graphics modules
-    include "sprite.asm"          ; Sprite graphics module
-
     assert !($FFFF<$)   ; ROM full!
 
     free_rom_ext = $10000 - $
@@ -1301,5 +1298,5 @@ ifdef xxxxx
     
 endif    
     
-    end
+end
 

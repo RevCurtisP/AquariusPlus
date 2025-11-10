@@ -1,5 +1,5 @@
 ;-----------------------------------------------------------------------------
-; version.asm - Auxilliary kernel system and plusBASIC version routines
+; version.asm - Auxiliary kernel system and plusBASIC version routines
 ;-----------------------------------------------------------------------------
 
 

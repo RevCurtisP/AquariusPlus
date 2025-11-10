@@ -184,7 +184,10 @@ plusBASIC Quick Reference Guide
  - **[GETPALETTE$(_palette_,_index_)](BASIC-Palette-Statements-and-Functions#getpalette)** - Return palette entry.
  - **GETSOUNDFAST** - Return `SOUND FAST` status.
  - **[GETSPEED](BASIC-System-Statements-and-Functions#getspeed)** - Return current turbo setting.
- - **[GETSPRITE$(_spritedef_)](BASIC-Sprite-Statements-and-Functions#getsprite)** - Return attributes of each spritle in the spritedef.
+ - **[GETSPRITE(_spritle_)](BASIC-Sprite-Statements-and-Functions#getsprite)** - Return spritle properties.
+ - **[GETSPRITE$(_spritedef_)](BASIC-Sprite-Statements-and-Functions#getsprite-1)** - Return properties of each spritle in the spritedef.
+ - **[GETSPRITEX(_spritedef_|_spritle_)](BASIC-Sprite-Statements-and-Functions#getspritex)** - Return sprite or spritle x-position.
+ - **[GETSPRITEY(_spritedef_|_spritle_)](BASIC-Sprite-Statements-and-Functions#getspritey)** - Return sprite or spritle y-position.
  - **[GETTILE$(_tileno_)](BASIC-Tile-Statements-and-Functions#gettile)** - Return tile pixels.
  - **[GOSUB _lineref_{:ARGS _expression_{,...} {RETURN _var_{,...}}](BASIC-Flow-Control-Statements#gosub)** - Branch to subroutine with optional call and return arguments.
  - **[GOTO _lineref_](BASIC-Flow-Control-Statements#goto)** - Branch to line specified by line number or label.
@@ -355,7 +358,8 @@ plusBASIC Quick Reference Guide
  - **SET SAVE ASC ON|OFF** - Enable or disable forced saving of BASIC programs in ASCII format.
  - **[SET SOUND FAST ON|OFF_](BASIC-System-Statements-and-Functions#set-sound-fast)** - Set whether SOUND is affected by turbo mode.
  - **[SET SPEED _speed_](BASIC-System-Statements-and-Functions#set-speed)** - Set turbo mode.
- - **[SET SPRITE _spritedef_ {ON|OFF} {POS _x_,_y_} {TILE _tilelist_} {PALETTE _palettelist_} {ATTR _attrlist_}](BASIC-Sprite-Statements-and-Functions#set-sprite)** - Set sprite properties.
+ - **[SET SPRITE #_spritle_ {ON|OFF} {POS _x_,_y_} {TILE _tileno_} {PALETTE _palette_} {ATTR _attrs_}](BASIC-Sprite-Statements-and-Functions#set-sprite)** - Set spritle properties.
+ - **[SET SPRITE #_spritle_ TO _props_](BASIC-Sprite-Statements-and-Functions#set-sprite)** - Set combined spritle properties.
  - **[SET SPRITE _spritedef_ TILECLIP \*_array_|^_strvar_](BASIC-Sprite-Statements-and-Functions#set-sprite)** - Set sprite to tile indexes and properties in tilemap clip.
  - **[SET SPRITE _spritedef_ TO _proplist_](BASIC-Sprite-Statements-and-Functions#set-sprite)** - Set sprite properties from combined properties list.
  - **[SET SPRITE \* OFF|CLEAR](BASIC-Sprite-Statements-and-Functions#set-sprite)** - Disable or clears all sprites.

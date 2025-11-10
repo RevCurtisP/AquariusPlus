@@ -184,7 +184,10 @@ plusBASIC Quick Reference Guide
  - **GETPALETTE$(_palette_,_index_)** - Return palette entry.
  - **GETSOUNDFAST** - Return `SOUND FAST` status.
  - **GETSPEED** - Return current turbo setting.
- - **GETSPRITE$(_spritedef_)** - Return attributes of each spritle in the spritedef.
+ - **GETSPRITE(_spritle_)** - Return spritle properties.
+ - **GETSPRITE$(_spritedef_)** - Return properties of each spritle in the spritedef.
+ - **GETSPRITEX(_spritedef_|_spritle_)** - Return sprite or spritle x-position.
+ - **GETSPRITEY(_spritedef_|_spritle_)** - Return sprite or spritle y-position.
  - **GETTILE$(_tileno_)** - Return tile pixels.
  - **GOSUB _lineref_{:ARGS _expression_{,...} {RETURN _var_{,...}}** - Branch to subroutine with optional call and return arguments.
  - **GOTO _lineref_** - Branch to line specified by line number or label.
@@ -355,7 +358,8 @@ plusBASIC Quick Reference Guide
  - **SET SAVE ASC ON|OFF** - Enable or disable forced saving of BASIC programs in ASCII format.
  - **SET SOUND FAST ON|OFF_** - Set whether SOUND is affected by turbo mode.
  - **SET SPEED _speed_** - Set turbo mode.
- - **SET SPRITE _spritedef_ {ON|OFF} {POS _x_,_y_} {TILE _tilelist_} {PALETTE _palettelist_} {ATTR _attrlist_}** - Set sprite properties.
+ - **SET SPRITE #_spritle_ {ON|OFF} {POS _x_,_y_} {TILE _tileno_} {PALETTE _palette_} {ATTR _attrs_}** - Set spritle properties.
+ - **SET SPRITE #_spritle_ TO _props_** - Set combined spritle properties.
  - **SET SPRITE _spritedef_ TILECLIP \*_array_|^_strvar_** - Set sprite to tile indexes and properties in tilemap clip.
  - **SET SPRITE _spritedef_ TO _proplist_** - Set sprite properties from combined properties list.
  - **SET SPRITE \* OFF|CLEAR** - Disable or clears all sprites.

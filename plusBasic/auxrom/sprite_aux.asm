@@ -2,9 +2,43 @@
 ; Sprite and Spritle Assembly Routines
 ;=============================================================================
 
-;; ToDo: Move routines from sprite.asm (EXTROM) to here (AUXROM), changing BASIC commands and functions to match
+; Sprite attributes
+SPR_ENABLE    equ   $80
+SPR_PRIORITY  equ   $40
+SPR_HEIGHT    equ   $08
+SPR_VFLIP     equ   $04
+SPR_HFLIP     equ   $02
 
-mspritex:
+;-----------------------------------------------------------------------------
+; Sprite Registers         76543210  76543210
+; IO_VSPRSEL                        ~~NNNNNN  spriteNum
+; IO_VSPRX_H  IO_VSPRX_L  ~~~~~~~X  XXXXXXXX  Xposition
+; IO_VSPRY	                        YYYYYYYY  Yposition
+; IO_VSPRATTR IO_VSPRIDX  ERPPTVHI  IIIIIIII  
+;                         Enable pRiority Palette heighT Vflip Hflip tileIndex
+;-----------------------------------------------------------------------------
+; SpriteDef Structure
+; Byte 0: Spritle Count
+;      1: Total pixel width
+;      2: Total pixel height
+;   3...: Spritles List   + 0 : Spritle Number
+;                         + 1: X-offset
+;                         + 2: Y-offset
+;
+; TileDef Structure
+; Byte 0: Tile Count            
+;   1...: Tile List       + 0 : Tile LSB
+;                         + 1 : Tile MSB
+;
+; AtrDef Structure
+; Byte 0: Tile Count
+;   1...: Attr List     Bit 7 : Enabled (sprite only)
+;                           6 : Priority
+;                         4-5 : Palette
+;                           3 : Height (sprite only)
+;                           2 : H-flip
+;                           1 : V-flip
+;-----------------------------------------------------------------------------
 
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ; sprite_define - Define Sprite
@@ -132,7 +166,7 @@ sprite_defrect:
     ld      l,c                   ; L = SpCols
     ld      b,e                   ; B = SpRows
     ld      de,0                  ; Yofs = 0, Xofs = 0
-; A = SptNum, IXH = SptMun, IXL = SpCols, IY = DefPtr
+; A = SptNum, IXH = SptNum, IXL = SpCols, IY = DefPtr
 .rows
     ld      c,l                   ; C = SpCols
     ld      e,0                   ; Xofs = 0
@@ -172,6 +206,39 @@ sprite_defrect:
 .writedef
     ld      (iy+0),a
     inc     iy                    ; Bump DefPtr
+    ret
+
+;-----------------------------------------------------------------------------
+; Get sprite position
+;  Input: HL: SpriteDef Address
+; Output: BC: X-position
+;         DE: Y-position
+; Clobbered: A, HL
+;-----------------------------------------------------------------------------
+sprite_get_pos:
+    inc     hl                    ; Skip SptCnt
+    inc     hl                    ; Skip SprWid
+    inc     hl                    ; Skip SprHgt
+    ld      a,(hl)                ; A = SptNum
+    call    spritle_get_pos       ; BC = SptXpos. DE = SptYpos
+    inc     hl                    ; Skip SptNum
+    push    hl                    ; Stack = SprPtr, RtnAdr
+    push    bc                    ; Stack = SptXpos, SprPtr, RtnAdr
+    xor     a                     ; Clear carry
+    ld      b,a
+    ld      c,(hl)                ; BC = SptXofs
+    pop     hl                    ; HL = SptXpos; Stack = SprPtr, RtnAdr
+    sbc     hl,bc                 ; HL = SprXpos
+    ld      b,h
+    ld      c,l                   ; BC = SprXpos
+    pop     hl                    ; HL = SprPtr; Stack = RtnAdr
+    inc     hl                    ; Skip SptXofs
+    xor     a                     ; Clear carry
+    ld      l,(hl)
+    ld      h,a                   ; HL = SptYofs        
+    ex      de,hl                 ; HL = SptYpos, DE = SptYofs
+    sbc     hl,de                 ; HL = SprYpos
+    ex      de,hl                 ; DE = SprYofs
     ret
 
 ;-----------------------------------------------------------------------------
@@ -384,4 +451,264 @@ sprite_set_pos:
     pop     hl                    ; HL = SprAdr; Stack = RtnAdr
     ret
 
-    msize_sprite_aux = $ - mspritex
+;-----------------------------------------------------------------------------
+; Set Sprite Attributes
+; Input:  C: Attribute Count
+;        DE: Attribute List Address
+;        HL: SpriteDef Address
+; Output: Not Zero if tile count <> spritle count
+; Clobbered: A,BC,DE
+;-----------------------------------------------------------------------------
+sprite_set_attrs:
+    ld      ix,spritle_set_attr
+    jr      _sprite_attrs
+
+;-----------------------------------------------------------------------------
+; Set Sprite Attributes
+; Input:  C: Palette List Length
+;        DE: Palette List Address
+;        HL: SpriteDef Address
+; Output: Not Zero if tile count <> spritle count
+; Clobbered: A,BC,DE
+;-----------------------------------------------------------------------------
+sprite_set_palettes:
+    ld      ix,spritle_set_palette
+_sprite_attrs:
+    push    hl                    ; Stack = SprAdr, RtnAdr
+    ld      a,c                   ; A = AtrCnt
+    cp      (hl)                  ; If AtrCnt <> SprCnt
+    jr      nz,.error             ;   Error
+    ld      b,(hl)                ; B = spritle/tile count
+    ex      de,hl                 ; DE = SprAdr, HL = AtrAdr
+.loop 
+    inc     de                    ; Skip SprCnt/PrvSprt#
+    inc     de                    ; Skip X,Y/Width/Height
+    inc     de
+    ld      a,(de)                ; A = Sprtl#
+    ld      c,(hl)                ; C = Attrbt
+    call    JUMPIX
+    inc     hl                    ; AtrAdr += 1
+    djnz    .loop
+.error
+    pop     hl                    ; HL = SprAdr; Stack = RtnAdr
+    ret
+
+;-----------------------------------------------------------------------------
+; Set spritle attributes 
+; Input: A: sprite #  0-63
+;        C: attributes: Bit 6: Priority
+;                       Bit 3: Double-Height
+;                       Bit 2: Vertical Flip
+;                       Bit 1: Horizontal Flip
+;-----------------------------------------------------------------------------
+spritle_set_attr:
+    out   (IO_VSPRSEL),a          ; Select sprite
+    ex    af,af'
+    ld    a,c
+    and   $4E                     ; Only attribute bits
+    ld    c,a
+    in    a,(IO_VSPRATTR)         ; Get current attributes
+    and   $B1                     ; Keep enabled, palette and tile index msb
+    or    c                       ; Set attribute bits
+    out   (IO_VSPRATTR),a         ; and write back out
+    ex    af,af'
+    ret
+    
+;-----------------------------------------------------------------------------
+; Set spritle palette
+; Input: A: sprite #  0-63
+;        C: color palette  0-3
+;-----------------------------------------------------------------------------
+spritle_set_palette:
+    out   (IO_VSPRSEL),a          ; Select sprite
+    ex    af,af'
+    ld    a,c                     ; Get palette #
+    exx
+    and   $03                     ; Mask it
+    rla                           ; Shift into position
+    rla
+    rla
+    rla
+    ld    c,a                     ; Put back in C
+    in    a,(IO_VSPRATTR)         ; Get current attributes
+    and   ~$30                    ; Keep attributes and tile index msb
+    or    c                       ; Set attribute bits
+    out   (IO_VSPRATTR),a         ; and write back out
+    exx
+    ex    af,af'
+    ret
+
+;-----------------------------------------------------------------------------
+; Set Sprite Properties
+; Input: BC: PrpLen 
+;        DE: PrpAdr
+;        HL: SprAdr
+;        Not Zero tile count <> spritle count
+; Clobbered: A,BC,DE,HL
+;-----------------------------------------------------------------------------
+sprite_set_props:
+    ld      a,c                   ; Get tile count
+    srl     a
+    cp      (hl)                  ; If not equal to spritle count
+    jr      nz,.ret               ;   Return NZ (error)
+    ld      b,(hl)                ; B = spritle/tile count
+.loop 
+    inc     hl                    ; Skip X-offset
+    inc     hl                    ; Skip Y-offset
+    inc     hl                    ; Next spritle entry
+    ld      a,(hl)                ; Get spritle#
+    out     (IO_VSPRSEL),a        ; Select sprite
+    ld      a,(de)                ; Get Tile Index
+    out     (IO_VSPRIDX),a        ; and Write it
+    inc     de
+    ld      a,(de)                ; Get Attributes
+    out     (IO_VSPRATTR),a       ; and write them
+    inc     de                    ; Next Property
+    djnz    .loop                 ; Do next one
+    xor     a                     ; Return Z (success)
+.ret
+    ret
+
+;-----------------------------------------------------------------------------
+; Set Spritle Properties
+; Input: A: SptNum 
+;        DE: Props
+;-----------------------------------------------------------------------------
+spritle_set_props:
+    out     (IO_VSPRSEL),a        ; Select sprite
+    ex      af,af'
+    ld      a,e                   ; Get Tile Index LSB
+    out     (IO_VSPRIDX),a        ; and Write it
+    ld      a,d                   ; Get Attributes
+    out     (IO_VSPRATTR),a       ; and write them
+    ex      af,af'
+    ret
+
+;-----------------------------------------------------------------------------
+; Set Spritle Properties
+;   Input: A: SptNum 
+; Output: DE: Props
+;-----------------------------------------------------------------------------
+spritle_get_props:
+    out     (IO_VSPRSEL),a        ; Select sprite
+    ex      af,af'
+    in      a,(IO_VSPRIDX)
+    ld      e,a                   ; E = Tile Index LSB
+    in      a,(IO_VSPRATTR)
+    ld      e,a                   ; D = Attributes
+    ex      af,af'
+    ret
+
+;-----------------------------------------------------------------------------
+; Set sprite tile indexes
+; Input: BC: TilLen 
+;        DE: TilAdr
+;        HL: SprAdr
+;        Not Zero tile count <> spritle count
+; Clobbered: A,BC,DE
+;-----------------------------------------------------------------------------
+sprite_set_tiles:
+    push    hl
+    ld      a,c                   ; Get tile count
+    srl     a
+    cp      (hl)                  ; If not equal to spritle count
+    jr      nz,.ret               ;   Return NZ (error)
+    ld      b,(hl)                ; B = spritle/tile count
+    ex      de,hl                 ; DE = SprAdr, HL = TilAdr
+.loop 
+    inc     de                    ; Skip X-offset
+    inc     de                    ; Skip Y-offset
+    inc     de                    ; Next spritle entry
+    ld      a,(de)                ; Get spritle#
+    push    de                    ; Stack = SprAdr
+    ld      e,(hl)
+    inc     hl 
+    ld      d,(hl)                ; DE = TilIdx
+    inc     hl
+    call    spritle_set_tile
+    pop     de                    ; DE = SprAdr
+    djnz    .loop                 ; Do next one
+    xor     a                     ; Return Z (success)
+.ret
+    pop     hl
+    ret
+
+;-----------------------------------------------------------------------------
+; Set spritle tile index
+; Input: A: spritle# (0-63)
+;        DE: tile index (0-511)
+;-----------------------------------------------------------------------------
+spritle_set_tile:
+    out     (IO_VSPRSEL),a        ; Select sprite
+    ex      af,af'
+    ld      a,e                   ; Write index LSB             
+    out     (IO_VSPRIDX),a
+    ld      a,d                   ; Get index MSB
+    exx     
+    and     $01                   ; Mask off unused bits
+    ld      d,a                   ; Back into D
+    in      a,(IO_VSPRATTR)       ; Get current attributes
+    and     $FE                   ; Keep attribute and palette bits
+    or      d                     ; Set attribute bits
+    out     (IO_VSPRATTR),a       ; and write back out
+    exx 
+    ex      af,af'
+    ret
+
+;-----------------------------------------------------------------------------
+; Enable/disable sprite
+; Input: A: 0 = Disable, else Enable
+;        HL: spritedef address
+; Clobbered: A,BC,HL
+;-----------------------------------------------------------------------------
+sprite_toggle:
+    or      a
+    jr      z,.zero
+    ld      a,$80
+.zero
+    ld      c,a
+    ld      b,(hl)                ; Get sprite list length
+.loop 
+    inc     hl                    ; Skip X-offset
+    inc     hl                    ; Skip Y-offset
+    inc     hl                    ; Next spritle entry
+    ld      a,(hl)                ; Get spritle#
+    call    spritle_toggle        ; Toggle it
+    djnz    .loop
+    xor     a                     ; No Errors
+    ret
+
+;-----------------------------------------------------------------------------
+; Enable/Disable spritle
+; Input: A: sprite #  0-63
+;        C: 128 = Enable, $0 = Disable
+;-----------------------------------------------------------------------------
+spritle_toggle:
+    out     (IO_VSPRSEL),a        ; Select sprite
+    ex      af,af'
+    ld      a,$80                 ; Only Enable Bit
+    and     c
+    ld      c,a 
+    in      a,(IO_VSPRATTR)       ; Get current attributes
+    and     $7F                   ; Keep all other attributes
+    or      c                     ;   Set enable bit
+    out     (IO_VSPRATTR),a       ; and write back out
+    ex      af,af'
+    ret
+
+;-----------------------------------------------------------------------------
+; Enable/Disable all spritles
+; Input: C: 128 = Enable, $0 = Disable
+; Clobbers: A
+;-----------------------------------------------------------------------------
+spritle_clear_all:
+    ld      c,0
+spritle_toggle_all:
+    ld      a,63
+spritle_toggle_a2z:
+    call    spritle_toggle
+    dec     a
+    ret     m 
+    jr      spritle_toggle_a2z
+
+

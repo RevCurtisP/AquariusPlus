@@ -512,6 +512,28 @@ _array_len
     ret
 
 
+; HEX$(long) core code
+bas_hex_long:
+    ld      hl,FBUFFR+1           ; HL = TmpBuf
+    ld      a,c
+    or      a                     ; If high byte <> 0
+    jr      z,.middle_byte
+    call    aux_byte_to_hex       ;   Convert to hex string
+    ld      a,d
+    jr      .force_middle
+.middle_byte
+    ld      a,d
+    or      a                     ; If middle byte <> 0
+    jr      z,.lower_byte
+.force_middle
+    call    aux_byte_to_hex       ;   Convert to hex string
+.lower_byte
+    ld      a,e
+    call    aux_byte_to_hex       ; Convert low byte to hex string
+    ld      (hl),0                ; Null-terminate string
+    ld      hl,FBUFFR+1
+    ret
+
 ; HEX$(string$) core code
 bas_hex_string:
     push    de                    ; Stack = ArgDsc, DmyRtn, TxtPtr

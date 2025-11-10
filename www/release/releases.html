@@ -17,38 +17,24 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
     <body>
         <h1 id="plusbasic-release-history">plusBASIC Release History</h1>
 <ul>
-<li>v0.27o (2025-10-??)
+<li>v0.27p (2025-11-09)
 <ul>
-<li>Moved <em>lookup_file</em> in <em>basfile.asm</em> from to <em>bas_lookup_prog</em> in <em>fileaux.asm</em></li>
-<li>Jump directly to _main_ctrl_c, <em>skip_label</em>, <em>skip_on_label</em> instead of through jump table</li>
-<li>Directly call <em>main_ext</em>, <em>wait_key</em>, instead of through jump table</li>
-<li>Modified <em>INPCOM</em>, <em>INLIN</em>, <em>EDENT</em>, and <em>CRUNCH</em> to check for/use 256 byte input buffer</li>
+<li>Added <code>SET SPRITE #spritlenum ...</code>, <code>GETSPRITE()</code>, <code>GETSPRITEX()</code>, <code>GETSPRITEY()</code></li>
+</ul>
+</li>
+<li>v0.27o (2025-10-29)
+<ul>
 <li>Ignore Delete key in direct mode and <code>INPUT</code></li>
-<li>Write direct mode commands to command line history buffers.</li>
 </ul>
 </li>
 <li>v0.27n (2025-10-23)
 <ul>
-<li>Moved  <em>byte_to_dec_fast</em>, <em>div_a_16</em>, <em>div_a_8</em>, <em>div_a_4</em>, and <em>mult_c_10</em> from <em>color.asm</em> to <em>misc.asm</em></li>
-<li>Deleted orphaned routines <em>rgb_to_asc</em> and <em>rgb_to_dec</em> ftom <em>color.asm</em></li>
-<li>Moved <em>clear_array</em> from <em>enhanced,asm</em> to <em>arrayaux.asm</em></li>
-<li>In <em>evalext.asm</em>, replaced conversiop loop in <em>hex_to_asc</em> with call to <em>aux_eval_hex</em></li>
-<li>In <em>evalext.asm</em>, replaced <em>get_hex</em> call in , with <em>aux_hex_to_byte</em> call and removed routine _get_hex_</li>
-<li>Moved core code from <em>_escaped</em> in <em>evalext.asm</em> to <em>aux_escaped_string</em> in <em>evalaux,asm</em></li>
-<li>Moved <em>aux_asc_to_hex</em>, <em>aux_byte_to_hex</em>, <em>aux_hex_to_asc</em>, <em>aux_hex_to_byte</em>, and <em>aux_get_hex</em> from <em>basicaux.asm</em> to _evalaux.asm</li>
-<li>Moved <em>VMOVE</em> from <em>basic80.asm</em> to <em>aqplusbas.asm</em></li>
-<li>Moved <em>copy_literal_string</em> from <em>evalext.asm</em> to evalaux.asm_</li>
+<li>Various internal code changes</li>
 </ul>
 </li>
 <li>v0.27m (2025-10-21)
 <ul>
-<li>Moved <em>outdo_hook</em> from <em>text80.asm</em> to <em>hooks.asm</em>, jump directly to it instead of through table</li>
-<li>Moved <em>clear_hook</em> in <em>extended.asm</em> to <em>ST_NEW</em> in <em>enhanced.asm</em>, jump through <em>exec_next_statement</em> instead of UDF hook</li>
-<li>Moved <em>clear_extension</em> from <em>hooks.asm</em> to <em>enhanced.asm</em>, and <code>CALL</code> directly instead of jumping through table</li>
-<li>Jump directly to <em>FN_ATN</em> instead of through table from <em>ATN</em> in <em>sbasic.asm</em></li>
-<li>Move <em>read_extension</em> from <em>arrays.asm</em> to <em>ST_READ</em> in <em>enhanced.asm</em>, removes jump through table</li>
-<li>Jump directly to <em>dim_extension</em>, isvar_extension,  <em>let_extension</em> instead of through table.</li>
-<li>Renamed <em>_check_comment</em> to <em>check_for_comment</em> and jump to directly instead of through table</li>
+<li>Various internal code changes</li>
 </ul>
 </li>
 <li>v0.27l (2025-10-19)
@@ -57,44 +43,23 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
 <li>Key repeat now disabled on cold or warm boot</li>
 <li>Added <code>KEY REPEAT ON/OFF</code> to enable/disable key repeat during program execution</li>
 <li><code>^K</code>, <code>^L</code>, <code>^N</code>, <code>^O</code> now ignored during <code>INPUT</code></li>
-<li><em>pause_jiffies</em> returns Carry Set if interrupted by Ctrl-C</li>
 <li><code>PAUSE jiffies</code> clears key buffer only if interrupted by Ctrl-C</li>
-<li>Internal code changes
-<ul>
-<li>Consolidated all <code>__</code> and <code>_</code> routines in <em>paged.asm</em></li>
-<li>Moved <code>HEX$()</code> core code, <em>scale_xy</em> into AuxROM</li>
-<li>Removed orphan code from <em>basfile.bas</em></li>
-<li>Replaced occurances of <code>call aux_call:pop hl:ret</code> with <code>jp aux_call_popret</code></li>
-<li>Replaced occurances of <code>call aux_call:jp _pop_hl_doserror</code> with <code>jp _aux_call_hl_error</code></li>
-<li>Replaced occurances of <code>ld hl,(FACLO):call string_addr_len</code> with <code>call faclo_addr_len</code></li>
-<li>Replaced occurances of <code>rst CHRGET:call GETBYT</code> with <code>call skip_get_byte</code></li>
-<li>Added label <code>PFRNEW</code> to sbasic.asm, replaced <code>pop de:call FRETMP:jp PUTNEW</code> with <code>jp PFRNEW</code></li>
-<li>Added label <code>FRENEW</code> to sbasic.asm, replaced <code>call FRETMP:jp PUTNEW</code> with <code>jp FRENEW</code></li>
-<li>Replaced reference to bit flag <code>BASCRNCLR</code> in <code>BASYSCTL</code> with <code>SCRCOLOR</code> in <code>SCREENCTL</code> in <code>FN_GETCOLOR</code></li>
-</ul>
-</li>
 </ul>
 </li>
 <li>v0.27k (2025-10-08)
 <ul>
-<li>Replaced calls to <em>aux_call_inline</em> with <em>aux_call</em> and removed <em>aux_call_inline</em></li>
-<li>Replaced occurances of <code>push hl:ld bc,LABBCK:push bc</code> with <code>call push_hl_labbck</code></li>
-<li>Debugged <em>alloc_temp_buffer</em>, replaced <em>get_strbuf_addr</em> calls in <em>FN_ARG</em>, <em>FN_CD</em>, <em>eval_list</em>, <em>_escaped</em>, and <em>oper_stringsub</em></li>
 <li>Added <code>String formula too complex</code> error on nested <code>EVAL()</code></li>
 </ul>
 </li>
 <li>v0.27j (2025-10-01)
 <ul>
-<li>Moved temporary sysvars from <code>RNDTAB</code> to <code>FILNAM</code>+<code>FILNAF</code>, <code>RESMO</code>-<code>RESLO</code></li>
-<li>Moved PT3 control routines from <em>util.asm</em> (SysROM) to <em>sound.asm</em> (AuxROM) and renamed from <em>pt3...</em> to <em>track...</em></li>
-<li>Added system variable <code>TMPBUFTOP</code> and routines <em>alloc_temp_buffer</em> and <em>free_temp_buffer</em></li>
+<li>Various internal code changes</li>
 </ul>
 </li>
 <li>v0.27i (2025-09-28)
 <ul>
-<li>Fixed assignment of sysvar <code>DEFTK</code> in <em>sbasic.asm</em> and added <code>VARDEF(*array)</code></li>
+<li>Added <code>VARDEF(*array)</code></li>
 <li>Added <code>,ASC</code> opttion to <code>SAVE filespec$,*array$</code></li>
-<li>Replaced <code>SRA</code> with <code>SRL</code> in <em>div_a_16</em>, <em>div_a_8</em>, and <em>div_a_4</em> to fix <code>RGB(rgb$,delimiter)</code></li>
 <li>Added <code>LIST *array$</code> and <code>LLIST array$</code> ro print contents of a string array.</li>
 <li>Added new syntax <code>GETPALETTE$(palnum,index)</code> to return a single palette entry</li>
 <li>Added <code>APPEND INTLIST</code>, <code>APPEND RGBLIST</code>, <code>APPEND TILELIST</code>, <code>APPEND ATTRLIST</code>, <code>APPEND BYTELIST</code>, and <code>APPEND PALETTELIST</code></li>
@@ -103,8 +68,6 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
 <li>v0.27h (2025-09-21)
 <ul>
 <li>Printing <code>CHR$(11)</code> now disables color printing mode.</li>
-<li>Moved <em>buffer_read</em> and <em>buffer_write</em> routines from <code>aqplusbas.asm</code> to new file <code>buffer.asm</code></li>
-<li>Moved <em>basbuf_read</em> and <em>basbuf_write</em> routines from <code>basbuf.asm</code> to 0<code>buffer.asm</code></li>
 <li><code>NEW</code> and <code>LOAD</code> basic progran clear run arguments returned by <code>ARGS</code> and <code>ARGS$</code></li>
 <li>Added parsing of delimited decimal RGB string to <code>RGB()</code> and <code>RGB$</code></li>
 </ul>
@@ -113,22 +76,16 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
 <ul>
 <li><code>SAVE SCREEN</code> <em>file_save_screen</em> now defaults to writing only Screen RAM and Color RAM.</li>
 <li>Added trailing options <code>PALETTE</code> and <code>BORDERMAP</code> to <code>SAVE SCREEN</code> and write options parameter to <em>file_save_screen</em></li>
-<li>Remap border byte is now written as either <code>$00</code> or <code>$FF</code></li>
-<li>Add unit tests to <em>ss.bas</em></li>
 </ul>
 </li>
 <li>v0.27f (2025-09-09)
 <ul>
 <li>Added <code>SET SOUND FAST ON/OFF</code>, <code>GETSOUNDFAST</code>, <em>set_soundfast</em>, and <em>get_soundfast</em></li>
-<li>Deleted deprecated include file <em>sbasic.inc</em></li>
-<li>Removed spurious label <em>gfx_jump_table</em> causing corrupted <em>aqplus.inc</em> and <em>aqplus_asm.inc</em> to be generated</li>
-<li>Renamed <em>screen_read_string</em> and <em>screen_write_string</em> to <em>screen_read_bytes</em>, <em>screen_write_bytes</em></li>
-<li>Renamed <em>color_read_string</em> and <em>color_write_string</em> to <em>color_read_bytes</em>, <em>color_write_bytes</em></li>
 </ul>
 </li>
 <li>v0.27e (2025-08-31)
 <ul>
-<li>Moved bit flags <code>GFXM_TEXT</code>,<code>GFXM_WIDE</code>,<code>GFXM_1BPP</code>, and<code>GFXM_4BPP</code> to new system variable <code>GFX_FLAGS</code></li>
+<li>Various internal code changes</li>
 </ul>
 </li>
 <li>v0.27d (2025-08-21)
@@ -138,9 +95,8 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
 </li>
 <li>v0.27c (2025-08-21)
 <ul>
-<li>Added <em>page_call</em> to kernel jump table</li>
 <li>Removed extended palette modes from <em>file_load_palette</em> and <em>file_save_palette</em></li>
-<li>Removed <code>ASC</code>/<code>HEX</code>/<code>RGB</code> mode from <code>SAVE PALETTE</code> and <code>LOAD PALETTE</code>\</li>
+<li>Removed <code>ASC</code>/<code>HEX</code>/<code>RGB</code> mode from <code>SAVE PALETTE</code> and <code>LOAD PALETTE</code></li>
 <li>Added argument format <code>RRGGBB</code>  to <code>RGB$()</code></li>
 </ul>
 </li>
@@ -150,28 +106,19 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
 <li>Added <code>,HEX</code> and <code>,RGB</code> options to <code>LOAD PALETTE</code> and <code>SAVE PALETTE</code></li>
 <li>Added function <code>FGBDEC$()</code></li>
 <li>Moved <code>LOAD PALETTE</code> and <code>SAVE PALETTE</code> to <em>sp.baq</em> and added tests for <code>HEX</code>, <code>ASC</code>, and <code>RGB</code></li>
-<li>Refactored only <code>call gfx_call_inline</code> and removed routine <em>gfx_call_inline</em></li>
 </ul>
 </li>
 <li>v0.27a (2025-05-25)
 <ul>
-<li>Renamed <em>ptrget_hook</em> to <em>ptrget_ext</em> and moved to AuxROM, with stub in SysROM</li>
-<li>Changed <em>trap_error</em> and <em>ptrget_ext</em> from jump table entries to direct calls</li>
-<li>Added tokens <code>RAN</code> and <code>DOM</code></li>
 <li>Changed <code>OPEN var TO filespec$ FOR mode</code> to <code>OPEN filespec$ FOR mode AS var</code></li>
-<li>Debugged <em>dos_open_random</em>, <em>write_file</em>,</li>
 <li>Implemented <em>dos_tell</em>, <code>FILEPOS()</code>, and <code>SET FILE .. POS TO ...</code></li>
-<li>Moved <code>OPEN</code> core code to AuxROM and implemented mode <code>RANDOM</code> in <code>OPEN</code></li>
+<li>Added mode <code>RANDOM</code> to <code>OPEN</code></li>
 <li>Added (not debugged) statement <code>PUT CHR</code> and kernel routine <em>page_skip_write</em></li>
-<li>Moved plusBASIC extended error calls to now deprecated <code>STMDSP</code></li>
-<li>Fixed error on hex digits <code>A</code>-<code>F</code> in aux_cvt_hex</li>
 </ul>
 </li>
 <li>v0.25e (2025-05-19)
 <ul>
-<li>Fixed &quot;.dev&quot; minor version evaluation in <em>version_to_long</em></li>
-<li>Moved <code>VER()</code> and <code>VER$()</code> core code to auxiliary ROM</li>
-<li>Modified <em>s3_string_ext</em> and wrapped in <em>aux_call</em></li>
+<li>Various internal code changes</li>
 </ul>
 </li>
 <li>v0.25d (2025-05-18)
@@ -181,45 +128,27 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
 <li>Hex literals, <code>DEC()</code> and <code>HEX$()</code> now support longs</li>
 <li>Added statement <code>CHECK VER</code></li>
 <li><code>VER()</code> evaluates <code>.dev</code> as higher than <code>.99</code> (the current highest major or minor version number)</li>
-<li>Renamed kernel routines and moved to Auxiliary ROM
-<ul>
-<li><em>esp_get_version</em> to <em>get_system_version</em></li>
-<li><em>sys_ver_plusbasic</em> to get_plusbas_version</li>
-<li><em>sys_num_ver</em> to <em>version_to_long</em></li>
-</ul>
-</li>
-<li>Moved utility routines <em>asc_to_bcd</em>, <em>bcd_to_bin</em>, and <em>mult_hl_10</em>  from System ROM to Auxiliary</li>
-<li>Refactored routines <em>s3_ctrl_keys</em>, s3_stuffh_ext_, <em>s3_string_ext</em> to be used with <em>aux_call</em></li>
-<li>Added jump table address to comments in <em>kernel.asm</em> to verify that the jump points don't accidentally change</li>
 </ul>
 </li>
 <li>v0.25c (2025-05-04)
 <ul>
-<li>Replaced bit flags <code>BASCHRMOD</code> and <code>BASCHRMOD</code> in <code>BASYSCTL</code> with <code>SCRCHRMOD</code> and <code>SCRCHRMOD</code> in <code>SCREENCTL</code></li>
+<li>Various internal code changes</li>
 </ul>
 </li>
 <li>v0.25b (2025-05-03)
 <ul>
-<li>Replaced all calls to <em>float_signed_byte</em> with calls to <em>FLOAT</em>, removed <em>float_signed_byte</em></li>
-<li>Renamed labels <code>FN_PT3</code>, <code>PT3_BUFFR</code>, <code>PT3_LOOPS</code>, <code>PT3TK</code>, <code>ST_LOOP_PT3</code>, <code>ST_PAUSE_PT3</code>, <code>ST_PLAY_PT3</code>, <code>ST_RESUME_PT3</code>,
-<code>ST_SET_PT3</code>, <code>ST_STOP_PT3</code>, and <code>_play_pt3</code>
-with <code>FN_TRACK</code>, <code>TRK_BUFFR</code>, <code>TRK_LOOPS</code>, <code>TRKTK</code>, <code>ST_LOOP_TRACK</code>, <code>ST_PAUSE_TRACK</code>, <code>ST_PLAY_TRACK</code>, <code>ST_RESUME_TRACK</code>,
-<code>ST_SET_TRACK</code>, <code>ST_STOP_TRACK</code>, <code>__play_track</code></li>
+<li>Various internal code changes</li>
 </ul>
 </li>
 <li>v0.25a (2025-04-30)
 <ul>
 <li>Fixed <code>Illegal quantity error</code> in <code>DEF SPRITE (rows,columns),spritle</code></li>
 <li>Added functions <code>CURSOROFFSET</code>, <code>CURSORX</code>, <code>CURSORY</code></li>
-<li>Moved bit flag <em>SCRCOLOR</em> from <em>BASYSCTL</em> to <em>SCREENCTL</em></li>
-<li>Added unit tests to <em>sg.bas</em> (screen graphics)</li>
 </ul>
 </li>
 <li>v0.25 (2025-04-23)
 <ul>
-<li>Forked <em>s3basic.asm</em> to plusBASIC specific <em>sbasic.asm</em> and inlined into <em>aqplusbas.asm</em></li>
-<li>Renamed macro <code>SYNCHK</code> to <code>SYNCHKC</code>, added <code>SYNCHKT</code></li>
-<li>Refactored <code>rst SYNCHKC</code> calls to <code>SYNCHKC</code> or <code>SYNCHKT</code></li>
+<li>Various internal code changes</li>
 </ul>
 </li>
 <li>v0.24l (2025-04-15)
@@ -227,19 +156,12 @@ with <code>FN_TRACK</code>, <code>TRK_BUFFR</code>, <code>TRK_LOOPS</code>, <cod
 <li>Implemented AqExec load to and run from paged RAM</li>
 <li>Added paged RAM destination to <code>CALL</code></li>
 <li>Fixed <code>PUT SCREEN</code> generating <em>Illegal quantity error</em></li>
-<li>Replaced UDF hook in <code>ATN</code> with direct jump</li>
-<li>Replaced UDF hooks in <code>OUTDO</code> and <code>TTYCHR</code>/<code>TTYCH</code> with direct jump. Moved hook code from AuxROM to SysROM</li>
-<li>Ensured that Extended ROM is paged in for direct jumps that replaced UDF hooks</li>
 </ul>
 </li>
 <li>v0.24k (2025-04-07)
 <ul>
-<li>Updated <code>AQPLUS</code> Resource file chunk header formet and AqExec example <em>asm/hello.asm</em></li>
-<li>Implemented RUNing AqExec programs</li>
-<li>Refactored <code>LINE INPUT</code> code</li>
 <li>Fixed <code>PLAY SAMPLE</code> and ^G warm boot infinite loop</li>
 <li><code>print_string_immd</code> now preserves HL</li>
-<li>Updated <em>makeinc.py</em> and regenerated assembly include files</li>
 </ul>
 </li>
 <li>v0.24j (2025-03-28)
@@ -247,31 +169,16 @@ with <code>FN_TRACK</code>, <code>TRK_BUFFR</code>, <code>TRK_LOOPS</code>, <cod
 <li>SAVE routines no longer close all files</li>
 <li>Fixed <code>OPEN</code>, <code>FILEATTR()</code>, <code>READ KEYS</code></li>
 <li>Added <code>OPEN ... APPEND</code>, <code>CLOSE #channel</code>, <code>READ #channel,var$,length</code>, <code>WRITE #channel,^var$</code></li>
-<li>Moved <code>play_sample</code> to auxiliary ROM, add <code>play_sample</code> to kernel jump table</li>
 <li>Temporarily disable turbo mode during <code>Ctrl-G</code> beep and <code>PLAY SAMPLE</code></li>
-<li>Replaced assembly routine <code>GET_STRING</code> with <code>FRMSTR</code>, added routine <code>PARSTR</code></li>
-<li>Replaced calls to:
-<ul>
-<li><code>FRMEVL</code>+<code>CHKSTR</code> with <code>FRMSTR</code></li>
-<li><code>FRMPRN</code>+<code>GETYPE</code> with <code>FRMPRT</code></li>
-<li><code>PARCHK</code>+<code>CHKSTR</code> with <code>PARSTR</code></li>
-</ul>
-</li>
-<li>Renamed <em>fileaux.asm</em> to <em>filemisc.asm</em></li>
 </ul>
 </li>
 <li>v0.24i (2025-03-27)
 <ul>
-<li>Replaced UDF hooks 0, 35 through 45 with direct jumps</li>
-<li>Deleted deprecated routine <code>aux_rom_call</code></li>
+<li>Various internal code changes</li>
 </ul>
 </li>
 <li>v0.24h (2025-03-26)
 <ul>
-<li>Moved <code>FN_KEY</code> and <code>FN_MOUSE</code> core code into auxiliary ROM</li>
-<li>Renamed kernel routine <code>key_read_ascii</code> to <code>key_read</code> and removed kernel routine stub <code>key_read_scan_code</code></li>
-<li>Moved kernel routines <code>key_clear_fifo</code>, <code>key_read</code>, and <code>key_set_keymode</code> from <em>keyread.asm</em> to <em>aqplusbas.asm</em></li>
-<li>Moved kernel routine <code>key_pressed</code> from <em>keyread.asm</em> to <em>auxrom/misc.asm</em> and deleted file <em>keyread.asm</em></li>
 <li>Modified <code>FN_KEY</code> to take string of keycodes instead of ASCII codes and return position in string of key pressed</li>
 <li>Added <code>REPEAT</code> and <code>UNTIL</code> tokens, <code>PAUSE UNTIL</code> statement, kernel routine <code>bool_setbit_long</code></li>
 </ul>
@@ -284,8 +191,6 @@ with <code>FN_TRACK</code>, <code>TRK_BUFFR</code>, <code>TRK_LOOPS</code>, <cod
 <li>v0.24f (2025-03-10)
 <ul>
 <li>Added <code>OFFSET()</code></li>
-<li>Moved <code>move_cursor</code> into AuxROM, split screen offset calculation code into <code>cursor_offset</code>.</li>
-<li>Moved <code>DATE</code>+<code>TIME</code>, <code>MOUSEx</code>, <code>JOIN</code>, and <code>SPLIT</code> core code into AuxROM.</li>
 </ul>
 </li>
 <li>v0.24e (2025-03-08)
@@ -303,13 +208,12 @@ with <code>FN_TRACK</code>, <code>TRK_BUFFR</code>, <code>TRK_LOOPS</code>, <cod
 <li>Added <code>String length</code> error</li>
 <li>Added <code>RESET SPRITE</code> with <code>Empty string</code> and <code>String length</code> errors</li>
 <li>Fixed <code>Syntax arror</code> on negative numbers after <code>DIM var()=</code></li>
-<li>Moved <code>_get_rgb</code> core code and <code>sprite_set_pos</code> from Extended ROM to Auxiliary ROM</li>
 </ul>
 </li>
 <li>v0.24c (2025-02-17)
 <ul>
 <li>Added <code>DEF SPRITE def$=(cols,rows),spritle</code></li>
-<li>Fixed SET FNKEY rebooting when string is too long</li>
+<li>Fixed <code>SET FNKEY</code> rebooting when string is too long</li>
 </ul>
 </li>
 <li>v0.24b (2025-02-16)
@@ -319,10 +223,6 @@ with <code>FN_TRACK</code>, <code>TRK_BUFFR</code>, <code>TRK_LOOPS</code>, <cod
 <li>Added <code>DEF SPRITE def$=^var$</code>, unimplemented <code>DEF SPRITE def$=(w,h),s</code></li>
 <li><code>SET SPRITE</code> generates <em>Empty string error</em> if spritedef = &quot;&quot;</li>
 <li>Removed undocumented <code>OPEN()</code> function</li>
-<li>Moved <em>GETYPE</em> into, added <em>FRMTYP</em>, <em>FRMPRS</em>, <em>FRMPRT</em>, <em>PARTYP</em>, <em>FRMSTR</em> to S3BASIC</li>
-<li>Removed routines <em>parchk_getype</em>, <em>frmeval_getype</em>, <em>skip_frmprn_getype</em>, <em>skip_frmprn_getyp</em>, <em>frmprn_getype</em></li>
-<li><code>parse_colors</code> generates <em>Missing Operand</em> error instead of <em>Syntax error</em></li>
-<li>Added routines <em>get_strbuf_addr_no_bc</em>, <em>fretms_addr_len</em></li>
 </ul>
 </li>
 <li>v0.24a (2025-02-09)
@@ -331,15 +231,11 @@ with <code>FN_TRACK</code>, <code>TRK_BUFFR</code>, <code>TRK_LOOPS</code>, <cod
 <ul>
 <li>Color cycle screen skipped if <code>/system/plusbasic/_skipsplash</code> exists</li>
 <li><code>DEF ATTRLIST</code> now allows string operands.</li>
-<li>Changed all internal graphic kernel calls to use gfx_call instead of aux_call</li>
-<li>Moved ST_SPLIT core code into <code>basicaux.asm</code></li>
-<li>Added tests to aqpunit/sg.bas and linked into test chain</li>
-<li>Changed aqpunit/sx.bas to match plusBASIC last user page change</li>
 </ul>
 </li>
 <li>v0.23u (2025-02-02)
 <ul>
-<li>Fixed PAD$() overwriting string variables</li>
+<li>Fixed <code>PAD$()</code> overwriting string variables</li>
 <li>Added <code>PRINT @()</code>, <code>SET CURSOR ON/OFF</code>, <code>GETCURSOR</code></li>
 <li>Added <code>SET BORDER CHR/COLOR</code>, <code>RESET BORDER</code></li>
 <li>Added <code>GETBORDERCHR</code>, <code>GETBORDERCHR$</code>, <code>GETBORDERCOLOR</code>, <code>GETBORDERCOLOR$</code></li>
@@ -347,7 +243,7 @@ with <code>FN_TRACK</code>, <code>TRK_BUFFR</code>, <code>TRK_LOOPS</code>, <cod
 </li>
 <li>v0.23t (2025-02-01)
 <ul>
-<li>Added DUMP VARS</li>
+<li>Added <code>DUMP VARS</code></li>
 </ul>
 </li>
 <li>v0.23s (2025-01-26)
@@ -366,7 +262,6 @@ with <code>FN_TRACK</code>, <code>TRK_BUFFR</code>, <code>TRK_LOOPS</code>, <cod
 <li><code>DEF RGBLIST</code>, <code>RGB()</code>, and <code>RGB$()</code> now accept 3 byte binary string of 8-bit R,G,B values</li>
 <li>Added <code>LEN(*array)</code> which returns length in bytes of data portion of array.</li>
 <li>Added <code>COPY *array TO ...</code>, <code>COPY ... TO *array</code>, and <code>COPY *array TO *array</code></li>
-<li>ROM load routine executes <code>esp:boot.bin</code> instead of <code>/boot/bin</code></li>
 </ul>
 </li>
 <li>v0.23q (2024-11-29)
@@ -395,7 +290,6 @@ with <code>FN_TRACK</code>, <code>TRK_BUFFR</code>, <code>TRK_LOOPS</code>, <cod
 <li>v0.23n (2024-10-25)</li>
 <li>Added statement <code>SET TRACK SPEED herz</code> and function <code>TRACKSPEED</code></li>
 <li>Added Ctrl-U sets Unlimited Turbo while program is running</li>
-<li>Copied JOY() assembly code to AuxROM routine <code>read_gamepad</code></li>
 <li>Embedded SYSROM filename at $2FF0</li>
 <li>v0.23m (2024-10-21)
 <ul>
@@ -416,7 +310,7 @@ with <code>FN_TRACK</code>, <code>TRK_BUFFR</code>, <code>TRK_LOOPS</code>, <cod
 </ul>
 </li>
 <li><code>READ *var$</code> now parses quoted strings correctly.</li>
-<li>DIM <code>var$(...)=</code> requires quoted strings unless string is empty</li>
+<li><code>DIM var$(...)=</code> requires quoted strings unless string is empty</li>
 </ul>
 </li>
 <li>v0.23j (2024-10-18)
@@ -428,84 +322,71 @@ with <code>FN_TRACK</code>, <code>TRK_BUFFR</code>, <code>TRK_LOOPS</code>, <cod
 <li><code>FILL WORD</code> is now <code>FILL WORDS</code></li>
 </ul>
 </li>
-<li>Added BYTE(), WORD(), and WORD$() functions</li>
-<li>S3 BASIC CONINT routine now allows signed numbers (-256 through 255)</li>
-<li>Fixed DEC() Overflow error when argument is not a literal string</li>
-<li>Fixed ASC$() corrupting argument contents</li>
-<li>var$[...] now returns a temporary so that FRETOP won't get clobbered</li>
+<li>Added <code>BYTE()</code>, <code>WORD()</code>, and <code>WORD$()</code> functions</li>
+<li>Fixed <code>DEC()</code>Overflow error when argument is not a literal string</li>
+<li>Fixed <code>ASC$()</code> corrupting argument contents</li>
 </ul>
 </li>
 <li>v0.23i (2024-10-09)
 <ul>
-<li>Added ATTR(), ATTR$()</li>
-<li>Implemented GETCOLOR</li>
+<li>Added <code>ATTR()</code>, <code>ATTR$()</code></li>
+<li>Implemented <code>GETCOLOR</code></li>
 </ul>
 </li>
 <li>v0.23h (2024-09-23)
 <ul>
-<li>Added ENDKEY, FILESTATUS$(), FILEDATETIME$(), FILEATTR(), and FILELEN()</li>
-<li>Added optional position argument to ASC()</li>
-<li>Modified enhanced INPUT to exit on Ctrl-X, Tab, Back-Tab, Cursor-Up, and Cursor-Down</li>
+<li>Added <code>ENDKEY</code>, <code>FILESTATUS$()</code>, <code>FILEDATETIME$()</code>, <code>FILEATTR()</code>, and <code>FILELEN()</code></li>
+<li>Added optional position argument to<code>ASC()</code></li>
+<li>Modified enhanced <code>INPUT</code> to exit on Ctrl-X, Tab, Back-Tab, Cursor-Up, and Cursor-Down</li>
 </ul>
 </li>
 <li>v0.23g (2024-09-18)
 <ul>
-<li>Fixed get_byte 64 which was causing DEF SPRITE to error on spritle 63</li>
-<li>Added PAD token to bas2baq.py and baq2bas.py</li>
-<li>Added AqExec file support to RUN file</li>
+<li>Fixed <code>DEF SPRITE</code> to error on spritle 63</li>
+<li>Added <code>AqExec</code> file support to <code>RUN file</code></li>
 </ul>
 </li>
 <li>v0.23f (2024-09-13)
 <ul>
-<li>Added TILEOFFSET()</li>
-<li>Changed <code>get_color_args</code> calls to <code>get_screen_colors</code> and remove <code>get_color_args</code> routine</li>
+<li>Added <code>TILEOFFSET()</code></li>
 <li>Changed <code>CLEAR COLOR</code> to <code>CLS COLOR {_fg_,_bg_}</code></li>
-<li><code>CHR</code> and <code>ATTR</code> options to <code>COPY SCREEN TO...</code> and <code>COPY ... TO SCREEN</code></li>
-<li>Wrote unit test <code>cs.baq</code> to test COPY SCREEN statements</li>
-<li>Modified <code>ss.baq</code> to use COPY SCREEN and enabled <code>OUT</code> port restrictions</li>
+<li>Added <code>CHR</code> and <code>ATTR</code> options to <code>COPY SCREEN TO...</code> and <code>COPY ... TO SCREEN</code></li>
+<li>Enabled <code>OUT</code> port restrictions</li>
 </ul>
 </li>
 <li>v0.23e (2024-09-07)
 <ul>
-<li>Fixed file_load_paged executing random code when loading files over 65535 bytes</li>
-<li>Added test to sl.baq for loading large files to paged RAM</li>
+<li>Various internal code changes</li>
 </ul>
 </li>
 <li>v0.23d (2024-09-06)
 <ul>
-<li>Fixed PEEKSCREEN() and PEEKCOLOR() for both 40 and 80 column mode</li>
-<li>Refactored screen_read_byte, screen_write_byte, color_read_byte, and color_write_byte</li>
-<li>Rewrote PEEKSCREEN$() PEEKCOLOR$(), color_read_string, and color_write_string</li>
-<li>Added unit tests front end <code>au.baq</code> and unit test program <code>ps.baq</code></li>
+<li>Fixed <code>PEEKSCREEN()</code> and <code>PEEKCOLOR()</code> for both 40 and 80 column mode</li>
 </ul>
 </li>
 <li>v0.23c (2024-09-01)
 <ul>
-<li>Enabled SET BREAK ON/OFF</li>
-<li>Fixed PEEK$ Syntax error</li>
-<li>Added ASC option to SAVE/LOAD PALETTE.</li>
-<li>Added FAST option to COPY SCREEN TO ... and COPY ... TO SCEEN</li>
+<li>Enabled <code>SET BREAK ON/OFF</code></li>
+<li>Fixed <code>PEEK$()</code> Syntax error</li>
+<li>Added <code>ASC</code> option to <code>SAVE/LOAD PALETTE.</code></li>
+<li>Added <code>FAST</code> option to <code>COPY SCREEN TO ...</code> and <code>COPY ... TO SCEEN</code></li>
 <li>Added <code>CLEAR COLOR</code></li>
-<li>Fixed page_read_paged and page_write_paged to return next paged address</li>
-<li>Fixed FILL TILEMAP out of bounds error checking</li>
-<li>Added continuous chain option to unit tests</li>
 </ul>
 </li>
 <li>v0.23b (2024-08-28)
 <ul>
-<li>Added extended memory addressing (!long) to
+<li>Added extended memory addressing <code>!long</code> to
 <ul>
-<li>COPY, COMPARE()</li>
-<li>FILL BYTE, FILL WORD,</li>
-<li>LOAD, SAVE</li>
-<li>POKE, PEEK(), PEEK$(), DOKE, DEEK</li>
-<li>PLAY SAMPLE</li>
+<li><code>COPY</code>, <code>COMPARE()</code></li>
+<li><code>FILL BYTE</code>, <code>FILL WORD</code></li>
+<li><code>LOAD</code>, <code>SAVE</code></li>
+<li><code>POKE</code>, <code>PEEK()</code>,<code>PEEK$()</code>,<code>DOKE</code>, <code>DEEK</code></li>
+<li><code>PLAY SAMPLE</code></li>
 </ul>
 </li>
-<li>Moved gfx/screen.asm to auxrom/screen.asm</li>
-<li>Implemented COPY @page,address TO SCREEN</li>
-<li>Fixed ARGS always returning 0,ARGS$() crashing system.</li>
-<li>Fixed DIR returning wrong file size</li>
+<li>Implemented <code>COPY @page,address TO SCREEN</code></li>
+<li>Fixed <code>ARGS</code> always returning 0, <code>ARGS$()</code> crashing system.</li>
+<li>Fixed <code>DIR</code> returning wrong file size</li>
 </ul>
 </li>
 <li>v0.23a (2024-08-26)

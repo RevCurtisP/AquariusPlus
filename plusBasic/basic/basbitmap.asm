@@ -204,7 +204,7 @@ _preset:
     jr      _set
 _set:
     push    de                    ; Stack = SubAdr, RtnAdr
-    call    SCANDYX               ; C = Y, DE = X
+    call    paren_addr_len        ; C = Y, DE = X
     call    _getcolor
     pop     iy                    ; IY = SubAdr; Stack = RtnAdr
 aux_call_fcerr:
@@ -228,18 +228,6 @@ _getcolor:
     pop     de                    ; DE = X; Stack = Y, RtnAdr
     pop     bc                    ; BC = Y; Stack = RtnAdr
     ld      b,a
-    ret
-
-; Scan (X,Y) into DE,C
-SCANDYX:
-    SYNCHKC '('
-    call    GETINT                ; DE = X
-    push    de                    ; Stack = X, RtnAdr
-    SYNCHKC ','
-    call    GETBYT                ; A = Y
-    ld      c,a                   ; C = Y
-    pop     de                    ; DE = X; Stack = RtnAdr
-    SYNCHKC ')'
     ret
 
 ;-----------------------------------------------------------------------------

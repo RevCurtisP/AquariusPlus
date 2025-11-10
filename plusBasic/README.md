@@ -184,7 +184,10 @@ plusBASIC Quick Reference Guide
  - [x] **GETPALETTE$(_palette_,_index_)** - Return palette entry.<!--palette-->
  - [ ] **GETSOUNDFAST** - Return `SOUND FAST` status.
  - [ ] **GETSPEED** - Return current turbo setting.<!--system-->
- - [x] **GETSPRITE$(_spritedef_)** - Return attributes of each spritle in the spritedef.<!--sprites-->
+ - [ ] **GETSPRITE(_spritle_)** - Return spritle properties.<!--sprites-->
+ - [x] **GETSPRITE$(_spritedef_)** - Return properties of each spritle in the spritedef.<!--sprites-->
+ - [ ] **GETSPRITEX(_spritedef_|_spritle_)** - Return sprite or spritle x-position.<!--sprites-->
+ - [ ] **GETSPRITEY(_spritedef_|_spritle_)** - Return sprite or spritle y-position.<!--sprites-->
  - [x] **GETTILE$(_tileno_)** - Return tile pixels.<!--tile-->
  - [ ] **GOSUB _lineref_{:ARGS _expression_{,...} {RETURN _var_{,...}}** - Branch to subroutine with optional call and return arguments.<!--flow-->
  - [ ] **GOTO _lineref_** - Branch to line specified by line number or label.<!--flow-->
@@ -355,7 +358,8 @@ plusBASIC Quick Reference Guide
  - [ ] **SET SAVE ASC ON|OFF** - Enable or disable forced saving of BASIC programs in ASCII format.<!--save-->
  - [ ] **SET SOUND FAST ON|OFF_** - Set whether SOUND is affected by turbo mode.<!--system-->
  - [ ] **SET SPEED _speed_** - Set turbo mode.<!--system-->
- - [ ] **SET SPRITE _spritedef_ {ON|OFF} {POS _x_,_y_} {TILE _tilelist_} {PALETTE _palettelist_} {ATTR _attrlist_}** - Set sprite properties.<!--sprites-->
+ - [ ] **SET SPRITE #_spritle_ {ON|OFF} {POS _x_,_y_} {TILE _tileno_} {PALETTE _palette_} {ATTR _attrs_}** - Set spritle properties.<!--sprites-->
+ - [ ] **SET SPRITE #_spritle_ TO _props_** - Set combined spritle properties.<!--sprites-->
  - [x] **SET SPRITE _spritedef_ TILECLIP \*_array_|^_strvar_** - Set sprite to tile indexes and properties in tilemap clip.<!--sprites-->
  - [ ] **SET SPRITE _spritedef_ TO _proplist_** - Set sprite properties from combined properties list.<!--sprites-->
  - [x] **SET SPRITE \* OFF|CLEAR** - Disable or clears all sprites.<!--sprites-->

@@ -73,7 +73,8 @@ new_hook:
     call    clear_run_args
  	  call    clear_all_errvars
  	  ld      c,0
- 	  call    spritle_toggle_all    ; Disable all sprite
+ 	  ld      iy,spritle_toggle_all
+    call    gfx_call              ; Disable all sprite
  	  ld      hl,(TXTTAB)           ;[M80] GET POINTER TO START OF TEXT
     ret
 

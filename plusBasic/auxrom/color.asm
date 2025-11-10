@@ -157,17 +157,8 @@ rgb_hex:
     rra
 .to_hex
     or      b
-    jp      byte_to_hex
+    jp      aux_byte_to_hex       ; Write Hex and return  
     
-_crlf:
-    ld      a,13
-    ld      (hl),a                ; Write CR
-    inc     hl    
-    ld      a,10
-    ld      (hl),a                ; Write LF
-    inc     hl    
-    ret
-
 ; Convert $GB0R to "red,green,blue"
 ; Input: B: Delmtr, DE: BinPtr, HL: BufPtr
 rgb_dec:

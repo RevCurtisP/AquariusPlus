@@ -32,8 +32,7 @@ sng_chr:
     ld      a,(hl)
     cp      ','
     jr      nz,_asc_char
-    rst     CHRGET                ; Skip Comma
-    call    GETBYT                ; DE = ChrPos
+    call    skip_get_byte         ; A, DE = ChrPos
     or      a
     jp      z,FCERR
 _asc_char:
@@ -142,8 +141,7 @@ ST_COPY:
     ld      a,(hl)
     cp      TOTK
     jp      z,.copy_page_addr_to
-    SYNCHKC ','                   ; Require Comma
-    call    GETINT                ; DE = Len
+    call    get_comma_int         ; DE = Len
     push    de                    ; Stack = Len, SrcPgFlg, SrcAdr
 .do_to_arg
     SYNCHKT TOTK
@@ -317,8 +315,6 @@ ST_INPUT:
     call    SCAND                 ; C = Col, E = Row
     ld      d,c                   ; D = Col
     push    de                    ; Stack = ColRow, RtnAdr
-;; ToDo: make routine get_comma_bytes in shared.asm
-;; Call from here and _set_tile_ext
     call    get_comma_byte        ; A = MinLen
     push    af                    ; Stack = MinLen, ColRow, RtnAdr
     call    get_comma_byte        ; E = MaxLen
@@ -406,8 +402,6 @@ ST_LIST:
 ;         POKE extaddr, byte
 ;         POKE extaddr, string$
 ;-----------------------------------------------------------------------------
-;; ToDo: POKE SCREEN (col,row),byte
-;;       POKE SCREEN (col,row),string$
 ST_POKE:
     cp      SCRNTK
     jr      z,.pokescreen
@@ -417,7 +411,7 @@ ST_POKE:
     call    get_page_addr         ; AF = PgFlg, DE = Addr
     push    af                    ; Stack = Page, RtnAdr
     push    de                    ; Stack = Addr, Page, RtnAdr
-    SYNCHKC ','                   ; Require comma
+    call    get_comma             ; Require comma
     call    FRMEVL                ; Evaluate argumenr
     call    GETYPE                ; If String
     jr      z,.pokestring         ;   Poke It
@@ -533,14 +527,13 @@ ST_POKE:
 ;-----------------------------------------------------------------------------
 ST_DOKE:
     call    get_page_addr         ; AF = PgFlg, DE = Addr
-    push    af                    ; Save it
-    push    de                    ; Save It
-    SYNCHKC ','                   ; Require comma
-    call    GETINT                ; Parse Word
+    push    af                    ; Stack = PgFlag, RtnAd
+    push    de                    ; Stack = Addr, PgFlag, RtnAd
+    call    get_comma_int         ; DE = Word
     ld      b,d
-    ld      c,e                   ;
-    pop     de                    ; Get address
-    pop     af                    ; Get page number
+    ld      c,e                   ; BC = Word; Stack = PgFlag, RtnAd
+    pop     de                    ; DE = Addr; Stack = RtnAd
+    pop     af                    ; A = PgFlg
     jr      c,.write_paged_word   ; If page specified, write to it
     ld      a,c                   ; Get LSB
     ld      (de),a                ; Write to address
@@ -677,9 +670,7 @@ FN_PEEK:
 
 .peek_sc_string
     rst     CHRGET                ; Skip $
-    SYNCHKC '('                   ; Require '('
-    call    get_addr_len          ; DE = ScrOfs, BC = PkLen
-    SYNCHKC ')'                   ; Require ')'
+    call    paren_addr_len        ; DE = ScrOfs, BC = PkLen
     pop     af                    ; AF = SCFlag; Stack = RtnAdr
     push    hl                    ; Stack = TxtPtr, RtnAdr
     call    .init_peek_string     ; DE = StrPtr, HL = ScrOfs
@@ -729,8 +720,7 @@ paren_page_arg:
 parse_page_arg:
     cp      '@'
     jr      nz,.notat             ; If page prefix
-    rst     CHRGET                ;   Skip '@'
-    call    GETBYT                ;   Parse byte into E
+    call    skip_get_byte         ;   Parse byte into E
     call    get_comma
     ld      a,e
     scf

@@ -93,7 +93,6 @@ buffer_write_byte:
     inc     de
     jr      _buffer_write_done
 
-
 ;-----------------------------------------------------------------------------
 ; Write bytes to BAS_BUFFR
 ; Input: BC: Byte Count
@@ -138,7 +137,7 @@ basbuf_write_word:
 ; Write word to BASIC buffer
 ; Input: A: Page 
 ;       BC: Word
-;        DE: Address
+;       DE: Address
 ; Output: DE: Coerced address + 2
 ; Clobbered: A
 ;-----------------------------------------------------------------------------
@@ -161,3 +160,34 @@ _buffer_write_init:
     or      $C0
     ld      d,a
     ret
+
+basbuf_read_string:
+    ld      a,BAS_BUFFR
+;-----------------------------------------------------------------------------
+; Read NUL terminated string from paged memory
+; Input: A: Page 
+;       DE: Destination address
+;       HL: Source address (paged memory)
+; Output: BC: String length (excluding terminator)
+;         DE: Next destination address
+;         HL: Next source address
+; Clobbered: A
+;-----------------------------------------------------------------------------
+buffer_read_string:
+    call    page_map_bank3
+    ld      a,h                   ; Coerce Source Address
+    or      $C0
+    ld      h,a
+    ld      bc,0                  ; StrLen = 0
+.loop
+    ld      a,(hl)
+    inc     hl
+    ld      (de),a
+    inc     de
+    or      a
+    jr      z,.done
+    inc     c
+    scf
+    jr      nz,.loop
+.done
+    jp      page_restore_bank3

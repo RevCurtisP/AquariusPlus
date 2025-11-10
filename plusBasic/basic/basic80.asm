@@ -145,10 +145,10 @@ FN_INSTR:
     or      a                     ;   DONT ALLOW ZERO OFFSET
     jp      z,FCERR               ;   KILL HIM.
     push    af                    ;   Stack = Offset, RtnAdr
-    SYNCHKC ','                   ;   EAT THE COMMA                                -
+    call    get_comma             ;   EAT THE COMMA                                -
     call    FRMSTR                ;   Evaluate needle
 .was_string:
-    SYNCHKC ','                   ; EAT COMMA AFTER ARG
+    call    get_comma             ; EAT COMMA AFTER ARG
     push    hl                    ; Stack = TxtPtr, Offset, RtnAdr
     ld      hl,(FACLO)            ; HL = HayDsc
     ex      (sp),hl               ; HL = TxtPtr; Stack = HayDsc, Offset, RtnAdr
@@ -200,8 +200,7 @@ ST_MID: SYNCHKC '('               ; MUST HAVE (                                 
         call    VMOVE             ; MOVE NEW DESC. INTO OLD SLOT.                                  ~~     ~~
 NCPMID: pop     hl                ; GET DESC. POINTER                                                    Dsc1  TxtPtr
         ex      (sp),hl           ; GET TEXT POINTER TO [H,L] DESC. TO STACK                            TxtPtr  Dsc1
-        SYNCHKC ','               ; MUST HAVE COMMA
-        call    GETBYT            ; GET ARG#2 (OFFSET INTO STRING)                 Arg2
+        call    get_comma_byte    ; GET ARG#2 (OFFSET INTO STRING)                 Arg2
         or      a                 ; MAKE SURE NOT ZERO
         jp      z,FCERR           ; BLOW HIM UP IF ZERO
         push    af                ; SAVE ARG#2 ON STACK                                                        Arg2,Dsc1
@@ -209,8 +208,7 @@ NCPMID: pop     hl                ; GET DESC. POINTER                           
         ld      e,255             ; IF TWO ARG GUY, TRUNCATE.                                     255
         cp      ')'               ; [E] SAYS USE ALL CHARS
         jp      z,.MID2           ; IF ONE ARGUMENT THIS IS CORRECT
-        SYNCHKC ','
-        call    GETBYT            ; GET ARGUMENT  IN  [E]                          Arg3           Arg3
+        call    get_comma_byte    ; GET ARGUMENT  IN  [E]                          Arg3           Arg3
 .MID2:  SYNCHKC ')'               ; MUST BE FOLLOWED BY )                           ~~                         Arg3,Arg2,Dsc1
         push    de                ; SAVE THIRD ARG ([E]) ON STACK
                                   ; MUST HAVE = SIGN
@@ -350,9 +348,7 @@ FN_STR:
 ;;; STRING$ (*length*, *byte* )
 ;;; STRING$ (*length*, *string* )
 FN_STRING:
-        rst     CHRGET
-        SYNCHKC '$'               ;Require $
-        SYNCHKC '('               ;MAKE SURE LEFT PAREN
+        call    skip_dollar_paren ; Require $(
         call    GETBYT            ;EVALUATE FIRST ARG (LENGTH)
         ld      a,(hl)            ;Check Next Character
         cp      ','               ;If No Comma
@@ -403,7 +399,7 @@ ST_SWAP_VARS:
     ex      (sp),hl           ;GET THE TEXT POINTER BACK AND SAVE CURRENT [ARYTAB]
     ld      a,(VALTYP)        ;Get Variable Type
     push    af                ;SAVE THE TYPE OF VALUE #1
-    SYNCHKC ','               ;MAKE SURE THE VARIABLES ARE DELIMITED BY A COMMA
+    call    get_comma         ;MAKE SURE THE VARIABLES ARE DELIMITED BY A COMMA
     call    PTRGET            ;[D,E]=POINTER AT VALUE #2
     pop     bc                ;[B]=TYPE OF VALUE #1
     ld      a,(VALTYP)        ;[A]=TYPE OF VALUE #2
@@ -485,13 +481,11 @@ FN_VAR:
 ST_WAIT:
         call    GETINT            ; get/evaluate port
         push    de                ; stored to be used in BC
-        SYNCHKC ','               ; Compare RAM byte with following byte
-        call    GETBYT            ; get/evaluate data
+        call    get_comma_byte    ; get/evaluate data
         push    af                ; SAVE THE MASK
         call    CHRGT2            ; SEE IF THE STATEMENT ENDED
         jr      z,NOTTHR          ; IF NO THIRD ARGUMENT SKIP THIS
-        SYNCHKC ','               ; MAKE SURE THERE IS A ","
-        CALL    GETBYT            ; Get XOR mask into E
+        call    get_comma_byte    ; Get XOR mask into E
 NOTTHR: pop     de                ; REGET THE "AND" MASK in D
         ld      e,a               ; Put the XOR mask in E
         pop     bc                ; Get back the Port #
