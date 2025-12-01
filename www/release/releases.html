@@ -17,6 +17,14 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
     <body>
         <h1 id="plusbasic-release-history">plusBASIC Release History</h1>
 <ul>
+<li>v0.27q (2025-12-01)
+<ul>
+<li>Implemented <code>BIN$()</code>, <code>SAVE COLORMAP</code>, added <code>RESET CHRDEF char</code>, <code>,chrset</code> option to <code>GETCHRDEF$()</code></li>
+<li>Implemented<code>APPEND file$,addr,len</code>, <code>APPEND file$,@page,addr,len</code>, <code>APPEND file$,!extaddr,len</code>, `APPEND file$,*var$&quot;</li>
+<li>Backspace when input buffer is empty no longer prints a BS and CR/LF.</li>
+<li>Ctrl-U backspaces to delete current line instead of printing a CR/LF</li>
+</ul>
+</li>
 <li>v0.27p (2025-11-09)
 <ul>
 <li>Added <code>SET SPRITE #spritlenum ...</code>, <code>GETSPRITE()</code>, <code>GETSPRITEX()</code>, <code>GETSPRITEY()</code></li>

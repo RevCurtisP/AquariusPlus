@@ -3,12 +3,12 @@
 110 QG$="sp"
 120 GOSUB _init
 
-200 GOSUB _title:ARGS "SAVE and LOAD"
+200 GOSUB _title:ARGS "SAVE, LOAD, and APPEND"
 202 SET FILE ERROR OFF
 204 WD$="work":MKDIR wd$
 208 SET FILE ERROR ON
 
-210 GOSUB _title:ARGS "SAVE/LOAD binary"
+210 GOSUB _title:ARGS "SAVE/LOAD/APPEND binary"
 212 COPY $C000,2000 TO $8000
 214 GOSUB _outquoted:ARGS LIST$(NEXT)
 216 SAVE "work/binsave.bin",$100,1000
@@ -17,14 +17,22 @@
 222 GOSUB _outquoted:ARGS LIST$(NEXT)
 224 LOAD "work/binload.bin",$8000
 226 GOSUB _assert:ARGS "COMPARE($100,$8000,1000)"
-228 DEL "work/binload.bin"
-
+230 GOSUB _outquoted:ARGS LIST$(NEXT)
+232 APPEND "work/binload.bin",1256,1000
 234 GOSUB _outquoted:ARGS LIST$(NEXT)
-235 SET FILE ERROR OFF:LOAD "work/nofile.bin",$8000:SET FILE ERROR ON
-236 GOSUB _assert:ARGS "ERR=50"
+238 COPY $C000,2000 TO $8000
+240 RENAME "work/binload.bin" TO "work/binappend.bin"
+242 GOSUB _outquoted:ARGS LIST$(NEXT)
+244 LOAD "work/binappend.bin",$8000
+246 GOSUB _assert:ARGS "COMPARE($100,$8000,2000)"
+248 DEL "work/binappend.bin"
+
+262 GOSUB _outquoted:ARGS LIST$(NEXT)
+264 SET FILE ERROR OFF:LOAD "work/nofile.bin",$8000:SET FILE ERROR ON
+266 GOSUB _assert:ARGS "ERR=50"
 
 300 GOSUB _title:ARGS "SAVE/LOAD paged"
-302 COPY $C100,1000 TO @32,100
+302 COPY $C100,2000 TO @32,100:FILL BYTES @33,0,2256,0
 304 GOSUB _outquoted:ARGS LIST$(NEXT)
 306 SAVE "work/pagedsave.bin",@32,$100,1000
 308 GOSUB _outquoted:ARGS LIST$(NEXT)
@@ -32,15 +40,19 @@
 312 GOSUB _outquoted:ARGS LIST$(NEXT)
 314 LOAD "work/pagedload.bin",@33,200
 316 GOSUB _assert:ARGS "COMPARE(@32,$100,@33,200,1000)"
-318 DEL "work/pagedload.bin"
+320 GOSUB _outquoted:ARGS LIST$(NEXT)
+322 APPEND "work/pagedload.bin",@32,1256,1000
+324 GOSUB _outquoted:ARGS LIST$(NEXT)
+326 RENAME "work/pagedload.bin" TO "work/pagedappend.bin"
+328 FILL BYTES @33,0,2256,0
+330 GOSUB _outquoted:ARGS LIST$(NEXT)
+332 LOAD "work/pagedappend.bin",@33,$200
+334 GOSUB _assert:ARGS "COMPARE(@32,$100,@33,$200,2000)"
+348 DEL "work/pagedappend.bin"
 
-322 GOSUB _outquoted:ARGS LIST$(NEXT)
-324 FILL BYTES @39,0,255,0:LOAD "assets/large.bin",@35,0
-326 GOSUB _assert:ARGS "PEEK$(@39,0,5)=$`0102030405`"
-
-364 GOSUB _outquoted:ARGS LIST$(NEXT)
-365 SET FILE ERROR OFF:LOAD "work/nofile.bin",@32,100:SET FILE ERROR ON
-366 GOSUB _assert:ARGS "ERR=50"
+362 GOSUB _outquoted:ARGS LIST$(NEXT)
+364 FILL BYTES @39,0,255,0:LOAD "assets/large.bin",@35,0
+366 GOSUB _assert:ARGS "PEEK$(@39,0,5)=$`0102030405`"
 
 370 GOSUB _title:ARGS "SAVE/LOAD page"
 372 COPY @1 TO @33

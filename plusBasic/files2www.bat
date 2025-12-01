@@ -7,6 +7,7 @@ copy zout\sysrom.bin %_reldir%
 copy pt3player\zout\main.cim %_reldir%\ptplay.bin
 copy README.html %_reldir%\quickref.html
 copy README.md %_reldir%\quickref.md
+copy README.pdf %_reldir%\quickref.pdf
 copy releases.html %_reldir%
 copy releases.md %_reldir%
 copy ..\util\bas2baq.py %_reldir%

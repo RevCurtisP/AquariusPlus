@@ -102,14 +102,8 @@ IEND_KEY    equ $3832   ; Key pressed to end input
 SCREENCTL   equ $3833   ; Text Screen flags
 GFX_FLAGS   equ $3834   
 BAS_FLAGS   equ $3835   ; Temporary BASIC Flags
-TMPBUFTOP   equ $3836
-
-; enhance editor
-;RIGHTCOL    equ $3838   ; Right bound (LINELEN-1)
-;LEFTCOL     equ $3839   ; Left bound (1)
-;BOTLINE     equ $383A
-;TOPLINE     equ $383B
-;LINEDELTA   equ $383C   ; LINELEN - RIGHTCOL + LEFTCOL
+TMPBUFTOP   equ $3836   ; Address after top temporary string buffer
+IRQSAVSTK   equ $3838   ; Stack position after irq_handler has saved all registers
 
 ; Temporary Variables stored in FILNAM+FILNAM ($3851-$385C), RESMO-RESLO ($38F7-$38F8)
 ; bitmap_get and bitmap_set

@@ -28,17 +28,20 @@ _attr_byte:
 ; BIN$(long)
 ;-----------------------------------------------------------------------------
 FN_BIN:
-    jp      GSERR
     inc     hl                    ; Skip BIN
     SYNCHKC '$'                   ; Require $
-    call    PARTYP                ; FACC = Arg
-    jp      z,TMERR               ; Type mismatch error if string
-    ld      a,(FAC)               ; A = Exponent
-    sub     128                   ; A = BinLen
-    jr      z,.zero_string
-    jr      c,.zero_string
-
-.zero_string
+    ld      bc,free_temp_buffer
+    push    bc                    ; Stack = FunRtn, RtnAdr
+    call    PARCHK                ; FACC = Arg
+    push    hl                    ; Srack = TxtPtr, FunRtn, RtnAdr
+    call    FRC_LONG              ; CDE = LngInt
+    ld      iy,long_to_binstring
+temp_buff_aux_call:
+    call    alloc_temp_buffer     ; HL = TmpBuf
+aux_call_ret_tmpbuf:
+    call    aux_call
+    jp      c,FCERR
+    jp      return_tmpbuf         ; and return it
 
 ;-----------------------------------------------------------------------------
 ; BIT(expr,bit#)
@@ -285,8 +288,6 @@ ptrget_aux_call:
 ; INMEM(address,string$)
 ; INMEM(@page,address,string$)
 ;----------------------------------------------------------------------------
-;; ToDo: INMEM(!extaddr,string)
-;       Have to mod to return long
 ; PRINT INMEM(0,"Copyright")
 ; PRINT INMEM($3900,"Copyright")
 ; PRINT HEX$(INMEM(0,"Copy"+"wrong"))
@@ -306,11 +307,11 @@ FN_INMEM:
     ex      (sp),hl               ; HL = MemAdr; Stack = TxtPtr, RtnAdr
     ld      bc,LABBCK
     push    bc                    ; Stack = LABBCK, TxtPtr, RtnAdr
-    push    hl                    ; Stack = MemAdr, TxtPtr, RtnAdr
+    push    hl                    ; Stack = MemAdr, LABBCK, TxtPtr, RtnAdr
     ex      af,af'                ; AF' = PgFlag
-    call    free_addr_len         ; DE = TxtAdr, BC = TxtLen
+    call    free_addr_len         ; DE = StrAdr, BC = StrLen
     jp      z,pop_float_minus_one ; Return -1 if null string
-    pop     hl                    ; HL = MemAdr; Stack = TxtAdr, RtnAdr
+    pop     hl                    ; HL = MemAdr; Stack = LABBCK, TxtPtr, RtnAdr
     ex      af,af'                ; AF = PgFlag
     call    .search
     ex      de,hl                 ; DE = Address in page
@@ -328,7 +329,6 @@ FN_INMEM:
 ;----------------------------------------------------------------------------
 ; Search for string in string array
 ; INDEX(*array,string$)
-; ToDo: INDEX(*array,string${,start})
 ;----------------------------------------------------------------------------
 ; A$(0)="foo":A$(9)="bar"
 ; ? INDEX(*A$,"foo")
@@ -347,7 +347,7 @@ FN_INDEX:
     push    bc                    ; Stack = ArySiz, AryAdr, RtnAdr
     call    get_comma             ; Require ,
     call    FRMEVL                ; Evaluate search arg
-    SYNCHKC ')'                   ; Require (
+    SYNCHKC ')'                   ; Require )
     push    hl                    ; Stack = TxtPtr, ArySiz, AryAdr, RtnAdr
     call    free_addr_len         ; DE = StrAdr, A = StrLen
     pop     hl                    ; HL = TxtPtr; Stack = ArySiz, AryAdr, RtnAdr
@@ -625,7 +625,12 @@ ST_JOIN:
     call    parse_delimiter       ; A = DelChr
     ld      (SPLITDEL),a          ; SPLITDEL = DelChr
     ld      iy,bas_join
-    jp      aux_call_preserve_hl
+aux_call_preserve_hl:
+    push    hl
+aux_call_popret:
+    call    aux_call
+    pop     hl
+    ret
 
 ;-----------------------------------------------------------------------------
 ; OFFSET Function
@@ -987,7 +992,7 @@ ST_SET:
     cp      SPRITK                ; $84
     jp      z,ST_SET_SPRITE
     cp      CHRTK                 ; $85
-    jr      z,ST_SET_CHR
+    jp      z,ST_SET_CHR
     cp      KEYTK                 ; $86
     jr      z,ST_SET_KEY
     cp      FASTK                 ; $88
@@ -1005,28 +1010,41 @@ ST_SET:
     jp      SNERR
 
 ;-----------------------------------------------------------------------------
-; Set specified bit in variable to 1
+; Set specified bit in variable to 1 or 0
 ; Syntax: SET BIT VAR,bit#
 ;-----------------------------------------------------------------------------
+;; SET BIT A,7:? A
+;; B=$FFFF:RESET BIT B,8:? B
+ST_RESET_BIT:
+    byte    $3E                   ; LD A,$EE over XOR (Reset Bit)
 ST_SET_BIT:
-    jp      GSERR
-    ld      bc,bas_set_bit
+    xor     a                     ; A = Mode (Set Bit)
 _set_reset_bit:
+    ld      (TEMP8),a             ; (TEMP8) = Mode
     rst     CHRGET                ; Skip BIT
-    push    bc                    ; Stack = AuxRtn, RtnAdr
     call    PTRTYP                ; DE = VarPtr, AF = VarTyp
-    push    af                    ; Stack = VarTyp, AuxRtn, RtnAdr
-    push    de                    ; Stack = VarPtr, VarTyp, AuxRtn, RtnAdr
+    push    de                    ; Stack = VarPtr, RtnAdr
+    push    af                    ; Stack = VarTyp, VarPtr, RtnAdr
     call    get_comma_int         ; DE = BitNo
-    pop     bc                    ; BC = VarPtr; Stack = VarTyp, AuxRtn, RtnAdr
-    pop     af                    ; AF = VarTyp; Stack = AuxRtn, RtnAdr
-    pop     iy                    ; IY = AuxRtn; Stack = RtnAdr
-aux_call_preserve_hl:
-    push    hl
-aux_call_popret:
-    call    aux_call
-    pop     hl
-    ret
+    pop     af                    ; AF = VarTyp; Stack = VarPtr, RtnAdr
+    ex      (sp),hl               ; HL = VarPtr; Stack = TxtPtr, RtnAdr
+    jr      z,.string             ; If numeric variable
+    push    hl                    ;   Stack = VarPtr, TxtPtr, RtnAdr
+    push    de                    ;   Stack = BitNo, VarPtr, TxtPtr, RtnAdr
+    call    MOVFM                 ;   Copy variable to FACC
+    call    FRC_LONG              ;   CDE = Long
+    pop     hl                    ;   HL = BitNo; Stack = VarPtr, TxtPtr, RtnAdr
+    ld      iy,bas_bit_numvar
+    call    aux_call              ;   CDE = Result
+    call    FLOAT_CDE             ;   FACC = Result
+    pop     hl                    ;   HL = VarPtr; Stack = TxtPtr, RtnAdr
+    call    MOVMF                 ;   Copy FACC to variable
+    pop     hl                    ;   HL = TxtPtr
+    ret                           ; Else
+.string:
+    ld      iy,bas_bit_string
+    jp      aux_call_popret       ;   Do Set/Reset, Pop HL and return
+
 
 ;-----------------------------------------------------------------------------
 ; Toggle control-c checking
@@ -1036,35 +1054,6 @@ ST_SET_BREAK:
     call    get_on_off            ; A = $FF if ON, $00 if OFF
     xor     $FF                   ; A = $00 if enable, $FF if disabled
     jp      sys_break_mode
-
-;-----------------------------------------------------------------------------
-; Redifine character in Character RAM
-; Syntax: SET CHRDEF ascii_code TO string$
-; ToDo: SET CHRDEF ascii_code {IN char_set} TO string$
-;-----------------------------------------------------------------------------
-; SET CHRDEF 127 TO $"AA55AA55AA55AA55":PRINT CHR$(127)
-; SET CHRDEF "@" TO $"FF00FF00FF00FF00":PRINT "@"
-ST_SET_CHR:
-    rst     CHRGET                ; Skip CHR
-    SYNCHKT DEFTK                 ; Require DEF
-    call    get_char              ; A = ChrASC
-    push    af                    ; Stack = ChrASC, RtnAdr
-    call    get_to_string_arg     ; DE = StrAdr, BC = StrLen, Stack = TxtPtr, ChrASC, RtnAdr
-    ld      a,c
-    cp      8                     ; If StrLen <> 8
-    jp      nz,FCERR              ;   Illegal quantity error
-    pop     hl                    ; HL = TxtPtr; Stack = ChrASC, RtnAdr
-    pop     af                    ; A = ChrASC
-    push    hl                    ; Stack = TxtAdr, RtnAdr
-    ld      l,b                   ; Destination = 0 - ChrRAM
-    ld      iy,gfx_redefine_char
-    call    aux_call
-    jp      c,LSERR
-    ld      a,(SCREENCTL)         ; Set character set modified flag
-    or      a,SCRCHRMOD
-    ld      (SCREENCTL),a
-    pop     hl                    ; HL = TxtAdr; Stack = RtnAdr
-    ret
 
 ;-----------------------------------------------------------------------------
 ; Set Direct Mode Kay Repeat
@@ -1251,6 +1240,8 @@ ST_PAUSE_UNTIL
 ;;       RESET CHRDEF ascii_code
 ST_RESET:
     rst     CHRGET                ; Skip RESET
+    cp      BITTK
+    jp      z,ST_RESET_BIT
     cp      MULTK
     jr      z,_reset_array
     cp      SCRNTK
@@ -1264,6 +1255,8 @@ ST_RESET:
     jp      z,ST_RESET_BORDER
     cp      SPRITK
     jp      z,ST_RESET_SPRITE
+    cp      CHRTK
+    jp      z,ST_RESET_CHR
     jp      SNERR
 
 

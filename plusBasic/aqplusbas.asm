@@ -27,7 +27,7 @@
     jp      _reset          ; $2000 XPLUS  Called from main ROM at reset vector
     jp      _coldboot       ; $2003 XCOLD  Called from main ROM for cold boot
     jp      just_ret        ; $2006 XCART  Dummy entry matching jump table entry in SD-BASIC
-    jp      irq_handler     ; $2009 XINTR  Interrupt handler
+    jp      just_ret        ; $2009 
     jp      _warm_boot      ; $200C Called from main ROM for warm boot
     jp      _xkeyread       ; $200F XINCHR Called from COLORS
     jp      just_ret        ; $2012 
@@ -39,7 +39,7 @@
     jp      _input_ctrl_c   ; $2024 INPUTC Handle Ctrl-C in INPUT
     jp      just_ret        ; $2027
     jp      just_ret        ; $202A 
-    jp      _finish_input   ; $202D FININX C/R in INPUT patch
+    jp      just_ret        ; $202D FININX C/R in INPUT patch
     jp      _scan_label     ; $2030 SCNLBL Scan line label or line number
     jp      just_ret        ; $2033
     jp      just_ret        ; $2036
@@ -121,7 +121,7 @@ null_desc:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.27p"
+    db "v0.27q"
     db 0
 plusver_len equ $ - plus_version
 plus_len   equ   $ - plus_text
@@ -171,12 +171,11 @@ init_banks:
 ; Save registers, Calls address in BASINTJP
 ; Restores registers and re-enables interrupts on return
 ;-----------------------------------------------------------------------------
-; ; ToDo: Save stack position, so interrupt can jump back if needed
 irq_handler:
     push    af                    ; Stack = AF
     ld      a,(IRQACTIVE)
     or      a
-    jp      z,.stop_irqs
+    jp      z,_stop_irqs
     ex      af,af'
     push    af
     ex      af,af'
@@ -190,6 +189,10 @@ irq_handler:
     push    ix
     push    iy
 
+    ld      hl,0
+    add     hl,sp
+    ld      (IRQSAVSTK),hl        ; Save Stack Position
+
     rra                           ; Carry = IRQ_TIMER
     call    c,_timer
     rra                           ; Carry = IRQ_USER
@@ -197,6 +200,8 @@ irq_handler:
     rra                           ; Carry = IRQ_TRACKER
     call    c,_pt3tick
     rra                           ; Carry = IRQ_MOUSE
+
+irq_done:
     ld      a,IRQ_VBLANK
     out     (IO_IRQSTAT),a
 
@@ -215,7 +220,7 @@ irq_handler:
     ei
     reti
 
-.stop_irqs
+_stop_irqs
     out     (IO_IRQMASK)
     pop     af
     reti
@@ -353,7 +358,7 @@ main_ctrl_c:
     rst     CHRGET
     jp      MAIN0
 
-_finish_input:
+finish_input:
     ld      (IEND_KEY),a
     jp      FININL
 
@@ -889,6 +894,7 @@ tty_finish:
 ; - Executes routine, passing all registers except AF' and IX
 ; - Restores Bank 3 and returns all registers exoept AF'
 ; Input: IY = Routine address
+; Clobbered: AF', IX
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 gfx__call:
     inc     iy                    ; Index into gfx jump_table
@@ -904,6 +910,7 @@ gfx_call:
 ; - Executes routine, passing all registers except AF' and IX
 ; - Restores Bank 3 and returns all registers exoept AF'
 ; Input: IY = Routine address
+; Clobbered: AF', IX
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 aux_call:
     call    page_map_auxrom
@@ -917,6 +924,7 @@ _jumpiy:
 ; - Executes routine, passing all registers except AF' and IX
 ; - Restores Bank 3 and returns all registers exoept AF'
 ; Input: IY = Routine address
+; Clobbered: AF', IX
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ext_call:
     call    page_map_extrom
@@ -929,7 +937,7 @@ ext_call:
 ; - Restores Bank 3 and returns all registers exoept AF'
 ; Input: A = Page
 ;       IY = Routine address
-; Clobbered: AF'
+; Clobbered: AF', IX
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 page_call:
     call    page_map_bank3
@@ -968,7 +976,9 @@ _eat_suffix
 ; Allocate a 256 byte temporary string buffer
 ; Output: HL: Buffer Address
 alloc_temp_buffer:
-    push    de
+    push    af                    ; Stack = SaveAF, RtnAdr
+    push    bc                    ; Stack = SaveBC, SaveAF, RtnAdr
+    push    de                    ; Stack = SaveDE, SaveBC, SaveAF, RtnAdr
     ld      hl,(TMPBUFTOP)        ; HL = TempBufPtr
     inc     h                     ; Add 256
     ld      de,(FRETOP)           ; DE = Bottom of String Data
@@ -981,10 +991,9 @@ alloc_temp_buffer:
     jr      nc,OSERR              ;   Out of string space error
     ld      (TMPBUFTOP),hl        ; Set new pointer address
     dec     h                     ; Back to current pointer address
-    pop     de
-    ret
-
-_garbage_collect:
+    pop     de                    ; DE = SaveSE; Stack = SaveBC, SaveAF, RtnAdr
+    pop     bc                    ; BC = SaveBC; Stack = SaveAF, RtnAdr
+    pop     af                    ; AF = SaveAF; Stack = RtnAdr
     ret
 
 ; Get address of most recently allocated temp buffer
@@ -1014,10 +1023,25 @@ OSERR:
     ld      e,ERROS
     jp      ERROR
 
+;-----------------------------------------------------------------------------
+; Called from OUTDO through OUTDOH in sbasic.asm
+;-----------------------------------------------------------------------------
+outdo_hook:
+  push    af                
+  ld      a,(BASYSCTL)            ; Get System Control Bits
+  rra                             ; Carry = BASOUTBUF
+  jr      c,.buffer               ; If bit set, write to buffer 
+  pop     af
+  jp      OUTCON
+.buffer
+  pop     af
+  ld      iy,output_to_buffer
+  jp      ext_call                ; If bit set, write to buffer 
+
     free_rom_sys = $2F00 - $
 
-; ------------------------------------------------------------------------------
-;  Hook Jump Table
+;------------------------------------------------------------------------------
+; Hook Jump Table
 ; ------------------------------------------------------------------------------
 
     assert !($2EFF<$)   ; ROM full!
@@ -1101,6 +1125,8 @@ _scan_label
 error_ext:
     call    page_set_plus         ; Bank 3 could be mapped to any page at this point.
     call    clear_inevalflg       ; Clear In EVAL Flag
+    xor     a
+    ld      (SUBFLG),a            ; In case it as a UD error
     jp      trap_error            ; so map to Extended ROM, before continuing
 
 ;-----------------------------------------------------------------------------

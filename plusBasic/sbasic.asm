@@ -110,7 +110,6 @@ RESETX  equ     $201B   ;; + Skip start screen, cold boot if ':' pressed
 XINKEY  equ     $201E   ;  + Read buffered key and check for Ctrl-C
 INCNTX  equ     $2021   ;; + INCNTC control keys patch
 INPUTC  equ     $2024   ;; + INPUT Ctrl-C patch
-FININX  equ     $202D   ;; + Finish INPUT
 ;;plusBASIC specific hooks
 SCNLBL  equ     $2030   ;; | Scan line label or line number
 THENHK  equ     $2039   ;; | Scan for ELSE after IF THEN
@@ -338,13 +337,18 @@ CLDCON: call    PRNTIT            ;;Print copyright message
 ;;Check for Extended BASIC        ;;
 EXTCHK: ld      a,(de)            ;;Get byte from signature
         or      a                 ;;Did we reach a terminator?
-        jp      z,XBASIC          ;;Yes, start Extended BASIC
-        cp      (hl)              ;;Does it match byte in ROM?
-        jr      nz,INITFF         ;;No, move on
-        dec     hl                ;;Move backward in Extended BASIC
-        inc     de                ;;and forward in test signature
-        jr      EXTCHK            ;;Compare next character
 ;;; End AqPlus deprecated code
+        nop                       ;;                                          0149  jp      z,XBASIC
+        nop                       ;;                                          014A
+;; Set VALTYP to 1 (string) or 0 (number)
+VALSTR: byte    $3E               ;; + LD A,$AF                               014B  
+VALNUM: xor     a                 ;; + A = 0                                  014C  cp      (hl)
+        and     1                 ;; + Convert $AF to 1                       014D  jr      nz,INITFF
+                                  ;; +                                        014E
+VALSET: ld      (VALTYP),a        ;; +                                        014F  dec     hl     
+                                  ;; +                                        0150  inc     de              
+                                  ;; +                                        0151  jr      EXTCHK
+        ret                       ;; +                                        0152
 ;;Initialize I/O Port 255
 INITFF: ld      a,r               ;;Read random number from Refresh Register
         rla                       ;;Rotate left                               Original Code
@@ -2440,30 +2444,33 @@ QINLIN: ld      a,'?'             ;
         jp      INLIN             ;;;For relative jumps
 
 ;;; Code Change: Replace Ancient DELETE code with improved backspace code
-BSFIX:  or      a                 ;;If not at position 0                      ; 0D64
-        jr      nz,BSFIN          ;;Do the backspace                          ; 0D65  
-                                                                              ; 0D66   
-        ld      c,a                                                           ; 0D67
-        ld      a,l                                                           ; 0D68 
-        cp      41                ;;If at home position                       ; 0D69 
-                                                                              ; 0D6A
-        ld      a,c                                                           ; 0D6B 
-        jp      z,NOBS            ;;  Don't backspace                         ; 0D6C
-                                                                              ; 0D6D
-                                                                              ; 0D6E
-        dec      hl               ;;Backup to end of previous line            ; 0D6F
-        dec      hl                                                           ; 0D70  jr     z,INLIN 
-        ld       a,38                                                         ; 0D71  
-                                                                              ; 0D72  rst     OUTCHR
-BSFIN:  jp       DOBS             ;;Do the backspace                          ; 0D73  inc     b     
+BSFIX:  or      a                 ;;If not at position 0                      0D64
+        jr      nz,BSFIN          ;;Do the backspace                          0D65  
+                                  ;                                           0D66   
+        ld      c,a               ;                                           0D67
+        ld      a,l               ;                                           0D68 
+        cp      41                ;;If at home position                       0D69 
+                                  ;                                           0D6A
+        ld      a,c               ;                                           0D6B 
+        jp      z,NOBS            ;;  Don't backspace                         0D6C
+                                  ;                                           0D6D
+                                  ;                                           0D6E
+        dec      hl               ;;Backup to end of previous line            0D6F
+        dec      hl               ;                                           0D70  jr     z,INLIN 
+        ld       a,38             ;                                           0D71  
+                                  ;                                           0D72  rst     OUTCHR
+BSFIN:  jp      DOBS              ;;Do the backspace                          0D73  inc     b     
+;; Deprecated code - Good place for a JR to JP patch
         jr      z,INLINN          ;[M80] AND RE-SET UP INPUT
         ld      a,(hl)            ;[M80] OTHERWISE GET CHAR TO ECHO
-        rst     OUTCHR            ;[M80] SEND IT
-        jr      INLINC            ;[M80] AND GET NEXT CHAR
-LINLIN: dec     b                 ;[M80] AT START OF LINE?
-        dec     hl                ;[M65] BACKARROW SO BACKUP PNTR AND
-        rst     OUTCHR            ;[M80] SEND BACKSPACE
-        jr      nz,INLINC         ;
+;; End Deprecated code
+BSBEL:  dec     a                 ;; Convert from BS to BEL                   0D79  rst     OUTCHR
+        jr      OUTBEL            ;; Print it and jump to INLINC              0D7A  jr      INLINC
+                                  ;                                           0D7B
+LINLIN: dec     b                 ;[M80] AT START OF LINE?                   
+BINLIN: dec     hl                ;[M65] BACKARROW SO BACKUP PNTR AND        
+        rst     OUTCHR            ;[M80] SEND BACKSPACE                      
+        jr      INLINC            ;                                           0D7F  jr      nz,INLINC
 INLINN: rst     OUTCHR            ;
 INLINU: call    CRDO              ;[M80] TYPE A CRLF
 INLIN:  call    get_linbuf_hl     ;                                           0D85  ld      hl,BUF
@@ -2479,23 +2486,24 @@ INLINC: call    wait_key          ;; Bypasss Ctrl-C check                     0D
                                   ;                                           0D8F
                                   ;                                           0D90
 INLNC1: ld      c,a               ;[M80] SAVE CURRENT CHAR IN [C]
-        jp      ctrl_keys         ;; + Check for Extended Ctrl-Keys            0D92  cp      127 
-                                  ;; +                                         0D93    
-                                  ;; +                                         0D94  jr      z,RUBOUT          
+        jp      ctrl_keys         ;; + Check for Extended Ctrl-Keys           0D92  cp      127 
+                                  ;; +                                        0D93    
+                                  ;; +                                        0D94  jr      z,RUBOUT          
 ;; Set VALTYP to 1 (string) or 0 (number)
-VALSTR: byte    $3E               ;; + LD A,$AF                                0D95
-VALNUM: xor     a                 ;; + A = 0                                   0D96  ld      a,(RUBSW)
-        and     1                 ;; + Convert $AF to 1                        0D97
-                                  ;; +                                         0D98
-VALSET: ld      (VALTYP),a        ;; +                                         0D99  or      a
-                                  ;; +                                         0D9A  jr      z,NOTRUB          
-                                  ;; +                                         0D9B
-        ret                       ;; +                                         0D9D  ld      a,'\'
-        nop                       ;; +                                         0D9E
-        rst     OUTCHR            ;[M80] SEND IT
-        xor     a                 ;[M80] CLEAR RUBSW
-        ld      (RUBSW),a         ;[M80] LIKE SO
-;;; End of deprecated code
+LINDEL: ld      a,8               ;; +                                        0D95
+                                  ;; +                                        0D96  ld      a,(RUBSW)
+        dec     b                 ;; + Bump for loop                          0D97
+        jr      z,DELBEL          ;; +                                        0D98 
+                                  ;; +                                        0D99  or      a
+LINDLP: rst     OUTCHR            ;; +                                        0D9A  jr      z,NOTRUB
+        djnz    LINDLP            ;; +                                        0D9B
+                                  ;; +                                        0D9D  ld      a,'\'    
+        jr      INLIN             ;; +                                        09DE      
+                                  ;; +                                        09DF  rst     OUTCHR
+DELBEL: inc     b                 ;; + Set length back to 1                   09E2  xor     a
+        jp      BSBEL             ;; + Ring bell and contine                  09E3  ld      (RUBSW),a
+                                  ;; +                                        09E4
+                                  ;; +                                        09E5
 NOTRUB: ld      a,c               ;[M80] GET BACK CURRENT CHAR
 ;;; Bug Fix: Jump to OUTBEL so BEL doesn't go into buffer
 CHKFUN: cp      7                 ;[M80] IS IT BOB ALBRECHT RINGING THE BELL
@@ -2505,17 +2513,20 @@ CHKFUN: cp      7                 ;[M80] IS IT BOB ALBRECHT RINGING THE BELL
         scf                       ;[M80] RETURN WITH CARRY ON
         ret     z                 ;[M80] IF IT WAS CONTROL-C
         cp      13                ;
-        jp      z,FININX          ;; +                                        0DB1  jp      z,FININL
+        jp      z,finish_input    ;; +                                        0DB1  jp      z,FININL
         cp      21                ;[M80] ;LINE DELETE? (CONTROL-U)
-        jp      z,INLINU          ;[M80] GO DO IT
-        nop                       ;;;Orphan Code: Move this down to reuse - 5 bytes
-        nop                       ;;;Whatever was removed isn't in the
-        nop                       ;;;available source codes
-        nop                       ;
-        nop                       ;
-        cp      8                 ;[M80] BACKSPACE? (CONTROL-H)?
-        jp      z,LINLIN          ;[M65] YES
-        cp      24                ;[M80] AT START OF LINE?
+        jp      z,LINDEL          ;[M80] GO DO IT
+        cp      8                 ;[M80] BACKSPACE? (CONTROL-H)?              0DB9  nop
+                                  ;                                           0DBA  nop
+        jr      nz,NOTBS          ;[M65] YES                                  0DBB  nop
+                                  ;                                           0DBC  nop
+        dec     b                 ;                                           0DBD  nop
+        jr      nz,BINLIN          ;; If buffer not empty                     0DBE  cp      8       
+                                  ;;   Do the backspace                       0DBF
+        inc     b                 ;; Else                                     0DC0  jp      z,LINLIN
+        jr      BSBEL             ;;   Beep and continue                      0DC1
+                                  ;                                           0DC2
+NOTBS:  cp      24                ;[M80] AT START OF LINE?
         jr      nz,NTCTLX         ;[M80] IS IT  X (LINE DELETE)
         ld      a,'#'             ;[M80] SEND NUMBER SIGN
         jp      INLINN            ;[M80] SEND # SIGN AND ECHO

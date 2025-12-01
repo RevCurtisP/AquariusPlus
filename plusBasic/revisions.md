@@ -1,4 +1,18 @@
 # plusBASIC Revision History
+ - v0.27q (2025-12-01)
+    - Modified _irq_handler_ to save stack position in _IRQSAVSTK_, elminiated jump through `$2009` to _irq_handler_
+    - Fixed text screen corruption when _OUTDO_ called from Auxiliary ROM (specifically `LIST *array$' core code)
+    - Added _colormap_write_tmpbfr_, implemented _file_save_colormap_ and `SAVE COLORMAP`
+    - Implemented `APPEND file$,addr,len`, `APPEND file$,@page,addr,len`, `APPEND file$,!extaddr,len`, `APPEND file$,*var$"
+    - Added _text_read_tmpbfr_ and _file_load_text_
+    - Added `,chrset` option to `GETCHRDEF$()`, added _gfx_reset_char_def_ and `RESET CHRDEF char`
+    - Added _long_to_binstring_, implemented `BIN$()`
+    - Added _bool_setbit_string_ and _bool_resetbit_string_, implemented `SET BIT` and `RESET BIT` statements
+    - _alloc_temp_buffer_ now preserves `AF`, `BC`, and `DE`
+    - Refactored code in _auxrom/fileload.asm_ to change `JP` instructions to `JR`
+    - Modified _get_comma_len_ len to only allow positive length value, corrected comments in various routines
+    - Backspace when input buffer is empty no longer prints a BS and CR/LF, beeps if line buffer is empty
+    - Ctrl-U backspaces to delete current line instead of printing a CR/LF, beeps if line buffer is empty
  - v0.27p (2025-11-09)
     - Updated jump tables, generated and reviewed dev include files
     - Copied _releases.md_ to _revisions.md_ and removed non-user facing changes from _releases.md_ from _v0.23b_ through _v0.27o_

@@ -28,6 +28,30 @@ _or_a_ret:
     ret
 
 ;-----------------------------------------------------------------------------
+; Load screen image
+; Input: HL: String descriptor address
+; Output: A: result code
+; Flags Set: S if I/O error, C if invalid file contents
+; Clobbered: BC ,DE, HL
+;-----------------------------------------------------------------------------
+; ToDo: Allow loading to a screen buffer
+file_load_screen:
+    ld      iy,screen_read_tmpbfr
+    jr      _load_read_gfx
+
+;-----------------------------------------------------------------------------
+; Load tilemap into Video RAM
+;  Input: HL: String descriptor address
+; Output: A: result code
+; Flags Set: S if I/O error
+;            C if illegal file
+; Clobbered: BC, DE, HL
+;-----------------------------------------------------------------------------
+file_load_tilemap:
+    ld      iy,tilemap_read_tmpbfr
+    jr      _load_read_gfx
+
+;-----------------------------------------------------------------------------
 ; Load bitmap image
 ; Input: HL: String descriptor address
 ; Output: A: result code
@@ -42,7 +66,7 @@ _load_read_gfx:
     jp      gfx_call
 
 ;-----------------------------------------------------------------------------
-; Load bitmap image
+; Load Color RAM only
 ; Input: HL: String descriptor address
 ; Output: A: result code
 ; Flags Set: S if I/O error, C if invalid file contents
@@ -50,6 +74,17 @@ _load_read_gfx:
 ;-----------------------------------------------------------------------------
 file_load_color:
     ld      iy,color_read_tmpbfr
+    jr      _load_read_gfx
+
+;-----------------------------------------------------------------------------
+; Load Screen RAM only
+; Input: HL: String descriptor address
+; Output: A: result code
+; Flags Set: S if I/O error, C if invalid file contents
+; Clobbered: CD, DE, EF
+;-----------------------------------------------------------------------------
+file_load_text:
+    ld      iy,text_read_tmpbfr
     jr      _load_read_gfx
 
 ;-----------------------------------------------------------------------------
@@ -217,18 +252,6 @@ file_load_rom:
     jp      page_restore_bank1
 
 ;-----------------------------------------------------------------------------
-; Load screen image
-; Input: HL: String descriptor address
-; Output: A: result code
-; Flags Set: S if I/O error, C if invalid file contents
-; Clobbered: BC ,DE, HL
-;-----------------------------------------------------------------------------
-; ToDo: Allow loading to a screen buffer
-file_load_screen:
-    ld      iy,screen_read_tmpbfr
-    jp      _load_read_gfx
-
-;-----------------------------------------------------------------------------
 ; Load file into TMP_BUFFR
 ; Input: HL: String descriptor address
 ; Output: A: result code
@@ -258,7 +281,7 @@ file_load_tmpbuffr:
 ; Clobbered: AF', L
 ; Clobbered: AF', L
 ;-----------------------------------------------------------------------------
-;; YoDo: Return carry set if BC + DE > 116384
+;; ToDo: Return carry set if BC + DE > 116384
 file_load_buffer:
     push    af                    ; Stack = Page, RtnAdr
     call    dos_open_read         ; A = FilDsc
@@ -372,18 +395,6 @@ file_load_strbuf:
     xor     a
     ld      (de),a
     ret
-
-;-----------------------------------------------------------------------------
-; Load tilemap into Video RAM
-;  Input: HL: String descriptor address
-; Output: A: result code
-; Flags Set: S if I/O error
-;            C if illegal file
-; Clobbered: BC, DE, HL
-;-----------------------------------------------------------------------------
-file_load_tilemap:
-    ld      iy,tilemap_read_tmpbfr
-    jp      _load_read_gfx
 
 ;-----------------------------------------------------------------------------
 ; Load tileset into Video RAM

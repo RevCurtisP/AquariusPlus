@@ -37,6 +37,18 @@ bool_checkbit_long:
 ; Clobbered: AF',BC,DE,HL
 ;-----------------------------------------------------------------------------
 bool_checkbit_string:
+    call    _string_chr_bit       ; HL = ChrAdr; B = BitNo+1
+    ret     c
+.loop
+    rra
+    djnz    .loop
+    ccf                           ; Carry = ! Bit
+    ld      a,0
+    adc     $FF                   ; Convert bit to 0/$FF
+    or      a                     ; Clear carry
+    ret
+
+_string_chr_bit:
     push    de                    ; Stack = StrAdr, RtnAdr
     ld      de,2040
     rst     COMPAR
@@ -57,13 +69,6 @@ bool_checkbit_string:
     pop     bc                    ; B = ChrBit; Stack = RtnAdr
     inc     b                     ; Bump BitNo for Loop
     ld      a,(hl)                ; A = StrChr
-.loop
-    rra
-    djnz    .loop
-    ccf                           ; Carry = ! Bit
-    ld      a,0
-    adc     $FF                   ; Convert bit to 0/$FF
-    or      a                     ; Clear carry
     ret
 
 ;-----------------------------------------------------------------------------
@@ -74,8 +79,8 @@ bool_checkbit_string:
 ;-----------------------------------------------------------------------------
 bool_setbit_long:
     ld      b,0
-    ld      hl,1                  ; BHL = 1
-    or      a                     ; Clear Carry, set Zero flags
+    ld      hl,1                  ; BHL = %000000000000000000000001
+    or      a                     ; Clear Carry, Set Zero flag
 .loop
     jr      z,bool_or_long        ; If Not 0
     sla     l
@@ -85,15 +90,84 @@ bool_setbit_long:
     dec     a                     ;   Count down
     jr      .loop                 ;   and Loop
 bool_or_long:
-    ld      a,c                   ; CDE = CDE | BHL
+    ld      a,c
     or      b
-    ld      c,a
+    ld      c,a                   ; C = C | B
     ld      a,d
     or      h
-    ld      d,a
-    ld      a,d
+    ld      d,a                   ; D = D | H
+    ld      a,e
     or      l
-    ld      d,a
+    ld      e,a                   ; E = E | L
+    ret
+
+;-----------------------------------------------------------------------------
+; Set Bit in Long
+; Input: A: Bit# (0-23)
+;      CDE: Long
+; Flags: Carry set if A > 23
+;-----------------------------------------------------------------------------
+bool_resetbit_long:
+    ld      b,$FF
+    ld      hl,$FFFE              ; BHL = %111111111111111111111110
+    or      a                     ; Set Zero flag
+.loop
+    jr      z,bool_and_long        ; If Not 0
+    scf
+    rl      l
+    rl      h
+    rl      b                     ;   Move bit right
+    ccf
+    ret     c                     ;   Too far!
+    dec     a                     ;   Count down
+    jr      .loop                 ;   and Loop
+bool_and_long:
+    ld      a,c
+    and     b
+    ld      c,a                   ; C = C & B
+    ld      a,d
+    and     h
+    ld      d,a                   ; D = D & H
+    ld      a,e
+    and     l
+    ld      e,a                   ; E = E & L
+    ret
+
+;-----------------------------------------------------------------------------
+; Set Bit in String
+; Input: BC: String Length
+;        DE: String Address
+;        HL: Bit Number
+; Flags: Carry set if BitNo out of range
+;-----------------------------------------------------------------------------
+bool_setbit_string:
+    call    _string_chr_bit       ; HL = ChrAdr; B = BitNo+1
+    ret     c
+    xor     a                     ; A = 0
+    scf                           ; Set Carry
+.loop
+    rla                           ; A = BitMsk
+    djnz    .loop
+    or      (hl)                  ; A = (ChrAdr) | BitMask
+    ld      (hl),a                ; Write char back to string
+    ret
+
+;-----------------------------------------------------------------------------
+; Clear Bit in String
+; Input: BC: String Length
+;        DE: String Address
+;        HL: Bit Number
+; Flags: Carry set if BitNo out of range
+;-----------------------------------------------------------------------------
+bool_resetbit_string:
+    call    _string_chr_bit       ; HL = ChrAdr; B = BitNo+1
+    ret     c
+    or      a,$FF                 ; A = %11111111, Carry = 0
+.loop
+    rla                           ; A = BitMsk
+    djnz    .loop
+    and     (hl)                  ; A = (ChrAdr) & BitMask
+    ld      (hl),a                ; Write char back to string
     ret
 
 ; Input: A: Byte
@@ -352,6 +426,38 @@ _bitmask
     rla
     djnz    .loop
     ret
+
+; Input: HL: Buffer Addreess
+;       CDE: Long Int
+; Clobbered: A, BC, DE
+long_to_binstring:
+    push    hl
+    ld      b,24
+.zloop
+    sla     e
+    rl      d
+    rl      c    
+    jr      c,.digit
+    djnz    .zloop
+    ld      (hl),'0'
+    inc     hl
+    jr      .done
+.mloop
+    sla     e
+    rl      d
+    rl      c    
+.digit
+    ld      a,'0'
+    adc     0
+    ld      (hl),a
+    inc     hl
+    djnz    .mloop
+.done
+    ld      (hl),0
+    pop     hl
+    ret
+    
+
 
 ;-----------------------------------------------------------------------------
 ; Read keys into buffer

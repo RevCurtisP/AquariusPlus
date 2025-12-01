@@ -482,7 +482,8 @@ screen_swap_palette:
 ; 80 column mode only: 2048 bytes
 ;-----------------------------------------------------------------------------
 color_write_tmpbfr:
-    ld      iy,_read_tmpbfr
+    ld      iy,_write_tmpbfr
+    jr      _color_tmpbfr
 color_read_tmpbfr:
     ld      iy,_read_tmpbfr
 _color_tmpbfr:
@@ -497,7 +498,7 @@ _color_tmpbfr:
     cp      $04                   ;   If FileSize <> 1024
     jr      nz,_badfile           ;     Return Carry Set
     ld      de,COLOR              ;   DstAdr = ColorRAM
-    jr      _read_tmpbfr
+    jp      (iy)
 .col80
     cp      $08
     jr      nz,_badfile
@@ -515,7 +516,7 @@ _color80:
 
 _write_tmpbfr:
     ex      de,hl
-    ld      de,BANK1_base
+    ld      de,BANK1_BASE
     jr      _copy
 _write_tmpbfr_scrn:
     ld      hl,SCREEN             ; DstAdr = Screen
@@ -537,7 +538,7 @@ _badfile:
 
 ;-----------------------------------------------------------------------------
 ; Copy TMP_BUFFR to Screen RAM , Color RAM, Palette, and IO_VCTRL
-; Output: BC = Length of data to copy
+; Input: BC = Length of data to copy
 ; Sets flags: Carry if data length does not match screen mode
 ; Clobbers: A, AF', BC, DE, HLh
 ;          ----- 40 Column Mode ------
@@ -638,9 +639,28 @@ screen_read_tmpbfr:
     ret
 
 ;-----------------------------------------------------------------------------
+; Copy TMP_BUFFR to Screen RAM
+; Input: BC = Length of data to copy
+; Sets flags: Carry if data length does not match screen mode
+; Clobbers: A, AF', BC, DE, HL
+;-----------------------------------------------------------------------------
+text_read_tmpbfr:
+    call    page_map_tmpbfr
+    in      a,(IO_VCTRL)
+    and     VCRTL_80COL_EN        ; A = $40 if 80-column
+    add     $40                   ; A = $40 if 40-column, $80 if 80 column
+    cp      b
+    jp      nz,_badfile
+    ld      a,c
+    and     a
+    jp      nz,_badfile
+    jp      _read_tmpbfr_scrn
+
+;-----------------------------------------------------------------------------
 ; Copy Screen, Palette, and IO_VCTRL to TMP_BUFFR
-; Input: A = WriteOptBits (7 = Palette, 6 = Border, 2 = Swap, 0-1 = Screen#)
-; Output: BC = Length of copied data
+; Input: A: WriteOptBits 
+;   (7 = Palette, 6 = Border, 2 = Swap, 0-1 = Screen#)
+; Output: BC: Length of copied data
 ; Clobbers: AF, AF', DE, HL
 ;-----------------------------------------------------------------------------
 screen_write_tmpbfr:
@@ -668,22 +688,38 @@ screen_write_tmpbfr:
     ld      b,a
     ld      c,e                   ;     BC = WriteLen
     ret
+
+; Input: D = WrtOpt, E = Swap+Scrn
 _scrn_write_tmpbfr:
     call    page_map_tmpbfr       ; Bank 1 = TempBuffer. AF, Af', IX clobbered
     in      a,(IO_VCTRL)
     push    af                    ; Stack = IO_VCTRL, RtnAdr
     push    de                    ; Stack = WrtOpt, IO_VCTRL, RtnAdr
     and     VCRTL_80COL_EN
-    jr      z,.col40              ; If 80 column mode
+    jr      z,.column40           ; If 80 column mode
     in      a,(IO_VCTRL)
     and     $FF-VCTRL_TEXT_PAGE
     out     (IO_VCTRL),a          ;   Switch to Screen RAM
-    call    .copy                 ;   and copy to buffer
+    ld      ix,.copy              ; 
+    bit     5,d                   ;   If not Color Only 
+    jr      nz,.color80
+    call    jump_ix               ;     Copy to buffer
+    pop     af                    ;     A = WrtOpt; Stack = IO_VCTRL, RtnAdr
+    push    af                    ;     Stack = WrtOpt, IO_VCTRL, RtnAdr
+    bit     4,d                   ;     If Text Only
+    jr      nz,.trailer           ;       Finish up
+    ld      ix,.copy_next
+.color80:
+    in      a,(IO_VCTRL)
     or      VCTRL_TEXT_PAGE
-    out     (IO_VCTRL),a          ;   Switch to Color RAM
-    call    .copy_next            ;   and copy to buffer
+    out     (IO_VCTRL),a          ;     Switch to Color RAM
+    call    jump_ix               ;     and copy to buffer
     jr      .trailer              ; Else
-.col40
+.column40
+    bit     4,d
+    jr      nz,.text40
+    bit     5,d
+    jr      nz,.color40
     call    .copy
 .trailer
     pop     af                    ; A = WrtOpt; Stack = IO_VCTRL, RtnAdr
@@ -720,6 +756,17 @@ _scrn_write_tmpbfr:
     ldir
     ret
 
+.text40
+    ld      hl,SCREEN
+    jr      .copy40
+.color40
+    ld      hl,SCREEN+1024
+.copy40
+    ld      de,BANK1_BASE
+    ld      bc,1024
+    ldir
+    jr      .trailer
+  
 ; Input: E: Swap+Scrn; Output: H: VarOfs, HL: BufAdr; Clobbers: A
 calc_buff_ofs:
     ld      a,e

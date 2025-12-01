@@ -5,6 +5,39 @@
 ; ToDo: Fix and _check_coords, test screen_bounds, colormap_bounds
 
 ;-----------------------------------------------------------------------------
+; Set charcater in character RAM to default definition
+; RESET CHRDEF 127
+;-----------------------------------------------------------------------------
+; RESET CHRDEF 127
+ST_RESET_CHR:
+    rst     CHRGET                ; Skip CHR
+    SYNCHKT DEFTK                 ; Require DEF
+    call    get_char              ; A = ChrASC
+    ld      iy,bas_reset_chr
+    jp      gfx_call
+
+;-----------------------------------------------------------------------------
+; Redefine character in Character RAM
+; Syntax: SET CHRDEF ascii_code TO string$
+;-----------------------------------------------------------------------------
+; SET CHRDEF 127 TO $"AA55AA55AA55AA55"
+; SET CHRDEF "@" TO $"FF00FF00FF00FF00":PRINT "@"
+ST_SET_CHR:
+    rst     CHRGET                ; Skip CHR
+    SYNCHKT DEFTK                 ; Require DEF
+    call    get_char              ; A = ChrASC
+    push    af                    ; Stack = ChrASC, RtnAdr
+    call    get_to_string_arg     ; DE = StrAdr, BC = StrLen, Stack = TxtPtr, ChrASC, ChrSet, RtnAdr
+    ld      a,c
+    cp      8                     ; If StrLen <> 8
+    jp      nz,FCERR              ;   Illegal quantity error
+    pop     hl                    ; HL = TxtPtr; Stack = ChrASC,RtnAdr
+    pop     af                    ; A = ChrASC; Stack = RtnAdr
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    ld      iy,bas_set_chr
+    jp      gfx_call_popret
+
+;-----------------------------------------------------------------------------
 ; USE CHRSET - Change Character Set
 ; Syntax: USE CHRSET [0|1|filename$]
 ;-----------------------------------------------------------------------------
@@ -48,7 +81,7 @@ ST_USECHR:
 ; Syntax: USE SCREEN text,graphics
 ;-----------------------------------------------------------------------------
 ST_USE_SCREEN:
-    jp      GSERR                 ; Nor implemented error
+    jp      GSERR                 ; Not implemented error
     rst     CHRGET                ; Skip SCREEN
     call    get_byte4             ; A = text mode
     push    af
@@ -98,15 +131,24 @@ FN_GETCHR:
 ; GETCHRDEF - Return Corrent Character Set
 ; GETCHRDEF$(ascii_code)
 ;-----------------------------------------------------------------------------
-; ToDo: GETCHRDEF(ascii_code, chrset)
 ; PRINT HEX$(GETCHRDEF$(127))
+; PRINT HEX$(GETCHRDEF$(127,1))
 ; PRINT HEX$(GETCHRDEF$('@'))
 FN_GETCHRDEF:
-    call    skip_dollar_paren   ; Require $(
+    call    skip_dollar_paren     ; Require $(
     call    get_char              ; A = ChrASC
-    ld      b,a                   ; B = ChrASC
+    push    af                    ; Stack = ChrASC, RtnAdr
+    ld      e,-1                  ; E = ChrSet
+    ld      a,(hl)
+    cp      ','
+    jr      nz,.nocomma
+    ld      c,2
+    call    skip_get_byte_capped  ; A, E = ChrSet
+.nocomma
     SYNCHKC ')'                   ; Require )
+    pop     bc                    ; B = ChrASC; Stack = RtnAdr
     push    hl                    ; Stack = TxtPtr, RtnAdr
+    ld      l,e                   ; L = ChrSet
     ld      iy,bas_getchrdef
     jp      gfx_call_putnew
 
@@ -330,7 +372,7 @@ _reset_screen:
 gfx_call_preserve_hl:
     push    hl
 gfx_call_popret:
-    call    aux_call
+    call    gfx_call
     pop     hl
     ret
 
@@ -821,7 +863,7 @@ _tilemap_xy:
 ; APPEND TILELIST T$ = tile#, tile#, ...
 ;-----------------------------------------------------------------------------
 ST_APPEND_ATTR:
-    call    _check_append_list    ; Back to APPEND if not TILELIST
+    call    _check_append_list    ; Back to APPEND if not ATTRLIST
     byte    $06                   ; LD B, over RST CHRGET
 ST_DEF_ATTR:
     rst     CHRGET                ; Skip ATTR/BYTE
@@ -847,7 +889,7 @@ _parse_attr:
 ;-----------------------------------------------------------------------------
 ;DEF PALETTELIST P$ = 0,1,2,3
 ST_APPEND_PALETTE:
-    call    _check_append_list    ; Back to APPEND if not TILELIST
+    call    _check_append_list    ; Back to APPEND if not PALETTELIST
     byte    $06                   ; LD B, over RST CHRGET
 ST_DEF_PALETTE:
     rst     CHRGET                ; Skip PALETTE
@@ -867,7 +909,7 @@ ST_DEF_PALETTE:
 ;-----------------------------------------------------------------------------
 ; DEF INTLIST I$ = 1234,$ABBA;0,$FFFF
 ST_APPEND_INT:
-    call    _check_append_list    ; Back to APPEND if not TILELIST
+    call    _check_append_list    ; Back to APPEND if not INTLIST
     byte    $06                   ; LD B, over RST CHRGET
 ST_DEF_INT:
     rst     CHRGET                ; Skip INT
@@ -890,7 +932,7 @@ ST_DEF_INT:
 ; APPEND RGBLIST R$ = r,g,b; r,g,b; ...
 ;-----------------------------------------------------------------------------
 ST_APPEND_RGB:
-    call    _check_append_list    ; Back to APPEND if not TILELIST
+    call    _check_append_list    ; Back to APPEND if not RGBLIST
     byte    $06                   ; LD B, over RST CHRGET
 ST_DEF_RGB:
     rst     CHRGET                ; Skip RGB, NZ set for DEF 
@@ -1075,7 +1117,7 @@ push_ret_str_word:
 ;-----------------------------------------------------------------------------
 ; DEF SPRITE sprite$ = spritle#, x-offset, y-offset; spritle#, x-offset, y-offset
 ; DEF SPRITE sprite$ = (rows,cols),spritle
-; DEF SPRITE sprite$ = spritle_list$
+; DEF SPRITE sprite$ = ^spritle_list$
 ; String Format: SprCount,TotWidth,TotHeigth,(SprNum,Xoffset,Yoffset)...
 ;-----------------------------------------------------------------------------
 ST_DEF_SPRITE:
@@ -1484,7 +1526,6 @@ FN_GETSPRITE:
 ; PRINT RGB("1234")
 ; PRINT RGB("16,32,48",",")
 ; PRINT HEX$(RGB$("16,32,48",","))
-;;; ToDo: RGB$(string$,delimiter) "red,green,blue"
 FN_RGB:
     inc     hl                    ; Skip RGB
     ld      a,(hl)

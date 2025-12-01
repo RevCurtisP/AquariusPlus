@@ -863,6 +863,24 @@ bitmap_write_tmpbfr:
     jp      page_restore_bank1_af
 
 ;-----------------------------------------------------------------------------
+; Copy 1bpp ColorMap data in Video RAM to TMP_BUFFR
+; Output: BC: ColorMap length
+; Clobbers: A, AF', DE, HL
+;-----------------------------------------------------------------------------
+colormap_write_tmpbfr:
+    ld      bc,1000               ; Copying 1000 bytes 
+    push    bc                    ; Stack = DatLen, RtnAdr
+    ld      hl,8192               ; from ColorMap
+    ld      de,0                  ; to Start of buffer
+copy_vidram_tmpbfr
+    ld      a,VIDEO_RAM           ; Copying from Video RAM
+    ex      af,af'
+    ld      a,TMP_BUFFR           ; to buffer
+    call    page_fast_copy_sys
+    pop     bc                    ; BC = DatLen, Stack = RtnAdr
+    ret
+
+;-----------------------------------------------------------------------------
 ; Read Bitmap Screen Section into Buffer
 ; Input: BMPMODE: Mode: 0 = 1bpp, 1 = 4bpp
 ;        STARTCOL: Start Column

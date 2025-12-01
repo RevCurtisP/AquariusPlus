@@ -38,22 +38,21 @@ _write_binary:
     jp      _close
 
 ;-----------------------------------------------------------------------------
-; Save bitmap image
-; Input: HL: String descriptor address
+; Save binary data from paged memory to file
+; Input: A: Page
+;       BC: length
+;       DE: source address
+;       HL: string descriptor address
 ; Output: A: result code
-; Flags Set: S if I/O error, C if invalid file contents
-; Clobbered: CD, DE, EF
+;        BC: number of bytes actually read
+;        DE: next source address
+; Flags Set: S if I/O error
+; Clobbered: HL
 ;-----------------------------------------------------------------------------
-file_save_bitmap:
-    push    hl                    ; Stack = StrDsc, RtnAdr
-    call    bitmap_write_tmpbfr   ; BC = SavLen
-    pop     hl                    ; HL = StrDsc; Stack = RtnAdr
-    jp      file_save_tmpbuffr    ; Save bitmap data to file
-
-;-----------------------------------------------------------------------------
-file_save_colormap:
-    scf
-    ret
+file_append_paged:
+    push    af
+    call    dos_open_append
+    jr      _paged
 
 ;-----------------------------------------------------------------------------
 ; Save character RAM to file
@@ -80,6 +79,7 @@ file_save_chrset:
 file_save_paged:
     push    af
     call    dos_open_write
+_paged:
     jp      m,discard_ret
     ld      l,a                   ; L = FilDsc
     pop     af                    ; A = Page
@@ -147,6 +147,24 @@ file_save_string:
     ret
 
 ;-----------------------------------------------------------------------------
+; Save bitmap image
+; Input: HL: String descriptor address
+; Output: A: result code
+; Flags Set: S if I/O error, C if invalid file contents
+; Clobbered: CD, DE, EF
+;-----------------------------------------------------------------------------
+file_save_bitmap:
+    push    hl                    ; Stack = StrDsc, RtnAdr
+    ld      iy,bitmap_write_tmpbfr
+    jr      _gfx_call_save_tmpbuffr
+
+;-----------------------------------------------------------------------------
+file_save_colormap:
+    push    hl                    ; Stack = StrDsc, RtnAdr
+    ld      iy,colormap_write_tmpbfr
+    jr      _gfx_call_save_tmpbuffr
+
+;-----------------------------------------------------------------------------
 ; Save screen image
 ; Input: A: Save Options
 ;       HL: String descriptor address
@@ -165,8 +183,10 @@ file_save_string:
 file_save_screen:
     push    hl                    ; Stack = StrDsc, RtnAdr
     ld      iy,screen_write_tmpbfr
+_gfx_call_save_tmpbuffr:
     call    gfx_call              ; BC = SavLen
     pop     hl                    ; HL = StrDsc; Stack = RtnAdr
+; Input: BC: Save length
 file_save_tmpbuffr:
     ld      de,0                  ; DE = SavAdr
     ld      a,TMP_BUFFR           ; A = SavePg

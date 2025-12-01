@@ -52,4 +52,7 @@
 433 GOSUB _output:ARGS LIST$(NEXT)
 434 DATA "EF",GH,"IJ
 436 FOR I=0 TO 4:Z$=CHR$('A'+I+I)+CHR$('B'+I+I)
-438 GOSUB _assert:ARGS "G$(%%)=`%%`" % (I,Z$):NEXT
+437 GOSUB _assert:ARGS "G$(%%)=`%%`" % (I,Z$)
+438 GOSUB _assert:ARGS "INDEX(*G$,`%%`)=%%" % (Z$,I)
+439 NEXT
+

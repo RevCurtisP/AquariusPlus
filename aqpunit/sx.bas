@@ -11,32 +11,36 @@
 210 GOSUB _title:ARGS "LOAD/SAVE 1bpp bitmap"
 213 FILL BYTES @20,0,16384,$5A:FILL BYTES @32,0,32768,0:SET PALETTE 1 TO STRING$(32,0)
 
-214 GOSUB _nloutput:ARGS "Pixel data only"
+214 GOSUB _nloutput:ARGS "LOAD Pixel data only"
 215 GOSUB _output:ARGS LIST$(NEXT)
 216 LOAD BITMAP "assets/worldmap.bmpp":LOAD "assets/worldmap.bmp1",@32,0
 217 GOSUB _assert:ARGS "COMPARE(@20,0,@32,0,8000)"
 218 GOSUB _assert:ARGS "PEEK(@20,8000)=$5A"
 
-220 GOSUB _nloutput:ARGS "Colormap only"
+220 GOSUB _nloutput:ARGS "LOAD Colormap only"
 221 GOSUB _output:ARGS LIST$(NEXT)
 222 LOAD COLORMAP "assets/worldmap.cmap"
 223 GOSUB _assert:ARGS "COMPARE(@20,8192,@32,8000,1000)"
 224 GOSUB _assert:ARGS "PEEK(@20,9192)=$5A"
 
-226 GOSUB _nloutput:ARGS "Palette"
+226 GOSUB _nloutput:ARGS "LOAD Palette"
 227 GOSUB _output:ARGS LIST$(NEXT)
 228 LOAD PALETTE 1,"assets/worldmap.palt"
 229 GOSUB _assert:ARGS "GETPALETTE$(1)=PEEK$(@32,9000,32)"
 
-230 GOSUB _nloutput:ARGS "Pixel data, colormap, and palette"
-231 SCREEN 0,2
-232 GOSUB _output:ARGS LIST$(NEXT)
-233 SAVE BITMAP "work/savebitmap.bmp1"
-234 GOSUB _getkey:SCREEN 3,0
+230 GOSUB _nloutput:ARGS "SAVE Pixel data, colormap, and palette"
+231 GOSUB _output:ARGS LIST$(NEXT):SCREEN 0,2
+232 SAVE BITMAP "work/savebitmap.bmp1"
+233 GOSUB _getkey:SCREEN 3,0
+
+235 GOSUB _nloutput:ARGS "SAVE colormap only"
+236 GOSUB _output:ARGS LIST$(NEXT):SCREEN 0,2
+237 SAVE COLORMAP "work/savebitmap.cmap"
+238 GOSUB _getkey:SCREEN 3,0
 
 243 FILL BYTES @20,0,16384,$5A:SET PALETTE 1 TO STRING$(32,0)
 
-244 GOSUB _nloutput:ARGS "Pixel data and Colormap only"
+244 GOSUB _nloutput:ARGS ":LOAD Pixel data and Colormap only"
 245 GOSUB _output:ARGS LIST$(NEXT)
 246 LOAD BITMAP "assets/worldmap.bmpc":LOAD "assets/worldmap.bmpc",@32,0
 247 GOSUB _assert:ARGS "COMPARE(@20,0,@32,0,8000)"
@@ -45,7 +49,7 @@
 
 252 FILL BYTES @20,0,16384,$5A:SET PALETTE 1 TO STRING$(32,0)
 
-253 GOSUB _nloutput:ARGS "Pixel data, Colormap, and Palette"
+253 GOSUB _nloutput:ARGS "Verify Save Pixel data, Colormap, and Palette"
 254 GOSUB _output:ARGS LIST$(NEXT)
 255 LOAD BITMAP "work/savebitmap.bmp1":LOAD "work/savebitmap.bmp1",@32,0
 256 GOSUB _assert:ARGS "COMPARE(@20,0,@32,0,8000)"
@@ -53,27 +57,34 @@
 258 GOSUB _assert:ARGS "GETPALETTE$(1)=PEEK$(@32,9000,32)"
 259 DEL "work/savebitmap.bmp1"
 
-260 FILL BYTES @20,0,16384,$5A:SET PALETTE 1 TO STRING$(32,0)
+262 FILL BYTES @20,0,16384,$5A:SET PALETTE 1 TO STRING$(32,0)
+263 GOSUB _nloutput:ARGS "Verify Save Colormap only"
+264 GOSUB _output:ARGS LIST$(NEXT)
+265 LOAD COLORMAP "work/savebitmap.cmap":LOAD "work/savebitmap.cmap",@32,0
+266 GOSUB _assert:ARGS "COMPARE(@20,8192,@32,0,1000)"
+269 DEL "work/savebitmap.cmap"
 
-261 GOSUB _nloutput:ARGS "Legacy Bitmap"
-262 GOSUB _output:ARGS LIST$(NEXT)
-263 LOAD BITMAP "assets/celtic.bmp":LOAD "assets/celtic.bmp",@32,0
-264 SCREEN 0,2:GOSUB _getkey:SCREEN 3,0
-265 GOSUB _assert:ARGS "COMPARE(@20,0,@32,0,8000)"
-266 GOSUB _assert:ARGS "PEEK$(@20,8000,192)=STRING$(192,$5A)"
-267 GOSUB _assert:ARGS "GETPALETTE$(1)=PEEK$(@32,8000,32)"
-268 GOSUB _assert:ARGS "COMPARE(@20,8192,@32,8192,1000)"
-269 GOSUB _assert:ARGS "PEEK(@20,9192)=$5A"
+270 FILL BYTES @20,0,16384,$5A:SET PALETTE 1 TO STRING$(32,0)
 
-270 GOSUB _nloutput:ARGS "Invalid Bitmap Files":RESTORE 278
-271 FOR I=1 TO 8:READ S:F$="work/badsize%%.bmp" % (S)
-272 SAVE F$,@20,0,S
-273 GOSUB _outquoted:ARGS "LOAD BITMAP '%%'" % (F$)
-274 SET FILE ERROR OFF:LOAD BITMAP F$:SET FILE ERROR ON
-275 GOSUB _assert:ARGS "ERR=49"
-276 DEL F$
-277 NEXT
-278 DATA 7999,8001,8999,9001,9031,9033,9191,9193
+271 GOSUB _nloutput:ARGS "Legacy Bitmap"
+272 GOSUB _output:ARGS LIST$(NEXT)
+273 LOAD BITMAP "assets/celtic.bmp":LOAD "assets/celtic.bmp",@32,0
+274 SCREEN 0,2:GOSUB _getkey:SCREEN 3,0
+275 GOSUB _assert:ARGS "COMPARE(@20,0,@32,0,8000)"
+276 GOSUB _assert:ARGS "PEEK$(@20,8000,192)=STRING$(192,$5A)"
+277 GOSUB _assert:ARGS "GETPALETTE$(1)=PEEK$(@32,8000,32)"
+278 GOSUB _assert:ARGS "COMPARE(@20,8192,@32,8192,1000)"
+279 GOSUB _assert:ARGS "PEEK(@20,9192)=$5A"
+
+280 GOSUB _nloutput:ARGS "Invalid Bitmap Files":RESTORE 278
+281 FOR I=1 TO 8:READ S:F$="work/badsize%%.bmp" % (S)
+282 SAVE F$,@20,0,S
+283 GOSUB _outquoted:ARGS "LOAD BITMAP '%%'" % (F$)
+284 SET FILE ERROR OFF:LOAD BITMAP F$:SET FILE ERROR ON
+285 GOSUB _assert:ARGS "ERR=49"
+286 DEL F$
+287 NEXT
+288 DATA 7999,8001,8999,9001,9031,9033,9191,9193
 
 300 GOSUB _title:ARGS "LOAD/SAVE 4bpp bitmap"
 302 GOSUB _output:ARGS LIST$(NEXT)

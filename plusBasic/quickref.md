@@ -62,8 +62,9 @@ plusBASIC Quick Reference Guide
 
 ## Statements and Functions
  - **ABS(_float_)** - Return absolute value of expression.
+ - **APPEND _filespec_,«!_ext_addr_»|«{@_page_,}_address_** - Append memory to binary file.
  - **APPEND _filespec_,^_strvar_** - Append string to file.
- - **APPEND _filespec_,_address_,_length_** - Append memory to binary file.
+ - **APPEND _filespec_,\*_array_{,ASC|ASCX}** - Append string array to file.
  - **APPEND ATTRLIST _strvar_=_attr_,...** - Add to string list of sprite and/or tile attributes.
  - **APPEND BYTELIST _strvar_=_byte_,...** - Add to a string list of bytes.
  - **APPEND INTLIST _strvar_=_integer_,...** - Add to a string list of integers.
@@ -78,7 +79,7 @@ plusBASIC Quick Reference Guide
  - **ATN(_float_)** - Return arctangent of argument.
  - **ATTR(_fgcolor_,_bgcolor_)** - Build color attribute byte.
  - **ATTR$(_fgcolor_,_bgcolor_,_count_)** - Build color attributes string.
- - **BIN$()** - _Not implemented_
+ - **BIN$(_long))** - Convert number to into string of binary digits.
  - **BIT(_long_,_bit#_)** - Return status of bit in 23 bit number.
  - **BIT(_string_,_bit#_)** - Return status of bit in binary string.
  - **BYTE(_string_{,_pos_})** - Return signed byte value of specified character in _string_.
@@ -99,7 +100,7 @@ plusBASIC Quick Reference Guide
  - **CLS COLOR {_fgcolor_,_bgcolor_}** - Fill Color RAM with current or specified foreground and background colors.
  - **COLOR _fgcolor_{,_bgcolor_}** - Set or get bitmap default color(s).
  - **COMPARE (*_array_,*_array_)** - Compare the binary contents of two numeric arrays.
- - **COMPARE ({«!_ext_addr_»|«{@_page_,}_address_»,«!_ext_addr_»|«{@_page_,}_address_»,_length_)** - Compare two blocks of memory.
+ - **COMPARE («!_ext_addr_»|«{@_page_,}_address_»,«!_ext_addr_»|«{@_page_,}_address_»,_length_)** - Compare two blocks of memory.
  - **COMPARE (_filespec_,_filespec_)** - _Not implemented._
  - **CONT** - Resume program execution after STOP, Ctrl-C/Escape, or error.
  - **COPY** - Copy text screen to serial printer.
@@ -169,7 +170,7 @@ plusBASIC Quick Reference Guide
  - **GET ARGS _var_{,...}** - Read arguments from argument list after `GOSUB`.
  - **GET SCREEN {CHRS|COLORS} (_x_,y_)-(_x_,_y_) \*_array_|^_strvar_** - Copy text screen clip to array or string variable.
  - **GET TILEMAP (_x_,y_)-(_x_,_y_) \*_array_|^_strvar_** - Copy tilemap clip to array or string variable.
- - **GETCHRDEF$(_char_)** - Return character definition.
+ - **GETCHRDEF$(_char_{,_chrset_})** - Return character definition.
  - **GETBORDERCHR** - Return screen border character.
  - **GETBORDERCHR$** - Return screen border character as string.
  - **GETBORDERCOLOR** - Return screen border colors.
@@ -305,8 +306,9 @@ plusBASIC Quick Reference Guide
  - **RESUME _lineref_** - Clear error condition and continues program execution at specified line
  - **RESUME TRACK** - Resume playing paused track.
  - **RESET \*_array_** - Set all array elements to 0 or empty string and collect garbage if string array.
- - **RESET BIT** - _Not implemented_
+ - **RESET BIT _var_,_bit#_** - Set specified bit in numeric ot string variable to 0.
  - **RESET BORDER** - Set border character and colors to default values.
+ - **RESET CHRDEF _char_** - Revert character to default definition.
  - **RESET PALETTE _palette_** - Reset palette to default RGB values.
  - **RESET SCREEN** - Reset current text screen to default settings.
  - **RESET SPRITE _spritedef_|#_spritle_|\*** - Reset all spritle properties.
@@ -341,7 +343,7 @@ plusBASIC Quick Reference Guide
  - **SCREEN** - Return screen settings.
  - **SCROLL BITMAP** - Not implemented.
  - **SCROLL SCREEN** - Not implemented.
- - **SET BIT** - _Not implemented_
+ - **SET BIT _var_,_bit#_** - Set specified bit in numeric ot string variable to 1.
  - **SET BORDER {CHR _char_} {COLOR _fgcolor_,_bgcolor_}** - Enable color printing mode.
  - **SET BREAK ON|OFF** - Enable or disable control-c checking.
  - **SET CHRDEF _char_,_string_** - Redefine character.

@@ -242,8 +242,9 @@ get_array_pointer:
     ld      a,1                   ; Search arrays only
     ld      (SUBFLG),a            
     call    PTRGET                ; BC = NumDim, DE = NxtAry
-    jp      nz,UDERR              ; If not found, Undimensioned array error
+    ld      a,0
     ld      (SUBFLG),a            ; Clear Arrays only flag
+    jp      nz,UDERR              ; If not found, Undimensioned array error
     ret
 
 
@@ -465,7 +466,8 @@ get_addr_len:
     call    GET_POS_INT           ; DE = Address
 get_comma_len:
     push    de                    ; Stack = Address, Page+Flag
-    call    get_comma_byte        ; DE = Length
+    call    get_comma
+    call    GET_POS_INT           ; DE = Length
     ld      b,d
     ld      c,e                   ; BC = Length
     pop     de                    ; DE = Address, Stack = Page+Flag

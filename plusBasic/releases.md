@@ -1,4 +1,8 @@
 # plusBASIC Release History
+ - v0.27q (2025-12-01)
+    - Implemented `BIN$()`, `SAVE COLORMAP`, added `RESET CHRDEF char`, `,chrset` option to `GETCHRDEF$()`
+    - Implemented`APPEND file$,addr,len`, `APPEND file$,@page,addr,len`, `APPEND file$,!extaddr,len`, `APPEND file$,*var$"
+    - Backspace when input buffer is empty no longer prints a BS and CR/LF, Ctrl-U backspaces to delete current line instead of printing a CR/LF
  - v0.27p (2025-11-09)
    - Added `SET SPRITE #spritlenum ...`, `GETSPRITE()`, `GETSPRITEX()`, `GETSPRITEY()`
  - v0.27o (2025-10-29)

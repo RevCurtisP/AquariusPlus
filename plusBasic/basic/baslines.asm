@@ -146,7 +146,6 @@ unpack_line:
 
 ; Output Character to BUF
 output_to_buffer: 
-    pop     af                    ; Get Character to Output
     push    hl                    ; Stack = TxtPtr, RtnAdr
     ld      hl,(BUFPTR)
     cp      13                    ; 

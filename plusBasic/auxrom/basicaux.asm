@@ -95,7 +95,6 @@ bas_get_version:
     ex      de,hl                 ; HL = BufAdr
     ret
 
-        
 ; ------------------------------------------------------------------------------
 ; ERASE statement core code
 ; ------------------------------------------------------------------------------
@@ -287,24 +286,36 @@ bas_offset:
     ex      de,hl                 ; DE = Offset
     ret
 
-; Called from ST_SET_BIT
-; On entry: AF = VarTyp, BC = VarPtr, DE = BitNo
-bas_set_bit:
-    ld      ix,bool_setbit_long   ; Set the bit
-    jp      z,TMERR               ; No Strings (for now)
+; Called from ST_SET_BIT, ST_RESET_BIT
+; On entry: HL = BitNo, CDE = Long
+bas_bit_numvar:
     xor     a                     
-    or      d                     ; If BitNo > 255            
+    or      h                     ; If BitNo > 255            
     jp      nz,FCERR              ;   Illegal Quantity Error
-    ld      a,e                   ; A = BitNo
-    ld      h,b                   ; HL = VarPtr
-    ld      l,c                 
-    push    hl                    ; Stack = VarPtr, RtnAdr
-    push    af                    ; Stack = BitNo, VarPtr, RtnAdr
-    call    MOVFM                 ; FACC = (VarPtr)
-    call    FRC_LONG              ; CDE = Long
+    ld      a,(TEMP8)             ; A = Mode
+    or      a                     ; Set Z if SET BIT
+    ld      a,l                   ; A = BitNo
+    ld      ix,bool_setbit_long
+    jr      z,call_ix_fcerr
+    ld      ix,bool_resetbit_long
+call_ix_fcerr:
     call    jump_ix
-    jp      c,FCERR
-    ret
+    ret     nc
+    jp      FCERR
+    
+
+; Called from ST_SET_BIT, ST_RESET_BIT
+; On entry: HL = VarPtr, DE = BitNo
+bas_bit_string:
+    push    de                    ; Stack = BitNo, RtnAdr
+    call    string_addr_len       ; DE = StrAdr; BC = StrLen
+    pop     hl                    ; HL = BitNo
+    ld      a,(TEMP8)             ; A = Mode
+    or      a                     ; Set Z if SET BIT
+    ld      ix,bool_setbit_string
+    jr      z,call_ix_fcerr
+    ld      ix,bool_resetbit_string
+    jr      call_ix_fcerr
 
 ; ------------------------------------------------------------------------------
 ; Scan literal string and put Descriptor in FACC
@@ -573,7 +584,6 @@ bas_write_string:
     call    string_addr_len       ; DE = StrAdr, BC = StrLen
     pop     af                    ; A = FilDsc; Stack = RtnAdr
     jp      esp_writec_bytes      ; Write and return
-
 
 ; Called from SAVE SCREEN
 ; On entry: A = SaveArgs

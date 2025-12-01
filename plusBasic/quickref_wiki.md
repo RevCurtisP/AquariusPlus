@@ -62,8 +62,9 @@ plusBASIC Quick Reference Guide
 
 ## Statements and Functions
  - **[ABS(_float_)](BASIC-Math-Functions#abs)** - Return absolute value of expression.
+ - **[APPEND _filespec_,«!_ext_addr_»|«{@_page_,}_address_](BASIC-SAVE-and-APPEND-Statements#append)** - Append memory to binary file.
  - **[APPEND _filespec_,^_strvar_](BASIC-SAVE-and-APPEND-Statements#append)** - Append string to file.
- - **[APPEND _filespec_,_address_,_length_](BASIC-SAVE-and-APPEND-Statements#append)** - Append memory to binary file.
+ - **[APPEND _filespec_,\*_array_{,ASC|ASCX}](BASIC-SAVE-and-APPEND-Statements#append)** - Append string array to file.
  - **[APPEND ATTRLIST _strvar_=_attr_,...](BASIC-Sprite-Statements-and-Functions#append-attrlist)** - Add to string list of sprite and/or tile attributes.
  - **[APPEND BYTELIST _strvar_=_byte_,...](BASIC-Stringlist-Statements#append-bytelist)** - Add to a string list of bytes.
  - **[APPEND INTLIST _strvar_=_integer_,...](BASIC-Stringlist-Statements#append-intlist)** - Add to a string list of integers.
@@ -78,7 +79,7 @@ plusBASIC Quick Reference Guide
  - **[ATN(_float_)](BASIC-Math-Functions#atn)** - Return arctangent of argument.
  - **ATTR(_fgcolor_,_bgcolor_)** - Build color attribute byte.
  - **ATTR$(_fgcolor_,_bgcolor_,_count_)** - Build color attributes string.
- - **BIN$()** - _Not implemented_
+ - **BIN$(_long))** - Convert number to into string of binary digits.
  - **BIT(_long_,_bit#_)** - Return status of bit in 23 bit number.
  - **BIT(_string_,_bit#_)** - Return status of bit in binary string.
  - **[BYTE(_string_{,_pos_})](BASIC-Conversion-Functions#byte)** - Return signed byte value of specified character in _string_.
@@ -99,7 +100,7 @@ plusBASIC Quick Reference Guide
  - **[CLS COLOR {_fgcolor_,_bgcolor_}](BASIC-Screen-Statements-and-Functions#cls-color)** - Fill Color RAM with current or specified foreground and background colors.
  - **[COLOR _fgcolor_{,_bgcolor_}](BASIC-Bitmap-Statements-and-Functions#color)** - Set or get bitmap default color(s).
  - **[COMPARE (*_array_,*_array_)](BASIC-Variable-and-Memory-Statements-and-Functions#compare)** - Compare the binary contents of two numeric arrays.
- - **[COMPARE ({«!_ext_addr_»|«{@_page_,}_address_»,«!_ext_addr_»|«{@_page_,}_address_»,_length_)](BASIC-Variable-and-Memory-Statements-and-Functions#compare)** - Compare two blocks of memory.
+ - **[COMPARE («!_ext_addr_»|«{@_page_,}_address_»,«!_ext_addr_»|«{@_page_,}_address_»,_length_)](BASIC-Variable-and-Memory-Statements-and-Functions#compare)** - Compare two blocks of memory.
  - **COMPARE (_filespec_,_filespec_)** - _Not implemented._
  - **[CONT](BASIC-Flow-Control-Statements#cont)** - Resume program execution after STOP, Ctrl-C/Escape, or error.
  - **[COPY](BASIC-Screen-IO-Statements-and-Functions#copy)** - Copy text screen to serial printer.
@@ -169,7 +170,7 @@ plusBASIC Quick Reference Guide
  - **GET ARGS _var_{,...}** - Read arguments from argument list after `GOSUB`.
  - **[GET SCREEN {CHRS|COLORS} (_x_,y_)-(_x_,_y_) \*_array_|^_strvar_](BASIC-GET-SCREEN-Statement#get-screen)** - Copy text screen clip to array or string variable.
  - **[GET TILEMAP (_x_,y_)-(_x_,_y_) \*_array_|^_strvar_](BASIC-GET-TILEMAP-Statement#get-tilemap)** - Copy tilemap clip to array or string variable.
- - **GETCHRDEF$(_char_)** - Return character definition.
+ - **GETCHRDEF$(_char_{,_chrset_})** - Return character definition.
  - **[GETBORDERCHR](BASIC-Screen-Statements-and-Functions#getborderchr)** - Return screen border character.
  - **[GETBORDERCHR$](BASIC-Screen-Statements-and-Functions#getborderchr-1)** - Return screen border character as string.
  - **[GETBORDERCOLOR](BASIC-Screen-Statements-and-Functions#getbordercolor)** - Return screen border colors.
@@ -305,8 +306,9 @@ plusBASIC Quick Reference Guide
  - **RESUME _lineref_** - Clear error condition and continues program execution at specified line
  - **[RESUME TRACK](BASIC-TRACK-Statements#resume-track)** - Resume playing paused track.
  - **RESET \*_array_** - Set all array elements to 0 or empty string and collect garbage if string array.
- - **RESET BIT** - _Not implemented_
+ - **RESET BIT _var_,_bit#_** - Set specified bit in numeric ot string variable to 0.
  - **[RESET BORDER](BASIC-Screen-Statements-and-Functions#reset-border)** - Set border character and colors to default values.
+ - **[RESET CHRDEF _char_](BASIC-CHRSET-and-CHRDEF-Statements#reset-chrdef)** - Revert character to default definition.
  - **[RESET PALETTE _palette_](BASIC-Palette-Statements-and-Functions#reset-palette)** - Reset palette to default RGB values.
  - **RESET SCREEN** - Reset current text screen to default settings.
  - **[RESET SPRITE _spritedef_|#_spritle_|\*](BASIC-Sprite-Statements-and-Functions#reset-sprite)** - Reset all spritle properties.
@@ -341,7 +343,7 @@ plusBASIC Quick Reference Guide
  - **[SCREEN](BASIC-Screen-Statements-and-Functions#screen)** - Return screen settings.
  - **SCROLL BITMAP** - Not implemented.
  - **SCROLL SCREEN** - Not implemented.
- - **SET BIT** - _Not implemented_
+ - **SET BIT _var_,_bit#_** - Set specified bit in numeric ot string variable to 1.
  - **[SET BORDER {CHR _char_} {COLOR _fgcolor_,_bgcolor_}](BASIC-Screen-Statements-and-Functions#set-border)** - Enable color printing mode.
  - **[SET BREAK ON|OFF](BASIC-System-Statements-and-Functions#set-break)** - Enable or disable control-c checking.
  - **[SET CHRDEF _char_,_string_](BASIC-CHRSET-and-CHRDEF-Statements#set-chrdef)** - Redefine character.

@@ -71,11 +71,14 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <input disabled="disabled" type="checkbox" checked="checked" />
         <strong>ABS(<em>float</em>)</strong> - Return absolute value of expression.<!--math--></li>
       <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>APPEND <em>filespec</em>,�!_ext_addr_�|�{@<em>page</em>,}<em>address</em></strong> - Append memory to binary file.<!--SAVE--></li>
+      <li class="task-list-item">
         <input disabled="disabled" type="checkbox" checked="checked" />
         <strong>APPEND <em>filespec</em>,^<em>strvar</em></strong> - Append string to file.<!--SAVE--></li>
       <li class="task-list-item">
-        <input disabled="disabled" type="checkbox" checked="checked" />
-        <strong>APPEND <em>filespec</em>,<em>address</em>,<em>length</em></strong> - Append memory to binary file.<!--SAVE--></li>
+        <input disabled="disabled" type="checkbox" />
+        <strong>APPEND <em>filespec</em>,*<em>array</em>{,ASC|ASCX}</strong> - Append string array to file.<!--SAVE--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>APPEND ATTRLIST <em>strvar</em>=<em>attr</em>,...</strong> - Add to string list of sprite and/or tile attributes.<!--sprites--></li>
@@ -116,7 +119,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>ATTR$(<em>fgcolor</em>,<em>bgcolor</em>,<em>count</em>)</strong> - Build color attributes string.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>BIN$()</strong> - <em>Not implemented</em></li>
+        <strong>BIN$(_long))</strong> - Convert number to into string of binary digits.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>BIT(<em>long</em>,<em>bit#</em>)</strong> - Return status of bit in 23 bit number.</li>
@@ -173,7 +176,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>COMPARE (<em><em>array</em>,</em><em>array</em>)</strong> - Compare the binary contents of two numeric arrays.<!--variable--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" checked="checked" />
-        <strong>COMPARE ({�!_ext_addr_�|�{@<em>page</em>,}_address_�,�!_ext_addr_�|�{@<em>page</em>,}_address_�,<em>length</em>)</strong> - Compare two blocks of memory.<!--variable--></li>
+        <strong>COMPARE (�!_ext_addr_�|�{@<em>page</em>,}_address_�,�!_ext_addr_�|�{@<em>page</em>,}_address_�,<em>length</em>)</strong> - Compare two blocks of memory.<!--variable--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>COMPARE (<em>filespec</em>,<em>filespec</em>)</strong> - <em>Not implemented.</em></li>
@@ -377,7 +380,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>GET TILEMAP (<em>x</em>,y_)-(<em>x</em>,<em>y</em>) *<em>array</em>|^<em>strvar</em></strong> - Copy tilemap clip to array or string variable.<!--GETTILEMAP--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>GETCHRDEF$(<em>char</em>)</strong> - Return character definition.<!--CHRSET--></li>
+        <strong>GETCHRDEF$(<em>char</em>{,<em>chrset</em>})</strong> - Return character definition.<!--CHRSET--></li>
       <li>[.] <strong>GETBORDERCHR</strong> - Return screen border character.<!--screen--></li>
       <li>[.] <strong>GETBORDERCHR$</strong> - Return screen border character as string.<!--screen--></li>
       <li>[.] <strong>GETBORDERCOLOR</strong> - Return screen border colors.<!--screen--></li>
@@ -749,10 +752,13 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>RESET *<em>array</em></strong> - Set all array elements to 0 or empty string and collect garbage if string array.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>RESET BIT</strong> - <em>Not implemented</em></li>
+        <strong>RESET BIT <em>var</em>,<em>bit#</em></strong> - Set specified bit in numeric ot string variable to 0.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" checked="checked" />
         <strong>RESET BORDER</strong> - Set border character and colors to default values.<!--screen--></li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>RESET CHRDEF <em>char</em></strong> - Revert character to default definition.<!--chrset--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>RESET PALETTE <em>palette</em></strong> - Reset palette to default RGB values.<!--palette--></li>
@@ -851,7 +857,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>SCROLL SCREEN</strong> - Not implemented.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>SET BIT</strong> - <em>Not implemented</em></li>
+        <strong>SET BIT <em>var</em>,<em>bit#</em></strong> - Set specified bit in numeric ot string variable to 1.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" checked="checked" />
         <strong>SET BORDER  {COLOR <em>fgcolor</em>,<em>bgcolor</em>}</strong> - Enable color printing mode.<!--screen--></li>

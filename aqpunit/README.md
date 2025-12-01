@@ -6,7 +6,7 @@ Run the .baq file to run the associated tests.
 
 | Program | Tests              |
 | :------ | :----------------- |
-| bt.baq  | BIT                |
+| bt.baq  | BIT and BIN$       |
 | cp.baq  | COPY and COMPARE   |
 | cs.baq  | COPY SCREEN        |
 | cu.baq  | CALL and USR       |
@@ -32,8 +32,14 @@ Run the .baq file to run the associated tests.
 ## Test Details
 
 - bt.baq 
+  - BIN$(_long_)
   - BIT(_long_,_bitno_)
   - BIT(_string_,_bitno_)
+  - SET BIT _long_,_bitno_
+  - SET BIT _string_,_bitno_
+  - RESET BIT _long_,_bitno_
+  - RESET BIT _string_,_bitno_
+  
 - cp.baq 
   - COPY _fromaddr_,_count_ TO _toaddr_
   - COMPARE(_fromaddr_,_toaddr_,_count_)
@@ -67,11 +73,11 @@ Run the .baq file to run the associated tests.
   - HEX$(_long_)
   - HEX$(_string_)
   - DEF BYTELIST _var$_ = ...
-  - ASC(_string_,byte)
-  - BYTE(_string_,byte)
+  - ASC(_string_,_byte_)
+  - BYTE(_string_,_byte_)
   - DEF INTLIST _var$_ = ...
-  - INT(_string_,byte)
-  - WORD(_string_,byte)
+  - INT(_string_,_byte_)
+  - WORD(_string_,_byte_)
 - dr.baq
   - DIM _var_, _var_$
   - DIM _array_()_, _array_$()
@@ -80,6 +86,7 @@ Run the .baq file to run the associated tests.
   - READ _var_, _var_$
   - READ \*_array_
   - READ \*_array_$
+  - INDEX(\*_array_$,_string_)
 - pp.baq
   - POKE _addr_,_byte_
   - POKE _addr,_string_
@@ -164,6 +171,7 @@ Run the .baq file to run the associated tests.
   - LOAD SCREEN CHR
 - sx.baq
   - SAVE/LOAD BITMAP
+  - SAVE/LOAD COLORMAP
   - SAVE/LOAD CHRSET
   - SAVE/LOAD FNKEYS
   - **_ToDo:_**
@@ -193,6 +201,7 @@ Run the .baq file to run the associated tests.
   - DEF/APPEND ATTRLIST _var_$ = _attr_, ...
   - DEF/APPEND PALETTELIST  _var_$ = _palette_, ...
   - DEF SPRITE _var_$ = _spritle_,_x_ofs_,_y_ofs_; ...
+  - SET SPRITE TILE _tlist_$ PALETTE _plist_$ ATTR _alist_$ POS _x_,_y_
   - DEF/APPEND TILELIST _var_$ = _tile_index_, ...
   - FILL TILEMAP TILE _tile_index_ PALETTE _palette_
   - FILL TILEMAP (_left_,_top_) - (_right_,_bottom_) TILE )_tile_index_ PALETTE _palette_ 

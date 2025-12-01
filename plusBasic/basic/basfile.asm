@@ -538,15 +538,8 @@ _load_string:
 ; Input: HL: String descriptor address
 ;     Stack: TxtPtr, RtnAdr
 ;-----------------------------------------------------------------------------
-;; RUN "/t/memvars.baq"
-;; RUN "/t/ascprog.bas"
-;; RUN "/t/asczero.bas
-;; RUN "/t/ascbad.bas
-;; RUN "/t/ascdup.bas
-;; RUN "/t/ascsnerr.bas
 ;; load "/u/test/apos.bas"
 ;; run "/u/test/oneline.bas"
-;;; ToDo: Move text prporgams abouve into /u/test/ascprog
 ;;; ToDo: Check for Valid ASCII BASIC file (1st char is CR, LF, Space, 0-9, or ')
 ;;; ToDo: Debug skip lines beginning with apostrophe
 
@@ -929,9 +922,7 @@ _load_map:
 ; LOAD COLORMAP filename$
 ; SAVE COLORMAP filename$
 ;-----------------------------------------------------------------------------
-;; ToDo: Implement file_save_colormap, SAVE COLORMAP
 _save_colormap:
-    jp       GSERR
     ld      iy,file_save_colormap
     jr      _do_colormap
 _load_colormap:
@@ -971,7 +962,7 @@ _do_colormap:
 ; SET FILE ERROR OFF:LOAD SCREEN "/t/array.caq":PRINT ERR
 _save_screen:
     ld      de,file_save_screen   ; DE = AuxAdr
-    ld      c,0                   ; C = 0 (Save)
+    ld      c,0                   ; Mode = Save
     jr      _screen
 _load_screen:
     rst     CHRGET                ; Skip SCREEN
@@ -992,9 +983,9 @@ _screen_args:
     ld      e,0                   ; ScrnNum = 0 (Current Screen)
     jr      nz,_cur_scrn          ; If CurChr is #
     ld      c,8                   ;   Limit byte to 0 - 7
-    call    skip_get_byte_capped  ;   E = IsSwap + ScrnNum
+    call    skip_get_byte_capped  ;   E = ScrnNum
     call    get_comma             ;   MOERR if no comma
-_cur_scrn
+_cur_scrn:
     ld      a,e                   ; A = ScrnArgs
     push    af                    ; Stack = ScrnArgs, IsLoad, AuxAdr, RtnAdr
     call    get_strdesc_arg       ; HL = FilDsc; Stack = TxtPtr, ScrnArgs, IsLoad, AuxAdr, RtnAdr
@@ -1005,7 +996,7 @@ _cur_scrn
     sla     c                     ; Set Carry if Loading
     jr      c,_screen_aux_call    ; If Saving
     ld      iy,bas_save_screen_opts
-    call    aux_call              ;   A = ScreenArgs+SaveOpts
+    call    aux_call              ;   A = SaveArgs
 _screen_aux_call:
     pop     iy                    ; IY = AuxAdr; Stack = RtnAdr
     push    hl                    ; Stack = TxtPtr, RtnAdr
@@ -1149,11 +1140,11 @@ run_file:
 ;-----------------------------------------------------------------------------
 ; APPEND
 ;
-; ToDo: APPEND "filename",addr,len            Append binary data
-; ToDo: APPEND "filename",@page,addr,len      Append paged binary data
-; ToDo: APPEND "filename",!extaddr,addr,len   Append paged binary data
-; ToDo: APPEND "filename",*a                  Append numeric array a
-; APPEND "filename",^a$                       Append string array a
+; APPEND "filename",addr,len            Append binary data
+; APPEND "filename",@page,addr,len      Append paged binary data
+; APPEND "filename",!extaddr,addr,len   Append paged binary data
+; APPEND "filename",^a$                 Append string A$
+; APPEND "filename",*a$                 Append string array a
 ;-----------------------------------------------------------------------------
 ST_APPEND:
     rst     CHRGET                ; Skip APPEND token
@@ -1180,7 +1171,15 @@ do_append:
     call    get_comma
     cp      EXPTK                 ; If ^
     jp      z,append_string       ;   Append to binary file
-    jp      SNERR
+    cp      MULTK
+    jp      z,append_string_array
+    call    get_page_addr_len     ; A = PgFlg, BC = SavLen, DE = SavAdr
+    ex      (sp),hl               ; HL = StrDsc; Stack = TxtPtr, RtnAdr
+    ld      iy,file_append_binary
+    jr      nc,.aux_call
+    ld      iy,file_append_paged
+.aux_call
+    jp      _aux_call_hl_error
 
 _append_list:
 
@@ -1202,6 +1201,8 @@ ST_SAVE:
     jp      z,_save_screen
     cp      TILETK
     jp      z,_save_tile
+    cp      COLTK
+    jp      z,_save_colormap
     cp      BITTK
     jp      z,_save_bitmap
     cp      XTOKEN
@@ -1448,20 +1449,7 @@ save_caq_program:
 save_caq_array:
     jr      nz,.not_string
     ex      af,af'                ; F' = IsString
-    ld      a,(hl)                ; 
-    cp      ','                   ; Set NZ if no comma
-    jr      nz,.not_asc           ; If Comma
-    rst     CHRGET                ;   Skip comma
-    SYNCHKT ASCTK                 ;   Require ASC
-    cp      'X'
-    jr      nz,.not_ascx          ;   If ASCX
-    rst     CHRGET                ;     Skip X
-    xor     a                     ;     Set Zero,     
-    scf                           ;     Set Carry for ASCX
-    jr      .not_asc
-.not_ascx
-    xor     a                     ; Set Zero, Clear Carry for ASC
-.not_asc
+    call    parse_ascx
     ex      af,af'                ; F = IsString, F' = AscFlag
 .not_string
     ex      (sp),hl               ; HL = StrDsc, Stack = TxtPtr, RtnAdr
@@ -1494,15 +1482,44 @@ _close_pop_ret:
 
 _array_filename: db "######"
 
+parse_ascx:
+    ld      a,(hl)                ; 
+    cp      ','                   ; If no Comma
+    ret     nz                    ;   Return NZ for Binary
+    rst     CHRGET                ; Skip comma
+    SYNCHKT ASCTK                 ; Require ASC
+    cp      'X'                   ; If Not ASCX
+    jp      nz,_xor_a_ret         ;   Return NZ, NC
+    rst     CHRGET                ; Skip X
+    xor     a                     ; Set Zero,     
+    scf                           ; Set Carry for ASCX
+    ret
+
+;-----------------------------------------------------------------------------
+; Append string array
+;-----------------------------------------------------------------------------
+; DIM A$(2)="A","B","C"
+; APPEND "/u/test/fileio/sa.sta",*A$
+append_string_array:
+    call    skip_star_array       ; Parse Array Name
+    jp      nz,TMERR              ; Type mismatch error if not string array
+    call    parse_ascx
+    ex      (sp),hl               ; HL = StrDsc, Stack = TxtPtr, RtnAdr
+    push    bc                    ; Stack = AryLen, TxtPtr, RtnAdr
+    push    de                    ; Stack = AryAdr, AryLen, TxtPtr, RtnAdr
+    push    af                    ; Stack = AscFlg, AryPtr, AryLen, TxtPtr, RtnAdr
+    call    _open_append          ; Open file for append
+    jr      _string_array
 ;-----------------------------------------------------------------------------
 ; Save string array
 ;-----------------------------------------------------------------------------
-; DIM A$(9)
-; SAVE "/t/sa.sta",*A$
+; DIM S$(2)="1","2","3"
+; SAVE "/u/test/fileio/sa.sta",*S$
 save_string_array:
     ex      af,af'                ; F = AscFlg
-    push    af                    ; Stack = Stack = AscFlg, AryPtr, AryLen, TxtPtr, RtnAdr
+    push    af                    ; Stack = AscFlg, AryPtr, AryLen, TxtPtr, RtnAdr
     call    _open_write           ; Create file
+_string_array:
     pop     af                    ; F = AscFlg, Stack = AryPtr, AryLen, TxtPtr, RtnAdr
     pop     hl                    ; HL = AryPtr; Stack = AryLen, TxtPtr, RtnAdr
     pop     bc                    ; BC = AryLen; Stack = TxtPtr
@@ -1817,6 +1834,7 @@ _index_offset:
     call    tile_offset
 .done
     rst     CHRGET
+_xor_a_ret:
     xor     a
     ret
 
@@ -1835,6 +1853,9 @@ tile_offset_a:
 
 
 ; Open File with error handling
+_open_append:
+    ld      iy,dos_open_append
+    jr      _open_aux_call
 _open_write:
     ld      iy,dos_open_write
     jr      _open_aux_call

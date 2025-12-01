@@ -95,17 +95,6 @@ init_bas_fdesc:
     ret
 
 ;-----------------------------------------------------------------------------
-; Called from OUTDO through OUTDOH in sbasic.asm
-;-----------------------------------------------------------------------------
-outdo_hook:
-  push    af                
-  ld      a,(BASYSCTL)            ; Get System Control Bits
-  rra                             ; Carry = BASOUTBUF
-  jp      c,output_to_buffer      ; If bit set, write to buffer 
-  pop     af
-  jp      OUTCON
-
-;-----------------------------------------------------------------------------
 ; Hook 30 - Check for label at beginning of line, then search for it's line
 ;-----------------------------------------------------------------------------
 ;; Proposed: GOTO/GOSUB ( expression )

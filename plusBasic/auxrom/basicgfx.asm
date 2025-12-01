@@ -240,22 +240,45 @@ bas_put_chr:
     push    hl                    ; Stack = Line, Col, RtnAdr
     ld      de,FBUFFR             ; DE = BufAdr
     push    de                    ; Stack = BufAdr, Row, Col, RtnAdr
+    ld      l,0                   ; L = ChrSet
     call    _getchrdef            ; Copy ChrData to buffer
     pop     hl                    ; HL = BufAdr, Stack = Row, Col, RtnAdr
     pop     de                    ; DE = Line; Stack = Col, RtnAdr
     pop     bc                    ; BC = Col; Stack = RtnAdr
     jp      bitmap_put_char       ; Put char to bitmap and return
 
+; Called from ST_RESET_CHR
+; On entry: A = ChrASC
+bas_reset_chr:
+    push    hl                    ;  Stack = TxtPtr
+    ld      bc,8
+    ld      de,FBUFFR
+    call    gfx_reset_char_def
+    jp      c,LSERR
+    pop     hl
+    ret
+
+; Called from ST_SET_CHR
+; On entry: A = ChrASC, E = ChrSet, HL = TxtPtr
+bas_set_chr:
+    call    gfx_redefine_char
+    jp      c,LSERR
+    ld      a,(SCREENCTL)         ; Set character set modified flag
+    or      a,SCRCHRMOD
+    ld      (SCREENCTL),a
+    ret
+
 ; Called from FN_GETCHRDEF
 ; Input: B: ChrASCl
 bas_getchrdef:
-    push    bc
+    push    bc                    ; Stack = ChrASC, RtnAdr
+    push    hl                    ; Stack = ChrSet, ChrASC, RtnAdr
     ld      a,8                   ; A = BufLen
     call    STRINI                ; DE = BufAdr
-    pop     af
+    pop     hl                    ; L = ChrSet; Stack = ChrASC, RtnAdr
+    pop     af                    ; A = ChrASC; Stack = RtnAdr
 _getchrdef
     ld      bc,8                  ; BC = BufLen
-    ld      l,0                   ; L = ChrSet (CharRAM)
     jp      gfx_get_char_def
 
 ; Called from FN_GETCHRSET
