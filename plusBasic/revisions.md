@@ -1,4 +1,11 @@
 # plusBASIC Revision History
+ - v0.27r (2025-12-02)
+    - Replaced jump vectors _XINKEY_, _INCNTX_, _INPUTC_, _SCNLBL_, _THENHK_, _XERROR_, _INCHRA_, _XCLEAR_, and _XPTRGT_ with direct jumps
+    - Input line no longer written to multi-line history buffer in _BAS_BUFFR_
+    - Backspace at begining of input beeps instead of printing a CR/LF
+    - Ctrl-R in direct mode recalls previous line if current line is blank instead of reprinting the current entry
+    - Ctrl-U in direct mode and `INPUT` deletes to beginning of entry instead of printing a CR 
+    - Implemented `EDIT` _lineno_
  - v0.27q (2025-12-01)
     - Modified _irq_handler_ to save stack position in _IRQSAVSTK_, elminiated jump through `$2009` to _irq_handler_
     - Fixed text screen corruption when _OUTDO_ called from Auxiliary ROM (specifically `LIST *array$' core code)

@@ -144,7 +144,7 @@ plusBASIC Quick Reference Guide
  - **DRAW _command_string_** - _Not implemented._
  - **DRAW TEXT (_col_,_row)_),_string_** - _Not implemented._
  - **DUMP VARS "_filespec_"** - Dump system and BASIC variables to YAML file.
- - **EDIT {_lineref_}** - _Not implemented._
+ - **EDIT _lineno_** - Edit specified BASIC line.
  - **[END](BASIC-Flow-Control-Statements#end)** - Terminate program execution.
  - **ENDKEY** - Return key used to exit enhanced INPUT.
  - **ERASE _\*array_{,_\*array_...}** - Delete arrays.

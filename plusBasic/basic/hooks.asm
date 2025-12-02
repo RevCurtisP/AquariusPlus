@@ -182,7 +182,7 @@ scan_label:
 ; Hook 33: Save MAIN Line Number Flag
 ;-----------------------------------------------------------------------------
 main_ext:
-    ld      iy,write_history
+    ld      iy,write_prevbuf
     call    aux_call
     pop     de                    ; Pop Return Address
     pop     bc                    ; C = Line Number Flag

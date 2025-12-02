@@ -1,4 +1,9 @@
 # plusBASIC Release History
+ - v0.27r (2025-12-02)
+    - Backspace at begining of input beeps instead of printing a CR/LF
+    - Ctrl-R in direct mode recalls previous line if current line is blank instead of reprinting the current entry
+    - Ctrl-U in direct mode and `INPUT` deletes to beginning of entry instead of printing a CR 
+    - Implemented `EDIT` _lineno_
  - v0.27q (2025-12-01)
     - Implemented `BIN$()`, `SAVE COLORMAP`, added `RESET CHRDEF char`, `,chrset` option to `GETCHRDEF$()`
     - Implemented`APPEND file$,addr,len`, `APPEND file$,@page,addr,len`, `APPEND file$,!extaddr,len`, `APPEND file$,*var$"

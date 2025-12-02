@@ -124,6 +124,11 @@ basic_link_lines:
 
 ;; LOAD "/t/test.txt",ASC
 
+skip_unpack_line:
+    inc     hl
+    inc     hl
+    inc     hl
+    inc     hl
 ;-----------------------------------------------------------------------------
 ; Unpack BASIC line into buffer
 ; Input: DE: Buffer address
@@ -131,8 +136,6 @@ basic_link_lines:
 ; Output: HL: Pointer to beginning of next line
 ; Clobbers: A, BC, DE, IX
 ;-----------------------------------------------------------------------------
-
-;{M80} Unpack line into Buffer
 unpack_line: 
     push    hl                    ; Stack = LinPtr, RtnAdr
     ld      hl,2                  ; 

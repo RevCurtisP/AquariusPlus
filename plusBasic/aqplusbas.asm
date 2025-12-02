@@ -26,29 +26,14 @@
     org     $2000
     jp      _reset          ; $2000 XPLUS  Called from main ROM at reset vector
     jp      _coldboot       ; $2003 XCOLD  Called from main ROM for cold boot
-    jp      just_ret        ; $2006 XCART  Dummy entry matching jump table entry in SD-BASIC
+    jp      just_ret        ; $2006
     jp      just_ret        ; $2009 
-    jp      _warm_boot      ; $200C Called from main ROM for warm boot
+    jp      just_ret        ; $200C
     jp      _xkeyread       ; $200F XINCHR Called from COLORS
     jp      just_ret        ; $2012 
     jp      _ttymove_hook   ; $2015 TTYMOX TTYMOV extension - set screen colors if SYSCTRL bit set
     jp      _scroll_hook    ; $2018 SCROLX SCROLL extension - scroll color memory if SYSCTRL bit set
     jp      _check_cart     ; $201B RESETX Start-up screen extension
-    jp      in_key          ; $201E XINKEY Read key and check Ctrl-C if BREAK is ON
-    jp      _incntc_hook    ; $2021 INCNTX Patch to INCNTC
-    jp      _input_ctrl_c   ; $2024 INPUTC Handle Ctrl-C in INPUT
-    jp      just_ret        ; $2027
-    jp      just_ret        ; $202A 
-    jp      just_ret        ; $202D FININX C/R in INPUT patch
-    jp      _scan_label     ; $2030 SCNLBL Scan line label or line number
-    jp      just_ret        ; $2033
-    jp      just_ret        ; $2036
-    jp      _then_hook      ; $2039 THENHK *Not Implemented* Check for ELSE after IF ... THEN
-    jp      just_ret        ; $203C 
-    jp      just_ret        ; $203F
-    jp      just_ret        ; $2042
-    jp      _read_key       ; $2045 INCHRA Read alt keyboard port instead of matrix
-    jp      _check_topmem   ; $2048 XCLEAR Verify TOPMEM is in Bank 2
 
 just_ret:
     ret
@@ -73,7 +58,7 @@ _reset:
 ;-----------------------------------------------------------------------------
 ; Intercept WRMCON call
 ;-----------------------------------------------------------------------------
-_warm_boot:
+warm_boot:
     ld      a, ROM_EXT_RO         ; Page 1 ROM
     out     (IO_BANK3), a         ; into Bank 3
     call    esp_close_all
@@ -121,7 +106,7 @@ null_desc:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.27q"
+    db "v0.27r"
     db 0
 plusver_len equ $ - plus_version
 plus_len   equ   $ - plus_text
@@ -275,7 +260,7 @@ pt3call:
 ; Called from CLEARS
 ; Input: HL = Bottom of String Space
 ;-----------------------------------------------------------------------------
-_check_topmem:
+check_topmem:
     push    hl                    ; Stack = StrBottom, RtnAdr
     ld      bc,-512               ;
     add     hl,bc                 ; HL = StrBottom - 512
@@ -292,6 +277,8 @@ _check_topmem:
 ; Called from RESET
 ;-----------------------------------------------------------------------------
 _check_cart:
+
+check_aqplus_cart:
     ; Check for Aquarius+ specific cartridge goes here
 
 _start_screen:
@@ -339,12 +326,12 @@ in_direct:
     ret
 
 wait_key:
-    call    _read_key
+    call    read_key
     or       a
     jr       z,wait_key
     ret
 
-_input_ctrl_c:
+input_ctrl_c:
     ld      a,(BASYSCTL)
     and     BASBRKOFF             ; If BRK is on
     jp      z,STPEND              ;   Break out of program
@@ -366,7 +353,7 @@ finish_input:
 ; Check for Control Keys before fetching next statement 
 ; returns to NEWSTT
 ;-----------------------------------------------------------------------------
-_incntc_hook:
+incntc_hook:
     ld      a,(BASYSCTL)
     and     BASBRKOFF             ; If BRK is off
     jr      nz,.drain_buf         ;   Drain buffer
@@ -397,7 +384,7 @@ _incntc_hook:
     call    set_turbo_mode
     jr      _buffchr
 .pause:
-    call    _read_key
+    call    read_key
     jr      z,.pause
     jr      _buffchr
     
@@ -819,7 +806,7 @@ key_set_keymode:
 ;-----------------------------------------------------------------------------
 ; INCHRA - INCHRH Replacement
 ;-----------------------------------------------------------------------------
-_read_key:
+read_key:
     xor     a
     ld      (CHARC),a
 _in_key:
@@ -887,6 +874,12 @@ tty_finish:
     and     CRSR_OFF
     jp      z,TTYFID
     jp      TTYXPR
+
+
+; On entry: HL = BufAdr; Returns B = LinLen, HL = BufAdr
+get_prev_line:
+    ld      iy,read_prevbuf
+    jr      aux_call
 
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ; Call Graphics subsystem subroutine
@@ -1068,8 +1061,8 @@ hook_table:                     ; ## caller   addr  performing function
     dw      0                   ; 14                Deprecated
     dw      FN_FN               ; 16 FNDOER   0B40  FNxx() call
     dw      HOOK17+1            ; 17 LPTOUT   1AE8  Print Character to Printer
-    dw      _read_key           ; 18 INCHRH   1E7E  Read Character from Keyboard
-    dw      0                   ; 19 TTYCHR         Deprecated
+    dw      0                   ; 18                Deprecated
+    dw      0                   ; 19                Deprecated
     dw      HOOK20+1            ; 20 CLOAD    1C2C  Load File from Tape
     dw      HOOK21+1            ; 21 CSAVE    1C09  Save File to Tape
     dw      token_to_keyword    ; 22 LISPRT   0598  expanding a token
@@ -1120,8 +1113,6 @@ _scan_label
     call    page_set_plus
     jp      scan_label
 
-    jp      skip_label
-
 error_ext:
     call    page_set_plus         ; Bank 3 could be mapped to any page at this point.
     call    clear_inevalflg       ; Clear In EVAL Flag
@@ -1141,10 +1132,6 @@ stuffh_ext:
 auxcall_jumpix:
     call    aux_call
     jp      (ix)
-
-_then_hook:
-    jp      REM
-
 
 ; 10 _label:PRINT "testing":'comment
 ; 20 'comment
@@ -1175,6 +1162,17 @@ in_buffer:
     ret     c                 ;   Return Carry Set
     ld      hl,(STRSPC)       ; If String is below String Space
     rst     COMPAR            ;   Return Carry Clear
+    ret
+
+; Print the line buffer
+print_linbuf:
+    call    get_linbuf_hl
+    dec     b
+.loop
+    ld      a,(hl)
+    inc     hl
+    rst     OUTCHR
+    djnz    .loop
     ret
 
 ;-----------------------------------------------------------------------------

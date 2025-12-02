@@ -256,20 +256,23 @@ string_find:
 str_copy:
     push  hl
     push  de
-    ld    bc,0
-.loop
-    ld    a,(hl)
-    ld    (de),a
-    or    a
-    jr    z,.done
-    inc   bc
-    inc   de
-    inc   hl
-    jr    .loop
-.done
+    call  str_cpy0
     pop   de
     pop   hl
     ret
+
+str_cpy0:
+    ld    bc,0
+str_cpy:
+    ld    a,(hl)
+    ld    (de),a
+    or    a
+    ret   z
+    inc   bc
+    inc   de
+    inc   hl
+    jr    str_cpy
+
 
 ;-----------------------------------------------------------------------------
 ; Get length of null terminated string

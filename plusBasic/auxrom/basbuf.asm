@@ -105,51 +105,38 @@ clear_history:
     ld      bc,LINHSTTOP
     jp      basbuf_write_word
 
-; On entry: B = LinLen, HL = BufAdr+1
-; Carry Set if firsst character is digit
-write_history:
+; On entry: B = LinLen, HL = BufAdr
+;           Carry Set if first character is digit
+write_prevbuf:
     ret     c                     ; Return if line number
     push    hl                    ; Stack = BufPtr, RtnAdr
     ld      c,b
     ld      b,0                   ; BC = LinLen
-    push    bc                    ; Stack = LinLen, BufPtr, RtnAdr
-    dec     hl                    ; HL = BufAdr
+    inc     bc                    ; Include NUL terminator
     ld      de,PRVDIRLIN          ; DE = PrvBuf
     call    basbuf_write_bytes    ; Copy Input Buffer to PrvLineBuf
-    pop     bc                    ; BC = LinLen; Stack = LinLen, BufPtr, RtnAdr
-    call    _read_hist_ptr        ; HL = HstPtr
-    ld      de,LINHSTTOP+1
-    rst     COMPAR
-    jr      nc,.done              ; If HstPtr <= HstTop
-    sbc     hl,bc                 ;   HL = NewPtr
-    ld      de,LINHSTBOT          
-    rst     COMPAR                ; 
-    jr      c,.done               ;   If NewPtr >= HstBtm
-    call    _write_hist_ptr       ;   Save NewPtr
-    ex      de,hl                 ;     DE = NewPtr
-    call    get_linbuf_hl         ;     HL = BufAdr
-    call    basbuf_write_bytes    ;     Copy Buffer to History
-.done
     pop     hl                    ; HL = BufPtr; Stack = RtnAdr
     ret
 
-
-_read_hist_ptr:
-    ld      de,LINHSTPTR
-_read_word_hl:
-    push    bc
-    call    basbuf_read_word      ; BC = HstPtr
-    ld      h,b
-    ld      l,c
-    pop     bc
-    ret
-    
-_write_hist_ptr:
-    ld      de,LINHSTPTR
-_write_word_hl:
-    push    bc
-    ld      b,h
-    ld      c,l
-    call    basbuf_write_word      ; BC = HstPtr
-    pop     bc
-    ret
+; On entry: HL = BufAdr
+read_prevbuf:
+    call    get_linbuf_hl         ; HL = BufAdr
+    ld      de,BANK1_BASE+PRVDIRLIN
+    ld      b,0                   ; LinLen = 0
+    ld      a,BAS_BUFFR
+    call    page_map_bank1        
+.loop
+    ld      a,(de)                ; Get PrvChr
+    inc     de                    ; Bump PrvPtr
+    ld      (hl),a                ; Write to Buffer
+    inc     b                     ; Bump LinLen
+    or      a
+    ld      a,b                   ; A = LinLen
+    jr      z,.done               ; If not EOL
+    inc     hl                    ;   Bump BufPtr
+    cp      BUFSIZ                ;   If LinLen < BufLen
+    jr      c,.loop               ;      Copy next character
+.done
+    cp      1                     ; Set Carry if LinLen = 1
+    ld      a,7                   ; Set A for OUTBEL
+    jp      page_restore_bank1

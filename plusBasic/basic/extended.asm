@@ -216,3 +216,38 @@ get_fn_ptr:
     ld      c,a                   ; GET FIRST CHARACTER INTO [C]
     call    PTRGT2
     jp      CHKNUM
+
+;-----------------------------------------------------------------------------
+; EDIT Statement
+; EDIT lineno
+;-----------------------------------------------------------------------------
+ST_EDIT;
+    call    in_direct             ; Set carry if not Direct Mode
+    jp      c,IMERR
+    call    SCNLIN                ; DE = LinNum
+    ld      hl,MAINCC
+    ex      (sp),hl               ; Return to MAIN
+    push    de                    ; Stack = LinNum, RtnAdr
+    call    FNDLIN                ; BC = LinPtr
+    jp      nc,USERR              ; Error if not found
+    ld      d,b
+    ld      e,c                   ; DE = LinPtr
+    call    get_strbuf_addr       ; HL = StrBuf
+    ex      de,hl                 ; HL = LinPtr, DE = StrBuf
+    call    skip_unpack_line
+    pop     hl                    ; HL = LinNum, Stack = RtnAdr
+    call    LINOUT                ; (FBUFFR+1) = Line#
+    call    get_linbuf_de         ; DE = LinBufAdr
+    ld      hl,FBUFFR+2           ; HL = StrAdr
+    ld      bc,1
+    call    str_cpy               ; DE = LinBufPtr, BC = BufLen
+    ld      a,' '
+    ld      (de),a                ; Add Space after line number
+    inc     de
+    inc     bc
+    call    get_strbuf_addr_no_bc ; HL = StrBuf
+    call    str_cpy               ; DE = LinBufPtr, BC = BufLen
+    ld      b,c                   ; B = BufLen
+    jp      LINEDT                ; Print the line and edit it
+    
+    

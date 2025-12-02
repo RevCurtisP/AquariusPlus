@@ -107,16 +107,9 @@ XINCHR  equ     $200F   ;; + Alternate keyboard read
 TTYMOX  equ     $2015   ;; + TTYMOV extension
 SCROLX  equ     $2018   ;; + SCROLL extension
 RESETX  equ     $201B   ;; + Skip start screen, cold boot if ':' pressed
-XINKEY  equ     $201E   ;  + Read buffered key and check for Ctrl-C
-INCNTX  equ     $2021   ;; + INCNTC control keys patch
-INPUTC  equ     $2024   ;; + INPUT Ctrl-C patch
-;;plusBASIC specific hooks
-SCNLBL  equ     $2030   ;; | Scan line label or line number
-THENHK  equ     $2039   ;; | Scan for ELSE after IF THEN
-XERROR  equ     $203C   ;; | Restore Stack, Display Error, and Stop Program
-INCHRA  equ     $2045   ;; | Read alt keyboard port instead of matrix
-XCLEAR  equ     $2048   ;; | Issue Error if TOPMEM too low
-XPTRGT  equ     $204B   ;; | PTRGET Hook
+
+;;plusBASIC specific constants
+BUFSIZ  equ     240     ;; Max INPUT length
 
 EXTBAS  equ     $2000   ;;Start of Extended Basic
 XSTART  equ     $2010   ;;Extended BASIC Startup Routine
@@ -195,7 +188,7 @@ INIT:   ld      sp,TMPSTK         ;[M80] SET UP TEMP STACK
         ld      hl,$2FFF          ;
         ld      (INSYNC),hl       ;
 ;; Don't check for legacy cart - handled by boot.bin                          Original Code
-        jp      RESETX            ; +                                         005C ld      de,XINIT+1
+        jp      check_aqplus_cart ; +                                         005C ld      de,XINIT+1
 ;; Code moved from TAN to make room for hook replacements                     
 TANX:   call    COS               ; +                                         005F  ld      hl,CRTSIG-1
                                   ; +                                         0060
@@ -273,7 +266,7 @@ WARMST: ld      a,11              ;
         out     ($FF),a           ;;Reset I/O Port 255
         call    STKINI            ;;Initialize stack
 ;;; Do plusBASIC Warm Start
-        call    XWARM             ;; +                                        00FA  call    WRMCON
+        call    warm_boot         ;; +                                        00FA  call    WRMCON
 COLDST: ld      hl,DEFALT         ;Set System Variable Default Values
         ld      bc,81             ;
         ld      de,USRPOK         ;;Copy 80 bytes starting at DEFALT
@@ -850,7 +843,7 @@ MAIN:   ld      hl,$FFFF          ;
         ld      (CURLIN),hl       ;[M80] SETUP CURLIN FOR DIRECT MODE
         call    INLIN             ;[M80] GET A LINE FROM TTY
 ;; Break if INLIN exited with Ctrl-C                                          Original Code
-        jp      main_ctrl_c       ;; + If Ctrl-C, do BREAK                    041D  jr      c,MAIN
+MAINCC: jp      main_ctrl_c       ;; + If Ctrl-C, do BREAK                    041D  jr      c,MAIN
                                   ;; +                                        041E
                                   ;; +                                        041F  rst     CHRGET
 MAIN0:  inc     a                 ;[M80] SEE IF 0 SAVING THE CARRY FLAG
@@ -1101,7 +1094,7 @@ LLIST:  ld      a,1               ;[M80] PRTFLG=1 FOR LLIST
         ld      (PRTFLG),a        ;[M80] SAVE IN I/O FLAG (END OF LPT)
 LIST:   ld      a,23              ;;Set line count to 23
         ld      (CNTOFL),a        ;
-        call    SCNLBL            ; + Scan label or line number               0571  call    SCNLIN
+        call    scan_label        ; + Scan label or line number               0571  call    SCNLIN
         ret     nz                ;
         pop     bc                ;[M80] GET RID OF NEWSTT RETURN ADDR
         call    FNDLIN            ;[M80] DONT EVEN LIST LINE #
@@ -1372,7 +1365,7 @@ RUNC2:  push    bc                ;[M80] RESTORE RETURN ADDRESS OF "NEWSTT"
    
 ;; <<
 ;; + Allow GOTO and GOSUB to line label
-GOTO:   call    SCNLBL            ; + Scan label or line number               06DC  call    SCNLIN
+GOTO:   call    scan_label        ; + Scan label or line number               06DC  call    SCNLIN
 ;; >>
 GOTOLN: call    REM               ;[M80] SKIP TO THE END OF THIS LINE
         inc     hl                ;[M80] POINT AT THE LINK BEYOND IT
@@ -1512,7 +1505,7 @@ IFGOTO: cp      GOTOTK            ;[M80] ALLOW "GOTO" AS WELL
         dec     hl                ;
 OKGOTO: call    CHKNUM            ;[M65] 0=FALSE. ALL OTHERS TRUE
         rst     FSIGN             ;
-        jp      z,THENHK          ;; Scan for ELSE                            07AB  jp      z,REM
+        jp      z,then_hook       ;; Scan for ELSE                            07AB  jp      z,REM
         rst     CHRGET            ;[M80] PICK UP THE FIRST LINE # CHARACTER
         jp      c,GOTO            ;[M80] DO A "GOTO"
         jp      GONE3             ;[M80] EXECUTE STATEMENT, NOT GOTO
@@ -1644,7 +1637,7 @@ HOOK26: byte    26                ;
 NOTQTI: push    hl                ;{M80} SAVE TEXT POINTER
         call    QINLIN            ;[M65] TYPE "?" AND INPUT A LINE OF TEXT.
         pop     bc                ;{M80} GET BACK THE TEXT POINTER
-        jp      c,INPUTC          ;; + Handle Ctrl-C                          08AF  jp      c,STPEND
+        jp      c,input_ctrl_c    ;; + Handle Ctrl-C                          08AF  jp      c,STPEND
         inc     hl                ;
         ld      a,(hl)            ;
         or      a                 ;
@@ -1857,6 +1850,7 @@ HOOK9:  byte    9                 ;
         jp      c,FIN             ;[M80] IF NUMERIC, INTERPRET CONSTANT
         call    ISLETC            ;[M80] VARIABLE NAME?
         jp      nc,ISVAR          ;[M80] AN ALPHABETIC CHARACTER MEANS YES
+;; ToDo: mod eval_extension and jump to from here
         cp      PLUSTK            ;[M80] IGNORE "+"
         jr      z,EVAL            ;
 QDOT:   cp      '.'               ;[M65] LEADING CHARACTER OF CONSTANT?
@@ -2221,7 +2215,7 @@ RESTOR: ex      de,hl             ;[M80] SAVE [H,L] IN [D,E]
         jr      z,BGNRST          ;[M80] RESTORE DATA POINTER TO BEGINNING OF PROGRAM
         ex      de,hl             ;[M80] TEXT POINTER BACK TO [H,L]
 ;; Code Change: Allow RESTORE to line label
-        call    SCNLBL            ;; + Scan label or line number              0C0C  call    SCNLIN
+        call    scan_label        ;; + Scan label or line number              0C0C  call    SCNLIN
         push    hl                ;[M80] SAVE TEXT POINTER
         call    FNDLIN            ;[M80] FIND THE LINE NUMBER
         ld      h,b               ;[M80] GET POINTER TO LINE IN [H,L]
@@ -2381,7 +2375,7 @@ CLEARS: ld      a,l               ;[M80] SUBTRACT [H,L]-[D,E] INTO [D,E]
         rst     COMPAR            ;[M80] ROOM?
         jp      nc,OMERR          ;[M80] NO, DON'T EVEN CLEAR
         ex      de,hl             ;[M80] NEW STACK LOCATION [H,L]
-        call    XCLEAR            ;; + Validate, set TOPMEM and STRSPC        0D01  ld      (TOPMEM),hl
+        call    check_topmem      ;; + Validate, set TOPMEM and STRSPC        0D01  ld      (TOPMEM),hl
 CLRCON: pop     hl                ;[M80] GET BACK MEMSIZ
         ld      (MEMSIZ),hl       ;[M80] SET IT UP, MUST BE OK
         pop     hl                ;[M80] REGAIN THE TEXT POINTER
@@ -2526,29 +2520,36 @@ CHKFUN: cp      7                 ;[M80] IS IT BOB ALBRECHT RINGING THE BELL
         inc     b                 ;; Else                                     0DC0  jp      z,LINLIN
         jr      BSBEL             ;;   Beep and continue                      0DC1
                                   ;                                           0DC2
-NOTBS:  cp      24                ;[M80] AT START OF LINE?
-        jr      nz,NTCTLX         ;[M80] IS IT  X (LINE DELETE)
-        ld      a,'#'             ;[M80] SEND NUMBER SIGN
-        jp      INLINN            ;[M80] SEND # SIGN AND ECHO
-NTCTLX: cp      18                ;[M80] CONTROL-R?
-        jr      nz,NTCTLR         ;[M80] NO
-        push    bc                ;[M80] SAVE [B,C]
-        push    de                ;[M80] SAVE [D,E]
-        push    hl                ;[M80] SAVE [H,L]
-        ld      (hl),0            ;[M80] STORE TERMINATOR
-        call    CRDO              ;[M80] DO CRLF
-        call    get_linbuf_hl     ;[M80] POINT TO START OF BUFFER             0DDA  ld      hl,BUF
-                                  ;;                                          0DDB
-                                  ;;                                          0DDC
-        call    STROUT            ;;Print It
-        pop     hl                ;[M80] RESTORE [H,L]
-        pop     de                ;[M80] RESTORE [D,E]
-        pop     bc                ;[M80] RESTORE [B,C]
-        jp      INLINC            ;[M80] GET NEXT CHAR
+NOTBS:  cp      24                ;[M80] AT START OF LINE?                    
+        jr      nz,NTCTLX         ;[M80] IS IT  X (LINE DELETE)               
+        ld      a,'#'             ;[M80] SEND NUMBER SIGN                     
+        jp      INLINN            ;[M80] SEND # SIGN AND ECHO                 
+NTCTLX: cp      18                ;[M80] CONTROL-R?                           
+        jr      nz,NTCTLR         ;[M80] NO                                   
+        push    bc                ;[M80] SAVE [B,C]                           0DD0
+        dec     b                 ;; B = 0 if buffer empty                    0DD1  push    de
+        pop     bc                ;; Restore B                                0DD2  push    hl
+        ld      a,7               ;;                                          0DD3  ld      (hl),0
+                                  ;                                           0DD4
+        jr      nz,OUTBEL         ;; If not empty                             0DD5  call    CRDO
+                                  ;;   Beep and back to INLINC                0DD6
+        call    get_prev_line     ;; Copy PrevLine to LineBuffer              0DD7
+                                  ;;   B = LinLen, HL = BufPtr                0DD8  ld      hl,BUF
+                                  ;;   Carry Set if Blank                     0DD9
+        jr      c,OUTBEL          ;; If PrevLine blank                        0DDA
+                                  ;;    Beep and back to INLINC               0DDB  call    STROUT
+LINEDT: push    bc                ;                                           0DDC
+        call    print_linbuf      ;;                                          0DDD
+                                  ;;                                          0DDE  pop     hl    
+                                  ;;                                          0DDF  pop     de     
+        pop     bc                ;[M80] RESTORE [B,C]                        0DE0  pop     bc     
+        jp      INLINC            ;[M80] GET NEXT CHAR                        0DE1  jp      INLINC 
+                                  ;;                                          0DE2
+                                  ;;                                          0DE3
 NTCTLR: cp      ' '               ;[M80] CHECK FOR FUNNY CHARACTERS
         jp      c,INLINC          ;
 GOODCH: ld      a,b               ;[M80] GET CURRENT LENGTH
-        cp      240               ;[M80] ;Set Carry if longer than Buffer     0DEA  cp      ENDBUF-BUF
+        cp      BUFSIZ            ;[M80] ;Set Carry if longer than Buffer     0DEA  cp      ENDBUF-BUF
         ld      a,7               ;[M80] GET BELL CHAR
         jp      nc,OUTBEL         ;[M80] NO CAUSE FOR BELL
         ld      a,c               ;[M80] RESTORE  CURRENT CHARACTER INTO [A]
@@ -2675,7 +2676,7 @@ STROUT: call    STRLIT            ;[M80] GET A STRING LITERAL
 ; PRINT THE STRING WHOSE DESCRIPTOR IS POINTED TO BY FACLO.
 STRPRT: call    FREFAC            ;[M80] RETURN TEMP POINTER BY FACLO
         call    MOVRM             ;[M80] [D]=LENGTH [B,C]=POINTER AT DATA
-;;Output string at address BC with length D
+;;Output string at address BC with length E
 STRPRD: inc     e                 ;[M80] CHECK FOR NULL STRING
 STRPR2: dec     e                 ;[M80] DECREMENT THE LENGTH
         ret     z                 ;[M80] ALL DONE
@@ -4106,8 +4107,8 @@ INPRT:  push    hl                ;[M80] ENTRY TO LINPRT
 ;[M80] PRINT THE 2 BYTE NUMBER IN H,L
 LINPRT: ld      de,STROUI
         push    de
-;; Convert Unsigned Word in [HL] to String
-        ex      de,hl
+;; Convert Unsigned Word in [HL] to String in FOUT
+LINOUT: ex      de,hl
         xor     a
         ld      b,$98
         call    FLOATR
@@ -4613,7 +4614,7 @@ CRCONT: ret                       ;
 ;;The INKEY$ function
 INKEY:  rst     CHRGET            ;
         push    hl                ;[M80] SAVE THE TEXT POINTER
-        call    XINKEY            ;; +                                        19FD  call    CHARCG
+        call    in_key            ;; +                                        19FD  call    CHARCG
                                   ;; +                                        19FE
                                   ;; +                                        19FF
         jr      z,NULRT           ;{M80} NO CHAR, RETURN NULL STRING
@@ -5174,6 +5175,19 @@ TTYILF: jr      z,ISLF            ;
         call    TRYIN             ;;Wait for character from keyboard
 ISLF:   pop     af                ;;Retrieve Character
 ;;Print Character, bypassing Extended Hook and Line Counter checks
+;; * = proposed action when color print mode is On
+;; * Ctrl-A (ENQ) Move cursor to top left of screen
+;; * Ctrl-B (STX) Non-destructive backspace
+;; * Ctrl-D (EOT) Move cursor up one line
+;; * Ctrl-E (ENQ) Move cursor to end of line
+;; * Ctrl-F (ACK) Move cursor forward
+;;   Ctrl-G (BEL) Beep
+;;   Ctrl-H (BS)  Destructive backspace
+;; * Ctrl-I (TAB) Move to next Tab Stop
+;;   Ctrl-J (LF}  Move cursor down
+;;   Ctrl-K (VT)  Clear Screen to Default Colors, turn off Color Printing
+;; * Ctrl-L (FF)  Clear Screen to Current Colors, leave Color Printing enabled
+;;   Ctrl-M (CR)  Move cursor to beginning of line
 TTYOUT: push    af                ;
         exx                       ;;Save HL on Stack
         cp      7                 ;;Is it BEL!
@@ -5214,11 +5228,13 @@ LFS:    call    SCROLX            ;; +                                        1D
                                   ;; +                                        1DEB
         jr      TTYFIN            ;
 ;;Back Space: Move Cursor Left and Delete Character
+;; ToDo: Move this into BSFIX as well
 BS:     ld      a,(TTYPOS)        ;
 ;; s3basic: BackSpace moves to previous line                              
         jp      BSFIX             ;; Check for Backspace                      1DE0  or      a         
                                   ;;                                          1DE1  jr      z,NOBS    
                                   ;;                                          1DE2
+;;; ToDo: Move this to end of BSFIX so BSCGIX 
 DOBS:   dec     hl                ;;No, Move One to the Left
         dec     a                 ;
 NOBS:   ld      (hl),' '          ;;Erase Character at Position
@@ -5325,7 +5341,7 @@ SDELAL: ld      a,h               ;
 INCHRH: nop                       ;; +                                        1E7E  rst     HOOKDO
 HOOK18: nop                       ;; +                                        1E7F  byte    18
 INCHRC: nop                       ;; +                                        1E80  exx
-INCHRI: jp      INCHRA            ;; +                                        1E81  ld      hl,(RESPTR)
+INCHRI: jp      read_key          ;; +                                        1E81  ld      hl,(RESPTR)
                                   ;; +                                        1E82
                                   ;; +                                        1E83
         ld      a,h
@@ -5475,7 +5491,7 @@ INCNTC: push    hl                ;;Save text pointer
         add     hl,sp             ;
         ld      (SAVSTK),hl       ;;Save stack pointer less 2 entries
         pop     hl                ;;Restore text pointer
-        jp      INCNTX            ;; +                                        1FC2  jp      ISCNTC
+        jp      incntc_hook       ;; +                                        1FC2  jp      ISCNTC
                                   ;; +                                        1FC3
                                   ;; +                                        1FC4
 ;;Finish up Warm Start
@@ -5489,15 +5505,16 @@ STKSAV: dec     hl                ;TAKE INTO ACCOUNT FNDFOR STOPPER
         ld      (SAVSTK),hl       ;MAKE SURE SAVSTK OK JUST IN CASE
         ld      hl,TEMPST         ;INCREMENT BACK FOR SPHL
         ret                       ;
+;; AqPlus Deprecated
 ;;Power Up/Reset Routine: Jumped to from RST 0
 JMPINI: ld      a,$FF             ;;Turn off printer and Cold Start
         out     ($FE),a           ;;Write $FF to Printer Port
         jp      INIT              ;[M80] INIT IS THE INTIALIZATION ROUTINE
-;;Start Extended Basic
 XBASIC: ld      a,$AA             ;;
         out     ($FF),a           ;;Write Unlock Code to Port 255
         ld      (SCRMBL),a        ;;Save It
         jp      XSTART            ;;Jump to Extended BASIC Startup
+;; End deprecated
 ;;Called from COLDST to print BASIC startup message
 PRNTIT: ld      hl,HEDING         ;;Print copyright message and return
         jp      STROUT            ;
