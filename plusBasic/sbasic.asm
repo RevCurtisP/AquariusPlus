@@ -30,7 +30,6 @@ PRTFLG  equ     $3847   ;[M80] WHETHER OUTPUT GOES TO LPT
 LINLEN  equ     $3848   ;;Length of a Screen Line
 CLMLST  equ     $3849   ;[M80] POSITION OF LAST COMMA COLUMN
 SCOLOR  equ     $384A   ;;; Screen Colors for TTYCHR
-RUBSW   equ     SCOLOR  ;;; So deprecated code assembles
 TOPMEM  equ     $384B   ;[M80] TOP LOCATION TO USE FOR THE STACK INITIALLY SET UP BY INIT
                         ;[M80] ACCORDING TO MEMORY SIZE TO ALLOW FOR 50 BYTES OF STRING SPACE.
                         ;[M80] CHANGED BY A CLEAR COMMAND WITH AN ARGUMENT.
@@ -104,8 +103,6 @@ XCART   equ     $2006   ;; + plusBASIC Start Cartridge
 XINTR   equ     $2009   ;; + plusBASIC Interrupt Handler
 XWARM   equ     $200C   ;; + plusBASIC Warm Start`
 XINCHR  equ     $200F   ;; + Alternate keyboard read
-TTYMOX  equ     $2015   ;; + TTYMOV extension
-SCROLX  equ     $2018   ;; + SCROLL extension
 RESETX  equ     $201B   ;; + Skip start screen, cold boot if ':' pressed
 
 ;;plusBASIC specific constants
@@ -144,7 +141,7 @@ CHRGET: inc     hl                ;[M65] INCREMENT THE TEXT PNTR
         ret     nc                ;[M65] IT IS .GE. ":"
         jp      CHRCON            ;;Continue in CHRGTR
 ;; sbasic,inc: RST 3 - Output Character
-OUTCHR: jp      OUTDO             ;;Execute print character routine           
+OUTCHR: jp      outchr_hook       ;;Execute print character routine           0018  jp      OUTDO
         byte    0,0,0,0,0         ;;Pad out the RST routine
 
 ;; sbasic,inc: RST 4 - Integer Compare
@@ -814,7 +811,7 @@ HOOK1:  byte    1                 ;
         ld      d,a               ;;Add Error Offset
         add     hl,de             ;
         ld      a,'?'             ;[M65] PRINT A QUESTION MARK
-        rst     OUTCHR            ;
+        rst     0            ;
 ERRFIN: ld      a,(hl)            ;[M65] GET FIRST CHR OF ERR MSG.
         rst     OUTCHR            ;[M65] OUTPUT IT.
         rst     CHRGET            ;[M65] GET SECOND CHR.
@@ -830,9 +827,11 @@ ERRFN1: call    STROUT            ;[M80] PRINT MESSAGE
 ;[M80] FOR "LIST" COMMAND STOPPING
 STPRDY: pop     bc
 ;;Enter Immediate Mode
-READY:  rst     HOOKDO            ;;Call hook routine
-HOOK2:  byte    2                 ;
-        call    FINLPT            ;[M80] PRINT ANY LEFT OVERS
+READY:  nop                       ;;Call hook routine                         0402 rst     HOOKDO 
+HOOK2:  nop                       ;                                           0403 byte    2     
+        call    direct_mode       ; Execute direct mode extensions            0404 call    FINLPT
+                                  ; and csll FINLPT                           0405
+                                  ;                                           0406
         xor     a                 ;
         ld      (CNTOFL),a        ;[M80] FORCE OUTPUT
         call    CRDONZ            ;[M80] IF NOT ALREADY AT LEFT, SEND CRLF
@@ -1344,10 +1343,12 @@ MORLIN: rst     CHRGET            ;;Get next character
 POPHSR: pop     af                ;[M80] GET OFF TERMINATING DIGIT
         pop     hl                ;[M80] GET BACK OLD TEXT POINTER
         ret                       ;
-RUN:    rst     HOOKDO            ;Call Hook Routine
-HOOK24: byte    24                ;
-        jp      z,RUNC            ;[M80] NO LINE # ARGUMENT
-CONRUN: call    CLEARC            ;RESET THE STACK,DATPTR,VARIABLES ...
+RUN:    nop                       ;Call Hook Routine                          06BE rst     HOOKDO
+HOOK24: nop                       ;                                           06BF byte    24
+        jp      run_cmd           ;                                           06C0 jp      z,RUNC
+                                  ;                                           06C1
+                                  ;                                           06C2
+CONRUN: call    CLEARC            ;RESET THE STACK,DATPTR,VARIABLES ...     
         ld      bc,NEWSTT         ;
         jr      RUNC2             ;[M80] PUT "NEWSTT" ON AND FALL INTO "GOTO"
 ;[M80] GOSUB STATEMENT
@@ -1612,8 +1613,8 @@ FINPRT: nop                       ;                                             
         ret                       ;
 TRYAGN: byte    "?Redo from start",13,10,0
 ;[M80]  HERE WHEN THE DATA THAT WAS TYPED IN OR IN "DATA" STATEMENTS
-TRMNOK: rst     HOOKDO            ;
-HOOK8:  byte    8                 ;
+TRMNOK: nop                       ;                                                 0880 rst     HOOKDO
+HOOK8:  nop                       ;                                                 0881 byte    8
         ld      a,(FLGINP)        ;[M80] WAS IT READ OR INPUT?
         or      a                 ;[M80] ZERO=INPUT
         jp      nz,DATSNE         ;[M80] GIVE ERROR AT DATA LINE
@@ -1713,7 +1714,7 @@ STRDN2: dec     hl                ;
         jr      z,TRMOK           ;
         cp      ','               ;
         jp      nz,TRMNOK         ;[M80] ENDED PROPERLY?
-TRMOK:  ex      (sp),hl           ;
+TRMOK:  ex      (sp),hl           ;                        
         dec     hl                ;[M80] LOOK AT TERMINATOR
         rst     CHRGET            ;[M80] AND SET UP CONDITION CODES
         jp      nz,LOPDT2         ;[M80] NOT ENDING, CHECK FOR COMMA AND GET ANOTHER VARIABLE
@@ -2241,8 +2242,8 @@ ENDCON: ld      hl,(CURLIN)       ;[M80] SAVE CURLIN
         and     h                 ;[M80] SEE IF DIRECT
         inc     a                 ;
         jr      z,DIRIS           ;[M80] IF NOT SET UP FOR CONTINUE
-        ld      (OLDLIN),hl       ;[M80] SAVE OLD LINE #
-        ld      hl,(SAVTXT)       ;[M80] GET POINTER TO START OF STATEMENT
+        jp      end_hook          ;                                           0C32  ld      (OLDLIN),hl       
+ENDCOT: ld      hl,(SAVTXT)       ;[M80] GET POINTER TO START OF STATEMENT
         ld      (OLDTXT),hl       ;[M80] SAVE IT
 DIRIS:  call    FINLPT            ;{M80} BACK TO NORMAL PRINT MODE
         call    CRDONZ            ;[M80] PRINT CR IF TTYPOS .NE. 0
@@ -2438,27 +2439,30 @@ QINLIN: ld      a,'?'             ;
         jp      INLIN             ;;;For relative jumps
 
 ;;; Code Change: Replace Ancient DELETE code with improved backspace code
-BSFIX:  or      a                 ;;If not at position 0                      0D64
-        jr      nz,BSFIN          ;;Do the backspace                          0D65  
-                                  ;                                           0D66   
-        ld      c,a               ;                                           0D67
-        ld      a,l               ;                                           0D68 
-        cp      41                ;;If at home position                       0D69 
-                                  ;                                           0D6A
-        ld      a,c               ;                                           0D6B 
-        jp      z,NOBS            ;;  Don't backspace                         0D6C
-                                  ;                                           0D6D
-                                  ;                                           0D6E
-        dec      hl               ;;Backup to end of previous line            0D6F
-        dec      hl               ;                                           0D70  jr     z,INLIN 
-        ld       a,38             ;                                           0D71  
-                                  ;                                           0D72  rst     OUTCHR
-BSFIN:  jp      DOBS              ;;Do the backspace                          0D73  inc     b     
-;; Deprecated code - Good place for a JR to JP patch
-        jr      z,INLINN          ;[M80] AND RE-SET UP INPUT
-        ld      a,(hl)            ;[M80] OTHERWISE GET CHAR TO ECHO
-;; End Deprecated code
-BSBEL:  dec     a                 ;; Convert from BS to BEL                   0D79  rst     OUTCHR
+;;; Moves cursor to left but does not erase character
+BKSPC:  call    tty_pos           ; A = TTYpos, D = LinWid, E = LinLen        0D64  ld      a,(RUBSW)
+                                  ;                                           0D65
+                                  ;                                           0D66
+        or      a                 ;;If not at position 0                      0D67  or      a    
+        jr      nz,BKFIN          ;;Do the backspace                          0D68  ld      a,'\'
+                                  ;                                           0D69 
+        ld      c,a               ;                                           0D6A  ld      (RUBSW),a
+        ld      a,l               ;                                           0D6B 
+        inc     e                 ;                                           0D6C
+        cp      e                 ;;If at home position                       0D6D  jr      nz,NOTBEG
+        ld      a,c               ;                                           0D6E
+        ret     z                 ;;  Don't backspace                         0D6F  dec     b
+        dec     hl                ;                                           0D70  jr     z,INLIN 
+        dec     hl                ;                                           0D71  
+        ld      a,d               ;;Backup to end of previous line            0D72  rst     OUTCHR
+        nop                       ;                                           0D73  inc     b
+BKFIN:  dec     hl                ;;No, Move One to the Left                  0D74  dec     b
+        dec     a                 ;                                           0D75  dec     hl
+        jp      TTYSAV            ;                                           0D76  jr      z,INLINN
+                                  ;                                           0D77  
+                                  ;                                           0D78  ld      a,(hl)
+BSBEL:  dec     a                 ; Make BS into BEL                          0D79  rst     OUTCHR
+
         jr      OUTBEL            ;; Print it and jump to INLINC              0D7A  jr      INLINC
                                   ;                                           0D7B
 LINLIN: dec     b                 ;[M80] AT START OF LINE?                   
@@ -2483,7 +2487,6 @@ INLNC1: ld      c,a               ;[M80] SAVE CURRENT CHAR IN [C]
         jp      ctrl_keys         ;; + Check for Extended Ctrl-Keys           0D92  cp      127 
                                   ;; +                                        0D93    
                                   ;; +                                        0D94  jr      z,RUBOUT          
-;; Set VALTYP to 1 (string) or 0 (number)
 LINDEL: ld      a,8               ;; +                                        0D95
                                   ;; +                                        0D96  ld      a,(RUBSW)
         dec     b                 ;; + Bump for loop                          0D97
@@ -4531,24 +4534,19 @@ TAN:    call    PUSHF             ;[M80] SAVE ARG
         call    PUSHF             ;
         ex      de,hl             ;[M80] GET LO'S WHERE THEY BELONG
         call    MOVFR             ;
-        jp      TANX              ;; +                                        197F  call    COS
-                                  ;; +                                        1980
-                                  ;; +                                        1981
-OUTDOH: jp      outdo_hook        ;; +                                        1982  jp      FDIVT
-                                  ;; +                                        1983
-                                  ;; +                                        1984
+        call    COS               ;
+        jp      FDIVT             ;
 ;ARCTANGENT FUNCTION
 ATN:    nop                       ;; +                                        1985  rst     HOOKDO
         nop                       ;; +                                        1986  byte    14
         jp      FN_ATN            ;; +                                        1987  jp      SNERR
                                   ;; +                                        1988
                                   ;; +                                        1989
-;;Execute OUTCHR
-OUTDO:  jr      OUTDOH            ;; +                                        189A  rst     HOOKDO
-                                  ;; +                                        198B  byte    13
-                    ;;execute hook routine 13 (OUTDOX)
-OUTCON: push    af                ;
-        ld      a,(PRTFLG)        ;[M80] SEE IF WE WANT TO TALK TO LPT
+;; Execute this instead of RST OUTCHR to bypass the output to buffer logic
+OUTDO:  nop                       ;                                           189A  rst     HOOKDO
+        nop                       ;                                           198B  byte    13
+        push    af                ;
+OUTCON: ld      a,(PRTFLG)        ;[M80] SEE IF WE WANT TO TALK TO LPT
         or      a                 ;[M80] TEST BITS
         jp      z,TTYPOP          ;[M80] IF ZERO THEN NOT
 ;;Print character in [A] to printer
@@ -5154,12 +5152,11 @@ CLOADN: call    RDBYTE            ;;Get Byte
         djnz    CLOADN            ;;Loop until 256 $00 are read
         xor     a                 ;;Return with Zero set
         ret
-TTYCHR: ;Print character to screen
-        nop                       ;; +                                        1D72  rst     HOOKDO
+; Print character to screen with paging
+TTYCHR: nop                       ;; +                                        1D72  rst     HOOKDO
         nop                       ;; +                                        1D73  byte    19
-TTYCH:  jp      ttychr_hook       ;; +                                        1D74  push    af
-                                  ;; +                                        1d75  cp      10
-                                  ;; +                                        1d76
+TTYCH:  push    af                                ;;Save character
+        cp      10                                ;[M80] LINE FEED?
 TTYILF: jr      z,ISLF            ;
         ld      a,(TTYPOS)        ;
         or      a                 ;;At beginning of line?
@@ -5174,7 +5171,8 @@ TTYILF: jr      z,ISLF            ;
         ld      (CNTOFL),a        ;;Reset line counter
         call    TRYIN             ;;Wait for character from keyboard
 ISLF:   pop     af                ;;Retrieve Character
-;;Print Character, bypassing Extended Hook and Line Counter checks
+;;Print Character to Screen
+;;Clobbers: AF',BC',DE',HL'
 ;; * = proposed action when color print mode is On
 ;; * Ctrl-A (ENQ) Move cursor to top left of screen
 ;; * Ctrl-B (STX) Non-destructive backspace
@@ -5205,8 +5203,10 @@ TTYOUT: push    af                ;
         jr      z,CR              ;;Do Carriage Return
         cp      10                ;;Is it LF?
         jr      z,LF              ;;Do Line Feed
-        ld      hl,(CURRAM)       ;;Place character at
-        ld      (hl),a            ;;current position on screen
+        call    tty_put           ;;Place character at                        1DB5  ld      hl,(CURRAM)
+                                  ;                                           1DB6
+                                  ;                                           1DB7
+        nop                       ;;current position on screen                1DB8  ld      (hl),a
         call    TTYMOV            ;;Move Cursor Right
         jr      TTYFIN            ;;Finish Up
 ;;Carriage Return: Move Cursor to Beginning of Current Line
@@ -5216,36 +5216,41 @@ CR:     ld      de,(TTYPOS)       ;
         sbc     hl,de             ;;from Screen Position
         jr      TTYFIS            ;
 ;;Line Feed: Move Cursor Down One Line
-LF:     ld      de,SCREEN+960     ;
+LF:     call    lf_hook           ;; DE = LstRow                              1DC8  ld      de,SCREEN+960
+                                  ;;                                          1DC9
+                                  ;;                                          1DCA
         rst     COMPAR            ;;Cursor on Last Row?
         jp      nc,LFS            ;;Yes, Scroll and Finish Up
-        ld      de,40             ;
+
+        call    tty_linlen        ;; DE = LinLen                              1DCF  ld      de,40
+                                  ;;                                          1DCA
+                                  ;;                                          1DCA
         add     hl,de             ;;Add 40 to Move Down One Line
         ld      (CURRAM),hl       ;;Save New Screen Position
         jr      TTYFIN            ;
-LFS:    call    SCROLX            ;; +                                        1DD8  call    SCROLL
-                                  ;; +                                        1DDA
-                                  ;; +                                        1DEB
+LFS:    call    SCROLL            ;;Scroll Up and Keep Screen Position
         jr      TTYFIN            ;
-;;Back Space: Move Cursor Left and Delete Character
-;; ToDo: Move this into BSFIX as well
-BS:     ld      a,(TTYPOS)        ;
-;; s3basic: BackSpace moves to previous line                              
-        jp      BSFIX             ;; Check for Backspace                      1DE0  or      a         
+BS:     call    BKSPC             ;                                           1DDD  ld      a,(TTYPOS)
+                                  ;;                                          1DDE
+                                  ;;                                          1DDF
+        ld      (hl),' '          ;;Erase Character at Position               1DE0  or      a
                                   ;;                                          1DE1  jr      z,NOBS    
-                                  ;;                                          1DE2
-;;; ToDo: Move this to end of BSFIX so BSCGIX 
-DOBS:   dec     hl                ;;No, Move One to the Left
-        dec     a                 ;
-NOBS:   ld      (hl),' '          ;;Erase Character at Position
+        jr      TTYFIN            ;;                                          1DE2
+                                  ;;                                          1DE3  dec     hl
+        nop                       ;                                           1DE4  dec     a
+        nop                       ;                                           1DE5  ld      (hl),' '
+        nop                       ;                                           1DE6
 ;;Save Character and Display Cursor
 TTYFIS: call    TTYSAV            ;;Save Column and Position
-TTYFIN: ld      hl,(CURRAM)       ;
-        ld      a,(hl)            ;;Get character at position
-        jp      tty_finish        ;; +                                        1DEA  ld      (CURCHR),a
-                                  ;;                                          1DEB
-                                  ;;                                          1DEC
-TTYFID: ld      (hl),$7F          ;Display Cursor
+TTYFIN: call    cursor_put        ; `                                         1DEA  ld      hl,(CURRAM)
+                                  ; `                                         1DEB
+                                  ;                                           1DEC
+        nop                       ;                                           1DED  ld      a,(hl)
+        nop                       ;                                           1DEE  ld      (CURCHR),a
+        nop                       ;                                           1DEF
+        nop                       ;                                           1DF0
+        nop                       ;Display Cursor                             1DF1  ld      (hl),$7F
+        nop                       ;                                           1DF2 
 TTYXPR: exx                       ;Restore [BC], [DE] and [HL]
         pop     af                ;Restore [AF]
         ret
@@ -5258,12 +5263,14 @@ TTYRES: ld      hl,(CURRAM)       ;;Get position
         ret                       ;
 
 ;;Scroll Screen Up one Line
-SCROLL: ld      bc,920            ;;Move 23 * 40 bytes
-        ld      de,SCREEN+40      ;;To Row 1 Column 0
+SCROLL: jp      scroll_hook       ;                                           1DFE ld      bc,920
+                                  ;                                           1DFF
+                                  ;                                           1E00
+SCROLC: ld      de,SCREEN+40      ;;To Row 1 Column 0
         ld      hl,SCREEN+80      ;;From Row 2 Column 1
         ldir                      ;
         ld      b,40              ;;Loop 40 Times
-        ld      hl,SCREEN+961     ;;Starting at Row 23, Column 0
+        ld      hl,SCREEN+961     ;;Starting at Row 23, Column 
 SCROLP: ld      (hl),' '          ;;Put Space
         inc     hl                ;;Next Column
         djnz    SCROLP            ;;Do it again
@@ -5276,42 +5283,47 @@ BEEP:   ld      bc,200            ;
                                   ;; +                                        1E1C
         jr      TTYXPR            ;;Restore Registers and return
 ;;Move Cursor one character to the right
-TTYMOV: jp      TTYMOX            ;; +                                        1E1F  ld      hl,(CURRAM)       ;
-                                  ;; +                                        1E20
-                                  ;; +                                        1E21
-TTYMOP: ld      a,(TTYPOS)        ; 
+;;C must contain Line Width (38 or 78)
+TTYMOV: ld      hl,(CURRAM)       ;
+        call    tty_pos           ; A = TTYpos, D = LinWid, E = LinLen        1E22  ld      a,(TTYPOS)
+                                  ;                                           1E23
+                                  ;                                           1E24
         inc     hl                ;;Increment Position in Memory
         inc     a                 ;;Increment Cursor Column
-        cp      38                ;;Less than 39?
+        cp      d                 ;;                                          1E27  cp      38
+        nop                       ;;                                          1E28
         jr      c,TTYSAV          ;;Save and Return
         inc     hl                ;
         inc     hl                ;;Skip border columns
-        ld      de,SCREEN+1000    ;
+        call    ttymov_hook       ;;DE = ScrnEnd, BC = LastRow                1E2D ld      de,SCREEN+1000
+                                  ;                                           1E2E
+                                  ;                                           1E24
         rst     COMPAR            ;;Past End of Screen?
         ld      a,0               ;;Cursor Column = 0
         jr      c,TTYSAV          ;;No, Save Position and Column
-        ld      hl,033C1H         ;;Yes, Position = Row 24, Column 0
+        ld      h,b               ;;HL = LastRow                              1E35  ld      hl,SCREEN+961
+        ld      l,c               ;;                                          1E36
+        nop                       ;;                                          1E37
         call    TTYSAV            ;Save Position and Column
-        jp      SCROLX            ;; + 80 column extension                    1E3B  jp      SCROLL
-                                  ;; +                                        1E3C
-                                  ;; +                                        1E3D
+        jp      SCROLL            ;Scroll Screen
 ;;Update Current Screen Position and Cursor Column
 TTYSAV: ld      (CURRAM),hl       ;;Position in Screen RAM
         ld      (TTYPOS),a        ;;Cursor Column
         ret                       ;
-;;Clear Screen
-TTYCLR: ld      b,' '             ;
-        ld      hl,SCREEN         ;
-        call    FILLIT            ;;Write to Sreen RAM
+;;Clear Screen (jump to from TTYOUT)
+TTYCLR: ld      b,' '
+        jp      ttyclr_hook       ; HL = SCREEN                               1E47  ld      hl,SCREEN
+                                  ;                                           1E48
+                                  ;                                           1E49
+TTYCLF: call    FILLIT            ;;Write to Sreen RAM
+;;plusBASIC expects $1E4E to contain the default screen colors
 CLSCLR: ld      b,6               ;;Black on Light Cyan
         call    FILLIT            ;;Write to Color RAM
         ld      hl,SCREEN+41      ;;Home Cursor
-        xor     a                 ;;Column = 0                                
-        jp      tty_clear         ;;Save and Finish
-;;Fill 1024 bytes atarting at HL with A
-;;;Code Change - Fill all 1024 bytes
-FILLIT: ld      de,$400           ;;Count down from 1023
-;;Fill BC bytes atarting at HL with A
+TTYCLX: xor     a                 ;;Column = 0
+        jp      TTYFIS            ;;Save and Finish
+FILLIT: ld      de,$3FF           ;;Count down from 1023
+;;Fill BC bytes atartinf at HL with A
 FILLIP: ld      (hl),b            ;;Store byte
         inc     hl                ;;Increment pointer
         dec     de                ;;Decrement Counter

@@ -29,10 +29,10 @@
     jp      just_ret        ; $2006
     jp      just_ret        ; $2009 
     jp      just_ret        ; $200C
-    jp      _xkeyread       ; $200F XINCHR Called from COLORS
+    jp      _xkeyread       ; $200F
     jp      just_ret        ; $2012 
-    jp      _ttymove_hook   ; $2015 TTYMOX TTYMOV extension - set screen colors if SYSCTRL bit set
-    jp      _scroll_hook    ; $2018 SCROLX SCROLL extension - scroll color memory if SYSCTRL bit set
+    jp      just_ret        ; $2015
+    jp      just_ret        ; $2018
     jp      _check_cart     ; $201B RESETX Start-up screen extension
 
 just_ret:
@@ -106,7 +106,7 @@ null_desc:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.27r"
+    db "v0.27s"
     db 0
 plusver_len equ $ - plus_version
 plus_len   equ   $ - plus_text
@@ -639,96 +639,10 @@ exec_page:
 jump_iy:
     jp      (iy)
 
-do_cls:
-    call    get_cls_colors
-;-----------------------------------------------------------------------------
-; Clear Screen and init cursor
-;-----------------------------------------------------------------------------
-clear_home:
-;-----------------------------------------------------------------------------
-; Clear Screen
-; Input: A: Color Attributes
-;-----------------------------------------------------------------------------
-    push    hl
-    call    clear_screen
-    pop     hl
-_init_cursor
-    ld      a,' '
-    ld      (CURCHR),a            ; SPACE under cursor
-    ld      de,(LINLEN)
-    inc     de
-    ld      d,high(SCREEN)
-    ld      (CURRAM),de
-    xor     a
-    ld      (TTYPOS),a            ; column 0
-    ret
-
-get_cls_colors:
-;    ld      a,(BASYSCTL)
-    ld      a,(SCREENCTL)
-    rla                           ; Carry = SCRCOLOR
-    ld      a,(SCOLOR)            ; If Color PRINT enabled
-    ret     c
-    ld      a,(CLSCLR)            ; default to black on cyan
-    ret
-    
-clear_screen:
-    ld      c,IO_VCTRL
-    in      b,(c)
-    bit     6,b
-    jr      nz,clear_screen80
-clear_screen40:
-    ld      hl,SCREEN
-    ld      c,25
-.line:
-    ld      b,40
-.char:
-    ld      (hl),' '
-    set     2,h
-    ld      (hl),a
-    res     2,h
-    inc     hl
-    djnz    .char
-    dec     c
-    jr      nz,.line
-    ret
-
-_ttymove_hook:
-;    ld      a,(BASYSCTL)          ; If color PRINT not enabled
-    ld      a,(SCREENCTL)         ; 
-    rla                           ; Carry = SCRCOLOR
-    jp      nc,TTYMOP             ; If Color PRINT enabled
-    ld      a,(SCOLOR)            ;   Get screen color
-    set     2,h
-    ld      (hl),a                ;   Write to color RAM
-    res     2,h
-    jp      TTYMOP                ;   and continue
-
-_scroll_hook:
-    push    af
-;    ld      a,(BASYSCTL)          ; or color PRINT not enabled
-    ld      a,(SCREENCTL)         ; 
-    rla                           ; Carry = SCRCOLOR
-    jr      nc,.nocolor           ; If Color PRINT enabled
-    ld      bc,920                ;   Move 23 * 40 bytes
-    ld      de,COLOR+40           ;   To Row 1 Column 0
-    ld      hl,COLOR+80           ;   From Row 2 Column 1
-    ldir                          ;
-    ld      a,(SCOLOR)
-    ld      b,40                  ;   Loop 40 Times
-    ld      hl,COLOR+961          ;   Starting at Row 23, Column 0
-.loop:
-    ld      (hl),a                ;   Put Space
-    inc     hl                    ;   Next Column
-    djnz    .loop                 ;   Do it again
-.nocolor
-    pop     af
-    jp      SCROLL
-
 ;-----------------------------------------------------------------------------
 ; 80 column screen driver
 ;-----------------------------------------------------------------------------
-    include "text80.asm"
+    include "ttyhooks.asm"
 
 ;-----------------------------------------------------------------------------
 ; Cold Boot
@@ -856,25 +770,6 @@ sys_swap_mem:
     inc     de
     dec     bc
     jp      sys_swap_mem
-
-;-----------------------------------------------------------------------------
-; TTYCLR Hook
-;-----------------------------------------------------------------------------
-tty_clear:
-    call    set_color_off         ; Turn off color printing
-    xor     a                     ; Return Column = 0
-    jp      TTYFIS                ; Save and Finish
-
-;-----------------------------------------------------------------------------
-; TTYFIN hook
-;-----------------------------------------------------------------------------
-tty_finish:
-    ld      (CURCHR),a            ; Save character under cursor
-    ld      a,(SCREENCTL)
-    and     CRSR_OFF
-    jp      z,TTYFID
-    jp      TTYXPR
-
 
 ; On entry: HL = BufAdr; Returns B = LinLen, HL = BufAdr
 get_prev_line:
@@ -1019,19 +914,24 @@ OSERR:
 ;-----------------------------------------------------------------------------
 ; Called from OUTDO through OUTDOH in sbasic.asm
 ;-----------------------------------------------------------------------------
-outdo_hook:
-  push    af                
+outchr_hook:
+  push    af
   ld      a,(BASYSCTL)            ; Get System Control Bits
   rra                             ; Carry = BASOUTBUF
   jr      c,.buffer               ; If bit set, write to buffer 
-  pop     af
   jp      OUTCON
 .buffer
   pop     af
   ld      iy,output_to_buffer
-  jp      ext_call                ; If bit set, write to buffer 
+  jp      ext_call
 
-    free_rom_sys = $2F00 - $
+end_hook:
+  ld      (OLDLIN),hl
+  ld      iy,set_color_off
+  call    aux_call
+  jp      ENDCOT    
+
+free_rom_sys = $2F00 - $
 
 ;------------------------------------------------------------------------------
 ; Hook Jump Table
@@ -1045,13 +945,13 @@ outdo_hook:
 hook_table:                     ; ## caller   addr  performing function
     dw      0                   ;  0                Deprecated
     dw      force_error         ;  1 ERRCRD   03E0  Print Error Message
-    dw      direct_mode         ;  2 READY    0402  BASIC command line (immediate mode)
-    dw      0                   ; 13                Deprecated
-    dw      0                   ;  7                Deprecated
+    dw      0                   ;  2                Deprecated 
+    dw      0                   ;  3                Deprecated
+    dw      0                   ;  4                Deprecated
     dw      linker_hook         ;  5 LINKER   0485  Update BASIC Program Line Links
     dw      print_hook          ;  6 PRINT    07BC  Execute PRINT Statement
     dw      0                   ;  7                Deprecated
-    dw      HOOK8+1             ;  8 TRMNOK   0880  Improperly Formatted INPUT or DATA handler
+    dw      0                   ;  8 
     dw      eval_extension      ;  9 EVAL     09FD  Evaluate Number or String
     dw      keyword_to_token    ; 10 NOTGOS   0536  Converting Keyword to Token
     dw      0                   ; 11                Deprecated
@@ -1067,7 +967,7 @@ hook_table:                     ; ## caller   addr  performing function
     dw      HOOK21+1            ; 21 CSAVE    1C09  Save File to Tape
     dw      token_to_keyword    ; 22 LISPRT   0598  expanding a token
     dw      exec_next_statement ; 23 GONE2    064B  interpreting next BASIC statement
-    dw      run_cmd             ; 24 RUN      06BE  starting BASIC program
+    dw      0                   ; 24                Deprecated
     dw      on_error            ; 25 ONGOTO   0780  ON statement
     dw      HOOK26+1            ; 26 INPUT    0893  Execute INPUT, bypassing Direct Mode check
     dw      execute_function    ; 27 ISFUN    0A5F  Executing a Function
@@ -1104,10 +1004,6 @@ fast_hook_handler:
 _next_statement:
     call    page_set_plus
     jp      exec_next_statement   ; Go do the Statement
-
-_run_cmd:
-    call    page_set_plus
-    jp      run_cmd
 
 _scan_label
     call    page_set_plus

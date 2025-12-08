@@ -429,3 +429,10 @@ plusBASIC Quick Reference Guide
  - **WORD$(_integer_)** - Convert integer to unsigned two byte binary string.
  - **WRITE #_channel_,^_strvar_** - Write string to open file.
  - **WRITE KEYS _string_** - Write string to auto-type buffer.
+
+## PRINT control characters
+ - **CHR$(8) / $"08"** - Move cursor left, wrapping to previous line, and delete character in the new position.
+ - **CHR$(10) / $"0A"** - Move cursor down one line or scroll screen up if on last line.
+ - **CHR$(11) / $"0B"** - Clear screen to default colors and do `SET COLOR OFF` and `SET CURSOR ON`.
+ - **CHR$(13) / $"0D"** - Move cursor to first column of line.
+

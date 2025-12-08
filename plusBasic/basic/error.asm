@@ -59,6 +59,7 @@ LSTERR  equ     $72   ; 58 Last error used for range checks
 ; Print error message and return to direct mode
 ;----------------------------------------------------------------------------
 force_error:
+    call    CRDONZ                ; Print CR/LF if TTYPOS is not Zero
     ld      a,7                   ; Ring the bell
     rst     OUTCHR
     call    get_errmsg_ptr        ; Get Pointer into Error Table

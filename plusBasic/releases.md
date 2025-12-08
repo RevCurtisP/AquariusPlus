@@ -1,4 +1,6 @@
 # plusBASIC Release History
+ - v0.27s (2025-12-08)
+    - Fixed anomalies when `SET COLOR` is active, modified `PRINT CHR$(11)` to do implicit `SET COLOR OFF` and `SET CURSOR ON`
  - v0.27r (2025-12-02)
     - Backspace at begining of input beeps instead of printing a CR/LF
     - Ctrl-R in direct mode recalls previous line if current line is blank instead of reprinting the current entry

@@ -176,7 +176,7 @@ plusBASIC Quick Reference Guide
  - [.] **GETBORDERCOLOR** - Return screen border colors.<!--screen-->
  - [.] **GETBORDERCOLOR$** - Return screen border colors as string.<!--screen-->
  - [ ] **GETCHRSET** - Return character set currently in use.<!--CHRSET-->
- - [!] **GETCOLOR** - Return screen printing colors.<!--screen-->
+ - [ ] **GETCOLOR** - Return screen printing colors.<!--screen-->
  - [ ] **GETCURSOR** - Return cursor display mode.
  - [ ] **GETKEY** - Wait for key and return ASCII code.<!--key-->
  - [ ] **GETKEY$**  - Wait for key and return as string.<!--key-->
@@ -429,3 +429,10 @@ plusBASIC Quick Reference Guide
  - [x] **WORD$(_integer_)** - Convert integer to unsigned two byte binary string.<!--convert-->
  - [.] **WRITE #_channel_,^_strvar_** - Write string to open file.<!--fileio-->
  - [ ] **WRITE KEYS _string_** - Write string to auto-type buffer.
+
+## PRINT control characters
+ - [ ] **CHR$(8) / $"08"** - Move cursor left, wrapping to previous line, and delete character in the new position.
+ - [ ] **CHR$(10) / $"0A"** - Move cursor down one line or scroll screen up if on last line.
+ - [ ] **CHR$(11) / $"0B"** - Clear screen to default colors and do `SET COLOR OFF` and `SET CURSOR ON`.
+ - [ ] **CHR$(13) / $"0D"** - Move cursor to first column of line.
+ 

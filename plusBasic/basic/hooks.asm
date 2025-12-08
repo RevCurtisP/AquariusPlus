@@ -6,16 +6,24 @@
 ; Hook 2 - READY (Enter Direct Mode
 ;-----------------------------------------------------------------------------
 direct_mode:
-    call    text_screen
+    call    text_screen           ; Turn on text, disable graphics
 
     ld      a,(BASYSCTL)
     and     ~BASBRKOFF            ; Enable Ctrl-C break
     ld      (BASYSCTL),a
+;;; Proposed: Save and restore print colors in direct mode
+;   and     BASCOLOR
+;   ld      b,a                   ; B = [BASCOLOR]
+;   ld      a,(SCREENCTL)
+;   and     $FF-SCRCOLOR
+;   or      b                     ; Set [SCRCOLOR] to [BASCOLOR]
+;   ld      (SCREENCTL),a
+
     call    key_set_repeat        ; Turn on keybuffer in ASCII mode, KB_REPEAT in BASYSCTL
     call    set_cursor_on
     call    ferr_flag_on
     call    close_bas_fdesc       ; Clean up after aborted file commnds
-    jp      HOOK2+1            
+    jp      FINLPT                ;[M80] PRINT ANY LEFT OVERS            
 
 set_cursor_on:
     ld      a,$FF
@@ -49,8 +57,8 @@ ferr_flag_on:
     
 text_screen:
     in      a,(IO_VCTRL)
-    and     a,~VCTRL_MODE_MC
-    or      a,VCTRL_TEXT_EN
+    and     a,~VCTRL_MODE_MC      ; Disable graphics screen
+    or      a,VCTRL_TEXT_EN       ; Enable text screen
     out     (IO_VCTRL),a
     ret
 

@@ -66,19 +66,38 @@ ATNCON:
 ; syntax: CLS [fgcolor, bgcolor]
 ;-----------------------------------------------------------------------------
 ST_CLS:
-    jp      z,do_cls              ; No parameters, use default
+    ld      iy,screen_clear       ; If no arguments
+    jr      z,.cls                ;   Us current default colors
     cp      COLTK
-    jr      z,.cls_color
-    call    get_screen_colors     ; Pares foreground and background colors
-    jp      clear_home            ; Clear screen and homecursor
-.cls_color:
+    jr      z,.color              ; If not CLR COLOR
+    call    get_screen_colors     ;   Parse colors
+    ld      iy,screen_clear_a     ;   and clear screen
+.cls
+    push    hl
+    call    gfx_call
+    call    home_cursor
+    pop     hl
+    ret
+.color:
     rst     CHRGET                ; Skip COL
     SYNCHKT ORTK                  ; Require COLOR
     ld      iy,screen_clear_color
-    jp      z,gfx_call_preserve_hl
+    jr      z,.cls_color
     ld      iy,screen_clear_color_a
     call    get_screen_colors
+.cls_color
     jp      gfx_call_preserve_hl
+
+home_cursor:
+    ld      a,(LINLEN)
+    cp      40                    ;   NZ = 80 columns
+    ld      hl,SCREEN+41
+    jr      z,.skip
+    ld      hl,SCREEN+81
+.skip
+    call    TTYSAV
+    call    cursor_put
+    ret
 
 ;-----------------------------------------------------------------------------
 ; DEF statement stub

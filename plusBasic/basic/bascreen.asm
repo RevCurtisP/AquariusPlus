@@ -39,11 +39,7 @@ aux_call_bufcin:
 ST_RESET_BORDER:
     rst     CHRGET                ; Skip BORDER
     push    hl
-    ld      a,' '
-    ld      iy,set_border_chr
-    call    aux_call
-    call    get_cls_colors
-    ld      iy,border_set_color
+    ld      iy,border_reset
     jp      gfx_call_popret
 
 ;-----------------------------------------------------------------------------

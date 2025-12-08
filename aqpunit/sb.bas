@@ -1,5 +1,5 @@
 100 REM Test [] substrings
-110 QG$="sj"
+110 QG$="sg"
 120 GOSUB _init
 
 200 GOSUB _title:ARGS "Eval string$[]"

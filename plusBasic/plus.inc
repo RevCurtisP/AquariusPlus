@@ -260,15 +260,16 @@ BASSAVASC   equ $02     ; BASYSCTL: Default SAVe to ASC
 BASKEYRPT   equ $04     ; BASYSCTL: KEY RePeaT on
 BASBRKOFF   equ $20     ; BASYSCTL: BReak OFF (Disable Ctrl-C)
 BASLPRNTR   equ $40     ; BASYSCTL: LPRINT device: (0 = Serial, 1 = ESP)
+BASCOLOR    equ $80     ; BASYSCTL: Direct mode color print flag (must be same as SCRCOLOR)
 ; Temporary BASIC control flags
 BASVARDEF   equ $02     ; BAS_FLAGS: PTRGET called from VARDEF
 INEVALFLG   equ $04     ; BAS_FLAGS: Currently in EVAL function
 ; Screen Control Bitmask
 ; Screen printing control flags
 CRSR_OFF    equ $40     ; SCREENCTL: Display cursor (1 = No)
-SCRCOLOR    equ $80     ; SCREENCTL: PRINT updates Color RAM
 SCRCHRSET   equ $08     ; SCREENCTL: Character set in use (0 or 1)
 SCRCHRMOD   equ $10     ; SCREENCTL: Character set in use has been modified
+SCRCOLOR    equ $80     ; SCREENCTL: PRINT updates Color RAM
 
 ; Bitmap graphics mode: see gfx.asm for details
 GFXM_TEXT   equ $00     ; GFX_FLAGS: 40 colum mode (bloxels) 
@@ -279,6 +280,7 @@ GFXM_MASK   equ $03     ; Graphics mode bit mask
 GFXBUFLAG   equ $04     ; GFX_FLAGS: Bitmap operations are buffered
 GFXSETMSK   equ $F8     ; Mask for writing GFX_FLAGS
 ; BASIC extended control flags
+
 SOUNDSLOW   equ $08     ; Play SOUNDs at standard clock speed
 BASOUTOVR   equ $10     ; EXT_FLAGS: Allow OUT to all ports
 TRK_LOOPS   equ $20     ; EXT_FLAGS: PT3 songs repeat

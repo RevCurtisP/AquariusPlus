@@ -1020,6 +1020,8 @@ run_cmd:
     ld      a,KB_ENABLE | KB_ASCII
     call    key_set_keymode       ; Turn off key repeat
     call    clear_all_errvars
+    ld      iy,set_color_off
+    call    gfx_call
     pop     af
 
     jr      z,run_c               ; If no argument then RUN from 1st line

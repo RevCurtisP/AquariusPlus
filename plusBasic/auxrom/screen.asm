@@ -52,33 +52,114 @@ cursor_offset:
     add     hl, de              ; Added the columns
     ret
 
+set_color:
+    ld      (SCOLOR),a
+    ld      a,(SCREENCTL)
+    or      SCRCOLOR
+    jr      _write_screenctl
+
+set_color_off:
+    ld      a,(SCREENCTL)
+    push    af
+    and     $FF-SCRCOLOR
+    call    _write_screenctl
+    pop     af      
+    and     CRSR_OFF
+    ret     nz
+;    push    hl
+;    ld      hl,(CURRAM)
+;    ld      a,DFLTATTRS
+;    call    color_put
+;    pop     hl
+    ret
+
+_write_screenctl:
+    ld      (SCREENCTL),a
+    and     SCRCOLOR              ; Isolate Screen Control bit
+    ld      c,a                   ; C = ScrColor
+.direct
+    call    in_direct
+    ret     c                     ; If Direct mode
+    ld      a,(BASYSCTL)
+    and     $FF-SCRCOLOR
+    or      c
+    ld      (BASYSCTL),a
+    ret
+
+
+
+screen_clear_color_a:
+    ld      c,a
+    ld      a,(LINLEN)
+    cp      40                    ; NZ = 80 columns
+    ld      a,c
+    jr      _clear_color
 ;-----------------------------------------------------------------------------
 ; Fill Color RAM with current/default colors
 ;-----------------------------------------------------------------------------
 screen_clear_color:
-    ld      a,(SCREENCTL)         ; 
-    rla                           ; Carry = SCRCOLOR
-    ld      a,DFLTATTRS
-    jr      nc,screen_clear_color_a
-    ld      a,(SCOLOR)
-screen_clear_color_a:
+    call    _screen_width_colors
+_clear_color
+    jr      nz,_color_clear80
+    jr      _color_clear40
+
+screen_clear_a:
+    ld      c,a
+    ld      a,(LINLEN)
+    cp      40                    ; NZ = 80 columns
+    ld      a,c
+    jr      _clear_screen
+;-----------------------------------------------------------------------------
+; Clear Text Screen
+; Input: A: Color
+; Clobbered: A, BC, DE, HL
+;-----------------------------------------------------------------------------
+screen_clear:
+    call    _screen_width_colors
+_clear_screen:
+    jr      nz,_screen_clear80
+    call    _color_clear40
+    jr      _text_clear40
+_color_clear40:
+    ld      hl,COLOR
+    jr      _fill40
+_text_clear40:
+    ld      a,' '
+    ld      hl,SCREEN
+_fill40
+    ld      bc,1000
+    jp      sys_fill_mem
+    
+_screen_clear80:
+    call    _color_clear80
+    jr      _text_clear80
+_color_clear80:
     ld      c,IO_VCTRL
     in      b,(c)
-    bit     6,b    
-    jr      nz,.clear80
-    ld      hl,COLOR
-    ld      bc,1024
-    jp      sys_fill_mem
-.clear80
     set     7,b
     out     (c),b
-    push    bc  
-    ld      hl,SCREEN
-    ld      bc,2048
-    call    sys_fill_mem
+    push    bc
+    call    _fill80               ; Fill Color RAM
     pop     bc
     res     7,b
     out     (c),b
+    ret
+_text_clear80:
+    ld      a,' '
+_fill80
+    ld      hl,SCREEN
+    ld      bc,2000
+    jp      sys_fill_mem
+
+; Output: A = Colors, NZ = 80 columns
+_screen_width_colors:
+    ld      a,(LINLEN)
+    cp      40                    ; NZ = 80 columns
+    ld      a,(SCREENCTL)         ; 
+    rla                           ; Carry = SCRCOLOR
+    ld      a,DFLTATTRS
+    ret     nc
+    ld      a,(SCOLOR)
     ret
 
 ;-----------------------------------------------------------------------------
@@ -193,6 +274,11 @@ _border_offset:
     ld      de,2047               ;   Else
     ret                           ;     Return 2047
 
+
+border_reset:
+    ld      a,' '
+    call    set_border_chr
+    call    _screen_width_colors
 ; Input A: Character
 ; Clobbered: A,BC,DE,HL
 border_set_color:

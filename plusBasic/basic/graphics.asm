@@ -187,19 +187,14 @@ ST_SETCOLOR:
     cp      XTOKEN
     jr      z,.extended
     call    get_screen_colors     ; A,E = Colors
-    ld      (SCOLOR),a
-    ld      a,(SCREENCTL)
-    or      SCRCOLOR
-    jr      write_screenctl_ret
+    ld      iy,set_color
+    jr      .gfx_call
 .extended
     rst     CHRGET                ; Skip XTOKEN
     SYNCHKT OFFTK                 ; Require OFF
-set_color_off:
-    ld      a,(SCREENCTL)
-    and     $FF-SCRCOLOR
-write_screenctl_ret:
-    ld      (SCREENCTL),a
-    ret
+    ld      iy,set_color_off
+.gfx_call
+    jp      gfx_call   
 
 ;-----------------------------------------------------------------------------
 ; RESET PALETTE to default colors

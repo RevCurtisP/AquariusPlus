@@ -16,6 +16,7 @@ Run the .baq file to run the associated tests.
 | ps.baq  | POKE/POKE SCREEN   |
 | rg.baq  | RGB and PALETTE    |
 | sb.baq  | String Slicing     |
+| sc.baq  | COLOR and CURSOR   |
 | sg.baq  | Screen Graphics    |
 | sj.baq  | SPLIT and JOIN     |
 | sl.baq  | SAVE and LOAD      |
@@ -134,14 +135,20 @@ Run the .baq file to run the associated tests.
   - _string_\[_index_\]
   - _string_\[_index_ TO _index_\]
   - MID$(_strvar_,_pos_,_len_)=_string_
+-sc.baq
+
 - sg.baq
   - FILL SCREEN CHR _char_
   - RESET BORDER
   - SET BORDER CHR _char_
-  - SET BORDER COLOR _fg_, _bg
-  - SET BORDER CHR _char_ COLOR _fg_, _bg
+  - SET BORDER COLOR _fg_, _bg_
+  - SET BORDER CHR _char_ COLOR _fg_, _bg_
+  - SET COLOR _fg_, _bg_
+  - SET COLOR OFF
+  - GETCOLOR
   - SET CURSOR ON
   - SET CURSOR OFF
+  - GETCURSOR
   - CLEAR CURSOR
 - sj.baq
   - JOIN \*_array_$ INTO _var_$ DEL _delimiter_

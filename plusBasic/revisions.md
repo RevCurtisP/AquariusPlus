@@ -1,4 +1,23 @@
 # plusBASIC Revision History
+ - v0.27s (2025-12-08)
+    - Replaced jump vectors _TTYMOX_ and _SCROLX_ with direct jumps
+    - Renamed _outdo_hook_ to _outchr_hook_, modified _OUTCHR_ to jump directly to it, and removed hook 13 RST
+    - Removed _OUTDO_ jump vector and restored formerly displaced `TAN` code, removed unused hook 8 `RST`
+    - Replaced UDF hooks 2, 19, and 24 with direct calls to _direct_mode_, _ttychr_hook_, and _run_cmd_, respectively 
+    - Replaced file _text80.asm_ with _ttyhooks.asm_
+    - Added routines  _tty_pos_, _lf_hook_, _ttyclr_hook_, _cursor_put_, _tty_put_, _tty_linlen_, _tty_clear, _tty_finish_
+    - Modified _LF_, _TTYMOV_, and _TTYCLR_ to call _lf_hook_, _tty_pos_, and _ttyclr_hook_, respectively
+    - Modified _TTYOUT_ to call _tty_put_ and _TTYFIN_ to call _cursor_put_ instead of writing directly to screen memory
+    - `PRINT CHR$(11)` now turns off color printing mode and enables the cursor
+    - Renamed _BSFIX_ to _BKSPC_ and modified it to do a non-destructive backspace.
+    - Replaced `JP BSFIX` in _BS_ with `CALL BKSOC; LD (HL),' '`
+    - Modified `CLS` to call _screen_clear_ and new routines _screen_clear_a_ and _home_cursor_ instead of _clear_home_
+    - Added routine moved `RESET BORDER` core code to new routine _border_reset_ in _screen.asm_
+    - Removed routines _do_cls_, _clear_home_, _get_cls_colors_, _clear_screen_,
+    - Replaced _ttymove_hook_ with _ttymov_hook_, rewrote _scroll_hook_
+    - Moved `SET COLOR` core code into _screen.asm_. modified _set_color_ to write new _BASYSCTL_ flag _BASCOLOR_
+    - Modified _set_color_off_ to reset cursor color to default colors
+    - Modified `CLS COLOR` to not move the cursor to the home position.
  - v0.27r (2025-12-02)
     - Replaced jump vectors _XINKEY_, _INCNTX_, _INPUTC_, _SCNLBL_, _THENHK_, _XERROR_, _INCHRA_, _XCLEAR_, and _XPTRGT_ with direct jumps
     - Input line no longer written to multi-line history buffer in _BAS_BUFFR_
