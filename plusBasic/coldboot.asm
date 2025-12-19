@@ -30,11 +30,7 @@ do_coldboot:
 
     ld      iy,init_basbuf_vars
     call    aux_call
-    ld      iy,init_screen_buffers
-    call    gfx_call
-    ld      iy,init_screen_vars
-    call    gfx_call
-    ld      iy,bitmap_init_vars
+    ld      iy,gfx_init
     call    gfx_call
 
 ;    ld      d,$10                 ; Row 5 = Shift

@@ -4,8 +4,8 @@
 
 ;-----------------------------------------------------------------------------
 ; Append RAM chunk to file
-; Input: BC: maximum length
-;        DE: destination address
+; Input: BC: length
+;        DE: source address
 ;        HL: string descriptor address
 ; Output: A: result code
 ;        BC: number of bytes actually read

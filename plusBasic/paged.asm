@@ -416,6 +416,7 @@ page_read_byte:
 ;      Zero: Cleared if succesful, set if invalid page
 ;-----------------------------------------------------------------------------
 page_write_byte_sys:
+    call    _set_page
     call    page_coerce_de_addr
     jr      _write_byte
 page_write_byte:
@@ -464,8 +465,13 @@ page_read_word:
 ;      Carry: Cleared if succesful, Set if overflow
 ; Clobbered: A
 ;-----------------------------------------------------------------------------
+page_write_word_sys:
+    call    _set_page
+    call    page_coerce_de_addr
+    jr      _write_word
 page_write_word:
     call    page_set4write_coerce
+_write_word:
     ret     z                     ; Return if illegal page
     ld      a,c
     ld      (de),a
@@ -745,18 +751,6 @@ page_read_bytes_ex:
 .done
     ex      de,hl                 ; HL = SrcAdr, DE = DstAdr
     jp      page_restore_bank3    ; Restore BANK3 page and return
-
-;-----------------------------------------------------------------------------
-; Map Page into valid Bank 3 and coerce address to bank 3
-; Input: A: Bank to map into bank 3
-;       DE: Address to coerce
-; Output: DE: Coerced address
-; Flags Set: Z if page not RAM
-; Clobbers: AF'
-;-----------------------------------------------------------------------------
-;page_set4write_coerce:
-;    call    page_set_for_write
-;    jr      page_coerce_de_addr
 
 ;-----------------------------------------------------------------------------
 ; Increment Bank 3 Write Address in DE

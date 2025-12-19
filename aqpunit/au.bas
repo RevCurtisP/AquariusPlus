@@ -12,10 +12,12 @@
 125 SET FNKEY 5 TO "run"+CHR$(13)
 126 SET FNKEY 6 TO "run "+ARGS$(0)+CHR$(13)
 
-130 DIM T$(25)
-132 LOAD "tests.txt",*T$,ASC
-134 T=VAL(T$(0))
-136 IF T THEN FOR I=1 TO T:TL$=TL$+MID$(T$(I),3,2)+" ":NEXT
+130 IF ARGS THEN D$=FILEDIR$(ARGS$(0)):IF D$<>"" THEN CD D$
+
+140 DIM T$(25)
+142 LOAD "tests.txt",*T$,ASC
+144 T=VAL(T$(0))
+146 IF T THEN FOR I=1 TO T:TL$=TL$+MID$(T$(I),3,2)+" ":NEXT
 
 220 PRINT "Enter=Screen, 1=Printer, 2=File: ";
 222 K$=GETKEY$:IF K$<"1" OR K$>"2" THEN K$="0"
@@ -29,7 +31,6 @@
 254 IF P$="" THEN P$="bt":C=1
 256 POKE $BFF6,C
 
-300 CD "/au"
 310 IF Q=2 THEN SAVE "out/_results.txt",^Z$:'Create empty file
 320 RUN P$+".baq"
 

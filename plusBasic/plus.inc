@@ -100,10 +100,11 @@ EXT_FLAGS   equ $3830   ; Extended BASIC flags
 BAS_FDESC   equ $3831   ; ESP file descriptor to close on Error or Ctrl-C
 IEND_KEY    equ $3832   ; Key pressed to end input
 SCREENCTL   equ $3833   ; Text Screen flags
-GFX_FLAGS   equ $3834   
-BAS_FLAGS   equ $3835   ; Temporary BASIC Flags
-TMPBUFTOP   equ $3836   ; Address after top temporary string buffer
+GFX_FLAGS   equ $3834   ; Bitmap Graphics flags
+BAS_FLAGS   equ $3835   ; Temporary BASIC flags
+TBFTOP      equ $3836   ; Address after top temporary string buffer
 IRQSAVSTK   equ $3838   ; Stack position after irq_handler has saved all registers
+;       $383A - $3840   ; Unused (5 bytes)
 
 ; Temporary Variables stored in FILNAM+FILNAM ($3851-$385C), RESMO-RESLO ($38F7-$38F8)
 ; bitmap_get and bitmap_set
@@ -240,16 +241,15 @@ FKEYBASE    equ BASBUF_BASE + FKEYDEFS
 LPRFILSPC   equ $0500   ; LPRINT File Spec (32 byte)
 MOUSEWDLT   equ $0520   ; Accumulated change in mouse delta
 ;               $0521   ; Unused
-LINHSTPTR   equ $0522   ; Bottom entry of line history buffer
-;         $0524-$07FF   ; Unused
+HSTFILLEN   equ $0522   ; Length of "_history" file
+HSTFILPOS   equ $0526   ; Current position in "_history" file
+;         $052A-$07FF   ; Unused
 RUNARGS     equ $0800   ; RUN arguments (see run_args in args.asm)
 RUNARGEND   equ $08FF   ; End of RUN arguments
 RUN_PATH    equ $0900   ; Search path for RUN programs
 WRTKEYBUF   equ $0A00   ; user autotype buffer
 ;         $0B00-$1EFF   ; Unused
 PRVDIRLIN   equ $1F00   ; Previous direct mode line entered
-LINHSTBOT   equ $2000   ; Bottom of line history buffer
-LINHSTTOP   equ $2FFF   ; Top of line history buffer
 DEFCHRSET   equ $3000   ; Page Offset: Default Character Set Buffer
 ALTCHRSET   equ $3800   ; Page Offset: Custom Character Set Buffer
 CHRSETLEN   equ 2048    ; Size of character set ROM
@@ -266,9 +266,11 @@ BASVARDEF   equ $02     ; BAS_FLAGS: PTRGET called from VARDEF
 INEVALFLG   equ $04     ; BAS_FLAGS: Currently in EVAL function
 ; Screen Control Bitmask
 ; Screen printing control flags
-CRSR_OFF    equ $40     ; SCREENCTL: Display cursor (1 = No)
+EXTCTLCHR   equ $01     ; SCREENCTL: Extended control codes in TTYOUT
 SCRCHRSET   equ $08     ; SCREENCTL: Character set in use (0 or 1)
 SCRCHRMOD   equ $10     ; SCREENCTL: Character set in use has been modified
+SCROLLOFF   equ $20     ; SCREENCTL: Disable screen scrolling
+CRSR_OFF    equ $40     ; SCREENCTL: Display cursor (1 = No)
 SCRCOLOR    equ $80     ; SCREENCTL: PRINT updates Color RAM
 
 ; Bitmap graphics mode: see gfx.asm for details

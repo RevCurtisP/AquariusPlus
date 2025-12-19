@@ -263,26 +263,29 @@ oper_xor:
 oper_stringsub:
     ld      bc,free_temp_buffer
     push    bc                  ; Stack = FunRtn, RtnAdr
-    push    hl                  ; Stack = TxtPtr, RtnAdr
+    ld      de,(FACLO)          ; DE = ArgDsc
+    push    de                  ; Stack = ArgDsc, FunRtn, RtnAdr
+    push    hl                  ; Stack = TxtPtr, ArgDsc, FunRtn, RtnAdr
     call    alloc_temp_buffer   ; HL = BufAdr
-    ex      (sp),hl             ; HL = TxtPtr; Stack = BufPtr, RtnAdr
+    ex      (sp),hl             ; HL = TxtPtr; Stack = BufPtr, FunRtn, RtnAdr
     call    GETYPE              ; If expression is not a string
     jp      nz,TMERR            ;   Type mismatch error
     rst     CHRGET              ; Skip %
     SYNCHKC '('                 ; Require (
-    ex      (sp),hl             ; HL = BufPtr; Stack = TxtPtr, RtnAdr
+    ex      (sp),hl             ; HL = BufPtr; Stack = TxtPtr, ArgDsc, FunRtn, RtnAdr
     xor     a                   ; DatLen = 0
-    push    af                  ; Stack = DatLen, TxtPtr, RtnAdr
-    push    hl                  ; Stack = BufPtr, DatLen, TxtPtr, RtnAdr
-    call    free_addr_len       ; DE = StrAdr, BC = StrLen
-    ld      b,1                 ; B = ReqComma, C = StrLen
-    pop     hl                  ; HL = BufPtr; Stack = DatLen, TxtPtr, RtnAdr
+    push    af                  ; Stack = DatLen, TxtPtr, ArgDsc, FunRtn, RtnAdr
+    push    hl                  ; Stack = BufPtr, DatLen, TxtPtr, ArgDsc, FunRtn, RtnAdr
+    ex      de,hl               ; HL = ArgDsc
+    call    string_addr_len     ; DE = ArgAdr, BC = ArgLen
+    ld      b,1                 ; B = ReqComma, C = ArgLen
+    pop     hl                  ; HL = BufPtr; Stack = DatLen, TxtPtr, ArgDsc, FunRtn, RtnAdr
 .loop:
     inc     c                   ; Bump to Test at beginning of loop
     dec     c                   ; If not end of string
     jr      z,.done
-    ld      a,(de)              ;   A = StrChar
-    inc     de                  ;   Bump StrPtr
+    ld      a,(de)              ;   A = ArgChr
+    inc     de                  ;   Bump ArgPtr
     cp      '%'
     jr      nz,.copychar        ;   If substitution character
     ex      af,af'
@@ -294,49 +297,54 @@ oper_stringsub:
     ex      af,af'
 .copychar:                      ;
     ld      (hl),a              ;   Write A to StrBuf
-    inc     hl                  ;   Bump StrPtr
-    pop     af                  ;   A = DatLen; Stack = BufPtr, RtnAdr
+    inc     hl                  ;   Bump BufPtr
+    pop     af                  ;   A = DatLen; Stack = TxtPtr, ArgDsc, FunRtn, RtnAdr
     inc     a                   ;   Bump DatLen
     jp      z,LSERR             ;   Error if > 255
-    push    af                  ;   Stack = DatLen, TxtPtr, RtnAdr
+    push    af                  ;   Stack = DatLen, TxtPtr, ArgDsc, FunRtn, RtnAdr
     dec     c
     jr      .loop               ;   Check next character
 .done:
-    pop     af                    ; A = DatLen; Stack = TxtPtr, RtnAdr
-    call    tmpbuf_temp_string    ; HL = StrDsc
-    ex      (sp),hl               ; HL = TxtPtr; Stack = StrDsc, RtnAdr
+    pop     af                    ; A = DatLen; Stack = TxtPtr, ArgDsc, FunRtn, RtnAdr
+    pop     hl                    ; HL = TxtPtr; Stack = ArgDsc, FunRtn, RtnAdr
+    ex      (sp),hl               ; HL = ArgDsc; Stack = TxtPtr, FunRtn, RtnAdr
+    push    af                    ; Stack = DatLen, TxtPtr, FunRtn, RtnAdr
+    call    FRETM2                ; Free argument string
+    pop     af                    ; AF = DatLen; Stack = TxtPtr, FunRtn, RtnAdr
+    call    tmpbuf_temp_string    ; HL = TmpDsc
+    ex      (sp),hl               ; HL = TxtPtr; Stack = ArgDsc, FunRtn, RtnAdr
     ld      a,(hl)                ; A = NxtChr
     cp      ','                   ; If it's a comma
     jp      z,no_more             ;   Too many operands
     SYNCHKC ')'                   ; Require )
-    ex      (sp),hl               ; HL = StrDsc; Stack = TxtPtr, RtnAdr
+    ex      (sp),hl               ; HL = ArgDsc; Stack = TxtPtr, FunRtn, RtnAdr
+    ex      de,hl                 ; DE = ArgDsc
     jp      FRENEW                ; Free ArgDsc and return NewStr
 
 .substitute:
-    pop     af                  ; A = DatLen; Stack = TxtPtr, RtnAdr
-    ex      (sp),hl             ; HL = TxtPtr; Stack = BufPtr, RtnAdr
-    push    af                  ; Stack = DatLen, BufPtr, RtnAdr
+    pop     af                  ; A = DatLen; Stack = TxtPtr, FunRtn, RtnAdr
+    ex      (sp),hl             ; HL = TxtPtr; Stack = BufPtr, FunRtn, RtnAdr
+    push    af                  ; Stack = DatLen, BufPtr, FunRtn, RtnAdr
     inc     de                  ; Skip second substitution character
     dec     c
     dec     b                   ; Update ReqComma
     call    nz,get_comma        ; If not first arg and no comma, Missing operand error
-    push    de                  ; Stack = StrPtr, DatLen, BufPtr, RtnAdr
-    push    bc                  ; Stack = ReqCnt, StrPtr, DatLen, BufPtr, RtnAdr
+    push    de                  ; Stack = StrPtr, DatLen, BufPtr, FunRtn, RtnAdr
+    push    bc                  ; Stack = ReqCnt, StrPtr, DatLen, BufPtr, FunRtn, RtnAdr
     call    FRMEVL              ; Evaluate argument
-    pop     bc                  ; BC = ReqCnt, Stack = StrPtr, DatLen, BufPtr, RtnAdr
-    pop     de                  ; DE = StrPtr; Stack = DatLen, BufPtr, RtnAdr
-    pop     af                  ; A = DatLen; Stack = BufPtr, RtnAdr
-    ex      (sp),hl             ; HL = BufPtr; Stack = TxtPtr, RtnAdr
-    push    bc                  ; Stack = ReqCnt, TxtPtr, RtnAdr
-    push    de                  ; Stack = StrPtr, ReqCnt, TxtPtr, RtnAdr
-    push    af                  ; Stack = DatLen, StrPtr, ReqCnt, TxtPtr, RtnAdr
-    push    hl                  ; Stack = BufPtr, DatLen, StrPtr, ReqCnt, TxtPtr, RtnAdr
+    pop     bc                  ; BC = ReqCnt, Stack = StrPtr, DatLen, BufPtr, FunRtn, RtnAdr
+    pop     de                  ; DE = StrPtr; Stack = DatLen, BufPtr, FunRtn, RtnAdr
+    pop     af                  ; A = DatLen; Stack = BufPtr, FunRtn, RtnAdr
+    ex      (sp),hl             ; HL = BufPtr; Stack = TxtPtr, FunRtn, RtnAdr
+    push    bc                  ; Stack = ReqCnt, TxtPtr, FunRtn, RtnAdr
+    push    de                  ; Stack = StrPtr, ReqCnt, TxtPtr, FunRtn, RtnAdr
+    push    af                  ; Stack = DatLen, StrPtr, ReqCnt, TxtPtr, FunRtn, RtnAdr
+    push    hl                  ; Stack = BufPtr, DatLen, StrPtr, ReqCnt, TxtPtr, FunRtn, RtnAdr
     call    GETYPE
     jr      z,.notnum           ; If numeric
     call    FOUT                ;   Convert to text
     call    STRLIT              ;   Create Temp String
 .notnum                         ;
-    call    FRETMS
     call    free_addr_len       ; DE = ArgAdr, BC = ArgLen
 .spaces
     ld      a,b                 ; Remove leading space from arg string
@@ -349,8 +357,8 @@ oper_stringsub:
     dec     bc
     jr      .spaces
 .notspace
-    pop     hl                  ; HL = BufPtr; Stack = DatLen, StrPtr, ReqCnt, TxtPtr, RtnAdr
-    pop     af                  ; A = DatLen; Stack = StrPtr, ReqCnt, TxtPtr, RtnAdr
+    pop     hl                  ; HL = BufPtr; Stack = DatLen, StrPtr, ReqCnt, TxtPtr, FunRtn, RtnAdr
+    pop     af                  ; A = DatLen; Stack = StrPtr, ReqCnt, TxtPtr, FunRtn, RtnAdr
     ld      b,c                 ; B = ArgLen
     ld      c,a                 ; C = DatLen
     ld      a,b                 ; A = ArgLen
@@ -365,11 +373,11 @@ oper_stringsub:
     jp      z,LSERR             ; Error if > 255
     djnz    .copy               ; Do next arg character
 .empty
-; Return with BC = ReqCnt, DE = StrPtr, HL = BufPtr; Stack = DatLen, TxtPtr, RtnAdr
+; Return with BC = ReqCnt, DE = StrPtr, HL = BufPtr; Stack = DatLen, TxtPtr, FunRtn, RtnAdr
     ld      a,c                 ; A = DatLen
-    pop     de                  ; DE = StrPtr; Stack = ReqCnt, TxtPtr, RtnAdr
-    pop     bc                  ; BC = ReqCnt; Stack = TxtPtr, RtnAdr
-    push    af                  ; Stack = DatLen, TxtPtr, RtnAdr
+    pop     de                  ; DE = StrPtr; Stack = ReqCnt, TxtPtr, FunRtn, RtnAdr
+    pop     bc                  ; BC = ReqCnt; Stack = TxtPtr, FunRtn, RtnAdr
+    push    af                  ; Stack = DatLen, TxtPtr, FunRtn, RtnAdr
     jp      .loop               ; Do next StrChr
 
 ; clear:s$="abcd":s$[2]="x":?s$

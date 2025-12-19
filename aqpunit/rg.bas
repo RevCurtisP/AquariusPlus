@@ -1,4 +1,4 @@
-100 REM Miscelleneous Graphics Functions
+100 REM RGB an PALETTE Statements and Functions
 110 QG$="sb"
 130 GOSUB _init
 

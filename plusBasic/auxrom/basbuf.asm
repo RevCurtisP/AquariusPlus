@@ -7,8 +7,10 @@
 ; Initialize variables in page BAS_BUFFR
 ;-----------------------------------------------------------------------------
 init_basbuf_vars:
-    call    clear_history
     call    clear_mousedlt
+    ret
+;;; ToDo: Debug this routine, then add reading of history file
+    call    get_history_len
     ret
 
 ;-----------------------------------------------------------------------------
@@ -100,11 +102,6 @@ runarg_get:
     ld      (de),a                ; Terminate string
     ret
 
-clear_history:
-    ld      de,LINHSTPTR
-    ld      bc,LINHSTTOP
-    jp      basbuf_write_word
-
 ; On entry: B = LinLen, HL = BufAdr
 ;           Carry Set if first character is digit
 write_prevbuf:
@@ -117,6 +114,43 @@ write_prevbuf:
     call    basbuf_write_bytes    ; Copy Input Buffer to PrvLineBuf
     pop     hl                    ; HL = BufPtr; Stack = RtnAdr
     ret
+
+write_history:
+    ret     c                     ; Return if first char is digit
+    ld      a,(hl)
+    cp      ':'
+    ret     z                     ; Return if first char is colon
+    push    hl
+    ex      de,hl                 ; DE = BufAdr
+    ld      bc,256                ; Write entire buffer
+    ld      hl,_histdesc
+    call    file_append_binary
+    pop     hl
+    ret
+
+get_history_len:
+    ld      hl,_histdesc
+    call    file_size
+    jp      p,.saveit
+    ld      bc,0
+    ld      de,0
+.saveit
+    push    de
+    ld      de,HSTFILLEN
+    ld      a,BAS_BUFFR
+    call    page_write_word_sys
+    inc     de
+    inc     de
+    pop     bc
+    ld      a,BAS_BUFFR
+    jp      page_write_word_sys
+
+_histname:
+    db      "/_history"
+_histlen = $ - _histname
+_histdesc
+    dw      _histlen,_histname
+    
 
 ; On entry: HL = BufAdr
 read_prevbuf:

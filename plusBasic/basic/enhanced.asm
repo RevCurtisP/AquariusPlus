@@ -85,7 +85,7 @@ clear_extension:
     xor     a
     ld      (BAS_FDESC),a         ; Clear currently open file
     ld      hl,(STRSPC)           ; Set temp buffer pointer
-    ld      (TMPBUFTOP),hl        ; to start of string space
+    ld      (TBFTOP),hl           ; to start of string space
     ld      hl,(VARTAB)
     ret
 

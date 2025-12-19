@@ -3,8 +3,6 @@
 110 QG$="ts"
 120 GOSUB _init
 
-190 goto 500
-
 200 GOSUB _title:ARGS "String Trim Functions"
 201 PRINT LIST$(NEXT)
 202 C$="@":S$="<=>":D$="@@@123@@@":D$(0)="@@@@@@":D$(1)="<=>X=Y<=>"
@@ -37,7 +35,14 @@
 255 GOSUB _assert:ARGS "TRIMR$(D$,C$)=`@@@123`"
 256 GOSUB _assert:ARGS "TRIMR$(D$(0),`@`)=``"
 257 GOSUB _assert:ARGS "TRIMR$(`#*#123*#*`,`#*`)=`#*#123`"
-258 GOSUB _assert:ARGS "TRIMR$(D$(1),S$)=`<=>X=Y`)"
+258 GOSUB _assert:ARGS "TRIMR$(D$(1),S$)=`<=>X=Y`"
+
+270 GOSUB _title:ARGS "TRIM$(number)"
+272 GOSUB _assert:ARGS "TRIM$(0)=`0`"
+274 GOSUB _assert:ARGS "TRIM$(1)=`1`"
+276 GOSUB _assert:ARGS "TRIM$(-9)=`-9`"
+278 GOSUB _assert:ARGS "TRIM$(99)=`99`"
+
 
 300 GOSUB _title:ARGS "Filespec Trim and Extract Functions"
 301 PRINT LIST$(NEXT)
@@ -67,7 +72,7 @@
 373 GOSUB _assert: ARGS "TRIMEXT$(`file.ext`)=`file`"
 374 GOSUB _assert: ARGS "TRIMEXT$(F$)=`no_ext`"
 375 GOSUB _assert: ARGS "TRIMEXT$(F$(0))=`a/b/file`"
-376 GOSUB _aBVssert: ARGS "TRIMEXT$(``)=``"
+376 GOSUB _assert: ARGS "TRIMEXT$(``)=``"
 
 
 500 GOSUB _title:ARGS("PAD$")
@@ -95,7 +100,6 @@
 528 GOSUB _assert:ARGS "PAD$(P$,5,0)=`xyz`+$`0000`"
 529 GOSUB _assert:ARGS "PAD$(P$,-6,0)=$`000000`+`xyz`"
 
-
 540 GOSUB _title:ARGS("Multiple PAD$")
 541 P1$="1":P2$="22":P3$="333":P4$="4444"
 542 PD$="`1   22333444`"
@@ -106,3 +110,14 @@
 547 TT$=T1$+T2$+T3$+T4$
 548 TS$="T1$+T2$+T3$+T4$"
 549 GOSUB _assert:ARGS TS$+"="+PD$
+
+560 GOSUB _title:ARGS("PAD$(number)")
+561 GOSUB _assert:ARGS "PAD$(1,9)=`1        `"
+562 GOSUB _assert:ARGS "PAD$(99,-10)=`        99"
+563 GOSUB _assert:ARGS "PAD$(0,1)=`0`"
+564 GOSUB _assert:ARGS "PAD$(123,-2)=`23`"
+565 GOSUB _assert:ARGS "PAD$(999,0)=``"
+566 GOSUB _assert:ARGS "PAD$(456,9,`!`)=`456!!!!!!`"
+567 GOSUB _assert:ARGS "PAD$(-88,-10,`@`)=`@@@@@@@-88`"
+568 GOSUB _assert:ARGS "PAD$(789,5,0)=`789`+$`0000`"
+569 GOSUB _assert:ARGS "PAD$(-77,-6,0)=$`000000`+`-77`"

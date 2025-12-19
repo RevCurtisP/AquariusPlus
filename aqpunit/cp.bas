@@ -88,7 +88,7 @@
 
 
 
-590 GOTO 598
+590 GOTO 598: 'Skip subroutines
 592 _copytp_err:GETARGS PS,PL,PQ,PD,QE:QL=QL+1
 594 QA$="COPY $"+HEX$(PS)+","+STR$(PL)+" TO @"+TRIM$(STR$(PQ))+","+STR$(PD)
 596 ON ERROR GOTO _yes_err:COPY PS,PL TO @PQ,PD:GOTO _no_err

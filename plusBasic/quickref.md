@@ -1,4 +1,4 @@
-plusBASIC Quick Reference Guide
+# plusBASIC Quick Reference Guide
 <!-- Do not edit this page. Contents are copied from file quickref_wiki.md which is generated from README.md-->
 
 <!-- Check Box key
@@ -249,7 +249,7 @@ plusBASIC Quick Reference Guide
  - **LONG(_string_{,_offset_})** - Convert four consecutive bytes in string to unsigned long.
  - **LONG$(_long_)** - Convert long to unsigned four byte binary string.
  - **LOOP TRACK {_filespec_}** - Play specified or previously loaded tracker file repeatedly.
- - **LPOS(_expression__)** - Return current column position of printer.
+ - **LPOS(_expression_)** - Return current column position of printer.
  - **LPRINT TAB(_integer_)|SPC(_integer_)|_expression_|;|,{...}** - Output data to printer.
  - **LWR(_char_)** - Lowercases numeric ASCII code or ASCII code of first character of string
  - **LWR$(_string_|_byte_)** - Lowercases argument string or argument ASCII code converted to string.
@@ -272,6 +272,7 @@ plusBASIC Quick Reference Guide
  - **OPEN _filespec_ FOR INPUT|OUTPUT|APPEND|RANDOM as _numvar_** - Open file.
  - **OUT _port_,_byte_|_string_{,...}{;...}** - Write to a Z80 port.
  - **PAD$(_string_,_length_{,_char_})** - Pad string on left or right with optional fill character.
+ - **PAD$(_number_,_length_{,_char_})** - Convert number to padded string.
  - **PAUSE** - Halt program execution until key is pressed.
  - **PAUSE _jiffies_** - Pauses program execution for the specified amount of time.
  - **PAUSE UNTIL _expression_** - Pauses program execution until _expression_ evaluates to true.
@@ -288,7 +289,7 @@ plusBASIC Quick Reference Guide
  - **POKE «!_ext_addr_»|«{@_page_,}_address_»,_byte_|_string_{;..}.** - Write bytes and/or strings to memory.
  - **POKE COLOR _address_,_byte_|_string_{;...}** - Write bytes and/or strings to color RAM.
  - **POKE SCREEN _address_,_byte_|_string_{;...}** - Write bytes and/or strings to screen RAM.
- - **POS(_expression__)** - Return cursor position in current line.
+ - **POS(_expression_)** - Return cursor position in current line.
  - **POSX** - Return last pixel or bloxel x-position.
  - **POSY** - Return 1bpp pixel or bloxel y-position.
  - **PRESET (_x_,_y_)** - Erase bloxel or pixel.
@@ -358,6 +359,7 @@ plusBASIC Quick Reference Guide
  - **SET KEY REPEAT ON|OFF** - Enable or disable key repeat in direct mode.
  - **SET PALETTE _palette_ {INDEX _index_} TO _rgblist_** - Set palette entries.
  - **SET SAVE ASC ON|OFF** - Enable or disable forced saving of BASIC programs in ASCII format.
+ - **SET SCROLL ON|OFF** - Enable or disable scrolling of text screen when PRINTing.
  - **SET SOUND FAST ON|OFF_** - Set whether SOUND is affected by turbo mode.
  - **SET SPEED _speed_** - Set turbo mode.
  - **SET SPRITE #_spritle_ {ON|OFF} {POS _x_,_y_} {TILE _tileno_} {PALETTE _palette_} {ATTR _attrs_}** - Set spritle properties.
@@ -406,10 +408,11 @@ plusBASIC Quick Reference Guide
  - **TRACKSPEED** - Return tracker playback speed in Hertz.
  - **TRACKSTATUS** - Return -1 if track is playing, else 0.
  - **TRIM$(_string_{,_string_})** - Remove characters from both ends of string.
+ - **TRIM$(_number_)** - Convert number to string with no leading space.
  - **TRIMDIR$(_filespec_)** - Remove path from filespec.
  - **TRIMEXT$(_filespec_)** - Remove extension from filespec.
- - **TRIML$(_string_{,_string_})** - Remove characters from left end of string.
- - **TRIMR$(_string_{,_string_})** - Remove characters from right end of string.
+ - **TRIML$(_expression_{,_string_})** - Remove characters from left end of string.
+ - **TRIMR$(_expression_{,_string_})** - Remove characters from right end of string.
  - **TRON** - Enable line tracing.
  - **TROFF** - Disable line tracing.
  - **UPR(_char_)** - Uppercases numeric ASCII code or ASCII code of first character of string

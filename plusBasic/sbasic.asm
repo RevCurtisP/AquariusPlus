@@ -114,6 +114,32 @@ XINIT   equ     $E010   ;;ROM Cartridge Initialization Entry Point
 
         org     $0000   ;;Starting Address of Standard BASIC
 
+;;; BASIC RAM Memory Map
+;;;
+;;;             System Variables
+;;; TXTTAB =============================
+;;;              BASIC Program
+;;; VARTAB -----------------------------
+;;;            Simple Variables
+;;; ARYTAB -----------------------------
+;;;             Array Variables
+;;; STREND -----------------------------
+;;;             Unused BASIC RAM
+;;; SAVSTK -----------------------------
+;;;                  Stack
+;;; TOPMEM =============================         STKINI sets SP to TOPMEM
+;;;               Line Buffer
+;;;              String Buffer
+;;; STRSPC -----------------------------
+;;;          Allocated Temp Buffers
+;;; TBFTOP -----------------------------
+;;;            Unused String Space
+;;; FRETOP -----------------------------
+;;;           String Space in use
+;;; MEMSIZ =============================
+;;;          RAM Reserved using CLEAR
+
+
 ;; sbasic,inc: RST 0 - Startup
 START:
 ;;; Instead of checking for the Extended BASIC signature
@@ -2449,6 +2475,7 @@ BKSPC:  call    tty_pos           ; A = TTYpos, D = LinWid, E = LinLen        0D
         ld      c,a               ;                                           0D6A  ld      (RUBSW),a
         ld      a,l               ;                                           0D6B 
         inc     e                 ;                                           0D6C
+
         cp      e                 ;;If at home position                       0D6D  jr      nz,NOTBEG
         ld      a,c               ;                                           0D6E
         ret     z                 ;;  Don't backspace                         0D6F  dec     b
@@ -2518,15 +2545,18 @@ CHKFUN: cp      7                 ;[M80] IS IT BOB ALBRECHT RINGING THE BELL
         jr      nz,NOTBS          ;[M65] YES                                  0DBB  nop
                                   ;                                           0DBC  nop
         dec     b                 ;                                           0DBD  nop
-        jr      nz,BINLIN          ;; If buffer not empty                     0DBE  cp      8       
+        jr      nz,BINLIN         ;; If buffer not empty                      0DBE  cp      8       
                                   ;;   Do the backspace                       0DBF
         inc     b                 ;; Else                                     0DC0  jp      z,LINLIN
         jr      BSBEL             ;;   Beep and continue                      0DC1
                                   ;                                           0DC2
 NOTBS:  cp      24                ;[M80] AT START OF LINE?                    
         jr      nz,NTCTLX         ;[M80] IS IT  X (LINE DELETE)               
-        ld      a,'#'             ;[M80] SEND NUMBER SIGN                     
-        jp      INLINN            ;[M80] SEND # SIGN AND ECHO                 
+        nop                       ;                                           0DC5  ld      a,'#'
+        nop                       ;                                           0DC6
+        jp      ctrlx_hook        ;                                           0DC7  jp      INLINN
+                                  ;                                           0DC8
+                                  ;                                           0DC9
 NTCTLX: cp      18                ;[M80] CONTROL-R?                           
         jr      nz,NTCTLR         ;[M80] NO                                   
         push    bc                ;[M80] SAVE [B,C]                           0DD0
@@ -2694,7 +2724,7 @@ GETSPA: or      a                 ;[M80] MUST BE NON ZERO. SIGNAL NO GARBAG YET
         byte    $0E               ;[M80] "MVI C" AROUND THE NEXT BYTE
 TRYGI2: pop     af                ;[M80] IN CASE COLLECTED WHAT WAS LENGTH?
         push    af                ;[M80] SAVE IT BACK                             Original Code
-        ld      hl,(TMPBUFTOP)    ;; + Top of temp buffers                        0EB7  ld      hl,(TOPMEM)
+        ld      hl,(TBFTOP)       ;; + Top of temp buffers                        0EB7  ld      hl,(TOPMEM)
         ex      de,hl             ;[M80] IN [D,E]
         ld      hl,(FRETOP)       ;[M80] GET TOP OF FREE SPACE IN [H,L]
         cpl                       ;[M80] -# OF CHARS
@@ -5174,7 +5204,7 @@ ISLF:   pop     af                ;;Retrieve Character
 ;;Print Character to Screen
 ;;Clobbers: AF',BC',DE',HL'
 ;; * = proposed action when color print mode is On
-;; * Ctrl-A (ENQ) Move cursor to top left of screen
+;; * Ctrl-A (SOH) Move cursor to top left of screen
 ;; * Ctrl-B (STX) Non-destructive backspace
 ;; * Ctrl-D (EOT) Move cursor up one line
 ;; * Ctrl-E (ENQ) Move cursor to end of line
@@ -5189,8 +5219,11 @@ ISLF:   pop     af                ;;Retrieve Character
 TTYOUT: push    af                ;
         exx                       ;;Save HL on Stack
         cp      7                 ;;Is it BEL!
-        jp      z,BEEP            ;;Make Beep Sound
-        cp      11                ;;Is it CLS?
+        jp      z,BEEP
+;        jp      ttyout_hook       ;                                           1D98  jp      z,BEEP            ;;Make Beep Sound
+;                                  ;                                           1D99
+;                                  ;                                           1D9A
+TTYCLK: cp      11                ;;Is it CLS?
         jp      z,TTYCLR          ;;Clear the Screen
         ld      e,a               ;;Save A
         ld      hl,(CURRAM)       ;
@@ -5322,7 +5355,10 @@ CLSCLR: ld      b,6               ;;Black on Light Cyan
         ld      hl,SCREEN+41      ;;Home Cursor
 TTYCLX: xor     a                 ;;Column = 0
         jp      TTYFIS            ;;Save and Finish
-FILLIT: ld      de,$3FF           ;;Count down from 1023
+;; Bug Fix: Fill all 1024 bytes of Screen and Color RAM
+FILLIT: ld      de,$400           ;;Count down from 1024                      1E59  ld      de,$3FF
+                                  ;                                           1E5A
+                                  ;                                           1E5B
 ;;Fill BC bytes atartinf at HL with A
 FILLIP: ld      (hl),b            ;;Store byte
         inc     hl                ;;Increment pointer

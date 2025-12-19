@@ -12,6 +12,7 @@ Run the .baq file to run the associated tests.
 | cu.baq  | CALL and USR       |
 | cv.baq  | Convert functions  |
 | dr.baq  | DIM and READ       |
+| gr.baq  | Graphics Init      |
 | pp.baq  | POKE and PEEK      |
 | ps.baq  | POKE/POKE SCREEN   |
 | rg.baq  | RGB and PALETTE    |
@@ -25,7 +26,7 @@ Run the .baq file to run the associated tests.
 | sx.baq  | SAVE/LOAD extended |
 | sy.baq  | System functions   |
 | tf.baq  | FILL TILE          |
-| tr.baq  | TRIM functions     |
+| tr.baq  | TRIM...$ and PAD$  |
 | ts.baq  | Tiles and Sprites  |
 | tx.baq  | Tile/Sprite Errors |
 | vl.baq  | Variables/Literals |
@@ -88,6 +89,10 @@ Run the .baq file to run the associated tests.
   - READ \*_array_
   - READ \*_array_$
   - INDEX(\*_array_$,_string_)
+- gr.baq
+  - Screen Buffers
+  - Screen System Variables
+  - Bitmap System Variables 
 - pp.baq
   - POKE _addr_,_byte_
   - POKE _addr,_string_
@@ -135,9 +140,9 @@ Run the .baq file to run the associated tests.
   - _string_\[_index_\]
   - _string_\[_index_ TO _index_\]
   - MID$(_strvar_,_pos_,_len_)=_string_
--sc.baq
-
 - sg.baq
+  - PRINT CHR$(11)
+  - CLS
   - FILL SCREEN CHR _char_
   - RESET BORDER
   - SET BORDER CHR _char_
@@ -236,7 +241,9 @@ Run the .baq file to run the associated tests.
 - vl.baq
   - Extended variable names (tilde)
   - Character literals (single quote)
-  - Backslash escaped strings
+  - `\\` escaped strings
+  - `%` String Substitution
+  - Deallocation of temporary string buffers
 
 ## Asset Files
 
@@ -252,4 +259,3 @@ Run the .baq file to run the associated tests.
 | c64.hex    | plusBASIC hex string palette |
 | win.gpl    | Gimp palette: R\tG\tB        |
 | win.asc    | Paint.net palette: FFRRGGBB  |
-

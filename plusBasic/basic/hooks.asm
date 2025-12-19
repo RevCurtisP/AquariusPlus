@@ -21,6 +21,7 @@ direct_mode:
 
     call    key_set_repeat        ; Turn on keybuffer in ASCII mode, KB_REPEAT in BASYSCTL
     call    set_cursor_on
+    call    set_scroll_on
     call    ferr_flag_on
     call    close_bas_fdesc       ; Clean up after aborted file commnds
     jp      FINLPT                ;[M80] PRINT ANY LEFT OVERS            
@@ -191,6 +192,8 @@ scan_label:
 ;-----------------------------------------------------------------------------
 main_ext:
     ld      iy,write_prevbuf
+    call    aux_call
+    ld      iy,write_history
     call    aux_call
     pop     de                    ; Pop Return Address
     pop     bc                    ; C = Line Number Flag

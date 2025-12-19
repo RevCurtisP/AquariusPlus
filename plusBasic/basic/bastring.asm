@@ -139,9 +139,8 @@ _trim_arg:
 _pad_arg:
     SYNCHKC '$'                   ;
     call    FRMPRN                ; Evaluate argument after (
-    call    CHKSTR
-;    call    GETYPE                ; If numeric
-;    call    nz,facc_to_string     ;   Convert to string
+    call    GETYPE                ; If numeric
+    call    nz,facc_to_string     ;   DE = StrDsc
     ld      de,(FACLO)            ; DE = ArgDsc
     ld      a,(hl)                ; A = Next character
     ret

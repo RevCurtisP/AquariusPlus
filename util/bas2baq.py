@@ -267,7 +267,9 @@ xtokens = {
     0xB8: "REPEAT",
     0xB9: "UNTIL",
     0xBA: "RAN",
-    0xBB: "DOM"
+    0xBB: "DOM",
+    0xBC: "EXT",
+    0xBD: "SCROLL"
 }
 
 def error(idx, message):

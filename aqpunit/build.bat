@@ -10,12 +10,12 @@ for %%f in (??.bas) do (
   python ..\util\bas2baq.py %1 %%~nf.$$$ %%~nf.baq
   if "%errorlevel%" neq "0" (goto:eof)
   timeout 1 > nul
-  move %%~nf.baq %aquaplus%\sdcard\au\ >nul
+  move %%~nf.baq %aquaplus%\sdcard\u\au\ >nul
   del %%~nf.$$$
 )
 
 echo Building list of tests
 findstr /C:".baq  |" README.md >tests.txt
-copy tests.txt %aquaplus%\sdcard\au\
+copy tests.txt %aquaplus%\sdcard\u\au\
 
 echo Build complete

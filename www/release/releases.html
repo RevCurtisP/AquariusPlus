@@ -17,6 +17,15 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
     <body>
         <h1 id="plusbasic-release-history">plusBASIC Release History</h1>
 <ul>
+<li>v0.27t (2025-12-19)
+<ul>
+<li>Fixed Ctrl-C not breaking in <code>PAUSE jiffies</code>, causing <code>Syntax error</code> and warm boot in direct mode</li>
+<li><code>Ctrl-X</code> on empty line in direct mode resets and clears screen</li>
+<li>Fixed <code>Syntax error</code> in <code>WRITE KEYS</code>, string corruption in <code>%</code> string substition</li>
+<li><code>PAD$()</code> and <code>TRIM$()</code> now allow numeric expression as first argument</li>
+<li>Added command <code>SET SCROLL ON/OFF</code>, added new tokens to <em>bas2baq.py</em> and <em>baq2bas.py</em></li>
+</ul>
+</li>
 <li>v0.27s (2025-12-08)
 <ul>
 <li>Fixed anomalies when <code>SET COLOR</code> is active, modified <code>PRINT CHR$(11)</code> to do implicit <code>SET COLOR OFF</code> and <code>SET CURSOR ON</code></li>

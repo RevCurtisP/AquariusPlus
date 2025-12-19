@@ -128,10 +128,12 @@ EXTCMDS:
     db $80 + 'U',"NTIL"           ; $B9
     db $80 + 'R',"AN"             ; $BA
     db $80 + 'D',"OM"             ; $BB
+    db $80 + 'E',"XT"             ; $BC
+    db $80 + 'S',"CROLL"          ; $BD
     
     db $80                        ; End of table marker
 
-EXTOKEN = $BC                     ; Last Token + 1
+EXTOKEN = $BE                     ; Last Token + 1
 
 ;-----------------------------------------------------------------------------
 ; plusBASIC tokens
@@ -225,6 +227,8 @@ REPEATK   equ     $B8
 UNTILTK   equ     $B9
 RANTK     equ     $BA
 DOMTK     equ     $BB
+EXTK      equ     $BC
+SCROLTK   equ     $BD
 
 ;-----------------------------------------------------------------------------
 keyword_to_token:

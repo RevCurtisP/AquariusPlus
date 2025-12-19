@@ -12,9 +12,13 @@ move_cursor:
     ; Restore character behind cursor
     push    hl
     exx
-    ld      hl, (CURRAM)        ; CHRPOS - address of cursor within matrix
-    ld      a, (CURCHR)         ; BUFO - storage of the character behind the cursor
+    ld      a,(SCREENCTL)
+    and     CRSR_OFF
+    jr      nz,.no_cursor
+    ld      hl,(CURRAM)         ; CHRPOS - address of cursor within matrix
+    ld      a,(CURCHR)          ; BUFO - storage of the character behind the cursor
     ld      (hl), a             ; Put original character on screen
+.no_cursor
     pop     hl
     call    cursor_offset
     ld      de, SCREEN          ; Screen character-matrix (= 12288 dec)
@@ -52,6 +56,12 @@ cursor_offset:
     add     hl, de              ; Added the columns
     ret
 
+reset_bordermap:
+    in      a,(IO_VCTRL)
+    and     a,$FF-VCTRL_REMAP_BC
+    out     (IO_VCTRL),a
+    ret
+
 set_color:
     ld      (SCOLOR),a
     ld      a,(SCREENCTL)
@@ -66,11 +76,6 @@ set_color_off:
     pop     af      
     and     CRSR_OFF
     ret     nz
-;    push    hl
-;    ld      hl,(CURRAM)
-;    ld      a,DFLTATTRS
-;    call    color_put
-;    pop     hl
     ret
 
 _write_screenctl:
@@ -85,8 +90,6 @@ _write_screenctl:
     or      c
     ld      (BASYSCTL),a
     ret
-
-
 
 screen_clear_color_a:
     ld      c,a
@@ -103,6 +106,11 @@ _clear_color
     jr      nz,_color_clear80
     jr      _color_clear40
 
+;-----------------------------------------------------------------------------
+; Clear Text Screen
+; Input: A: Color
+; Clobbered: A, BC, DE, HL
+;-----------------------------------------------------------------------------
 screen_clear_a:
     ld      c,a
     ld      a,(LINLEN)
@@ -111,7 +119,6 @@ screen_clear_a:
     jr      _clear_screen
 ;-----------------------------------------------------------------------------
 ; Clear Text Screen
-; Input: A: Color
 ; Clobbered: A, BC, DE, HL
 ;-----------------------------------------------------------------------------
 screen_clear:
@@ -151,10 +158,12 @@ _fill80
     ld      bc,2000
     jp      sys_fill_mem
 
-; Output: A = Colors, NZ = 80 columns
+; Output: A = Colors, BC = ScrWid, NZ = 80 columns
 _screen_width_colors:
     ld      a,(LINLEN)
     cp      40                    ; NZ = 80 columns
+    ld      c,a
+    ld      b,0
     ld      a,(SCREENCTL)         ; 
     rla                           ; Carry = SCRCOLOR
     ld      a,DFLTATTRS
@@ -401,7 +410,7 @@ _color_string:
     push    af                    ; Stack = RWFlag, RtnAdr
     push    hl                    ; Stack = StrAdr, RWFlag, RtnAdr
     push    de                    ; Stack = ScrOfs, StrAdr, RWFlag, RtnAdr
-    call    _check_offset_len     ; DE = MaxOfs, HL = Scr0Ofs
+    call    _check_offset_len     ; DE = MaxOfs, HL = ScrOfs
     jp      c,discard3ret         ; If overflow, clean stack and return carry
     jp      z,discard3ret         ; If null string, pop RW flag and return
     ex      af,af'                ; F = WidFlg

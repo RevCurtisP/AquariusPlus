@@ -2,6 +2,8 @@
 ; 80 Column Text Screen Routines
 ;======================================================================================
 
+; Extended control keys in color printing mode
+
 tty_pos:
     ld      a,(TTYPOS)
     ld      de,(LINLEN)           ; E = LinLen
@@ -22,7 +24,10 @@ ttyclr_hook:
     push    bc
     ld      iy,set_color_off
     call    gfx_call
+    ld      iy,reset_bordermap
+    call    gfx_call
     call    set_cursor_on
+    call    set_scroll_on
     pop     bc
     ld      hl,SCREEN
     ld      a,(LINLEN)
@@ -32,6 +37,40 @@ ttyclr_hook:
     call    gfx_call
     ld      hl,SCREEN+81
     jp      TTYCLX
+
+;;; ToDo: Implement this at a later time
+;;; Add a command to enable/disable extended control codes
+ttyout_hook:
+    jp      z,BEEP
+    jp      TTYCLK
+    ld      e,a
+    ld      a,(SCREENCTL)
+    rra                           ; Set carry if extended control chars
+    ld      a,e                   ; Restore character
+    jr      nc,.ttyclk
+    cp      1
+    jr      z,_soh
+    cp      2
+;   jr      z,_stx
+    cp      12
+    jr      z,_ff
+.ttyclk
+    ld      a,e
+    jp      TTYCLK
+
+; Ctrl-L - Clear screen to current colors
+_ff:
+    ld      iy,screen_clear
+    call    aux_call
+; Ctrl-A - Move cursor to top left of screen
+_soh:
+    call    home_cursor
+    jp      TTYXPR
+; Ctrl-B - Non-destructive backspace
+;;; THIS IS WREAKING HAVOC!
+_stx:
+    call    BKSPC
+    jp      TTYFIN
 
 cursor_put:
     ld      hl,(CURRAM)           ;
@@ -83,6 +122,9 @@ ttymov_hook:
     ret
     
 scroll_hook:
+    ld      a,(SCREENCTL)
+    and     SCROLLOFF
+    ret     nz
     ld      a,(LINLEN)
     cp      40                    ; Set NZ if 80 columns
     ld      a,(SCREENCTL)         ; 
@@ -125,6 +167,18 @@ scroll_hook:
     ld      (de),a                ; Put Space
     inc     de                    ; Next Column
     djnz    .loop                 ; Do it again
+    ret
+
+set_scroll_on:
+    ld      a,$FF
+set_scroll:
+    xor     $FF                   ; Invert so 0 disables
+    and     SCROLLOFF
+    ld      c,a
+    ld      a,(SCREENCTL)
+    and     $FF-SCROLLOFF
+    or      c
+    ld      (SCREENCTL),a
     ret
 
 set_linlen:

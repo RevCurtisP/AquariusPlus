@@ -39,6 +39,7 @@ get_linbuf_de:
 
 get_linbuf_hl:
     ld      hl,(TOPMEM)
+inc_hl:
     inc     hl
     ret
 

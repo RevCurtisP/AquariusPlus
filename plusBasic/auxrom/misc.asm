@@ -252,7 +252,7 @@ mult_c_10:
 
 ;-----------------------------------------------------------------------------
 ; Pause program execution
-; Input: A: Diaable Ctrl-C 
+; Input: A: Ignore Ctrl-C if not 0
 ;       DE: Number of jiffies
 ; Clobbered: A, BC, DE, L
 ;-----------------------------------------------------------------------------

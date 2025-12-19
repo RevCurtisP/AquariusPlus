@@ -965,8 +965,6 @@ ST_PUT:
 ;-----------------------------------------------------------------------------
 ; SET Statement stub
 ;-----------------------------------------------------------------------------
-; ToDo: SET BIT var,bit#
-; ToDo: SET BORDER CHR char COLOR fg,bg
 ; ToDo: SET MOUSE ON/OFF/TILE (mouse.asm)
 ST_SET:
     cp      BITTK                 ; $EB
@@ -1007,6 +1005,10 @@ ST_SET:
     jr      z,ST_SET_SPEED
     cp      BORDTK                ; $B6
     jp      z,ST_SET_BORDER
+    cp      EXTK                  ; $B7
+    jp      z,SNERR               ;  will be SET EXTENDED PRINT
+    cp      SCROLTK               ; $BD
+    jp      z,ST_SET_SCROLL
     jp      SNERR
 
 ;-----------------------------------------------------------------------------
@@ -1111,6 +1113,13 @@ require_sor:
     ret
 
 ;-----------------------------------------------------------------------------
+; Enable/Disable Screen Scrolling
+;-----------------------------------------------------------------------------
+ST_SET_SCROLL
+    call    get_on_off            ; A = $FF if ON, $00 if OFF
+    jp      set_scroll
+
+;-----------------------------------------------------------------------------
 ; Set File Error generation
 ; Syntax: SET FILE ERROR ON/OFF
 ;-----------------------------------------------------------------------------
@@ -1209,9 +1218,10 @@ ST_PAUSE:
     and     BASBRKOFF
     ld      iy,pause_jiffies
     call    aux_call              ; If Ctrl-C
-    call    c,key_clear_fifo      ;   Clear keybaord buffer
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
-    ret
+    ret     nc
+    call    key_clear_fifo        ;   Clear keyboard buffer
+    jp      STPEND
 .string
     call    STRPRT
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
@@ -1235,9 +1245,7 @@ ST_PAUSE_UNTIL
 ;-----------------------------------------------------------------------------
 ; RESET Statement stub
 ;-----------------------------------------------------------------------------
-;; ToDo: RESET BIT var,bit#
-;;       RESET CHRSET set#
-;;       RESET CHRDEF ascii_code
+;; ToDo: RESET CHRSET set#
 ST_RESET:
     rst     CHRGET                ; Skip RESET
     cp      BITTK
@@ -1448,8 +1456,7 @@ ret_str_word:
 ST_WRITE:
     cp      '#'
     jp      z,write_file
-    SYNCHKT XTOKEN
-    rst     CHRGET               ; Skip XTOKEN
+    SYNCHKT XTOKEN                ; Require extended token
     cp      KEYTK
     jr      z,ST_WRITE_KEYS
     jp      SNERR
@@ -1463,6 +1470,6 @@ ST_WRITE:
 ST_WRITE_KEYS:
     rst      CHRGET                ; Skip KEY
     SYNCHKC  'S'                   ; Require S
-    call     get_free_string       ; DE = StrAdr, BC = StrLen
+    call     get_free_string       ; DE = StrAdr, BC = StrLen; Stack = TxtPtr, RtnAdr
     ld       iy,autokey_write_buffer
     jp       aux_call_popret       ; Write to auto-key buffer

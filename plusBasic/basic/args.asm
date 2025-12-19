@@ -179,8 +179,8 @@ FN_ARGS:
 .get_arg
     rst     CHRGET                ; Skip $
     call    PARCHK                ; Evaluate argument
-    ld      bc,free_temp_buffer   ; Stack = FunRtn, RtnAdr
-
+    ld      bc,free_temp_buffer
+    push    bc                    ; Stack = FunRtn, RtnAdr
     push    hl                    ; Stack = TxtPtr, FunRtn, RtnAdr
     call    CONINT                ; A, DE = ArgNum
     call    alloc_temp_buffer     ; HL = TmpBuf

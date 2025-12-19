@@ -90,7 +90,7 @@ _coldboot:
     jp      do_coldboot
 
 auto_cmd:
-    db      'RUN "'
+    db      ':RUN "'
 auto_text
     db      "autoexec"
 auto_len = $ - auto_text
@@ -106,7 +106,7 @@ null_desc:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.27s"
+    db "v0.27t"
     db 0
 plusver_len equ $ - plus_version
 plus_len   equ   $ - plus_text
@@ -341,9 +341,12 @@ input_ctrl_c:
     jp      DATAH                 ; Skip to end of INPUT statement
 
 main_ctrl_c:
-    jp      c,STPEND
+    jp      c,.break
     rst     CHRGET
     jp      MAIN0
+.break
+    or      $FF
+    jp      ENDCON
 
 finish_input:
     ld      (IEND_KEY),a
@@ -867,7 +870,7 @@ alloc_temp_buffer:
     push    af                    ; Stack = SaveAF, RtnAdr
     push    bc                    ; Stack = SaveBC, SaveAF, RtnAdr
     push    de                    ; Stack = SaveDE, SaveBC, SaveAF, RtnAdr
-    ld      hl,(TMPBUFTOP)        ; HL = TempBufPtr
+    ld      hl,(TBFTOP)           ; HL = TempBufPtr
     inc     h                     ; Add 256
     ld      de,(FRETOP)           ; DE = Bottom of String Data
     rst     COMPAR                ; If new pointer in string space
@@ -877,7 +880,7 @@ alloc_temp_buffer:
     ld      de,(FRETOP)           ; Try again
     rst     COMPAR                ; If new pointer in string space
     jr      nc,OSERR              ;   Out of string space error
-    ld      (TMPBUFTOP),hl        ; Set new pointer address
+    ld      (TBFTOP),hl           ; Set new pointer address
     dec     h                     ; Back to current pointer address
     pop     de                    ; DE = SaveSE; Stack = SaveBC, SaveAF, RtnAdr
     pop     bc                    ; BC = SaveBC; Stack = SaveAF, RtnAdr
@@ -887,7 +890,7 @@ alloc_temp_buffer:
 ; Get address of most recently allocated temp buffer
 ; Output: HL: Buffer Address
 get_temp_buffer:
-    ld      hl,(TMPBUFTOP)        ; HL = TempBufPtr
+    ld      hl,(TBFTOP)           ; HL = TempBufPtr
     dec     h                     ; Add 256
     ret
 
@@ -895,14 +898,14 @@ get_temp_buffer:
 free_temp_buffer:
     push    hl
     push    de
-    ld      hl,(TMPBUFTOP)        ; HL = TempBufPtr
+    ld      hl,(TBFTOP)           ; HL = TempBufPtr
     dec     h                     ; Subtract 256
     ld      de,(STRSPC)           ; DE = Bottom of String Space
     rst     COMPAR
-    jr      nc,.set               ; If Pointer < TOPMEM
-    ex      de,hl                 ;   Pointer = TOPMEM
+    jr      nc,.set               ; If Pointer < Botton of String Space
+    ex      de,hl                 ;   Pointer = Botton of String Space
 .set
-    ld      (TMPBUFTOP),hl        ; Update it
+    ld      (TBFTOP),hl           ; Update it
     pop     de
     pop     hl
     ret
@@ -930,6 +933,22 @@ end_hook:
   ld      iy,set_color_off
   call    aux_call
   jp      ENDCOT    
+
+
+ctrlx_hook:
+  push    bc
+  call    in_direct
+  pop     bc
+  jr      c,.nope                 ; If Direct Mode
+  ld      a,b
+  dec     a             
+  jr      nz,.nope                ; and buffer empty
+  ld      a,11
+  rst     OUTCHR                  ;   Clear screen and start over
+  jp      INLIN                   ; Else 
+.nope
+  ld      a,7                     ;   Ring the bell and continue   
+  jp      OUTBEL
 
 free_rom_sys = $2F00 - $
 

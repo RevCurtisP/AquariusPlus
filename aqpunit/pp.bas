@@ -24,7 +24,7 @@
 257 POKE $3026,""
 258 GOSUB _assert:ARGS "PEEK($3026)='!'"
 
-280 GOTO 300
+280 GOTO 300: 'skip subroutines
 282 _poke:GETARGS PA,PB:GOSUB _output:ARGS "POKE %%,%%" % (PA,PB):POKE PA,PB:RETURN
 284 _peek:GETARGS PA,PB:GOSUB _assert:ARGS "PEEK(%%)=%%" % (PA,PB):RETURN
 286 _peek_err:GETARGS PA,PE:GOSUB _assert_err:ARGS "PEEK(%%)" % (PA),PE:RETURN
@@ -42,7 +42,7 @@
 
 370 GOSUB _pause
 
-380 GOTO 400
+380 GOTO 400: 'Skip subroutines
 382 _pokew:GETARGS PA,PB:GOSUB _output:ARGS "DOKE %%,%%" % (PA,PB):DOKE PA,PB:RETURN
 384 _peekw:GETARGS PA,PB:GOSUB _assert:ARGS "DEEK(%%)=%%" % (PA,PB):RETURN
 386 _peekw_err:GETARGS PA,PE:GOSUB _assert_err:ARGS "DEEK(%%)" % (PA),PE:RETURN
@@ -71,7 +71,7 @@
 454 GOSUB _peekp_err:ARGS 0,16384,5
 456 GOSUB _peekwp_err:ARGS 0,16384,5
 
-470 GOTO 500
+470 GOTO 500: 'Skip subroutines
 472 _pokep:GETARGS PP,PA,PB:GOSUB _output:ARGS "POKE @%%,%%,%%" % (PP,PA,PB):POKE @PP,PA,PB:RETURN
 474 _peekp:GETARGS PP,PA,PB:GOSUB _assert:ARGS "PEEK(@%%,%%)=%%" % (PP,PA,PB):RETURN
 476 _peekp_err:GETARGS PP,PA,PE:GOSUB _assert_err:ARGS "PEEK(@%%,%%)" % (PP,PA),PE:RETURN

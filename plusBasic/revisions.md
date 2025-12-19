@@ -1,11 +1,24 @@
 # plusBASIC Revision History
+ - v0.27t (2025-12-??)
+    - Fixed Ctrl-C during `PAUSE jiffies` not generating `Break`
+    - Fixed Ctrl-C in direct mode causing `Syntax error` and restarting BASIC
+    - Modified INLIN so that Ctrl-X when buffer is empty in Direct Mode does a CHR$(11) clear screen
+    - Fixed _clear_home_ not setting _TTYPOS_ to 0
+    - Consolidated calls to _init_screen_buffers_, _init_screen_vars_, and _bitmap_init_vars_ in _do_coldboot_ into single call to _gfx_init_ 
+    - Fixed `ARGS$()` not freeing temp buffer
+    - Fixed `Syntax error` executing `WRITE KEYS`
+    - Fixed `%` string substition freeing argument string before evaluating substition expressions
+    - `LOCATE` and `PRINT @()` no longer restore character when `SET CURSOR OFF` is active
+    - `PAD$()` and `TRIM$()` now allow numeric expression as first argument
+    - Added tokens `EXT` and `SCROLL` and command `SET SCROLL ON/OFF`
+    - Updated _bas2baq.py_ and _baq2bas.py_ to include `EXT` and `SCROLL` tokens
  - v0.27s (2025-12-08)
     - Replaced jump vectors _TTYMOX_ and _SCROLX_ with direct jumps
     - Renamed _outdo_hook_ to _outchr_hook_, modified _OUTCHR_ to jump directly to it, and removed hook 13 RST
     - Removed _OUTDO_ jump vector and restored formerly displaced `TAN` code, removed unused hook 8 `RST`
     - Replaced UDF hooks 2, 19, and 24 with direct calls to _direct_mode_, _ttychr_hook_, and _run_cmd_, respectively 
     - Replaced file _text80.asm_ with _ttyhooks.asm_
-    - Added routines  _tty_pos_, _lf_hook_, _ttyclr_hook_, _cursor_put_, _tty_put_, _tty_linlen_, _tty_clear, _tty_finish_
+    - Added routines  _tty_pos_, _lf_hook_, _ttyclr_hook_, _cursor_put_, _tty_put_, _tty_linlen_, _tty_clear, _tty_finish_
     - Modified _LF_, _TTYMOV_, and _TTYCLR_ to call _lf_hook_, _tty_pos_, and _ttyclr_hook_, respectively
     - Modified _TTYOUT_ to call _tty_put_ and _TTYFIN_ to call _cursor_put_ instead of writing directly to screen memory
     - `PRINT CHR$(11)` now turns off color printing mode and enables the cursor

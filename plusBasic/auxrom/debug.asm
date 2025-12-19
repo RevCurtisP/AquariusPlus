@@ -2,11 +2,11 @@
 ; Debugging routines
 ;====================================================================
 
-_BUFADDR    equ   $3838
-_CHANNEL    equ   $383A
-_LINLEN     equ   $383B
-_STRADDR    equ   $383C
-_STRLEN     equ   $383E
+_BUFADDR    equ   $3852
+_CHANNEL    equ   $3854
+_LINLEN     equ   $3855
+_STRADDR    equ   $3856
+_STRLEN     equ   $3858 
 
 ;-----------------------------------------------------------------------------
 ; Dump BASIC variables to file vardump.txt
@@ -31,11 +31,12 @@ _dump:
     call    _sysvars
     call    _variables
 ;    call    _arrays
+;    call    _tempbuffs
     ret
 
 ; Dump Simple Variables
 _variables:
-    ld      de,svar
+    ld      de,mvar
     ld      bc,mvarlen
     call    _write_string
     ld      hl,(VARTAB)           ; Start of variables
@@ -193,7 +194,7 @@ _sysvars:
     pop     hl                    ; HL = LstPtrl Stack = RtnAdr
     jr      .loop
 
-_sysvar_list
+_sysvar_list:
     byte    'B',$38,$00,'TTYPOS'
     byte    'W',$38,$01,'CURRAM'
     byte    'W',$38,$04,'USRADD'
@@ -202,7 +203,6 @@ _sysvar_list
     byte    'W',$38,$DC,'DATPTR'
     byte    'F',$38,$C9,'DATLIN'
     byte    'W',$38,$AF,'TEMPPT'
-    byte    'e',$38,$B3,'TEMPST'
     byte    'e',$38,$B3,'TEMPST'
     byte    'e',$38,$B7,'      '
     byte    'e',$38,$BB,'      '
@@ -213,10 +213,25 @@ _sysvar_list
     byte    'W',$38,$DA,'STREND'
     byte    'W',$38,$F9,'SAVSTK'
     byte    'W',$38,$4B,'TOPMEM'
+    byte    'W',$38,$FE,'STRSPC'
+    byte    'W',$38,$36,'TBFTOP'
     byte    'W',$38,$C1,'FRETOP'
     byte    'W',$38,$AD,'MEMSIZ'
     byte    0
 
+_tempbuffs:
+    ld      de,tbuf
+    ld      bc,tbuflen
+    call    _write_string
+
+    ld      hl,(STRSPC)           ; Start of string memory
+    ld      de,(TBFTOP)           ; End of Temporary Buffers
+.loop
+    rst     COMPAR
+    ret     nc
+    call    _write_tempbuff
+    inc     h
+    jr      .loop
 
 ; Updates: BC: BufPtr, HL: VarPtr; Clobbers: AF, DE
 _out_strlen:
@@ -390,6 +405,26 @@ _out_hex:
     add     '0'
     jr      _out_buff
 
+; Input: DE = BufAdr
+; Clobbers: A, BC, DE 
+_write_tempbuff:
+    push    hl
+    ld      bc,0
+    push    de                    ; Stack = BufAdr, RtnAdr
+    ex      de,hl
+.loop
+    ld      a,(de)
+    or      a
+    jr      z,.write
+    inc     c
+    jr      nz,.loop
+    inc     b
+.write
+    pop     de
+    call    _write_string
+    ex      de,hl
+    pop     hl
+    ret
 
 ; Input: BC = BufPtr
 ; Clobbers: A, BC, DE
@@ -399,7 +434,7 @@ _write_buff:
     push    hl                    ; Stack = VarPtr, RtnAdr
     ld      h,b                   ; HL = BufPtr
     ld      l,c
-    ld      bc,(_BUFADDR)        ; BC = BufAdr
+    ld      bc,(_BUFADDR)         ; BC = BufAdr
     ld      d,b
     ld      e,c                   ; DE = BufAdr
     or      a
@@ -410,8 +445,6 @@ _write_buff:
     pop     hl                    ; HL =  VarPtr; Stack = RtnAdr
     ret
 
-
-
 _write_string:
     ld      a,(_CHANNEL)
     jp      esp_writec_bytes
@@ -421,12 +454,16 @@ _dtitle:
 _dtitlen     equ $ - _dtitle
 
 yvar:
-    byte    "System Variables:",13,10
+    byte    13,10,"System Variables:",13,10
 yvarlen     equ $ - yvar
 
 mvar:
     byte    13,10,"Simple Variables:",13,10
 mvarlen     equ $ - mvar
+
+tbuf:
+    byte    13,10,"Temporary Buffers:",13,10
+tbuflen     equ $ - tbuf
 
 _asctxt:
     byte    "    ASCII:",13,10

@@ -191,11 +191,11 @@ compare_hl_bc:
 facc_to_string:
     push    hl                    ; Stack = TxtPtr, RtnAdr
     call    FOUT                  ; Convert to String
+    ld      a,(hl)
+    cp      ' '                   ; If first character is space 
+    call    z,inc_hl              ;   Skip it
     call    STRLIT
-frefac_pophrt:
-    call    FREFAC                ; HL = StrDsc
-    ex      de,hl                 ; DE = StrDsc
-    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
+    pop     hl                    ; HL = TxtPtr, Stack = RtnAdr
     ret
 
 get_star_array: 

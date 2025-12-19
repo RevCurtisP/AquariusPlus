@@ -7,8 +7,11 @@
 ; Initialize graphics variables
 ;-----------------------------------------------------------------------------
 gfx_init:
+    call    init_screen_buffers
+    call    init_screen_vars
+    call    bitmap_init_vars
     ret
-
+    
 ;-----------------------------------------------------------------------------
 ; Get character definition from character RAM
 ; Input: A = ASCII Code

@@ -1,4 +1,10 @@
 # plusBASIC Release History
+ - v0.27t (2025-12-19)
+    - Fixed Ctrl-C not breaking in `PAUSE jiffies`, causing `Syntax error` and warm boot in direct mode
+    - `Ctrl-X` on empty line in direct mode resets and clears screen
+    - Fixed `Syntax error` in `WRITE KEYS`, string corruption in `%` string substition
+    - `PAD$()` and `TRIM$()` now allow numeric expression as first argument
+    - Added command `SET SCROLL ON/OFF`, added new tokens to _bas2baq.py_ and _baq2bas.py_
  - v0.27s (2025-12-08)
     - Fixed anomalies when `SET COLOR` is active, modified `PRINT CHR$(11)` to do implicit `SET COLOR OFF` and `SET CURSOR ON`
  - v0.27r (2025-12-02)

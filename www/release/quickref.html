@@ -297,7 +297,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
 <li>[.] <strong>LONG(<em>string</em>{,<em>offset</em>})</strong> - Convert four consecutive bytes in string to unsigned long.<!--convert--></li>
 <li>[.] <strong>LONG$(<em>long</em>)</strong> - Convert long to unsigned four byte binary string.<!--convert--></li>
 <li>[.] <strong>LOOP TRACK </strong> - Play specified or previously loaded tracker file repeatedly.<!--track--></li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>LPOS(<em>expression</em>_)</strong> - Return current column position of printer.</li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>LPOS(<em>expression</em>)</strong> - Return current column position of printer.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>LPRINT __ TAB(<em>integer</em>)|SPC(<em>integer</em>)|<em>expression</em>|;|,</strong> - Output data to printer.<!--print--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>LWR(<em>char</em>)</strong> - Lowercases numeric ASCII code or ASCII code of first character of string</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>LWR$(<em>string</em>|<em>byte</em>)</strong> - Lowercases argument string or argument ASCII code converted to string.</li>
@@ -320,6 +320,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
 <li>[.] <strong>OPEN <em>filespec</em> FOR INPUT|OUTPUT|APPEND|RANDOM as <em>numvar</em></strong> - Open file.<!--fileio--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>OUT <em>port</em>,<em>byte</em>|<em>string</em>{,...}{;...}</strong> - Write to a Z80 port.<!--system--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>PAD$(<em>string</em>,<em>length</em>{,<em>char</em>})</strong> - Pad string on left or right with optional fill character.<!--PAD--></li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>PAD$(<em>number</em>,<em>length</em>{,<em>char</em>})</strong> - Convert number to padded string.<!--PAD--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>PAUSE</strong> - Halt program execution until key is pressed.<!--system--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>PAUSE <em>jiffies</em></strong> - Pauses program execution for the specified amount of time.<!--system--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>PAUSE UNTIL <em>expression</em></strong> - Pauses program execution until <em>expression</em> evaluates to true.<!--system--></li>
@@ -336,7 +337,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>POKE �!_ext_addr_�|�{@<em>page</em>,}_address_�,<em>byte</em>|<em>string</em>{;..}.</strong> - Write bytes and/or strings to memory.<!--POKE--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>POKE COLOR <em>address</em>,<em>byte</em>|<em>string</em>{;...}</strong> - Write bytes and/or strings to color RAM.<!--POKESCREEN--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>POKE SCREEN <em>address</em>,<em>byte</em>|<em>string</em>{;...}</strong> - Write bytes and/or strings to screen RAM.<!--POKESCREEN--></li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>POS(<em>expression</em>_)</strong> - Return cursor position in current line.<!--cursor--></li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>POS(<em>expression</em>)</strong> - Return cursor position in current line.<!--cursor--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>POSX</strong> - Return last pixel or bloxel x-position.<!--pixel--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>POSY</strong> - Return 1bpp pixel or bloxel y-position.<!--pixel--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>PRESET (<em>x</em>,<em>y</em>)</strong> - Erase bloxel or pixel.<!--pixel--></li>
@@ -406,6 +407,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>SET KEY REPEAT ON|OFF</strong> - Enable or disable key repeat in direct mode.<!--system--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>SET PALETTE <em>palette</em>  TO <em>rgblist</em></strong> - Set palette entries.<!--palette--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>SET SAVE ASC ON|OFF</strong> - Enable or disable forced saving of BASIC programs in ASCII format.<!--save--></li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>SET SCROLL ON|OFF</strong> - Enable or disable scrolling of text screen when PRINTing.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>SET SOUND FAST ON|OFF_</strong> - Set whether SOUND is affected by turbo mode.<!--system--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>SET SPEED <em>speed</em></strong> - Set turbo mode.<!--system--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>SET SPRITE #<em>spritle</em> {ON|OFF} {POS <em>x</em>,<em>y</em>}   </strong> - Set spritle properties.<!--sprites--></li>
@@ -454,10 +456,11 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
 <li>[.] <strong>TRACKSPEED</strong> - Return tracker playback speed in Hertz.<!--track--></li>
 <li>[.] <strong>TRACKSTATUS</strong> - Return -1 if track is playing, else 0.<!--track--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>TRIM$(<em>string</em>{,<em>string</em>})</strong> - Remove characters from both ends of string.<!--string--></li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>TRIM$(<em>number</em>)</strong> - Convert number to string with no leading space.<!--string--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>TRIMDIR$(<em>filespec</em>)</strong> - Remove path from filespec.<!--filespec--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>TRIMEXT$(<em>filespec</em>)</strong> - Remove extension from filespec.<!--filespec--></li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>TRIML$(<em>string</em>{,<em>string</em>})</strong> - Remove characters from left end of string.<!--string--></li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>TRIMR$(<em>string</em>{,<em>string</em>})</strong> - Remove characters from right end of string.<!--string--></li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>TRIML$(<em>expression</em>{,<em>string</em>})</strong> - Remove characters from left end of string.<!--string--></li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>TRIMR$(<em>expression</em>{,<em>string</em>})</strong> - Remove characters from right end of string.<!--string--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>TRON</strong> - Enable line tracing.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>TROFF</strong> - Disable line tracing.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>UPR(<em>char</em>)</strong> - Uppercases numeric ASCII code or ASCII code of first character of string</li>

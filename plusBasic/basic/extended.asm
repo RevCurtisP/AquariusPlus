@@ -65,6 +65,7 @@ ATNCON:
 ; CLS statement
 ; syntax: CLS [fgcolor, bgcolor]
 ;-----------------------------------------------------------------------------
+;;; Proposed `CLS (row,col)-(row,col)` using screen_fill kernel routine
 ST_CLS:
     ld      iy,screen_clear       ; If no arguments
     jr      z,.cls                ;   Us current default colors
@@ -73,6 +74,10 @@ ST_CLS:
     call    get_screen_colors     ;   Parse colors
     ld      iy,screen_clear_a     ;   and clear screen
 .cls
+    cp      '('
+    jr      nz,.noparen
+    
+.noparen
     push    hl
     call    gfx_call
     call    home_cursor
@@ -95,6 +100,7 @@ home_cursor:
     jr      z,.skip
     ld      hl,SCREEN+81
 .skip
+    xor     a
     call    TTYSAV
     call    cursor_put
     ret

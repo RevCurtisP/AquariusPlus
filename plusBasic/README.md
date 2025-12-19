@@ -1,4 +1,4 @@
-plusBASIC Quick Reference Guide
+# plusBASIC Quick Reference Guide
 <!-- Do not edit this page. Contents are copied from file quickref_wiki.md which is generated from README.md-->
 
 <!-- Check Box key
@@ -249,7 +249,7 @@ plusBASIC Quick Reference Guide
  - [.] **LONG(_string_{,_offset_})** - Convert four consecutive bytes in string to unsigned long.<!--convert-->
  - [.] **LONG$(_long_)** - Convert long to unsigned four byte binary string.<!--convert-->
  - [.] **LOOP TRACK {_filespec_}** - Play specified or previously loaded tracker file repeatedly.<!--track-->
- - [ ] **LPOS(_expression__)** - Return current column position of printer.
+ - [ ] **LPOS(_expression_)** - Return current column position of printer.
  - [ ] **LPRINT __ TAB(_integer_)|SPC(_integer_)|_expression_|;|,{...}** - Output data to printer.<!--print-->
  - [x] **LWR(_char_)** - Lowercases numeric ASCII code or ASCII code of first character of string
  - [x] **LWR$(_string_|_byte_)** - Lowercases argument string or argument ASCII code converted to string.
@@ -272,6 +272,7 @@ plusBASIC Quick Reference Guide
  - [.] **OPEN _filespec_ FOR INPUT|OUTPUT|APPEND|RANDOM as _numvar_** - Open file.<!--fileio-->
  - [ ] **OUT _port_,_byte_|_string_{,...}{;...}** - Write to a Z80 port.<!--system-->
  - [ ] **PAD$(_string_,_length_{,_char_})** - Pad string on left or right with optional fill character.<!--PAD-->
+ - [ ] **PAD$(_number_,_length_{,_char_})** - Convert number to padded string.<!--PAD-->
  - [ ] **PAUSE** - Halt program execution until key is pressed.<!--system-->
  - [ ] **PAUSE _jiffies_** - Pauses program execution for the specified amount of time.<!--system-->
  - [ ] **PAUSE UNTIL _expression_** - Pauses program execution until _expression_ evaluates to true.<!--system-->
@@ -288,7 +289,7 @@ plusBASIC Quick Reference Guide
  - [ ] **POKE «!_ext_addr_»|«{@_page_,}_address_»,_byte_|_string_{;..}.** - Write bytes and/or strings to memory.<!--POKE-->
  - [ ] **POKE COLOR _address_,_byte_|_string_{;...}** - Write bytes and/or strings to color RAM.<!--POKESCREEN-->
  - [ ] **POKE SCREEN _address_,_byte_|_string_{;...}** - Write bytes and/or strings to screen RAM.<!--POKESCREEN-->
- - [x] **POS(_expression__)** - Return cursor position in current line.<!--cursor-->
+ - [x] **POS(_expression_)** - Return cursor position in current line.<!--cursor-->
  - [ ] **POSX** - Return last pixel or bloxel x-position.<!--pixel-->
  - [ ] **POSY** - Return 1bpp pixel or bloxel y-position.<!--pixel-->
  - [ ] **PRESET (_x_,_y_)** - Erase bloxel or pixel.<!--pixel-->
@@ -358,6 +359,7 @@ plusBASIC Quick Reference Guide
  - [ ] **SET KEY REPEAT ON|OFF** - Enable or disable key repeat in direct mode.<!--system-->
  - [ ] **SET PALETTE _palette_ {INDEX _index_} TO _rgblist_** - Set palette entries.<!--palette-->
  - [ ] **SET SAVE ASC ON|OFF** - Enable or disable forced saving of BASIC programs in ASCII format.<!--save-->
+ - [ ] **SET SCROLL ON|OFF** - Enable or disable scrolling of text screen when PRINTing.
  - [ ] **SET SOUND FAST ON|OFF_** - Set whether SOUND is affected by turbo mode.<!--system-->
  - [ ] **SET SPEED _speed_** - Set turbo mode.<!--system-->
  - [ ] **SET SPRITE #_spritle_ {ON|OFF} {POS _x_,_y_} {TILE _tileno_} {PALETTE _palette_} {ATTR _attrs_}** - Set spritle properties.<!--sprites-->
@@ -406,10 +408,11 @@ plusBASIC Quick Reference Guide
  - [.] **TRACKSPEED** - Return tracker playback speed in Hertz.<!--track-->
  - [.] **TRACKSTATUS** - Return -1 if track is playing, else 0.<!--track-->
  - [x] **TRIM$(_string_{,_string_})** - Remove characters from both ends of string.<!--string-->
+ - [x] **TRIM$(_number_)** - Convert number to string with no leading space.<!--string-->
  - [x] **TRIMDIR$(_filespec_)** - Remove path from filespec.<!--filespec-->
  - [x] **TRIMEXT$(_filespec_)** - Remove extension from filespec.<!--filespec-->
- - [x] **TRIML$(_string_{,_string_})** - Remove characters from left end of string.<!--string-->
- - [x] **TRIMR$(_string_{,_string_})** - Remove characters from right end of string.<!--string-->
+ - [x] **TRIML$(_expression_{,_string_})** - Remove characters from left end of string.<!--string-->
+ - [x] **TRIMR$(_expression_{,_string_})** - Remove characters from right end of string.<!--string-->
  - [ ] **TRON** - Enable line tracing.
  - [ ] **TROFF** - Disable line tracing.
  - [x] **UPR(_char_)** - Uppercases numeric ASCII code or ASCII code of first character of string

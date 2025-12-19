@@ -2,8 +2,6 @@
 120 IF FRE(2)<>$BEFF THEN CLEAR 4096
 130 GOSUB _init
 
-190 goto 520
-
 200 GOSUB _title:ARGS "Variables and Literals"
 
 300 GOSUB _title:ARGS "Extended Variable Names (tilde)"
@@ -93,15 +91,34 @@
 528 E4$=\"\aBell\fForm Feed":PRINT E4$:P4$=PEEKSCREEN$(200,40)
 529 GOSUB _pause:SCREEN 3
 
-530 GOSUB _outnewline
-532 GOSUB _assert:ARGS "P1$[1 TO 40]=` Clear Screen`+STRING$(27)"
-533 GOSUB _assert:ARGS "P1$[41 TO 80]=` Newline`+STRING$(32)"
-534 GOSUB _assert:ARGS "P2$=` Return`+$`09`+`Tab`+STRING$(29)"
-536 GOSUB _assert:ARGS "P3$=` Backspace`+STRING$(30)"
-538 GOSUB _assert:ARGS "P4$=` Bell`+$`0C`+`Form Feed`+STRING$(25)"
+530 GOSUB _output:ARGS "Verifying temporary string buffers deallocated"
+532 GOSUB _assert:ARGS "DEEK($3836)=DEEK($38FE)"
 
 540 GOSUB _outnewline
-542 GOSUB _assert:ARGS "E1$=$`0B`+`Clear Screen`+$`0D0A`+`Newline`" 
-544 GOSUB _assert:ARGS "E2$=`*****`+$`0D`+`Return`+$`09`+`Tab`"
-546 GOSUB _assert:ARGS "E3$=`Backspace*`+$`08`"
-548 GOSUB _assert:ARGS "E4$=$`07`+`Bell`+$`0C`+`Form Feed`"
+542 GOSUB _assert:ARGS "P1$[1 TO 40]=` Clear Screen`+STRING$(27)"
+543 GOSUB _assert:ARGS "P1$[41 TO 80]=` Newline`+STRING$(32)"
+544 GOSUB _assert:ARGS "P2$=` Return`+$`09`+`Tab`+STRING$(29)"
+546 GOSUB _assert:ARGS "P3$=` Backspace`+STRING$(30)"
+548 GOSUB _assert:ARGS "P4$=` Bell`+$`0C`+`Form Feed`+STRING$(25)"
+
+550 GOSUB _outnewline
+552 GOSUB _assert:ARGS "E1$=$`0B`+`Clear Screen`+$`0D0A`+`Newline`" 
+554 GOSUB _assert:ARGS "E2$=`*****`+$`0D`+`Return`+$`09`+`Tab`"
+556 GOSUB _assert:ARGS "E3$=`Backspace*`+$`08`"
+558 GOSUB _assert:ARGS "E4$=$`07`+`Bell`+$`0C`+`Form Feed`"
+
+560 GOSUB _pause
+562 GOSUB _title:ARGS "% String Substitution"
+
+571 GOSUB _output:ARGS LIST$(NEXT)
+572 PRINT \"ARGS$(0)=\"%%\"" % (ARGS$(0))
+573 SCREEN 3:GOSUB _output:ARGS LIST$(NEXT):SCREEN 1
+574 PRINT \"CD$=\"%%\"" % (CD$)
+575 SCREEN 3:GOSUB _output:ARGS LIST$(NEXT):SCREEN 1
+576 PRINT \"BIN$(12345)=\"%%\"" % (BIN$(12345))
+577 SCREEN 3
+
+580 GOSUB _output:ARGS "Verifying temporary string buffers deallocated"
+582 GOSUB _assert:ARGS "DEEK($3836)=DEEK($38FE)"
+584 GOSUB _output:ARGS "Verifying temporary strings \deallocated"
+586 GOSUB _assert:ARGS "DEEK($38AF)=$38B1"
