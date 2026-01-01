@@ -11,13 +11,8 @@ direct_mode:
     ld      a,(BASYSCTL)
     and     ~BASBRKOFF            ; Enable Ctrl-C break
     ld      (BASYSCTL),a
-;;; Proposed: Save and restore print colors in direct mode
-;   and     BASCOLOR
-;   ld      b,a                   ; B = [BASCOLOR]
-;   ld      a,(SCREENCTL)
-;   and     $FF-SCRCOLOR
-;   or      b                     ; Set [SCRCOLOR] to [BASCOLOR]
-;   ld      (SCREENCTL),a
+    xor     a
+    ld      (BAS_FLAGS),a
 
     call    key_set_repeat        ; Turn on keybuffer in ASCII mode, KB_REPEAT in BASYSCTL
     call    set_cursor_on
@@ -71,16 +66,11 @@ linker_hook:
     push  de                      ; Make MAIN the return address
     jp    LINKIT                  ; Link the lines
     
-
-
-
-    
 ;-----------------------------------------------------------------------------
 ; Called from SCRTCH (Execute NEW statement) - originally UDF Hook 12
 ;-----------------------------------------------------------------------------
 new_hook:
     call    clear_run_args
- 	  call    clear_all_errvars
  	  ld      c,0
  	  ld      iy,spritle_toggle_all
     call    gfx_call              ; Disable all sprite
@@ -191,16 +181,62 @@ scan_label:
 ; Hook 33: Save MAIN Line Number Flag
 ;-----------------------------------------------------------------------------
 main_ext:
+    cp      '.'
     ld      iy,write_prevbuf
-    call    aux_call
+    call    nz,aux_call
     ld      iy,write_history
-    call    aux_call
+    call    nz,aux_call
     pop     de                    ; Pop Return Address
     pop     bc                    ; C = Line Number Flag
     ld      (TEMP3),bc            ; Save it
     push    bc                    ; Flag back on stack
     push    de                      ; Return address back on stack
     jp      SCNLIN                ; Continue to SCNLIN
+
+; 10 ? 1:STOP:? 2:? 3:? 4
+
+gone_hook:
+    ld      de,NEWSTT
+    jp      z,GONEC
+    ld      bc,(BAS_FLAGS)        ; C = Flags
+    rl      c                     ; If step done
+    jr      c,.stop               ;   Stop
+    rl      c                     ; If stepping
+    jr      c,.step               ;   do it
+    cp      '.'
+    jr      z,.cont               ; If dot
+    cp      STEPTK
+    jr      z,.cont
+.go
+    or      a
+    jp      GONEC                 ; or STEP
+.cont
+    call    in_direct
+    jr      c,.go
+    ld      a,(BAS_FLAGS)
+    or      BASSTEPNG
+    ld      (BAS_FLAGS),a
+    push    de
+    jp      CONT
+.step 
+    ccf                           ; Clear stepping flag
+    rr      c                     ; Roll it in
+    scf                           ; Set stepped flag
+    rr      c                     ; Roll it in
+    ld      (BAS_FLAGS),bc        ; Save it
+    push    af
+    push    hl
+    ld      hl,(CURLIN)
+    call    _trace_line
+    pop     hl
+    pop     af
+    jp      GONEC                 ; Do the statement
+.stop
+    ccf                           ; Clear stepped flag
+    rl      c                     ; Roll it in
+    ld      (BAS_FLAGS),bc        ; Save it
+    dec     hl
+    jp      ENDCON
 
 ;-----------------------------------------------------------------------------
 ; Hook 37: Skip label at begin of line                                           
@@ -209,15 +245,7 @@ skip_label:
     ld      (CURLIN),hl           ; Save the Line #                        
     ld      a,(EXT_FLAGS)
     rla     
-    jr      nc,.not_trace
-    push    de                    ; Save text pointer
-    ld      a,'['
-    call    OUTDO
-    call    LINPRT
-    ld      a,']'
-    call    OUTDO
-    pop     de
-.not_trace
+    call    c,_trace_line
     ex      de,hl                 ; DE = Line#, HL = Text Pointer          
     rst     CHRGET                ; Get first character                    
     cp      '_'                   ; If not underscore                      
@@ -231,6 +259,16 @@ skip_label:
 .gone    
     dec     hl                    ; Back up text pointer                   
     jp      GONE                  ; Execute rest of line                   
+
+_trace_line:
+    push    de
+    ld      a,'['
+    call    OUTDO
+    call    LINPRT
+    ld      a,']'
+    call    OUTDO
+    pop     de
+    ret
 
 ;-----------------------------------------------------------------------------
 ; Hook 38: Skip Label in ON GOSUB

@@ -1580,16 +1580,24 @@ ST_SET_SAVE:
 ; New syntax: OPEN filename$ FOR INPUT/OUTPUT/RANDON AS var
 ; Channel is File Descriptor + 1
 ;-----------------------------------------------------------------------------
-; OPEN "1.txt" FOR INPUT AS I 
-; OPEN "2.txt" FOR OUTPUT AS W
-; OPEN "3.txt" FOR APPEND AS A 
-; OPEN "4.txt" FOR RANDOM AS R 
+; OPEN "autoexec" FOR INPUT AS I 
 ST_OPEN:
     call    get_strdesc_arg       ; HL = StrDsc; Stack = TxtPtr, RtnAdr
     ex      de,hl                 ; DE = StrDsc
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     ld      iy,bas_open           ; A = Result
-    jp      _aux_call_doserror
+    call    _aux_call_doserror    ; A = FilChn, HL = TxtPtr
+    push    af                    ; Stack = FilChn, RtnAdr
+    call    PTRGET                ; DE = VarPtr
+    call    CHKNUM                ; Error if not numeric
+    pop     af                    ; A = FilChn; Stack = RtnAdr
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    push    de                    ; Stack = VarPtr, TxtPtr, RtnAdr
+    call    SNGFLT                ; FACC = FilChn
+    pop     hl                    ; HL = VarPtr; Stack = TxtPtr, RtnAdr
+    call    MOVMF                 ; Copy FilChn to Ver
+    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
+    ret
 
 ;-----------------------------------------------------------------------------
 ; Close File

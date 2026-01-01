@@ -81,12 +81,17 @@ ST_CLEAR:
 ; Called from CLEAR in sbasic.asm
 ;-----------------------------------------------------------------------------
 clear_extension:
+    call    end_extension
+    ld      hl,(VARTAB)
+    ret
+
+end_extension:
     call    esp_close_all         ; Close all files
+    call    clear_all_errvars
     xor     a
     ld      (BAS_FDESC),a         ; Clear currently open file
     ld      hl,(STRSPC)           ; Set temp buffer pointer
     ld      (TBFTOP),hl           ; to start of string space
-    ld      hl,(VARTAB)
     ret
 
 ST_CLEAR_ARRAY:
@@ -253,6 +258,18 @@ ST_COPY:
     call    page_full_copy  ; Copy the page
     jp      z,FCERR         ; Error if invalid page
     ret
+
+;-----------------------------------------------------------------------------
+; Enhanced END 
+; Closes all files
+;-----------------------------------------------------------------------------
+ST_END:
+    ret     nz                    ; Return if no terminator
+    push    af
+    call    end_extension         ; Close files, clear error trapping sysvars, etc.
+    pop     af
+    ld      hl,0                  ; Set SAVTXT to 0 so CONT does "Can't continue"
+    jp      ENDPRG                ; Do normal END
 
 ;-----------------------------------------------------------------------------
 ; Enhanced FRE

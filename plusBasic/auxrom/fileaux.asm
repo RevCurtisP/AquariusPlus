@@ -41,18 +41,6 @@ bas_open:
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     ret     m
     inc     a                     ; A = FilChn
-    push    af                    ; Stack = FilChn, TxtPtr, RtnAdr
-; parse and po pulate variable
-    call    PTRGET                ; DE = VarPtr
-    call    CHKNUM                ; Error if not numeric
-    pop     af                    ; A = FilChn
-    push    hl                    ; Stack = TxtPtr, RtnAdr
-    push    de                    ; Stack = VarPtr, TxtPtr, RtnAdr
-    call    SNGFLT                ; FACC = FilChn
-    pop     hl                    ; HL = VarPtr; Stack = TxtPtr, RtnAdr
-    call    MOVMF                 ; Copy FilChn to Ver
-    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
-    xor     a                     ; Return no errors
     ret
 
 ; On entry: F = AscFlg (Z = ASCII), BC = AryLen, HL = AryPtr

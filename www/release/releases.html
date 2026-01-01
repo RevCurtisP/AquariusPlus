@@ -1,11 +1,10 @@
-
-<!DOCTYPE html>
+<!DOCTYPE html []>
 <html>
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="author" content="MarkdownViewer++" />
-        <title>releases.md</title>
-        <style type="text/css">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="author" content="MarkdownViewer++" />
+    <title>releases.md</title>
+    <style type="text/css">
             
 /* Avoid page breaks inside the most common attributes, especially for exports (i.e. PDF) */
 td, h1, h2, h3, h4, h5, p, ul, ol, li {
@@ -13,1107 +12,545 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
 }
 
         </style>
-      </head>
-    <body>
-        <h1 id="plusbasic-release-history">plusBASIC Release History</h1>
-<ul>
-<li>v0.27t (2025-12-19)
-<ul>
-<li>Fixed Ctrl-C not breaking in <code>PAUSE jiffies</code>, causing <code>Syntax error</code> and warm boot in direct mode</li>
-<li><code>Ctrl-X</code> on empty line in direct mode resets and clears screen</li>
-<li>Fixed <code>Syntax error</code> in <code>WRITE KEYS</code>, string corruption in <code>%</code> string substition</li>
-<li><code>PAD$()</code> and <code>TRIM$()</code> now allow numeric expression as first argument</li>
-<li>Added command <code>SET SCROLL ON/OFF</code>, added new tokens to <em>bas2baq.py</em> and <em>baq2bas.py</em></li>
-</ul>
-</li>
-<li>v0.27s (2025-12-08)
-<ul>
-<li>Fixed anomalies when <code>SET COLOR</code> is active, modified <code>PRINT CHR$(11)</code> to do implicit <code>SET COLOR OFF</code> and <code>SET CURSOR ON</code></li>
-</ul>
-</li>
-<li>v0.27r (2025-12-02)
-<ul>
-<li>Backspace at begining of input beeps instead of printing a CR/LF</li>
-<li>Ctrl-R in direct mode recalls previous line if current line is blank instead of reprinting the current entry</li>
-<li>Ctrl-U in direct mode and <code>INPUT</code> deletes to beginning of entry instead of printing a CR</li>
-<li>Implemented <code>EDIT</code> <em>lineno</em></li>
-</ul>
-</li>
-<li>v0.27q (2025-12-01)
-<ul>
-<li>Implemented <code>BIN$()</code>, <code>SAVE COLORMAP</code>, added <code>RESET CHRDEF char</code>, <code>,chrset</code> option to <code>GETCHRDEF$()</code></li>
-<li>Implemented<code>APPEND file$,addr,len</code>, <code>APPEND file$,@page,addr,len</code>, <code>APPEND file$,!extaddr,len</code>, `APPEND file$,*var$&quot;</li>
-<li>Backspace when input buffer is empty no longer prints a BS and CR/LF, Ctrl-U backspaces to delete current line instead of printing a CR/LF</li>
-</ul>
-</li>
-<li>v0.27p (2025-11-09)
-<ul>
-<li>Added <code>SET SPRITE #spritlenum ...</code>, <code>GETSPRITE()</code>, <code>GETSPRITEX()</code>, <code>GETSPRITEY()</code></li>
-</ul>
-</li>
-<li>v0.27o (2025-10-29)
-<ul>
-<li>Ignore Delete key in direct mode and <code>INPUT</code></li>
-</ul>
-</li>
-<li>v0.27n (2025-10-23)
-<ul>
-<li>Various internal code changes</li>
-</ul>
-</li>
-<li>v0.27m (2025-10-21)
-<ul>
-<li>Various internal code changes</li>
-</ul>
-</li>
-<li>v0.27l (2025-10-19)
-<ul>
-<li>Added <code>SET KEY REPEAT ON/OFF</code> to enable/disable Direct Mode key repeat, <code>GETKEYRPEAT</code> to return status</li>
-<li>Key repeat now disabled on cold or warm boot</li>
-<li>Added <code>KEY REPEAT ON/OFF</code> to enable/disable key repeat during program execution</li>
-<li><code>^K</code>, <code>^L</code>, <code>^N</code>, <code>^O</code> now ignored during <code>INPUT</code></li>
-<li><code>PAUSE jiffies</code> clears key buffer only if interrupted by Ctrl-C</li>
-</ul>
-</li>
-<li>v0.27k (2025-10-08)
-<ul>
-<li>Added <code>String formula too complex</code> error on nested <code>EVAL()</code></li>
-</ul>
-</li>
-<li>v0.27j (2025-10-01)
-<ul>
-<li>Various internal code changes</li>
-</ul>
-</li>
-<li>v0.27i (2025-09-28)
-<ul>
-<li>Added <code>VARDEF(*array)</code></li>
-<li>Added <code>,ASC</code> opttion to <code>SAVE filespec$,*array$</code></li>
-<li>Added <code>LIST *array$</code> and <code>LLIST array$</code> ro print contents of a string array.</li>
-<li>Added new syntax <code>GETPALETTE$(palnum,index)</code> to return a single palette entry</li>
-<li>Added <code>APPEND INTLIST</code>, <code>APPEND RGBLIST</code>, <code>APPEND TILELIST</code>, <code>APPEND ATTRLIST</code>, <code>APPEND BYTELIST</code>, and <code>APPEND PALETTELIST</code></li>
-</ul>
-</li>
-<li>v0.27h (2025-09-21)
-<ul>
-<li>Printing <code>CHR$(11)</code> now disables color printing mode.</li>
-<li><code>NEW</code> and <code>LOAD</code> basic progran clear run arguments returned by <code>ARGS</code> and <code>ARGS$</code></li>
-<li>Added parsing of delimited decimal RGB string to <code>RGB()</code> and <code>RGB$</code></li>
-</ul>
-</li>
-<li>v0.27g (2025-09-12)
-<ul>
-<li><code>SAVE SCREEN</code> <em>file_save_screen</em> now defaults to writing only Screen RAM and Color RAM.</li>
-<li>Added trailing options <code>PALETTE</code> and <code>BORDERMAP</code> to <code>SAVE SCREEN</code> and write options parameter to <em>file_save_screen</em></li>
-</ul>
-</li>
-<li>v0.27f (2025-09-09)
-<ul>
-<li>Added <code>SET SOUND FAST ON/OFF</code>, <code>GETSOUNDFAST</code>, <em>set_soundfast</em>, and <em>get_soundfast</em></li>
-</ul>
-</li>
-<li>v0.27e (2025-08-31)
-<ul>
-<li>Various internal code changes</li>
-</ul>
-</li>
-<li>v0.27d (2025-08-21)
-<ul>
-<li>Fixed Ctrl-C during <code>INPUT</code> not causing <code>BREAK</code></li>
-</ul>
-</li>
-<li>v0.27c (2025-08-21)
-<ul>
-<li>Removed extended palette modes from <em>file_load_palette</em> and <em>file_save_palette</em></li>
-<li>Removed <code>ASC</code>/<code>HEX</code>/<code>RGB</code> mode from <code>SAVE PALETTE</code> and <code>LOAD PALETTE</code></li>
-<li>Added argument format <code>RRGGBB</code>  to <code>RGB$()</code></li>
-</ul>
-</li>
-<li>v0.27b (2025-07-07)
-<ul>
-<li>Added file types <code>hex</code> and <code>rgb</code> to <em>file_load_palette</em> and <em>file_save_palette</em></li>
-<li>Added <code>,HEX</code> and <code>,RGB</code> options to <code>LOAD PALETTE</code> and <code>SAVE PALETTE</code></li>
-<li>Added function <code>FGBDEC$()</code></li>
-<li>Moved <code>LOAD PALETTE</code> and <code>SAVE PALETTE</code> to <em>sp.baq</em> and added tests for <code>HEX</code>, <code>ASC</code>, and <code>RGB</code></li>
-</ul>
-</li>
-<li>v0.27a (2025-05-25)
-<ul>
-<li>Changed <code>OPEN var TO filespec$ FOR mode</code> to <code>OPEN filespec$ FOR mode AS var</code></li>
-<li>Implemented <em>dos_tell</em>, <code>FILEPOS()</code>, and <code>SET FILE .. POS TO ...</code></li>
-<li>Added mode <code>RANDOM</code> to <code>OPEN</code></li>
-<li>Added (not debugged) statement <code>PUT CHR</code> and kernel routine <em>page_skip_write</em></li>
-</ul>
-</li>
-<li>v0.25e (2025-05-19)
-<ul>
-<li>Various internal code changes</li>
-</ul>
-</li>
-<li>v0.25d (2025-05-18)
-<ul>
-<li>Fixed <em>Type mismatch error</em> in <code>BYTE()</code></li>
-<li>Added function <code>CHECKDIR()</code> and kernel routine <em>file_check_ver</em></li>
-<li>Hex literals, <code>DEC()</code> and <code>HEX$()</code> now support longs</li>
-<li>Added statement <code>CHECK VER</code></li>
-<li><code>VER()</code> evaluates <code>.dev</code> as higher than <code>.99</code> (the current highest major or minor version number)</li>
-</ul>
-</li>
-<li>v0.25c (2025-05-04)
-<ul>
-<li>Various internal code changes</li>
-</ul>
-</li>
-<li>v0.25b (2025-05-03)
-<ul>
-<li>Various internal code changes</li>
-</ul>
-</li>
-<li>v0.25a (2025-04-30)
-<ul>
-<li>Fixed <code>Illegal quantity error</code> in <code>DEF SPRITE (rows,columns),spritle</code></li>
-<li>Added functions <code>CURSOROFFSET</code>, <code>CURSORX</code>, <code>CURSORY</code></li>
-</ul>
-</li>
-<li>v0.25 (2025-04-23)
-<ul>
-<li>Various internal code changes</li>
-</ul>
-</li>
-<li>v0.24l (2025-04-15)
-<ul>
-<li>Implemented AqExec load to and run from paged RAM</li>
-<li>Added paged RAM destination to <code>CALL</code></li>
-<li>Fixed <code>PUT SCREEN</code> generating <em>Illegal quantity error</em></li>
-</ul>
-</li>
-<li>v0.24k (2025-04-07)
-<ul>
-<li>Fixed <code>PLAY SAMPLE</code> and ^G warm boot infinite loop</li>
-<li><code>print_string_immd</code> now preserves HL</li>
-</ul>
-</li>
-<li>v0.24j (2025-03-28)
-<ul>
-<li>SAVE routines no longer close all files</li>
-<li>Fixed <code>OPEN</code>, <code>FILEATTR()</code>, <code>READ KEYS</code></li>
-<li>Added <code>OPEN ... APPEND</code>, <code>CLOSE #channel</code>, <code>READ #channel,var$,length</code>, <code>WRITE #channel,^var$</code></li>
-<li>Temporarily disable turbo mode during <code>Ctrl-G</code> beep and <code>PLAY SAMPLE</code></li>
-</ul>
-</li>
-<li>v0.24i (2025-03-27)
-<ul>
-<li>Various internal code changes</li>
-</ul>
-</li>
-<li>v0.24h (2025-03-26)
-<ul>
-<li>Modified <code>FN_KEY</code> to take string of keycodes instead of ASCII codes and return position in string of key pressed</li>
-<li>Added <code>REPEAT</code> and <code>UNTIL</code> tokens, <code>PAUSE UNTIL</code> statement, kernel routine <code>bool_setbit_long</code></li>
-</ul>
-</li>
-<li>v0.24g (2025-03-16)
-<ul>
-<li>Renamed and added <code>JOYx()</code> functions. Allowed controller id as argument to <code>JOYxx()</code> functions</li>
-</ul>
-</li>
-<li>v0.24f (2025-03-10)
-<ul>
-<li>Added <code>OFFSET()</code></li>
-</ul>
-</li>
-<li>v0.24e (2025-03-08)
-<ul>
-<li>Key read logic rewritten to mimic original INKEY$ logic</li>
-<li>Added <code>CLEAR KEYS</code> statement, <code>%</code> binary numeric literals</li>
-<li><code>UPRKEY</code>, <code>UPRKEY$</code>, <code>LWRKEY</code>, and <code>LWRKEY$</code> no longer wait for a keypress</li>
-<li>Added <code>JOYB()</code>, <code>JOYD()</code>, <code>JOYK()</code>, <code>JOYP()</code>, and <code>JOYxx()</code> functions</li>
-</ul>
-</li>
-<li>v0.24d (2025-02-27)
-<ul>
-<li>Added <code>INC var</code> and <code>DEC var</code></li>
-<li>Fixed <code>ERASE *array</code></li>
-<li>Added <code>String length</code> error</li>
-<li>Added <code>RESET SPRITE</code> with <code>Empty string</code> and <code>String length</code> errors</li>
-<li>Fixed <code>Syntax arror</code> on negative numbers after <code>DIM var()=</code></li>
-</ul>
-</li>
-<li>v0.24c (2025-02-17)
-<ul>
-<li>Added <code>DEF SPRITE def$=(cols,rows),spritle</code></li>
-<li>Fixed <code>SET FNKEY</code> rebooting when string is too long</li>
-</ul>
-</li>
-<li>v0.24b (2025-02-16)
-<ul>
-<li>Fixed <code>SET TILE TO CHR</code> statement</li>
-<li>Added <code>SET TILE *array$</code></li>
-<li>Added <code>DEF SPRITE def$=^var$</code>, unimplemented <code>DEF SPRITE def$=(w,h),s</code></li>
-<li><code>SET SPRITE</code> generates <em>Empty string error</em> if spritedef = &quot;&quot;</li>
-<li>Removed undocumented <code>OPEN()</code> function</li>
-</ul>
-</li>
-<li>v0.24a (2025-02-09)
+  </head>
+  <body>
+    <h1 id="plusbasic-release-history">plusBASIC Release History</h1>
+    <ul>
+      <li>v0.27u (2026-01-01)
+<ul><li>Fixed 'OPEN' halting the BASIC interpreter</li><li><code>CHECK VER</code> beeps when displaying incorrect version message</li><li>New command  <code>STEP</code> and shortcut <code>.</code> single steps through program statements after <code>STOP</code> or <code>Ctrl-C</code></li><li><code>END</code> closes all files, clears <code>ON ERROR</code> flags and sets <code>Can't continue</code> status</li></ul></li>
+      <li>v0.27t (2025-12-19)
+<ul><li>Fixed Ctrl-C not breaking in <code>PAUSE jiffies</code>, causing <code>Syntax error</code> and warm boot in direct mode</li><li><code>Ctrl-X</code> on empty line in direct mode resets and clears screen</li><li>Fixed <code>Syntax error</code> in <code>WRITE KEYS</code>, string corruption in <code>%</code> string substition</li><li><code>PAD$()</code> and <code>TRIM$()</code> now allow numeric expression as first argument</li><li>Added command <code>SET SCROLL ON/OFF</code>, added new tokens to <em>bas2baq.py</em> and <em>baq2bas.py</em></li></ul></li>
+      <li>v0.27s (2025-12-08)
+<ul><li>Fixed anomalies when <code>SET COLOR</code> is active, modified <code>PRINT CHR$(11)</code> to do implicit <code>SET COLOR OFF</code> and <code>SET CURSOR ON</code></li></ul></li>
+      <li>v0.27r (2025-12-02)
+<ul><li>Backspace at begining of input beeps instead of printing a CR/LF</li><li>Ctrl-R in direct mode recalls previous line if current line is blank instead of reprinting the current entry</li><li>Ctrl-U in direct mode and <code>INPUT</code> deletes to beginning of entry instead of printing a CR</li><li>Implemented <code>EDIT</code><em>lineno</em></li></ul></li>
+      <li>v0.27q (2025-12-01)
+<ul><li>Implemented <code>BIN$()</code>, <code>SAVE COLORMAP</code>, added <code>RESET CHRDEF char</code>, <code>,chrset</code> option to <code>GETCHRDEF$()</code></li><li>Implemented<code>APPEND file$,addr,len</code>, <code>APPEND file$,@page,addr,len</code>, <code>APPEND file$,!extaddr,len</code>, `APPEND file$,*var$"</li><li>Backspace when input buffer is empty no longer prints a BS and CR/LF, Ctrl-U backspaces to delete current line instead of printing a CR/LF</li></ul></li>
+      <li>v0.27p (2025-11-09)
+<ul><li>Added <code>SET SPRITE #spritlenum ...</code>, <code>GETSPRITE()</code>, <code>GETSPRITEX()</code>, <code>GETSPRITEY()</code></li></ul></li>
+      <li>v0.27o (2025-10-29)
+<ul><li>Ignore Delete key in direct mode and <code>INPUT</code></li></ul></li>
+      <li>v0.27n (2025-10-23)
+<ul><li>Various internal code changes</li></ul></li>
+      <li>v0.27m (2025-10-21)
+<ul><li>Various internal code changes</li></ul></li>
+      <li>v0.27l (2025-10-19)
+<ul><li>Added <code>SET KEY REPEAT ON/OFF</code> to enable/disable Direct Mode key repeat, <code>GETKEYRPEAT</code> to return status</li><li>Key repeat now disabled on cold or warm boot</li><li>Added <code>KEY REPEAT ON/OFF</code> to enable/disable key repeat during program execution</li><li><code>^K</code>, <code>^L</code>, <code>^N</code>, <code>^O</code> now ignored during <code>INPUT</code></li><li><code>PAUSE jiffies</code> clears key buffer only if interrupted by Ctrl-C</li></ul></li>
+      <li>v0.27k (2025-10-08)
+<ul><li>Added <code>String formula too complex</code> error on nested <code>EVAL()</code></li></ul></li>
+      <li>v0.27j (2025-10-01)
+<ul><li>Various internal code changes</li></ul></li>
+      <li>v0.27i (2025-09-28)
+<ul><li>Added <code>VARDEF(*array)</code></li><li>Added <code>,ASC</code> opttion to <code>SAVE filespec$,*array$</code></li><li>Added <code>LIST *array$</code> and <code>LLIST array$</code> ro print contents of a string array.</li><li>Added new syntax <code>GETPALETTE$(palnum,index)</code> to return a single palette entry</li><li>Added <code>APPEND INTLIST</code>, <code>APPEND RGBLIST</code>, <code>APPEND TILELIST</code>, <code>APPEND ATTRLIST</code>, <code>APPEND BYTELIST</code>, and <code>APPEND PALETTELIST</code></li></ul></li>
+      <li>v0.27h (2025-09-21)
+<ul><li>Printing <code>CHR$(11)</code> now disables color printing mode.</li><li><code>NEW</code> and <code>LOAD</code> basic progran clear run arguments returned by <code>ARGS</code> and <code>ARGS$</code></li><li>Added parsing of delimited decimal RGB string to <code>RGB()</code> and <code>RGB$</code></li></ul></li>
+      <li>v0.27g (2025-09-12)
+<ul><li><code>SAVE SCREEN</code><em>file_save_screen</em> now defaults to writing only Screen RAM and Color RAM.</li><li>Added trailing options <code>PALETTE</code> and <code>BORDERMAP</code> to <code>SAVE SCREEN</code> and write options parameter to <em>file_save_screen</em></li></ul></li>
+      <li>v0.27f (2025-09-09)
+<ul><li>Added <code>SET SOUND FAST ON/OFF</code>, <code>GETSOUNDFAST</code>, <em>set_soundfast</em>, and <em>get_soundfast</em></li></ul></li>
+      <li>v0.27e (2025-08-31)
+<ul><li>Various internal code changes</li></ul></li>
+      <li>v0.27d (2025-08-21)
+<ul><li>Fixed Ctrl-C during <code>INPUT</code> not causing <code>BREAK</code></li></ul></li>
+      <li>v0.27c (2025-08-21)
+<ul><li>Removed extended palette modes from <em>file_load_palette</em> and <em>file_save_palette</em></li><li>Removed <code>ASC</code>/<code>HEX</code>/<code>RGB</code> mode from <code>SAVE PALETTE</code> and <code>LOAD PALETTE</code></li><li>Added argument format <code>RRGGBB</code>  to <code>RGB$()</code></li></ul></li>
+      <li>v0.27b (2025-07-07)
+<ul><li>Added file types <code>hex</code> and <code>rgb</code> to <em>file_load_palette</em> and <em>file_save_palette</em></li><li>Added <code>,HEX</code> and <code>,RGB</code> options to <code>LOAD PALETTE</code> and <code>SAVE PALETTE</code></li><li>Added function <code>FGBDEC$()</code></li><li>Moved <code>LOAD PALETTE</code> and <code>SAVE PALETTE</code> to <em>sp.baq</em> and added tests for <code>HEX</code>, <code>ASC</code>, and <code>RGB</code></li></ul></li>
+      <li>v0.27a (2025-05-25)
+<ul><li>Changed <code>OPEN var TO filespec$ FOR mode</code> to <code>OPEN filespec$ FOR mode AS var</code></li><li>Implemented <em>dos_tell</em>, <code>FILEPOS()</code>, and <code>SET FILE .. POS TO ...</code></li><li>Added mode <code>RANDOM</code> to <code>OPEN</code></li><li>Added (not debugged) statement <code>PUT CHR</code> and kernel routine <em>page_skip_write</em></li></ul></li>
+      <li>v0.25e (2025-05-19)
+<ul><li>Various internal code changes</li></ul></li>
+      <li>v0.25d (2025-05-18)
+<ul><li>Fixed <em>Type mismatch error</em> in <code>BYTE()</code></li><li>Added function <code>CHECKDIR()</code> and kernel routine <em>file_check_ver</em></li><li>Hex literals, <code>DEC()</code> and <code>HEX$()</code> now support longs</li><li>Added statement <code>CHECK VER</code></li><li><code>VER()</code> evaluates <code>.dev</code> as higher than <code>.99</code> (the current highest major or minor version number)</li></ul></li>
+      <li>v0.25c (2025-05-04)
+<ul><li>Various internal code changes</li></ul></li>
+      <li>v0.25b (2025-05-03)
+<ul><li>Various internal code changes</li></ul></li>
+      <li>v0.25a (2025-04-30)
+<ul><li>Fixed <code>Illegal quantity error</code> in <code>DEF SPRITE (rows,columns),spritle</code></li><li>Added functions <code>CURSOROFFSET</code>, <code>CURSORX</code>, <code>CURSORY</code></li></ul></li>
+      <li>v0.25 (2025-04-23)
+<ul><li>Various internal code changes</li></ul></li>
+      <li>v0.24l (2025-04-15)
+<ul><li>Implemented AqExec load to and run from paged RAM</li><li>Added paged RAM destination to <code>CALL</code></li><li>Fixed <code>PUT SCREEN</code> generating <em>Illegal quantity error</em></li></ul></li>
+      <li>v0.24k (2025-04-07)
+<ul><li>Fixed <code>PLAY SAMPLE</code> and ^G warm boot infinite loop</li><li><code>print_string_immd</code> now preserves HL</li></ul></li>
+      <li>v0.24j (2025-03-28)
+<ul><li>SAVE routines no longer close all files</li><li>Fixed <code>OPEN</code>, <code>FILEATTR()</code>, <code>READ KEYS</code></li><li>Added <code>OPEN ... APPEND</code>, <code>CLOSE #channel</code>, <code>READ #channel,var$,length</code>, <code>WRITE #channel,^var$</code></li><li>Temporarily disable turbo mode during <code>Ctrl-G</code> beep and <code>PLAY SAMPLE</code></li></ul></li>
+      <li>v0.24i (2025-03-27)
+<ul><li>Various internal code changes</li></ul></li>
+      <li>v0.24h (2025-03-26)
+<ul><li>Modified <code>FN_KEY</code> to take string of keycodes instead of ASCII codes and return position in string of key pressed</li><li>Added <code>REPEAT</code> and <code>UNTIL</code> tokens, <code>PAUSE UNTIL</code> statement, kernel routine <code>bool_setbit_long</code></li></ul></li>
+      <li>v0.24g (2025-03-16)
+<ul><li>Renamed and added <code>JOYx()</code> functions. Allowed controller id as argument to <code>JOYxx()</code> functions</li></ul></li>
+      <li>v0.24f (2025-03-10)
+<ul><li>Added <code>OFFSET()</code></li></ul></li>
+      <li>v0.24e (2025-03-08)
+<ul><li>Key read logic rewritten to mimic original INKEY$ logic</li><li>Added <code>CLEAR KEYS</code> statement, <code>%</code> binary numeric literals</li><li><code>UPRKEY</code>, <code>UPRKEY$</code>, <code>LWRKEY</code>, and <code>LWRKEY$</code> no longer wait for a keypress</li><li>Added <code>JOYB()</code>, <code>JOYD()</code>, <code>JOYK()</code>, <code>JOYP()</code>, and <code>JOYxx()</code> functions</li></ul></li>
+      <li>v0.24d (2025-02-27)
+<ul><li>Added <code>INC var</code> and <code>DEC var</code></li><li>Fixed <code>ERASE *array</code></li><li>Added <code>String length</code> error</li><li>Added <code>RESET SPRITE</code> with <code>Empty string</code> and <code>String length</code> errors</li><li>Fixed <code>Syntax arror</code> on negative numbers after <code>DIM var()=</code></li></ul></li>
+      <li>v0.24c (2025-02-17)
+<ul><li>Added <code>DEF SPRITE def$=(cols,rows),spritle</code></li><li>Fixed <code>SET FNKEY</code> rebooting when string is too long</li></ul></li>
+      <li>v0.24b (2025-02-16)
+<ul><li>Fixed <code>SET TILE TO CHR</code> statement</li><li>Added <code>SET TILE *array$</code></li><li>Added <code>DEF SPRITE def$=^var$</code>, unimplemented <code>DEF SPRITE def$=(w,h),s</code></li><li><code>SET SPRITE</code> generates <em>Empty string error</em> if spritedef = ""</li><li>Removed undocumented <code>OPEN()</code> function</li></ul></li>
+      <li>v0.24a (2025-02-09)
 -Fixed display of plusBASIC version on boot screen</li>
-<li>v0.24 (2025-02-09)
-<ul>
-<li>Color cycle screen skipped if <code>/system/plusbasic/_skipsplash</code> exists</li>
-<li><code>DEF ATTRLIST</code> now allows string operands.</li>
-</ul>
-</li>
-<li>v0.23u (2025-02-02)
-<ul>
-<li>Fixed <code>PAD$()</code> overwriting string variables</li>
-<li>Added <code>PRINT @()</code>, <code>SET CURSOR ON/OFF</code>, <code>GETCURSOR</code></li>
-<li>Added <code>SET BORDER CHR/COLOR</code>, <code>RESET BORDER</code></li>
-<li>Added <code>GETBORDERCHR</code>, <code>GETBORDERCHR$</code>, <code>GETBORDERCOLOR</code>, <code>GETBORDERCOLOR$</code></li>
-</ul>
-</li>
-<li>v0.23t (2025-02-01)
-<ul>
-<li>Added <code>DUMP VARS</code></li>
-</ul>
-</li>
-<li>v0.23s (2025-01-26)
-<ul>
-<li>Implemented <code>UPR()</code>, <code>UPR$()</code>, <code>LWR()</code>, <code>LWR$()</code>, <code>UPRKEY</code>, <code>UPRKEY$</code>, <code>LWRKEY</code>, <code>LWRKEY$</code></li>
-<li>Implemented <code>BIT(string,bit#)</code></li>
-<li>Added <code>LONG()</code>, <code>LONG$()</code>, <code>FLOAT()</code>, <code>FLOAT$()</code></li>
-<li><code>INKEY</code>. <code>INKEY$</code>, <code>GETKEY</code>, <code>GETKEY$</code> now respect <code>SET BREAK OFF</code></li>
-<li>Fixed errors in <code>TRIMDIR$</code> and <code>TRIMEXT$</code></li>
-<li>Fixed bug in <code>RGB()</code> and <code>RGB$()</code> with string argument</li>
-</ul>
-</li>
-<li>v0.23r (2024-12-14)
-<ul>
-<li>Added <code>PAD$(number,...)</code> where number is converted to string before padding</li>
-<li><code>DEF RGBLIST</code>, <code>RGB()</code>, and <code>RGB$()</code> now accept 3 byte binary string of 8-bit R,G,B values</li>
-<li>Added <code>LEN(*array)</code> which returns length in bytes of data portion of array.</li>
-<li>Added <code>COPY *array TO ...</code>, <code>COPY ... TO *array</code>, and <code>COPY *array TO *array</code></li>
-</ul>
-</li>
-<li>v0.23q (2024-11-29)
-<ul>
-<li>Removed <code>SGNINT()</code>, added <code>INT(string$)</code> and <code>INT(string$,offset)</code></li>
-<li><code>RGB()</code>, <code>RGB$()</code>, and <code>DEF RGBLIST</code> now accept 8-bit RGB binary string operands</li>
-</ul>
-</li>
-<li>v0.23p (2024-11-28)
-<ul>
-<li><code>SET BREAK OFF</code> causes Ctrl-C to not BREAK out of INPUT</li>
-<li>Syntax <code>OUT! port,byte</code> allows writing to protected I/O ports</li>
-<li>boot.bin modified to identify and execute alternate BASIC ROMs</li>
-<li>Implemented <code>SGNINT()</code> function</li>
-</ul>
-</li>
-<li>v0.23o (2024-10-27)
-<ul>
-<li>SET BREAK OFF disables key checks between BASIC statements</li>
-<li>Fixed Ctrl-D, Ctrl-F, Ctrl-U turbo mode selection</li>
-<li>plusBASIC now executes ROM images via boot.bin</li>
-<li>Set S3 BASIC internal revision date to same as S1/S2</li>
-<li>Removed sys_ver_s3basic and S3BASIC option from <code>VER()</code> and <code>VER()</code></li>
-</ul>
-</li>
-<li>v0.23n (2024-10-25)</li>
-<li>Added statement <code>SET TRACK SPEED herz</code> and function <code>TRACKSPEED</code></li>
-<li>Added Ctrl-U sets Unlimited Turbo while program is running</li>
-<li>Embedded SYSROM filename at $2FF0</li>
-<li>v0.23m (2024-10-21)
-<ul>
-<li>Implemented <code>PAUSE jiffies</code></li>
-<li>Added <code>DEF USRINT</code>, <code>SET USRINT ON/OFF</code></li>
-</ul>
-</li>
-<li>v0.23l (2024-10-20)
-<ul>
-<li>Added statement <code>SET SPEED</code> and function <code>GETSPEED</code></li>
-</ul>
-</li>
-<li>v0.23k (2024-10-19)
-<ul>
-<li>Breaking change
-<ul>
-<li>Keyword <code>PT3</code> has been changed to <code>TRACK</code></li>
-</ul>
-</li>
-<li><code>READ *var$</code> now parses quoted strings correctly.</li>
-<li><code>DIM var$(...)=</code> requires quoted strings unless string is empty</li>
-</ul>
-</li>
-<li>v0.23j (2024-10-18)
-<ul>
-<li>Breaking changes
-<ul>
-<li><code>FILL BITMAP BYTE</code> is now <code>FILL BITMAP BYTES</code></li>
-<li><code>FILL BYTE</code> is now <code>FILL BYTES</code></li>
-<li><code>FILL WORD</code> is now <code>FILL WORDS</code></li>
-</ul>
-</li>
-<li>Added <code>BYTE()</code>, <code>WORD()</code>, and <code>WORD$()</code> functions</li>
-<li>Fixed <code>DEC()</code>Overflow error when argument is not a literal string</li>
-<li>Fixed <code>ASC$()</code> corrupting argument contents</li>
-</ul>
-</li>
-<li>v0.23i (2024-10-09)
-<ul>
-<li>Added <code>ATTR()</code>, <code>ATTR$()</code></li>
-<li>Implemented <code>GETCOLOR</code></li>
-</ul>
-</li>
-<li>v0.23h (2024-09-23)
-<ul>
-<li>Added <code>ENDKEY</code>, <code>FILESTATUS$()</code>, <code>FILEDATETIME$()</code>, <code>FILEATTR()</code>, and <code>FILELEN()</code></li>
-<li>Added optional position argument to<code>ASC()</code></li>
-<li>Modified enhanced <code>INPUT</code> to exit on Ctrl-X, Tab, Back-Tab, Cursor-Up, and Cursor-Down</li>
-</ul>
-</li>
-<li>v0.23g (2024-09-18)
-<ul>
-<li>Fixed <code>DEF SPRITE</code> to error on spritle 63</li>
-<li>Added <code>AqExec</code> file support to <code>RUN file</code></li>
-</ul>
-</li>
-<li>v0.23f (2024-09-13)
-<ul>
-<li>Added <code>TILEOFFSET()</code></li>
-<li>Changed <code>CLEAR COLOR</code> to <code>CLS COLOR {_fg_,_bg_}</code></li>
-<li>Added <code>CHR</code> and <code>ATTR</code> options to <code>COPY SCREEN TO...</code> and <code>COPY ... TO SCREEN</code></li>
-<li>Enabled <code>OUT</code> port restrictions</li>
-</ul>
-</li>
-<li>v0.23e (2024-09-07)
-<ul>
-<li>Various internal code changes</li>
-</ul>
-</li>
-<li>v0.23d (2024-09-06)
-<ul>
-<li>Fixed <code>PEEKSCREEN()</code> and <code>PEEKCOLOR()</code> for both 40 and 80 column mode</li>
-</ul>
-</li>
-<li>v0.23c (2024-09-01)
-<ul>
-<li>Enabled <code>SET BREAK ON/OFF</code></li>
-<li>Fixed <code>PEEK$()</code> Syntax error</li>
-<li>Added <code>ASC</code> option to <code>SAVE/LOAD PALETTE.</code></li>
-<li>Added <code>FAST</code> option to <code>COPY SCREEN TO ...</code> and <code>COPY ... TO SCEEN</code></li>
-<li>Added <code>CLEAR COLOR</code></li>
-</ul>
-</li>
-<li>v0.23b (2024-08-28)
-<ul>
-<li>Added extended memory addressing <code>!long</code> to
-<ul>
-<li><code>COPY</code>, <code>COMPARE()</code></li>
-<li><code>FILL BYTE</code>, <code>FILL WORD</code></li>
-<li><code>LOAD</code>, <code>SAVE</code></li>
-<li><code>POKE</code>, <code>PEEK()</code>,<code>PEEK$()</code>,<code>DOKE</code>, <code>DEEK</code></li>
-<li><code>PLAY SAMPLE</code></li>
-</ul>
-</li>
-<li>Implemented <code>COPY @page,address TO SCREEN</code></li>
-<li>Fixed <code>ARGS</code> always returning 0, <code>ARGS$()</code> crashing system.</li>
-<li>Fixed <code>DIR</code> returning wrong file size</li>
-</ul>
-</li>
-<li>v0.23a (2024-08-26)
-<ul>
-<li>Fixed LOAD BITMAP incorrectly loading 9192 byte legacy bitmaps.</li>
-<li>Fixed unit test for legacy bitmaps</li>
-</ul>
-</li>
-<li>v0.23 (2024-08-25)
-<ul>
-<li>Fixed ptplay.bin not being loaded</li>
-<li>Fixed RUN rom-files crashing system</li>
-<li>Fixed LOAD FNKEY</li>
-<li>Load pt3play.bin from SD card, then esp: if not found</li>
-</ul>
-</li>
-<li>v0.22y (2024-08-21)
-<ul>
-<li>Breaking changes
-<ul>
-<li><code>FILL {@page},address,oount,byte</code> is now <code>FILL BYTE {@page}, address, oount, byte</code></li>
-<li><code>FILL {@page},address,oount,WORD integer</code> is now <code>FILL WORD {@page}, address, count, integer</code></li>
-<li><code>LOAD COLOR</code> is now <code>LOAD SCREEN ATTR</code></li>
-<li><code>LOAD DIR ... \*array</code> now loads filenames only</li>
-<li><code>LOAD DIR ... *array$,BIN</code> replaces old <code>LOAD DIR ... \*array</code></li>
-<li><code>SAVE filespec$,TOK</code> to <code>SAVE filespec$,BIN</code>.</li>
-</ul>
-</li>
-<li>New statements and functions
-<ul>
-<li><code>APPEND filespec$,^var$</code></li>
-<li><code>BIT(long,bit#)</code></li>
-<li><code>COPY SCREEN TO @page,address</code></li>
-<li><code>FILL COLORMAP</code></li>
-<li><code>JOY$()</code></li>
-<li><code>PT3FAST</code></li>
-<li><code>SET FILE ERROR ON/OFF</code></li>
-<li><code>SET PT3 FAST ON/OFF</code></li>
-</ul>
-</li>
-<li>Updated statements and functions
-<ul>
-<li><code>ATN</code> implemented.</li>
-<li><code>CLEAR CURSOR</code></li>
-<li><code>FRE(_option_)</code>
-<ul>
-<li>-1 - Returns the number of bytes in memory not being used by BASlC as unsigned int.</li>
-<li>0 - Returns the number of bytes in memory not being used by BASlC as signed int.</li>
-<li>1 - Returns the total size of string space (as set by the first argument of CLEAR).</li>
-<li>2 - Returns the top of BAexSIC memory (as set by the second argument of CLEAR).</li>
-<li>&quot;&quot; - Garbage collect and return free string space</li>
-</ul>
-</li>
-<li><code>INPUT (_col_,_row_),_minlen_,_maxlen_,INT _var_</code></li>
-<li><code>LOAD CHRSET</code>
-<ul>
-<li>768 byte file loads to characters 32 to 127 (standard ASCII printable)</li>
-<li>1024 byte file loads to characters 128 to 255 (high ASCII)</li>
-<li>2048 byte file loads entire character set</li>
-</ul>
-</li>
-<li><code>LOAD DIR ... *array$,ASC</code> loads formatted directory</li>
-</ul>
-</li>
-<li>Operational changes
-<ul>
-<li><code>CLEAR</code>, <code>NEW</code>, and <code>RUN</code> close all files</li>
-<li><code>LOAD filespec,@page,address</code> now load more than 64k</li>
-<li><code>LOAD BITMAP</code> generates Error 49 if file size does not exactly match one of the supported formats.</li>
-<li><code>LOAD</code> basic program sets FILE ERROR ON</li>
-<li><code>LOAD</code> binary closes file</li>
-<li>Renamed <code>Disk I/O error</code> to <code>I/O error</code></li>
-</ul>
-</li>
-<li>Statements and functions now respecting SET FILE ERROR OFF
-<ul>
-<li><code>LOAD FNKEYS</code></li>
-<li><code>SAVE/LOAD PALETTE</code></li>
-<li><code>LOAD</code> string</li>
-<li><code>LOAD</code> array</li>
-<li><code>LOAD DIR</code></li>
-<li><code>DEL</code></li>
-<li><code>MKDIR</code></li>
-<li><code>CD</code> and <code>CD$</code></li>
-</ul>
-</li>
-<li>Bug fixes
-<ul>
-<li>Syntax error on <code>LOAD filespec$,@page :</code></li>
-<li>Syntax error in <code>SET SPRITE ... PALETTE</code></li>
-</ul>
-</li>
-<li>Added unit test front end <code>au.bas</code>, chained unit test programs</li>
-<li>Updated unit test framework an unit tests</li>
-<li>Restricted kernel page writes to not write past USER_END.</li>
-<li>System IRQ handler now preserves all registers</li>
-</ul>
-</li>
-<li>v0.22x (2024-05-25)
-<ul>
-<li>Added LOAD TILESET and SAVE TILESET</li>
-<li>Added SET CHRDEF, GETCHRDEF$(), and SAVE CHRSET</li>
-<li>Fixed characters 128 - 255 of default character set being overridden</li>
-<li>INPUT and READ now parse hexademical numbers</li>
-<li>Added DIM var()=list, READ *var</li>
-</ul>
-</li>
-<li>v0.22w (2024-05-20)</li>
-<li>Added WAIT, SET BREAK ON/OFF</li>
-<li>Implemented RGB(), DEF USR</li>
-<li>Added syntax OUT port,byte|string$;port,byte|string$...</li>
-<li>Syntax {@page,}address,byte;... to POKE, POKE COLOR, POKE SCREEN, and DOKE</li>
-<li>
-<ul>
-<li>^ operator string substition gives Missing or Too many operands errors.
+      <li>v0.24 (2025-02-09)
+<ul><li>Color cycle screen skipped if <code>/system/plusbasic/_skipsplash</code> exists</li><li><code>DEF ATTRLIST</code> now allows string operands.</li></ul></li>
+      <li>v0.23u (2025-02-02)
+<ul><li>Fixed <code>PAD$()</code> overwriting string variables</li><li>Added <code>PRINT @()</code>, <code>SET CURSOR ON/OFF</code>, <code>GETCURSOR</code></li><li>Added <code>SET BORDER CHR/COLOR</code>, <code>RESET BORDER</code></li><li>Added <code>GETBORDERCHR</code>, <code>GETBORDERCHR$</code>, <code>GETBORDERCOLOR</code>, <code>GETBORDERCOLOR$</code></li></ul></li>
+      <li>v0.23t (2025-02-01)
+<ul><li>Added <code>DUMP VARS</code></li></ul></li>
+      <li>v0.23s (2025-01-26)
+<ul><li>Implemented <code>UPR()</code>, <code>UPR$()</code>, <code>LWR()</code>, <code>LWR$()</code>, <code>UPRKEY</code>, <code>UPRKEY$</code>, <code>LWRKEY</code>, <code>LWRKEY$</code></li><li>Implemented <code>BIT(string,bit#)</code></li><li>Added <code>LONG()</code>, <code>LONG$()</code>, <code>FLOAT()</code>, <code>FLOAT$()</code></li><li><code>INKEY</code>. <code>INKEY$</code>, <code>GETKEY</code>, <code>GETKEY$</code> now respect <code>SET BREAK OFF</code></li><li>Fixed errors in <code>TRIMDIR$</code> and <code>TRIMEXT$</code></li><li>Fixed bug in <code>RGB()</code> and <code>RGB$()</code> with string argument</li></ul></li>
+      <li>v0.23r (2024-12-14)
+<ul><li>Added <code>PAD$(number,...)</code> where number is converted to string before padding</li><li><code>DEF RGBLIST</code>, <code>RGB()</code>, and <code>RGB$()</code> now accept 3 byte binary string of 8-bit R,G,B values</li><li>Added <code>LEN(*array)</code> which returns length in bytes of data portion of array.</li><li>Added <code>COPY *array TO ...</code>, <code>COPY ... TO *array</code>, and <code>COPY *array TO *array</code></li></ul></li>
+      <li>v0.23q (2024-11-29)
+<ul><li>Removed <code>SGNINT()</code>, added <code>INT(string$)</code> and <code>INT(string$,offset)</code></li><li><code>RGB()</code>, <code>RGB$()</code>, and <code>DEF RGBLIST</code> now accept 8-bit RGB binary string operands</li></ul></li>
+      <li>v0.23p (2024-11-28)
+<ul><li><code>SET BREAK OFF</code> causes Ctrl-C to not BREAK out of INPUT</li><li>Syntax <code>OUT! port,byte</code> allows writing to protected I/O ports</li><li>boot.bin modified to identify and execute alternate BASIC ROMs</li><li>Implemented <code>SGNINT()</code> function</li></ul></li>
+      <li>v0.23o (2024-10-27)
+<ul><li>SET BREAK OFF disables key checks between BASIC statements</li><li>Fixed Ctrl-D, Ctrl-F, Ctrl-U turbo mode selection</li><li>plusBASIC now executes ROM images via boot.bin</li><li>Set S3 BASIC internal revision date to same as S1/S2</li><li>Removed sys_ver_s3basic and S3BASIC option from <code>VER()</code> and <code>VER()</code></li></ul></li>
+      <li>v0.23n (2024-10-25)</li>
+      <li>Added statement <code>SET TRACK SPEED herz</code> and function <code>TRACKSPEED</code></li>
+      <li>Added Ctrl-U sets Unlimited Turbo while program is running</li>
+      <li>Embedded SYSROM filename at $2FF0</li>
+      <li>v0.23m (2024-10-21)
+<ul><li>Implemented <code>PAUSE jiffies</code></li><li>Added <code>DEF USRINT</code>, <code>SET USRINT ON/OFF</code></li></ul></li>
+      <li>v0.23l (2024-10-20)
+<ul><li>Added statement <code>SET SPEED</code> and function <code>GETSPEED</code></li></ul></li>
+      <li>v0.23k (2024-10-19)
+<ul><li>Breaking change
+<ul><li>Keyword <code>PT3</code> has been changed to <code>TRACK</code></li></ul></li><li><code>READ *var$</code> now parses quoted strings correctly.</li><li><code>DIM var$(...)=</code> requires quoted strings unless string is empty</li></ul></li>
+      <li>v0.23j (2024-10-18)
+<ul><li>Breaking changes
+<ul><li><code>FILL BITMAP BYTE</code> is now <code>FILL BITMAP BYTES</code></li><li><code>FILL BYTE</code> is now <code>FILL BYTES</code></li><li><code>FILL WORD</code> is now <code>FILL WORDS</code></li></ul></li><li>Added <code>BYTE()</code>, <code>WORD()</code>, and <code>WORD$()</code> functions</li><li>Fixed <code>DEC()</code>Overflow error when argument is not a literal string</li><li>Fixed <code>ASC$()</code> corrupting argument contents</li></ul></li>
+      <li>v0.23i (2024-10-09)
+<ul><li>Added <code>ATTR()</code>, <code>ATTR$()</code></li><li>Implemented <code>GETCOLOR</code></li></ul></li>
+      <li>v0.23h (2024-09-23)
+<ul><li>Added <code>ENDKEY</code>, <code>FILESTATUS$()</code>, <code>FILEDATETIME$()</code>, <code>FILEATTR()</code>, and <code>FILELEN()</code></li><li>Added optional position argument to<code>ASC()</code></li><li>Modified enhanced <code>INPUT</code> to exit on Ctrl-X, Tab, Back-Tab, Cursor-Up, and Cursor-Down</li></ul></li>
+      <li>v0.23g (2024-09-18)
+<ul><li>Fixed <code>DEF SPRITE</code> to error on spritle 63</li><li>Added <code>AqExec</code> file support to <code>RUN file</code></li></ul></li>
+      <li>v0.23f (2024-09-13)
+<ul><li>Added <code>TILEOFFSET()</code></li><li>Changed <code>CLEAR COLOR</code> to <code>CLS COLOR {_fg_,_bg_}</code></li><li>Added <code>CHR</code> and <code>ATTR</code> options to <code>COPY SCREEN TO...</code> and <code>COPY ... TO SCREEN</code></li><li>Enabled <code>OUT</code> port restrictions</li></ul></li>
+      <li>v0.23e (2024-09-07)
+<ul><li>Various internal code changes</li></ul></li>
+      <li>v0.23d (2024-09-06)
+<ul><li>Fixed <code>PEEKSCREEN()</code> and <code>PEEKCOLOR()</code> for both 40 and 80 column mode</li></ul></li>
+      <li>v0.23c (2024-09-01)
+<ul><li>Enabled <code>SET BREAK ON/OFF</code></li><li>Fixed <code>PEEK$()</code> Syntax error</li><li>Added <code>ASC</code> option to <code>SAVE/LOAD PALETTE.</code></li><li>Added <code>FAST</code> option to <code>COPY SCREEN TO ...</code> and <code>COPY ... TO SCEEN</code></li><li>Added <code>CLEAR COLOR</code></li></ul></li>
+      <li>v0.23b (2024-08-28)
+<ul><li>Added extended memory addressing <code>!long</code> to
+<ul><li><code>COPY</code>, <code>COMPARE()</code></li><li><code>FILL BYTE</code>, <code>FILL WORD</code></li><li><code>LOAD</code>, <code>SAVE</code></li><li><code>POKE</code>, <code>PEEK()</code>,<code>PEEK$()</code>,<code>DOKE</code>, <code>DEEK</code></li><li><code>PLAY SAMPLE</code></li></ul></li><li>Implemented <code>COPY @page,address TO SCREEN</code></li><li>Fixed <code>ARGS</code> always returning 0, <code>ARGS$()</code> crashing system.</li><li>Fixed <code>DIR</code> returning wrong file size</li></ul></li>
+      <li>v0.23a (2024-08-26)
+<ul><li>Fixed LOAD BITMAP incorrectly loading 9192 byte legacy bitmaps.</li><li>Fixed unit test for legacy bitmaps</li></ul></li>
+      <li>v0.23 (2024-08-25)
+<ul><li>Fixed ptplay.bin not being loaded</li><li>Fixed RUN rom-files crashing system</li><li>Fixed LOAD FNKEY</li><li>Load pt3play.bin from SD card, then esp: if not found</li></ul></li>
+      <li>v0.22y (2024-08-21)
+<ul><li>Breaking changes
+<ul><li><code>FILL {@page},address,oount,byte</code> is now <code>FILL BYTE {@page}, address, oount, byte</code></li><li><code>FILL {@page},address,oount,WORD integer</code> is now <code>FILL WORD {@page}, address, count, integer</code></li><li><code>LOAD COLOR</code> is now <code>LOAD SCREEN ATTR</code></li><li><code>LOAD DIR ... \*array</code> now loads filenames only</li><li><code>LOAD DIR ... *array$,BIN</code> replaces old <code>LOAD DIR ... \*array</code></li><li><code>SAVE filespec$,TOK</code> to <code>SAVE filespec$,BIN</code>.</li></ul></li><li>New statements and functions
+<ul><li><code>APPEND filespec$,^var$</code></li><li><code>BIT(long,bit#)</code></li><li><code>COPY SCREEN TO @page,address</code></li><li><code>FILL COLORMAP</code></li><li><code>JOY$()</code></li><li><code>PT3FAST</code></li><li><code>SET FILE ERROR ON/OFF</code></li><li><code>SET PT3 FAST ON/OFF</code></li></ul></li><li>Updated statements and functions
+<ul><li><code>ATN</code> implemented.</li><li><code>CLEAR CURSOR</code></li><li><code>FRE(_option_)</code><ul><li>-1 - Returns the number of bytes in memory not being used by BASlC as unsigned int.</li><li>0 - Returns the number of bytes in memory not being used by BASlC as signed int.</li><li>1 - Returns the total size of string space (as set by the first argument of CLEAR).</li><li>2 - Returns the top of BAexSIC memory (as set by the second argument of CLEAR).</li><li>"" - Garbage collect and return free string space</li></ul></li><li><code>INPUT (_col_,_row_),_minlen_,_maxlen_,INT _var_</code></li><li><code>LOAD CHRSET</code><ul><li>768 byte file loads to characters 32 to 127 (standard ASCII printable)</li><li>1024 byte file loads to characters 128 to 255 (high ASCII)</li><li>2048 byte file loads entire character set</li></ul></li><li><code>LOAD DIR ... *array$,ASC</code> loads formatted directory</li></ul></li><li>Operational changes
+<ul><li><code>CLEAR</code>, <code>NEW</code>, and <code>RUN</code> close all files</li><li><code>LOAD filespec,@page,address</code> now load more than 64k</li><li><code>LOAD BITMAP</code> generates Error 49 if file size does not exactly match one of the supported formats.</li><li><code>LOAD</code> basic program sets FILE ERROR ON</li><li><code>LOAD</code> binary closes file</li><li>Renamed <code>Disk I/O error</code> to <code>I/O error</code></li></ul></li><li>Statements and functions now respecting SET FILE ERROR OFF
+<ul><li><code>LOAD FNKEYS</code></li><li><code>SAVE/LOAD PALETTE</code></li><li><code>LOAD</code> string</li><li><code>LOAD</code> array</li><li><code>LOAD DIR</code></li><li><code>DEL</code></li><li><code>MKDIR</code></li><li><code>CD</code> and <code>CD$</code></li></ul></li><li>Bug fixes
+<ul><li>Syntax error on <code>LOAD filespec$,@page :</code></li><li>Syntax error in <code>SET SPRITE ... PALETTE</code></li></ul></li><li>Added unit test front end <code>au.bas</code>, chained unit test programs</li><li>Updated unit test framework an unit tests</li><li>Restricted kernel page writes to not write past USER_END.</li><li>System IRQ handler now preserves all registers</li></ul></li>
+      <li>v0.22x (2024-05-25)
+<ul><li>Added LOAD TILESET and SAVE TILESET</li><li>Added SET CHRDEF, GETCHRDEF$(), and SAVE CHRSET</li><li>Fixed characters 128 - 255 of default character set being overridden</li><li>INPUT and READ now parse hexademical numbers</li><li>Added DIM var()=list, READ *var</li></ul></li>
+      <li>v0.22w (2024-05-20)</li>
+      <li>Added WAIT, SET BREAK ON/OFF</li>
+      <li>Implemented RGB(), DEF USR</li>
+      <li>Added syntax OUT port,byte|string$;port,byte|string$...</li>
+      <li>Syntax {@page,}address,byte;... to POKE, POKE COLOR, POKE SCREEN, and DOKE</li>
+      <li>
+        <ul>
+          <li>^ operator string substition gives Missing or Too many operands errors.
 v0.22v (2024-05-19)</li>
-</ul>
-</li>
-<li>Added JOIN statement</li>
-<li>Added CLEAR *array</li>
-<li>All statements that write to multiple elements of string array, first zero out the array contents, then do a garbage collecion.</li>
-<li>Fixed DIM causes Syntax error after VARPTR()</li>
-<li>v0.22u</li>
-<li>Added string slicing in the form var$[pos] and var$[start TO end]</li>
-<li>Added Bad range error</li>
-<li>Fixed null string causing String too long error when used as an argument in % string substitution</li>
-<li>v0.22t (2024-05-15)</li>
-<li>Added PAD$ function</li>
-<li>v0.22s (2024-05-13)</li>
-<li>Added LOAD BITMAP and SAVE BITMAP</li>
-<li>v0.22r (2024-05-12)</li>
-<li>Added comments starting with apostrophe.</li>
-<li>Fixed silent abort on duplicate line number in LOAD with ASC option.</li>
-<li>v0.22q (2024-05-11)</li>
-<li>Changed DEF TILE TO CHR to SET TILE TO CHR</li>
-<li>Wrote demo program /pbdemo/chrsprite.bas</li>
-<li>v0.22p (2024-05-10)</li>
-<li>Added DEF TILE TO CHR and DEF BYTELIST</li>
-<li>v0.22o (2024-05-09)</li>
-<li>Implemented SAVE SCREEN and LOAD SCREEN statements</li>
-<li>v0.22n (2024-05-08)</li>
-<li>Added SPLIT command</li>
-<li>v0.22m (2024-04-28)</li>
-<li>Fixed spaces after escaped string being tokenized.</li>
-<li>v0.22l (2024-04-21)</li>
-<li>Added INMEM function</li>
-<li>Fixed stomping of temporay string in string trimming functions functions.</li>
-<li>v0.22k (2024-03-24)</li>
-<li>Added SAVE filespec$,CAQ to override SET SAVE ASC and SAVE filespec$,TOK to save raw tokenized program.</li>
-<li>Updated load_basic_program accordingly</li>
-<li>v0.22j (2024-03-20)</li>
-<li>Implemented COPY FILE</li>
-<li>v0.22i (2024-03-20)</li>
-<li>Removed LOAD STRING stub from source and README.md. Add LOAD and SAVE ^var$ to README.md.</li>
-<li>v0.22h (2024-03-19)</li>
-<li>Single PSET, PRESET, and POINT(), along with underlying routines.</li>
-<li>Single FILL BITMAP and CLEAR BITMAP along with underlying routines.</li>
-<li>Replaced SET BITMAP?? with COLOR, GETBITMAP?? with POSX, POSY, and COLOR</li>
-<li>Bitmap routines use EXT_FLAGS bits to determine</li>
-<li>Added DRAW token, USE SCREEN stub.</li>
-<li>v0.22g (2024-03-11)</li>
-<li>Added bitmap_read_sysvars, GETBITMAPBC, GETBITMAPBX, and GETBITMAPBY</li>
-<li>Added bitmap_write_color, bitmap_write_xpos, bitmap_write_ypos, and SET BITMAPBC BITMAPBX BITMAPBY</li>
-<li>Added bitmapc_read_sysvars, GETBITMAPCC, GETBITMAPCX, and GETBITMAPCY</li>
-<li>PSETB, PRESETB, POINTB, PSETC, PRESETC, and POINTC update last-x and last-y system variables</li>
-<li>Changed CLEAR BITMAP to CLEAR BITMAPB, matching syntax of other BITMAP keywords</li>
-<li>Added bitmapc_write_color, bitmapc_write_xpos, bitmapc_write_ypos, and SET BITMAPCC BITMAPCX BITMAPCY</li>
-<li>If PSETB color operand not specified, use color from SET BITMAPCC</li>
-<li>Renamed and reorganized several module assembly language files</li>
-<li>Added bitmap_move</li>
-<li>v0.22f (2024-03-09)</li>
-<li>Implemented PSETC, PRESETC, and POINTC</li>
-<li>Fixed Y-coordinate clipping in PSETB, PRESETB, POTNTB</li>
-<li>v0.22e (2024-03-09)</li>
-<li>Implemented POINTB(), added CLEAR BITMAPC and FILL BITMAPC</li>
-<li>v0.22d (2024-03-08)</li>
-<li>Added CLEAR BITMAP, FILL BITMAP.</li>
-<li>Implemented PSETB and PRESETB</li>
-<li>v0.22c (2024-03-06)</li>
-<li>v0.22c (2024-03-06)</li>
-<li>Fixed syntax error on extended functions VER through VARPTR</li>
-<li>v0.22b (2024-03-04)</li>
-<li>Added KEY(-1)</li>
-<li>v0.22a (2024-03-04)</li>
-<li>Added KEY(&quot;keys&quot;)</li>
-<li>v0.22 (2024-03-04)</li>
-<li>Added PT3STATUS, PT3LOOP, SET PT3 ON/OFF and fixed PAUSE PT3 while PT3 LOOP is active</li>
-<li>v0.21z (2024-03-01)</li>
-<li>Added pseudovariable ARGS and ARGS$(0)</li>
-<li>v0.21y (2024-02-25)</li>
-<li>Added SWAP VARS statement, ERASE statement, MID$ statement, and INDEX() function</li>
-<li>v0.21x (2024-02-24)</li>
-<li>Added TRIM$, TRIML$, and TRIMR$ functions</li>
-<li>v0.21w (2024-02-21)</li>
-<li>Added GETCHRSET function</li>
-<li>Improved screen switch/swap</li>
-<li>Fixed 80-column color mode printing</li>
-<li>Tweaked Latin-1 character sets</li>
-<li>v0.21v (2024-02-14)</li>
-<li>Added LOAD DIR filename$,*array$</li>
-<li>LOAD array$ ASC and LOAD DIR start at array index 1, put number of lines in index 0</li>
-<li>Updated read/write page checking to match new memory structure</li>
-<li>v0.21u (2024-02-13)</li>
-<li>Added LOAD filename$,*array$,ASC</li>
-<li>v0.21s (2024-02-13)</li>
-<li>Implemented DEF FNx and FNx</li>
-<li>v0.21r (2024-02-13)</li>
-<li>Added function INSTR, kernel routine str_instr</li>
-<li>v0.21q (2024-02-12)</li>
-<li>Added VARPTR() and STRPTR()</li>
-<li>v0.20p (2024-02-12)</li>
-<li>Replaced SCREEN SAVE, SCREEN RESTORE, and SCREEN SWAP with STASH SCREEN, RESTORE SCREEN, and SWAP SCREEN.</li>
-<li>v0.21o (2024-02-12)</li>
-<li>Removed character ROM data from sysrom binary, makerom script now does a simple copy with concatenate</li>
-<li>v0.21n (2024-02-11)</li>
-<li>Fixed 'Unknown error' bug in SAVE paged binary over 32k in length</li>
-<li>v0.21m (2024-02-11)</li>
-<li>Added MOUSEW</li>
-<li>v0.21j (2024-0209)</li>
-<li>Added SAVE/LOAD string arrays</li>
-<li>v0.21h (2024-02-05)</li>
-<li>Modified legal write pages, PLAY SAMPLE allowed pages</li>
-<li>v0.21g (2024-02-03)</li>
-<li>Reactivated JP descramble_rom in files.asm</li>
-<li>v0.21f (2024-02-03)</li>
-<li>Loads ptplay.bin from ESP: instead of SD card</li>
-<li>v0.21e (2024-01-31)</li>
-<li>Added LOOP PT3 [filename]</li>
-<li>v0.21c (2024-01-31)</li>
-<li>Separated pt3player code into loadable module</li>
-<li>v0.21b (2024-01-29)</li>
-<li>Load default and Latin-1 character sets from ESP filesystem</li>
-<li>v0.21a (2024-01-29)</li>
-<li>Added USE CHRSET filename$, changed Ctrl-O to switch to custom chrset, removed Ctrl-P option</li>
-<li>v0.21 (2024-01-27)</li>
-<li>SYSROM loaded in pages 60 through 62 as SoftROM</li>
-<li>v0.20w (2024-01-22)</li>
-<li>Fixed tokenization bug when RUNing BASIC progam files in ASCII format</li>
-<li>v0.20v (2024-01-21)</li>
-<li>Fixed DEF SPRITE [...] x-offset bug</li>
-<li>v0.20u (2024-01-18)</li>
-<li>Added SET SPRITE var$ TILECLIP and debugged str_length</li>
-<li>v0.20s (2024-01-17)</li>
-<li>Added <code>GET/PUT TILEMAP ... ^var$</code>, debugged FILL <code>[@page,]address,WORD int</code>, fixed <code>ASC$()</code> bug.</li>
-<li>v0.20r (2024-01-16)
-<ul>
-<li>Added TRON and TROFF statements and Extended BASIC jump table. Debugged graphics DEF statements.</li>
-</ul>
-</li>
-<li>v0.20q (2024-01-14)
-<ul>
-<li>Finalized esp, paged, dos, and file_io jump table entries</li>
-</ul>
-</li>
-<li>v0.20n (2024-01-13)
-<ul>
-<li>Added syntax <code>LIST$(NEXT)</code>, replaced all usage of <code>SBUFF</code> in paged memory with <code>STRBUF</code> in main memory</li>
-</ul>
-</li>
-<li>v0.20m (2024-01-11)</li>
-<li>Added <code>FILL [@page,] start, count, |byte|WORD int|</code>,  <code>sys_fill_word</code>, tokens <code>VARS</code> and <code>WORD</code></li>
-<li>Fixed spurious <code>FC error</code> in <code>GET SCREEN</code></li>
-<li>Finished <code>GET TILEMAP</code>, <code>PUT_TILEMAP</code>, <code>tilemap_get</code>, and <code>tilemap_put</code></li>
-<li>v0.20k (2024-01-08)</li>
-<li>Implemented <code>SET TILEMAP (x,y)</code> and <code>tilemap_set_tile</code></li>
-<li>v0.20j (2024-01-07)</li>
-<li>Allow both <code>,</code> and <code>;</code> as delimiters in <code>DEF INTLIST</code></li>
-<li>Fixed <code>ATTR attrs</code> and <code>PALETTE palette#</code> causing syntax error after <code>FILL TILEMAP tile#</code></li>
-<li><code>.</code> treated as <code>0</code> in hex literal strings and <code>ASC$</code> function</li>
-<li>v0.20i (2024-01-06)</li>
-<li>Added BASIC functions <code>FILEEXT$()</code>, <code>FILEDIR$()</code>, <code>TRIMDIR$()</code>, <code>TRIMEXT$()</code></li>
-<li>Added kernel routines <code>file_get_ext</code>, <code>file_trim_dir</code>, <code>file_get_dir</code>, <code>file_trim_ext</code></li>
-<li>Allow unquoted filename operand for <code>RUN</code> in direct mode</li>
-<li>Added direct mode syntax <code>DEL file file file...</code></li>
-<li>Added syntax <code>LOAD filename$,@page</code> and <code>SAVE filename$,@page</code></li>
-<li>Added cartridge diagnostic mode assembly option</li>
-<li>v0.20h (2024-01-02)</li>
-<li>Fixed 8k carts not working</li>
-<li>v0.20g (2023-12-30)</li>
-<li><code>FILL SCREEN</code>, <code>GET SCREEN</code>, <code>PUT SCREEN</code> now work in both 40 column and 80 column mode</li>
-<li>v0.20f (2023-12-30)</li>
-<li>Added optional comma between end-coordinate and fill character in <code>FILL SCREEN</code></li>
-<li>v0.20e (2023-12-29)</li>
-<li>Added <code>KEY()</code> function</li>
-<li>v0.20d (2023-12-29)</li>
-<li>Added <code>DEC()</code> function, fixed <code>esp_get_version</code>/<code>VER(0)</code>/<code>VER$(0)</code></li>
-<li>v0.20c (2023-12-23)</li>
-<li>Refactored (and hopefully fixed) cartridge boot code</li>
-<li>v0.20b (2023-12-17)</li>
-<li>Fixed bug in init_charram</li>
-<li>v0.20a (2023-12-17)
-<ul>
-<li>Clear BASIC RAM before starting cart. Add IRQ and hook disable, screen reset to hardware cart startup</li>
-</ul>
-</li>
-<li>v0.20u (2023-12-14)
-<ul>
-<li>Fixed GETPALETTE$, modded file_load_pt3 to stop any running pt3play process</li>
-</ul>
-</li>
-<li>v0.19t (2023-12-13)
-<ul>
-<li>Replaced RESET PT3 with STOP PT3, added PAUSE PT3 and RESUME PT3</li>
-</ul>
-</li>
-<li>v0.19s (2023-12-12)
-<ul>
-<li>Fixed CLS when SET COLOR is active</li>
-</ul>
-</li>
-<li>v0.19r (2023-12-12)
-<ul>
-<li>Fixed PLAY PT3 and RESET PT3</li>
-</ul>
-</li>
-<li>v0.19q (2023-12-13)
-<ul>
-<li>PLAY PT3 fixes</li>
-</ul>
-</li>
-<li>v0.19p (2023-12-11)
-<ul>
-<li>implemented PT3 PLAY</li>
-</ul>
-</li>
-<li>v0.19n (2023-12-08)
-<ul>
-<li>Added LOAD PALLETE, SAVE PALETTE, RESET PALETTE and RESET SCREEN</li>
-</ul>
-</li>
-<li>v0.19m (2023-12-08)
-<ul>
-<li>Fixed routine screen_pos_addr which had broken GET SCREEN and PUT SCREEN</li>
-<li>Implemented LOAD PT3 statement</li>
-</ul>
-</li>
-<li>v0.19j (2023-12-04)
-<ul>
-<li>Fixed printing to screen after SET COLOR</li>
-</ul>
-</li>
-<li>v0.19i (2023-12-03)
-<ul>
-<li>Converted plusBASIC patches to hooks to increase cartridge compatibility</li>
-</ul>
-</li>
-<li>v0.19h (2023-12-02)
-<ul>
-<li>Fixed ?Syntax error when RUNning ROM</li>
-</ul>
-</li>
-<li>v0.19g (2023-12-01)
-<ul>
-<li>Added SET SAVE ASC ON/OFF, preset DAC to $80 to eliminate click at begining of first sample</li>
-</ul>
-</li>
-<li>v0.19f (2023-11-29)
-<ul>
-<li>Fixed bank 1 not restored after, clicking in play_sample</li>
-</ul>
-</li>
-<li>v0.19e (2023-11-28)
-<ul>
-<li>Moved Extended BASIC hook routines into Bank 1 ROM</li>
-</ul>
-</li>
-<li>v0.19d (2023-11-27)
-<ul>
-<li>Moved dos and fileio modules into Aux ROM</li>
-</ul>
-</li>
-<li>v0.19c (2023-11-26)
-<ul>
-<li>Consolidated 256-byte aligned tables into tables.asm</li>
-<li>Fixed Disk I/O error when trying to LOAD/RUN esp:settings</li>
-</ul>
-</li>
-<li>v0.19b (2023-11-26)
-<ul>
-<li>DIR now shows 0B instead of B for zero length files.</li>
-</ul>
-</li>
-<li>v0.19a (2023-11-26)
-<ul>
-<li>Added /r and /t escape sequences</li>
-</ul>
-</li>
-<li>v0.19 (2023-11-25)
-<ul>
-<li>Added backslash escaped strings</li>
-</ul>
-</li>
-<li>v0.18y (2023-11-24)
-<ul>
-<li>LOAD and RUN now autodect CAQ vs ASCII when loading BASIC programs. Removed ,ASC option from LOAD.</li>
-</ul>
-</li>
-<li>v0.18x (2023-11-24)
-<ul>
-<li>Added SAVE file$,ASC</li>
-</ul>
-</li>
-<li>v0.18w (2023-11-24
-<ul>
-<li>Added <em>unpack_line</em>, <code>OUTDO</code> hooks and <code>LINE$()</code> function</li>
-</ul>
-</li>
-<li>v0.18v (2023-11-23
-<ul>
-<li><code>LOAD prog$,ASC</code> allows empty lines, requires line numbers, enforces line number order</li>
-</ul>
-</li>
-<li>v0.18u (2023-11-22
-<ul>
-<li>Renamed <em>play_raw</em> to <em>play_paged</em>, then <em>play_sample</em></li>
-<li>Added <code>PLAY SAMPLE</code> command, <em>raw2saq.py</em>, and example directory /play_</li>
-</ul>
-</li>
-<li>v0.18t (2023-11-21
-<ul>
-<li>Fixed CD and CD$ crash, added preliminary digital sample routine <em>play_raw</em></li>
-</ul>
-</li>
-<li>v0.18s (2023-11-20
-<ul>
-<li>Moved routines into Aux ROM to make more room in System ROM</li>
-</ul>
-</li>
-<li>v0.18r (2023-11-20
-<ul>
-<li>Call clear_all_errvars during <code>RUN</code> [Issue #55]</li>
-</ul>
-</li>
-<li>v0.18q (2023-11-19
-<ul>
-<li>Added <code>LOAD filnam$,ASC</code> and incomplete <code>OPEN()</code> and <code>LINE INPUT #</code></li>
-</ul>
-</li>
-<li>v0.18p (2023-11-18
-<ul>
-<li>Made <code>CHEAD</code> callable.  At end of <em>init_basic_program</em>, jump through <em>basic_link_lines</em> to <code>CHEAD</code></li>
-</ul>
-</li>
-<li>v0.18o (2023-11-17
-<ul>
-<li>Added pair of 256 bytes buffer between stack and string space, fixed CLS in 80 column mode after Ctrl-W</li>
-</ul>
-</li>
-<li>v0.18m (2023-11-16
-<ul>
-<li>Added <code>PEEKSCREEN</code>, <code>PEEKSCREEN$</code>, <code>PEEKCOLOR</code>, and <code>PEEKCOLOR$</code> functions</li>
-</ul>
-</li>
-<li>v0.18k (2023-11-16
-<ul>
-<li>Added <code>SAVE FNKEYS</code>, <code>LOAD FNKEYS</code>, and <code>PAUSE string</code></li>
-</ul>
-</li>
-<li>v0.18j (2023-11-15
-<ul>
-<li>Added <code>POKE SCREEN</code> and <code>POKE COLOR</code> statements</li>
-</ul>
-</li>
-<li>v0.18h (2023-11-14
-<ul>
-<li>Added <code>Ctrl-T</code>, <code>Ctrl-Y</code>, and <code>Ctrl-W</code> to switch between 40 column screens and 80 column screen in direct mode</li>
-</ul>
-</li>
-<li>v0.18g (2023-11-14
-<ul>
-<li>Implemented color printing and scrolling in 80 column mode</li>
-</ul>
-</li>
-<li>v0.18f (2023-11-14)
-<ul>
-<li>Added <code>SET COLOR</code> statement, printing and scrolling color text</li>
-</ul>
-</li>
-<li>v0.18e (2023-11-13)
-<ul>
-<li>Buffer and restore screens when switching between SCREEN 1, 2 and 3</li>
-</ul>
-</li>
-<li>v0.18d (2023-11-13)
-<ul>
-<li>Added 80-column text screen support to PSET/PRESET</li>
-</ul>
-</li>
-<li>v0.18c (2023-11-13)
-<ul>
-<li>Added 80 column text screen support, updated LOCATE accordingly</li>
-</ul>
-</li>
-<li>v0.18b (2023-11-12)
-<ul>
-<li>Moved cold boot code into Auxiliary ROM</li>
-</ul>
-</li>
-<li>v0.18a (2023-11-12)
-<ul>
-<li>Added fpga cores to RUN</li>
-</ul>
-</li>
-<li>v0.18 (2023-11-12)
-<ul>
-<li>Moved extended control key evaluation and direct mode function key expansion into Auxiliary ROM</li>
-</ul>
-</li>
-<li>v0.17w (2023-11-11)
-<ul>
-<li>Fixed Ctrl-F/Ctrl-D SOUND conflict, F-Key definitions, cold boot custom character ROM not persisting,</li>
-</ul>
-</li>
-<li>v0.17v (2023-11-10)
-<ul>
-<li>Added hook to SOUNDS routine to adjust SOUND command and ^G beep in turbo mode</li>
-</ul>
-</li>
-<li>v0.17u (2023-11-10)</li>
-<li>Fixed error in page_write_word, DOKE @page</li>
-<li>v0.17s (2023-11-10)
-<ul>
-<li>Moved subroutine STRNGX from s3basic.asm to s3hooks.asm</li>
-</ul>
-</li>
-<li>v0.17r (2023-11-09)</li>
-<li>Moved all label processing routine from s3basic.asm to s3hooks.asm and misc.asm</li>
-<li>v0.17q (2023-11-08)</li>
-<li>Made precedence of MOD same as multiply and divide</li>
-<li>v0.17p (2023-11-08)</li>
-<li>Added MOD and XOR operators</li>
-<li>v0.17n (2023-11-08)</li>
-<li>Call dos_open_read instead of esp_open. Reset system state before running cartridge. Start/Stop IRQs based on TIMER state.</li>
-<li>v0.17m (2023-11-08)</li>
-<li>Added asm timer routine and Basic TIMER pseudovar. Implemented IM1 interrupt handler with call to timer_click and enabled interrupts on cold start.</li>
-<li>v0.17k (2023-11-07)</li>
-<li>Modified module page.asm to use Bank 1 instead of Bank 2 when doing page to page copies</li>
-<li>v0.17j (2023-11-06)</li>
-<li>Added set SET FNKEY TO string, which assignes autotype strings to F-Keys</li>
-<li>v0.17i (2023-11-06)</li>
-<li>Added LOAD SCREEN, if basic program autoexec exists, run it after cold boot.</li>
-<li>v0.17h (2023-11-06)</li>
-<li>LOAD basic program and LOAD array generate trappable BASIC errors</li>
-<li>v0.17g (2023-11-06)</li>
-<li>Added return to LIST to _scan_label. ON GOTO/GOSUB, LIST, and RUN now accept line labels</li>
-<li>v0.17f (2023-11-05)</li>
-<li>LOAD filename$,address generates BASIC errors</li>
-<li>v0.17d (2023-11-05)</li>
-<li>LOAD filename$,@page,address generates BASIC errors</li>
-<li>v0.17d (2023-11-05)</li>
-<li>Renamed fileio.asm to files.asm, created new fileio.asm, moved dos_load_chrset in dos.asm to file_load_chrset in fileio.asm</li>
-<li>v0.17c (2023-11-05)</li>
-<li>LOAD CHRSET generates BASIC errors</li>
-<li>v0.17b (2023-11-05)</li>
-<li>DIR generates trappable errors</li>
-<li>v0.17 (2023-11-04)</li>
-<li>Added variable-tilde-suffix syntax</li>
-<li>v0.16f (2023-11-04)</li>
-<li>Disable turbo mode at boot</li>
-<li>v0.16e (2023-11-03)</li>
-<li>Added GETSCREENCHR, PUTSCREENCHR, GETSCREENATTR, PUTSCREENATTR</li>
-<li>v0.16d (2023-11-01)</li>
-<li>Simplified SCREEN statement operand list</li>
-<li>v0.16c (2023-10-30)</li>
-<li>Refactore screen_save, screen_restore, ad screen_swap to use either set of screen buffers</li>
-<li>v0.16b (2023-10-30)</li>
-<li>CLEAR issues OVERR if trying to set TOPMEM less than $8400.</li>
-<li>v0.16a (2023-10-29)</li>
-<li>SCREEN SAVE, RESTORE, and SWAP now save and restore cursor state</li>
-<li>v0.16 (2023-10-29)</li>
-<li>Fixed generated ROM length</li>
-<li>Updated SCREEN RESET command and demo programs</li>
-<li>v0.15p (2023-10-28)</li>
-<li>Moved run_cmd to fileio.asm, s3_ctrl_keys to s3hooks.asm. Added FILL SCREEN COLOR</li>
-<li>v0.15o (2023-10-28)</li>
-<li>Moved all screen buffers to page 29. Added code to initialize screen switch buffers on startup</li>
-<li>v0.15o (2023-10-28)</li>
-<li>Added stub for LOAD PALETTE</li>
-<li>v0.15n (2023-10-28)</li>
-<li>Reassigned tokens for ARGS, FILL. Added keywords DOKE, DEEK, ELSE, WRITE. Updated esp_get_mouse, added MOUSEW function and float_signed_byte.</li>
-<li>Direct mode enables text, disables graphics. All other VCTRL bits unchanged. Move main_ext and _stuffh_ext to s3hooks.asm.</li>
-<li>v0.15m (2023-10-28)</li>
-<li>DIR,MKDIR,DEL,CD allow unquoted literal strings in direct mode</li>
-<li>Complete rewrite of SCREEN statement. Added VER(), PAUSE, SCREEN RESET. Cold boot clears entire 80-column screen</li>
-<li>v0.15k (2023-10-24)</li>
-<li>Complete rewrite of SCREEN statement. Added VER(), PAUSE, SCREEN RESET. Cold boot clears entire 80-column screen</li>
-<li>v0.15i (2023-10-23)</li>
-<li>Added VER$() function, fixed Ctrl-O,N,P blowing away text pointer</li>
-<li>Updated and retokenized demo programs</li>
-<li>v0.15h (2023-10-23)</li>
-<li>Shifted extended tokens ($83 and $8E unusable), updated bas2baq and baq3bas accordingly</li>
-<li>v0.15g (2023-10-22)</li>
-<li>Fill visible RAM from $3900 through $BFFF with 0 during cold start</li>
-<li>v0.15f (2023-10-22)</li>
-<li>Modified ISCNTC hook to eat Crtl-D and Ctrl-F</li>
-<li>v0.15e (2023-10-21)</li>
-<li>Breaking Changes: reassigned tokens, changed POKE!, PEEK! COPY!, to POKEINT, PEEKINT, COPY ... FAST. Added SET FAST ON/OFF</li>
-<li>v0.15d (2023-10-21)</li>
-<li>Ctrl-F, Ctrl-D enables/disables turbo mode while BASIC program is running</li>
-<li>v0.15c (2023-10-15)</li>
-<li>Moved keyboard buffer init from _coldboot to _reset</li>
-<li>v0.15b (2023-10-14)</li>
-<li>Enabled and tested FILL TILEMAP statement</li>
-<li>v0.15a (2023-10-11)</li>
-<li>Changed GETCOLOR to GETPALETTE</li>
-<li>v0.15 (2023-10-11)</li>
-<li>Changed COLOR to PALETTE, CHRSET to USE CHRSET, added DEF RGBLIST</li>
-<li>v0.14d (2023-10-04)</li>
-<li>Copy AQUACII charROM to cust charROM buffer on cold start</li>
-<li>v0.14c (2023-10-04)</li>
-<li>Added ^K, ^L, and ^P in direct mode</li>
-<li>v0.14a (2023-10-03)</li>
-<li>Added BASYSCTL system variable (bit 2 = key repeat)</li>
-<li>v0.14 (2023-10-01)</li>
-<li>reset key mode to ascii in direct mode. New statement SET KEY mode</li>
-<li>v0.13j (2023-10-01)</li>
-<li>Fixed errors in SCREEN SET 0 and SCREEN SET 1</li>
-<li>v0.13i (2023-10-01)</li>
-<li>Swapped Ctrl-N and Ctrl-O character set switching - v0.13h (2023-10-01)</li>
-<li>v0.13h (2023-10-01)</li>
-<li>Added ESP write protect error reporting</li>
-<li>v0.13g (2023-09-30)
-<ul>
-<li>Changed SCREEN SET filename$ to call new routine dos_load_charram</li>
-</ul>
-</li>
-<li>v0.13f (2023-09-30)
-<ul>
-<li>Added SCREEN SET filename$</li>
-</ul>
-</li>
-<li>v0.13e (2023-09-30)
-<ul>
-<li>Added character set switchng</li>
-</ul>
-</li>
-<li>v0.13d (2023-09-30)
-<ul>
-<li>S3BASIC boot screen calls read_key_ascii through vector at $2012</li>
-</ul>
-</li>
-<li>v0.13c (2023-09-28)
-<ul>
-<li>activated key read from port $FA</li>
-</ul>
-</li>
-<li>v0.13a (2023-09-27)
-<ul>
-<li>Added HOOK18 handler to read keyboard.</li>
-</ul>
-</li>
-<li>v0.13 (2023-09-26)
-<ul>
-<li>Added COPY! statement, page_fast_copy; renamed existing fast page routines</li>
-</ul>
-</li>
-<li>v0.12s (2023-09-26)
-<ul>
-<li>Fixed esp_get_mouse after fixing DIR date and time</li>
-</ul>
-</li>
-<li>v0.12r (2023-09-26)
-<ul>
-<li>Fixed date and time display in DIR, mapped PgUp, PgDn, Home, End to shifted cursor keys</li>
-</ul>
-</li>
-<li>v0.12q (2023-09-25)
-<ul>
-<li>MOUSE functions, esp routine return -1 when no mouse is found instead of ?Not found error</li>
-</ul>
-</li>
-<li>v0.12q (2023-09-25)
-<ul>
-<li>Fixed SCREEN statement, screen_set_mode routine</li>
-</ul>
-</li>
-<li>v0.12p (2023-09-24)
-<ul>
-<li>Moved text screen restore to READY hook. Enabled SET SCREEN OFFSET</li>
-</ul>
-</li>
-<li>v0.12m (2023-09-24)
-<ul>
-<li>Modified S3BASIC and plusBASIC to revert to text only after Ctrl-C, STOP, or END</li>
-</ul>
-</li>
-<li>v0.12l (2023-09-23)
-<ul>
-<li>Added ASC$(hex$)</li>
-</ul>
-</li>
-<li>0.12k (2023-09-23)
-<ul>
-<li>Added PEEK$([@page], addr, len)</li>
-</ul>
-</li>
-</ul>
-
-    </body>
+        </ul>
+      </li>
+      <li>Added JOIN statement</li>
+      <li>Added CLEAR *array</li>
+      <li>All statements that write to multiple elements of string array, first zero out the array contents, then do a garbage collecion.</li>
+      <li>Fixed DIM causes Syntax error after VARPTR()</li>
+      <li>v0.22u</li>
+      <li>Added string slicing in the form var$[pos] and var$[start TO end]</li>
+      <li>Added Bad range error</li>
+      <li>Fixed null string causing String too long error when used as an argument in % string substitution</li>
+      <li>v0.22t (2024-05-15)</li>
+      <li>Added PAD$ function</li>
+      <li>v0.22s (2024-05-13)</li>
+      <li>Added LOAD BITMAP and SAVE BITMAP</li>
+      <li>v0.22r (2024-05-12)</li>
+      <li>Added comments starting with apostrophe.</li>
+      <li>Fixed silent abort on duplicate line number in LOAD with ASC option.</li>
+      <li>v0.22q (2024-05-11)</li>
+      <li>Changed DEF TILE TO CHR to SET TILE TO CHR</li>
+      <li>Wrote demo program /pbdemo/chrsprite.bas</li>
+      <li>v0.22p (2024-05-10)</li>
+      <li>Added DEF TILE TO CHR and DEF BYTELIST</li>
+      <li>v0.22o (2024-05-09)</li>
+      <li>Implemented SAVE SCREEN and LOAD SCREEN statements</li>
+      <li>v0.22n (2024-05-08)</li>
+      <li>Added SPLIT command</li>
+      <li>v0.22m (2024-04-28)</li>
+      <li>Fixed spaces after escaped string being tokenized.</li>
+      <li>v0.22l (2024-04-21)</li>
+      <li>Added INMEM function</li>
+      <li>Fixed stomping of temporay string in string trimming functions functions.</li>
+      <li>v0.22k (2024-03-24)</li>
+      <li>Added SAVE filespec$,CAQ to override SET SAVE ASC and SAVE filespec$,TOK to save raw tokenized program.</li>
+      <li>Updated load_basic_program accordingly</li>
+      <li>v0.22j (2024-03-20)</li>
+      <li>Implemented COPY FILE</li>
+      <li>v0.22i (2024-03-20)</li>
+      <li>Removed LOAD STRING stub from source and README.md. Add LOAD and SAVE ^var$ to README.md.</li>
+      <li>v0.22h (2024-03-19)</li>
+      <li>Single PSET, PRESET, and POINT(), along with underlying routines.</li>
+      <li>Single FILL BITMAP and CLEAR BITMAP along with underlying routines.</li>
+      <li>Replaced SET BITMAP?? with COLOR, GETBITMAP?? with POSX, POSY, and COLOR</li>
+      <li>Bitmap routines use EXT_FLAGS bits to determine</li>
+      <li>Added DRAW token, USE SCREEN stub.</li>
+      <li>v0.22g (2024-03-11)</li>
+      <li>Added bitmap_read_sysvars, GETBITMAPBC, GETBITMAPBX, and GETBITMAPBY</li>
+      <li>Added bitmap_write_color, bitmap_write_xpos, bitmap_write_ypos, and SET BITMAPBC BITMAPBX BITMAPBY</li>
+      <li>Added bitmapc_read_sysvars, GETBITMAPCC, GETBITMAPCX, and GETBITMAPCY</li>
+      <li>PSETB, PRESETB, POINTB, PSETC, PRESETC, and POINTC update last-x and last-y system variables</li>
+      <li>Changed CLEAR BITMAP to CLEAR BITMAPB, matching syntax of other BITMAP keywords</li>
+      <li>Added bitmapc_write_color, bitmapc_write_xpos, bitmapc_write_ypos, and SET BITMAPCC BITMAPCX BITMAPCY</li>
+      <li>If PSETB color operand not specified, use color from SET BITMAPCC</li>
+      <li>Renamed and reorganized several module assembly language files</li>
+      <li>Added bitmap_move</li>
+      <li>v0.22f (2024-03-09)</li>
+      <li>Implemented PSETC, PRESETC, and POINTC</li>
+      <li>Fixed Y-coordinate clipping in PSETB, PRESETB, POTNTB</li>
+      <li>v0.22e (2024-03-09)</li>
+      <li>Implemented POINTB(), added CLEAR BITMAPC and FILL BITMAPC</li>
+      <li>v0.22d (2024-03-08)</li>
+      <li>Added CLEAR BITMAP, FILL BITMAP.</li>
+      <li>Implemented PSETB and PRESETB</li>
+      <li>v0.22c (2024-03-06)</li>
+      <li>v0.22c (2024-03-06)</li>
+      <li>Fixed syntax error on extended functions VER through VARPTR</li>
+      <li>v0.22b (2024-03-04)</li>
+      <li>Added KEY(-1)</li>
+      <li>v0.22a (2024-03-04)</li>
+      <li>Added KEY("keys")</li>
+      <li>v0.22 (2024-03-04)</li>
+      <li>Added PT3STATUS, PT3LOOP, SET PT3 ON/OFF and fixed PAUSE PT3 while PT3 LOOP is active</li>
+      <li>v0.21z (2024-03-01)</li>
+      <li>Added pseudovariable ARGS and ARGS$(0)</li>
+      <li>v0.21y (2024-02-25)</li>
+      <li>Added SWAP VARS statement, ERASE statement, MID$ statement, and INDEX() function</li>
+      <li>v0.21x (2024-02-24)</li>
+      <li>Added TRIM$, TRIML$, and TRIMR$ functions</li>
+      <li>v0.21w (2024-02-21)</li>
+      <li>Added GETCHRSET function</li>
+      <li>Improved screen switch/swap</li>
+      <li>Fixed 80-column color mode printing</li>
+      <li>Tweaked Latin-1 character sets</li>
+      <li>v0.21v (2024-02-14)</li>
+      <li>Added LOAD DIR filename$,*array$</li>
+      <li>LOAD array$ ASC and LOAD DIR start at array index 1, put number of lines in index 0</li>
+      <li>Updated read/write page checking to match new memory structure</li>
+      <li>v0.21u (2024-02-13)</li>
+      <li>Added LOAD filename$,*array$,ASC</li>
+      <li>v0.21s (2024-02-13)</li>
+      <li>Implemented DEF FNx and FNx</li>
+      <li>v0.21r (2024-02-13)</li>
+      <li>Added function INSTR, kernel routine str_instr</li>
+      <li>v0.21q (2024-02-12)</li>
+      <li>Added VARPTR() and STRPTR()</li>
+      <li>v0.20p (2024-02-12)</li>
+      <li>Replaced SCREEN SAVE, SCREEN RESTORE, and SCREEN SWAP with STASH SCREEN, RESTORE SCREEN, and SWAP SCREEN.</li>
+      <li>v0.21o (2024-02-12)</li>
+      <li>Removed character ROM data from sysrom binary, makerom script now does a simple copy with concatenate</li>
+      <li>v0.21n (2024-02-11)</li>
+      <li>Fixed 'Unknown error' bug in SAVE paged binary over 32k in length</li>
+      <li>v0.21m (2024-02-11)</li>
+      <li>Added MOUSEW</li>
+      <li>v0.21j (2024-0209)</li>
+      <li>Added SAVE/LOAD string arrays</li>
+      <li>v0.21h (2024-02-05)</li>
+      <li>Modified legal write pages, PLAY SAMPLE allowed pages</li>
+      <li>v0.21g (2024-02-03)</li>
+      <li>Reactivated JP descramble_rom in files.asm</li>
+      <li>v0.21f (2024-02-03)</li>
+      <li>Loads ptplay.bin from ESP: instead of SD card</li>
+      <li>v0.21e (2024-01-31)</li>
+      <li>Added LOOP PT3 [filename]</li>
+      <li>v0.21c (2024-01-31)</li>
+      <li>Separated pt3player code into loadable module</li>
+      <li>v0.21b (2024-01-29)</li>
+      <li>Load default and Latin-1 character sets from ESP filesystem</li>
+      <li>v0.21a (2024-01-29)</li>
+      <li>Added USE CHRSET filename$, changed Ctrl-O to switch to custom chrset, removed Ctrl-P option</li>
+      <li>v0.21 (2024-01-27)</li>
+      <li>SYSROM loaded in pages 60 through 62 as SoftROM</li>
+      <li>v0.20w (2024-01-22)</li>
+      <li>Fixed tokenization bug when RUNing BASIC progam files in ASCII format</li>
+      <li>v0.20v (2024-01-21)</li>
+      <li>Fixed DEF SPRITE [...] x-offset bug</li>
+      <li>v0.20u (2024-01-18)</li>
+      <li>Added SET SPRITE var$ TILECLIP and debugged str_length</li>
+      <li>v0.20s (2024-01-17)</li>
+      <li>Added <code>GET/PUT TILEMAP ... ^var$</code>, debugged FILL <code>[@page,]address,WORD int</code>, fixed <code>ASC$()</code> bug.</li>
+      <li>v0.20r (2024-01-16)
+<ul><li>Added TRON and TROFF statements and Extended BASIC jump table. Debugged graphics DEF statements.</li></ul></li>
+      <li>v0.20q (2024-01-14)
+<ul><li>Finalized esp, paged, dos, and file_io jump table entries</li></ul></li>
+      <li>v0.20n (2024-01-13)
+<ul><li>Added syntax <code>LIST$(NEXT)</code>, replaced all usage of <code>SBUFF</code> in paged memory with <code>STRBUF</code> in main memory</li></ul></li>
+      <li>v0.20m (2024-01-11)</li>
+      <li>Added <code>FILL [@page,] start, count, |byte|WORD int|</code>,  <code>sys_fill_word</code>, tokens <code>VARS</code> and <code>WORD</code></li>
+      <li>Fixed spurious <code>FC error</code> in <code>GET SCREEN</code></li>
+      <li>Finished <code>GET TILEMAP</code>, <code>PUT_TILEMAP</code>, <code>tilemap_get</code>, and <code>tilemap_put</code></li>
+      <li>v0.20k (2024-01-08)</li>
+      <li>Implemented <code>SET TILEMAP (x,y)</code> and <code>tilemap_set_tile</code></li>
+      <li>v0.20j (2024-01-07)</li>
+      <li>Allow both <code>,</code> and <code>;</code> as delimiters in <code>DEF INTLIST</code></li>
+      <li>Fixed <code>ATTR attrs</code> and <code>PALETTE palette#</code> causing syntax error after <code>FILL TILEMAP tile#</code></li>
+      <li>
+        <code>.</code> treated as <code>0</code> in hex literal strings and <code>ASC$</code> function</li>
+      <li>v0.20i (2024-01-06)</li>
+      <li>Added BASIC functions <code>FILEEXT$()</code>, <code>FILEDIR$()</code>, <code>TRIMDIR$()</code>, <code>TRIMEXT$()</code></li>
+      <li>Added kernel routines <code>file_get_ext</code>, <code>file_trim_dir</code>, <code>file_get_dir</code>, <code>file_trim_ext</code></li>
+      <li>Allow unquoted filename operand for <code>RUN</code> in direct mode</li>
+      <li>Added direct mode syntax <code>DEL file file file...</code></li>
+      <li>Added syntax <code>LOAD filename$,@page</code> and <code>SAVE filename$,@page</code></li>
+      <li>Added cartridge diagnostic mode assembly option</li>
+      <li>v0.20h (2024-01-02)</li>
+      <li>Fixed 8k carts not working</li>
+      <li>v0.20g (2023-12-30)</li>
+      <li>
+        <code>FILL SCREEN</code>, <code>GET SCREEN</code>, <code>PUT SCREEN</code> now work in both 40 column and 80 column mode</li>
+      <li>v0.20f (2023-12-30)</li>
+      <li>Added optional comma between end-coordinate and fill character in <code>FILL SCREEN</code></li>
+      <li>v0.20e (2023-12-29)</li>
+      <li>Added <code>KEY()</code> function</li>
+      <li>v0.20d (2023-12-29)</li>
+      <li>Added <code>DEC()</code> function, fixed <code>esp_get_version</code>/<code>VER(0)</code>/<code>VER$(0)</code></li>
+      <li>v0.20c (2023-12-23)</li>
+      <li>Refactored (and hopefully fixed) cartridge boot code</li>
+      <li>v0.20b (2023-12-17)</li>
+      <li>Fixed bug in init_charram</li>
+      <li>v0.20a (2023-12-17)
+<ul><li>Clear BASIC RAM before starting cart. Add IRQ and hook disable, screen reset to hardware cart startup</li></ul></li>
+      <li>v0.20u (2023-12-14)
+<ul><li>Fixed GETPALETTE$, modded file_load_pt3 to stop any running pt3play process</li></ul></li>
+      <li>v0.19t (2023-12-13)
+<ul><li>Replaced RESET PT3 with STOP PT3, added PAUSE PT3 and RESUME PT3</li></ul></li>
+      <li>v0.19s (2023-12-12)
+<ul><li>Fixed CLS when SET COLOR is active</li></ul></li>
+      <li>v0.19r (2023-12-12)
+<ul><li>Fixed PLAY PT3 and RESET PT3</li></ul></li>
+      <li>v0.19q (2023-12-13)
+<ul><li>PLAY PT3 fixes</li></ul></li>
+      <li>v0.19p (2023-12-11)
+<ul><li>implemented PT3 PLAY</li></ul></li>
+      <li>v0.19n (2023-12-08)
+<ul><li>Added LOAD PALLETE, SAVE PALETTE, RESET PALETTE and RESET SCREEN</li></ul></li>
+      <li>v0.19m (2023-12-08)
+<ul><li>Fixed routine screen_pos_addr which had broken GET SCREEN and PUT SCREEN</li><li>Implemented LOAD PT3 statement</li></ul></li>
+      <li>v0.19j (2023-12-04)
+<ul><li>Fixed printing to screen after SET COLOR</li></ul></li>
+      <li>v0.19i (2023-12-03)
+<ul><li>Converted plusBASIC patches to hooks to increase cartridge compatibility</li></ul></li>
+      <li>v0.19h (2023-12-02)
+<ul><li>Fixed ?Syntax error when RUNning ROM</li></ul></li>
+      <li>v0.19g (2023-12-01)
+<ul><li>Added SET SAVE ASC ON/OFF, preset DAC to $80 to eliminate click at begining of first sample</li></ul></li>
+      <li>v0.19f (2023-11-29)
+<ul><li>Fixed bank 1 not restored after, clicking in play_sample</li></ul></li>
+      <li>v0.19e (2023-11-28)
+<ul><li>Moved Extended BASIC hook routines into Bank 1 ROM</li></ul></li>
+      <li>v0.19d (2023-11-27)
+<ul><li>Moved dos and fileio modules into Aux ROM</li></ul></li>
+      <li>v0.19c (2023-11-26)
+<ul><li>Consolidated 256-byte aligned tables into tables.asm</li><li>Fixed Disk I/O error when trying to LOAD/RUN esp:settings</li></ul></li>
+      <li>v0.19b (2023-11-26)
+<ul><li>DIR now shows 0B instead of B for zero length files.</li></ul></li>
+      <li>v0.19a (2023-11-26)
+<ul><li>Added /r and /t escape sequences</li></ul></li>
+      <li>v0.19 (2023-11-25)
+<ul><li>Added backslash escaped strings</li></ul></li>
+      <li>v0.18y (2023-11-24)
+<ul><li>LOAD and RUN now autodect CAQ vs ASCII when loading BASIC programs. Removed ,ASC option from LOAD.</li></ul></li>
+      <li>v0.18x (2023-11-24)
+<ul><li>Added SAVE file$,ASC</li></ul></li>
+      <li>v0.18w (2023-11-24
+<ul><li>Added <em>unpack_line</em>, <code>OUTDO</code> hooks and <code>LINE$()</code> function</li></ul></li>
+      <li>v0.18v (2023-11-23
+<ul><li><code>LOAD prog$,ASC</code> allows empty lines, requires line numbers, enforces line number order</li></ul></li>
+      <li>v0.18u (2023-11-22
+<ul><li>Renamed <em>play_raw</em> to <em>play_paged</em>, then <em>play_sample</em></li><li>Added <code>PLAY SAMPLE</code> command, <em>raw2saq.py</em>, and example directory /play_</li></ul></li>
+      <li>v0.18t (2023-11-21
+<ul><li>Fixed CD and CD$ crash, added preliminary digital sample routine <em>play_raw</em></li></ul></li>
+      <li>v0.18s (2023-11-20
+<ul><li>Moved routines into Aux ROM to make more room in System ROM</li></ul></li>
+      <li>v0.18r (2023-11-20
+<ul><li>Call clear_all_errvars during <code>RUN</code> [Issue #55]</li></ul></li>
+      <li>v0.18q (2023-11-19
+<ul><li>Added <code>LOAD filnam$,ASC</code> and incomplete <code>OPEN()</code> and <code>LINE INPUT #</code></li></ul></li>
+      <li>v0.18p (2023-11-18
+<ul><li>Made <code>CHEAD</code> callable.  At end of <em>init_basic_program</em>, jump through <em>basic_link_lines</em> to <code>CHEAD</code></li></ul></li>
+      <li>v0.18o (2023-11-17
+<ul><li>Added pair of 256 bytes buffer between stack and string space, fixed CLS in 80 column mode after Ctrl-W</li></ul></li>
+      <li>v0.18m (2023-11-16
+<ul><li>Added <code>PEEKSCREEN</code>, <code>PEEKSCREEN$</code>, <code>PEEKCOLOR</code>, and <code>PEEKCOLOR$</code> functions</li></ul></li>
+      <li>v0.18k (2023-11-16
+<ul><li>Added <code>SAVE FNKEYS</code>, <code>LOAD FNKEYS</code>, and <code>PAUSE string</code></li></ul></li>
+      <li>v0.18j (2023-11-15
+<ul><li>Added <code>POKE SCREEN</code> and <code>POKE COLOR</code> statements</li></ul></li>
+      <li>v0.18h (2023-11-14
+<ul><li>Added <code>Ctrl-T</code>, <code>Ctrl-Y</code>, and <code>Ctrl-W</code> to switch between 40 column screens and 80 column screen in direct mode</li></ul></li>
+      <li>v0.18g (2023-11-14
+<ul><li>Implemented color printing and scrolling in 80 column mode</li></ul></li>
+      <li>v0.18f (2023-11-14)
+<ul><li>Added <code>SET COLOR</code> statement, printing and scrolling color text</li></ul></li>
+      <li>v0.18e (2023-11-13)
+<ul><li>Buffer and restore screens when switching between SCREEN 1, 2 and 3</li></ul></li>
+      <li>v0.18d (2023-11-13)
+<ul><li>Added 80-column text screen support to PSET/PRESET</li></ul></li>
+      <li>v0.18c (2023-11-13)
+<ul><li>Added 80 column text screen support, updated LOCATE accordingly</li></ul></li>
+      <li>v0.18b (2023-11-12)
+<ul><li>Moved cold boot code into Auxiliary ROM</li></ul></li>
+      <li>v0.18a (2023-11-12)
+<ul><li>Added fpga cores to RUN</li></ul></li>
+      <li>v0.18 (2023-11-12)
+<ul><li>Moved extended control key evaluation and direct mode function key expansion into Auxiliary ROM</li></ul></li>
+      <li>v0.17w (2023-11-11)
+<ul><li>Fixed Ctrl-F/Ctrl-D SOUND conflict, F-Key definitions, cold boot custom character ROM not persisting,</li></ul></li>
+      <li>v0.17v (2023-11-10)
+<ul><li>Added hook to SOUNDS routine to adjust SOUND command and ^G beep in turbo mode</li></ul></li>
+      <li>v0.17u (2023-11-10)</li>
+      <li>Fixed error in page_write_word, DOKE @page</li>
+      <li>v0.17s (2023-11-10)
+<ul><li>Moved subroutine STRNGX from s3basic.asm to s3hooks.asm</li></ul></li>
+      <li>v0.17r (2023-11-09)</li>
+      <li>Moved all label processing routine from s3basic.asm to s3hooks.asm and misc.asm</li>
+      <li>v0.17q (2023-11-08)</li>
+      <li>Made precedence of MOD same as multiply and divide</li>
+      <li>v0.17p (2023-11-08)</li>
+      <li>Added MOD and XOR operators</li>
+      <li>v0.17n (2023-11-08)</li>
+      <li>Call dos_open_read instead of esp_open. Reset system state before running cartridge. Start/Stop IRQs based on TIMER state.</li>
+      <li>v0.17m (2023-11-08)</li>
+      <li>Added asm timer routine and Basic TIMER pseudovar. Implemented IM1 interrupt handler with call to timer_click and enabled interrupts on cold start.</li>
+      <li>v0.17k (2023-11-07)</li>
+      <li>Modified module page.asm to use Bank 1 instead of Bank 2 when doing page to page copies</li>
+      <li>v0.17j (2023-11-06)</li>
+      <li>Added set SET FNKEY TO string, which assignes autotype strings to F-Keys</li>
+      <li>v0.17i (2023-11-06)</li>
+      <li>Added LOAD SCREEN, if basic program autoexec exists, run it after cold boot.</li>
+      <li>v0.17h (2023-11-06)</li>
+      <li>LOAD basic program and LOAD array generate trappable BASIC errors</li>
+      <li>v0.17g (2023-11-06)</li>
+      <li>Added return to LIST to _scan_label. ON GOTO/GOSUB, LIST, and RUN now accept line labels</li>
+      <li>v0.17f (2023-11-05)</li>
+      <li>LOAD filename$,address generates BASIC errors</li>
+      <li>v0.17d (2023-11-05)</li>
+      <li>LOAD filename$,@page,address generates BASIC errors</li>
+      <li>v0.17d (2023-11-05)</li>
+      <li>Renamed fileio.asm to files.asm, created new fileio.asm, moved dos_load_chrset in dos.asm to file_load_chrset in fileio.asm</li>
+      <li>v0.17c (2023-11-05)</li>
+      <li>LOAD CHRSET generates BASIC errors</li>
+      <li>v0.17b (2023-11-05)</li>
+      <li>DIR generates trappable errors</li>
+      <li>v0.17 (2023-11-04)</li>
+      <li>Added variable-tilde-suffix syntax</li>
+      <li>v0.16f (2023-11-04)</li>
+      <li>Disable turbo mode at boot</li>
+      <li>v0.16e (2023-11-03)</li>
+      <li>Added GETSCREENCHR, PUTSCREENCHR, GETSCREENATTR, PUTSCREENATTR</li>
+      <li>v0.16d (2023-11-01)</li>
+      <li>Simplified SCREEN statement operand list</li>
+      <li>v0.16c (2023-10-30)</li>
+      <li>Refactore screen_save, screen_restore, ad screen_swap to use either set of screen buffers</li>
+      <li>v0.16b (2023-10-30)</li>
+      <li>CLEAR issues OVERR if trying to set TOPMEM less than $8400.</li>
+      <li>v0.16a (2023-10-29)</li>
+      <li>SCREEN SAVE, RESTORE, and SWAP now save and restore cursor state</li>
+      <li>v0.16 (2023-10-29)</li>
+      <li>Fixed generated ROM length</li>
+      <li>Updated SCREEN RESET command and demo programs</li>
+      <li>v0.15p (2023-10-28)</li>
+      <li>Moved run_cmd to fileio.asm, s3_ctrl_keys to s3hooks.asm. Added FILL SCREEN COLOR</li>
+      <li>v0.15o (2023-10-28)</li>
+      <li>Moved all screen buffers to page 29. Added code to initialize screen switch buffers on startup</li>
+      <li>v0.15o (2023-10-28)</li>
+      <li>Added stub for LOAD PALETTE</li>
+      <li>v0.15n (2023-10-28)</li>
+      <li>Reassigned tokens for ARGS, FILL. Added keywords DOKE, DEEK, ELSE, WRITE. Updated esp_get_mouse, added MOUSEW function and float_signed_byte.</li>
+      <li>Direct mode enables text, disables graphics. All other VCTRL bits unchanged. Move main_ext and _stuffh_ext to s3hooks.asm.</li>
+      <li>v0.15m (2023-10-28)</li>
+      <li>DIR,MKDIR,DEL,CD allow unquoted literal strings in direct mode</li>
+      <li>Complete rewrite of SCREEN statement. Added VER(), PAUSE, SCREEN RESET. Cold boot clears entire 80-column screen</li>
+      <li>v0.15k (2023-10-24)</li>
+      <li>Complete rewrite of SCREEN statement. Added VER(), PAUSE, SCREEN RESET. Cold boot clears entire 80-column screen</li>
+      <li>v0.15i (2023-10-23)</li>
+      <li>Added VER$() function, fixed Ctrl-O,N,P blowing away text pointer</li>
+      <li>Updated and retokenized demo programs</li>
+      <li>v0.15h (2023-10-23)</li>
+      <li>Shifted extended tokens ($83 and $8E unusable), updated bas2baq and baq3bas accordingly</li>
+      <li>v0.15g (2023-10-22)</li>
+      <li>Fill visible RAM from $3900 through $BFFF with 0 during cold start</li>
+      <li>v0.15f (2023-10-22)</li>
+      <li>Modified ISCNTC hook to eat Crtl-D and Ctrl-F</li>
+      <li>v0.15e (2023-10-21)</li>
+      <li>Breaking Changes: reassigned tokens, changed POKE!, PEEK! COPY!, to POKEINT, PEEKINT, COPY ... FAST. Added SET FAST ON/OFF</li>
+      <li>v0.15d (2023-10-21)</li>
+      <li>Ctrl-F, Ctrl-D enables/disables turbo mode while BASIC program is running</li>
+      <li>v0.15c (2023-10-15)</li>
+      <li>Moved keyboard buffer init from _coldboot to _reset</li>
+      <li>v0.15b (2023-10-14)</li>
+      <li>Enabled and tested FILL TILEMAP statement</li>
+      <li>v0.15a (2023-10-11)</li>
+      <li>Changed GETCOLOR to GETPALETTE</li>
+      <li>v0.15 (2023-10-11)</li>
+      <li>Changed COLOR to PALETTE, CHRSET to USE CHRSET, added DEF RGBLIST</li>
+      <li>v0.14d (2023-10-04)</li>
+      <li>Copy AQUACII charROM to cust charROM buffer on cold start</li>
+      <li>v0.14c (2023-10-04)</li>
+      <li>Added ^K, ^L, and ^P in direct mode</li>
+      <li>v0.14a (2023-10-03)</li>
+      <li>Added BASYSCTL system variable (bit 2 = key repeat)</li>
+      <li>v0.14 (2023-10-01)</li>
+      <li>reset key mode to ascii in direct mode. New statement SET KEY mode</li>
+      <li>v0.13j (2023-10-01)</li>
+      <li>Fixed errors in SCREEN SET 0 and SCREEN SET 1</li>
+      <li>v0.13i (2023-10-01)</li>
+      <li>Swapped Ctrl-N and Ctrl-O character set switching - v0.13h (2023-10-01)</li>
+      <li>v0.13h (2023-10-01)</li>
+      <li>Added ESP write protect error reporting</li>
+      <li>v0.13g (2023-09-30)
+<ul><li>Changed SCREEN SET filename$ to call new routine dos_load_charram</li></ul></li>
+      <li>v0.13f (2023-09-30)
+<ul><li>Added SCREEN SET filename$</li></ul></li>
+      <li>v0.13e (2023-09-30)
+<ul><li>Added character set switchng</li></ul></li>
+      <li>v0.13d (2023-09-30)
+<ul><li>S3BASIC boot screen calls read_key_ascii through vector at $2012</li></ul></li>
+      <li>v0.13c (2023-09-28)
+<ul><li>activated key read from port $FA</li></ul></li>
+      <li>v0.13a (2023-09-27)
+<ul><li>Added HOOK18 handler to read keyboard.</li></ul></li>
+      <li>v0.13 (2023-09-26)
+<ul><li>Added COPY! statement, page_fast_copy; renamed existing fast page routines</li></ul></li>
+      <li>v0.12s (2023-09-26)
+<ul><li>Fixed esp_get_mouse after fixing DIR date and time</li></ul></li>
+      <li>v0.12r (2023-09-26)
+<ul><li>Fixed date and time display in DIR, mapped PgUp, PgDn, Home, End to shifted cursor keys</li></ul></li>
+      <li>v0.12q (2023-09-25)
+<ul><li>MOUSE functions, esp routine return -1 when no mouse is found instead of ?Not found error</li></ul></li>
+      <li>v0.12q (2023-09-25)
+<ul><li>Fixed SCREEN statement, screen_set_mode routine</li></ul></li>
+      <li>v0.12p (2023-09-24)
+<ul><li>Moved text screen restore to READY hook. Enabled SET SCREEN OFFSET</li></ul></li>
+      <li>v0.12m (2023-09-24)
+<ul><li>Modified S3BASIC and plusBASIC to revert to text only after Ctrl-C, STOP, or END</li></ul></li>
+      <li>v0.12l (2023-09-23)
+<ul><li>Added ASC$(hex$)</li></ul></li>
+      <li>0.12k (2023-09-23)
+<ul><li>Added PEEK$([@page], addr, len)</li></ul></li>
+    </ul>
+  </body>
 </html>
-            

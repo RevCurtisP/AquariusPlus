@@ -16,4 +16,4 @@ copy ..\pbutil\getver.bas %_reldir%
 copy ..\pbutil\myip.bas %_reldir%
 copy ..\dev\aqplus.inc %_devdir%
 copy ..\dev\aqplus_asm.inc %_devdir%
-copy ..\util\image2tiles.* %_gfxdir%
+@rem copy ..\util\image2tiles.* %_gfxdir%

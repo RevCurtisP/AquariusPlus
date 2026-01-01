@@ -46,7 +46,7 @@ aux_check_ver:
         scf
         ret
         
-.head   byte    13,10,"This program requires",13,10,"plusBASIC ",0
+.head   byte    13,10,7,"This program requires",13,10,"plusBASIC ",0
 .headln equ     $ - .head
 .tail   byte    " or higher.",0
 .tailln equ     $ - .tail

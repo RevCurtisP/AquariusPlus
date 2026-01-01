@@ -1,4 +1,9 @@
 # plusBASIC Release History
+ - v0.27u (2026-01-01)
+    - Fixed 'OPEN' halting the BASIC interpreter
+    - `CHECK VER` beeps when displaying incorrect version message
+    - New command  `STEP` and shortcut `.` single steps through program statements after `STOP` or `Ctrl-C`
+    - `END` closes all files, clears `ON ERROR` flags and sets `Can't continue` status
  - v0.27t (2025-12-19)
     - Fixed Ctrl-C not breaking in `PAUSE jiffies`, causing `Syntax error` and warm boot in direct mode
     - `Ctrl-X` on empty line in direct mode resets and clears screen
@@ -31,7 +36,7 @@
    - `^K`, `^L`, `^N`, `^O` now ignored during `INPUT`
    - `PAUSE jiffies` clears key buffer only if interrupted by Ctrl-C
  - v0.27k (2025-10-08)
-   - Added `String formula too complex` error on nested `EVAL()`
+   - Added `String formula too complex` error on nested `EVAL()`
  - v0.27j (2025-10-01)
     - Various internal code changes
  - v0.27i (2025-09-28)

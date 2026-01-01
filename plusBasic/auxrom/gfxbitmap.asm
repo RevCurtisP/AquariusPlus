@@ -312,7 +312,27 @@ colormap_bounds:
 ; Clobbered: A
 ;-----------------------------------------------------------------------------
 bitmap_line:
-
+;dx = abs(x1 - x0)
+;sx = x0 < x1 ? 1 : -1
+;dy = -abs(y1 - y0)
+;sy = y0 < y1 ? 1 : -1
+;error = dx + dy
+;
+;while true
+;    plot(x0, y0)
+;    e2 = 2 * error
+;    if e2 >= dy
+;        if x0 == x1 break
+;        error = error + dy
+;        x0 = x0 + sx
+;    end if
+;    if e2 <= dx
+;        if y0 == y1 break
+;        error = error + dx
+;        y0 = y0 + sy
+;    end if
+;end while
+    
 ;-----------------------------------------------------------------------------
 ; Move one pixel and set/reset point
 ;  Input: A: 0 = Move, 1 = Set, 255 = Reset
@@ -555,7 +575,7 @@ _resetpixel4:
 _resetpixel8:
 ; 1bpp
 _setpixelm:
-    call    _calc_1bpp_addr           ; DE = BytAdr; BC = PxlOfs
+    call    _calc_1bpp_addr       ; DE = BytAdr; BC = PxlOfs
     ld      hl,_ormask1bpp
     add     hl,bc                 ; HL = MskAdr
     ld      b,(hl)                ; B = BitMsk
@@ -946,6 +966,7 @@ _char_offset:
     add     hl,hl                 ; HL = Row * 32
     add     hl,de                 ; HL = Row * 40
     add     hl,bc                 ; HL = Row * 40 + Col
+_swap_de_hl:
     ex      de,hl                 ; DE = Row * 40 + Col
     ret
 

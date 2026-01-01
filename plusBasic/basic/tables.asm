@@ -14,7 +14,7 @@ endif
 ; Standard BASIC Routines left as HEX
 ;----------------------------------------------------------------------------
 STJUMPS:
-    dw      $0C21                 ;$80 END              
+    dw      ST_END                ;$80 END              
     dw      $05BC                 ;$81 FOR               
     dw      $0D13                 ;$82 NEXT              
     dw      $071C                 ;$83 DATA              

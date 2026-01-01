@@ -1,8 +1,21 @@
 # plusBASIC Revision History
- - v0.27t (2025-12-??)
+ - v0.27u (2025-12-??)
+    - Fixed 'OPEN' halting the BASIC interpreter
+    - _in_direct_ preserves the 'A' register
+    - `CHECK VER` beeps when displaying incorrect version message
+    - All bits in _BAS_FLAGS_ cleared when direct mode entered
+    - New command  `STEP` and shortcut `.` single steps through program statements after `STOP` or `Ctrl-C`
+    - `END` now does the following:
+      - Closes all files, clears _BAS_FDESC_ (`LOAD` and `DIR` currently open file)
+      - Clears _ONEFLG_ to indicate the interpreter is not currently trapping an error
+      - Clears _ONELIN_ so that errors in direct mode will **not** execute the last specified `ON ERROR` routine
+      - Clears _ERRLIN_ and _ERRFLG_ so `ERR` and `ERRLINE` report `0`
+      - Resets the temporary string buffer pointer
+      - Clears _SAVTXT_ so the `CONT` generates `Can't continue` error
+ - v0.27t (2025-12-19)
     - Fixed Ctrl-C during `PAUSE jiffies` not generating `Break`
     - Fixed Ctrl-C in direct mode causing `Syntax error` and restarting BASIC
-    - Modified INLIN so that Ctrl-X when buffer is empty in Direct Mode does a CHR$(11) clear screen
+    - Modified INLIN so that Ctrl-X when buffer is empty in  Direct Mode does a CHR$(11) clear screen
     - Fixed _clear_home_ not setting _TTYPOS_ to 0
     - Consolidated calls to _init_screen_buffers_, _init_screen_vars_, and _bitmap_init_vars_ in _do_coldboot_ into single call to _gfx_init_ 
     - Fixed `ARGS$()` not freeing temp buffer

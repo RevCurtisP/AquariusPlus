@@ -579,6 +579,7 @@ TK      =            TK+1
 PRINTK  equ     TK                ;
         byte    'P'+$80,"RINT"    ;;$95
 TK      =            TK+1
+CONTK   equ     TK                ;
         byte    'C'+$80,"ONT"     ;;$96
 TK      =            TK+1
 LISTK   equ     TK                ;
@@ -1242,7 +1243,8 @@ NXTCON: ld      b,FORTK           ;[M80] PUT A 'FOR' TOKEN ONTO THE STACK
         push    bc                ;
         inc     sp                ;[M80] THE "TOKEN" ONLY TAKES ONE BYTE OF STACK SPACE
 ;[M80] NEW STATEMENT FETCHER
-NEWSTT: ld      (SAVTXT),hl       ;USED BY CONTINUE AND INPUT AND CLEAR AND PRINT USING
+;;; ToDo: Add hook mechanism (user defined, ON TIMER, ON MOUSE, etc...)
+NEWSTT: ld      (SAVTXT),hl
         call    INCNTC            ;
         ld      a,(hl)            ;;Get Terminator
         cp      ':'               ;[M80] IS IT A COLON?
@@ -1259,24 +1261,20 @@ GONE4:  ld      a,(hl)            ;[M80] IF POINTER IS ZERO, END OF PROGRAM
         inc     hl                ;
         ld      d,(hl)            ;[M80] GET LINE # IN [D,E]
         ex      de,hl             ;[M80] [H,L]=LINE #
-;; <<
         jp      skip_label        ;; + Skip label at beginning of line        0647  ld      (CURLIN),hl
-;; >>
 GONCON: ex      de,hl             ;;DE=Line#, HL=Text Pointer
 
-GONE:   rst     CHRGET            ;[M80] GET THE STATEMENT TYPE
-        ld      de,NEWSTT         ;[M80] PUSH ON A RETURN ADDRESS OF NEWSTT
-        push    de                ;[M80] STATEMENT
+GONE:   rst     CHRGET
+        jp      gone_hook         ;;                                                ld      de,NEWSTT
+GONEC:  push    de                ;[M80] STATEMENT
 GONE3:  ret     z                 ;[M80] IF A TERMINATOR TRY AGAIN
 ;[M80] "IF" COMES HERE
 GONE2:
-;; <<
         jp      check_for_comment ;; + Check for ' and treat as REM           0651  sub     $80
                                   ;; +                                        0652
                                   ;; +                                        0653  jp      c,LET
         byte    $31               ;; +                                        0654
         byte    $07               ;; +                                        0655
-;; >>
 GONEX:  cp      TABTK-$80         ;;End of Statement Tokens
         rst     HOOKDO            ;;Handle Extended BASIC Statement Tokens`
 HOOK23: byte    23                ;
@@ -2268,7 +2266,7 @@ ENDCON: ld      hl,(CURLIN)       ;[M80] SAVE CURLIN
         and     h                 ;[M80] SEE IF DIRECT
         inc     a                 ;
         jr      z,DIRIS           ;[M80] IF NOT SET UP FOR CONTINUE
-        jp      end_hook          ;                                           0C32  ld      (OLDLIN),hl       
+        ld      (OLDLIN),hl       ;[M80] SAVE CURLIN
 ENDCOT: ld      hl,(SAVTXT)       ;[M80] GET POINTER TO START OF STATEMENT
         ld      (OLDTXT),hl       ;[M80] SAVE IT
 DIRIS:  call    FINLPT            ;{M80} BACK TO NORMAL PRINT MODE
@@ -4147,7 +4145,8 @@ LINOUT: ex      de,hl
         call    FLOATR
 ;[M80] FLOATING OUTPUT OF FAC
 FOUT:   ld      hl,FBUFFR+1       ;[M80] GET A POINTER INTO FBUFFR
-        push    hl                ;{M80} SAVE IT
+;; To use custom buffer, call this with buffer in HL to write
+FOUTHL: push    hl                ;{M80} SAVE IT
         rst     FSIGN
         ld      (hl),' '          ;[M80] PUT A SPACE FOR POSITIVE NUMBERS IN THE BUFFER
         jp      p,FOUT2           ;[M80] IF WE HAVE A NEGATIVE NUMBER, NEGATE IT

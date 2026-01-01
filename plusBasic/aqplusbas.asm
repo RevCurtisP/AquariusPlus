@@ -106,7 +106,7 @@ null_desc:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.27t"
+    db "v0.27u"
     db 0
 plusver_len equ $ - plus_version
 plus_len   equ   $ - plus_text
@@ -315,14 +315,16 @@ ctrl_keys:
 ;-----------------------------------------------------------------------------
 ; Check for Direct Mode
 ; Output: Carry clear if in Direct Mode
-; Clobbered: B
+; Clobbered: BC
 ;-----------------------------------------------------------------------------
 in_direct:
+    ld      c,a
     ld      a,(CURLIN)
     ld      b,a
     ld      a,(CURLIN+1)
     and     b
     cp      $FE
+    ld      a,c
     ret
 
 wait_key:
@@ -927,13 +929,6 @@ outchr_hook:
   pop     af
   ld      iy,output_to_buffer
   jp      ext_call
-
-end_hook:
-  ld      (OLDLIN),hl
-  ld      iy,set_color_off
-  call    aux_call
-  jp      ENDCOT    
-
 
 ctrlx_hook:
   push    bc

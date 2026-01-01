@@ -264,6 +264,9 @@ BASCOLOR    equ $80     ; BASYSCTL: Direct mode color print flag (must be same a
 ; Temporary BASIC control flags
 BASVARDEF   equ $02     ; BAS_FLAGS: PTRGET called from VARDEF
 INEVALFLG   equ $04     ; BAS_FLAGS: Currently in EVAL function
+BASSTEPNG   equ $40     ; BAS_FLAGS: Currently stepping
+BASSTEPED   equ $80     ; BAS_FLAGS: Done stepping
+
 ; Screen Control Bitmask
 ; Screen printing control flags
 EXTCTLCHR   equ $01     ; SCREENCTL: Extended control codes in TTYOUT
@@ -283,6 +286,7 @@ GFXBUFLAG   equ $04     ; GFX_FLAGS: Bitmap operations are buffered
 GFXSETMSK   equ $F8     ; Mask for writing GFX_FLAGS
 ; BASIC extended control flags
 
+NEWSTTHKS   equ $01     ; Active NEWSTT hooks
 SOUNDSLOW   equ $08     ; Play SOUNDs at standard clock speed
 BASOUTOVR   equ $10     ; EXT_FLAGS: Allow OUT to all ports
 TRK_LOOPS   equ $20     ; EXT_FLAGS: PT3 songs repeat
