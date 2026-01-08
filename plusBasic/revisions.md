@@ -1,4 +1,7 @@
 # plusBASIC Revision History
+ - v0.29 (2026-01-08)
+    - Fixed PSET and PRESET blowing up stack in bloxel mode
+    - Added bit flags _GFXM_BLXF_ and _GFXM_BLXA_ to sysvar _GFX_FLAGS_ for future use
  - v0.28 (2026-01-08)
     - Fixed bug in _page_write_word_sys_
     - Added bit flag _BASWRTHST_ to _BASYSCTL_ (set to _off_) which controls writing to direct mode history file

@@ -113,6 +113,7 @@ STARTCOL    equ $3852
 ENDCOL      equ $3854
 STARTROW    equ $3856
 ENDROW      equ $3858
+PSETMODE    equ $385A   ; PSET or PRESET
 
 ; CALL ARGS
 SAVEHL      equ $3852   ; [word] 
@@ -282,9 +283,11 @@ GFXM_TEXT   equ $00     ; GFX_FLAGS: 40 colum mode (bloxels)
 GFXM_WIDE   equ $01     ; GFX_FLAGS: 80 colum mode (bloxels) 
 GFXM_1BPP   equ $02     ; GFX_FLAGS: Bitmap mode (1bpp)
 GFXM_4BPP   equ $03     ; GFX_FLAGS: Bitmap mode (4bpp)
-GFXM_MASK   equ $03     ; Graphics mode bit mask
-GFXBUFLAG   equ $04     ; GFX_FLAGS: Bitmap operations are buffered
-GFXSETMSK   equ $F8     ; Mask for writing GFX_FLAGS
+GFXM_MASK   equ $03     ; Bit mask for IO_VCTRL read
+GFXM_BLXF   equ $04     ; Force Bloxel mode`
+GFXM_BLXA   equ $05     ; Use alternate bloxel mode
+GFXBUFLAG   equ $06     ; GFX_FLAGS: Bitmap operations are buffered
+GFXSETMSK   equ $F8     ; Bit mask for OR with IO_VCTRL bits
 ; BASIC extended control flags
 
 NEWSTTHKS   equ $01     ; Active NEWSTT hooks

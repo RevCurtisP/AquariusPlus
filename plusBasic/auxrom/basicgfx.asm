@@ -439,15 +439,13 @@ bas_set_tile_ary:
 
 ; Convert PSET Coordinates to Screen Position and Character Mask
 scale_xy:
-    ex      (sp),hl               ; HL = RtnAdr; Stack = TxtPtr     BC=X Coordinate
-    push    hl                    ; Stack = RtnAdr, TxtPtr          DE=Y Coordinate
-    push    bc                    ; Stack = Xpos, RtnAdr, TxtPtr
-    push    de                    ; Stack = Ypos, Xpos, RtnAdr, TxtPtr
+    push    bc                    ; Stack = Xpos, RtnAdr
+    push    de                    ; Stack = Ypos, Xpos, RtnAdr
     ld      hl,71
     rst     COMPAR                ; If Y greater than 71
     jp      c,FCERR
-    push    bc                    ;
-    pop     de
+    push    bc                    ; Stack = Ypos, Xpos, RtnAdr
+    pop     de                    
     ld      a,(LINLEN)            ;  Get Line Length
     add     a,a                   ;  Multiply by 2
     dec     a                     ;  A = LinLen * 2 - 1
@@ -488,4 +486,4 @@ scale_xy:
     ld      a,(hl)                ; Get character at screen offset
     or      $A0                   ; and return it with
     xor     (hl)                  ; bits 5 and 7 cleared
-    ret                           ;
+    ret

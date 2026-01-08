@@ -1,7 +1,9 @@
 # plusBASIC Release History
+ - v0.29 (2026-01-08) 
+    - Fixed `PSET` and `PRESET` crashing BASIC
  - v0.28 (2026-01-08) 
     - Modified `CLS` to not display cursor in program mode
-    - Fixed `CD$`, `BIN$()`, `EVAL$()`, `\"string"`, `string$ % (args)` returning garbage after cold boot.
+    - Fixed `CD$`, `BIN$()`, `EVAL$()`, `\"string"`, `string$ % (args)` returning garbage after cold boot
  - v0.27u (2026-01-01)
     - Fixed 'OPEN' halting the BASIC interpreter
     - `CHECK VER` beeps when displaying incorrect version message

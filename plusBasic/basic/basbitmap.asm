@@ -172,10 +172,14 @@ ST_PSET:
     ld      a,(GFX_FLAGS)
     and     GFXM_1BPP
     jr      nz,_pset
+    ld      a,1
+_scand_rsetcc:
+    ld      (PSETMODE),a
     call    SCAND                 ; Parse (X,Y)
+    push    hl
     ld      iy,scale_xy           ; Convert X,Y
     call    gfx_call
-    ld      a,1
+    ld      a,(PSETMODE)
     jp      z,RSETCC              ; Semigraphics at screen location?
     ld      (hl),$A0              ; No, store base semigraphic
     jp      RSETCC
@@ -185,13 +189,8 @@ ST_PRESET:
     ld      a,(GFX_FLAGS)
     and     GFXM_1BPP
     jr      nz,_preset
-    call    SCAND                 ; Parse (X,Y)
-    ld      iy,scale_xy           ; Convert X,Y
-    call    gfx_call
-    ld      a,0
-    jp      z,RSETCC              ; Semigraphics at screen location?
-    ld      (hl),$A0              ; No, store base semigraphic
-    jp      RSETCC
+    xor     a
+    jr      _scand_rsetcc
 
 ; RUN /pbt/bitmap.bas
 ; A: Mode

@@ -270,6 +270,7 @@ FN_SCREEN:
 ; SCREEN 3:PRINT HEX$(PEEK($3830))
 ; SCREEN 0,2:PRINT HEX$(PEEK($3830))
 ; SCREEN 0,3:PRINT HEX$(PEEK($3830))
+;; ToDo: Add parameter ,[bloxelmode] which sets GFXM_BLXF and GFXM_BLXA
 ST_SCREEN:
     call    get_byte_optional     ; A = [text]
     jr      c,.no_text            ; If specified
