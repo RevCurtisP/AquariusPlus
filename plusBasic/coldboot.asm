@@ -1,5 +1,5 @@
 ;=============================================================================
-; Cold boot initialialization code
+; Cold boot initialization code
 ;=============================================================================
 do_coldboot:
       
@@ -9,13 +9,22 @@ do_coldboot:
     ld      bc,$C000-$3900      ; to end of BASIC RAM
     call    sys_fill_mem
 
+    ; Zero out plusBASIC system vars
+    ld      b,RNDX-RNDTAB
+    ld      hl,RNDTAB
+.sysvar_loop
+    ld      (hl),a
+    inc     hl
+    djnz    .sysvar_loop
+
     ; Set memory size
     ld      hl, BASIC_RAM_END   ; Top of public RAM
     ld      (MEMSIZ), hl        ; MEMSIZ, Contains the highest RAM location
     ld      de,-1023            ; Subtract 1023 bytes for string space
     add     hl, de
     ld      (STRSPC),hl
-    ld      de, -512           ; Subtract another 512 for buffers
+    ld      (TBFTOP),hl         ; Init Temp String Buffers
+    ld      de, -512            ; Subtract another 512 for buffers
     add     hl, de
     ld      (TOPMEM), hl        ; TOPMEM, Top location to be used for stack
     ld      hl, BASTXT-1
@@ -40,15 +49,6 @@ do_coldboot:
 ; Install BASIC HOOK
     ld      hl,fast_hook_handler
     ld      (HOOK), hl
-
-    ; Zero out plusBASIC system vars
-    xor     a
-    ld      b,RNDX-RNDTAB
-    ld      hl,RNDTAB
-.sysvar_loop
-    ld      (hl),a
-    inc     hl
-    djnz    .sysvar_loop
 
     ; Install Interrupt Handler
     ld      a,$C3               ; Jump Instruction

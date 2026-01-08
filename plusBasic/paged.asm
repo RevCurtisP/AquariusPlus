@@ -458,7 +458,7 @@ page_read_word:
 ; Write Word to Page - wraps to next page if address is 16383
 ; Input: A: Page
 ;       BC: Word to write
-;`       DE: Address 0-16383 (Higher addresses mapped to input range) 
+;       DE: Address 0-16383 (Higher addresses mapped to input range) 
 ; Output: BC: Word written
 ;         DE: Address coerced to $C000-$FFFF
 ;       Zero: Cleared if succesful, Set if invalid page
@@ -471,8 +471,8 @@ page_write_word_sys:
     jr      _write_word
 page_write_word:
     call    page_set4write_coerce
-_write_word:
     ret     z                     ; Return if illegal page
+_write_word:
     ld      a,c
     ld      (de),a
     inc     de

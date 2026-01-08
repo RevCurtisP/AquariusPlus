@@ -258,6 +258,7 @@ ASCSETLEN   equ 768     ; Size of ASCII character set (' ' - DEL)
 BASOUTBUF   equ $01     ; BASYSCTL: redirect OUTput to BUFfer
 BASSAVASC   equ $02     ; BASYSCTL: Default SAVe to ASC
 BASKEYRPT   equ $04     ; BASYSCTL: KEY RePeaT on
+BASWRTHST   equ $08     ; BASYSCTL: Write to command history file
 BASBRKOFF   equ $20     ; BASYSCTL: BReak OFF (Disable Ctrl-C)
 BASLPRNTR   equ $40     ; BASYSCTL: LPRINT device: (0 = Serial, 1 = ESP)
 BASCOLOR    equ $80     ; BASYSCTL: Direct mode color print flag (must be same as SCRCOLOR)

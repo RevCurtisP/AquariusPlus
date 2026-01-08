@@ -15,6 +15,8 @@ s3_ctrl_keys:
     jp      p,.not_extended       ; If Key > 127
     cp      $A0                   ;   If international character
     jr      nc,.notrub            ;     use it
+    cp      143                   ;   If Up
+    jr      z,.up_key             ;     Handle it
     call    fnkey_get_buff_addr   ;   DE = Key Buffer Address
     jr      nz,.inlinc            ;   If Function Key
     dec     de                    ;     Back up for autotype
@@ -72,6 +74,25 @@ s3_ctrl_keys:
     pop     hl
     pop     de
     jr      .inlinc
+.up_key
+    jr      .inlinc
+;disable until completed    
+    ld      (BUFPTR),hl           ; Save Buffer Ptr
+    ld      (BUFLEN),bc           ; Save Buffer Len
+    dec     b
+    jr      z,.prev_line          ; If not empty line
+.no_recall
+    ld      a,7
+    call    ttyout                ;   Ring Bell
+    ld      hl,(BUFPTR)           ;   Restore registers
+    ld      bc,(BUFLEN)
+    jr      .inlinc               ;   Wait for next character
+.prev_line
+
+    call    get_linbuf_hl         ; HL = LinBuf
+    call    read_prev_hist_line
+    halt
+
 
 ;-----------------------------------------------------------------------------
 ; Hook 34: Don't tokenize unquoted literal string after DOS command in direct mode

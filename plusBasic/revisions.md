@@ -1,5 +1,12 @@
 # plusBASIC Revision History
- - v0.27u (2025-12-??)
+ - v0.28 (2026-01-08)
+    - Fixed bug in _page_write_word_sys_
+    - Added bit flag _BASWRTHST_ to _BASYSCTL_ (set to _off_) which controls writing to direct mode history file
+    - Added check for cursor-up key to _s3_ctrl_keys_ which will eventually access the direct mode history file
+    - Modified _screen_clear_ to display cursor only in direct mode to match behavior of `CLS` prior to _v0.27s_
+    - Modified _do_coldboot_ to clear _RNDTAB_ table before setting calculated sysvars and set _TBFTOP_ to _STRSPC_
+      - Fixes `CD$`, `BIN$()`, `EVAL$()`, `\"string"`, and `string$ % (args)` returning garbage character after cold boot
+ - v0.27u (2026-01-01)
     - Fixed 'OPEN' halting the BASIC interpreter
     - _in_direct_ preserves the 'A' register
     - `CHECK VER` beeps when displaying incorrect version message

@@ -8,7 +8,7 @@
 ;-----------------------------------------------------------------------------
 init_basbuf_vars:
     call    clear_mousedlt
-    ret
+    ;ret
 ;;; ToDo: Debug this routine, then add reading of history file
     call    get_history_len
     ret
@@ -115,16 +115,20 @@ write_prevbuf:
     pop     hl                    ; HL = BufPtr; Stack = RtnAdr
     ret
 
+; On entry: HL = BufAdr
 write_history:
-    ret     c                     ; Return if first char is digit
-    ld      a,(hl)
-    cp      ':'
-    ret     z                     ; Return if first char is colon
+    call    CHRGT2                ; A = CurChr
+    ret     z                     ; Return if terminator (blank for first character is colon)
+    ret     c                     ; Return if first char is a digit (program line)
+    ld      a,(BASYSCTL)
+    and     BASWRTHST             ; If Write history flag not set
+    ret     z                     ;   Return
     push    hl
     ex      de,hl                 ; DE = BufAdr
     ld      bc,256                ; Write entire buffer
     ld      hl,_histdesc
     call    file_append_binary
+    call    p,get_history_len     ; Update history length if successful
     pop     hl
     ret
 
@@ -135,22 +139,95 @@ get_history_len:
     ld      bc,0
     ld      de,0
 .saveit
-    push    de
-    ld      de,HSTFILLEN
+    ld      hl,HSTFILLEN
+    call    _basbuff_write_long   ; Write History File Length
+    ld      hl,HSTFILPOS          ; Write History File Position
+_basbuff_write_long:
     ld      a,BAS_BUFFR
+_write_long:
+    push    bc                    ; Stack = LSW, RtnAdr
+    push    de                    ; Stack = MSW, LSW, RtnAdr
+    ex      de,hl                 ; DE = Address; HL = MSW
+    call    _write_word           ; DE = NxtAdr
+    pop     bc                    ; BC = MSW; Stack = LSW, RtnAdr
+    call    _write_word           ; DE = NxtAdr
+    ex      de,hl                 ; HL = NxtAdr, DE = MSW
+    pop     bc                    ; BC = LSW; Stack = RtnAdr
+    ret
+
+_write_word:
+    push    af                    ; Stack = Page, RtnAdr
     call    page_write_word_sys
+    inc     de                    ; Bump Address
     inc     de
-    inc     de
-    pop     bc
+    pop     af                    ; A = Page; Stack = RtnAdr
+    ret
+
+;  Input: HL: BufAdr
+; Output: HL: BufPtr, D = BufLen
+;  Flags: M set if error
+read_prev_hist_line:
+    ld      (BUFADR),hl           ; Save BufAdr
+    ld      hl,_histdesc          ; HL = FilDsc
+    call    dos_open_read         ; A = FilChn
+    ret     m                     ;   Return if Error
+    push    af                    ; Stack = FilChn, RtnAdr
+    ld      hl,HSTFILPOS          ; HL = History File Position
+    call    _basbuff_read_long    ; BCDE = Position
+    ld      a,b
+    or      a
+    jr      nz,.notzero           ; If D = 0
+    dec     de                    ;   Decrement MSW
+.notzero
+    dec     b                     ; Back up 256 bytes
+    call    _basbuff_write_long   ; Save new position
+    pop     af                    ; A = FilChn; Stack = RtnAdr
+    call    dos_seek              ; Move to Previous Line
+    ret     m                     ;   Return if error
+    ld      de,(BUFADR)           ; DE = BufAdr
+    ld      bc,255                ; Read 256 characters
+    call    esp_read_bytes        ; C = Bytes Read
+    ret     m                     ;   Return if error
+    ld      hl,(BUFADR)           ; HL = BufAdr
+    xor     a                     ; A = 0
+    ld      d,a                   ; D = 0
+    ld      b,255                 ; Checking 255 characters
+.loop
+    or      (hl)                  ; If Terminator
+    ret     z                     ;   Return Len in D
+    inc     hl
+    djnz    .loop                 ; If no terminator
+    dec     b                     ;   Return error
+    ret
+
+_basbuff_read_long:
     ld      a,BAS_BUFFR
-    jp      page_write_word_sys
+_read_long:
+    push    hl                    ; Stack = RdAddr
+    ex      de,hl                 ; DE = RdAddr; HL = MSW
+    call    _read_word            ; DE = NxtAdr
+    push    bc                    ; BC = MSW; Stack = LSW, RdAddr, RtnAdr
+    call    _read_word            ; DE = NxtAdr
+    ld      d,b
+    ld      e,c                   ; DE = MSW
+    pop     bc                    ; BC = LSW; Stack = RdAddr, RtnAdr
+    pop     hl                    ; HL = RdAddr; Stack = RtnAdr
+    ret
+
+_read_word:
+    push    af                    ; Stack = Page, RtnAdr
+    call    page_read_word
+    inc     de                    ; Bump Address
+    inc     de
+    pop     af                    ; A = Page; Stack = RtnAdr
+    ret
+
 
 _histname:
     db      "/_history"
 _histlen = $ - _histname
 _histdesc
     dw      _histlen,_histname
-    
 
 ; On entry: HL = BufAdr
 read_prevbuf:
