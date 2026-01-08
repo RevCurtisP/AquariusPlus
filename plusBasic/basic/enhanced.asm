@@ -81,11 +81,13 @@ ST_CLEAR:
 ; Called from CLEAR in sbasic.asm
 ;-----------------------------------------------------------------------------
 clear_extension:
-    call    end_extension
+    call    _clear_stuff
     ld      hl,(VARTAB)
     ret
 
 end_extension:
+    call    reset_turbo_mode
+_clear_stuff:
     call    esp_close_all         ; Close all files
     call    clear_all_errvars
     xor     a

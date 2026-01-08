@@ -1,4 +1,7 @@
 # plusBASIC Release History
+ - v0.30 (2026-01-08)
+    - `END` now turns off turbo mode (implicit `SET SPEED 0`)
+    - Fixed `INMEM()` generating syntax error
  - v0.29 (2026-01-08) 
     - Fixed `PSET` and `PRESET` crashing BASIC
  - v0.28 (2026-01-08) 

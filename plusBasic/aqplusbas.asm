@@ -106,7 +106,7 @@ null_desc:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.29"
+    db "v0.30"
     db 0
 plusver_len equ $ - plus_version
 plus_len   equ   $ - plus_text
@@ -415,6 +415,8 @@ _buffchr:
     or      a                     ; Return previously buffered key
     ret
 
+reset_turbo_mode:
+    xor     a
 ;-----------------------------------------------------------------------------
 ; Enable/Disable Turbo mode
 ; Input: A: 0 = 3 Mhz, 1 = 7 Mhz, 2 = undefined, 3 = unlimited
@@ -424,6 +426,7 @@ _buffchr:
 ;         2 = Undefined (returns Carry set)
 ;         3 = Unlimited
 ;-----------------------------------------------------------------------------
+;; ToDo: Move to AuxROM?
 set_turbo_mode:
     cp      4                     ; If A > 4
     ccf

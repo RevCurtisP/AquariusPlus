@@ -296,9 +296,8 @@ ptrget_aux_call:
 ; PRINT INMEM(@61,0,"WontFindMe")
 FN_INMEM:
     rst     CHRGET                ; Skip MEM
-    push    af                    ; Stack = PgFlag, RtnAdr
-    call    GETINT                ; DE = MemAdr
-    pop     af                    ; AF = PgFlag; Stack = RtnAdr
+    SYNCHKC '('
+    call    at_page_addr          ; AF = PgFlg, DE = Addr
     push    de                    ; Stack = MemAdr, RtnAdr
     push    af                    ; Stack = PgFlag, MemAdr, RtnAdr
     call    get_comma             ; Require comma

@@ -1,4 +1,7 @@
 # plusBASIC Revision History
+ - v0.30 (2026-01-08)
+    - `END` now turns off turbo mode (implicit `SET SPEED 0`)
+    - Fixed `INMEM()` generating syntax error
  - v0.29 (2026-01-08)
     - Fixed PSET and PRESET blowing up stack in bloxel mode
     - Added bit flags _GFXM_BLXF_ and _GFXM_BLXA_ to sysvar _GFX_FLAGS_ for future use

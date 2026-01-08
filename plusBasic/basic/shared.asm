@@ -389,7 +389,7 @@ require_page_addr:
     jr      z,get_ext_addr
     cp      '@'
     jp      nz,MOERR
-    jr      _at_page_addr
+    jr      at_page_addr
 
 get_par_page_addr:
     SYNCHKC '('
@@ -409,7 +409,7 @@ get_comma_page_addr:
 get_page_addr:
     cp      '!'
     jr      z,get_ext_addr
-_at_page_addr
+at_page_addr
     call    get_page_arg          ; Get (optional) Page
     push    af                    ; Stack = Page+Flag
     jr      nc,_no_page           ; If Page specified
