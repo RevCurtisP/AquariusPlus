@@ -112,6 +112,7 @@
  - [ ] **COPY «!_ext_addr_»|«@_page_,_address_» TO SCREEN {CHR|ATTR}** - Copy paged memory to screen.
  - [ ] **COPY FILE _filespec_ TO _filespec_** - Copy file.
  - [ ] **COPY SCREEN {CHR|ATTR} TO «!_ext_addr_»|«@_page_,_address_» {FAST}** - Copy screen to paged memory.
+ - [ ] **COPY TILEMAP @page,width,height,x,y** - _Not implemented_.
  - [x] **COS(_float_)** - Return cosine of argument.<!--math-->
  - [ ] **CSAVE _filename_|\*_array_** - Save program or array data to cassette.
  - [x] **CURSOROFFSET** - Return text screen relative address at cursor location.<!--cursor-->
@@ -160,9 +161,9 @@
  - [ ] **FILELEN(_filespec_)** - Return file length.<!--filesystem-->
  - [.] **FILEPOS({#}_channel_)** - Return current position in open file.<!--fileio-->
  - [ ] **FILESTATUS$(_filespec_)** - Return file information as binary string.<!--filesystem-->
- - [ ] **FILL (_x_,_y_){,_color_}** - _Proposed enhancement_.
  - [ ] **FILL BYTES {@_page_},_address_,_oount_,_byte_** - Fill block of memory with byte.
  - [ ] **FILL WORDS {@_page_},_address_,_oount_,_integer_** - Fill block of memory with integer.
+ - [ ] **FILL BITMAP (_x_,_y_){,_color_}** - _Proposed enhancement_.
  - [ ] **FILL BITMAP {BYTES _byte_} {COLOR _fgcolor_, _bgcolor_}** - Fill bitmap and/or colormap with byte and/or color(s).
  - [ ] **FILL COLORMAP (_x_,y_)-(_x_,_y_) COLOR _fgcolor_, _bgcolor_** - Fill rectangular section of 1bpp colormap.
  - [ ] **FILL SCREEN {(_x_,y_)-(_x_,_y_)} {CHR _char) {COLOR _fgcolor_,_bgcolor_}** - Fill screen with character and/or colors.<!--FILLSCREEN-->

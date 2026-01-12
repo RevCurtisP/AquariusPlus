@@ -30,9 +30,9 @@ FN_PAD:
     ex      (sp),hl               ; HL = ArgDsc; Stack = TxtPtr, RtnAdr
     jr      z,.nullstring         ; If PadLen = 0, return null string
     push    hl                    ; Stack = ArgDsc, TxtPtr, RtnAdr
-    push    de                    ; Stack = PadLen, ArgDsc, TxtPtr, RtnAdr
+    push    de                    ; Stack = PadLen, ArgDsc, TxtPtr, RtnAdr
     push    bc                    ; Stack = PadChr, PadLen, ArgDsc, TxtPtr, RtnAdr
-    push    de                    ; Stack = PadLen, PadChr. PadLen, ArgDsc, TxtPtr, RtnAdr
+    push    de                    ; Stack = PadLen, PadChr. PadLen, ArgDsc, TxtPtr, RtnAdr
     ex      de,hl                 ; DE = ArgDsc
     call    FRETMS
     pop     de                    ; DE = Padlen, Stack = PadChr, PadLen, ArgDsc, TxtPtr, RtnAdr

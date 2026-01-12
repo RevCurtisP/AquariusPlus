@@ -67,6 +67,19 @@ dim_extension:
 ; 30 FOR I=0 TO 9:PRINT I,A$(I):NEXT
 ; 40 DATA A,B,C,D,E
 ; 50 DATA F,G,H,I,J
+
+; 10 DIM A$(2)
+; 20 READ *A$
+; 30 FOR I=0 TO 2:PRINT I,A$(I):NEXT
+; 40 DATA "DOG","CAT"
+; 50 DATA "FROG"
+
+; 10 DIM A$(2)
+; 20 READ *A$
+; 30 FOR I=0 TO 2:PRINT I,A$(I):NEXT
+; 40 DATA $"414243",$"313233"
+; 50 DATA $"..2A.."
+
 read_array
     xor     a
     ld      (ARRAYREQ),a          ; Unquoted strings allowed
@@ -124,25 +137,41 @@ _array_read:
     call    CHRGT2                ;   A = First character
     cp      ','
     jr      z,.comma
-    ld      d,a                   ;   If it's a quote, terminators will be quote
+    cp      '$'                   ;   
+    jr      nz,.nothexstr         
+    inc     hl
+    ld      a,(hl)
+    cp      '"'
+    dec     hl
+    ld      a,(hl)
+    jr      nz,.nothexstr         ;   If $" 
+    inc     hl                    ;     Move back up to quote
+    call    eval_hex_str          ;     Evaluate the string
+    push    hl                    ;     Stack = TxtPtr, RtnAdr
+    ld      de,(FACLO)            ;     DE = StrDsc
+    call    FRETMS                ;     Free the Temp Pointer
+    jr      .exnext               ;   Else
+.nothexstr
+    ld      d,a                   ;     If it's a quote, terminators will be quote
     ld      e,a                   ;   
     cp      '"'
-    jr      z,.parse              ;   If not quoted
+    jr      z,.parse              ;     If not quoted
     ld      a,(ARRAYREQ)
-    or      a                     ;     If quotes required
-    jp      nz,TMERR              ;       Type mismatch error
+    or      a                     ;       If quotes required
+    jp      nz,TMERR              ;         Type mismatch error
 .comma
-    ld      d,':'                 ;     Terminators are colon and comms
+    ld      d,':'                 ;       Terminators are colon and comms
     ld      b,','                 ;    
-    dec     hl                    ;     Back up TxtPtr
+    dec     hl                    ;       Back up TxtPtr
 .parse
-    call    STRLT2                ;   Parse string literal
-    push    hl                    ;   Stack = TxtPtr, RtnAdr
-    call    FREFAC                ;   HL = StrDsc 
-    ex      de,hl                 ;   DE = StrDsc
+    call    STRLT2                ;     Parse string literal
+    push    hl                    ;     Stack = TxtPtr, RtnAdr
+    call    FREFAC                ;     HL = StrDsc 
+    ex      de,hl                 ;     DE = StrDsc
     ld      iy,copy_literal_string
     call    aux_call
-    ex      de,hl                 ;   HL = StrDsc
+.exnext
+    ex      de,hl                 ;     HL = StrDsc
 .next
     ld      de,(ARRAYPTR)         ; HL = AryPtr
     ld      bc,4

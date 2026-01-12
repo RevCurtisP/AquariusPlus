@@ -1254,6 +1254,8 @@ ST_RESET:
     jr      z,_reset_array
     cp      SCRNTK
     jp      z,ST_RESET_SCREEN
+    cp      TILETK
+    jp      z,ST_RESET_TILEMAP
     cp      USRTK
     jr      z,reset_usrdef
     SYNCHKT XTOKEN

@@ -709,6 +709,7 @@ _get_put:
 ; Copy section of virtual tilemap into actual tilemap
 ; COPY TILEMAP @page,width,height,x,y
 ;-----------------------------------------------------------------------------
+;; ToDo: Implement COPY TILEMAP
 
 ;-----------------------------------------------------------------------------
 ; SET TILEMAP
@@ -775,12 +776,20 @@ _get_attr_palette:
     ld      c,a                   ;   C = palette#
     jr      .loop
 
+ST_RESET_TILEMAP:
+    rst     CHRGET                ; Skip TILE
+    SYNCHKT MAPTK                 ; Require MAP
+    ld      de,0                  ; Y-position = 0
+    push    de                    ; Stack = 0, RtnA`
+    jr      _tilemap_set_offset
+
 _tilemap_offset:
     rst     CHRGET                ; Skip OFF
     SYNCHKT SETTK                 ; Require SET
     call    get_int512            ; DE = X-position
     push    de                    ; Stack = X-position, RtnAdr
     call    get_comma_byte        ; E = Y-position
+_tilemap_set_offset:
     pop     bc                    ; BC = X-position, Stack = RtnAdr
     ld      iy,tilemap_set_offset ; Set Offset and return
     jp      gfx_call

@@ -384,7 +384,7 @@ _notat
     ret     
 
 
-require_page_addr:
+require_ext_addr:
     cp      '!'
     jr      z,get_ext_addr
     cp      '@'

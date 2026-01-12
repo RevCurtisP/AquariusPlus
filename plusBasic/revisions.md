@@ -1,4 +1,9 @@
 # plusBASIC Revision History
+ - v0.31 (2026-01-12)
+    - Added `RESET TIMEMAP`
+    - `READ *array$` now parses hexademical strings 
+    - `CLS` does not draw the cursor in program mode, regardless of SET CURSOR status
+    - Fixed `%` string substition operation aborting formula evaluator resulting in `Syntax error`
  - v0.30 (2026-01-08)
     - `END` now turns off turbo mode (implicit `SET SPEED 0`)
     - Fixed `INMEM()` generating syntax error

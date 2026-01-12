@@ -52,6 +52,7 @@
    - **_integer_ AND _integer_** - Sets resulting bit to 1 if both operand bits are 1.
    - **_integer_ OR _integer_** - Sets the resulting bit to 1 if either operand bit is 1.
    - **_integer_ XOR _integer_** - Sets resulting bit to 1 if one operand bits is 1, and the other is 0.
+   - **_integer_ IMP _integer_** - _Not implemented_.
  - *String operators* create new temporary string.
    - **_string_ + _string_** - Concatenates second string to the end of first string.
    - **_string_ %% (_expression_{,...})** - Perform string substitution.
@@ -111,6 +112,7 @@
  - **COPY «!_ext_addr_»|«@_page_,_address_» TO SCREEN {CHR|ATTR}** - Copy paged memory to screen.
  - **COPY FILE _filespec_ TO _filespec_** - Copy file.
  - **COPY SCREEN {CHR|ATTR} TO «!_ext_addr_»|«@_page_,_address_» {FAST}** - Copy screen to paged memory.
+ - **COPY TILEMAP @page,width,height,x,y** - _Not implemented_.
  - **COS(_float_)** - Return cosine of argument.
  - **CSAVE _filename_|\*_array_** - Save program or array data to cassette.
  - **CURSOROFFSET** - Return text screen relative address at cursor location.
@@ -127,6 +129,7 @@
  - **DEF FN _var_(_var_) = _expression_** - Define user-defined function.
  - **DEF INTLIST _strvar_=_integer_,...** - Create a string list of integers.
  - **DEF PALETTELIST _strvar_=_palette_,...** - Create a string list of palette numbers.
+ - **DEF PSGLIST _strvar_=_register_,_value_{;...}** - _Proposed enhancement_.
  - **DEF RGBLIST _strvar_=_r_,_g_,_b_|_rgbstr_;...** - Create a string list of RGB values.
  - **DEF SPRITE _strvar_= _spritle_, _x-offset_, _y-offset_ ;...** - Create a sprite definition.
  - **DEF SPRITE _strvar_= ( _cols_, _rows_ ) , _spritle_** - Create a sprite definition.
@@ -145,6 +148,7 @@
  - **DRAW TEXT (_col_,_row)_),_string_** - _Not implemented._
  - **DUMP VARS "_filespec_"** - Dump system and BASIC variables to YAML file.
  - **EDIT _lineno_** - Edit specified BASIC line.
+ - **ELSE** - _Not implemented_.
  - **END** - Terminate program execution.
  - **ENDKEY** - Return key used to exit enhanced INPUT.
  - **ERASE _\*array_{,_\*array_...}** - Delete arrays.
@@ -159,6 +163,7 @@
  - **FILESTATUS$(_filespec_)** - Return file information as binary string.
  - **FILL BYTES {@_page_},_address_,_oount_,_byte_** - Fill block of memory with byte.
  - **FILL WORDS {@_page_},_address_,_oount_,_integer_** - Fill block of memory with integer.
+ - **FILL BITMAP (_x_,_y_){,_color_}** - _Proposed enhancement_.
  - **FILL BITMAP {BYTES _byte_} {COLOR _fgcolor_, _bgcolor_}** - Fill bitmap and/or colormap with byte and/or color(s).
  - **FILL COLORMAP (_x_,y_)-(_x_,_y_) COLOR _fgcolor_, _bgcolor_** - Fill rectangular section of 1bpp colormap.
  - **FILL SCREEN {(_x_,y_)-(_x_,_y_)} {CHR _char) {COLOR _fgcolor_,_bgcolor_}** - Fill screen with character and/or colors.
@@ -240,7 +245,7 @@
  - **LOAD PALETTE _p_,_filespec_** - Load file data ino palette.
  - **LOAD SCREEN _filespec_** - Load text screen from file.
  - **LOAD SCREEN ATTR _filespec_** - Load text colors from file.
- - **LOAD SCREEN CHR _filespec_** - _Not implemented_
+ - **LOAD SCREEN CHR _filespec_** - _Not implemented_.
  - **LOAD TILEMAP _filespec_** - Load tile map into Video RAM.
  - **LOAD TILESET {INDEX _tileno_|OFFSET _tileofs_}  _filespec_** - Load tile definitions to Video RAM.
  - **LOAD TRACK _filespec_** - Load tracker file track into tracker player buffer.
@@ -265,10 +270,12 @@
  - **MOUSEY** - Return mouse y-position.
  - **NEXT {_var_,...}** - Terminate one or more _FOR_ loops.
  - **NEW** - Delete program and clears all variables.
+ - **OFFSET(_column_,_row_)** - Return offset into Screen or Color RAM.
  - **ON _integer_ GOSUB _lineref_,...** - `GOSUB` one of several line numbers based on _expression_.
  - **ON _integer_ GOTO _lineref_,...** - `GOTO` one of several line numbers based on _expression_.
  - **ON ERROR GOTO _lineref_** - Enable or disable error trapping.
- - **OFFSET(_column_,_row_)** - Return offset into Screen or Color RAM.
+ - **ON MOUSE GOTO|GOSUB _lineref_** - _Proposed enhancement_
+ - **ON TIMER GOTO|GOSUB _lineref_** - _Proposed enhancement_
  - **OPEN _filespec_ FOR INPUT|OUTPUT|APPEND|RANDOM as _numvar_** - Open file.
  - **OUT _port_,_byte_|_string_{,...}{;...}** - Write to a Z80 port.
  - **PAD$(_string_,_length_{,_char_})** - Pad string on left or right with optional fill character.
@@ -310,6 +317,7 @@
  - **RESET BIT _var_,_bit#_** - Set specified bit in numeric ot string variable to 0.
  - **RESET BORDER** - Set border character and colors to default values.
  - **RESET CHRDEF _char_** - Revert character to default definition.
+ - **RESET CHRSET _byte_** - _Not implemented_.
  - **RESET PALETTE _palette_** - Reset palette to default RGB values.
  - **RESET SCREEN** - Reset current text screen to default settings.
  - **RESET SPRITE _spritedef_|#_spritle_|\*** - Reset all spritle properties.
@@ -325,7 +333,8 @@
  - **RIGHT$(_string_,_len_)** - Return the last up to _byte_ characters of string.
  - **RND(_integer_)** - Return new or previous psuedo-random number or seeds the random number generator.
  - **RUN {_lineref_}** - Start program execution at first or specified line.
- - **RUN _filespec_** - Load a.d runs specified program, cartridge image, or FPGA core.
+ - **RUN _filespec_** - Load and run specified program, cartridge image, or FPGA core.
+ - **RUN _filespec_ _arg_{ ...}** - _Not implemented_.
  - **SAVE _filespec_{,ASC|CAQ|BIN}** - Save BASIC program to CAQ or ASCII or raw tokenized file.
  - **SAVE _filespec_,{@_page_,}_address_,_length_** - Save memory to binary file.
  - **SAVE _filespec_,\*_array_** - Save numeric or string array data to file.
@@ -336,8 +345,8 @@
  - **SAVE FNKEYS _filespec_** - Save function key definitions to file.
  - **SAVE PALETTE _p_,_filespec_** - Save palette contents to file.
  - **SAVE SCREEN _filespec_{{,PALETTE},BORDERMAP}** - Save text screen to file.
- - **SAVE SCREEN ATTR _filespec_** - _Not implemented_
- - **SAVE SCREEN CHR _filespec_** - _Not implemented_
+ - **SAVE SCREEN ATTR _filespec_** - _Not implemented_.
+ - **SAVE SCREEN CHR _filespec_** - _Not implemented_.
  - **SAVE TILEMAP _filespec_** - Save tile map to file.
  - **SAVE TILESET _tileno_,_tilecount_,_filespec_** - Save tile definitions to disk.
  - **SCREEN {_text_mode_},{_gfx_mode_},{_sprites_},{_priority_},{_remap_}** - Set screen mode.
@@ -357,6 +366,8 @@
  - **SET FNKEY _key_ TO _string_** - Set auto-typed text when function key is pressed.
  - **SET KEY _byte_** - Temporarily change keyboard buffer settings.
  - **SET KEY REPEAT ON|OFF** - Enable or disable key repeat in direct mode.
+ - **SET MOUSE ON|OFF** - _Proposed enhancement_.
+ - **SET MOUSE TILE** - _Proposed enhancement_.
  - **SET PALETTE _palette_ {INDEX _index_} TO _rgblist_** - Set palette entries.
  - **SET SAVE ASC ON|OFF** - Enable or disable forced saving of BASIC programs in ASCII format.
  - **SET SCROLL ON|OFF** - Enable or disable scrolling of text screen when PRINTing.
@@ -424,6 +435,7 @@
  - **USR(_float_)** - Call user-defined machine language routine passing argument and returning result.
  - **VAL(_string_)** - Convert ASCII string to floating point number.
  - **VARDEF(\*_array{$}_)** - Return True if array is defined.
+ - **VARDEF(_variable_)** - _Proposed enhancement_.
  - **VARPTR(_var{$}_|\*_array{$}_)** - Return address of variable, array element, or array
  - **VER(_expression_)** - Return System or plusBASIC version as integer.
  - **VER$(_expression_)** - Return System or plusBASIC version as printable string.
@@ -437,5 +449,11 @@
  - **CHR$(8) / $"08"** - Move cursor left, wrapping to previous line, and delete character in the new position.
  - **CHR$(10) / $"0A"** - Move cursor down one line or scroll screen up if on last line.
  - **CHR$(11) / $"0B"** - Clear screen to default colors and do `SET COLOR OFF` and `SET CURSOR ON`.
- - **CHR$(13) / $"0D"** - Move cursor to first column of line.
+ - **CHR$(13) / $"0D"** - Move cursor to first column of line.
+
+ <!--
+  331 statements+Functions
+   22 not implemented
+    9 proposed
+ -->
 

@@ -196,7 +196,7 @@ _escaped:
 ;    HL: Text Pointer
 ; TEMP3: Saved Text Pointer
 ;-------------------------------------------------------------------------
-; ToDo: Add IMP(lowest precedence boolean operator)
+; ToDo: Add IMP(lowest precedence booleban operator)
 oper_extension:
     cp        '%'                 ; If string sub operator
     jr        z,oper_stringsub    ;   Go do it
@@ -206,9 +206,13 @@ oper_extension:
     jp        EVALOP              ;   Do the operator
 .notmod
     cp        XORTK
-    jp        nz,HOOK29+1         ;
+    jr        nz,.notxor          ;
     ld        hl,optab_xor        ;   HL = OPTAB entry
     jp        EVALOP              ;   Do the operator
+.notxor
+    cp      PLUSTK            ;[M80] IS IT AN OPERATOR?
+    ret     c                 ;
+    jp        CHKLTK
 
 optab_mod:
     byte      124
@@ -261,7 +265,10 @@ oper_xor:
 
 ;? "%%" % (1)
 oper_stringsub:
-    ld      bc,free_temp_buffer
+    push    bc                  ; Save Old Precedence
+    ld      bc,TSTOP
+    push    bc                  ; Return to TSTOP
+    ld      bc,free_temp_buffer ; After freeing temp buffer
     push    bc                  ; Stack = FunRtn, RtnAdr
     ld      de,(FACLO)          ; DE = ArgDsc
     push    de                  ; Stack = ArgDsc, FunRtn, RtnAdr

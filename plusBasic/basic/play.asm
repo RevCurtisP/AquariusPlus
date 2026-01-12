@@ -31,7 +31,7 @@ ST_PLAY:
 ; PLAY SAMPLE !131072
 ST_PLAY_SAMPLE:
     rst     CHRGET                ; Skip SAMPLE
-    call    require_page_addr     ; AF = PgFlg, DE = Addr
+    call    require_ext_addr      ; AF = PgFlg, DE = Addr
     ld      iy,play_sample
     push    hl                    ; Stack = TxtPtr, RtnAdr
     ex      de,hl                 ; HL = Address

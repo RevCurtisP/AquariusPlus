@@ -106,7 +106,7 @@ null_desc:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.30"
+    db "v0.31"
     db 0
 plusver_len equ $ - plus_version
 plus_len   equ   $ - plus_text
@@ -903,6 +903,7 @@ get_temp_buffer:
 free_temp_buffer:
     push    hl
     push    de
+    push    af
     ld      hl,(TBFTOP)           ; HL = TempBufPtr
     dec     h                     ; Subtract 256
     ld      de,(STRSPC)           ; DE = Bottom of String Space
@@ -911,6 +912,7 @@ free_temp_buffer:
     ex      de,hl                 ;   Pointer = Botton of String Space
 .set
     ld      (TBFTOP),hl           ; Update it
+    pop     af
     pop     de
     pop     hl
     ret
@@ -989,7 +991,7 @@ hook_table:                     ; ## caller   addr  performing function
     dw      HOOK26+1            ; 26 INPUT    0893  Execute INPUT, bypassing Direct Mode check
     dw      execute_function    ; 27 ISFUN    0A5F  Executing a Function
     dw      HOOK28+1            ; 28 DATBK    08F1  Doing a READ from DATA
-    dw      oper_extension      ; 29 NOTSTV   099E  Evaluate Operator (S3 BASIC Only)
+    dw      0                   ; 29                Deprecated
 
 ; ------------------------------------------------------------------------------
 ;  Execute Hook Routine

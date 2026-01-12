@@ -1808,12 +1808,11 @@ RETAOP: ld      hl,(TEMP2)        ;[M80] RESTORE TEXT PTR
         call    nc,CHKNUM         ;
         ld      a,(hl)            ;[M80] GET NEXT CHARACTER
         ld      (TEMP3),hl        ;[M80] SAVE UPDATED CHARACTER POINTER       Original Code
-        rst     HOOKDO            ;;                                          09A2  cp      PLUSTK     
-HOOK29: byte    29                ;;                                          09A3  
-        call    CHKOP             ;;If it's not an Operator                   09A4  ret     c                 
-                                  ;;                                          09A5  cp      LESSTK+1          
-                                  ;;                                          09A6   
-        ret     c                 ;;  Return                                  09A7  ret     nc                
+        jp      oper_extension    ;;                                          09A2  cp      PLUSTK     
+                                  ;;                                          09A3  
+                                  ;;                                          09A4  ret     c                 
+CHKLTK: cp      LESSTK+1          ;[M80] IS IT AN OPERATOR?          
+        ret     nc                ;[M80] NO, ALL DONE
         cp      GREATK            ;[M80] SOME KIND OF RELATIONAL?
         jp      nc,DORELS         ;[M80] YES, DO IT
         sub     PLUSTK            ;[M80] SUBTRACT OFFSET FOR FIRST ARITHMETIC
@@ -2861,33 +2860,33 @@ GRBPAS: pop     de                ;[M80] POP OFF MAX POINTER
 ;[M80] THE FACLO CONTAINS THE FIRST ONE AT THIS POINT,
 ;[M80] [H,L] POINTS  BEYOND THE + SIGN AFTER IT
 ;
-CAT:    push    bc                ;[M80] PUT OLD PRECEDENCE BACK ON
-        push    hl                ;[M80] SAVE TEXT POINTER
+CAT:    push    bc                ;; Stack = OldPrc, RtnAdr
+        push    hl                ;; Stack = TxtPtr, OldPrc, RtnAdr
         ld      hl,(FACLO)        ;[M80] GET POINTER TO STRING DESC.
-        ex      (sp),hl           ;[M80] SAVE ON STACK & GET TEXT POINTER BACK
+        ex      (sp),hl           ;; HL = TxtPtr; Stack = LftDsc, OldPrc, RtnAdr
         call    EVAL              ;[M80] EVALUATE REST OF FORMULA
-        ex      (sp),hl           ;[M80] SAVE TEXT POINTER, GET BACK DESC.
+        ex      (sp),hl           ;; HL = LftDsc; Stack = TxtPtr, OldPrc, RtnAdr
         call    CHKSTR            ;
-        ld      a,(hl)            ;
-        push    hl                ;[M80] SAVE DESC. POINTER.
-        ld      hl,(FACLO)        ;[M80] GET POINTER TO 2ND DESC.
-        push    hl                ;[M80] SAVE IT
-        add     a,(hl)            ;[M80] ADD TWO LENGTHS TOGETHER
+        ld      a,(hl)            ;; A = LftLen
+        push    hl                ;; Stack = LftDsc, TxtPtr, OldPrc, RtnAdr
+        ld      hl,(FACLO)        ;; HL = RgtDsc
+        push    hl                ;; Stack = RgtDsc, LftDsc, TxtPtr, OldPrc, RtnAdr
+        add     a,(hl)            ;; A = LftLen + RgtLen
         ld      de,ERRLS          ;[M80] SEE IF RESULT .LT. 256
         jp      c,ERROR           ;[M80] ERROR "LONG STRING"
         call    STRINI            ;[M80] GET INITIAL STRING
-        pop     de                ;[M80] GET 2ND DESC.
-        call    FRETMP            ;
-        ex      (sp),hl           ;[M80] SAVE POINTER TO IT
-        call    FRETM2            ;[M80] FREE UP 1ST TEMP
-        push    hl                ;[M80] SAVE DESC. POINTER (FIRST)
-        ld      hl,(DSCTMP+2)     ;[M80] GET POINTER TO FIRST
-        ex      de,hl             ;[M80] IN [D,E]
-        call    MOVINS            ;[M80] MOVE IN THE FIRST STRING
-        call    MOVINS            ;[M80] AND THE SECOND
+        pop     de                ;; DE = RgtDsc; Stack = LftDsc, TxtPtr, OldPrc, RtnAdr
+        call    FRETMP            ;; HL = RgtDsc
+        ex      (sp),hl           ;; HL = LftDsc; Stack = RgtDsc, TxtPtr, OldPrc, RtnAdr
+        call    FRETM2            ;; HL = LftDsc
+        push    hl                ;; Stack = LftDsc, RgtDsc, TxtPtr, OldPrc, RtnAdr
+        ld      hl,(DSCTMP+2)     ;; HL = LftDsc
+        ex      de,hl             ;; DE = LftDsc
+        call    MOVINS            ;; Stack = RgtDsc, TxtPtr, OldPrc, RtnAdr
+        call    MOVINS            ;; Stack = TxtPtr, OldPrc, RtnAdr
         ld      hl,TSTOP          ;[M80] CAT REENTERS FORMULA EVALUATION AT TSTOP
-        ex      (sp),hl           ;
-        push    hl                ;[M80] TEXT POINTER OFF FIRST
+        ex      (sp),hl           ;; HL = TxtPtr; Stack = TSTOP, OldPrc, RtnAdr
+        push    hl                ;; Stack = TxtPtr, TSTOP, OldPrc, RtnAdr
         jp      PUTNEW            ;[M80] THEN RETURN ADDRESS OF TSTOP
 MOVINS: pop     hl                ;[M80] GET RETURN ADDR
         ex      (sp),hl           ;[M80] PUT BACK, BUT GET DESC.
