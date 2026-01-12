@@ -12,7 +12,7 @@
 896 IF QC=0 THEN PRINT "Unit Tests Complete":END
 897 IF QM AND QG THEN RUN QG$+".baq"
 898 _theend:GOSUB _nlscreen:ARGS "F3=Run Again, F4=Run Next":END
-899 _failend:GOSUB _nlscreen:ARGS "Test failed":goto _theend
+899 _failend:GOSUB _nlscreen:ARGS "Test `%%` failed" % (QA$):goto _theend
 
 
 900 _init:

@@ -49,8 +49,9 @@
 430 GOSUB _title:ARGS "READ String Array"
 431 GOSUB _output:ARGS LIST$(NEXT)
 432 DIM G$(4):READ *G$:DATA "AB",CD
-433 GOSUB _output:ARGS LIST$(NEXT)
-434 DATA "EF",GH,"IJ
+433 'Test Quoted, Unquoted, and Quoted Terminated by EOL
+434 GOSUB _output:ARGS LIST$(NEXT)
+435 DATA "EF",GH,"IJ
 436 FOR I=0 TO 4:Z$=CHR$('A'+I+I)+CHR$('B'+I+I)
 437 GOSUB _assert:ARGS "G$(%%)=`%%`" % (I,Z$)
 438 GOSUB _assert:ARGS "INDEX(*G$,`%%`)=%%" % (Z$,I)

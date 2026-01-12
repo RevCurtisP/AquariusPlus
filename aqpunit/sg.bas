@@ -59,9 +59,10 @@
 
 261 L3$=LIST$(NEXT)
 262 CLS:COPY SCREEN TO !8192:GC=GETCOLOR:GS=SCREEN:GU=GETCURSOR
+265 GOSUB _getkey:GOSUB _main_screen:CO=2048*(C+1)
+268 GOSUB _output:ARGS L1$:GOSUB _output:ARGS L2$:GOSUB _output:ARGS L3$
 
-270 GOSUB _main_screen:CO=2048*(C+1):IF U THEN POKE !SC+1,$7F
-271 GOSUB _output:ARGS L1$:GOSUB _output:ARGS L2$:GOSUB _output:ARGS L3$
+271 GOSUB _assert:ARGS "(PEEK(!%%)=' ')" % (SC+1)
 272 GOSUB _assert:ARGS "COMPARE(!8192,!0,%%)" % (SL): 'Screen RAM
 273 GOSUB _assert:ARGS "PEEK$(!%%,%%)=SF$" % (8192+SL,SF)
 274 GOSUB _assert:ARGS "COMPARE(!%%,!%%,%%)" % (8192+SR,CO,SL)
@@ -69,9 +70,9 @@
 276 GOSUB _assert:ARGS "GC=%%" % (CC): 'Color printing disabled
 277 GOSUB _assert:ARGS "BIT(GS,5)=%%" % (-B): 'Map border char off
 278 GOSUB _assert:ARGS "GU=%%" % (-U): 'Cursor enabled
-279 GOSUB _outnewline:POKE !SC+1,' '
+279 GOSUB _outnewline
 
-280 NEXT U:NEXT C:NEXT B
+290 NEXT U:NEXT C:NEXT B
 
 301 GOSUB _output:ARGS LIST$(NEXT):GOSUB _work_screen
 302 SET COLOR OFF:CLS:POKE SCREEN SE+1,DS$:POKE COLOR SE+1,DC$

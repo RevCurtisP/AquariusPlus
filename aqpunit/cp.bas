@@ -86,12 +86,16 @@
 522 GOSUB _copytp_err:ARGS $8000,256,21,$3FFE,6
 524 GOSUB _copytp_err:ARGS $8000,256,47,$3FFE,6
 
+600 GOSUB _title:ARGS "Test INMEM"
+602 GOSUB _assert:ARGS "INMEM(0,`BASIC`)=$B0"
+604 GOSUB _assert:ARGS "INMEM($B1,`BASIC`)=INMEM(0,`plusBASIC`)+4"
+606 GOSUB _assert:ARGS "INMEM(0,`sysrom.bin`)=$2FF0"
+608 GOSUB _assert:ARGS "INMEM(@60,0,`sysrom.bin`)=$2FF0"
 
 
-590 GOTO 598: 'Skip subroutines
-592 _copytp_err:GETARGS PS,PL,PQ,PD,QE:QL=QL+1
-594 QA$="COPY $"+HEX$(PS)+","+STR$(PL)+" TO @"+TRIM$(STR$(PQ))+","+STR$(PD)
-596 ON ERROR GOTO _yes_err:COPY PS,PL TO @PQ,PD:GOTO _no_err
-598 REM
+700 GOTO _finish: 'Skip subroutines
+702 _copytp_err:GETARGS PS,PL,PQ,PD,QE:QL=QL+1
+704 QA$="COPY $"+HEX$(PS)+","+STR$(PL)+" TO @"+TRIM$(STR$(PQ))+","+STR$(PD)
+706 ON ERROR GOTO _yes_err:COPY PS,PL TO @PQ,PD:GOTO _no_err
+708 REM
 
-599 GOTO _finish

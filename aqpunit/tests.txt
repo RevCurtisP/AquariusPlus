@@ -1,0 +1,24 @@
+| bt.baq  | BIT and BIN$       |
+| cp.baq  | COPY and COMPARE   |
+| cs.baq  | COPY SCREEN        |
+| cu.baq  | CALL and USR       |
+| cv.baq  | Convert functions  |
+| dr.baq  | DIM and READ       |
+| gr.baq  | Graphics Init      |
+| pp.baq  | POKE and PEEK      |
+| ps.baq  | POKE/POKE SCREEN   |
+| rg.baq  | RGB and PALETTE    |
+| sb.baq  | String Slicing     |
+| sc.baq  | COLOR and CURSOR   |
+| sg.baq  | Screen Graphics    |
+| sj.baq  | SPLIT and JOIN     |
+| sl.baq  | SAVE and LOAD      |
+| sp.baq  | SAVE/LOAD PALETTE  |
+| ss.baq  | SAVE/LOAD SCREEN   |
+| sx.baq  | SAVE/LOAD extended |
+| sy.baq  | System functions   |
+| tf.baq  | FILL TILE          |
+| tr.baq  | TRIM...$ and PAD$  |
+| ts.baq  | Tiles and Sprites  |
+| tx.baq  | Tile/Sprite Errors |
+| vl.baq  | Variables/Literals |

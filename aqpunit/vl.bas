@@ -122,3 +122,7 @@
 582 GOSUB _assert:ARGS "DEEK($3836)=DEEK($38FE)"
 584 GOSUB _output:ARGS "Verifying temporary strings \deallocated"
 586 GOSUB _assert:ARGS "DEEK($38AF)=$38B1"
+
+590 GOSUB _assert:ARGS "`%%-%%-%%`%(1,`B`,'C')=`1-B-67`)"
+592 GOSUB _assert:ARGS "`$`+`%%`%(99)+`.99`=`$99.99`": '% applied to "$%%"
+594 GOSUB _assert:ARGS "`%%`+(`%%`%(0))+`%%`=`%%0%%`)"
