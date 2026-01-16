@@ -171,6 +171,30 @@ ST_DUMP:
     jp      aux_call_popret       ; Do the dump, pop TxtPtr, and return
 
 ;-----------------------------------------------------------------------------
+; INKEY - Return ASCII code of currently pressed key
+;-----------------------------------------------------------------------------
+FN_INKEY:
+    rst     CHRGET                ; Skip KEY Token
+    cp      '('                   ;
+    ld      bc,in_key
+    jr      z,_key_par            ; If Not INKEY()
+    call    push_hl_labbck        ;   Stack = LABBCK, TxtPtr, RtnAdr
+    call    in_key                ;   Get Keypress and Float it
+    jp      SNGFLT                ; Else  
+_key_par:
+    push    bc
+    call    PARCHK                ;   Get argument
+    pop     ix
+    call    push_hl_labbck        ;   Stack = LABBCK, TxtPtr, RtnAdr
+    call    free_addr_len         ;   DE = StrAdr, BC = StrLen
+    jp      z,ESERR               ;   Empty string error if ""
+    call    (jump_ix)             ;   A = KeyASC
+    ld      iy,chr_string_search  ;   C = ChrPos
+aux_call_float_c:
+    call    aux_call
+    jp      FLOAT_C
+
+;-----------------------------------------------------------------------------
 ; GET functions stub
 ;-----------------------------------------------------------------------------
 FN_GET:
@@ -211,6 +235,9 @@ FN_GET:
 FN_GETKEY:
     call    check_repeat          ; Skips KEY token
     jr      z,FN_GETKEYREPEAT
+    ld      bc,get_key
+    cp      '('
+    jr      z,_key_par
     push    hl
     call    get_key               ; Wait for keypress
     pop     hl
@@ -462,23 +489,16 @@ ST_LOOP:
 ; UPR(), UPR$(), LWR(), LWR$
 ; GETUPR, GETUPR$, UPRKEY, UPRKEY$
 ;-----------------------------------------------------------------------------
-FN_GETUPR:
-FN_GETLWR:
-    jp      GSERR
-    cp      UPRTK                 ; Set Z it UPRTK, NZ if LWRTK
-    push    af                    ; Stack = UprFlg, RtnAdr
-    inc     hl                    ; Skip UPR/LWR
-    ld      ix,get_key
+;;; Proposed: `SET UPR string$ LWR string$` for custom conversions
 FN_UPR:
 FN_LWR:
     ld      a,(hl)                ; Reget Token
-    cp      UPRTK                 ; Set Z it UPRTK, NZ if LWRTK
+    cp      UPRTK                 ; Set Z if UPRTK, NZ if LWRTK
     push    af                    ; Stack = UprFlg, RtnAdr
     inc     hl                    ; Skip UPR/LWR
     ld      a,(hl)                ; A = NxtChr
     cp      (XTOKEN)              ; If Extended Token
-    ld      iy,in_key
-    jr      z,.extended           ;   Do UPRKEY, LWRKEY
+    jr      z,_uprlwr_key         ;   Do UPRKEY, LWRKEY
     cp      '$'                   ;
     jr      z,.do_string          ; If UPR() or LWR()
     call    get_char_parens       ;   C = Character
@@ -522,31 +542,48 @@ FN_LWR:
     pop     de                    ; DE = ArgDsc; Stack = DmyRtn, TxtPtr
     jp      fretmp_finbck         ; Free ArgStr and return Result String
 
-; 10 IF K=UPRKEY:ON -(K=0) GOTO 10:? K: GOTO 10
+;-----------------------------------------------------------------------------
+; GETUPR, GETUPR(), GETUPR$
+; GETLWR, GETLWR(), GETLWR$
+;-----------------------------------------------------------------------------
+FN_GETUPR:
+    ld      bc,upr_get
+    jr      _do_key
 
-.extended
-    inc     hl
+FN_GETLWR:
+    ld      bc,lwr_get
+    jr      _do_key
+
+_uprlwr_key:
+    inc     hl                    ; 
     SYNCHKT KEYTK                 ; Require KEY
-    call    check_dollar          ; Stack = StrFlg, UprFlg, RtnAdr
-    pop     bc                    ; C = StrFlg; Stack = UprFlg, RtnAdr
-    pop     af                    ; F = UprFlg; Stack = RtnAdr
+    pop     af                    ; AF = UprFlg; Stack = RtnAdr
+    ld      bc,upr_key
+    jr      z,_do_key
+    ld      bc,lwr_key
+    byte    $B7                   ; OR A over CHRGET
+_do_key:
+    push    bc
+    pop     iy
+    rst     CHRGET                ; Skip UPR/LWR
+    cp      '('
+    jp      z,_key_par
+    call    check_dollar          ; Stack = StrFlg, RtnAdr
+    pop     af                    ; A = StrFlg; Stack = RtnAdr
     call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
-    push    af                    ; Stack = UprFlg, LABBCK, TxtPtr, RtnAdr
-    push    bc                    ; Stack = StrFlg, UprFlg, LABBCK, TxtPtr, RtnAdr
+    push    af                    ; Stack = StrFlg, LABBCK, TxtPtr, RtnAdr
     call    jump_iy               ; Get Keypress
     ld      c,a
-    pop     af                    ; A = StrFlg; Stack = UprFlg, LABBCK, TxtPtr, RtnAdr
-    jr      z,.key_str            ; If returning number
-    pop     af                    ;   A = UprFlg; Stack = LABBCK, TxtPtr, RtnAdr
-    jr      .ret_char             ;   Convert C, float and return
-.key_str
+    pop     af                    ; A = StrFlg; Stack = LABBCK, TxtPtr, RtnAdr
+    jp      nz,FLOAT_C            ; If Not string, float it
     ld      a,c                   ; A = KeyChr
     or      a                     ; If no key
-    jp      z,pop_null_string     ;   Pop UprFlg and return ""
+    jp      z,null_string         ;   Return ""
+ret_string_c:
     push    bc                    ; Stack = KeyChr, UprFlg, LABBCK, TxtPtr, RtnAdr
-    call    STRIN1
+    call    STRIN1                ; Create 1 character string
     pop     de                    ; E = KeyChr; Stack = UprFlg, LABBCK, TxtPtr, RtnAdr
-    jr      .ret_string
+    jp      SETSTR
 
 ;-----------------------------------------------------------------------------
 ; MOUSEB - Returns mouse buttons
@@ -569,15 +606,6 @@ FN_MOUSE:
     jp      c,FLOAT_BC
     jp      m,FLOAT               
     jp      SNGFLT
-
-;-----------------------------------------------------------------------------
-; INKEY - Return ASCII code of currently pressed key
-;-----------------------------------------------------------------------------
-FN_INKEY:
-    rst     CHRGET                ; Skip KEY Token
-    call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
-    call    in_key                ; Get Keypress
-    jp      SNGFLT                ; and Float it
 
 ;-----------------------------------------------------------------------------
 ; KEY - Check for Matrix Keypress
@@ -692,6 +720,14 @@ ST_SWAP:
     cp      VARTK
     jp      z,ST_SWAP_VARS
     jp      SNERR
+
+_swap_pages:
+    call    req_page_arg
+    push    af                    ; Stack = LftPg, RtnAdr
+    call    req_page_arg          ; E = RgtPg
+    pop     af                    ; A = RgtPg
+    ld      iy,bas_swap_pages
+    jp      aux_call_preserve_hl
 
 ;-----------------------------------------------------------------------------
 ; TIME$ - Get Current Time
@@ -909,6 +945,7 @@ ST_FILL:
 ;----------------------------------------------------------------------------
 ; GET Statement stub
 ;----------------------------------------------------------------------------
+;;; Proposed: GET KEY var{$}{,TIMEOUT=jiffies)
 ST_GET:
     cp      SCRNTK
     jp      z,ST_GET_SCREEN
@@ -929,7 +966,7 @@ ST_KEY:
     jp      key_set_repeat
 
 check_repeat:
-    rst     CHRGET
+    rst     CHRGET                ; Skip KEY
     ld      b,REPEATK
 check_exttok:
     cp      XTOKEN                ; If Not Extended Token

@@ -1,4 +1,13 @@
 # plusBASIC Revision History
+ - v0.32 (2026-01-16)
+    - Added kernel routine _tilemap_reset_, modified `RESET TILEMAP` to call it
+    - Added untested kernel routine _tilemap_copy_, "unimplemented" statement `COPY TILEMAP`
+    - Modified `KEY(string)` to generate _Illegal quantity error_ if any characters in string have ASCII code greater than 63
+    - Refactored `LWRKEY`, `LWRKEY$`, `UPRKEY`, and `UPRKEY$`
+    - Implemented `GETLWR`, `GETLWR$`, `GETUPR`, and `GETUPR$`
+    - Added routine _chr_string_search_
+    - Added `GETKEY(string)`, `GETLWR(string)`, `GETUPR(string)`, `INKEY(string)`, `UPRKEY(string)`, `LWRKEY(string)`
+    - Added untested routine _bas_swap_pages_
  - v0.31 (2026-01-12)
     - Added `RESET TIMEMAP`
     - `READ *array$` now parses hexademical strings 

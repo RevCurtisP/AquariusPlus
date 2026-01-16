@@ -414,7 +414,19 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>GETKEY$</strong>  - Wait for key and return as string.<!--key--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
+        <strong>GETKEY(<em>string</em>)</strong> - Wait for key and return position in string.<!--key--></li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
         <strong>GETKEYREPEAT</strong> - Return Direct mode key repeat status.<!--system--></li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>GETLWR</strong> - Wait for key and return lowercased ASCII code.</li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>GETLWR$</strong> - Wait for key and return as lowercased string.</li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>GETLWR(<em>string</em>)</strong> - Wait for key, convert to lowercase, and return position in string.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" checked="checked" />
         <strong>GETPALETTE$(<em>palette</em>)</strong> - Return palette contents.<!--palette--></li>
@@ -442,6 +454,15 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" checked="checked" />
         <strong>GETTILE$(<em>tileno</em>)</strong> - Return tile pixels.<!--tile--></li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>GETUPR</strong> - Wait for key and return uppercased ASCII code.</li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>GETUPR$</strong> - Wait for key and return as uppercased string.</li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>GETUPR(<em>string</em>)</strong> - Wait for key, convert to uppercase, and return position in string.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>GOSUB <em>lineref</em>{:ARGS <em>expression</em>{,...} {RETURN <em>var</em>{,...}}</strong> - Branch to subroutine with optional call and return arguments.<!--flow--></li>
@@ -483,6 +504,9 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>INKEY</strong> - Return ASCII code of most recently pressed key.<!--KEY--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
+        <strong>INKEY(<em>string</em>)</strong> - Return position in string of most recently pressed key.<!--KEY--></li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
         <strong>INKEY$</strong> - Return most recently pressed key as string.<!--KEY--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
@@ -504,7 +528,10 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>JOY$(<em>id</em>)</strong> - Read wireless game controller.<!--JOY--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
-        <strong>KEY({<em>keycode</em>|<em>string</em>})</strong> - Check if key is currently pressed.<!--key--></li>
+        <strong>KEY(<em>keycode</em>)</strong> - Check if key is currently pressed.<!--key--></li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>KEY(<em>string</em>)</strong> - Return position in in string of keycodes of currently pressed key.<!--key--></li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>KEY REPEAT ON|OFF</strong> - Temporarily enable or disable key repeat during program execution.<!--system--></li>
@@ -621,6 +648,9 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>LWRKEY$</strong> - Return lowercased string containing last key pressed.</li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>LWRKEY(<em>string</em>)</strong> - Convert last key pressed to lowercase, and return position in string.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>MENU</strong> - <em>Not implemented.</em></li>
@@ -1093,6 +1123,9 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>UPRKEY$</strong> - Return uppercased string containing last key pressed.</li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" />
+        <strong>UPRKEY(<em>string</em>)</strong> - Convert last key pressed to uppercase, and return position in string.</li>
       <li class="task-list-item">
         <input disabled="disabled" type="checkbox" />
         <strong>USE CHRSET <em>0</em>|<em>1</em>|<em>filespec</em></strong> - Copy specified character set to character RAM.<!--CHRSET--></li>

@@ -88,6 +88,22 @@ mult_a_de:
     djnz    .loop
     ret
 
+upr_get:
+    call    get_key
+    jr      uppercase_char
+
+lwr_get:
+    call    get_key
+    jr      lowercase_char
+
+upr_key:
+    call    in_key
+    jr      uppercase_char
+
+lwr_key:
+    call    in_key
+    jr      lowercase_char
+    
 uprlwr_char:
     jr      z,uppercase_char
 ;-----------------------------------------------------------------------------

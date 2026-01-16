@@ -96,6 +96,13 @@ tile_from_chrrom:
     ret
 
 ;-----------------------------------------------------------------------------
+; Reset tilemap
+; Clobbered: A, BC, E
+;-----------------------------------------------------------------------------
+tilemap_reset:
+    ld      bc,0
+    ld      e,c
+;-----------------------------------------------------------------------------
 ; Set tilemap offset
 ; Input: BC: X-Offset
 ;         E: Y-Offset
@@ -175,7 +182,7 @@ tilemap_set_tile:
 ;        E: Row
 ; Output: BC = Tile + Properties
 ; Clobbered: A,DE
-;-----------------------------------------------------------------------------
+;-----------------  ------------------------------------------------------------
 tilemap_get_tile:
     call    tilemap_cell_addr     ; DE = Cell Addres
     ret     c                     ; Return if Error
@@ -318,6 +325,97 @@ _tilemap_bounds:
     ret     c                     ;   Return Carry Set
     cp      e                     ; If EndRow > 31
     ret                           ;   Return Carry Set
+
+;-----------------------------------------------------------------------------
+; Copy Section from Virtual Tilemap to Video RAM
+; Virtual TileMap is 128 x 64, filling entire page
+; Input: A = Page
+;        B = Width in Tiles
+;        C = Height in Tiles
+;        D = Tilemap X position
+;        E = Tilemap Y position
+;        H = Virtual X position
+;        L = Virtual Y position
+; Sets flags: Carry if parameters out of range
+;-----------------------------------------------------------------------------
+tilemap_copy:
+    ex      af,af'                ; A' = VirPg
+    call    .check_parms          ; If bad parameter
+    ret     c                     ;   Return error
+    call    .tmap_addr            ; DE = TmapAdr
+    call    .vmap_addr            ; HL = VmapAdr
+    ld      a,c                   ; A = CpyWid
+    add     a,a                   ; A = CpyLen
+    ld      b,c                   ; B = CpyHgt
+    ld      c,a                   ; C = CpyLen
+.loop
+    ld      a,VIDEO_RAM           ; Copying from VirPg to VidRAM
+    push    bc                    ; Stack = WidLen, RtnAdr
+    push    hl                    ; Stack = VmapAdr, WidLen, RtnAdr
+    push    de                    ; Stack = TmapAdr, VmapAdr, WidLen, RtnAdr
+    ld      b,0                   ; BC = CopyLen
+    call    page_fast_copy        ; Copy from Vmap to Tmap
+    pop     hl                    ; HL = TmapAdr; Stack = VmapAdr, WidLen, RtnAdr
+    ld      bc,64                 ; 
+    add     hl,bc                 ;
+    ex      de,hl                 ; TmapAdr = TmapAdr + 64 
+    pop     hl                    ; HL = VmapAdr; Stack = WidLen, RtnAdr
+    sla     c                     ; BC = 128
+    add     hl,bc                 ; VmapAdr = TmapAdr + 64 
+    pop     bc                    ; B = CpyHgt, C = CpyLen; Stack = RtnAdr
+    djnz    .loop                 ; Do next line
+    ret
+
+.tmap_addr:
+    ld      a,d                   ; A = TmapX
+    ld      h,e
+    ld      e,0                   ; DE = TmapY * 256
+    sra     d
+    rr      e                     ; DE = TmapY * 128
+    sra     d
+    rr      e                     ; DE = TmapY * 64
+    add     a,e                   ; Will not carry because TmapX < 64
+    ld      e,a                   ; DE = TmapY * 64 + TmapX
+    ret
+
+.vmap_addr:
+    ld      a,h                   ; A = VmapX
+    ld      h,l
+    ld      l,0                   ; HL = VmapY * 256
+    sra     h
+    rr      l                     ; HL = VmapY * 128
+    add     a,l                   ; Will not carry because TmapX < 64
+    ld      l,a                   ; HL = VmapY * 64 + VmapX
+    ret
+    
+.check_parms:
+    ld      a,h                   ; A = VirLft
+    add     b                     ; A = VirRgt+1
+    ret     c
+    rla                           ;   or > 127
+    ret     c                     ;   Return Error
+
+    ld      a,l                   ; A = VirTop
+    add     c                     ; A = VirBot+1
+    ret     c
+    cp      64
+    ccf                           ; If VirBot > 63
+    ret     c                     ;   Return Error
+
+    ld      a,d                   ; A = MapLft
+    add     b                     ; A = MapRgt+1
+    ret     c
+    cp      64
+    ccf                           ; If MapRgt > 63
+    ret     c                     ;   Return Error
+
+    ld      a,e                   ; A = MapTop
+    add     c                     ; A = MapBot+1
+    ret     c
+    cp      32
+    ccf                           ; If MapBot > 63
+    ret                           ;   Return Error
+    
 
 ;-----------------------------------------------------------------------------
 ; Copy TileMap from TMP_BUFFR to Video RAM

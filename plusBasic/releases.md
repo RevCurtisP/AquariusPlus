@@ -1,4 +1,7 @@
 # plusBASIC Release History
+ - v0.32 (2026-01-16)
+    - Implemented `GETLWR`, `GETLWR$`, `GETUPR`, and `GETUPR$`
+    - Added `GETKEY(string)`, `GETLWR(string)`, `GETUPR(string)`, `INKEY(string)`, `UPRKEY(string)`, `LWRKEY(string)`
  - v0.31 (2026-01-12)
     - Added `RESET TIMEMAP`
     - `READ *array$` now parses hexademical strings 

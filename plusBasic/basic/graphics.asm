@@ -709,7 +709,28 @@ _get_put:
 ; Copy section of virtual tilemap into actual tilemap
 ; COPY TILEMAP @page,width,height,x,y
 ;-----------------------------------------------------------------------------
-;; ToDo: Implement COPY TILEMAP
+ST_COPY_TILEMAP:
+    jp      GSERR
+    call    req_page_arg          ; A = PageNo
+    push    af                    ; Stack = PageNo, PgAddr, RtnAdr
+    call    get_byte_comma_byte   ; D = Width, E = Height
+    push    de                    ; Stack = WidHgt, PageNo, PgAddr, RtnAdr
+    call    comma_byte_comma_byte ; D = X-pos, E = Y-Pos
+    pop     bc                    ; B = Width, C = Height; Stack = PageNo, PgAddr, RtnAdr
+    pop     af                    ; A = PageNo; Stack = PgAddr, RtnAdr
+    ld      iy,tilemap_copy
+    jp      aux_call_preserve_hl  ; Do the copy and return
+
+;; ToDo: Move this to shared.asm
+comma_byte_comma_byte:
+    call    get_comma
+get_byte_comma_byte
+    call    get_byte
+    push    af
+    call    get_comma_byte
+    pop     af
+    ld      d,a
+    ret
 
 ;-----------------------------------------------------------------------------
 ; SET TILEMAP
@@ -779,9 +800,8 @@ _get_attr_palette:
 ST_RESET_TILEMAP:
     rst     CHRGET                ; Skip TILE
     SYNCHKT MAPTK                 ; Require MAP
-    ld      de,0                  ; Y-position = 0
-    push    de                    ; Stack = 0, RtnA`
-    jr      _tilemap_set_offset
+    ld      iy,tilemap_reset
+    jp      aux_call_preserve_hl  ; Do it
 
 _tilemap_offset:
     rst     CHRGET                ; Skip OFF

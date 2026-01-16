@@ -105,21 +105,21 @@ _jump_table:
     jp      just_ret              ; C108 
     jp      just_ret              ; C10B 
 ; tile.asm <<Tilemap>>
-    jp      tile_set              ; C10E 
-    jp      tile_get              ; C111 
-    jp      tile_from_chrrom      ; C114 
-    jp      tile_combine_props    ; C117 
+    jp      tile_set              ; C10E Write Tile definition to Video RAM
+    jp      tile_get              ; C111 Read Tile definition from Video RAM
+    jp      tile_from_chrrom      ; C114 Build Tile from Character definition
+    jp      tile_combine_props    ; C117 Combine Tile Index, Palette# and Attributes
     jp      just_ret              ; C11A 
     jp      just_ret              ; C11D 
-    jp      tilemap_set_offset    ; C120 
-    jp      tilemap_get_offset    ; C123 
-    jp      tilemap_set_tile      ; C126 
-    jp      tilemap_get_tile      ; C129 
-    jp      tilemap_fill          ; C12C 
-    jp      tilemap_get           ; C12F 
-    jp      tilemap_put           ; C132 
-    jp      just_ret              ; C135 
-    jp      just_ret              ; C138 
+    jp      tilemap_set_offset    ; C120 Move Tilemap to specified offset
+    jp      tilemap_get_offset    ; C123 Return current Tilemap offset
+    jp      tilemap_set_tile      ; C126 Write Tilemap cell contents
+    jp      tilemap_get_tile      ; C129 Read Tilemap cell contents
+    jp      tilemap_fill          ; C12C Fill Tilemap section with specified Tile
+    jp      tilemap_get           ; C12F Read clip from Tilemap into buffer
+    jp      tilemap_put           ; C132 Write clip from buffer to tilemap
+    jp      tilemap_copy          ; C135 Copy clip from Virtual tilemap to Tilemap
+    jp      tilemap_reset         ; C138 Reset tilemap to home position
     jp      just_ret              ; C13B 
     jp      just_ret              ; C13E 
 ; sprite_aux.asm <<Sprite Definition and Manipulation>>

@@ -3,6 +3,33 @@
 ;-----------------------------------------------------------------------------
 
 ;----------------------------------------------------------------------------
+; Search for character in string
+;  Input: A = Character ASCII value
+;        BC = String Length
+;        DE = String Addr
+; Output: C = Position of character in string (0 = not found)
+; Clobbered: BC, DE, HL
+;----------------------------------------------------------------------------
+chr_string_search:
+    ex      af,af'
+    ld      a,b
+    or      c                     ; If StrLen = 0
+    ret     z                     ;   Return 0
+    ex      af,af'
+    ld      b,c                   ; B = StrLen
+    ld      c,1                   ; C = StrPos
+    ex      de,hl                 ; HL = StrAdrs
+.loop    
+    cp      (hl)                  ; If matched
+    ret     z                     ;   Return StrPos, Carry Clear
+    inc     c                     ; Bump StrPos
+    inc     hl                    ; and StrPtr
+    djnz    .loop                 ; If not found
+    xor     a                     ;   Clear Carry
+    ld      c,0                   ;   Return 0
+    ret
+  
+;----------------------------------------------------------------------------
 ; Search for string in string
 ;  Input: A = Offset (base 1)
 ;        DE = Needle descriptor

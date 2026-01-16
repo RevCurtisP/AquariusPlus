@@ -204,6 +204,7 @@ bas_key:
     push    bc
     push    de
     call    key_pressed           ;   NZ if pressed
+    jp      c,FCERR               ;   Illegal Quantity if > 63
     pop     de
     pop     bc
     ld      a,c
@@ -612,3 +613,36 @@ bas_save_screen_opts:
     ex      af,af'                ; A = SaveArgs
     or      b                     ; A = SaveArgs + SaveOpts
     ret
+
+; On entry: A = LftPg, E = RgtPg
+bas_swap_pages:
+    push    af                    ; Stack = LftPg, RtnAdr
+    push    de                    ; Stack = RgtPg, LftPg, RtnAdr
+    ex      af,af'                ; SrcPg = LftPg
+    ld      a,TMP_BUFFR           ; DstPg = TmpBuf
+
+    ld      bc,$4000              ; Copying 16k
+    ld      d,c
+    ld      e,c                   ; From page start
+    ld      h,c
+    ld      l,c                   ; to page start
+    call    page_copy_bytes_sys   ; Copy LftPg to buffer
+    jp      c,FCERR               ; Error if illegal LftPg
+    pop     de                    ; E = RgtPg; Stack = LftPg, RtnAdr
+    ex      af,af'                ; SrcPg = RgtPg
+    pop     af                    ; DstPg = LftPg; Stack = RtnAdr
+    push    af                    ; Stack = LftPg, RtnAdr
+    call    _copy_page            ; Copy RgtPg to LftPg
+    ld      a,TMP_BUFFR
+    ex      af,af'                ; SrcPg = TmpBuf
+    pop     af                    ; DstPg = LftPg
+ _copy_page:
+    ld      bc,$4000              ; Copying 16k
+    ld      d,c
+    ld      e,c                   ; From page start
+    ld      h,c
+    ld      l,c                   ; to page start
+    call    page_copy_bytes_sys
+    jp      c,FCERR               ; Error if illegal RgtPg
+    ret
+

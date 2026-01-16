@@ -185,7 +185,11 @@
  - **GETCURSOR** - Return cursor display mode.
  - **GETKEY** - Wait for key and return ASCII code.
  - **GETKEY$**  - Wait for key and return as string.
+ - **GETKEY(_string_)** - Wait for key and return position in string.
  - **GETKEYREPEAT** - Return Direct mode key repeat status.
+ - **GETLWR** - Wait for key and return lowercased ASCII code.
+ - **GETLWR$** - Wait for key and return as lowercased string.
+ - **GETLWR(_string_)** - Wait for key, convert to lowercase, and return position in string.
  - **GETPALETTE$(_palette_)** - Return palette contents.
  - **GETPALETTE$(_palette_,_index_)** - Return palette entry.
  - **GETSOUNDFAST** - Return `SOUND FAST` status.
@@ -195,6 +199,9 @@
  - **GETSPRITEX(_spritedef_|_spritle_)** - Return sprite or spritle x-position.
  - **GETSPRITEY(_spritedef_|_spritle_)** - Return sprite or spritle y-position.
  - **GETTILE$(_tileno_)** - Return tile pixels.
+ - **GETUPR** - Wait for key and return uppercased ASCII code.
+ - **GETUPR$** - Wait for key and return as uppercased string.
+ - **GETUPR(_string_)** - Wait for key, convert to uppercase, and return position in string.
  - **GOSUB _lineref_{:ARGS _expression_{,...} {RETURN _var_{,...}}** - Branch to subroutine with optional call and return arguments.
  - **GOTO _lineref_** - Branch to line specified by line number or label.
  - **HEX$(_number_)** - Convert byte or integer into hexadecimal string.
@@ -208,6 +215,7 @@
  - **INT(_number_)** - Return expression rounded down to nearest integer.
  - **INT(_string_{,_offset_})** - Convert two consecutive bytes in string to signed integer.
  - **INKEY** - Return ASCII code of most recently pressed key.
+ - **INKEY(_string_)** - Return position in string of most recently pressed key.
  - **INKEY$** - Return most recently pressed key as string.
  - **INPUT {_stringliteral_;}_var_{,...}** - Prompt for keyboard input and assigns entries to variables.
  - **INPUT (_col_,_row_),_minlen_,_maxlen_,INT _var_** - Enhanced keyboard input routine.
@@ -215,7 +223,8 @@
  - **JOIN \*_array$_ INTO _string_ DEL _delimiter_** - Join string array elements into delimited string.
  - **JOY(_stick_)** - Read one or both game controllers.
  - **JOY$(_id_)** - Read wireless game controller.
- - **KEY({_keycode_|_string_})** - Check if key is currently pressed.
+ - **KEY(_keycode_)** - Check if key is currently pressed.
+ - **KEY(_string_)** - Return position in in string of keycodes of currently pressed key.
  - **KEY REPEAT ON|OFF** - Temporarily enable or disable key repeat during program execution.
  - **LEFT$(_string_,_len_)** - Return the first up to _len_ characters of string.
  - **LEN(_string_)** - Return length of string.
@@ -260,6 +269,7 @@
  - **LWR$(_string_|_byte_)** - Lowercases argument string or argument ASCII code converted to string.
  - **LWRKEY** - Return lowercased ASCII code of last key presed.
  - **LWRKEY$** - Return lowercased string containing last key pressed.
+ - **LWRKEY(_string_)** - Convert last key pressed to lowercase, and return position in string.
  - **MENU** - _Not implemented._
  - **MID$(_string_,_start_{,_len_})** - Return first up to _len_ or all remaining characters starting at character _start_ of string.
  - **MID$(_strvar_,_start__{,_len_})=_string_** - Replace text in string variable.
@@ -430,6 +440,7 @@
  - **UPR$(_string_|_byte_)** - Uppercases argument string or argument ASCII code converted to string.
  - **UPRKEY** - Return uppercased ASCII code of last key presed.
  - **UPRKEY$** - Return uppercased string containing last key pressed.
+ - **UPRKEY(_string_)** - Convert last key pressed to uppercase, and return position in string.
  - **USE CHRSET _0_|_1_|_filespec_** - Copy specified character set to character RAM.
  - **USE SCREEN {@_page_,}_text_mode_,_gfx_mode_** - _Not implemented._
  - **USR(_float_)** - Call user-defined machine language routine passing argument and returning result.
