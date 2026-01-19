@@ -1,4 +1,6 @@
 # plusBASIC Revision History
+ - v0.33 (2026-01-19)
+    - Fixed `READ *array$` treating colon in quoted string as terminator
  - v0.32 (2026-01-16)
     - Added kernel routine _tilemap_reset_, modified `RESET TILEMAP` to call it
     - Added untested kernel routine _tilemap_copy_, "unimplemented" statement `COPY TILEMAP`

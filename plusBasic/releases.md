@@ -1,4 +1,6 @@
 # plusBASIC Release History
+ - v0.33 (2026-01-19)
+    - Fixed `READ *array$` treating colon in quoted string as terminator
  - v0.32 (2026-01-16)
     - Implemented `GETLWR`, `GETLWR$`, `GETUPR`, and `GETUPR$`
     - Added `GETKEY(string)`, `GETLWR(string)`, `GETUPR(string)`, `INKEY(string)`, `UPRKEY(string)`, `LWRKEY(string)`

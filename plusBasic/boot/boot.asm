@@ -129,6 +129,10 @@ endif
 
     ; Check for cartridge
 .cart
+    ; Disable Turbo Mode while reading cart
+    ld      a,0
+    out     (IO_SYSCTRL),a
+
     ld      de,$A010+1
     ld      hl,cart_crtsig-1
 .1: dec     de
@@ -165,6 +169,9 @@ endif
     jr      .descramble_done
 
 .descramble_cart:
+    ; Reenable Turbo Mode
+    ld      a,6
+    out     (IO_SYSCTRL),a
     ; Descramble ROM with XOR value in A
     ld      b,a
     ld      a,PAGE_CART_NONSCRAM
@@ -284,6 +291,11 @@ fill_mem:
     ret
 
 copy_sysrom:
+    ; Reenable unlimited turbo ode
+    ld      a,6
+    out     (IO_SYSCTRL),a
+
+
     ld      a,PAGE_SYSROM0
     out     (IO_BANK0),a
 

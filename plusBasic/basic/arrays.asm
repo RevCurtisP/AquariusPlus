@@ -153,7 +153,7 @@ _array_read:
     jr      .exnext               ;   Else
 .nothexstr
     ld      d,a                   ;     If it's a quote, terminators will be quote
-    ld      e,a                   ;   
+    ld      b,a                   ;   
     cp      '"'
     jr      z,.parse              ;     If not quoted
     ld      a,(ARRAYREQ)
