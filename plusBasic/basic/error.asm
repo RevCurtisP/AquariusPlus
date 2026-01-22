@@ -123,12 +123,12 @@ MSGNF:  byte    "NEXT without FOR",0            ; 1
 MSGSN:  byte    "Syntax",0                      ; 2
 MSGRG:  byte    "RETURN without GOSUB",0        ; 3
 MSGOD:  byte    "Out of DATA",0                 ; 4
-MSGFC:  byte    "Illegal Quantity",0            ; 5
+MSGFC:  byte    "Illegal quantity",0            ; 5
 MSGOV:  byte    "Overflow",0                    ; 6
 MSGOM:  byte    "Out of memory",0               ; 7
 MSGUS:  byte    "Undefined line number",0       ; 8
 MSGBS:  byte    "Subscript out of range",0      ; 9
-MSGDD:  byte    "Duplicate Definition",0        ; 10
+MSGDD:  byte    "Duplicate definition",0        ; 10
 MSGDV0: byte    "Division by zero",0            ; 11
 MSGID:  byte    "Illegal direct",0              ; 12
 MSGTM:  byte    "Type mismatch",0               ; 13
@@ -147,7 +147,7 @@ MSGGS:  byte    "Statement not implemented",0   ; 24
 MSGUL:  byte    "Undefined line label",0        ; 25
 MSGAG:  byte    "ARGS without GOSUB",0          ; 26
 ; plusBASIC errors
-MSGUD:  byte    "Undimensioned Array",0         ; 27 
+MSGUD:  byte    "Undimensioned array",0         ; 27 
 MSGTO:  byte    "Too many operands",0           ; 28
 MSGIM:  byte    "Invalid mode",0                ; 29
 MSGBR:  byte    "Bad range",0                   ; 30

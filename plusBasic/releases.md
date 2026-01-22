@@ -1,4 +1,7 @@
 # plusBASIC Release History
+ - v0.70 (2026-01-21)
+    - Fixed error messages letter casing
+    - Jumping to v0.70 to represent approximate percentage complete to v1.0
  - v0.33 (2026-01-19)
     - Fixed `READ *array$` treating colon in quoted string as terminator
  - v0.32 (2026-01-16)
@@ -38,6 +41,7 @@
  - v0.27q (2025-12-01)
     - Implemented `BIN$()`, `SAVE COLORMAP`, added `RESET CHRDEF char`, `,chrset` option to `GETCHRDEF$()`
     - Implemented`APPEND file$,addr,len`, `APPEND file$,@page,addr,len`, `APPEND file$,!extaddr,len`, `APPEND file$,*var$"
+    - Added option `ASCX` to `SAVE file$,*array$` to save as Unix text file
     - Backspace when input buffer is empty no longer prints a BS and CR/LF, Ctrl-U backspaces to delete current line instead of printing a CR/LF
  - v0.27p (2025-11-09)
    - Added `SET SPRITE #spritlenum ...`, `GETSPRITE()`, `GETSPRITEX()`, `GETSPRITEY()`
@@ -59,7 +63,7 @@
     - Various internal code changes
  - v0.27i (2025-09-28)
    - Added `VARDEF(*array)`
-   - Added `,ASC` opttion to `SAVE filespec$,*array$`
+   - Added `,ASC` option to `SAVE filespec$,*array$`
    - Added `LIST *array$` and `LLIST array$` ro print contents of a string array.
    - Added new syntax `GETPALETTE$(palnum,index)` to return a single palette entry
    - Added `APPEND INTLIST`, `APPEND RGBLIST`, `APPEND TILELIST`, `APPEND ATTRLIST`, `APPEND BYTELIST`, and `APPEND PALETTELIST`
@@ -83,7 +87,7 @@
  - v0.27b (2025-07-07)
    - Added file types `hex` and `rgb` to _file_load_palette_ and _file_save_palette_
    - Added `,HEX` and `,RGB` options to `LOAD PALETTE` and `SAVE PALETTE`
-   - Added function `FGBDEC$()`
+   - Added functions `RGBDEC$()` and `RGBHEX$()`
    - Moved `LOAD PALETTE` and `SAVE PALETTE` to _sp.baq_ and added tests for `HEX`, `ASC`, and `RGB`
  - v0.27a (2025-05-25)
    - Changed `OPEN var TO filespec$ FOR mode` to `OPEN filespec$ FOR mode AS var`
@@ -283,6 +287,7 @@
        - 1024 byte file loads to characters 128 to 255 (high ASCII)
        - 2048 byte file loads entire character set 
      - `LOAD DIR ... *array$,ASC` loads formatted directory
+     - `LOAD ... ^var$` loads file into string variable
    - Operational changes
      - `CLEAR`, `NEW`, and `RUN` close all files
      - `LOAD filespec,@page,address` now load more than 64k
@@ -441,6 +446,7 @@
   - Fixed tokenization bug when RUNing BASIC progam files in ASCII format
  - v0.20v (2024-01-21)
   - Fixed DEF SPRITE [...] x-offset bug
+  - Added `LOAD file$, *array$` and `SAVE file$, *array$
  - v0.20u (2024-01-18)
   - Added SET SPRITE var$ TILECLIP and debugged str_length
  - v0.20s (2024-01-17)

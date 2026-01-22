@@ -16,6 +16,8 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
   <body>
     <h1 id="plusbasic-release-history">plusBASIC Release History</h1>
     <ul>
+      <li>v0.70 (2026-01-21)
+<ul><li>Fixed error messages letter casing</li><li>Jumping to v0.70 to represent approximate percentage complete to v1.0</li></ul></li>
       <li>v0.33 (2026-01-19)
 <ul><li>Fixed <code>READ *array$</code> treating colon in quoted string as terminator</li></ul></li>
       <li>v0.32 (2026-01-16)
@@ -37,7 +39,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
       <li>v0.27r (2025-12-02)
 <ul><li>Backspace at begining of input beeps instead of printing a CR/LF</li><li>Ctrl-R in direct mode recalls previous line if current line is blank instead of reprinting the current entry</li><li>Ctrl-U in direct mode and <code>INPUT</code> deletes to beginning of entry instead of printing a CR</li><li>Implemented <code>EDIT</code><em>lineno</em></li></ul></li>
       <li>v0.27q (2025-12-01)
-<ul><li>Implemented <code>BIN$()</code>, <code>SAVE COLORMAP</code>, added <code>RESET CHRDEF char</code>, <code>,chrset</code> option to <code>GETCHRDEF$()</code></li><li>Implemented<code>APPEND file$,addr,len</code>, <code>APPEND file$,@page,addr,len</code>, <code>APPEND file$,!extaddr,len</code>, `APPEND file$,*var$"</li><li>Backspace when input buffer is empty no longer prints a BS and CR/LF, Ctrl-U backspaces to delete current line instead of printing a CR/LF</li></ul></li>
+<ul><li>Implemented <code>BIN$()</code>, <code>SAVE COLORMAP</code>, added <code>RESET CHRDEF char</code>, <code>,chrset</code> option to <code>GETCHRDEF$()</code></li><li>Implemented<code>APPEND file$,addr,len</code>, <code>APPEND file$,@page,addr,len</code>, <code>APPEND file$,!extaddr,len</code>, `APPEND file$,*var$"</li><li>Added option <code>ASCX</code> to <code>SAVE file$,*array$</code> to save as Unix text file</li><li>Backspace when input buffer is empty no longer prints a BS and CR/LF, Ctrl-U backspaces to delete current line instead of printing a CR/LF</li></ul></li>
       <li>v0.27p (2025-11-09)
 <ul><li>Added <code>SET SPRITE #spritlenum ...</code>, <code>GETSPRITE()</code>, <code>GETSPRITEX()</code>, <code>GETSPRITEY()</code></li></ul></li>
       <li>v0.27o (2025-10-29)
@@ -53,7 +55,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
       <li>v0.27j (2025-10-01)
 <ul><li>Various internal code changes</li></ul></li>
       <li>v0.27i (2025-09-28)
-<ul><li>Added <code>VARDEF(*array)</code></li><li>Added <code>,ASC</code> opttion to <code>SAVE filespec$,*array$</code></li><li>Added <code>LIST *array$</code> and <code>LLIST array$</code> ro print contents of a string array.</li><li>Added new syntax <code>GETPALETTE$(palnum,index)</code> to return a single palette entry</li><li>Added <code>APPEND INTLIST</code>, <code>APPEND RGBLIST</code>, <code>APPEND TILELIST</code>, <code>APPEND ATTRLIST</code>, <code>APPEND BYTELIST</code>, and <code>APPEND PALETTELIST</code></li></ul></li>
+<ul><li>Added <code>VARDEF(*array)</code></li><li>Added <code>,ASC</code> option to <code>SAVE filespec$,*array$</code></li><li>Added <code>LIST *array$</code> and <code>LLIST array$</code> ro print contents of a string array.</li><li>Added new syntax <code>GETPALETTE$(palnum,index)</code> to return a single palette entry</li><li>Added <code>APPEND INTLIST</code>, <code>APPEND RGBLIST</code>, <code>APPEND TILELIST</code>, <code>APPEND ATTRLIST</code>, <code>APPEND BYTELIST</code>, and <code>APPEND PALETTELIST</code></li></ul></li>
       <li>v0.27h (2025-09-21)
 <ul><li>Printing <code>CHR$(11)</code> now disables color printing mode.</li><li><code>NEW</code> and <code>LOAD</code> basic progran clear run arguments returned by <code>ARGS</code> and <code>ARGS$</code></li><li>Added parsing of delimited decimal RGB string to <code>RGB()</code> and <code>RGB$</code></li></ul></li>
       <li>v0.27g (2025-09-12)
@@ -67,7 +69,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
       <li>v0.27c (2025-08-21)
 <ul><li>Removed extended palette modes from <em>file_load_palette</em> and <em>file_save_palette</em></li><li>Removed <code>ASC</code>/<code>HEX</code>/<code>RGB</code> mode from <code>SAVE PALETTE</code> and <code>LOAD PALETTE</code></li><li>Added argument format <code>RRGGBB</code>  to <code>RGB$()</code></li></ul></li>
       <li>v0.27b (2025-07-07)
-<ul><li>Added file types <code>hex</code> and <code>rgb</code> to <em>file_load_palette</em> and <em>file_save_palette</em></li><li>Added <code>,HEX</code> and <code>,RGB</code> options to <code>LOAD PALETTE</code> and <code>SAVE PALETTE</code></li><li>Added function <code>FGBDEC$()</code></li><li>Moved <code>LOAD PALETTE</code> and <code>SAVE PALETTE</code> to <em>sp.baq</em> and added tests for <code>HEX</code>, <code>ASC</code>, and <code>RGB</code></li></ul></li>
+<ul><li>Added file types <code>hex</code> and <code>rgb</code> to <em>file_load_palette</em> and <em>file_save_palette</em></li><li>Added <code>,HEX</code> and <code>,RGB</code> options to <code>LOAD PALETTE</code> and <code>SAVE PALETTE</code></li><li>Added functions <code>RGBDEC$()</code> and <code>RGBHEX$()</code></li><li>Moved <code>LOAD PALETTE</code> and <code>SAVE PALETTE</code> to <em>sp.baq</em> and added tests for <code>HEX</code>, <code>ASC</code>, and <code>RGB</code></li></ul></li>
       <li>v0.27a (2025-05-25)
 <ul><li>Changed <code>OPEN var TO filespec$ FOR mode</code> to <code>OPEN filespec$ FOR mode AS var</code></li><li>Implemented <em>dos_tell</em>, <code>FILEPOS()</code>, and <code>SET FILE .. POS TO ...</code></li><li>Added mode <code>RANDOM</code> to <code>OPEN</code></li><li>Added (not debugged) statement <code>PUT CHR</code> and kernel routine <em>page_skip_write</em></li></ul></li>
       <li>v0.25e (2025-05-19)
@@ -161,7 +163,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
 <ul><li>Breaking changes
 <ul><li><code>FILL {@page},address,oount,byte</code> is now <code>FILL BYTE {@page}, address, oount, byte</code></li><li><code>FILL {@page},address,oount,WORD integer</code> is now <code>FILL WORD {@page}, address, count, integer</code></li><li><code>LOAD COLOR</code> is now <code>LOAD SCREEN ATTR</code></li><li><code>LOAD DIR ... \*array</code> now loads filenames only</li><li><code>LOAD DIR ... *array$,BIN</code> replaces old <code>LOAD DIR ... \*array</code></li><li><code>SAVE filespec$,TOK</code> to <code>SAVE filespec$,BIN</code>.</li></ul></li><li>New statements and functions
 <ul><li><code>APPEND filespec$,^var$</code></li><li><code>BIT(long,bit#)</code></li><li><code>COPY SCREEN TO @page,address</code></li><li><code>FILL COLORMAP</code></li><li><code>JOY$()</code></li><li><code>PT3FAST</code></li><li><code>SET FILE ERROR ON/OFF</code></li><li><code>SET PT3 FAST ON/OFF</code></li></ul></li><li>Updated statements and functions
-<ul><li><code>ATN</code> implemented.</li><li><code>CLEAR CURSOR</code></li><li><code>FRE(_option_)</code><ul><li>-1 - Returns the number of bytes in memory not being used by BASlC as unsigned int.</li><li>0 - Returns the number of bytes in memory not being used by BASlC as signed int.</li><li>1 - Returns the total size of string space (as set by the first argument of CLEAR).</li><li>2 - Returns the top of BAexSIC memory (as set by the second argument of CLEAR).</li><li>"" - Garbage collect and return free string space</li></ul></li><li><code>INPUT (_col_,_row_),_minlen_,_maxlen_,INT _var_</code></li><li><code>LOAD CHRSET</code><ul><li>768 byte file loads to characters 32 to 127 (standard ASCII printable)</li><li>1024 byte file loads to characters 128 to 255 (high ASCII)</li><li>2048 byte file loads entire character set</li></ul></li><li><code>LOAD DIR ... *array$,ASC</code> loads formatted directory</li></ul></li><li>Operational changes
+<ul><li><code>ATN</code> implemented.</li><li><code>CLEAR CURSOR</code></li><li><code>FRE(_option_)</code><ul><li>-1 - Returns the number of bytes in memory not being used by BASlC as unsigned int.</li><li>0 - Returns the number of bytes in memory not being used by BASlC as signed int.</li><li>1 - Returns the total size of string space (as set by the first argument of CLEAR).</li><li>2 - Returns the top of BAexSIC memory (as set by the second argument of CLEAR).</li><li>"" - Garbage collect and return free string space</li></ul></li><li><code>INPUT (_col_,_row_),_minlen_,_maxlen_,INT _var_</code></li><li><code>LOAD CHRSET</code><ul><li>768 byte file loads to characters 32 to 127 (standard ASCII printable)</li><li>1024 byte file loads to characters 128 to 255 (high ASCII)</li><li>2048 byte file loads entire character set</li></ul></li><li><code>LOAD DIR ... *array$,ASC</code> loads formatted directory</li><li><code>LOAD ... ^var$</code> loads file into string variable</li></ul></li><li>Operational changes
 <ul><li><code>CLEAR</code>, <code>NEW</code>, and <code>RUN</code> close all files</li><li><code>LOAD filespec,@page,address</code> now load more than 64k</li><li><code>LOAD BITMAP</code> generates Error 49 if file size does not exactly match one of the supported formats.</li><li><code>LOAD</code> basic program sets FILE ERROR ON</li><li><code>LOAD</code> binary closes file</li><li>Renamed <code>Disk I/O error</code> to <code>I/O error</code></li></ul></li><li>Statements and functions now respecting SET FILE ERROR OFF
 <ul><li><code>LOAD FNKEYS</code></li><li><code>SAVE/LOAD PALETTE</code></li><li><code>LOAD</code> string</li><li><code>LOAD</code> array</li><li><code>LOAD DIR</code></li><li><code>DEL</code></li><li><code>MKDIR</code></li><li><code>CD</code> and <code>CD$</code></li></ul></li><li>Bug fixes
 <ul><li>Syntax error on <code>LOAD filespec$,@page :</code></li><li>Syntax error in <code>SET SPRITE ... PALETTE</code></li></ul></li><li>Added unit test front end <code>au.bas</code>, chained unit test programs</li><li>Updated unit test framework an unit tests</li><li>Restricted kernel page writes to not write past USER_END.</li><li>System IRQ handler now preserves all registers</li></ul></li>
@@ -300,6 +302,7 @@ v0.22v (2024-05-19)</li>
       <li>Fixed tokenization bug when RUNing BASIC progam files in ASCII format</li>
       <li>v0.20v (2024-01-21)</li>
       <li>Fixed DEF SPRITE [...] x-offset bug</li>
+      <li>Added <code>LOAD file$, *array$</code> and `SAVE file$, *array$</li>
       <li>v0.20u (2024-01-18)</li>
       <li>Added SET SPRITE var$ TILECLIP and debugged str_length</li>
       <li>v0.20s (2024-01-17)</li>

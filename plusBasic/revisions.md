@@ -1,4 +1,7 @@
 # plusBASIC Revision History
+ - v0.70 (2026-01-21)
+    - Fixed error messages letter casing
+    - Jumping to v0.70 to represent approximate percentage complete to v1.0
  - v0.33 (2026-01-19)
     - Fixed `READ *array$` treating colon in quoted string as terminator
  - v0.32 (2026-01-16)
@@ -85,6 +88,7 @@
     - Fixed text screen corruption when _OUTDO_ called from Auxiliary ROM (specifically `LIST *array$' core code)
     - Added _colormap_write_tmpbfr_, implemented _file_save_colormap_ and `SAVE COLORMAP`
     - Implemented `APPEND file$,addr,len`, `APPEND file$,@page,addr,len`, `APPEND file$,!extaddr,len`, `APPEND file$,*var$"
+    - Added option `ASCX` to `SAVE file$,*array$` to save as Unix text file
     - Added _text_read_tmpbfr_ and _file_load_text_
     - Added `,chrset` option to `GETCHRDEF$()`, added _gfx_reset_char_def_ and `RESET CHRDEF char`
     - Added _long_to_binstring_, implemented `BIN$()`
@@ -116,8 +120,8 @@
    - Moved  _byte_to_dec_fast_, _div_a_16_, _div_a_8_, _div_a_4_, and _mult_c_10_ from _color.asm_ to _misc.asm_ 
    - Deleted orphaned routines _rgb_to_asc_ and _rgb_to_dec_ ftom _color.asm_
    - Moved _clear_array_ from _enhanced,asm_ to _arrayaux.asm_
-   - In _evalext.asm_, replaced conversiop loop in _hex_to_asc_ with call to _aux_eval_hex_
-   - In _evalext.asm_, replaced _get_hex_ call in , with _aux_hex_to_byte_ call and removed routine _get_hex_
+   - In _evalext.asm_, replaced conversiop loop in _hex_to_asc_ with call to _aux_eval_hex_
+   - In _evalext.asm_, replaced _get_hex_ call in , with _aux_hex_to_byte_ call and removed routine _get_hex_
    - Moved core code from _\_escaped_ in _evalext.asm_ to _aux_escaped_string_ in _evalaux,asm_
    - Moved _aux_asc_to_hex_, _aux_byte_to_hex_, _aux_hex_to_asc_, _aux_hex_to_byte_, and _aux_get_hex_ from _basicaux.asm_ to _evalaux.asm
    - Moved _VMOVE_ from _basic80.asm_ to _aqplusbas.asm_
@@ -152,14 +156,14 @@
    - Replaced calls to _aux_call_inline_ with _aux_call_ and removed _aux_call_inline_
    - Replaced occurances of `push hl:ld bc,LABBCK:push bc` with `call push_hl_labbck`
    - Debugged _alloc_temp_buffer_, replaced _get_strbuf_addr_ calls in _FN_ARG_, _FN_CD_, _eval_list_, _\_escaped_, and _oper_stringsub_
-   - Added `String formula too complex` error on nested `EVAL()`
+   - Added `String formula too complex` error on nested `EVAL()`
  - v0.27j (2025-10-01)
    - Moved temporary sysvars from `RNDTAB` to `FILNAM`+`FILNAF`, `RESMO`-`RESLO`
    - Moved PT3 control routines from _util.asm_ (SysROM) to _sound.asm_ (AuxROM) and renamed from _pt3..._ to _track..._
    - Added system variable `TMPBUFTOP` and routines _alloc_temp_buffer_ and _free_temp_buffer_
  - v0.27i (2025-09-28)
    - Fixed assignment of sysvar `DEFTK` in _sbasic.asm_ and added `VARDEF(*array)`
-   - Added `,ASC` opttion to `SAVE filespec$,*array$`
+   - Added `,ASC` option to `SAVE filespec$,*array$`
    - Replaced `SRA` with `SRL` in _div_a_16_, _div_a_8_, and _div_a_4_ to fix `RGB(rgb$,delimiter)`
    - Added `LIST *array$` and `LLIST array$` ro print contents of a string array.
    - Added new syntax `GETPALETTE$(palnum,index)` to return a single palette entry
@@ -188,12 +192,12 @@
  - v0.27c (2025-08-21)
    - Added _page_call_ to kernel jump table
    - Removed extended palette modes from _file_load_palette_ and _file_save_palette_
-   - Removed `ASC`/`HEX`/`RGB` mode from `SAVE PALETTE` and `LOAD PALETTE`\
+   - Removed `ASC`/`HEX`/`RGB` mode from `SAVE PALETTE` and `LOAD PALETTE`
    - Added argument format `RRGGBB`  to `RGB$()`
  - v0.27b (2025-07-07)
    - Added file types `hex` and `rgb` to _file_load_palette_ and _file_save_palette_
    - Added `,HEX` and `,RGB` options to `LOAD PALETTE` and `SAVE PALETTE`
-   - Added function `FGBDEC$()`
+   - Added functions `RGBDEC$()` and `RGBHEX$()`
    - Moved `LOAD PALETTE` and `SAVE PALETTE` to _sp.baq_ and added tests for `HEX`, `ASC`, and `RGB`
    - Refactored only `call gfx_call_inline` and removed routine _gfx_call_inline_
  - v0.27a (2025-05-25)
@@ -462,6 +466,7 @@
        - 1024 byte file loads to characters 128 to 255 (high ASCII)
        - 2048 byte file loads entire character set 
      - `LOAD DIR ... *array$,ASC` loads formatted directory
+     - `LOAD ... ^var$` loads file into string variable
    - Operational changes
      - `CLEAR`, `NEW`, and `RUN` close all files
      - `LOAD filespec,@page,address` now load more than 64k
@@ -620,6 +625,7 @@
   - Fixed tokenization bug when RUNing BASIC progam files in ASCII format
  - v0.20v (2024-01-21)
   - Fixed DEF SPRITE [...] x-offset bug
+  - Added `LOAD file$, *array$` and `SAVE file$, *array$
  - v0.20u (2024-01-18)
   - Added SET SPRITE var$ TILECLIP and debugged str_length
  - v0.20s (2024-01-17)

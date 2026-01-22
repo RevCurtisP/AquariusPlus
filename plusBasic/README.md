@@ -63,15 +63,16 @@
  
 ## Statements and Functions
  - [x] **ABS(_float_)** - Return absolute value of expression.<!--math-->
- - [ ] **APPEND _filespec_,«!_ext_addr_»|«{@_page_,}_address_** - Append memory to binary file.<!--SAVE-->
+ - [x] **APPEND _filespec_,«!_ext_addr_»|«{@_page_,}_address_»,_length_** - Append memory to binary file.<!--SAVE-->
  - [x] **APPEND _filespec_,^_strvar_** - Append string to file.<!--SAVE-->
- - [ ] **APPEND _filespec_,\*_array_{,ASC|ASCX}** - Append string array to file.<!--SAVE-->
- - [ ] **APPEND ATTRLIST _strvar_=_attr_,...** - Add to string list of sprite and/or tile attributes.<!--sprites-->
- - [ ] **APPEND BYTELIST _strvar_=_byte_,...** - Add to a string list of bytes.<!--defstrlist-->
- - [ ] **APPEND INTLIST _strvar_=_integer_,...** - Add to a string list of integers.<!--defstrlist-->
- - [ ] **APPEND PALETTELIST _strvar_=_palette_,...** - Add to a string list of palette numbers.<!--sprites-->
- - [ ] **APPEND RGBLIST _strvar_=_r_,_g_,_b_|_rgbstr_;...** - Add to a string list of RGB values.<!--palette-->
- - [ ] **APPEND TILELIST _strvar_=_tileno_,...** - Add to a string list of tile indexes.<!--sprites-->
+ - [x] **APPEND _filespec_,\*_array_{,ASC|ASCX}** - Append string array to file.<!--SAVE-->
+ - [x] **APPEND ATTRLIST _strvar_=_attr_,...** - Add to string list of sprite and/or tile attributes.<!--sprites-->
+ - [x] **APPEND BYTELIST _strvar_=_byte_,...** - Add to a string list of bytes.<!--defstrlist-->
+ - [x] **APPEND INTLIST _strvar_=_integer_,...** - Add to a string list of integers.<!--defstrlist-->
+ - [x] **APPEND PALETTELIST _strvar_=_palette_,...** - Add to a string list of palette numbers.<!--sprites-->
+ - [ ] **APPEND PSGLIST _strvar_=_register_,_value_{;...}** - _Proposed enhancement_.
+ - [x] **APPEND RGBLIST _strvar_=_r_,_g_,_b_|_rgbstr_;...** - Add to a string list of RGB values.<!--palette-->
+ - [x] **APPEND TILELIST _strvar_=_tileno_,...** - Add to a string list of tile indexes.<!--sprites-->
  - [-] **ARGS  _arg_{,...} {RETURN _var_{,...}}** - Specify subroutine arguments and return variables.
  - [-] **ARGS** - Return number of RUN arguments<!--runargs-->
  - [x] **ARGS$(_argno_)** - Return RUN argument number _index_.<!--runargs-->
@@ -124,17 +125,17 @@
  - [ ] **DEC _numvar_** - Decrement numeric variable.
  - [x] **DEC(_hexstring_)** - Convert hexadecimal string to long.<!--convert-->
  - [ ] **DEEK(«!_ext_addr_»|«@_page_,_address_»)** - Read integer from memory.<!--PEEK-->
- - [ ] **DEF ATTRLIST _strvar_=_attr_,...** - Create a string list of sprite and/or tile attributes.<!--sprites-->
- - [ ] **DEF BYTELIST _strvar_=_byte_,...** - Create a string list of bytes.<!--defstrlist-->
+ - [x] **DEF ATTRLIST _strvar_=_attr_,...** - Create a string list of sprite and/or tile attributes.<!--sprites-->
+ - [x] **DEF BYTELIST _strvar_=_byte_,...** - Create a string list of bytes.<!--defstrlist-->
  - [ ] **DEF FN _var_(_var_) = _expression_** - Define user-defined function.
- - [ ] **DEF INTLIST _strvar_=_integer_,...** - Create a string list of integers.<!--defstrlist-->
- - [ ] **DEF PALETTELIST _strvar_=_palette_,...** - Create a string list of palette numbers.<!--sprites-->
+ - [x] **DEF INTLIST _strvar_=_integer_,...** - Create a string list of integers.<!--defstrlist-->
+ - [x] **DEF PALETTELIST _strvar_=_palette_,...** - Create a string list of palette numbers.<!--sprites-->
  - [ ] **DEF PSGLIST _strvar_=_register_,_value_{;...}** - _Proposed enhancement_.
- - [ ] **DEF RGBLIST _strvar_=_r_,_g_,_b_|_rgbstr_;...** - Create a string list of RGB values.<!--palette-->
- - [ ] **DEF SPRITE _strvar_= _spritle_, _x-offset_, _y-offset_ ;...** - Create a sprite definition.<!--sprites-->
- - [ ] **DEF SPRITE _strvar_= ( _cols_, _rows_ ) , _spritle_** - Create a sprite definition.<!--sprites-->
- - [ ] **DEF SPRITE _strvar_=^_strvar_** - Create a sprite definition.<!--sprites-->
- - [ ] **DEF TILELIST _strvar_=_tileno_,...** - Create a string list of tile indexes.<!--sprites-->
+ - [x] **DEF RGBLIST _strvar_=_r_,_g_,_b_|_rgbstr_;...** - Create a string list of RGB values.<!--palette-->
+ - [x] **DEF SPRITE _strvar_= _spritle_, _x-offset_, _y-offset_ ;...** - Create a sprite definition.<!--sprites-->
+ - [x] **DEF SPRITE _strvar_= ( _cols_, _rows_ ) , _spritle_** - Create a sprite definition.<!--sprites-->
+ - [x] **DEF SPRITE _strvar_=^_strvar_** - Create a sprite definition.<!--sprites-->
+ - [x] **DEF TILELIST _strvar_=_tileno_,...** - Create a string list of tile indexes.<!--sprites-->
  - [ ] **DEF USR=_address_** - Set USR() machine language routine address.<!--system-->
  - [ ] **DEF USRINT=_address_** - Set user interupt machine language routine address.<!--system-->
  - [ ] **DEL _filespec_** - Delete file or directory.<!--filesystem-->
@@ -238,11 +239,11 @@
  - [.] **LIST$(_lineno_|NEXT)** - Detokenize program line.<!--list-->
  - [.] **LLIST {_lineref_}** - Outputs program lines to printer starting at beginning of program or specified line.<!--list-->
  - [.] **LLIST \*_array_** - Outputs contemts of specified string array to printer.
- - [ ] **LOAD _filespec_** - Load BASIC program into memory.<!--LOAD-->
- - [ ] **LOAD _filespec_,«!_ext_addr_»|«{@_page_,}_address_»** - Load binary file into memory.<!--LOAD-->
- - [ ] **LOAD _filespec_,\*_array_** - Load binary file data into numeric or string array.<!--LOAD-->
- - [ ] **LOAD _filespec_,\*_array_,ASC** - Load multi-line ASCII file into string array.<!--LOAD-->
- - [ ] **LOAD _filespec_,^_stringvar_** - Load up to 255 characters of file into string variable.<!--LOAD-->
+ - [x] **LOAD _filespec_** - Load BASIC program into memory.<!--LOAD-->
+ - [x] **LOAD _filespec_,«!_ext_addr_»|«{@_page_,}_address_»** - Load binary file into memory.<!--LOAD-->
+ - [x] **LOAD _filespec_,\*_array_** - Load binary file data into numeric or string array.<!--LOAD-->
+ - [x] **LOAD _filespec_,\*_array_,ASC** - Load multi-line ASCII file into string array.<!--LOAD-->
+ - [x] **LOAD _filespec_,^_stringvar_** - Load up to 255 characters of file into string variable.<!--LOAD-->
  - [ ] **LOAD BITMAP _filespec_** - Load bitmap file into Video RAM.<!--bmpfile-->
  - [ ] **LOAD CHRSET _filespec_** - Load character set into alternate character buffer.<!--CHRSET-->
  - [ ] **LOAD COLORMAP _filespec_** - Load 1bpp color map file into Video RAM.<!--bmpfile-->
@@ -336,20 +337,20 @@
  - [ ] **RESTORE BITMAP|TILEMAP** - _Not implemented._
  - [ ] **RESTORE SCREEN** - Copy respective screen buffer to current text screen.
  - [ ] **RETURN {_expression_{,...}}** - Resume program execution after GOSUB, optionally returning results.<!--flow-->
- - [-] **RGB(«_r_,_g_,_b_»|«_rgbstr_»|«_string_,_delimiter_»)** - Return integer representing a single palette entry.<!--palette-->
- - [-] **RGB$(«_r_,_g_,_b_»|«_rgbstr_»|«_string_,_delimiter_»)** - Return string representing a single palette entry.<!--palette-->
- - [ ] **RGBDEC$(_string_{,_char_})** - Convert binary RGB value to decimal red,green, and blue.<!--palette-->
- - [ ] **RGBHEX$(_string_{,_char_})** - Convert binary RGB value to decimal red,green, and blue.<!--palette-->
+ - [x] **RGB(«_r_,_g_,_b_»|«_rgbstr_»|«_string_,_delimiter_»)** - Return integer representing a single palette entry.<!--palette-->
+ - [x] **RGB$(«_r_,_g_,_b_»|«_rgbstr_»|«_string_,_delimiter_»)** - Return string representing a single palette entry.<!--palette-->
+ - [x] **RGBDEC$(_string_{,_char_})** - Convert binary RGB value to decimal red,green, and blue.<!--palette-->
+ - [x] **RGBHEX$(_string_{,_char_})** - Convert binary RGB value to decimal red,green, and blue.<!--palette-->
  - [x] **RIGHT$(_string_,_len_)** - Return the last up to _byte_ characters of string.<!--string-->
  - [x] **RND(_integer_)** - Return new or previous psuedo-random number or seeds the random number generator.<!--math-->
  - [x] **RUN {_lineref_}** - Start program execution at first or specified line.<!--runargs-->
  - [-] **RUN _filespec_** - Load and run specified program, cartridge image, or FPGA core.<!--runargs-->
  - [-] **RUN _filespec_ _arg_{ ...}** - _Not implemented_.
- - [ ] **SAVE _filespec_{,ASC|CAQ|BIN}** - Save BASIC program to CAQ or ASCII or raw tokenized file.<!--SAVE-->
- - [ ] **SAVE _filespec_,{@_page_,}_address_,_length_** - Save memory to binary file.<!--SAVE-->
- - [ ] **SAVE _filespec_,\*_array_** - Save numeric or string array data to file.<!--SAVE-->
- - [ ] **SAVE _filespec_,^_strvar_** - Save string to file.<!--SAVE-->
- - [ ] **SAVE BITMAP _filespec_** - Save bitmap screen data from Video RAM to file.<!--bmpfile-->
+ - [x] **SAVE _filespec_{,ASC|CAQ|BIN}** - Save BASIC program to CAQ or ASCII or raw tokenized file.<!--SAVE-->
+ - [x] **SAVE _filespec_,«!_ext_addr_»|«{@_page_,}_address_»,_length_** - Save memory to binary file.<!--SAVE-->
+ - [x] **SAVE _filespec_,\*_array_** {ASC|ASCX} - Save numeric or string array data to file.<!--SAVE-->
+ - [x] **SAVE _filespec_,^_strvar_** - Save string to file.<!--SAVE-->
+ - [x] **SAVE BITMAP _filespec_** - Save bitmap screen data from Video RAM to file.<!--bmpfile-->
  - [ ] **SAVE CHRSET _filespec_** - Save curent character set to file.<!--chrset-->
  - [ ] **SAVE COLORMAP _filespec_** - Save 1bpp color map from Video RAM to file.<!--bmpfile-->
  - [ ] **SAVE FNKEYS _filespec_** - Save function key definitions to file.
