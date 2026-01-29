@@ -185,10 +185,15 @@ set_linlen:
     in      a,(IO_VCTRL)
 set_linlen_a:
     and     VCRTL_80COL_EN
-    ld      a,40                  ; A = 40
+    ld      a,40                  ; LinLen = 40
+    ld      b,0                   ; GfxMode = 40 column
     jr      z,.not80              ; If 80 column bitset
     rla                           ;   A = 80
+    inc     b                     ;   GfxMode = 80 column
 .not80
     ld      (LINLEN),a            ; Save it
+    ld      a,(GFX_FLAGS)
+    and     $FF-GFXM_WIDE
+    or      b
+    ld      (GFX_FLAGS),a
     ret
-

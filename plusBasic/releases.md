@@ -1,4 +1,8 @@
 # plusBASIC Release History
+ - v0.70a (2026-01-29)
+    - Fixed bug in `SET FNKEY`
+    - `PSET` optional color argument now supported in bloxel mode
+    - Entering direct mode now sets graphics mode back to bloxels
  - v0.70 (2026-01-21)
     - Fixed error messages letter casing
     - Jumping to v0.70 to represent approximate percentage complete to v1.0

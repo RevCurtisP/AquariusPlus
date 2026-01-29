@@ -112,8 +112,9 @@ BMPMODE     equ $3851   ; Bitmap Mode 0=1bpp, 2=4bpp
 STARTCOL    equ $3852
 ENDCOL      equ $3854
 STARTROW    equ $3856
-ENDROW      equ $3858
-PSETMODE    equ $385A   ; PSET or PRESET
+ENDROW      equ $3857
+PSETCOLOR   equ $385A
+
 
 ; CALL ARGS
 SAVEHL      equ $3852   ; [word] 
@@ -236,7 +237,7 @@ PSG_LEFTCON     equ 15      ; Left Hand Controller
 ; Page 54 (BAS_BUFFR), swapped into Bank 3
 BASBUF_BASE equ $C000   ; Base Address of BASIC Buffers
 SCRNVBASE   equ $0000   ; Screen variable buffers (see screen.inc)
-GFXVBASE    equ $0100   ; GFX SysVar Base, 256 byte aligned (see gfxvars.asm)
+GFXVBASE    equ $0100   ; GFX SysVar Base, 256 byte aligned (see gfxbitmap.asm)
 FKEYDEFS    equ $0200   ; Function Key Definitions (32 bytes each)
 FKEYBASE    equ BASBUF_BASE + FKEYDEFS
 LPRFILSPC   equ $0500   ; LPRINT File Spec (32 byte)
@@ -285,9 +286,10 @@ GFXM_1BPP   equ $02     ; GFX_FLAGS: Bitmap mode (1bpp)
 GFXM_4BPP   equ $03     ; GFX_FLAGS: Bitmap mode (4bpp)
 GFXM_MASK   equ $03     ; Bit mask for IO_VCTRL read
 GFXM_BLXF   equ $04     ; Force Bloxel mode`
-GFXM_BLXA   equ $05     ; Use alternate bloxel mode
+GFXM_BLXA   equ $08     ; Use alternate bloxel mode
 GFXBUFLAG   equ $06     ; GFX_FLAGS: Bitmap operations are buffered
 GFXSETMSK   equ $F8     ; Bit mask for OR with IO_VCTRL bits
+GFXBMPMSK   equ $0F     ; Mask for Bitmap Mode
 ; BASIC extended control flags
 
 NEWSTTHKS   equ $01     ; Active NEWSTT hooks

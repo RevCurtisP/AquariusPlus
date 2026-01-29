@@ -96,7 +96,7 @@ _get_chardef_address:
 ;  Input: A: Mode (0: bloxel, 2: 1bpp, 3: 4bpp)
 ; Output: A: New GFX_FLAGS
 ;-----------------------------------------------------------------------------
-gfs_set_mode:
+gfx_set_mode:
     and     GFXM_MASK             ; Isolate mode bits
     push    bc
     ld      b,a                   ; B = Mode
@@ -111,7 +111,7 @@ gfs_set_mode:
 ; Output: A: Mode (0: bloxel, 2: 1bpp, 3: 4bpp)
 ; Sets: Z if bloxel, NZ if bitmap
 ;-----------------------------------------------------------------------------
-gfs_get_mode:
+gfx_get_mode:
     ld      a,(GFX_FLAGS)         ; A = Extended Flags
     and     GFXM_MASK             ; Isolate mode bits
     ret

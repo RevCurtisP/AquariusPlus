@@ -2,10 +2,14 @@
 ; Bitmap Graphics Routines
 ;====================================================================
 
-
 ;-----------------------------------------------------------------------------
 ; Initialize bitmap sysvars
 ;-----------------------------------------------------------------------------
+; Ofs Desription
+;  0  Default Colors
+;  1  Last Y-Coord
+; 2-3 Last X-Coord
+
 _bmp_defaults
     byte    $06,0,0,0,$06,0,0,0,$70,0,0,0,$07,0,0,0
 _bmp_deflen = $ - _bmp_defaults   
@@ -152,7 +156,7 @@ _fill_video_ram:
 
 ;-----------------------------------------------------------------------------
 ; Clear Bitmap
-; Input: B: Screen colors (0 = use default)
+; Input: B: Screen colors ($FF = use default)
 ; Clobbered: AF,AF',BC,DE,HL
 ;-----------------------------------------------------------------------------
 bitmap_clear_screen:
@@ -175,8 +179,7 @@ bitmap_clear_screen:
     call    z,bitmap_read_color   ;   Get default colors
 ;-----------------------------------------------------------------------------
 ; Fill Bitmap Color RAM
-; Input: A: Mode (0: 40col, 1: 80col, 2: 1bpp, 3: 4bpp)
-;        B: Byte
+; Input: B: Color Byte
 ; Clobbered: AF,AF',BC,DE,HL
 ;-----------------------------------------------------------------------------
 bitmap_fill_color:
@@ -193,8 +196,8 @@ bitmap_fill_color:
     ld      bc,1000
     dec     a
     jr      z,_fill_video_ram
-    scf                           ; If 4bpp
-    ret     c                     ;   Return error
+    scf
+    ret
 .fill80
     ld      hl,$3000
     ld      bc,2000
@@ -227,17 +230,14 @@ colormap_fill:
     ret     c
     ld      h,a                   ; H = RowCnt
     ld      a,VIDEO_RAM
-    call    page_map_bank1
+    call    page_map_bank1        ; Stack = OrigPg, RtnAdr
     ld      a,h                   ; A = RowCnt
     ex      de,hl                 ; D = AdrOfs, E = Byte, HL = RowAdr
     ex      af,af'                ; A' = RowCnt
-;    ld      a,d
-;    add     h                     ; Add offset to RowAdr
-;    ld      h,a
     ld      a,c                   ; A = ColCnt
     ex      af,af'                ; A = RowCnt, A' = ColCnt
 .loop
-    push    hl                    ; Save RowAdr
+    push    hl                    ; Stack = RowAdr, OrigPg, RtnAdr
     ex      af,af'                ; A = ColCnt, A' = RowCnt
     ld      b,a                   ; B = ColCnt
 .row
@@ -245,7 +245,7 @@ colormap_fill:
     inc     hl
     djnz    .row                  ; Next Column
     ld      c,40                  ; BC = Line Length
-    pop     hl                    ; HL = RowAdr
+    pop     hl                    ; HL = RowAdr; Stack = OrigPg, RtnAdr
     add     hl,bc                 ; HL = Next RowAdr
     ex      af,af'                ; A = RowCnt, A' = ColCnt
     dec     a
@@ -420,14 +420,15 @@ bitmap_getpixel:
     ld      a,(GFX_FLAGS)
     and     GFXM_MASK             ; Mask bits and set flags
     ld      l,a                   ; L = GfxMode
-    ld      ix,_getpixel4         ;
-    jr      z,_dopixel          ;   Do Bloxel 40
-    ld      ix,_getpixel8         ; Bloxel80
-    dec     a                     ; If GfxMode = 1
-    jr      z,_dopixel          ;   Do Bloxel 80
+    ld      h,$FF                 ; Don't update LastX, Last Y
+    ld      ix,_getpixel40        ; If 40 column
+    jr      z,_dopixel            ;   Do Bloxel 40
+    ld      ix,_getpixel80        ; 
+    dec     a                     ; If 80 column
+    jr      z,_dopixel            ;   Do Bloxel 80
     ld      ix,_getpixelm         ;
     dec     a                     ; If GfxMode = 2
-    jr      z,_dopixel          ;   Do Bitmap 1bpp
+    jr      z,_dopixel            ;   Do Bitmap 1bpp
     ld      ix,_getpixelc         ; Else fo Bitmap 4bpp
     jr      _dopixel
 
@@ -442,10 +443,11 @@ bitmap_getpixel:
 bitmap_resetpixel:
     ld      a,(GFX_FLAGS)
     and     GFXM_MASK             ; Mask bits and set flags
+    ld      h,$FF                 ; Update LastX, Last Y
     ld      l,a                   ; L = GfxMode
-    ld      ix,_resetpixel4
+    ld      ix,_resetpixel40
     jr      z,_dopixel            ;   Do Bloxel 40
-    ld      ix,_resetpixel8       ; Bloxel80
+    ld      ix,_resetpixel80
     dec     a                     ; If GfxMode = 1
     jr      z,_dopixel            ;   Do Bloxel 80
     ld      ix,_resetpixelm
@@ -456,47 +458,49 @@ bitmap_resetpixel:
 
 ;-----------------------------------------------------------------------------
 ; Draw pixel
-;  Input: B: Draw color(s3) (0 = Default, $FF = None)
+;  Input: A: Draw color - 0 = Default (4bpp), None (1bpp/Bloxel)
 ;         C: Y-coordinate
 ;        DE: X-coordinate
 ;      Sets: Carry if coordinates out of range
 ; Clobbered: A, HL
 ;-----------------------------------------------------------------------------
 bitmap_setpixel:
+    ld      (PSETCOLOR),a         ; Save DrwClr
     ld      a,(GFX_FLAGS)
     and     GFXM_MASK             ; Mask bits and set flags
+    ld      h,$FF                 ; Update LastX, Last Y
     ld      l,a                   ; L = GfxMode
-    ld      ix,_setpixel4         ;
-    jr      z,.dopixel            ;   Do Bloxel 40
-    ld      ix,_setpixel8         ; Bloxel80
+    ld      ix,_setpixel40        ;
+    jr      z,_dopixel            ;   Do Bloxel 40
+    ld      ix,_setpixel80         ; Bloxel80
     dec     a                     ; If GfxMode = 1
-    jr      z,.dopixel            ;   Do Bloxel 80
+    jr      z,_dopixel            ;   Do Bloxel 80
     ld      ix,_setpixelm         ;
     dec     a                     ; If GfxMode = 2
-    jr      z,.dopixel            ;   Do Bitmap 1bpp
+    jr      z,_dopixel            ;   Do Bitmap 1bpp
     ld      ix,_setpixelc         ; Else fo Bitmap 4bpp
-.dopixel
-    call    _dopixel
-    ld      a,(GFX_FLAGS)
-    and     GFXM_MASK             ; 
-    cp      3                     ; If 4bpp
-    call    nz,_set_cellcolor
-    ret
-
+; On Entry B = Color, C = X-Coord, DE = Y-Coord, H = SaveXY, L = GfxMode 
 _dopixel:
+    push    hl                    ; Stack = SaveXY, RtnAdr
     ld      a,l                   ; A = GfxMode
     call    _check_coords
+    pop     hl                    ; HL = SaveXY; Stack = RtnAdr
     ret     c
     in      a,(IO_BANK1)
     push    af                    ; Stack = OldPg, RtnAdr
     push    bc                    ; Stack = ColorY, OldPg, RtnAdr
     push    de                    ; Stack = X, ColorY, OldPg, RtnAdr
+    push    hl                    ; Stack = SaveXY, X, ColorY, OldPg, RtnAdr
     ld      a,VIDEO_RAM
     out     (IO_BANK1),a
     call    jump_ix
     ex      af,af'                ; A' = NewByte
+    pop     hl                    ; H = SaveXY; Stack = X, ColorY, OldPg, RtnAdr
     pop     de                    ; DE = X; Stack = ColorY, OldPg, RtnAdr
     pop     bc                    ; BC = ColorY; Stack = OldPg, RtnAdr
+    ld      a,h
+    or      a
+    jr      z,.done
     call    _get_varbase          ; HL = VarAdr
     ld      a,BAS_BUFFR           ; Write sysvars
     out     (IO_BANK1),a
@@ -506,29 +510,12 @@ _dopixel:
     ld      (hl),e
     inc     hl
     ld      (hl),d
+.done
     pop     af                    ; A = OldPg; Stack = RtnAdr
     out     (IO_BANK1),a
     ex      af,af'                ; A = NewByte
     ret
 
-_set_cellcolor:
-    ld      a,b                   ; A = Color
-    or      a                     ; If Color = 0
-    ret     z                     ;   Return
-_set_cellcolorm:
-    in      a,(IO_BANK1)
-    ex      af,af'
-    ld      a,VIDEO_RAM
-    out     (IO_BANK1),a
-    ld      a,b
-    call    _calc_1bpp_cell       ; HL = Cell address
-    ld      (hl),a
-    ex      af,af'
-    out     (IO_BANK1),a
-    ret
-
-_getpixel8:
-_getpixel4:
 _getpixelm:
     call    _calc_1bpp_addr           ; DE = BytAdr; BC = PxlOfs
     ld      hl,_ormask1bpp
@@ -540,8 +527,6 @@ _getpixelm:
     ld      a,1                   ; Else return 1
     ret
 
-_setpixel4:
-_setpixel8:
 _resetpixelm:
     call    _calc_1bpp_addr           ; DE = BytAdr; BC = PxlOfs
     ld      hl,_andmask1bpp
@@ -570,11 +555,86 @@ _getpixelc:
 
 
 ; C = Y-coordinate, DE: X-coordinate
-; bloxel
-_resetpixel4:
-_resetpixel8:
-; 1bpp
+_getpixel80:
+    call    _bloxel80
+    jr      _getbloxel
+
+_resetpixel80:
+    call    _bloxel80
+    jr      _resetbloxel
+
+_setpixel80:
+    call    _bloxel80
+    or      (hl)                  ; Set bit 
+    ld      (hl),a                ; Write to screen
+    call    _psetcolor
+    ret     m
+    in      a,(IO_VCTRL)
+    push    af                    ; Stack = IO_VCTRL, RtnAdr
+    or      VCTRL_TEXT_PAGE
+    out     (IO_VCTRL),a
+    call    _bloxel_color
+    pop     af                    ; A = IO_VCTRL; Stack = RtnAdr
+    out     (IO_VCTRL),a
+    ret
+
+_getpixel40:
+    call    _bloxel40
+_getbloxel
+    jr      nz,.notbloxel
+    and     (hl)
+    ret     z
+    xor     a
+    inc     a                     ; A = 1 with flags set
+    ret
+.notbloxel
+    xor     a
+    ret     
+    
+_resetpixel40:
+    call    _bloxel40
+_resetbloxel:
+    jr      z,.reset
+    ld      (hl),$A0              ;   Set to blank
+.reset
+    ld      a,(de)                ; A = BitMsk
+    xor     $FF                   ; Invert Bitmap
+    and     (hl)                  ; Clear Pixel
+    ld      (hl),a
+    ret
+
+_setpixel40:
+    call    _bloxel40
+    jr      z,.set
+    ld      (hl),$A0              ;   Set to blank
+.set
+    or      (hl)                  ; Set bit 
+    ld      (hl),a                ; Write to screen
+    call    _psetcolor
+    ret     m
+    set     2,h
+_bloxel_color    
+    ld      a,(hl)
+    and     $0F
+    or      b
+    ld      (hl),a
+    ret
+
+_psetcolor:
+    ld      a,(PSETCOLOR)
+    or      a
+    ret     m
+    and     $0F
+    rla
+    rla
+    rla
+    rla
+    ld      b,a
+    ret
+
 _setpixelm:
+    ld      (STARTCOL),de
+    ld      (STARTROW),bc
     call    _calc_1bpp_addr       ; DE = BytAdr; BC = PxlOfs
     ld      hl,_ormask1bpp
     add     hl,bc                 ; HL = MskAdr
@@ -582,18 +642,27 @@ _setpixelm:
     ld      a,(de)
     or      b
     ld      (de),a
+    call    _psetcolor
+    ret     m
+    ld      de,(STARTCOL)
+    ld      bc,(STARTROW)
+    call    _calc_1bpp_cell       ; HL = Cell address
+    ld      b,a
+    ld      a,(hl)
+    and     $0F
+    or      b
+    ld      (hl),a
     ret
-; 4bpp
-
 
 _resetpixelc:
     xor     a                     ; DrwClr = 0 (Background)
     jr      _pixelc
 _setpixelc:
-    ld      a,b                   ; A = DrwClr
-    and     $0F                   ; Force color to 0 - 15
-    call    z,bitmap_read_color
+    ld      a,(PSETCOLOR)
+    or      a
+    call    m,bitmap_read_color
 _pixelc
+    and     $0F                   ; Force to 0 - 15
     push    af                    ; Stack = Color, RtnAdr
     call    _calc_4bpp_addr       ; AF = NybOfs, DE = BytAdr; BC = PxlOfs
     pop     hl                    ; H = Color; Stack = RtnAdr
@@ -678,6 +747,53 @@ _calc_byte_addr:
     ex      de,hl                 ; DE = BytAdr
     ex      af,af'
     ld      c,a                   ; BC = PxlOfs
+    ret
+
+_bloxel80:
+    ld      a,80
+    byte    $21                   ; LD HL, over LD A,
+;-----------------------------------------------------------------------------
+; Calculate 40 column bitmap coordinate address
+;   Input: BC: Y-coordinate
+;          DE: X-coordinate
+; Output: A: BitMsk
+;        DE: Coordinate Address
+;        HL: Screen Address
+; Clobbered: BC, HL
+;-----------------------------------------------------------------------------
+_bloxel40:
+    ld      a,40                  ; A = LinLen
+    push    de                    ; Stack = X-Coord, RtnAdr
+    ld      e,a                   ; DE = LineLen
+    ld      a,c                   ; A = Y-Coord
+    ld      hl,SCREEN             
+    add     hl,de                 ; HL = PxlAdr
+.lineloop
+    cp      3        
+    jr      c,.xcoord             ; If A >= 3
+    sub     a,3                   ;   A = A - 3
+    add     hl,de                 ;  PxlAdr += LinLen
+    jr      .lineloop
+.xcoord
+    rlca                          ; A = PxlOfs
+    pop     de                    ; DE = X-Coord
+    sra     e                     ; Column = X-Coord / 2
+    jr      nc,.even              ; If Odd
+    inc     a                     ;   Bump PxlOfs
+.even
+    add     hl,de                 ; PxlAdr += Column
+    ld      de,BITTAB
+.pxlloop
+    or      a
+    jr      z,.pxlmask
+    inc     de
+    dec     a
+    jr      .pxlloop
+.pxlmask
+    ld      a,(hl)                ; A = ScrnChr
+    or      $A0                   ; Convert to GfxChr
+    xor     (hl)                  ; Clear bits 5 and 7
+    ld      a,(de)                ; A = BitMsk
     ret
 
 ; Must preserve AF'

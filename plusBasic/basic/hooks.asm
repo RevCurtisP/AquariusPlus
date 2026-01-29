@@ -56,7 +56,8 @@ text_screen:
     and     a,~VCTRL_MODE_MC      ; Disable graphics screen
     or      a,VCTRL_TEXT_EN       ; Enable text screen
     out     (IO_VCTRL),a
-    ret
+    ld      iy,bitmap_set_mode_nobuff
+    jp      gfx_call
 
 ;-----------------------------------------------------------------------------
 ; Hook 5: Push MAIN onto stack so modified CHEAD will return to it

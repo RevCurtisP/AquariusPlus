@@ -150,12 +150,9 @@ FN_POS:
 ; SCREEN 0,2:? POINT (299,55)
 FN_POINT:
     rst     CHRGET                ; Skip POINT
-    ld      a,(GFX_FLAGS)
-    and     GFXM_1BPP
-    jp      z,POINTX
 _point:
     ld      de,bitmap_getpixel
-    call    _set
+    call    _do_pixel
     jp      push_hl_labbck_sngflt
 
 ;-----------------------------------------------------------------------------
@@ -169,42 +166,16 @@ _point:
 ; SCREEN 0,3:PSET (159,0),2:PAUSE
 ; SCREEN 0,3:PSET (159,0),0:PAUSE
 ST_PSET:
-    ld      a,(GFX_FLAGS)
-    and     GFXM_1BPP
-    jr      nz,_pset
-    ld      a,1
-_scand_rsetcc:
-    ld      (PSETMODE),a
-    call    SCAND                 ; Parse (X,Y)
-    push    hl
-    ld      iy,scale_xy           ; Convert X,Y
-    call    gfx_call
-    ld      a,(PSETMODE)
-    jp      z,RSETCC              ; Semigraphics at screen location?
-    ld      (hl),$A0              ; No, store base semigraphic
-    jp      RSETCC
+    ld      de,bitmap_setpixel
+    jr      _do_pixel
 
 ; SCREEN 0,2:PRESET (160,0)
 ST_PRESET:
-    ld      a,(GFX_FLAGS)
-    and     GFXM_1BPP
-    jr      nz,_preset
-    xor     a
-    jr      _scand_rsetcc
-
-; RUN /pbt/bitmap.bas
-; A: Mode
-_pset:
-    ld      de,bitmap_setpixel
-    call    _set
-    ret
-_preset:
     ld      de,bitmap_resetpixel
-    jr      _set
-_set:
+_do_pixel:
     push    de                    ; Stack = SubAdr, RtnAdr
     call    paren_addr_len        ; C = Y, DE = X
-    call    _getcolor
+    call    _getcolor             ; A = Color
     pop     iy                    ; IY = SubAdr; Stack = RtnAdr
 aux_call_fcerr:
     push    hl                    ; Stack = TxtPtr, RtnAdr
@@ -213,20 +184,17 @@ aux_call_fcerr:
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     ret
 
+; Return optional color arg in A
 _getcolor:
-    ld      b,0
     ld      a,(hl)
     cp      ','                   ; If no comma
-    ret     nz                    ;   Return 0
-    push    bc                    ; Stack = Y, Mode, RtnAdr
-    push    de                    ; Stack = X, Y, Mode, RtnAdr
-    rst     CHRGET                ; Skip comma
-    call    _color_args
-    jp      z,FCERR               ; Error if color is 0
-    ld      a,b
+    ld      a,$FF                 ;   Return -1 (none)
+    ret     nz
+    push    bc                    ; Stack = ModeY, RtnAdr
+    push    de                    ; Stack = X, ModeY, RtnAdr
+    call    get_comma_byte16
     pop     de                    ; DE = X; Stack = Y, RtnAdr
-    pop     bc                    ; BC = Y; Stack = RtnAdr
-    ld      b,a
+    pop     bc                    ; B = Mode, C = Y; Stack = RtnAdr
     ret
 
 ;-----------------------------------------------------------------------------

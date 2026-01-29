@@ -35,7 +35,7 @@ autokey_write_buffer:
 ; Clobbered: A,BC,DE,HL
 ;-----------------------------------------------------------------------------
 fnkey_write_buffer:
-    ex      de,hl                 ; HL = String Address
+    ex      de,hl                 ; HL = StrAdr
     ld      d,FKEYBASE/512        ; 011??000
     and     $0F                   ; 011??000 0 0000XXXX
     rla                           ; 011??000 0 000XXXX0
@@ -44,11 +44,9 @@ fnkey_write_buffer:
     rla                           ; 011??000 0 XXXX0000
     rla                           ; 011??000 X XXX00000
     rl      d                     ; 11??000X 0 XXX00000
-    ld      e,a                   ; DE = Buffer Address
-    call    basbuf_write_bytes
-    inc     de
+    ld      e,a                   ; DE = BufAdr
+    call    basbuf_write_bytes    ; BC = 0, DE = BufPtr
     jp      basbuf_write_byte
-
 
 read_mousewdlt:
     ld      de,MOUSEWDLT

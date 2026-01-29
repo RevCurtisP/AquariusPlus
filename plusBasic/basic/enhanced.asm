@@ -266,6 +266,7 @@ ST_COPY:
 ; Closes all files
 ;-----------------------------------------------------------------------------
 ST_END:
+;;; ToDo: Reset ARGS to 0
     ret     nz                    ; Return if no terminator
     push    af
     call    end_extension         ; Close files, clear error trapping sysvars, etc.

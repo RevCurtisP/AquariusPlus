@@ -69,6 +69,7 @@ FN_PAD:
 ; ? TRIML$("@@@@@@","@");"<"
 ; ? TRIMR$("@@@@@@","@");"<"
 ; ? TRIM$("@@@@@@","@");"<"
+;;; ToDo: Free Arg String after building result string
 FN_TRIM:
     rst     CHRGET            ; Skip TRIM
     jp      m,.token

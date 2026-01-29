@@ -1,4 +1,9 @@
 # plusBASIC Revision History
+ - v0.70a (2026-01-29)
+    - Fixed _fnkey_write_buffer_ incorrectly writing null terminator 
+    - Updated _bitmap_get_pixel_, _bitmap_set_pixel_, and _bitmap_reset_pixel_ to handle bloxel mode
+    - Updated `PSET` and `PRESET` to call _bitmap_set_pixel_ instead of the 8K BASIC routines
+    - Modified hook routine _text_screen_ hook to reset _GFX_FLAGS_
  - v0.70 (2026-01-21)
     - Fixed error messages letter casing
     - Jumping to v0.70 to represent approximate percentage complete to v1.0

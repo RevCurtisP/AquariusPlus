@@ -106,7 +106,6 @@ basbuf_write_bytes:
     or      c
     ret     z
     ld      a,BAS_BUFFR
-    jp      buffer_write_bytes
 ;-----------------------------------------------------------------------------
 ; Write bytes to BASIC buffer
 ; Input: A: Page 

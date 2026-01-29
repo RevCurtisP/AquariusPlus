@@ -74,7 +74,7 @@
  - [x] **APPEND RGBLIST _strvar_=_r_,_g_,_b_|_rgbstr_;...** - Add to a string list of RGB values.<!--palette-->
  - [x] **APPEND TILELIST _strvar_=_tileno_,...** - Add to a string list of tile indexes.<!--sprites-->
  - [-] **ARGS  _arg_{,...} {RETURN _var_{,...}}** - Specify subroutine arguments and return variables.
- - [-] **ARGS** - Return number of RUN arguments<!--runargs-->
+ - [x] **ARGS** - Return number of RUN arguments<!--runargs-->
  - [x] **ARGS$(_argno_)** - Return RUN argument number _index_.<!--runargs-->
  - [x] **ASC(_string_{,_pos_})** - Return ASCII value of specified character in _string_.<!--convert-->
  - [x] **ASC$(_hexstring_)** - Convert hexadecimal string to ASCII string.<!--convert-->
