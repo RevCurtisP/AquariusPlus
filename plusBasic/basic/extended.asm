@@ -64,10 +64,16 @@ ATNCON:
 ;-----------------------------------------------------------------------------
 ; CLS statement
 ; syntax: CLS [fgcolor, bgcolor]
-; Note: Displays cursor in home position after clearing the screen 
-;       This is the same behavior as Extended BASIC and SD-BASIC
 ;-----------------------------------------------------------------------------
 ST_CLS:
+    push    af
+    push    hl
+    ld      iy,screen_status
+    call    gfx_call              ; A = Screen Status
+    and     $C0                   ; If SCREEN 0
+    jp      z,IMERR               ;   Invalid mode error
+    pop     hl
+    pop     af
     ld      iy,screen_clear       ; If no arguments
     jr      z,.cls                ;   Us current default colors
     cp      COLTK

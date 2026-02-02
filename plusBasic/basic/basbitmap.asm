@@ -178,7 +178,7 @@ _do_pixel_no_color:
 _do_pixel:
     push    de                    ; Stack = SubAdr, RtnAdr
     push    af
-    call    paren_addr_len        ; C = Y, DE = X
+    call    paren_coords          ; C = Y, DE = X
     pop     af
     call    nz,_pset_opt          ; A = Color
 iy_aux_call_fcerr

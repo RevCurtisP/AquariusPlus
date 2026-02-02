@@ -690,7 +690,7 @@ FN_PEEK:
 
 .peek_sc_string
     rst     CHRGET                ; Skip $
-    call    paren_addr_len        ; DE = ScrOfs, BC = PkLen
+    call    paren_coords          ; DE = ScrOfs, BC = PkLen
     pop     af                    ; AF = SCFlag; Stack = RtnAdr
     push    hl                    ; Stack = TxtPtr, RtnAdr
     call    .init_peek_string     ; DE = StrPtr, HL = ScrOfs

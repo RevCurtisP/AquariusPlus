@@ -102,11 +102,11 @@ auto_desc
 null_desc:
     word    0,null_desc
 
-; plusBASIC cold start messafe
+; plusBASIC cold start message
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.70a"
+    db "v0.70c"
     db 0
 plusver_len equ $ - plus_version
 plus_len   equ   $ - plus_text

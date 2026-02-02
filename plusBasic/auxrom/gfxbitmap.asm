@@ -76,7 +76,7 @@ bitmap_read_sysvars:
     call    _get_varbase          ; HL = VarBase
     in      a,(IO_BANK1)
     ex      af,af'                ; AF' = OldPg
-    ld      a,b
+    ld      a,BAS_BUFFR
     out     (IO_BANK1),a          ; Map Basic Buffers
     ld      b,(hl)                ; A = BMP_DRAWCOLOR
     inc     hl
@@ -119,6 +119,7 @@ _get_varbase:
     sla     l                     ; HL = SysVar Base (0-12)
     ret
 
+
 ;-----------------------------------------------------------------------------
 ; Write to bitmap draw color system variable
 ; Input: B: Color(s)
@@ -145,10 +146,11 @@ bitmap_fill_byte:
     ld      a,(GFX_FLAGS)
     and     GFXM_MASK             ; A = GfxMode
     ld      d,b                   ; D = FillByte
-    ld      hl,$3000
-    ld      bc,1000
+    ld      hl,$3000+40
+    ld      bc,1000-40
     jp      z,sys_fill_mem_d
-    ld      bc,2000
+    ld      hl,$3000+80
+    ld      bc,2000-80
     dec     a
     jp      z,sys_fill_mem_d
     ld      hl,BANK1_BASE+BMP_BASE
@@ -167,12 +169,26 @@ _fill_video_ram:
     out     (IO_BANK1),a          ; Restore original page
     ret
 
+
 ;-----------------------------------------------------------------------------
 ; Clear Bitmap
 ; Input: B: Screen colors ($FF = use default)
 ; Clobbered: AF,AF',BC,DE,HL
 ;-----------------------------------------------------------------------------
 bitmap_clear_screen:
+    call    _get_varbase          ; HL = VarAdr
+    in      a,(IO_BANK1)
+    ex      af,af'
+    ld      a,BAS_BUFFR           ; Write sysvars
+    out     (IO_BANK1),a
+    inc     hl
+    ld      (hl),0
+    inc     hl
+    ld      (hl),0
+    inc     hl
+    ld      (hl),0
+    ex      af,af'
+    out     (IO_BANK1),a
     ld      a,(GFX_FLAGS)
     and     GFXM_MASK
     push    af                    ; Stack = BmpMode, RtnAdr
@@ -199,8 +215,8 @@ bitmap_fill_color:
     ld      a,(GFX_FLAGS)
     and     GFXM_MASK
     ld      d,b
-    ld      hl,$3400
-    ld      bc,1000               ; BC = Count
+    ld      hl,$3400+40
+    ld      bc,1000-40            ; BC = Count
     or      a
     jp      z,sys_fill_mem_d
     dec     a
@@ -212,8 +228,8 @@ bitmap_fill_color:
     scf
     ret
 .fill80
-    ld      hl,$3000
-    ld      bc,2000
+    ld      hl,$3000+80
+    ld      bc,2000-40
     in      a,(IO_VCTRL)
     or      VCTRL_TEXT_PAGE       ; Select color page
     out     (IO_VCTRL),a
@@ -433,7 +449,7 @@ bitmap_getpixel:
     ld      a,(GFX_FLAGS)
     and     GFXM_MASK             ; Mask bits and set flags
     ld      l,a                   ; L = GfxMode
-    ld      h,$FF                 ; Don't update LastX, Last Y
+    ld      h,0                   ; Don't update LastX, Last Y
     ld      ix,_getpixel40        ; If 40 column
     jr      z,_dopixel            ;   Do Bloxel 40
     ld      ix,_getpixel80        ; 
@@ -484,8 +500,8 @@ bitmap_togglepixel:
     ld      ix,_togglepixelm      ;
     dec     a                     ; If GfxMode = 2
     jr      z,_dopixel            ;   Do Bitmap 1bpp
-    scf                           ; Else return error
-    ret
+    ld      ix,_togglepixelc      ;
+    jr      _dopixel
 
 ;-----------------------------------------------------------------------------
 ; Draw pixel
@@ -708,6 +724,9 @@ _pixelm:
     ld      a,(de)
     ret
 
+_togglepixelc:
+    ld      a,$FF
+    jr      _pixelc
 _resetpixelc:
     xor     a                     ; DrwClr = 0 (Background)
     jr      _pixelc
@@ -715,28 +734,45 @@ _setpixelc:
     ld      a,(PSETCOLOR)
     or      a
     call    m,bitmap_read_color
-_pixelc
     and     $0F                   ; Force to 0 - 15
+_pixelc:
     push    af                    ; Stack = Color, RtnAdr
     call    _calc_4bpp_addr       ; AF = NybOfs, DE = BytAdr; BC = PxlOfs
     pop     hl                    ; H = Color; Stack = RtnAdr
     ld      a,h                   ; A = Color (preserve flags)
-    jr      nz,.noshift           ; If Odd X-coordinate
-    rla                           ; Shift color to high nybble
+    rla                           
+    jr      nc,.notxor            ; If $FF
+    push    bc
+    call    .getmask              ;   B = Mask, C = $FF
+    ld      a,b
+    xor     $FF
+    ld      b,a                   ;   B = Mask ^ $FF
+    ld      a,(de)                ;   A = Byte
+    xor     $FF                   ;   Flip Bits
+    and     b                     ;   Mask it
+    pop     bc
+    jr      .noshift              ; Else
+.notxor
+    ld      a,h                   ;   A = Color
+    jr      nz,.noshift           ;   If Odd X-coordinate
+    rla                           ;   Shift color to high nybble
     rla
     rla
     rla
 .noshift
-    ld      hl,_setmask
-    add     hl,bc                 ; HL = MskAdr
-    ld      b,(hl)                ; B = BitMsk
-    ld      c,a
+    call    .getmask              ; B = Mask, C = Color
     ld      a,(de)
     and     b
     or      c
     ld      (de),a
     ret
-
+.getmask
+    ld      hl,_setmask
+    add     hl,bc                 ;   HL = MskAdr
+    ld      b,(hl)                ;   B = BitMsk
+    ld      c,a
+    ret
+    
 
 ;-----------------------------------------------------------------------------
 ; Calculate 1bpp bitmap color cell address

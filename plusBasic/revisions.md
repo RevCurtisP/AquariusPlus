@@ -1,4 +1,10 @@
 # plusBASIC Revision History
+ - v0.70c (2026-02-02)
+    - Fixed bug in bitmap_read_sysvars causing `COLOR`, `POSX`, and `POSY` to return incorrect values
+    - Fixed bug in _bitmap_get_pixel_ causing `POINT()` to update last X and Y coordinates
+    - _bitmap_clear_screen_ and `CLEAR BITMAP` in bloxel mode no longer clear top line of text, change border
+    - `CLS` generates _Invalid mode error_ when text screen is disabled.
+    - _bitmap_togglepixel_ and `PSET (x,y),XOR` now support 4bpp mode
  - v0.70b (2026-02-02)
     - Added kernel routine _bitmap_togglepixel_ and `,XOR` option to `PSET` statement
     - Implemented flag _GFXM_TXPG_ in _GFX_FLAGS_ and added separate graphics mode save sysvars for Screen 2

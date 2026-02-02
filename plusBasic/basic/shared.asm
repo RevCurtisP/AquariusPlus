@@ -248,9 +248,9 @@ get_array_pointer:
     ret
 
 
-paren_addr_len:
+paren_coords:
     SYNCHKC '('
-    call    get_addr_len
+    call    get_coords
     jr      close_paren
 
 ; Returns C = Character
@@ -462,12 +462,19 @@ get_page_addr_len:
 ;         DE = Address
 ; Clobbers: A
 ;-----------------------------------------------------------------------------
-get_addr_len:
+get_coords:
     call    GET_POS_INT           ; DE = Address
+    call    get_comma_len
+    ld      a,b
+    or      a
+    ret     z
+    jp      FCERR
+
 get_comma_len:
     push    de                    ; Stack = Address, Page+Flag
     call    get_comma
     call    GET_POS_INT           ; DE = Length
+    jp      nz,FCERR
     ld      b,d
     ld      c,e                   ; BC = Length
     pop     de                    ; DE = Address, Stack = Page+Flag

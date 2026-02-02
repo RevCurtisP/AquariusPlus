@@ -1,4 +1,9 @@
 # plusBASIC Release History
+ - v0.70c (2026-02-02)
+    - Fixed bugs in `COLOR`, `POSX`, `POSY`, and `POINT()`
+    - `CLEAR BITMAP` in bloxel mode no longer clears top line of text or changes border
+    - `CLS` generates _Invalid mode error_ when text screen is disabled.
+    - `PSET (x,y),XOR` now support 4bpp mode
  - v0.70b (2026-02-02)
     - Added `,XOR` option to `PSET` statement
     - Screens 1 and 2 now have separate bloxel mode save sysvars

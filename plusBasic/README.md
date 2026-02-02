@@ -303,19 +303,19 @@
  - [ ] **PEEKSCREEN$(_address_,_length_)** - Read string from screen RAM.<!--PEEK-->
  - [ ] **PLAY SAMPLE «!_ext_addr_»|«@_page_,_address_»** - Play digital sample from previously loaded file.<!--PLAYSAMPLE-->
  - [-] **PLAY TRACK \{_filespec_}** - Play specified or previously loaded tracker file.<!--track-->
- - [ ] **POINT(_x_,_y_)** - Return status of bloxel or pixel.<!--pixel-->
+ - [X] **POINT(_x_,_y_)** - Return status of bloxel or pixel.<!--pixel-->
  - [ ] **POKE «!_ext_addr_»|«{@_page_,}_address_»,_byte_|_string_{;..}.** - Write bytes and/or strings to memory.<!--POKE-->
  - [ ] **POKE COLOR _address_,_byte_|_string_{;...}** - Write bytes and/or strings to color RAM.<!--POKESCREEN-->
  - [ ] **POKE SCREEN _address_,_byte_|_string_{;...}** - Write bytes and/or strings to screen RAM.<!--POKESCREEN-->
  - [x] **POS(_expression_)** - Return cursor position in current line.<!--cursor-->
- - [ ] **POSX** - Return last pixel or bloxel x-position.<!--pixel-->
- - [ ] **POSY** - Return 1bpp pixel or bloxel y-position.<!--pixel-->
- - [ ] **PRESET (_x_,_y_)** - Erase bloxel or pixel.<!--pixel-->
+ - [X] **POSX** - Return last pixel or bloxel x-position.<!--pixel-->
+ - [X] **POSY** - Return 1bpp pixel or bloxel y-position.<!--pixel-->
+ - [X] **PRESET (_x_,_y_)** - Erase bloxel or pixel.<!--pixel-->
  - [ ] **PRINT __ {@(_x_,_y_)} TAB(_integer_)|SPC(_integer_)|_expression_|;|,{...}** - Display data on screen.<!--print-->
  - [ ] **PSG _register_,_byte_{,...}** - Write bytes to PSG register
  - [ ] **PSG _register_,_byte_{;...}** - Not implemented
- - [ ] **PSET (_x_,_y_){,color}** - Draw bloxel or pixel.<!--pixel-->
- - [ ] **PSET (_x_,_y_),XOR** - Toggle bloxel or pixel.<!--pixel-->
+ - [X] **PSET (_x_,_y_){,color}** - Draw bloxel or pixel.<!--pixel-->
+ - [X] **PSET (_x_,_y_),XOR** - Toggle bloxel or pixel.<!--pixel-->
  - [ ] **PUT SCREEN {CHR|ATTR} (_x_,y_) \*_array_|^_strvar_** - Copy clip from array or string variable to text screen.<!--PUTSCREEN-->
  - [ ] **PUT TILEMAP (_x_,y_),\*_array_|^_strvar_** - Copy clip from array or string variable to tilemap.<!--PUTTILE-->
  - [ ] **READ _var_{,...}** - Read values from DATA statements into variables.<!--READ-->

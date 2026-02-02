@@ -1244,6 +1244,7 @@ NXTCON: ld      b,FORTK           ;[M80] PUT A 'FOR' TOKEN ONTO THE STACK
         inc     sp                ;[M80] THE "TOKEN" ONLY TAKES ONE BYTE OF STACK SPACE
 ;[M80] NEW STATEMENT FETCHER
 ;;; ToDo: Add hook mechanism (user defined, ON TIMER, ON MOUSE, etc...)
+;;;       Allow direct mode shortcuts LS and $ for DIR, / for LIST, etx.
 NEWSTT: ld      (SAVTXT),hl
         call    INCNTC            ;
         ld      a,(hl)            ;;Get Terminator
