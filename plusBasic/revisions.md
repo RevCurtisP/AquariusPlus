@@ -1,4 +1,7 @@
 # plusBASIC Revision History
+ - v0.70b (2026-02-02)
+    - Added kernel routine _bitmap_togglepixel_ and `,XOR` option to `PSET` statement
+    - Implemented flag _GFXM_TXPG_ in _GFX_FLAGS_ and added separate graphics mode save sysvars for Screen 2
  - v0.70a (2026-01-29)
     - Fixed _fnkey_write_buffer_ incorrectly writing null terminator 
     - Updated _bitmap_get_pixel_, _bitmap_set_pixel_, and _bitmap_reset_pixel_ to handle bloxel mode

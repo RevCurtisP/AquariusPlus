@@ -6,12 +6,17 @@
 ; Initialize bitmap sysvars
 ;-----------------------------------------------------------------------------
 ; Ofs Desription
-;  0  Default Colors
-;  1  Last Y-Coord
-; 2-3 Last X-Coord
+;  0  Screen 1 Bloxel Mode
+;  4  Screen 3 Bloxel Mode
+;  8  1bpp Pixel Mode
+; 12  4bpp Pixel Mode
+; 16  Screen 2 Bloxel Mode
+; +0  Default Colors
+; +1  Last Y-Coord
+; +2  Last X-Coord
 
 _bmp_defaults
-    byte    $06,0,0,0,$06,0,0,0,$70,0,0,0,$07,0,0,0
+    byte    $06,0,0,0,$06,0,0,0,$70,0,0,0,$07,0,0,0,$06,0,0,0
 _bmp_deflen = $ - _bmp_defaults   
 
 bitmap_init_vars:
@@ -44,9 +49,13 @@ bitmap_set_mode:
     cp      2                     ; If Text
     jr      nc,.write             ;   
     ld      a,c                   ;   A = VCTRL
-    and     a,VCRTL_80COL_EN      ;   If 40 column
-    jr      z,.write              ;     A = 0
-    ld      a,1                   ;   Elss A =1
+    and     a,VCRTL_80COL_EN      ;   If 80 column
+    ld      a,1                   ;     A = 1
+    jr      nz,.write     
+    ld      a,c                   ;   A = VCTRL
+    and     VCTRL_TEXT_PAGE 
+    jr      z,.write              ;   If Screen 2
+    ld      a,GFXM_TXPG           ;     A = 16
 .write 
     or      b                     ; Include BufFlg
     ld      c,a                   ; C = New flags
@@ -67,7 +76,7 @@ bitmap_read_sysvars:
     call    _get_varbase          ; HL = VarBase
     in      a,(IO_BANK1)
     ex      af,af'                ; AF' = OldPg
-    ld      a,BAS_BUFFR
+    ld      a,b
     out     (IO_BANK1),a          ; Map Basic Buffers
     ld      b,(hl)                ; A = BMP_DRAWCOLOR
     inc     hl
@@ -98,12 +107,16 @@ bitmap_read_color:
 
 ; In: A: GfxMode; Out: HL: VarBase
 _get_varbase:
+    ld      h,high(BANK1_BASE+GFXVBASE)
+    ld      a,(GFX_FLAGS)
+    and     GFXM_TXPG
+    ld      l,a                   ; If Screen 1
+    ret     nz                    ;   Return 16
     ld      a,(GFX_FLAGS)
     and     GFXM_MASK             ; A = BmpMode
-    ld      h,high(BANK1_BASE+GFXVBASE)
     ld      l,a
     sla     l
-    sla     l                     ; HL = SysVar Base
+    sla     l                     ; HL = SysVar Base (0-12)
     ret
 
 ;-----------------------------------------------------------------------------
@@ -456,6 +469,24 @@ bitmap_resetpixel:
     ld      ix,_resetpixelc       ; Else fo Bitmap 4bpp
     jr      _dopixel
 
+
+bitmap_togglepixel:
+    ld      (PSETCOLOR),a         ; Save DrwClr
+    ld      a,(GFX_FLAGS)
+    and     GFXM_MASK             ; Mask bits and set flags
+    ld      h,$FF                 ; Update LastX, Last Y
+    ld      l,a                   ; L = GfxMode
+    ld      ix,_togglepixel40     ;
+    jr      z,_dopixel            ;   Do Bloxel 40
+    ld      ix,_togglepixel80         ; Bloxel80
+    dec     a                     ; If GfxMode = 1
+    jr      z,_dopixel            ;   Do Bloxel 80
+    ld      ix,_togglepixelm      ;
+    dec     a                     ; If GfxMode = 2
+    jr      z,_dopixel            ;   Do Bitmap 1bpp
+    scf                           ; Else return error
+    ret
+
 ;-----------------------------------------------------------------------------
 ; Draw pixel
 ;  Input: A: Draw color - 0 = Default (4bpp), None (1bpp/Bloxel)
@@ -603,6 +634,19 @@ _resetbloxel:
     ld      (hl),a
     ret
 
+_togglepixel80:
+    call    _bloxel80
+    jr      _togglepixel
+_togglepixel40:
+    call    _bloxel40
+_togglepixel:
+    jr      z,.set
+    ld      (hl),$A0              ;   Set to blank
+.set
+    xor     (hl)                  ; Set bit 
+    ld      (hl),a                ; Write to screen
+    ret
+
 _setpixel40:
     call    _bloxel40
     jr      z,.set
@@ -632,14 +676,16 @@ _psetcolor:
     ld      b,a
     ret
 
+_togglepixelm:
+    call    _pixelm
+    xor     b
+    ld      (de),a
+    ret
+
 _setpixelm:
     ld      (STARTCOL),de
     ld      (STARTROW),bc
-    call    _calc_1bpp_addr       ; DE = BytAdr; BC = PxlOfs
-    ld      hl,_ormask1bpp
-    add     hl,bc                 ; HL = MskAdr
-    ld      b,(hl)                ; B = BitMsk
-    ld      a,(de)
+    call    _pixelm
     or      b
     ld      (de),a
     call    _psetcolor
@@ -652,6 +698,14 @@ _setpixelm:
     and     $0F
     or      b
     ld      (hl),a
+    ret
+
+_pixelm:
+    call    _calc_1bpp_addr       ; DE = BytAdr; BC = PxlOfs
+    ld      hl,_ormask1bpp
+    add     hl,bc                 ; HL = MskAdr
+    ld      b,(hl)                ; B = BitMsk
+    ld      a,(de)
     ret
 
 _resetpixelc:
@@ -1038,6 +1092,10 @@ bitmap_get:
 
 .get_4bpp
     
+bitmap_put:
+    ret
+    
+    
 ;------------------------------------------------------------------------------
 ; Draw Character on 1bpp Bitmap Screen
 ; Input: BC: Column (0-39)
@@ -1046,7 +1104,7 @@ bitmap_get:
 ; Sets: Carry if coordinate out of range
 ; Clobbered: A, B, DE, HL
 ;------------------------------------------------------------------------------
-bitmap_put_char:
+bitmap_putchar:
     call    _char_bounds          ; If ColRow out of bounds
     ret     c                     ; Return Carry Set
     push    hl                    ; Stack = ChrAdr, RtnAdr

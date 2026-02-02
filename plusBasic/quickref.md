@@ -63,13 +63,14 @@
 
 ## Statements and Functions
  - **ABS(_float_)** - Return absolute value of expression.
- - **APPEND _filespec_,«!_ext_addr_»|«{@_page_,}_address_** - Append memory to binary file.
+ - **APPEND _filespec_,«!_ext_addr_»|«{@_page_,}_address_»,_length_** - Append memory to binary file.
  - **APPEND _filespec_,^_strvar_** - Append string to file.
  - **APPEND _filespec_,\*_array_{,ASC|ASCX}** - Append string array to file.
  - **APPEND ATTRLIST _strvar_=_attr_,...** - Add to string list of sprite and/or tile attributes.
  - **APPEND BYTELIST _strvar_=_byte_,...** - Add to a string list of bytes.
  - **APPEND INTLIST _strvar_=_integer_,...** - Add to a string list of integers.
  - **APPEND PALETTELIST _strvar_=_palette_,...** - Add to a string list of palette numbers.
+ - **APPEND PSGLIST _strvar_=_register_,_value_{;...}** - _Proposed enhancement_.
  - **APPEND RGBLIST _strvar_=_r_,_g_,_b_|_rgbstr_;...** - Add to a string list of RGB values.
  - **APPEND TILELIST _strvar_=_tileno_,...** - Add to a string list of tile indexes.
  - **ARGS  _arg_{,...} {RETURN _var_{,...}}** - Specify subroutine arguments and return variables.
@@ -313,7 +314,8 @@
  - **PRINT {@(_x_,_y_)} TAB(_integer_)|SPC(_integer_)|_expression_|;|,{...}** - Display data on screen.
  - **PSG _register_,_byte_{,...}** - Write bytes to PSG register
  - **PSG _register_,_byte_{;...}** - Not implemented
- - **PSET (_x_,_y_)** - Draw bloxel or pixel.
+ - **PSET (_x_,_y_){,color}** - Draw bloxel or pixel.
+ - **PSET (_x_,_y_),XOR** - Toggle bloxel or pixel.
  - **PUT SCREEN {CHR|ATTR} (_x_,y_) \*_array_|^_strvar_** - Copy clip from array or string variable to text screen.
  - **PUT TILEMAP (_x_,y_),\*_array_|^_strvar_** - Copy clip from array or string variable to tilemap.
  - **READ _var_{,...}** - Read values from DATA statements into variables.
@@ -346,8 +348,8 @@
  - **RUN _filespec_** - Load and run specified program, cartridge image, or FPGA core.
  - **RUN _filespec_ _arg_{ ...}** - _Not implemented_.
  - **SAVE _filespec_{,ASC|CAQ|BIN}** - Save BASIC program to CAQ or ASCII or raw tokenized file.
- - **SAVE _filespec_,{@_page_,}_address_,_length_** - Save memory to binary file.
- - **SAVE _filespec_,\*_array_** - Save numeric or string array data to file.
+ - **SAVE _filespec_,«!_ext_addr_»|«{@_page_,}_address_»,_length_** - Save memory to binary file.
+ - **SAVE _filespec_,\*_array_** {ASC|ASCX} - Save numeric or string array data to file.
  - **SAVE _filespec_,^_strvar_** - Save string to file.
  - **SAVE BITMAP _filespec_** - Save bitmap screen data from Video RAM to file.
  - **SAVE CHRSET _filespec_** - Save curent character set to file.

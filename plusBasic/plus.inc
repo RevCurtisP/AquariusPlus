@@ -285,11 +285,11 @@ GFXM_WIDE   equ $01     ; GFX_FLAGS: 80 colum mode (bloxels)
 GFXM_1BPP   equ $02     ; GFX_FLAGS: Bitmap mode (1bpp)
 GFXM_4BPP   equ $03     ; GFX_FLAGS: Bitmap mode (4bpp)
 GFXM_MASK   equ $03     ; Bit mask for IO_VCTRL read
-GFXM_BLXF   equ $04     ; Force Bloxel mode`
-GFXM_BLXA   equ $08     ; Use alternate bloxel mode
-GFXBUFLAG   equ $06     ; GFX_FLAGS: Bitmap operations are buffered
-GFXSETMSK   equ $F8     ; Bit mask for OR with IO_VCTRL bits
-GFXBMPMSK   equ $0F     ; Mask for Bitmap Mode
+GFXM_BLXF   equ $04     ; GFX_FLAGS: Force Bloxel mode
+GFXM_BLXA   equ $08     ; GFX_FLAGS: Use alternate bloxel mode
+GFXM_TXPG   equ $10     ; GFX_FLAGS: Alt Text Page (SCREEN 2) (Must be 16)
+GFXBUFLAG   equ $20     ; GFX_FLAGS: Bitmap operations are buffered
+GFXSETMSK   equ $E0     ; Bit Mask for updating GFX_FLAGS
 ; BASIC extended control flags
 
 NEWSTTHKS   equ $01     ; Active NEWSTT hooks

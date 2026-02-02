@@ -1,4 +1,7 @@
 # plusBASIC Release History
+ - v0.70b (2026-02-02)
+    - Added `,XOR` option to `PSET` statement
+    - Screens 1 and 2 now have separate bloxel mode save sysvars
  - v0.70a (2026-01-29)
     - Fixed bug in `SET FNKEY`
     - `PSET` optional color argument now supported in bloxel mode

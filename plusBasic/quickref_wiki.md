@@ -63,13 +63,14 @@
 
 ## Statements and Functions
  - **[ABS(_float_)](BASIC-Math-Functions#abs)** - Return absolute value of expression.
- - **[APPEND _filespec_,«!_ext_addr_»|«{@_page_,}_address_](BASIC-SAVE-and-APPEND-Statements#append)** - Append memory to binary file.
+ - **[APPEND _filespec_,«!_ext_addr_»|«{@_page_,}_address_»,_length_](BASIC-SAVE-and-APPEND-Statements#append)** - Append memory to binary file.
  - **[APPEND _filespec_,^_strvar_](BASIC-SAVE-and-APPEND-Statements#append)** - Append string to file.
  - **[APPEND _filespec_,\*_array_{,ASC|ASCX}](BASIC-SAVE-and-APPEND-Statements#append)** - Append string array to file.
  - **[APPEND ATTRLIST _strvar_=_attr_,...](BASIC-Sprite-Statements-and-Functions#append-attrlist)** - Add to string list of sprite and/or tile attributes.
  - **[APPEND BYTELIST _strvar_=_byte_,...](BASIC-Stringlist-Statements#append-bytelist)** - Add to a string list of bytes.
  - **[APPEND INTLIST _strvar_=_integer_,...](BASIC-Stringlist-Statements#append-intlist)** - Add to a string list of integers.
  - **[APPEND PALETTELIST _strvar_=_palette_,...](BASIC-Sprite-Statements-and-Functions#append-palettelist)** - Add to a string list of palette numbers.
+ - **APPEND PSGLIST _strvar_=_register_,_value_{;...}** - _Proposed enhancement_.
  - **[APPEND RGBLIST _strvar_=_r_,_g_,_b_|_rgbstr_;...](BASIC-Palette-Statements-and-Functions#append-rgblist)** - Add to a string list of RGB values.
  - **[APPEND TILELIST _strvar_=_tileno_,...](BASIC-Sprite-Statements-and-Functions#append-tilelist)** - Add to a string list of tile indexes.
  - **ARGS  _arg_{,...} {RETURN _var_{,...}}** - Specify subroutine arguments and return variables.
@@ -313,7 +314,8 @@
  - **[PRINT {@(_x_,_y_)} TAB(_integer_)|SPC(_integer_)|_expression_|;|,{...}](BASIC-PRINT-Statements#print)** - Display data on screen.
  - **PSG _register_,_byte_{,...}** - Write bytes to PSG register
  - **PSG _register_,_byte_{;...}** - Not implemented
- - **[PSET (_x_,_y_)](BASIC-Bloxel-and-Pixel-Functions#pset)** - Draw bloxel or pixel.
+ - **[PSET (_x_,_y_){,color}](BASIC-Bloxel-and-Pixel-Functions#pset)** - Draw bloxel or pixel.
+ - **[PSET (_x_,_y_),XOR](BASIC-Bloxel-and-Pixel-Functions#pset)** - Toggle bloxel or pixel.
  - **[PUT SCREEN {CHR|ATTR} (_x_,y_) \*_array_|^_strvar_](BASIC-PUT-SCREEN-Statement#put-screen)** - Copy clip from array or string variable to text screen.
  - **[PUT TILEMAP (_x_,y_),\*_array_|^_strvar_](BASIC-PUT-TILEMAP-Statement#put-tilemap)** - Copy clip from array or string variable to tilemap.
  - **[READ _var_{,...}](BASIC-READ-Statement#read)** - Read values from DATA statements into variables.
@@ -346,8 +348,8 @@
  - **[RUN _filespec_](BASIC-RUN-Command-and-ARGS-Functions#run)** - Load and run specified program, cartridge image, or FPGA core.
  - **RUN _filespec_ _arg_{ ...}** - _Not implemented_.
  - **[SAVE _filespec_{,ASC|CAQ|BIN}](BASIC-SAVE-and-APPEND-Statements#save)** - Save BASIC program to CAQ or ASCII or raw tokenized file.
- - **[SAVE _filespec_,{@_page_,}_address_,_length_](BASIC-SAVE-and-APPEND-Statements#save)** - Save memory to binary file.
- - **[SAVE _filespec_,\*_array_](BASIC-SAVE-and-APPEND-Statements#save)** - Save numeric or string array data to file.
+ - **[SAVE _filespec_,«!_ext_addr_»|«{@_page_,}_address_»,_length_](BASIC-SAVE-and-APPEND-Statements#save)** - Save memory to binary file.
+ - **[SAVE _filespec_,\*_array_](BASIC-SAVE-and-APPEND-Statements#save)** {ASC|ASCX} - Save numeric or string array data to file.
  - **[SAVE _filespec_,^_strvar_](BASIC-SAVE-and-APPEND-Statements#save)** - Save string to file.
  - **[SAVE BITMAP _filespec_](BASIC-BITMAP-File-Statements#save-bitmap)** - Save bitmap screen data from Video RAM to file.
  - **[SAVE CHRSET _filespec_](BASIC-CHRSET-and-CHRDEF-Statements#save-chrset)** - Save curent character set to file.

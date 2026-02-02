@@ -152,7 +152,7 @@ FN_POINT:
     rst     CHRGET                ; Skip POINT
 _point:
     ld      de,bitmap_getpixel
-    call    _do_pixel
+    call    _do_pixel_no_color
     jp      push_hl_labbck_sngflt
 
 ;-----------------------------------------------------------------------------
@@ -167,16 +167,25 @@ _point:
 ; SCREEN 0,3:PSET (159,0),0:PAUSE
 ST_PSET:
     ld      de,bitmap_setpixel
+    or      $FF
     jr      _do_pixel
 
 ; SCREEN 0,2:PRESET (160,0)
 ST_PRESET:
     ld      de,bitmap_resetpixel
+_do_pixel_no_color:
+    xor     a
 _do_pixel:
     push    de                    ; Stack = SubAdr, RtnAdr
+    push    af
     call    paren_addr_len        ; C = Y, DE = X
-    call    _getcolor             ; A = Color
+    pop     af
+    call    nz,_pset_opt          ; A = Color
+iy_aux_call_fcerr
     pop     iy                    ; IY = SubAdr; Stack = RtnAdr
+    cp      XORTK
+    jr      nz,aux_call_fcerr
+    ld      iy,bitmap_togglepixel
 aux_call_fcerr:
     push    hl                    ; Stack = TxtPtr, RtnAdr
     call    aux_call
@@ -185,17 +194,30 @@ aux_call_fcerr:
     ret
 
 ; Return optional color arg in A
-_getcolor:
+_pset_opt:
     ld      a,(hl)
     cp      ','                   ; If no comma
     ld      a,$FF                 ;   Return -1 (none)
     ret     nz
+    rst     CHRGET                ; Skip Comma
+    cp      ANDTK
+    jr      z,skip_char
+    cp      XORTK
+    jr      z,skip_char
     push    bc                    ; Stack = ModeY, RtnAdr
     push    de                    ; Stack = X, ModeY, RtnAdr
-    call    get_comma_byte16
+    call    get_byte16
     pop     de                    ; DE = X; Stack = Y, RtnAdr
     pop     bc                    ; B = Mode, C = Y; Stack = RtnAdr
     ret
+.token
+
+skip_char:
+    push    af
+    rst     CHRGET
+    pop     af
+    ret
+
 
 ;-----------------------------------------------------------------------------
 ; Return current bitmap mode

@@ -24,13 +24,13 @@ _jump_table:
     jp      just_ret              ; C021 (bitmap_move)
     jp      just_ret              ; C024 (bitmap_setcell)
     jp      just_ret              ; C027 
-    jp      just_ret              ; C02A 
+    jp      bitmap_togglepixel    ; C02A Toggle pixel
     jp      bitmap_setpixel       ; C02D Draw pixel
-    jp      bitmap_resetpixel     ; C030 Erase pixel on 1 bpp bitmap screen
+    jp      bitmap_resetpixel     ; C030 Erase pixel
     jp      bitmap_getpixel       ; C033 Return pixel/bloxel at position
     jp      bitmap_get            ; C036 [future] Read Bitmap Screen Section into Buffer
-    jp      just_ret              ; C039 (bitmap_put)
-    jp      just_ret              ; C03C (bitmap_putchar)
+    jp      bitmap_put            ; C039 (bitmap_put)
+    jp      bitmap_putchar        ; C03C (bitmap_putchar)
     jp      just_ret              ; C03F (bitmap_putstring)
     jp      just_ret              ; C042 (bitmap_putclip)
     jp      colormap_fill         ; C045 Fill 1bpp Color Map Rectangle with Byte

@@ -314,7 +314,8 @@
  - [ ] **PRINT __ {@(_x_,_y_)} TAB(_integer_)|SPC(_integer_)|_expression_|;|,{...}** - Display data on screen.<!--print-->
  - [ ] **PSG _register_,_byte_{,...}** - Write bytes to PSG register
  - [ ] **PSG _register_,_byte_{;...}** - Not implemented
- - [ ] **PSET (_x_,_y_)** - Draw bloxel or pixel.<!--pixel-->
+ - [ ] **PSET (_x_,_y_){,color}** - Draw bloxel or pixel.<!--pixel-->
+ - [ ] **PSET (_x_,_y_),XOR** - Toggle bloxel or pixel.<!--pixel-->
  - [ ] **PUT SCREEN {CHR|ATTR} (_x_,y_) \*_array_|^_strvar_** - Copy clip from array or string variable to text screen.<!--PUTSCREEN-->
  - [ ] **PUT TILEMAP (_x_,y_),\*_array_|^_strvar_** - Copy clip from array or string variable to tilemap.<!--PUTTILE-->
  - [ ] **READ _var_{,...}** - Read values from DATA statements into variables.<!--READ-->

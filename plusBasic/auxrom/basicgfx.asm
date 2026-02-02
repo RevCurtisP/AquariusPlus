@@ -245,7 +245,7 @@ bas_put_chr:
     pop     hl                    ; HL = BufAdr, Stack = Row, Col, RtnAdr
     pop     de                    ; DE = Line; Stack = Col, RtnAdr
     pop     bc                    ; BC = Col; Stack = RtnAdr
-    jp      bitmap_put_char       ; Put char to bitmap and return
+    jp      bitmap_putchar        ; Put char to bitmap and return
 
 ; Called from ST_RESET_CHR
 ; On entry: A = ChrASC
