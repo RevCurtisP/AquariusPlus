@@ -231,7 +231,7 @@
  - **LEN(_string_)** - Return length of string.
  - **LEN(\*_array_)** - Return total length of array data.
  - **\{LET} _var_=_expression_** - Define and assigns value to variable.
- - **LINE {(_x1_,_y1_)}-(_x2_,_y2_){,{_color_}{,B{F}}}}** - _Not implemented._
+ - **LINE (_x1_,_y1_)-(_x2_,_y2_){,_color_|PRESET|XOR}** - Draw line of bloxels or pixels.
  - **LINE stringvar** - Read an entire line of input from keyboard.
  - **LINE INPUT #channel,stringvar** - Read an entire line of input from keyboard or file.
  - **LIST {_lineref_}** - Display program lines starting at beginning of program or specified line.
@@ -303,19 +303,19 @@
  - **PEEKSCREEN$(_address_,_length_)** - Read string from screen RAM.
  - **PLAY SAMPLE «!_ext_addr_»|«@_page_,_address_»** - Play digital sample from previously loaded file.
  - **PLAY TRACK \{_filespec_}** - Play specified or previously loaded tracker file.
- - **POINT(_x_,_y_)** - Return status of bloxel or pixel.
+ - [X] **POINT(_x_,_y_)** - Return status of bloxel or pixel.
  - **POKE «!_ext_addr_»|«{@_page_,}_address_»,_byte_|_string_{;..}.** - Write bytes and/or strings to memory.
  - **POKE COLOR _address_,_byte_|_string_{;...}** - Write bytes and/or strings to color RAM.
  - **POKE SCREEN _address_,_byte_|_string_{;...}** - Write bytes and/or strings to screen RAM.
  - **POS(_expression_)** - Return cursor position in current line.
- - **POSX** - Return last pixel or bloxel x-position.
- - **POSY** - Return 1bpp pixel or bloxel y-position.
- - **PRESET (_x_,_y_)** - Erase bloxel or pixel.
+ - [X] **POSX** - Return last pixel or bloxel x-position.
+ - [X] **POSY** - Return 1bpp pixel or bloxel y-position.
+ - [X] **PRESET (_x_,_y_)** - Erase bloxel or pixel.
  - **PRINT {@(_x_,_y_)} TAB(_integer_)|SPC(_integer_)|_expression_|;|,{...}** - Display data on screen.
  - **PSG _register_,_byte_{,...}** - Write bytes to PSG register
  - **PSG _register_,_byte_{;...}** - Not implemented
- - **PSET (_x_,_y_){,color}** - Draw bloxel or pixel.
- - **PSET (_x_,_y_),XOR** - Toggle bloxel or pixel.
+ - [X] **PSET (_x_,_y_){,color}** - Draw bloxel or pixel.
+ - [X] **PSET (_x_,_y_),XOR** - Toggle bloxel or pixel.
  - **PUT SCREEN {CHR|ATTR} (_x_,y_) \*_array_|^_strvar_** - Copy clip from array or string variable to text screen.
  - **PUT TILEMAP (_x_,y_),\*_array_|^_strvar_** - Copy clip from array or string variable to tilemap.
  - **READ _var_{,...}** - Read values from DATA statements into variables.

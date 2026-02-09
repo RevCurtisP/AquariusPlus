@@ -106,6 +106,20 @@ TBFTOP      equ $3836   ; Address after top temporary string buffer
 IRQSAVSTK   equ $3838   ; Stack position after irq_handler has saved all registers
 ;       $383A - $3840   ; Unused (5 bytes)
 
+
+; For bitmap_line
+BMP_DX      equ $38E4   ; FACLO, FACMO
+BMP_DY      equ $38E6   ; FACHO, FAC
+BMP_X0      equ $38E8   ; FBUFFR
+BMP_X1      equ $38EA   ;
+BMP_Y0      equ $38EC   ;
+BMP_Y1      equ $38EE   ;
+BMP_SX      equ $38F0
+BMP_SY      equ $38F2
+BMP_ERROR   equ $38F4
+BMP_E2      equ $38F6   ; RESHO
+
+
 ; Temporary Variables stored in FILNAM+FILNAM ($3851-$385C), RESMO-RESLO ($38F7-$38F8)
 ; bitmap_get and bitmap_set
 BMPMODE     equ $3851   ; Bitmap Mode 0=1bpp, 2=4bpp

@@ -596,6 +596,7 @@ TK      =            TK+1
 TK      =            TK+1
         byte    'P'+$80,"SET"     ;;$9C
 TK      =            TK+1
+PRESETK equ     TK                ;
         byte    'P'+$80,"RESET"   ;;$9D
                                   ;
 TK      =            TK+1

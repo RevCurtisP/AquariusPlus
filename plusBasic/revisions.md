@@ -1,4 +1,6 @@
 # plusBASIC Revision History
+ - v0.70d (2026-02-09)
+    - Implemented kernel routine _bitmap_line_ and `LINE (x,y)-(x,y),color` statement
  - v0.70c (2026-02-02)
     - Fixed bug in bitmap_read_sysvars causing `COLOR`, `POSX`, and `POSY` to return incorrect values
     - Fixed bug in _bitmap_get_pixel_ causing `POINT()` to update last X and Y coordinates

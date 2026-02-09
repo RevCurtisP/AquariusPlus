@@ -1,7 +1,7 @@
 ;=====================================================================================
 ; Aquarius+ System ROM and plusBASIC
 ;=====================================================================================
-; By Curtis F Kaylor and Frank van den Hoef
+; By Curtis F Kaylor, Frank van den Hoef, and Mack Wharton
 ;
 ; Based on AQUBASIC source code by Bruce Abbott:
 ; http://bhabbott.net.nz/micro_expander.html
@@ -106,7 +106,7 @@ null_desc:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.70c"
+    db "v0.70d"
     db 0
 plusver_len equ $ - plus_version
 plus_len   equ   $ - plus_text

@@ -106,6 +106,39 @@ gfx_call_sngflt:
     call    gfx_call              ; A = Color
     jp      SNGFLT
 
+
+;----------------------------------------------------------------------------
+; LINE Statement
+; LINE (x0,y0)-(x1,y1){,color|XOR}
+;----------------------------------------------------------------------------
+ST_LINE:
+    cp      INPUTK
+    jp      z,ST_LINE_INPUT
+    call    SCAND                 ; BC = x0, DE = y0
+    push    de                    ; Stack = y0, RtnAdr
+    push    bc                    ; Stack = x0, y0, RtnAdr
+    SYNCHKT MINUTK                ; Require -
+    call    SCAND                 ; BC = x0, DE = y0
+    push    de                    ; Stack = y1, x0, y0, RtnAdr
+    push    bc                    ; Stack = x1, y1, x0, y0, RtnAdr
+    call    _pset_opt             ; A = Color, $FF, or XORTK
+    ld      (PSETCOLOR),a
+    pop     bc                    ; BC = x1; Stack = y1, x0, y0, RtnAdr
+    ld      (BMP_X1),bc
+    pop     de                    ; DE = y1; Stack = x0, y0, RtnAdr
+    ld      (BMP_Y1),de
+    pop     bc                    ; BC = x0; Stack = y0, RtnAdr
+    ld      (BMP_X0),bc
+    pop     de                    ; DE = y0; Stack = RtnAdr
+    ld      (BMP_Y0),de
+
+    ld      iy,bitmap_line
+gfx_call_fcerr:
+    push    hl
+    jp      gfx_call_fc_popret
+
+
+
 ;-----------------------------------------------------------------------------
 ; POSX, POSY
 ; Last X,Y position
@@ -200,9 +233,9 @@ _pset_opt:
     ld      a,$FF                 ;   Return -1 (none)
     ret     nz
     rst     CHRGET                ; Skip Comma
-    cp      ANDTK
-    jr      z,skip_char
     cp      XORTK
+    jr      z,skip_char
+    cp      PRESETK
     jr      z,skip_char
     push    bc                    ; Stack = ModeY, RtnAdr
     push    de                    ; Stack = X, ModeY, RtnAdr
@@ -210,8 +243,6 @@ _pset_opt:
     pop     de                    ; DE = X; Stack = Y, RtnAdr
     pop     bc                    ; B = Mode, C = Y; Stack = RtnAdr
     ret
-.token
-
 skip_char:
     push    af
     rst     CHRGET

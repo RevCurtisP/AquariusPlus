@@ -231,7 +231,7 @@
  - **LEN(_string_)** - Return length of string.
  - **LEN(\*_array_)** - Return total length of array data.
  - **\{LET} _var_=_expression_** - Define and assigns value to variable.
- - **LINE {(_x1_,_y1_)}-(_x2_,_y2_){,{_color_}{,B{F}}}}** - _Not implemented._
+ - **[LINE (_x1_,_y1_)-(_x2_,_y2_){,_color_|PRESET|XOR}](BASIC-Bloxel-and-Pixel-Functions#line)** - Draw line of bloxels or pixels.
  - **LINE stringvar** - Read an entire line of input from keyboard.
  - **[LINE INPUT #channel,stringvar](BASIC-File-IO-Statements-and-Functions#line-input)** - Read an entire line of input from keyboard or file.
  - **[LIST {_lineref_}](BASIC-LIST-Statements-and-Functions#list)** - Display program lines starting at beginning of program or specified line.
@@ -303,19 +303,19 @@
  - **[PEEKSCREEN$(_address_,_length_)](BASIC-PEEK-and-DEEK-Functions#peekscreen-1)** - Read string from screen RAM.
  - **[PLAY SAMPLE «!_ext_addr_»|«@_page_,_address_»](BASIC-PLAY-SAMPLE-Statement#play-sample)** - Play digital sample from previously loaded file.
  - **[PLAY TRACK \{_filespec_}](BASIC-TRACK-Statements#play-track)** - Play specified or previously loaded tracker file.
- - **[POINT(_x_,_y_)](BASIC-Bloxel-and-Pixel-Functions#point)** - Return status of bloxel or pixel.
+ - [X] **[POINT(_x_,_y_)](BASIC-Bloxel-and-Pixel-Functions)** - Return status of bloxel or pixel.
  - **[POKE «!_ext_addr_»|«{@_page_,}_address_»,_byte_|_string_{;..}.](BASIC-POKE-and-DOKE-Statements#poke)** - Write bytes and/or strings to memory.
  - **[POKE COLOR _address_,_byte_|_string_{;...}](BASIC-POKE-SCREEN-and-POKE-COLOR-Statements#poke-color)** - Write bytes and/or strings to color RAM.
  - **[POKE SCREEN _address_,_byte_|_string_{;...}](BASIC-POKE-SCREEN-and-POKE-COLOR-Statements#poke-screen)** - Write bytes and/or strings to screen RAM.
  - **[POS(_expression_)](BASIC-Text-Cursor-Statements-and-Functions#pos)** - Return cursor position in current line.
- - **[POSX](BASIC-Bloxel-and-Pixel-Functions#posx)** - Return last pixel or bloxel x-position.
- - **[POSY](BASIC-Bloxel-and-Pixel-Functions#posy)** - Return 1bpp pixel or bloxel y-position.
- - **[PRESET (_x_,_y_)](BASIC-Bloxel-and-Pixel-Functions#preset)** - Erase bloxel or pixel.
+ - [X] **[POSX](BASIC-Bloxel-and-Pixel-Functions)** - Return last pixel or bloxel x-position.
+ - [X] **[POSY](BASIC-Bloxel-and-Pixel-Functions)** - Return 1bpp pixel or bloxel y-position.
+ - [X] **[PRESET (_x_,_y_)](BASIC-Bloxel-and-Pixel-Functions)** - Erase bloxel or pixel.
  - **[PRINT {@(_x_,_y_)} TAB(_integer_)|SPC(_integer_)|_expression_|;|,{...}](BASIC-PRINT-Statements#print)** - Display data on screen.
  - **PSG _register_,_byte_{,...}** - Write bytes to PSG register
  - **PSG _register_,_byte_{;...}** - Not implemented
- - **[PSET (_x_,_y_){,color}](BASIC-Bloxel-and-Pixel-Functions#pset)** - Draw bloxel or pixel.
- - **[PSET (_x_,_y_),XOR](BASIC-Bloxel-and-Pixel-Functions#pset)** - Toggle bloxel or pixel.
+ - [X] **[PSET (_x_,_y_){,color}](BASIC-Bloxel-and-Pixel-Functions)** - Draw bloxel or pixel.
+ - [X] **[PSET (_x_,_y_),XOR](BASIC-Bloxel-and-Pixel-Functions)** - Toggle bloxel or pixel.
  - **[PUT SCREEN {CHR|ATTR} (_x_,y_) \*_array_|^_strvar_](BASIC-PUT-SCREEN-Statement#put-screen)** - Copy clip from array or string variable to text screen.
  - **[PUT TILEMAP (_x_,y_),\*_array_|^_strvar_](BASIC-PUT-TILEMAP-Statement#put-tilemap)** - Copy clip from array or string variable to tilemap.
  - **[READ _var_{,...}](BASIC-READ-Statement#read)** - Read values from DATA statements into variables.

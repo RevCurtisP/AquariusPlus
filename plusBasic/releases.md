@@ -1,4 +1,6 @@
 # plusBASIC Release History
+ - v0.70d (2026-02-09)
+    - Implemented `LINE (x,y)-(x,y),color` statement
  - v0.70c (2026-02-02)
     - Fixed bugs in `COLOR`, `POSX`, `POSY`, and `POINT()`
     - `CLEAR BITMAP` in bloxel mode no longer clears top line of text or changes border

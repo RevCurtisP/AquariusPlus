@@ -330,38 +330,141 @@ colormap_bounds:
     cp      e                     ; If EndRow > 24
     ret                           ;   Return Carry Set
 
-
 ;-----------------------------------------------------------------------------
 ; Draw line on 1bpp bitmap screen
-; Input: B: Y1
-;        C: Y2
-;       DE: X1
-;       HL: X2
-; Output:
 ; Clobbered: A
+; Derived from code written by Mack Wharton
 ;-----------------------------------------------------------------------------
 bitmap_line:
+    call    _check_rect
+    ret     c
+    ld      a,(PSETCOLOR)
+    ld      iy,bitmap_resetpixel
+    cp      PRESETK
+    jr      z,.setup
+    ld      iy,bitmap_togglepixel
+    cp      XORTK
+    jr      z,.setup
+    ld      iy,bitmap_setpixel
+.setup
+    ld      bc,$8000
+    xor     a                     ; Clear carry
 ;dx = abs(x1 - x0)
-;sx = x0 < x1 ? 1 : -1
+    ld      hl,(BMP_X1)
+    ld      de,(BMP_X0)
+    sbc     hl,de                 ; HL = x1 - x0
+    call    c,neg_hl              ; If negative, make it positive
+    push    hl                    ; Stack = dx, RtnAdr
+    add     hl,bc                 ; Offset to $8000 for compares
+    ld      (BMP_DX),hl
 ;dy = -abs(y1 - y0)
-;sy = y0 < y1 ? 1 : -1
+    or      a
+    ld      hl,(BMP_Y1)
+    ld      de,(BMP_Y0)
+    sbc     hl,de
+    call    nc,neg_hl
+    push    hl                    ; Stack = dy, dx, RtnAdr
+    add     hl,bc                 ; Offset to $8000 for compares
+    ld      (BMP_DY),hl
 ;error = dx + dy
-;
+    pop     de                    ; DE = dy; Stack = dx, RtnAdr
+    pop     hl                    ; HL = dx; Stack = RtnAdr
+    add     hl,de
+    ld      (BMP_ERROR),hl
+;sx = x0 < x1 ? 1 : -1
+    ld      hl,(BMP_X0)
+    ld      de,(BMP_X1)
+    rst     COMPAR                ; Set Carry if HL < DE
+    ld      bc,$0001
+    jr      c,.save_sx
+    dec     bc
+    dec     bc
+.save_sx
+    ld      (BMP_SX),bc
+;sy = y0 < y1 ? 1 : -1
+    ld      de,(BMP_Y1)
+    ld      hl,(BMP_Y0)
+    rst     COMPAR                ; Set Carry if HL < DE
+    ld      bc,$0001
+    jr      c,.save_sy
+    dec     bc
+    dec     bc
+.save_sy
+    ld      (BMP_SY),bc
 ;while true
-;    plot(x0, y0)
-;    e2 = 2 * error
-;    if e2 >= dy
-;        if x0 == x1 break
-;        error = error + dy
-;        x0 = x0 + sx
-;    end if
-;    if e2 <= dx
-;        if y0 == y1 break
-;        error = error + dx
-;        y0 = y0 + sy
-;    end if
+.loop
+; plot(x0, y0)
+    ld      a,(PSETCOLOR)
+    ld      bc,(BMP_Y0)
+    ld      de,(BMP_X0)
+    call    (jump_iy)
+; e2 = 2 * error
+    ld      hl,(BMP_ERROR)
+    add     hl,hl                 ; HL = 2 * error
+    ld      bc,$8000
+    add     hl,bc
+    ld      (BMP_E2),hl
+; if e2 >= dy
+    ld      de,(BMP_DY)
+    rst     COMPAR                ; Carry Clear if HL >= DE
+    jr      c,.skip1
+;  if x0 == x1 break
+    ld      hl,(BMP_X0)
+    ld      de,(BMP_X1)
+    rst     COMPAR
+    ret     z
+;  error = error + dy
+    ld      hl,(BMP_ERROR)
+    ld      de,(BMP_DY)
+    add     hl,de
+    ld      (BMP_ERROR),hl
+;  x0 = x0 + sx
+    ld      hl,(BMP_X0)
+    ld      de,(BMP_SX)
+    add     hl,de
+    ld      (BMP_X0),hl
+; end if
+.skip1
+; if dx >= e2  {e2 <= dx}
+    ld      hl,(BMP_DX)
+    ld      de,(BMP_E2)
+    rst     COMPAR                ; Carry Clear if HL >= DE
+    jr      c,.skip2
+;  if y0 == y1 break
+    ld      hl,(BMP_Y0)
+    ld      de,(BMP_Y1)
+    rst     COMPAR
+    ret     z
+;  error = error + dx
+    ld      hl,(BMP_ERROR)
+    ld      de,(BMP_DX)
+    add     hl,de
+    ld      (BMP_ERROR),hl
+;  y0 = y0 + sy
+    ld      hl,(BMP_Y0)
+    ld      de,(BMP_SY)
+    add     hl,de
+    ld      (BMP_Y0),hl
+; end if
+.skip2
 ;end while
+    jr      .loop
     
+abs_hl:
+    ld      a,h
+    and     $80
+    ret p
+neg_hl:
+    ld      a,h
+    cpl
+    ld      h,a
+    ld      a,l
+    cpl   
+    ld      l,a
+    inc     hl
+    ret
+   
+ 
 ;-----------------------------------------------------------------------------
 ; Move one pixel and set/reset point
 ;  Input: A: 0 = Move, 1 = Set, 255 = Reset
@@ -1189,6 +1292,8 @@ get_set_init:
     ld      a,(BMPMODE)             
     and     a,1                   ; A = 0 (1bpp), 1 (4bpp)
     or      2                     ; A = GfxMode
+    ld      a,(GFX_FLAGS)
+    and     GFXM_MASK             ; Mask bits and set flags
     ld      (BMPMODE),a           ; BMPMODE = GfxMode
     ld      de,(STARTCOL)
     ld      bc,(STARTROW)
@@ -1199,6 +1304,21 @@ get_set_init:
     ld      bc,(ENDROW)
     call    _check_coords         ; If end coordinates out of range
     ret                           ;  Return Carry Set
+
+_check_rect:    
+    ld      a,(GFX_FLAGS)
+    and     GFXM_MASK             ; Mask bits and set flags
+    ld      (BMPMODE),a           ; BMPMODE = GfxMode
+    ld      de,(BMP_X0)
+    ld      bc,(BMP_Y0)
+    call    _check_coords         ; Set Carry if out of range
+    ret     c                     ; Return Carry Set if (X0,Y0) out of range
+    ld      de,(BMP_X1)
+    ld      bc,(BMP_Y1)
+    ld      a,(BMPMODE)           ; A = GfxMode
+    ld      c,b                   ; C = Y1
+    call    _check_coords         ; Set Carry if out of range
+    ret                           ; Return Carry Set if (X0,Y0) out of range
 
 
 _bitmap_code_size = $ - bitmap_resetpixel
