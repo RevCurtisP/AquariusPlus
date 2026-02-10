@@ -15,7 +15,7 @@
 ; +1  Last Y-Coord
 ; +2  Last X-Coord
 
-_bmp_defaults
+_bmp_defaults:
     byte    $06,0,0,0,$06,0,0,0,$70,0,0,0,$07,0,0,0,$06,0,0,0
 _bmp_deflen = $ - _bmp_defaults   
 
@@ -30,6 +30,15 @@ bitmap_init_vars:
     ldir
     ex      af,af'                ; A = OldPg, af' = BMP_DRAWCOLOR
     out     (IO_BANK1),a          ; Map Original Page
+    ret
+
+bitmap_init_screen:
+    ld      a,2
+    ld      (GFX_FLAGS),a
+    xor     a
+    call    bitmap_clear_screen
+    xor     a
+    ld      (GFX_FLAGS),a
     ret
 
 ;-----------------------------------------------------------------------------
@@ -168,7 +177,6 @@ _fill_video_ram:
     ex      af,af'                ; A = OrigPg
     out     (IO_BANK1),a          ; Restore original page
     ret
-
 
 ;-----------------------------------------------------------------------------
 ; Clear Bitmap
@@ -330,13 +338,129 @@ colormap_bounds:
     cp      e                     ; If EndRow > 24
     ret                           ;   Return Carry Set
 
+
 ;-----------------------------------------------------------------------------
-; Draw line on 1bpp bitmap screen
-; Clobbered: A
+; Draw rectangle of bloxels or pixels screen
+; Input: A: Color/Option
+;       BC: Start X-Coord
+;       DE: Start Y-Coord
+;      BC': End X-Coord
+;      DE': End Y-Coord
+; Clobbered: All
+; Derived from code written by Mack Wharton
+;-----------------------------------------------------------------------------
+bitmap_frect:
+    ld      (PSETCOLOR),a
+    call    _check_rect
+    push    de                    ; Stack = y0, RtnAdr
+    exx                           ; BC = x1, DE = y1, BC' = x0, DE' = y0
+    pop     hl                    ; HL = y0; Stack = RtnAdr
+    ex      de,hl                 ; DE = y0, HL = y1
+    rst     COMPAR                ; Set carry if HL < DE
+    jr      nc,.skip              ; If y1 < y0
+    ex      de,hl                 ; Swap y1 and y0
+.skip
+    push    hl                    ; Stack = y1, RtnAdr
+    push    de                    ; Stack = y0, RtnAdr
+    exx                           ; BC = x0, DE = Old_y0, BC' = x1, DE' = y0
+    pop     de                    ; BC = x0, DE = y0, BC' = x1, DE' = y0
+.loop
+    call    _save_rect            ; BC = x1, DE = y1, BC' = x0, DE' = y0; Stack = x1, y0, x0, y0, y1, RtnAdr
+    exx                           ; BC = x0, DE = y0, BC' = x1, DE' = y0
+    call    _line
+    call    _restore_rect         ; BC = x0, DE = y0, BC' = x1, DE' = y0; Stack = y1, RtnAdr
+    pop     hl                    ; HL = y1; Stack = RtnAdr
+    rst     COMPAR                ; If y0 = y1
+    ret     z                     ;   Return
+    push    hl                    ; Stack = y1, RtnAdr
+    inc     de                    ; y0 += 1
+    push    de                    ; Stack = y0, y1, RtnAdr
+    exx
+    pop     de
+    exx                           ; BC = x0, DE = y0, BC' = x1, DE' = y0
+    jr      .loop
+
+;-----------------------------------------------------------------------------
+; Draw rectangle of bloxels or pixels screen
+; Input: A: Color/Option
+;       BC: Start X-Coord
+;       DE: Start Y-Coord
+;      BC': End X-Coord
+;      DE': End Y-Coord
+; Clobbered: All
+; Derived from code written by Mack Wharton
+;-----------------------------------------------------------------------------
+bitmap_rect:
+    ld      (PSETCOLOR),a
+    call    _check_rect
+    ld      h,d
+    ld      l,e                   ; HL = y0
+    call    _save_rect            ; BC = x1, DE = y1, BC' = x0, DE' = y0; Stack = x1, y1, x0, y0, RtnAdr
+    ex      de,hl                 ; DE = y0
+    exx                           ; BC = x0, DE = y0, BC' = x1, DE' = y0
+    call    _line                 ; Draw Top Line
+    call    _restore_rect         ; BC = x0, DE = y0, BC' = x1, DE' = y1
+    call    _save_rect            ; BC = x1, DE = y1, BC' = x0, DE' = y0; Stack = x1, y1, x0, y0, RtnAdr
+    push    de                    ; Stack = y1, x1, y1, x0, y0
+    exx                           ; BC = x0, DE = y0, BC' = x1, DE' = y1
+    pop     de                    ; BC = x0, DE = y1, BC' = x1, DE' = y1
+    call    _line                 ; Draw Bottom Line
+    call    _restore_rect         ; BC = x0, DE = y0, BC' = x1, DE' = y1
+    ld      h,b
+    ld      l,c                   ; HL = x0
+    call    _save_rect            ; BC = x1, DE = y1, BC' = x0, DE' = y0; Stack = x1, y1, x0, y0, RtnAdr
+    ld      b,h
+    ld      c,l                   ; BC = x0
+    exx                           ; BC = x0, DE = y0, BC' = x0, DE' = y1
+    call    _line                 ; Draw Top Line
+    call    _restore_rect         ; BC = x0, DE = y0, BC' = x1, DE' = y1
+    call    _save_rect            ; BC = x1, DE = y1, BC' = x0, DE' = y0; Stack = x1, y1, x0, y0, RtnAdr
+    push    bc                    ; Stack = x1, x1, y1, x0, y0
+    exx                           ; BC = x0, DE = y0, BC' = x1, DE' = y1
+    pop     bc                    ; BC = x1, DE = y1, BC' = x1, DE' = y1
+    call    _line                 ; Draw Bottom Line
+    call    _restore_rect         ; BC = x0, DE = y0, BC' = x1, DE' = y1
+    ret
+
+_save_rect:
+    pop     ix                    ; IX = RtnAdr; Stack = SavCrd
+    push    de                    ; Stack = Y
+    push    bc                    ; Stack = X, Y
+    push    hl
+    exx
+    pop     hl
+    push    de                    ; Stack = Y', X, Y
+    push    bc                    ; Stack = X', Y', X, Y
+    jp      (ix)                  ; Return
+_restore_rect
+    pop     ix                    ; IX = RtnAdr; Stack = SavCrd
+    pop     bc                    ; BC = X'; Stack = Y', X, Y
+    pop     de                    ; DE = Y'; Stack = X, Y
+    exx                           ; BC' = X', DE' = Y'
+    pop     bc                    ; BC = X, Stack = Y
+    pop     de                    ; DE = Y
+    jp      (ix)                  ; Return
+
+
+;-----------------------------------------------------------------------------
+; Draw line of bloxels or pixels screen
+; Input: A: Color/Option
+;       BC: Start X-Coord
+;       DE: Start Y-Coord
+;      BC': End X-Coord
+;      DE': End Y-Coord
+; Clobbered: All
 ; Derived from code written by Mack Wharton
 ;-----------------------------------------------------------------------------
 bitmap_line:
+    ld      (PSETCOLOR),a
     call    _check_rect
+_line:
+    ld      (BMP_X0),BC
+    ld      (BMP_Y0),DE
+    exx
+    ld      (BMP_X1),BC
+    ld      (BMP_Y1),DE
     ret     c
     ld      a,(PSETCOLOR)
     ld      iy,bitmap_resetpixel
@@ -715,6 +839,9 @@ _resetpixel80:
 
 _setpixel80:
     call    _bloxel80
+    jr      z,.set
+    ld      (hl),$A0              ;   Set to blank
+.set
     or      (hl)                  ; Set bit 
     ld      (hl),a                ; Write to screen
     call    _psetcolor
@@ -988,6 +1115,32 @@ _bloxel40:
     xor     (hl)                  ; Clear bits 5 and 7
     ld      a,(de)                ; A = BitMsk
     ret
+
+; Must preserve AF'
+; A: GfxMode, BC: X, DE: Y
+; Clobbers A, HL
+_check_coords2:
+    rra                           ; Carry = TextMode
+    rra
+    jr      c,.bitmap             ; If bloxel
+    rla                           ;   Carry = 40/80
+    ld      a,72                  ;   MaxY=72
+    jr      c,.x160               ;   If 80, MaxX = 160 and check
+    ld      hl,-80                ;   Else MaxX = 80 and check
+    jr      .check_coords
+.bitmap
+    rla                           ;   Carry = 1bpp/4bpp
+    ld      a,199                 ;   MaxY = 199
+    ld      hl,-320               ;
+    jr      nc,.check_coords      ;   If 1bpp MaxX=320
+.x160
+    ld      hl,-160               ;   Else MaxX = 160
+; DE = X, C = Y, HL = MaxX, A = MaxY
+.check_coords:
+    add     hl,bc                 ; If HL >= MaxX
+    ret     c                     ;   Return carry set
+    cp      e                     ; If Y >= MaxY
+    ret                           ;   Return carry set
 
 ; Must preserve AF'
 ; A: GfxMode, DE: X, C: Y
@@ -1309,15 +1462,12 @@ _check_rect:
     ld      a,(GFX_FLAGS)
     and     GFXM_MASK             ; Mask bits and set flags
     ld      (BMPMODE),a           ; BMPMODE = GfxMode
-    ld      de,(BMP_X0)
-    ld      bc,(BMP_Y0)
-    call    _check_coords         ; Set Carry if out of range
+    call    _check_coords2        ; Set Carry if out of range
     ret     c                     ; Return Carry Set if (X0,Y0) out of range
-    ld      de,(BMP_X1)
-    ld      bc,(BMP_Y1)
+    exx
     ld      a,(BMPMODE)           ; A = GfxMode
-    ld      c,b                   ; C = Y1
-    call    _check_coords         ; Set Carry if out of range
+    call    _check_coords2        ; Set Carry if out of range
+    exx
     ret                           ; Return Carry Set if (X0,Y0) out of range
 
 

@@ -1,4 +1,8 @@
 # plusBASIC Release History
+ - v0.70e (2026-02-10)
+    - 1bpp bitmap cleared to default colors on cold start
+    - Fixed `PSET` for 80-column bloxels
+    - Added options `,RECT` and `,FILL` to `LINE (x,y)-(x,y)`
  - v0.70d (2026-02-09)
     - Implemented `LINE (x,y)-(x,y),color` statement
  - v0.70c (2026-02-02)

@@ -231,8 +231,9 @@
  - **LEN(_string_)** - Return length of string.
  - **LEN(\*_array_)** - Return total length of array data.
  - **\{LET} _var_=_expression_** - Define and assigns value to variable.
- - **LINE (_x1_,_y1_)-(_x2_,_y2_){,_color_|PRESET|XOR}** - Draw line of bloxels or pixels.
- - **LINE stringvar** - Read an entire line of input from keyboard.
+ - **LINE (_x1_,_y1_)-(_x2_,_y2_){,_color_|PRESET|XOR}** - Draw, erase, or toggle line of bloxels or pixels.
+ - **LINE (_x1_,_y1_)-(_x2_,_y2_),{_color_|PRESET|XOR},RECT** - Draw, erase, or toggle rectangle of bloxels or pixels.
+ - **LINE (_x1_,_y1_)-(_x2_,_y2_),{_color_|PRESET|XOR},FILL** - Draw, erase, or toggle filled rectangle of bloxels or pixels.
  - **LINE INPUT #channel,stringvar** - Read an entire line of input from keyboard or file.
  - **LIST {_lineref_}** - Display program lines starting at beginning of program or specified line.
  - **LIST \*_array_** - Display contents of specified string array.

@@ -237,7 +237,8 @@ xtokens = {
     0xBA: "RAN",
     0xBB: "DOM",
     0xBC: "EXT",
-    0xBD: "SCROLL"
+    0xBD: "SCROLL",
+    0xBE: "RECT"
 }
 
 with open(args.input, "rb") as f:

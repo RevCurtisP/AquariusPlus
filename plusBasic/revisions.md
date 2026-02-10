@@ -1,4 +1,10 @@
 # plusBASIC Revision History
+ - v0.70e (2026-02-10)
+    - Modified _gfx_init_ to call new routine _bitmap_init_screen_, clearing 1bpp bitmap to default colors
+    - Fixed _bitmap_set_pixel_ for 80-column bloxels
+    - Modified _bitmap_line_ to use registers for input parameters, modified __check_rect_ to use registers
+    - Added `RECT` token, update _bas2baq.py_ and _baq2bas.py_
+    - Added kernel routines _bitmap_rect_ and _bitmap_frect_, options `,RECT` and `,FILL` to `LINE (x,y)-(x,y)`
  - v0.70d (2026-02-09)
     - Implemented kernel routine _bitmap_line_ and `LINE (x,y)-(x,y),color` statement
  - v0.70c (2026-02-02)

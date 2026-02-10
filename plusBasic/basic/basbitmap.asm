@@ -122,22 +122,32 @@ ST_LINE:
     push    de                    ; Stack = y1, x0, y0, RtnAdr
     push    bc                    ; Stack = x1, y1, x0, y0, RtnAdr
     call    _pset_opt             ; A = Color, $FF, or XORTK
-    ld      (PSETCOLOR),a
-    pop     bc                    ; BC = x1; Stack = y1, x0, y0, RtnAdr
-    ld      (BMP_X1),bc
-    pop     de                    ; DE = y1; Stack = x0, y0, RtnAdr
-    ld      (BMP_Y1),de
-    pop     bc                    ; BC = x0; Stack = y0, RtnAdr
-    ld      (BMP_X0),bc
-    pop     de                    ; DE = y0; Stack = RtnAdr
-    ld      (BMP_Y0),de
-
     ld      iy,bitmap_line
+    ex      af,af'
+    call    CHRGT2                ; A = CurChr
+    call    nz,_line_opt
+    ex      af,af'
+    exx
+    pop     bc                    ; BC = x1; Stack = y1, x0, y0, RtnAdr
+    pop     de                    ; DE = y1; Stack = x0, y0, RtnAdr
+    exx                           ; BC' = x1, DE' = y1
+    pop     bc                    ; BC = x0; Stack = y0, RtnAdr
+    pop     de                    ; DE = y0; Stack = RtnAdr
 gfx_call_fcerr:
     push    hl
     jp      gfx_call_fc_popret
 
-
+_line_opt:
+    SYNCHKC ','                   ; Require comma
+    SYNCHKT XTOKEN
+    cp      RECTK
+    jr      nz,.not_rect
+    ld      iy,bitmap_rect
+    jp      CHRGTR
+.not_rect
+    SYNCHKT FILLTK
+    ld      iy,bitmap_frect
+    ret
 
 ;-----------------------------------------------------------------------------
 ; POSX, POSY
@@ -230,9 +240,10 @@ aux_call_fcerr:
 _pset_opt:
     ld      a,(hl)
     cp      ','                   ; If no comma
-    ld      a,$FF                 ;   Return -1 (none)
-    ret     nz
+    jr      nz,.retff
     rst     CHRGET                ; Skip Comma
+    cp      ','
+    jr      z,.retff
     cp      XORTK
     jr      z,skip_char
     cp      PRESETK
@@ -243,6 +254,10 @@ _pset_opt:
     pop     de                    ; DE = X; Stack = Y, RtnAdr
     pop     bc                    ; B = Mode, C = Y; Stack = RtnAdr
     ret
+.retff
+    ld      a,$FF                 ;   Return -1 (none)
+    ret
+
 skip_char:
     push    af
     rst     CHRGET

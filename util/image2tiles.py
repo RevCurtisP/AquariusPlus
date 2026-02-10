@@ -32,18 +32,24 @@ parser = argparse.ArgumentParser(prog="image2tiles", description=argdesc)
 parser.add_argument("imagename",help="Image filename")
 parser.add_argument("-b","--blanktile", default=None, type=int, help="Tile ID of pre-existing blank tile")
 parser.add_argument("-c","--clipsize", default=None, help="Tileclip size WIDTHxHEIGHT[r]")
+# ToDo: Expand to CLIPWIDTHxCLIPHEIGHT[mMARGINWIDTHxMARGINHEIGHT][r] where margin is in pixels
 parser.add_argument("-d","--debug", action="store_true", help="Write debug info to stdout")
+# Proposed: -h, --spritesheet - Process as sprite sheet
+#   Pixel 0,0 is the color of pixels between sprite clips
+#   Color index 0 assigned to top-left of first sprite found
+parser.add_argument("-m","--clipmap", default=None, help="Tileclip map filename")
 parser.add_argument("-n","--palnum", default=2, type=int, help="Palette number (0-3)")
 parser.add_argument("-p","--palette", default=None, help="Base palette")
 parser.add_argument("-r","--truncate", action="store_true", help="Write truncated palette")
 parser.add_argument("-s","--starttile", default=128, type=int, help="Starting tile number")
 parser.add_argument("-v","--verbose", action="store_true", help="Write image info to stdout")
-parser.add_argument("-x","--suffix", default="", help="Tileclip size WIDTHxHEIGHT[r]")
+parser.add_argument("-x","--suffix", default="", help="File suffix")
 args = parser.parse_args()
 
 blank_tile = args.blanktile
 clip_size = args.clipsize
 debug = args.debug
+clip_map = args.clipmap
 palette_num = args.palnum
 base_palt = args.palette
 start_tile = args.starttile
@@ -56,11 +62,22 @@ if palette_num < 0 or palette_num > 3:
 
 palt_props = palette_num << 12
 
-#if args.docs:
-#    print(docs)
-#    exit()
+clst = []
+if clip_map:
+    if debug: print("ClipDefs:")
+    with open(clip_map, "r") as cmapfile:
+        cmap = cmapfile.readlines()
+        for clin in cmap:
+           sxy, exy = clin.strip().split("-")
+           sx, sy = sxy.strip("()").split(",")
+           ex, ey = exy.strip("()").split(",")
+           cdef = [int(sx),int(sy),int(ex),int(ey)]
+           if debug: print(cdef)
+           clst.append(cdef)
 
 if clip_size:
+    if clip_map:
+        exit_err(255,"Incompatible command line options")
     if clip_size[-1] == "r":
         size = clip_size[:-1]
         clip_rotate = True
@@ -111,9 +128,11 @@ if img_width % 8 != 0 or img_height % 8 != 0:
 vmap_width = img_width // 8
 vmap_height = img_height // 8
 
-vmap = []
-dmap = ""
+vmap = [] #Virtual Tilemap
+dmap = "" #Tilemap
 pmap = "" if debug and verbose else None
+
+plst = ""
 
 if verbose: print("Tilemap size: %s x %s" % (vmap_width, vmap_height))
 if vmap_width > 64: warning("Tilmap width is more than 64 tiles")
@@ -133,6 +152,7 @@ if verbose: print("\nTruncate palette = %s" % (truncate_pallete))
 
 blank_id = blank_tile if blank_tile else start_tile
 if verbose: print("\nBlank tile ID: %d" % (blank_id))
+
 
 bdef = "0" * 64
 if blank_tile == None:
@@ -156,6 +176,7 @@ for vmap_row in range(0,vmap_height):
                 img_x = vmap_col * 8 + ofs_x
                 img_y = vmap_row * 8 + ofs_y
                 pxl = img_pixels[img_x,img_y]
+                if isinstance(pxl,int): exit_err(255,"Image is not in RGB format")
                 if len(pxl)==3: (rr,gg,bb) = pxl
                 else: (rr,gg,bb,aa) = pxl
                 rgb = hex_nybble(gg >> 4) + hex_nybble(bb >> 4) + "0" + hex_nybble(rr >> 4)
@@ -249,6 +270,24 @@ with open(base_name + ".tmap","wb") as tmap_file:
             else: tcell = blank_id | palt_props
             tmap_file.write(tcell.to_bytes(2,"little"))
 
+clips = None
+
+if len(clst):
+    if debug: print("\nTileClips:")
+    clips = bytes()
+    for cdef in clst:
+        clip_left, clip_top, clip_right, clip_bottom = cdef
+        clip_width = clip_right - clip_left + 1
+        clip_height = clip_bottom - clip_top + 1
+        clip_len = clip_width * clip_height * 2 + 2
+        clip = hex_byte(clip_len) + hex_byte(clip_width) + hex_byte(clip_height)
+        for tmapy in range(clip_top, clip_bottom + 1):
+            for tmapx in range(clip_left, clip_right + 1):
+                tcell = vmap[tmapy][tmapx]
+                clip += hex_int(tcell)
+        if debug: print(clip)
+        clips += bytes.fromhex(clip)
+
 if clip_size:
     if debug: print("\nTileClips:")
     clips = bytes()
@@ -277,5 +316,7 @@ if clip_size:
                         clip += hex_int(tcell)
                 if debug: print(clip)
                 clips += bytes.fromhex(clip)
+
+if clips:
     with open(base_name + ".clip", "wb") as clip_file:
         clip_file.write(clips)
