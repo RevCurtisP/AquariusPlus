@@ -719,6 +719,8 @@ ST_SWAP:
     SYNCHKT XTOKEN
     cp      VARTK
     jp      z,ST_SWAP_VARS
+    ;cp      CHRTK
+    ;jp      z,ST_SWAP_CHRSET
     jp      SNERR
 
 _swap_pages:

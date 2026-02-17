@@ -3,6 +3,8 @@
 ;====================================================================
 
 print_hook:
+    cp      '#'
+    jp      z,print_to_file
     cp      '@'
     jr      nz,.not_at            ; If '@'
     rst     CHRGET                ;   Skip '@'

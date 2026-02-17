@@ -12,7 +12,7 @@ Run the .baq file to run the associated tests.
 | cu.baq  | CALL and USR       |
 | cv.baq  | Convert functions  |
 | dr.baq  | DIM and READ       |
-| gr.baq  | Graphics Init      |
+| io.baq  | File I/O           |
 | pp.baq  | POKE and PEEK      |
 | ps.baq  | POKE/POKE SCREEN   |
 | rg.baq  | RGB and PALETTE    |
@@ -89,10 +89,8 @@ Run the .baq file to run the associated tests.
   - READ \*_array_
   - READ \*_array_$
   - INDEX(\*_array_$,_string_)
-- gr.baq
-  - Screen Buffers
-  - Screen System Variables
-  - Bitmap System Variables 
+- io.baq
+   - OUTPUT# _output_list_
 - pp.baq
   - POKE _addr_,_byte_
   - POKE _addr,_string_

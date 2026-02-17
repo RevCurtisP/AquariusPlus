@@ -1,5 +1,5 @@
 100 REM DIM and READ
-110 QG$="pp"
+110 QG$="io"
 130 GOSUB _init
 
 200 GOSUB _title:ARGS "DIM Arrays"

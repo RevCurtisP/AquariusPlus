@@ -1,4 +1,11 @@
 # plusBASIC Revision History
+ - v0.70f (2026-02-17)
+    - Moved core code for `OUT` into _bas_out_bang_ and _bas_out_ in Auxiliary ROM
+    - Refactored _bitmap_line_ to call mode specific _setpixel_ routine instead of _bitmap_set_pixel_
+    - Updated _jump_gfx.asm_
+    - Added `OUTPUT#` statement, stubs for `PRINT#` and `INPUT#` statements
+    - Added stubs for new `STASH CHRSET`, `SWAP CHRSET`, and `RESTORE CHRSET` statements
+    - Allocated buffer _SWPCHRSET_ in page 54 for `STASH/SWAP/RESTORE CHRSET`
  - v0.70e (2026-02-10)
     - Modified _gfx_init_ to call new routine _bitmap_init_screen_, clearing 1bpp bitmap to default colors
     - Fixed _bitmap_set_pixel_ for 80-column bloxels

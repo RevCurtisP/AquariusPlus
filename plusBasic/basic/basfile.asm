@@ -553,7 +553,7 @@ _load_ascii:
 
 .lineloop
     call    get_strbuf_addr       ; HL = StrBuf
-    call    esp_read_line         ; BC = LinLen
+    call    esp_read_line         ; BC = LinLen; D = FilDsc; HL = StrBuf
     jp      m,.done
     ld      a,(hl)
     cp      39                    ; If first character is '
@@ -1680,6 +1680,92 @@ _clear_errflag:
     ld      (ERRFLG),a            ;   Set Error# to 0
 .skip
     jp      CHRGT2
+
+;-----------------------------------------------------------------------------
+; INPUT #channel, ...
+;-----------------------------------------------------------------------------
+ifdef xxx
+input_from_file:
+    call    _get_chan_badfile     ; A = FilDsc
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    ld      iy,bas_read_linbuf    ; HL = LinBuf
+    call    _aux_call_hl_error    ; HL = LinBuf
+    jp      m,_io_error           ; If error, pop TxtPtr and process error
+    ex      (sp),hl               ; HL = TxtPtr; Stack = LinPtr, RtnAdr
+.loop    
+    call    get_comma
+    call    PTRTYP                ; DE = VarPtr
+    ex      (sp),hl               ; HL = LinPtr; Stack = TxtPtr, RtnAdr
+    push    de                    ; Stack = VarPtr, TxtPtr, RtnAdr
+    push    af                    ; Stack = VarTyp, VarPtr, TxtPtr, RtnAdr
+    ld      iy,bas_parse_linbuf
+    call    aux_call              ; BC = StrLen, DE = LinPtr, HL = StrPtr
+    pop     af                    ; AF = VarTyp; Stack = VarPtr, TxtPtr, RtnAdr
+    ld      (BUFPTR),de
+    ld      a,(hl)                ; Preload first character
+    jr      z,.string             ; If numeric variable
+    call    FIN                   ;   Convert to float
+    pop     hl                    ;   HL = VarPtr; Stack = TxtPtr, RtnAdr
+    call    MOVMF                 ;   Copy FACC to Variable
+    pop     hl                    ;   HL = TxtPtr; Stack = RtnAdr
+    jr      .next                 ; Else
+.string
+    call    strbuf_to_strvar      ; HL = TxtPtr; Stack = RtnAdr
+.next
+    call    CHRGT2
+    jr      nz,.loop
+    ret
+endif
+
+;-----------------------------------------------------------------------------
+; OUTPUT #channel, ...
+;-----------------------------------------------------------------------------
+ST_OUTPUT:
+    rst     CHRGET                ; Skip PUT
+    call    _get_chan_badfile     ; A = FilDsc
+    ld      b,a                   ; B = FilDsc
+    call    get_comma
+    push    bc                    ; Stack = FilDsc, RtnAdr
+.loop
+    call    FRMTYP                ; Set Z if String
+    ex      (sp),hl               ; H = FilDsc, Stack = TxtPtr, RtnAdr
+    ld      iy,bas_write_facc
+    call    aux_call              ; H = FilDsc
+    jp      m,_io_error
+    ex      (sp),hl               ; HL = TxtPtr; Stack = FilDsc, RtnAdr
+    call    CHRGT2
+    jr      z,.crlf
+    cp      ';'
+    jr      z,.semicolon
+    SYNCHKC ','
+    ex      (sp),hl               ; H = FilDsc, Stack = TxtPtr, RtnAdr
+    ld      iy,bas_write_tab
+    call    aux_call              ; H = FilDsc
+    ex      (sp),hl               ; HL = TxtPtr; Stack = FilDsc, RtnAdr
+    dec     hl                    ; Back up for CHRGET
+.semicolon
+    rst     CHRGET                ; Skip Semicolon/Comma
+    jr      nz,.loop              ; If no more expressions
+.popret
+    pop     bc                    ;   Stack = TxtPtr
+    ret                           ;   Return
+.crlf
+    ex      (sp),hl               ; H = FilDsc;  Stack = TxtPtr, RtnAdr
+    ld      iy,bas_write_crlf
+    call    aux_call              ; H = FilDsc
+    pop     hl                    ; HL = TxtPtr, Stack = RtnAdr
+    ret     p
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+_io_error:
+    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
+    call    dos_error             ; If FILE ERROR OFF
+    jp      REMER                 ;   Skip to end of statement
+
+;-----------------------------------------------------------------------------
+; PRINT #channel, ...
+;-----------------------------------------------------------------------------
+print_to_file:
+    jp      GSERR
 
 ;-----------------------------------------------------------------------------
 ; Read from File

@@ -290,6 +290,7 @@
  - [ ] **ON TIMER GOTO|GOSUB _lineref_** - _Proposed enhancement_
  - [.] **OPEN _filespec_ FOR INPUT|OUTPUT|APPEND|RANDOM as _numvar_** - Open file.<!--fileio-->
  - [ ] **OUT _port_,_byte_|_string_{,...}{;...}** - Write to a Z80 port.<!--system-->
+ - [ ] **OUTPUT #_channel_,_expression_;|,{...}** - Write data to file.<!--print-->
  - [ ] **PAD$(_string_,_length_{,_char_})** - Pad string on left or right with optional fill character.<!--PAD-->
  - [ ] **PAD$(_number_,_length_{,_char_})** - Convert number to padded string.<!--PAD-->
  - [ ] **PAUSE** - Halt program execution until key is pressed.<!--system-->

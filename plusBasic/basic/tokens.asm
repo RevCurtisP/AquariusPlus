@@ -10,21 +10,21 @@ BTOKEN:     equ $CB               ; Our first token number
 
 TBLCMDS:
 
-    db $80 + 'X',"OR"             ; $CB            
-    db $80 + 'P',"UT"             ; $CC            
-    db $80 + 'G',"ET"             ; $CD             
-    db $80 + 'D',"RAW"            ; $CE            
-    db $80 + ' '                  ; $CF             
-    db $80 + 'L',"INE"            ; $D0             
-    db $80 + 'S',"WAP"            ; $D1            
-    db $80 + 'D',"OKE"            ; $D2   
+    db $80 + 'X',"OR"             ; $CB  
+    db $80 + 'P',"UT"             ; $CC
+    db $80 + 'G',"ET"             ; $CD           
+    db $80 + 'D',"RAW"            ; $CE          
+    db $80 + ' '                  ; $CF           
+    db $80 + 'L',"INE"            ; $D0           
+    db $80 + 'S',"WAP"            ; $D1          
+    db $80 + 'D',"OKE"            ; $D2  
     db $80 + 'T',"IME"            ; $D3   Replaces MX-BASIC keyword SDTM
     db $80 + 'E',"DIT"            ; $D4   Not Implemented
     db $80 + 'C',"LS"             ; $D5
     db $80 + 'L',"OCATE"          ; $D6
     db $80 + 'O',"UT"             ; $D7
     db $80 + 'P',"SG"             ; $D8
-    db $80 + 'M',"OUSE"           ; $D9   
+    db $80 + 'M',"OUSE"           ; $D9
     db $80 + 'C',"ALL"            ; $DA
     db $80 + 'L',"OAD"            ; $DB
     db $80 + 'S',"AVE"            ; $DC

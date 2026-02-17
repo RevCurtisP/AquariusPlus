@@ -304,7 +304,7 @@ COLDST: ld      hl,DEFALT         ;Set System Variable Default Values
 FRMTYP: call    FRMEVL            ;; + Evaluate the formula                   0112  inc     hl    
                                   ;; +                                        0113  ld      c,(hl)
                                   ;; +                                        0114  ld      a,h   
-;; Get vsriable or formula type      +
+;; Get va;riable or formula type      +
 GETYPE: ld      a,(VALTYP)        ;; +                                        0115  or      l       
                                   ;; +                                        0116  jr      z,MEMCHK
         dec     a                 ;; +                                        0118  xor     c                 
@@ -739,7 +739,8 @@ OPTAB:  byte    121               ;ADD
 ;{M80} NEEDED FOR MESSAGES
 ERR:    byte    " Error",7,0
 INTXT:  byte    " in ",0
-REDDY:  byte    "Ok",13,10,0      ;;FINZER and NULRT rely on REDDY-1 being a 0!
+REDDY:  byte    "Ok"
+CRLFT:  byte    13,10,0           ;;FINZER and NULRT rely on REDDY-1 being a 0!
 BRKTXT: byte    "Break",0
 ; [M65] ERROR MESSAGES
 ERRTAB: ;;List OF Error Messages
@@ -4582,7 +4583,7 @@ OUTCON: ld      a,(PRTFLG)        ;[M80] SEE IF WE WANT TO TALK TO LPT
 ;;Print character in [A] to printer
 OUTLPT: pop     af                ;
         push    af                ;
-        cp      9                 ;[M80] TAB
+LPTAB:  cp      9                 ;; bas_write_tab requires CPTAB+1 to be $09
         jr      nz,NOTABL         ;[M80] NO
 ;;Print spaces until next Tab Stop is reached
 MORSPL: ld      a,' '             ;[M80] GET SPACE

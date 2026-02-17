@@ -95,6 +95,21 @@ bas_get_version:
     ex      de,hl                 ; HL = BufAdr
     ret
 
+; Flags on entry: Z = Restore, P = Stash, S = Swap
+bas_buffer_chrset:
+    ex      af,af'
+    ld      a,CHAR_RAM
+    ex      af,af'
+    ld      a,BAS_BUFFR
+    ld      de,0
+    ld      hl,SWPCHRSET
+    jp      z,page_fast_copy_sys  ; Copy ChrBuf to ChrRAM
+    ex      de,hl
+    jp      p,page_fast_copy_sys  ; Copy ChrRAM to ChrBuf
+
+
+        
+
 ; ------------------------------------------------------------------------------
 ; ERASE statement core code
 ; ------------------------------------------------------------------------------
@@ -268,8 +283,6 @@ bas_mouse:
     pop     de
     pop     bc
     ret
-
-
       
 ; Called from FN_OFF
 ; On entry: C = Column, E = Row
@@ -285,6 +298,44 @@ bas_offset:
     ex      de,hl                 ; H = Column, L = Row
     call    cursor_offset         ; HL = Offset
     ex      de,hl                 ; DE = Offset
+    ret
+
+
+bas_out_bang:
+    ld      a,e                 ; A = Port
+    ret     z
+    cp      IO_VCTRL             
+    ret     c                   ; A < VCTRL, Okay
+    jp      z,FCERR             ; A = VCTRL, Error
+    cp      IO_IRQMASK          
+    ret     c
+    cp      IO_ESPCTRL
+    jp      c,FCERR
+    cp      IO_SYSCTRL      
+    jp      z,FCERR
+    ret
+
+; Called from ST_OUT
+; On Entry: AF = ArgTyp, BC = Port, FACC = Arg
+; Clobbers: All
+bas_out:
+    push    bc                    ; Stack = Port, RtnAdr
+    jr      z,.string             ; If numeric
+    call    CONINT                ;   E = Byte
+    pop     bc                    ;   BC = Port; Stack = RtnAdr
+    out     (c), a                ;   Write byte to port
+    ret                           ; Else
+.string:
+    call    free_addr_len         ;   DE = StrAdr, BC = StrLen
+    ex      af,af'                ;   Save Length Flag
+    ld      l,c                   ;   L = StrLen
+    pop     bc                    ;   BC = Port; Stack = RtnAdr
+.sloop
+    ld      a,(de)              ;     A = StrChr
+    out     (c),a               ;     Write to IOPort
+    inc     de                  ;     Bump StrPtr
+    dec     l                   ;     Count down
+    jr      nz,.sloop           ;       OUT next character
     ret
 
 ; Called from ST_SET_BIT, ST_RESET_BIT
@@ -576,6 +627,73 @@ bas_read_string:
     pop     hl                    ; HL = StrDsc; Stack = RtnAdr
     ld      (hl),c                ; Write bytes read to StrDsc
     ret
+
+bas_read_linbuf:
+    push    af                    ; Stack = FilDsc, TxtPtr, RtnAdr
+    call    get_linbuf_addr       ; HL = StrBuf
+    pop     af                    ; A = FilDsc; Stack = TxtPtr, RtnAdr
+    jp      esp_read_line         ; BC = LinLen; D = FilDsc; HL = StrBuf
+
+; On entry: HL = LinPtr
+; On exit: C = StrLen, DE = LinPtr, HL = StrBuf
+bas_parse_linbuf:
+    ex      de,hl                 ; DE = LinPtr
+    call    get_strbuf_addr       ; HL = StrBuf
+    push    hl                    ; Stack = StrBuf, RtnAdr
+    ex      de,hl                 ; HL = LinPtr, DE = StrBuf
+    ld      bc,-1                 ; For INC BC
+.loop
+    ld      a,(hl)                ; Get from LinBuf
+    inc     hl
+    push    af                    ; Stack = OrigChr, StrBuf, RtnAdr
+    cp      ','
+    jr      z,.make_null
+    cp      $09
+    jr      nz,.not_tab           ; If Tab
+.make_null
+    xor     a                     ;   Make it null
+.not_tab    
+    ld      (de),a                ; Put to StrBuf
+    inc     de
+    inc     bc
+    or      a
+    jr      nz,.loop
+    ex      de,hl                 ; DE = LinPtr
+    pop     af                    ; A = OrigChr; Stack = StrBuf, RtnAdr
+    pop     hl                    ; HL = StrBuf; Stack = RtnAdr
+    or      a
+    ret     nz                    ; If actuall null terminator
+    dec     de                    ;   Back up to it
+    ret
+
+; On entry: H = Channel, AF = Type
+bas_write_facc:
+    push    hl                    ; Stack = Channel, RtnAdr
+    jr      z,.string             ; If not string
+    call    FOUT                  ;   Convert float to string
+    call    STRLTI                ;   Make temporary string
+.string    
+    call    free_addr_len         ; BC = StrLen, DE = StrAdr
+_write_string_stack:
+    pop     af                    ; A = Channel; Stack = RtnAdr
+    push    af                    ; Stack = Channel, RtnAdr
+    call    esp_writec_bytes      ; A = Result
+    pop     hl                    ; H = Channel; Stack = RtnAdr
+    ret
+
+bas_write_crlf:    
+    ld      bc,2
+    ld      de,CRLFT
+    jr      _write_string_h
+
+bas_write_tab:
+    ld      bc,1
+    ld      de,LPTAB+1
+_write_string_h:
+    ld      a,h
+    push    af
+    jr      _write_string_stack
+
     
 ; Called from write_file
 ; On entry: DE = StrDsc, H = FilChn

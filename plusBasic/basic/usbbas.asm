@@ -91,7 +91,7 @@ fretmp_finbck:
 FN_IN:
     rst     CHRGET                ; Skip IN and Eat Spaces
     cp      '$'                   ; If followed by dollar sign
-    jr      z,.instring          ;   Do IN$()
+    jr      z,.instring           ;   Do IN$()
     cp      XTOKEN                ; If followed by extended token
     jr      z,.extended           ;   Handle it
     call    PARCHK
@@ -105,6 +105,7 @@ FN_IN:
     jp      SNGFLT           ; Return with 8 bit input value in variable var
 
 .instring
+;;; ToDo: Replace with '(' get_coords ')'
     rst     CHRGET                ; Skip $
     call    FRMPRN                ; Evaluate formula following (
     call    CHKNUM
@@ -113,9 +114,10 @@ FN_IN:
     call    get_comma_byte        ; DE = StrLen
     SYNCHKC ')'                   ; Require )
     ex      (sp),hl               ; HL = IOPort; Stack = TxtPtr, RtnAdr
+;;; ToDo: Move following into AuxROM
     push    hl                    ; Stack = IOPort, TxtPtr, RtnAdr
     ld      a,e
-    or      a                     ; If SrtLen = 0
+    or      a                     ; If StrLen = 0
     jp      z,FCERR               ;   Illegal quantity error
     call    STRINI                ; HL = StrDsc, DE = StrAdr, A = StrLen
     pop     bc                    ; BC = IOPort; Stack = TxtPtr, RtnAdr
@@ -128,6 +130,7 @@ FN_IN:
     dec     l
     jr      nz,.loop
     pop     hl                    ; HL = StrDsc; Stack = TxtPtr, RtnAdr
+;;; AuxROM routine will return here
     jp      PUTNEW
 
 .extended
@@ -278,57 +281,28 @@ parse_screen_coord:
 ; Ports $E0, $EE - $F3, $FB
 ;-----------------------------------------------------------------------------
 ST_OUT:
+    cp      PUTTK
+    jp      z,ST_OUTPUT
+.ploop
     call    check_bang          ; Stack = CurChr+Flag
     call    GETINT              ; Convert number to 16 bit integer (result in DE)
     pop     af                  ; F = BngFlg
-    ld      a,e                 ; A = Port
-    jr      z,.okay
-    cp      IO_VCTRL             
-    jr      c,.okay             ; A < VCTRL, Okay
-    jp      z,FCERR             ; A = VCTRL, Error
-    cp      IO_IRQMASK          
-    jr      c,.okay
-    cp      IO_ESPCTRL
-    jp      c,FCERR
-    cp      IO_SYSCTRL      
-    jp      z,FCERR
-.okay
-    push    de                  ; Stored to be used in BC
+    ld      iy,bas_out_bang
+    call    aux_call
+    push    de                  ; Stack = IOPort, RtnAdr
     SYNCHKC ','                 ; Require comma
 .dloop
-    call    FRMEVL              ; Parse data portion
-    call    GETYPE
-    jr      z,.string           ; If number
-    call    CONINT              ;   Convert to byte
-    pop     bc                  ;   BC = IOPort
-    out     (c), a              ;   Write byte to port
-    jr      .next               ; Else
-.string
-    ex      (sp),hl             ;   HL = IOPort; Stack = TxtPtr
-    push    hl                  ;   Stack = IOPort, TxtPtr
-    call    free_addr_len       ;   DE = StrAdr, BC = StrLen
-    ld      h,b
-    ld      l,c                 ;   HL = StrLen
-    pop     bc                  ;   BC = IOPort
-    jr      z,.pophl            ;   If not ""
-.sloop
-    ld      a,(de)              ;     A = StrChr
-    out     (c),a               ;     Write to IOPort
-    inc     de                  ;     Bump StrPtr
-    dec     hl                  ;     Count down
-    ld      a,h
-    or      l                   ;     If HL = 0
-    jr      nz,.sloop           ;       OUT next character
-.pophl
-    pop     hl                  ;   HL = TxtPtr; Stack = RtnAdr
-.next
+    call    FRMTYP              ; AF = ValTyp
+    pop     bc                  ; BC = IOPort
+    ld      iy,bas_out
+    call    aux_call_preserve_hl
     call    CHRGT2              ; Reget NxtChr
     ret     z                   ; If terminator, return
     ld      e,a                 ; Save NxtChr
     rst     CHRGET              ; Skip it
     ld      a,e                 ; Get it back
     cp      ';'                 ; If semicolon
-    jr      z,ST_OUT            ;   Start over with next IOPort
+    jr      z,.ploop            ;   Start over with next IOPort
     cp      ','                 ; If not comma
     jp      nz,SNERR            ;   Syntax error
     push    bc                  ;   Stack = IOPort, RtnAdr

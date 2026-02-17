@@ -37,6 +37,18 @@ ST_SET_CHR:
     ld      iy,bas_set_chr
     jp      gfx_call_popret
 
+
+ST_RESTORE_CHRSET:
+    xor     a
+    byte    $01
+ST_STASH_CHRSET:
+    or      a,$01
+    byte    $01
+ST_SWAP_CHRSET:
+    or      a,$FF
+    ld      iy,bas_buffer_chrset
+    jp      aux_call_preserve_hl
+
 ;-----------------------------------------------------------------------------
 ; USE CHRSET - Change Character Set
 ; Syntax: USE CHRSET [0|1|filename$]
@@ -47,8 +59,7 @@ ST_USECHR:
 ;.ormask = SCRCHRSET * 256
     rst     CHRGET                ; Skip CHR
     SYNCHKT SETTK                 ; Require SET
-    call    FRMEVL                ; Evaluate operand
-    call    GETYPE
+    call    FRMTYP                ; Evaluate operand
     jr      nz,.switch
     push    hl
     call    FRESTR                ; Free TEMP, get StrDsc in HL

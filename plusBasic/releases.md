@@ -1,4 +1,6 @@
 # plusBASIC Release History
+ - v0.70f (2026-02-17)
+    - Added `OUTPUT#` statement
  - v0.70e (2026-02-10)
     - 1bpp bitmap cleared to default colors on cold start
     - Fixed `PSET` for 80-column bloxels

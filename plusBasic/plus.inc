@@ -266,6 +266,8 @@ RUN_PATH    equ $0900   ; Search path for RUN programs
 WRTKEYBUF   equ $0A00   ; user autotype buffer
 ;         $0B00-$1EFF   ; Unused
 PRVDIRLIN   equ $1F00   ; Previous direct mode line entered
+;         $2000-$7FF    ; Unusd
+SWPCHRSET   equ $2800   ; Page Offset: Character Set Swap Buffer
 DEFCHRSET   equ $3000   ; Page Offset: Default Character Set Buffer
 ALTCHRSET   equ $3800   ; Page Offset: Custom Character Set Buffer
 CHRSETLEN   equ 2048    ; Size of character set ROM

@@ -441,7 +441,6 @@ _restore_rect
     pop     de                    ; DE = Y
     jp      (ix)                  ; Return
 
-
 ;-----------------------------------------------------------------------------
 ; Draw line of bloxels or pixels screen
 ; Input: A: Color/Option
@@ -455,22 +454,16 @@ _restore_rect
 bitmap_line:
     ld      (PSETCOLOR),a
     call    _check_rect
-_line:
-    ld      (BMP_X0),BC
-    ld      (BMP_Y0),DE
-    exx
-    ld      (BMP_X1),BC
-    ld      (BMP_Y1),DE
     ret     c
-    ld      a,(PSETCOLOR)
-    ld      iy,bitmap_resetpixel
-    cp      PRESETK
-    jr      z,.setup
-    ld      iy,bitmap_togglepixel
-    cp      XORTK
-    jr      z,.setup
-    ld      iy,bitmap_setpixel
+_line:
+    ld      (BMP_X0),bc
+    ld      (BMP_Y0),de
+    exx
+    ld      (BMP_X1),bc
+    ld      (BMP_Y1),de
+    call    _line_addr
 .setup
+    call    (jump_iy)
     ld      bc,$8000
     xor     a                     ; Clear carry
 ;dx = abs(x1 - x0)
@@ -518,10 +511,10 @@ _line:
 ;while true
 .loop
 ; plot(x0, y0)
-    ld      a,(PSETCOLOR)
+;    ld      a,(PSETCOLOR)
     ld      bc,(BMP_Y0)
     ld      de,(BMP_X0)
-    call    (jump_iy)
+    call    _drawpixel
 ; e2 = 2 * error
     ld      hl,(BMP_ERROR)
     add     hl,hl                 ; HL = 2 * error
@@ -573,7 +566,18 @@ _line:
 .skip2
 ;end while
     jr      .loop
-    
+
+_line_addr:
+    ld      a,(PSETCOLOR)
+    ld      iy,_resetpixel_addr
+    cp      PRESETK
+    ret     z
+    ld      iy,_togglepixel_addr
+    cp      XORTK
+    ret     z
+    ld      iy,_setpixel_addr
+    ret
+
 abs_hl:
     ld      a,h
     and     $80
@@ -697,38 +701,44 @@ bitmap_getpixel:
 ; Clobbered: A, BC, DE, HL
 ;-----------------------------------------------------------------------------
 bitmap_resetpixel:
+    call    _resetpixel_addr
+    jr      _dopixel
+
+_resetpixel_addr:
     ld      a,(GFX_FLAGS)
     and     GFXM_MASK             ; Mask bits and set flags
     ld      h,$FF                 ; Update LastX, Last Y
     ld      l,a                   ; L = GfxMode
     ld      ix,_resetpixel40
-    jr      z,_dopixel            ;   Do Bloxel 40
+    ret     z                     ;   Do Bloxel 40
     ld      ix,_resetpixel80
     dec     a                     ; If GfxMode = 1
-    jr      z,_dopixel            ;   Do Bloxel 80
+    ret     z                     ;   Do Bloxel 80
     ld      ix,_resetpixelm
     dec     a                     ; If GfxMode = 2
-    jr      z,_dopixel            ;   Do Bitmap 1bpp
+    ret     z                     ;   Do Bitmap 1bpp
     ld      ix,_resetpixelc       ; Else fo Bitmap 4bpp
-    jr      _dopixel
-
+    ret
 
 bitmap_togglepixel:
-    ld      (PSETCOLOR),a         ; Save DrwClr
+    call    _togglepixel_addr
+    jr      _dopixel
+
+_togglepixel_addr:
     ld      a,(GFX_FLAGS)
     and     GFXM_MASK             ; Mask bits and set flags
     ld      h,$FF                 ; Update LastX, Last Y
     ld      l,a                   ; L = GfxMode
     ld      ix,_togglepixel40     ;
-    jr      z,_dopixel            ;   Do Bloxel 40
+    ret     z                     ;   Do Bloxel 40
     ld      ix,_togglepixel80         ; Bloxel80
     dec     a                     ; If GfxMode = 1
-    jr      z,_dopixel            ;   Do Bloxel 80
+    ret     z                     ;   Do Bloxel 80
     ld      ix,_togglepixelm      ;
     dec     a                     ; If GfxMode = 2
-    jr      z,_dopixel            ;   Do Bitmap 1bpp
+    ret     z                     ;   Do Bitmap 1bpp
     ld      ix,_togglepixelc      ;
-    jr      _dopixel
+    ret
 
 ;-----------------------------------------------------------------------------
 ; Draw pixel
@@ -740,26 +750,15 @@ bitmap_togglepixel:
 ;-----------------------------------------------------------------------------
 bitmap_setpixel:
     ld      (PSETCOLOR),a         ; Save DrwClr
-    ld      a,(GFX_FLAGS)
-    and     GFXM_MASK             ; Mask bits and set flags
-    ld      h,$FF                 ; Update LastX, Last Y
-    ld      l,a                   ; L = GfxMode
-    ld      ix,_setpixel40        ;
-    jr      z,_dopixel            ;   Do Bloxel 40
-    ld      ix,_setpixel80         ; Bloxel80
-    dec     a                     ; If GfxMode = 1
-    jr      z,_dopixel            ;   Do Bloxel 80
-    ld      ix,_setpixelm         ;
-    dec     a                     ; If GfxMode = 2
-    jr      z,_dopixel            ;   Do Bitmap 1bpp
-    ld      ix,_setpixelc         ; Else fo Bitmap 4bpp
-; On Entry B = Color, C = X-Coord, DE = Y-Coord, H = SaveXY, L = GfxMode 
+    call    _setpixel_addr
+; On Entry C = X-Coord, DE = Y-Coord, H = SaveXY, L = GfxMode 
 _dopixel:
     push    hl                    ; Stack = SaveXY, RtnAdr
     ld      a,l                   ; A = GfxMode
     call    _check_coords
     pop     hl                    ; HL = SaveXY; Stack = RtnAdr
     ret     c
+_drawpixel:
     in      a,(IO_BANK1)
     push    af                    ; Stack = OldPg, RtnAdr
     push    bc                    ; Stack = ColorY, OldPg, RtnAdr
@@ -788,6 +787,22 @@ _dopixel:
     pop     af                    ; A = OldPg; Stack = RtnAdr
     out     (IO_BANK1),a
     ex      af,af'                ; A = NewByte
+    ret
+
+_setpixel_addr:
+    ld      a,(GFX_FLAGS)
+    and     GFXM_MASK             ; Mask bits and set flags
+    ld      h,$FF                 ; Update LastX, Last Y
+    ld      l,a                   ; L = GfxMode
+    ld      ix,_setpixel40        ;
+    ret     z                     ;   Do Bloxel 40
+    ld      ix,_setpixel80         ; Bloxel80
+    dec     a                     ; If GfxMode = 1
+    ret     z                     ;   Do Bloxel 80
+    ld      ix,_setpixelm         ;
+    dec     a                     ; If GfxMode = 2
+    ret     z                     ;   Do Bitmap 1bpp
+    ld      ix,_setpixelc         ; Else fo Bitmap 4bpp
     ret
 
 _getpixelm:
@@ -1469,6 +1484,3 @@ _check_rect:
     call    _check_coords2        ; Set Carry if out of range
     exx
     ret                           ; Return Carry Set if (X0,Y0) out of range
-
-
-_bitmap_code_size = $ - bitmap_resetpixel

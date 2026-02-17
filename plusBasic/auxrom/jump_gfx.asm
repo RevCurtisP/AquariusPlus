@@ -18,7 +18,7 @@ _jump_table:
     jp      bitmap_clear_screen   ; C00F Clear Bitmap
     jp      bitmap_fill_byte      ; C012 Fill Bitmap with Byte
     jp      bitmap_fill_color     ; C015 Fill Bitmap Color RAM
-    jp      bitmap_line           ; C018 [Future]
+    jp      bitmap_line           ; C018 Draw Line
     jp      just_ret              ; C01B (bitmap_circle)
     jp      just_ret              ; C01E (bitmap_box)
     jp      just_ret              ; C021 (bitmap_move)
@@ -34,8 +34,8 @@ _jump_table:
     jp      just_ret              ; C03F (bitmap_putstring)
     jp      just_ret              ; C042 (bitmap_putclip)
     jp      colormap_fill         ; C045 Fill 1bpp Color Map Rectangle with Byte
-    jp      just_ret              ; C048 
-    jp      just_ret              ; C04B 
+    jp      bitmap_rect           ; C048 Draw Unfilled Rectange
+    jp      bitmap_frect          ; C04B Draw Filled Rectange
     jp      just_ret              ; C04E 
     jp      just_ret              ; C051 
 ; color.asm <<Palette and Colors>>
