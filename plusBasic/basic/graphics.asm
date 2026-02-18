@@ -38,17 +38,6 @@ ST_SET_CHR:
     jp      gfx_call_popret
 
 
-ST_RESTORE_CHRSET:
-    xor     a
-    byte    $01
-ST_STASH_CHRSET:
-    or      a,$01
-    byte    $01
-ST_SWAP_CHRSET:
-    or      a,$FF
-    ld      iy,bas_buffer_chrset
-    jp      aux_call_preserve_hl
-
 ;-----------------------------------------------------------------------------
 ; USE CHRSET - Change Character Set
 ; Syntax: USE CHRSET [0|1|filename$]
@@ -83,9 +72,8 @@ ST_USECHR:
     and     $FF-SCRCHRMOD         ; Clear CharRAM modified bit
     ld      (SCREENCTL),a
     pop     af                    ; A = ChrSet; Stack = TxtPtr, RtnAdr
-    call    select_chrset         ;
-    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
-    ret
+    ld      iy,chrset_select
+    jp      gfx_call_popret
 
 ;-----------------------------------------------------------------------------
 ; USE SCREEN - Specify bitmap mode for drawing
@@ -384,6 +372,13 @@ gfx_call_popret:
     ret
 
 ;-----------------------------------------------------------------------------
+; RESTORE CHRSET - Copy Character Set Buffer to Character ROM
+;-----------------------------------------------------------------------------
+ST_RESTORE_CHRSET:
+    ld      iy,chrset_restore
+    jr      DO_CHRSET
+
+;-----------------------------------------------------------------------------
 ; RESTORE SCREEN - Copy Screen Buffer to Text Screen
 ;-----------------------------------------------------------------------------
 ST_RESTORE_SCREEN:
@@ -391,11 +386,29 @@ ST_RESTORE_SCREEN:
     jr      _swapcall_pophrt
 
 ;-----------------------------------------------------------------------------
+; STASH CHRSET - Copy Character ROM to Character Set Buffer
+;-----------------------------------------------------------------------------
+ST_STASH_CHRSET:
+    ld      iy,chrset_stash
+    jr      DO_CHRSET
+
+;-----------------------------------------------------------------------------
 ; STASH SCREEN - Copy Text Screen to Screen Buffer
 ;-----------------------------------------------------------------------------
 ST_STASH_SCREEN:
     ld      iy,screen_stash
     jr      _swapcall_pophrt
+
+;-----------------------------------------------------------------------------
+; SWAP CHRSET - Swap Character ROM and Character Set Buffer contents
+;-----------------------------------------------------------------------------
+ST_SWAP_CHRSET:
+    ld      iy,chrset_swap
+DO_CHRSET:
+    rst     CHRGET                ; Skip CHR
+    SYNCHKT SETTK                 ; Require SET
+    jp      z,IMERR               ;   Invalid mode error
+    jp      gfx_call_preserve_hl  ; Do RESTORE/STASH/SWAP and return
 
 ;-----------------------------------------------------------------------------
 ; SWAP SCREEN - Swap Text Screen with Screen Buffer

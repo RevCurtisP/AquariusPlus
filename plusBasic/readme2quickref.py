@@ -43,9 +43,20 @@ kwords = []
 
 list_level = 0
 
+skipc = False
+
 for line in md_in.readlines():
     line = line.rstrip()
     key = 0
+
+    if line.find("<!---") == 0: 
+        skipc = True
+
+    if line.find("--->") == 0: 
+        skipc = False
+        continue
+    
+    if skipc: continue
 
     # Strip checkboxes
     i = line.find("- [ ] ")

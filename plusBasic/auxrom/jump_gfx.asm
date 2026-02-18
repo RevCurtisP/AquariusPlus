@@ -134,7 +134,10 @@ _jump_table:
     jp      spritle_string_attrs  
     jp      spritle_reset         ; C156 
     jp      spritle_reset_all     ; C159 
-; in extrom
-    
+    jp      just_ret              ; C15C 
+    jp      just_ret              ; C13F 
+; chrset.asm <<Character Set Manipulation>>
+
+
 _end_jump_table:
 

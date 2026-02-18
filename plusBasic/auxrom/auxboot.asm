@@ -1,19 +1,7 @@
 ; AuxROM system initialization routines
 
-;-----------------------------------------------------------------------------
-; Character ROM buffers initialization
-;-----------------------------------------------------------------------------
-init_chrsets:
-; Copy standard character set into buffer
-    ld      hl,.defdesc
-    call    file_load_defchrs
-    ld      hl,.altdesc
-    jp      file_load_altchrs
-.defset:
-    byte    "esp:default.chr"
-.defdesc:
-    word    $-.defset,.defset
-.altset:
-    byte    "esp:latin1b.chr"
-.altdesc:
-    word    $-.altset,.altset
+aux_init:
+    call    chrset_init
+    call    spritle_reset_all
+    call    file_load_pt3play
+    ret

@@ -95,21 +95,6 @@ bas_get_version:
     ex      de,hl                 ; HL = BufAdr
     ret
 
-; Flags on entry: Z = Restore, P = Stash, S = Swap
-bas_buffer_chrset:
-    ex      af,af'
-    ld      a,CHAR_RAM
-    ex      af,af'
-    ld      a,BAS_BUFFR
-    ld      de,0
-    ld      hl,SWPCHRSET
-    jp      z,page_fast_copy_sys  ; Copy ChrBuf to ChrRAM
-    ex      de,hl
-    jp      p,page_fast_copy_sys  ; Copy ChrRAM to ChrBuf
-
-
-        
-
 ; ------------------------------------------------------------------------------
 ; ERASE statement core code
 ; ------------------------------------------------------------------------------

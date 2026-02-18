@@ -708,6 +708,9 @@ ST_STASH:
     rst     CHRGET                ; Skip STASH
     cp      SCRNTK
     jp      z,ST_STASH_SCREEN
+    SYNCHKT XTOKEN
+    cp      CHRTK
+    jp      z,ST_STASH_CHRSET
     jp      SNERR
 
 ;-----------------------------------------------------------------------------
@@ -719,8 +722,8 @@ ST_SWAP:
     SYNCHKT XTOKEN
     cp      VARTK
     jp      z,ST_SWAP_VARS
-    ;cp      CHRTK
-    ;jp      z,ST_SWAP_CHRSET
+    cp      CHRTK
+    jp      z,ST_SWAP_CHRSET
     jp      SNERR
 
 _swap_pages:

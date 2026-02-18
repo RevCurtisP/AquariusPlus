@@ -38,7 +38,6 @@ math        BASIC-Math-Functions
 mouse       BASIC-MOUSE-Functions
 ON          BASIC-ON-Statement
 OUT         BASIC-OUT-Statement
-PAD         BASIC-PAD-Function
 palette     BASIC-Palette-Statements-and-Functions
 PAUSE       BASIC-PAUSE-Statement
 pixel       BASIC-Bloxel-and-Pixel-Functions

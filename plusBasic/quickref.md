@@ -1,13 +1,6 @@
 # plusBASIC Quick Reference Guide
 <!-- Do not edit this page. Contents are copied from file quickref_wiki.md which is generated from README.md-->
 
-<!-- Check Box key
-  [ ] - Either not documented, or documented but not linked
-  [.] - Stub has been added to documentation
-  [-] - Incomplete entry in documentation
-  [x] - Documentation is complete
-  [!] - Bug fix required in plusBASIC
--->
 
 ## Literals
   - _Numeric literals_ evaluate to floating point or integer numbers.
@@ -234,7 +227,8 @@
  - **LINE (_x1_,_y1_)-(_x2_,_y2_){,_color_|PRESET|XOR}** - Draw, erase, or toggle line of bloxels or pixels.
  - **LINE (_x1_,_y1_)-(_x2_,_y2_),{_color_|PRESET|XOR},RECT** - Draw, erase, or toggle rectangle of bloxels or pixels.
  - **LINE (_x1_,_y1_)-(_x2_,_y2_),{_color_|PRESET|XOR},FILL** - Draw, erase, or toggle filled rectangle of bloxels or pixels.
- - **LINE INPUT #channel,stringvar** - Read an entire line of input from keyboard or file.
+ - **LINE INPUT stringvar** - Read an entire line of input from keyboard.
+ - **LINE INPUT #channel,stringvar** - Read an entire line of input from file.
  - **LIST {_lineref_}** - Display program lines starting at beginning of program or specified line.
  - **LIST \*_array_** - Display contents of specified string array.
  - **LIST$(_lineno_|NEXT)** - Detokenize program line.
@@ -247,6 +241,7 @@
  - **LOAD _filespec_,^_stringvar_** - Load up to 255 characters of file into string variable.
  - **LOAD BITMAP _filespec_** - Load bitmap file into Video RAM.
  - **LOAD CHRSET _filespec_** - Load character set into alternate character buffer.
+ - **LOAD CHRSET _filespec_,SWAP** - Load character set into system character buffer.
  - **LOAD COLORMAP _filespec_** - Load 1bpp color map file into Video RAM.
  - **LOAD DIR \{_filespec_,}\*_array_** - Load disk directory filenames into string array.
  - **LOAD DIR \{_filespec_,}}\*_array_,ASC** - Load formatted disk directory into string array.
@@ -338,6 +333,7 @@
  - **RESET USRDEF** - Reset `USR()` vector to default address
  - **RESTORE {_lineref_}** - Reset READ/DATA pointer to beginning of program or specified line.
  - **RESTORE BITMAP|TILEMAP** - _Not implemented._
+ - **RESTORE CHRSET** - Copy current character set from system buffer.
  - **RESTORE SCREEN** - Copy respective screen buffer to current text screen.
  - **RETURN {_expression_{,...}}** - Resume program execution after GOSUB, optionally returning results.
  - **RGB(«_r_,_g_,_b_»|«_rgbstr_»|«_string_,_delimiter_»)** - Return integer representing a single palette entry.
@@ -408,6 +404,7 @@
  - **SPLIT _string_ INTO \*_array$_ DEL _delimiter_** - Split delimited string into string array elements.
  - **SQR(_float)** - Return square root of argument.
  - **STASH BITMAP** - _Not implemented._
+ - **STASH CHRSET** - Copy current character set to system buffer.
  - **STASH SCREEN** - Copy current text screen to respective screen buffer.
  - **STASH TILEMAP** - _Not implemented._
  - **STOP** - Interrupt program execution.
@@ -416,6 +413,7 @@
  - **STRING$(_length_{,_byte_|_string_})** - Create string of repeated character.
  - **STRPTR(_strvar_)** - Return address of text for string variable.
  - **SWAP BITMAP** - _Not implemented._
+ - **SWAP CHRSET** - Swap current character set from character set in system buffer.
  - **SWAP SCREEN** - Swap current text screen with respective screen buffer.
  - **SWAP TILEMAP** - _Not implemented._
  - **SWAP VARS _var_,_var_** - Swap contents of two variables.

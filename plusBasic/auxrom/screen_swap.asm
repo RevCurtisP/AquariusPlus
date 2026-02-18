@@ -847,4 +847,4 @@ _select_chrset:
     rra
     rra
     rra                           ; Move
-    jp      select_chrset
+    jp      chrset_select

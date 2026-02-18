@@ -1,4 +1,12 @@
 # plusBASIC Revision History
+ - v0.20g (2026-02-18)
+    - Moved _init_chrsets_, _spritle_reset_all_, and _file_load_pt3play_ into _auxboot.asm_
+    - Moved _select_chrset_, and  _init_chrsets_ to _chrset_select_, and _chrset_init_
+    - Moved in _aqplusbas.asm_
+    - Added _file_load_chrswap_
+    - Added kernel routines _chrset_restore_, _chrset_stash_, _chrset_swap_
+    - Added statements `RESTORE CHRSET`, `STASH CHRSET`, `SWAP CHRSET`
+    - Added `,SWAP` option to `LOAD CHRSET`
  - v0.70f (2026-02-17)
     - Moved core code for `OUT` into _bas_out_bang_ and _bas_out_ in Auxiliary ROM
     - Refactored _bitmap_line_ to call mode specific _setpixel_ routine instead of _bitmap_set_pixel_

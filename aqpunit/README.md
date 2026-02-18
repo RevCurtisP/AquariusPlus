@@ -32,7 +32,6 @@ Run the .baq file to run the associated tests.
 | vl.baq  | Variables/Literals |
 
 ## Test Details
-
 - bt.baq 
   - BIN$(_long_)
   - BIT(_long_,_bitno_)

@@ -109,25 +109,34 @@ file_load_colormap:
 ;  $400 1024  128 to 255   1024
 ;  $800 2048    0 to 255      0
 ;-----------------------------------------------------------------------------
+file_load_chrswap:
+    ld      de,SWPCHRSET          ; DE = DstBuf
+    jr      _load_chrset
 file_load_chrset:
+    ld      de,ALTCHRSET          ; DE = DstBuf
+_load_chrset:
+    push    de                    ; Stack = DstBuf, RtnAdr
     call    file_load_tmpbuffr    ; A = 0 if no error
+    pop     hl                    ; DE = DstBfr; Stack = RtnAdr
     ret     m                     ; Return if arror
     or      c
     jr      nz,ret_carry_set
     ld      a,b
     cp      $08                   ; If FileLen = 2048
-    ld      de,ALTCHRSET          ;   Copy over entire character set
+    ld      de,0                  ;   Copy over entire character set
     jr      z,copy_chrset         ;
     cp      $04
-    ld      de,ALTCHRSET+1024     ; Else if FileLen = 1024
+    ld      de,1024               ; Else if FileLen = 1024
     jr      z,copy_chrset         ;
     cp      $03                   ; Else If FileLen = 769
-    ld      de,ALTCHRSET+256      ;   Copy starting at space character
+    ld      de,256                ;   Copy starting at space character
     jr      z,copy_chrset         ; Else
 ret_carry_set:
     scf                           ;   Return Bad file error
     ret
 copy_chrset:
+    add     hl,de                 ; HL = DstBuf + Offset
+    ex      de,hl                 ; DE = DstAdr
     ld      hl,0                  ; Copy from start
     ld      a,TMP_BUFFR           ; of TMP_BUFFR
     ex      af,af'
@@ -142,10 +151,10 @@ copy_chrset:
 ;-----------------------------------------------------------------------------
 file_load_defchrs:
     ld      de,DEFCHRSET
-    jr      _load_chrset
+    jr      _load_chrs
 file_load_altchrs:
     ld      de,ALTCHRSET
-_load_chrset
+_load_chrs:
     ld      a,BAS_BUFFR
     ld      bc,CHRSETLEN
     jp      file_load_buffer

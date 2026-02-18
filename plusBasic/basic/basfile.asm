@@ -781,12 +781,21 @@ _load_extended:
 ; load chrset "/chrsets/linedraw.char"
 ; load chrset "/chrsets/seraphim.char"
 _load_chrset:
-    call    get_strdesc_arg       ; HL = FileSpec StrDsc; Stack = TxtPtr
-; Pops HL before returning
-    byte    $3E                   ; LD A, over PUSH HL
+    call    get_strdesc_arg       ; HL = FilDsc; Stack = TxtPtr, RtnAdr
+    jr      z,_altchrset
+    ex      (sp),hl               ; HL = TxtPtr; Stack = FilDsc, RtnAdr
+    call    get_comma_token       ; A = Token
+    ex      (sp),hl               ; HL = FilDsc; Stack = TxtPtr, RtnAdr
+    cp      SWAPTK
+    jp      nz,SNERR
+    ld      iy,file_load_chrswap
+    jr      _chrset
+
 load_chrset:
     push    hl
+_altchrset:
     ld      iy,file_load_chrset   ; Load into alternate character set buffer
+_chrset:
     jp      _aux_call_bdf
 
 ; SAVE CHRSET "/t/test.chrs"
@@ -1888,6 +1897,7 @@ get_strdesc_arg:
     push    bc                    ; Stack = BC, IY, RtnAdr
     push    de                    ; Stack = DE, BC, IY, RtnAdr
     call    FRMEVL                ; Get String at HL
+    call    CHRGT2                ; A = NxtChr
     pop     de                    ; Stack = BC, IY, RtnAdr
     pop     bc                    ; Stack = IY, RtnAdr
     pop     iy                    ; Stack = RtnAdr
@@ -1895,7 +1905,9 @@ get_strdesc_arg:
     push    hl                    ; Stack = TxtPtr
     push    bc                    ; Stack = BC, TxtPtr
     push    de                    ; Stack = DE, BC, TxtPtr
+    push    af                    ; Stack = NxtChr, DE, BC, TxtPtr
     call    FRESTR                ; HL = StrDsc
+    pop     af                    ; A = NxtChr; Stack = DE, BC, TxtPtr
     pop     de                    ; Stack = BC, TxtPtr
     pop     bc                    ; Stack = TxtPtr
     jp      (ix)                  ; Fast Return

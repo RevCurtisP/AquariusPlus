@@ -1,13 +1,13 @@
 # plusBASIC Quick Reference Guide
 <!-- Do not edit this page. Contents are copied from file quickref_wiki.md which is generated from README.md-->
 
-<!-- Check Box key
+<!--- Check Box key
   [ ] - Either not documented, or documented but not linked
   [.] - Stub has been added to documentation
   [-] - Incomplete entry in documentation
   [x] - Documentation is complete 
   [!] - Bug fix required in plusBASIC
--->
+--->
 
 ## Literals
   - _Numeric literals_ evaluate to floating point or integer numbers.
@@ -234,7 +234,8 @@
  - [ ] **LINE (_x1_,_y1_)-(_x2_,_y2_){,_color_|PRESET|XOR}** - Draw, erase, or toggle line of bloxels or pixels.<!--pixel-->
  - [ ] **LINE (_x1_,_y1_)-(_x2_,_y2_),{_color_|PRESET|XOR},RECT** - Draw, erase, or toggle rectangle of bloxels or pixels.<!--pixel-->
  - [ ] **LINE (_x1_,_y1_)-(_x2_,_y2_),{_color_|PRESET|XOR},FILL** - Draw, erase, or toggle filled rectangle of bloxels or pixels.<!--pixel-->
- - [ ] **LINE INPUT #channel,stringvar** - Read an entire line of input from keyboard or file.<!--fileio-->
+ - [ ] **LINE INPUT stringvar** - Read an entire line of input from keyboard.<!--input-->
+ - [ ] **LINE INPUT #channel,stringvar** - Read an entire line of input from file.<!--fileio-->
  - [-] **LIST {_lineref_}** - Display program lines starting at beginning of program or specified line.<!--list-->
  - [ ] **LIST \*_array_** - Display contents of specified string array.
  - [.] **LIST$(_lineno_|NEXT)** - Detokenize program line.<!--list-->
@@ -247,6 +248,7 @@
  - [x] **LOAD _filespec_,^_stringvar_** - Load up to 255 characters of file into string variable.<!--LOAD-->
  - [ ] **LOAD BITMAP _filespec_** - Load bitmap file into Video RAM.<!--bmpfile-->
  - [ ] **LOAD CHRSET _filespec_** - Load character set into alternate character buffer.<!--CHRSET-->
+ - [ ] **LOAD CHRSET _filespec_,SWAP** - Load character set into system character buffer.<!--CHRSET-->
  - [ ] **LOAD COLORMAP _filespec_** - Load 1bpp color map file into Video RAM.<!--bmpfile-->
  - [ ] **LOAD DIR \{_filespec_,}\*_array_** - Load disk directory filenames into string array.
  - [ ] **LOAD DIR \{_filespec_,}}\*_array_,ASC** - Load formatted disk directory into string array.
@@ -290,9 +292,9 @@
  - [ ] **ON TIMER GOTO|GOSUB _lineref_** - _Proposed enhancement_
  - [.] **OPEN _filespec_ FOR INPUT|OUTPUT|APPEND|RANDOM as _numvar_** - Open file.<!--fileio-->
  - [ ] **OUT _port_,_byte_|_string_{,...}{;...}** - Write to a Z80 port.<!--system-->
- - [ ] **OUTPUT #_channel_,_expression_;|,{...}** - Write data to file.<!--print-->
- - [ ] **PAD$(_string_,_length_{,_char_})** - Pad string on left or right with optional fill character.<!--PAD-->
- - [ ] **PAD$(_number_,_length_{,_char_})** - Convert number to padded string.<!--PAD-->
+ - [x] **OUTPUT #_channel_,_expression_;|,{...}** - Write data to file.<!--print-->
+ - [x] **PAD$(_string_,_length_{,_char_})** - Pad string on left or right with optional fill character.<!--string-->
+ - [x] **PAD$(_number_,_length_{,_char_})** - Convert number to padded string.<!--string-->
  - [ ] **PAUSE** - Halt program execution until key is pressed.<!--system-->
  - [ ] **PAUSE _jiffies_** - Pauses program execution for the specified amount of time.<!--system-->
  - [ ] **PAUSE UNTIL _expression_** - Pauses program execution until _expression_ evaluates to true.<!--system-->
@@ -338,6 +340,7 @@
  - [ ] **RESET USRDEF** - Reset `USR()` vector to default address<!--system-->.
  - [ ] **RESTORE {_lineref_}** - Reset READ/DATA pointer to beginning of program or specified line.<!--RESTORE-->
  - [ ] **RESTORE BITMAP|TILEMAP** - _Not implemented._
+ - [ ] **RESTORE CHRSET** - Copy current character set from system buffer.<!--CHRSET-->
  - [ ] **RESTORE SCREEN** - Copy respective screen buffer to current text screen.
  - [ ] **RETURN {_expression_{,...}}** - Resume program execution after GOSUB, optionally returning results.<!--flow-->
  - [x] **RGB(«_r_,_g_,_b_»|«_rgbstr_»|«_string_,_delimiter_»)** - Return integer representing a single palette entry.<!--palette-->
@@ -408,6 +411,7 @@
  - [ ] **SPLIT _string_ INTO \*_array$_ DEL _delimiter_** - Split delimited string into string array elements.
  - [x] **SQR(_float)** - Return square root of argument.<!--math-->
  - [ ] **STASH BITMAP** - _Not implemented._
+ - [ ] **STASH CHRSET** - Copy current character set to system buffer.<!--CHRSET-->
  - [ ] **STASH SCREEN** - Copy current text screen to respective screen buffer.
  - [ ] **STASH TILEMAP** - _Not implemented._
  - [ ] **STOP** - Interrupt program execution.<!--flow-->
@@ -416,6 +420,7 @@
  - [x] **STRING$(_length_{,_byte_|_string_})** - Create string of repeated character.<!--STRING-->
  - [ ] **STRPTR(_strvar_)** - Return address of text for string variable.
  - [ ] **SWAP BITMAP** - _Not implemented._
+ - [ ] **SWAP CHRSET** - Swap current character set from character set in system buffer.<!--CHRSET-->
  - [ ] **SWAP SCREEN** - Swap current text screen with respective screen buffer.
  - [ ] **SWAP TILEMAP** - _Not implemented._
  - [ ] **SWAP VARS _var_,_var_** - Swap contents of two variables.

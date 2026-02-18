@@ -302,6 +302,25 @@ get_extoken:
     jp      z,CHRGTR              ;   Skip it and return
     jp      SNERR                 ; Else Syntax error
 
+;-----------------------------------------------------------------------------
+; Parse C, X, or Y
+; Output: E: 0 = C, 1 = X, 255 = Y
+;-----------------------------------------------------------------------------
+parse_cxy:
+    ld      a,(hl)                ; A = NxtChr
+    ld      e,0                   ; E = 0
+    cp      'C'
+    jr      nz,.not_c             ; If C 
+    jr      _chrgtr               ;   Skip C and Return E
+.not_c    
+    cp      'X'                    
+    jr      nz,.not_x             ; If X 
+    inc     e                     ;   E = 1
+    jr      _chrgtr               ;   Skip X and Return E
+.not_x    
+    SYNCHKC   'Y'                   ; Else require Y
+    dec     e                     ;   E = 255
+    ret                           ;   Return E
 
 skip_get_comma:
     rst     CHRGET
@@ -311,8 +330,17 @@ skip_get_comma:
 get_comma:
     ld      a,(hl)
     cp      ','
+_moerr:
     jp      nz,MOERR
+_chrgtr:
     jp      CHRGTR
+
+get_comma_token:
+    call    get_comma             ; Require comma
+    cp      XTOKEN                ; If extended token
+    call    z,CHRGTR              ;   Get next byte
+    inc     hl                    ; Skip Token
+    ret
 
 ;-----------------------------------------------------------------------------
 ; Require comma, then parse byte
@@ -341,25 +369,6 @@ skip_get_int:
     or      e
     ret
 
-;-----------------------------------------------------------------------------
-; Parse C, X, or Y
-; Output: E: 0 = C, 1 = X, 255 = Y
-;-----------------------------------------------------------------------------
-parse_cxy:
-    ld      a,(hl)                ; A = NxtChr
-    ld      e,0                   ; E = 0
-    cp      'C'
-    jr      nz,.not_c             ; If C 
-    jp      CHRGTR                ;   Skip C and Return E
-.not_c    
-    cp      'X'                    
-    jr      nz,.not_x             ; If X 
-    inc     e                     ;   E = 1
-    jp      CHRGTR                ;   Skip X and Return E
-.not_x    
-    SYNCHKC   'Y'                   ; Else require Y
-    dec     e                     ;   E = 255
-    ret                           ;   Return E
 
 ;-----------------------------------------------------------------------------
 ; Parse @Page

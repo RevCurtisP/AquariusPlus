@@ -1,13 +1,6 @@
 # plusBASIC Quick Reference Guide
 <!-- Do not edit this page. Contents are copied from file quickref_wiki.md which is generated from README.md-->
 
-<!-- Check Box key
-  [ ] - Either not documented, or documented but not linked
-  [.] - Stub has been added to documentation
-  [-] - Incomplete entry in documentation
-  [x] - Documentation is complete
-  [!] - Bug fix required in plusBASIC
--->
 
 ## Literals
   - _Numeric literals_ evaluate to floating point or integer numbers.
@@ -234,7 +227,8 @@
  - **[LINE (_x1_,_y1_)-(_x2_,_y2_){,_color_|PRESET|XOR}](BASIC-Bloxel-and-Pixel-Functions#line)** - Draw, erase, or toggle line of bloxels or pixels.
  - **[LINE (_x1_,_y1_)-(_x2_,_y2_),{_color_|PRESET|XOR},RECT](BASIC-Bloxel-and-Pixel-Functions#line)** - Draw, erase, or toggle rectangle of bloxels or pixels.
  - **[LINE (_x1_,_y1_)-(_x2_,_y2_),{_color_|PRESET|XOR},FILL](BASIC-Bloxel-and-Pixel-Functions#line)** - Draw, erase, or toggle filled rectangle of bloxels or pixels.
- - **[LINE INPUT #channel,stringvar](BASIC-File-IO-Statements-and-Functions#line-input)** - Read an entire line of input from keyboard or file.
+ - **LINE INPUT stringvar** - Read an entire line of input from keyboard.
+ - **[LINE INPUT #channel,stringvar](BASIC-File-IO-Statements-and-Functions#line-input)** - Read an entire line of input from file.
  - **[LIST {_lineref_}](BASIC-LIST-Statements-and-Functions#list)** - Display program lines starting at beginning of program or specified line.
  - **LIST \*_array_** - Display contents of specified string array.
  - **[LIST$(_lineno_|NEXT)](BASIC-LIST-Statements-and-Functions#list-1)** - Detokenize program line.
@@ -247,6 +241,7 @@
  - **[LOAD _filespec_,^_stringvar_](BASIC-LOAD-Statement#load)** - Load up to 255 characters of file into string variable.
  - **[LOAD BITMAP _filespec_](BASIC-BITMAP-File-Statements#load-bitmap)** - Load bitmap file into Video RAM.
  - **LOAD CHRSET _filespec_** - Load character set into alternate character buffer.
+ - **LOAD CHRSET _filespec_,SWAP** - Load character set into system character buffer.
  - **[LOAD COLORMAP _filespec_](BASIC-BITMAP-File-Statements#load-colormap)** - Load 1bpp color map file into Video RAM.
  - **LOAD DIR \{_filespec_,}\*_array_** - Load disk directory filenames into string array.
  - **LOAD DIR \{_filespec_,}}\*_array_,ASC** - Load formatted disk directory into string array.
@@ -291,8 +286,8 @@
  - **[OPEN _filespec_ FOR INPUT|OUTPUT|APPEND|RANDOM as _numvar_](BASIC-File-IO-Statements-and-Functions#open)** - Open file.
  - **[OUT _port_,_byte_|_string_{,...}{;...}](BASIC-System-Statements-and-Functions#out)** - Write to a Z80 port.
  - **[OUTPUT #_channel_,_expression_;|,{...}](BASIC-PRINT-Statements#output)** - Write data to file.
- - **[PAD$(_string_,_length_{,_char_})](BASIC-PAD-Function#pad)** - Pad string on left or right with optional fill character.
- - **[PAD$(_number_,_length_{,_char_})](BASIC-PAD-Function#pad)** - Convert number to padded string.
+ - **[PAD$(_string_,_length_{,_char_})](BASIC-String-Functions#pad)** - Pad string on left or right with optional fill character.
+ - **[PAD$(_number_,_length_{,_char_})](BASIC-String-Functions#pad)** - Convert number to padded string.
  - **[PAUSE](BASIC-System-Statements-and-Functions#pause)** - Halt program execution until key is pressed.
  - **[PAUSE _jiffies_](BASIC-System-Statements-and-Functions#pause)** - Pauses program execution for the specified amount of time.
  - **[PAUSE UNTIL _expression_](BASIC-System-Statements-and-Functions#pause-until)** - Pauses program execution until _expression_ evaluates to true.
@@ -338,6 +333,7 @@
  - **[RESET USRDEF](BASIC-System-Statements-and-Functions#reset-usrdef)** - Reset `USR()` vector to default address
  - **[RESTORE {_lineref_}](BASIC-RESTORE-Statement#restore)** - Reset READ/DATA pointer to beginning of program or specified line.
  - **RESTORE BITMAP|TILEMAP** - _Not implemented._
+ - **RESTORE CHRSET** - Copy current character set from system buffer.
  - **RESTORE SCREEN** - Copy respective screen buffer to current text screen.
  - **[RETURN {_expression_{,...}}](BASIC-Flow-Control-Statements#return)** - Resume program execution after GOSUB, optionally returning results.
  - **[RGB(«_r_,_g_,_b_»|«_rgbstr_»|«_string_,_delimiter_»)](BASIC-Palette-Statements-and-Functions#rgb)** - Return integer representing a single palette entry.
@@ -408,6 +404,7 @@
  - **SPLIT _string_ INTO \*_array$_ DEL _delimiter_** - Split delimited string into string array elements.
  - **[SQR(_float)](BASIC-Math-Functions#sqr)** - Return square root of argument.
  - **STASH BITMAP** - _Not implemented._
+ - **STASH CHRSET** - Copy current character set to system buffer.
  - **STASH SCREEN** - Copy current text screen to respective screen buffer.
  - **STASH TILEMAP** - _Not implemented._
  - **[STOP](BASIC-Flow-Control-Statements#stop)** - Interrupt program execution.
@@ -416,6 +413,7 @@
  - **STRING$(_length_{,_byte_|_string_})** - Create string of repeated character.
  - **STRPTR(_strvar_)** - Return address of text for string variable.
  - **SWAP BITMAP** - _Not implemented._
+ - **SWAP CHRSET** - Swap current character set from character set in system buffer.
  - **SWAP SCREEN** - Swap current text screen with respective screen buffer.
  - **SWAP TILEMAP** - _Not implemented._
  - **SWAP VARS _var_,_var_** - Swap contents of two variables.

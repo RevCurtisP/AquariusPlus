@@ -1,4 +1,7 @@
 # plusBASIC Release History
+ - v0.20g (2026-02-18)
+    - Added statements `RESTORE CHRSET`, `STASH CHRSET`, `SWAP CHRSET`
+    - Added `,SWAP` option to `LOAD CHRSET`
  - v0.70f (2026-02-17)
     - Added `OUTPUT#` statement
  - v0.70e (2026-02-10)

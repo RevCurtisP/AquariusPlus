@@ -83,9 +83,7 @@ _coldboot:
     call    sys_fill_zero
 
     call    page_set_aux
-    call    init_chrsets
-    call    spritle_reset_all
-    call    file_load_pt3play
+    call    aux_init
     call    page_set_plus
     jp      do_coldboot
 
@@ -106,7 +104,7 @@ null_desc:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.70f"
+    db "v0.70g"
     db 0
 plusver_len equ $ - plus_version
 plus_len   equ   $ - plus_text
@@ -529,37 +527,6 @@ sys_fill_word:
     inc     hl                    ; Bump Address
     dec     bc                    ; Count down
     jr      sys_fill_word         ; Do it again
-
-
-default_chrset:
-   xor      a
-;-----------------------------------------------------------------------------
-; Copy selected character set into Character RAM
-; Input: A: Character set (0: Default, 1: Custom)
-; Clobbered: AF',BC,DE,HL,IX
-;-----------------------------------------------------------------------------
-select_chrset:
-    ld      hl,DEFCHRSET          ; If A = 0
-    or      a                     ;   Copy standard character set
-    jr      z,.copy               ; Else
-.alt
-    ld      hl,ALTCHRSET          ;   Copy Custom Character Set
-.copy
-    ld      a,BAS_BUFFR
-    jr      copy_char_ram
-
-;-----------------------------------------------------------------------------
-; Copy Character ROM into Character RAM
-; Input: A = Source Page
-;       HL = Source Address
-; Clobbered: AF',BC,DE,HL,IX
-;-----------------------------------------------------------------------------
-copy_char_ram:
-    ex      af,af'
-    ld      a,CHAR_RAM
-    ld      bc,2048
-    ld      de,0
-    jp      page_fast_copy_sys    ; Copy It
 
 ;-----------------------------------------------------------------------------
 ; Enable VBLANK Interrupts
@@ -1201,7 +1168,8 @@ print_linbuf:
     include "gfxvar.asm"          ; Graphics sysvars and lookup tables
     include "gfx.asm"             ; Main graphics module
     include "basicgfx.asm"        ; BASIC graphics.asm subcalls
-    include "color.asm"           ; Color palette module
+    include "chrset.asm"          ; Character set routines
+    include "color.asm"           ; Color Palette module
     include "gfxbitmap.asm"       ; Bitmap graphics routines
     include "screen.asm"          ; Text screen graphics subroutines
     include "screen_gfx.asm"      ; Screen graphics routines    

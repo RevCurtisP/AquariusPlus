@@ -59,7 +59,7 @@ s3_ctrl_keys:
     sub     a,'N'-'K'             ;         ^N = 0, ^O = 1
     xor     1                     ;         ^O = 1, ^O = 0
     push    hl                    ;
-    call    select_chrset         ;         Select the character set
+    call    chrset_select         ;         Select the character set
     pop     hl
 .inlinc
     ld      ix,INLINC             ; Wait for next key

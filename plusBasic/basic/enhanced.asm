@@ -781,8 +781,15 @@ ST_READ_KEYS:
 ST_RESTORE:
     cp      SCRNTK
     jp      z,ST_RESTORE_SCREEN
+    cp      XTOKEN
+    jr      z,.xtoken
     call    CHRGT3                ; Set digit and terminator flags
     jp      RESTOR
+.xtoken
+    rst     CHRGET                ; Skip XTOKEN
+    cp      CHRTK
+    jp      z,ST_RESTORE_CHRSET
+    jp      SNERR
 
 ;-----------------------------------------------------------------------------
 ; Enhanced STOP statement stub
