@@ -1,4 +1,6 @@
 # plusBASIC Release History
+ - v0.20h (2026-02-20)
+    - Added function `SPRITECOL()`
  - v0.20g (2026-02-18)
     - Added statements `RESTORE CHRSET`, `STASH CHRSET`, `SWAP CHRSET`
     - Added `,SWAP` option to `LOAD CHRSET`

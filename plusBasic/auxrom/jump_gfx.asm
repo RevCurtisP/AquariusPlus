@@ -130,14 +130,17 @@ _jump_table:
     jp      spritle_set_pos       ; C14D 
     jp      spritle_get_pos       ; C150 
     jp      spritle_set_props     ; C153 
-    jp      spritle_get_props     ; C153 
-    jp      spritle_string_attrs  
-    jp      spritle_reset         ; C156 
-    jp      spritle_reset_all     ; C159 
-    jp      just_ret              ; C15C 
-    jp      just_ret              ; C13F 
+    jp      spritle_get_props     ; C156 
+    jp      spritle_string_attrs  ; C159
+    jp      spritle_reset         ; C15C
+    jp      spritle_reset_all     ; C15F
+    jp      sprite_collision      ; C162 
+    jp      spritle_collision     ; C165
+    jp      just_ret              ; C168
+    jp      just_ret              ; C16B
+    jp      just_ret              ; C16E
 ; chrset.asm <<Character Set Manipulation>>
-
+    jp      just_ret              ; C171
 
 _end_jump_table:
 

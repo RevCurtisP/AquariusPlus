@@ -104,7 +104,7 @@ null_desc:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.70g"
+    db "v0.70h"
     db 0
 plusver_len equ $ - plus_version
 plus_len   equ   $ - plus_text

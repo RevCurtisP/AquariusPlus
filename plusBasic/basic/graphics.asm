@@ -30,7 +30,7 @@ ST_SET_CHR:
     call    get_to_string_arg     ; DE = StrAdr, BC = StrLen, Stack = TxtPtr, ChrASC, ChrSet, RtnAdr
     ld      a,c
     cp      8                     ; If StrLen <> 8
-    jp      nz,FCERR              ;   Illegal quantity error
+    jp      nz,SLERR              ;   Illegal quantity error
     pop     hl                    ; HL = TxtPtr; Stack = ChrASC,RtnAdr
     pop     af                    ; A = ChrASC; Stack = RtnAdr
     push    hl                    ; Stack = TxtPtr, RtnAdr
@@ -158,8 +158,9 @@ FN_GETCHRDEF:
 ; USE CHRSET 0:PRINT GETCHRSET
 FN_GETCHRSET:
     rst     CHRGET                ; Skip SET
-    call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
     ld      iy,bas_get_chrset
+hl_labbck_gfx_call_float:
+    call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
     call    gfx_call
     jp      FLOAT                 ; Float an return result
 
@@ -194,6 +195,14 @@ ST_SETCOLOR:
     ld      iy,set_color_off
 .gfx_call
     jp      gfx_call   
+
+;-----------------------------------------------------------------------------
+; Draw rectangle on text screen
+; RECT (x0,y0)-(x1,y1),boxchars${,fgcolor,bgcolor}
+;-----------------------------------------------------------------------------
+; RECT (10,5)-(20,6),"+-+| |+-+"
+ST_RECT:
+    jp      GSERR
 
 ;-----------------------------------------------------------------------------
 ; RESET PALETTE to default colors
@@ -1531,7 +1540,6 @@ _parse_pos:
     pop     bc                    ; BC = X-pos; Stack = SprAdr, RtnAdr
     ret
     
-    
 ;-----------------------------------------------------------------------------
 ; Return Sprite Attributes
 ; GETSPRITE$(SpriteDef$)
@@ -1551,13 +1559,41 @@ FN_GETSPRITE:
     rst     CHRGET                ; Skip SPRITE token
     push    af                    ; Stack = FncSfx, RtnAdr
     cp      '('                   ; If not (
-    call    nz,CHRGTR             ;   Skip it
+    call    nz,CHRGTR             ;   Skipl
     call    PARCHK                ; FACLO = Arg
     pop     af                    ; A = FncSfx
     call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
     ld      iy,bas_getsprite      ; Get Int or StrzDsc  in HL
     call    gfx_call              ; IX = FLOAT_HL or FINBCK
     jp      (ix)                  ; Return String
+
+;-----------------------------------------------------------------------------
+; Check for collision between spritles/sprites
+; SPRITECOL(spritle1,spritle2)
+;-----------------------------------------------------------------------------
+FN_SPRITE:
+    rst     CHRGET                ; Skip SPRITE
+    SYNCHKT COLTK                 ; Require COL
+    call    FRMPRT                ; AF = Type
+    jr      z,.string             ; If numeric
+    call    CONINT                ;   A = Spritle 1
+    push    af                    ;   Stack = Spritle 1, RtnAdr
+    call    get_comma_byte        ;   E = Spritle2
+    call    close_paren           ;   Error if not )
+    pop     af                    ;   A = Spritle 1
+    ld      iy,aux_spritlecol     ;   Check for collision and float result
+    jr      .gfx_call_return      ; Else
+.string
+    ld      de,(FACLO)            ;   DE = ArgDsc1
+    push    de                    ;   Stack = ArgDsc1, RtnAdr
+    call    get_comma
+    call    FRMSTR
+    call    close_paren
+    pop     de                    ;   DE = ArgDsc1
+    ld      iy,aux_spritecol      ;   Check for collision and float result
+.gfx_call_return
+    jp      hl_labbck_gfx_call_float
+    
 
 ;-----------------------------------------------------------------------------
 ; RGB(r,g,b)

@@ -176,12 +176,12 @@
  - [ ] **GET ARGS _var_{,...}** - Read arguments from argument list after `GOSUB`.
  - [ ] **GET SCREEN {CHRS|COLORS} (_x_,y_)-(_x_,_y_) \*_array_|^_strvar_** - Copy text screen clip to array or string variable.<!--GETSCREEN-->
  - [ ] **GET TILEMAP (_x_,y_)-(_x_,_y_) \*_array_|^_strvar_** - Copy tilemap clip to array or string variable.<!--GETTILEMAP-->
- - [ ] **GETCHRDEF$(_char_{,_chrset_})** - Return character definition.<!--CHRSET-->
+ - [ ] **GETCHRDEF$(_char_{,_chrset_})** - Return character definition.<!--chrset-->
  - [.] **GETBORDERCHR** - Return screen border character.<!--screen-->
  - [.] **GETBORDERCHR$** - Return screen border character as string.<!--screen-->
  - [.] **GETBORDERCOLOR** - Return screen border colors.<!--screen-->
  - [.] **GETBORDERCOLOR$** - Return screen border colors as string.<!--screen-->
- - [ ] **GETCHRSET** - Return character set currently in use.<!--CHRSET-->
+ - [ ] **GETCHRSET** - Return character set currently in use.<!--chrset-->
  - [ ] **GETCOLOR** - Return screen printing colors.<!--screen-->
  - [ ] **GETCURSOR** - Return cursor display mode.
  - [x] **GETKEY** - Wait for key and return ASCII code.<!--key-->
@@ -247,8 +247,8 @@
  - [x] **LOAD _filespec_,\*_array_,ASC** - Load multi-line ASCII file into string array.<!--LOAD-->
  - [x] **LOAD _filespec_,^_stringvar_** - Load up to 255 characters of file into string variable.<!--LOAD-->
  - [ ] **LOAD BITMAP _filespec_** - Load bitmap file into Video RAM.<!--bmpfile-->
- - [ ] **LOAD CHRSET _filespec_** - Load character set into alternate character buffer.<!--CHRSET-->
- - [ ] **LOAD CHRSET _filespec_,SWAP** - Load character set into system character buffer.<!--CHRSET-->
+ - [ ] **LOAD CHRSET _filespec_** - Load character set into alternate character buffer.<!--chrset-->
+ - [ ] **LOAD CHRSET _filespec_,SWAP** - Load character set into system character buffer.<!--chrset-->
  - [ ] **LOAD COLORMAP _filespec_** - Load 1bpp color map file into Video RAM.<!--bmpfile-->
  - [ ] **LOAD DIR \{_filespec_,}\*_array_** - Load disk directory filenames into string array.
  - [ ] **LOAD DIR \{_filespec_,}}\*_array_,ASC** - Load formatted disk directory into string array.
@@ -340,7 +340,7 @@
  - [ ] **RESET USRDEF** - Reset `USR()` vector to default address<!--system-->.
  - [ ] **RESTORE {_lineref_}** - Reset READ/DATA pointer to beginning of program or specified line.<!--RESTORE-->
  - [ ] **RESTORE BITMAP|TILEMAP** - _Not implemented._
- - [ ] **RESTORE CHRSET** - Copy current character set from system buffer.<!--CHRSET-->
+ - [ ] **RESTORE CHRSET** - Copy current character set from system buffer.<!--chrset-->
  - [ ] **RESTORE SCREEN** - Copy respective screen buffer to current text screen.
  - [ ] **RETURN {_expression_{,...}}** - Resume program execution after GOSUB, optionally returning results.<!--flow-->
  - [x] **RGB(«_r_,_g_,_b_»|«_rgbstr_»|«_string_,_delimiter_»)** - Return integer representing a single palette entry.<!--palette-->
@@ -409,18 +409,20 @@
  - [x] **SIN(_float_)** - Return sine of argument.<!--math-->
  - [ ] **SOUND (_duration_,_frequency_)** - Generate a tone through the television speaker.
  - [ ] **SPLIT _string_ INTO \*_array$_ DEL _delimiter_** - Split delimited string into string array elements.
+ - [ ] **SPRITECOL(_spritle_,_spritle_)** - Check for collision between spritles.<!--sprites-->
+ - [ ] **SPRITECOL(_spritedef_,_spritedef_)** - Check for collision between sprites.<!--sprites-->
  - [x] **SQR(_float)** - Return square root of argument.<!--math-->
  - [ ] **STASH BITMAP** - _Not implemented._
- - [ ] **STASH CHRSET** - Copy current character set to system buffer.<!--CHRSET-->
+ - [ ] **STASH CHRSET** - Copy current character set to system buffer.<!--chrset-->
  - [ ] **STASH SCREEN** - Copy current text screen to respective screen buffer.
  - [ ] **STASH TILEMAP** - _Not implemented._
  - [ ] **STOP** - Interrupt program execution.<!--flow-->
  - [-] **STOP TRACK** - Stop currently playing track.<!--track-->
  - [x] **STR$(_float_)** - Convert floating point number to ASCII string.<!--convert-->
- - [x] **STRING$(_length_{,_byte_|_string_})** - Create string of repeated character.<!--STRING-->
+ - [x] **STRING$(_length_{,_byte_|_string_})** - Create string of repeated character.<!--string-->
  - [ ] **STRPTR(_strvar_)** - Return address of text for string variable.
  - [ ] **SWAP BITMAP** - _Not implemented._
- - [ ] **SWAP CHRSET** - Swap current character set from character set in system buffer.<!--CHRSET-->
+ - [ ] **SWAP CHRSET** - Swap current character set from character set in system buffer.<!--chrset-->
  - [ ] **SWAP SCREEN** - Swap current text screen with respective screen buffer.
  - [ ] **SWAP TILEMAP** - _Not implemented._
  - [ ] **SWAP VARS _var_,_var_** - Swap contents of two variables.
@@ -450,7 +452,7 @@
  - [x] **UPRKEY** - Return uppercased ASCII code of last key presed.
  - [x] **UPRKEY$** - Return uppercased string containing last key pressed.
  - [x] **UPRKEY(_string_)** - Convert last key pressed to uppercase, and return position in string.
- - [ ] **USE CHRSET _0_|_1_|_filespec_** - Copy specified character set to character RAM.<!--CHRSET-->
+ - [ ] **USE CHRSET _0_|_1_|_filespec_** - Copy specified character set to character RAM.<!--chrset-->
  - [ ] **USE SCREEN {@_page_,}_text_mode_,_gfx_mode_** - _Not implemented._
  - [ ] **USR(_float_)** - Call user-defined machine language routine passing argument and returning result.<!--USR-->
  - [x] **VAL(_string_)** - Convert ASCII string to floating point number.<!--convert-->

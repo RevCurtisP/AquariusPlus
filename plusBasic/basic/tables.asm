@@ -93,11 +93,11 @@ STJUMPS:
     dw      ST_MID                ;$C9 MID$     
     dw      SNERR                 ;$CA POINT
 ;PlusBASIC Statements and Functions
-    dw      SNERR                 ;$CB 
+    dw      SNERR                 ;$CB XOR
     dw      ST_PUT                ;$CC PUT
     dw      ST_GET                ;$CD GET
     dw      GSERR                 ;$CE DRAW
-    dw      SNERR                 ;$CF  
+    dw      SNERR                 ;$CF unused
     dw      ST_LINE               ;$D0 LINE
     dw      ST_SWAP               ;$D1 SWAP 
     dw      ST_DOKE               ;$D2 DOKE
@@ -126,14 +126,14 @@ STJUMPS:
     dw      SNERR                 ;$E9 ERR
     dw      SNERR                 ;$EA STRING$
     dw      SNERR                 ;$EB BIT
-    dw      SNERR                 ;$EC 
+    dw      SNERR                 ;$EC unused
     dw      SNERR                 ;$ED EVAL
     dw      ST_PAUSE              ;$EE PAUSE
     dw      SNERR                 ;$EF ELSE
     dw      SNERR                 ;$F0 TILE
     dw      SNERR                 ;$F1 RGB
     dw      SNERR                 ;$F2 MAP
-    dw      SNERR                 ;$F3 
+    dw      SNERR                 ;$F3 FILE
     dw      ST_RESUME             ;$F4 RESUME
     dw      ST_COLOR              ;$F5 COL
     dw      ST_SCREEN             ;$F6 SCREEN 
@@ -142,10 +142,10 @@ STJUMPS:
     dw      ST_USE                ;$F9 USE
     dw      ST_OPEN               ;$FA OPEN
     dw      ST_CLOSE              ;$FB CLOSE
-    dw      SNERR                 ;$FC
-    dw      SNERR                 ;$FD
-    dw      extended_statement    ;$FE
-    dw      SNERR                 ;$FF
+    dw      SNERR                 ;$FC unused
+    dw      SNERR                 ;$FD unused
+    dw      extended_statement    ;$FE XTOKEN
+    dw      SNERR                 ;$FF unused
 
 ;----------------------------------------------------------------------------
 ; Combined Function Jump Table 

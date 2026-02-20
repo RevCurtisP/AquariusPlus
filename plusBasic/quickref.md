@@ -402,6 +402,8 @@
  - **SIN(_float_)** - Return sine of argument.
  - **SOUND (_duration_,_frequency_)** - Generate a tone through the television speaker.
  - **SPLIT _string_ INTO \*_array$_ DEL _delimiter_** - Split delimited string into string array elements.
+ - **SPRITECOL(_spritle_,_spritle_)** - Check for collision between spritles.
+ - **SPRITECOL(_spritedef_,_spritedef_)** - Check for collision between sprites.
  - **SQR(_float)** - Return square root of argument.
  - **STASH BITMAP** - _Not implemented._
  - **STASH CHRSET** - Copy current character set to system buffer.

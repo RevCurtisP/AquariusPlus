@@ -40,6 +40,101 @@ SPR_HFLIP     equ   $02
 ;                           1 : V-flip
 ;-----------------------------------------------------------------------------
 
+;-----------------------------------------------------------------------------
+; Detect collision between two sprites
+; Input: DE = SpriteDef 1 Address
+;        HL = SpriteDef 2 Address
+; Returns: Carry Set if ???
+; Clobbered: AF, BC, DE, HL
+;-----------------------------------------------------------------------------
+sprite_collision:
+    ld    a,(de)
+    ld    c,a                     ; C = SprLen1
+    ld    b,(hl)                  ; B = SprLen2
+.loop1
+    push  bc                      ; Stack = SptCnt1+SprLen2, RtnAdr
+    inc   de
+    inc   de                      
+    inc   de                      ; DE = SptPtr1
+    push  hl                      ; Stack = SptDef2, SptCnt1+SprLen2, RtnAdr
+.loop2
+    push  bc                      ; Stack = SptCnt2, SptDef2, SptCnt1+SprLen2, RtnAdr
+    push  de                      ; Stack = SptPtr1, SptCnt2, SptDef2, SptCnt1+SprLen2, RtnAdr
+    inc   hl
+    inc   hl
+    inc   hl                      ; HL = SptPtr2
+    push  hl                      ; Stack = SptPtr2, SptPtr1, SptCnt2, SptDef2, SptCnt1+SprLen2, RtnAdr
+    ld    a,(de)
+    ld    b,a                     ; B = Spt1
+    ld    c,(hl)                  ; C = Spt2
+    call  spritle_collision       ; Set Carry if Collision
+    pop   hl                      ; HL = SptPtr2; Stack = SptPtr1, SptCnt2, SptDef2, SptCnt1+SprLen2, RtnAdr
+    pop   de                      ; DE = SptPtr1; Stack = SptCnt2, SptDef2, SptCnt1+SprLen2, RtnAdr
+    pop   bc                      ; BC = SptCnt2; Stack = SptDef2, SptCnt1+SprLen2, RtnAdr
+    jr    c,.next2                ; If No collision
+    djnz  .loop2                  ;   Check next spritle in Sprite 2
+.next2
+    pop   hl                      ; HL = SptDef2; Stack = SptPtr1, SptCnt1+SprLen2, RtnAdr
+    pop   bc                      ; B = SprLen2, C = SprCnt1; Stack = RtnAdr
+    ret   c                       ; Return Carry Set if Collision
+    dec   c
+    jr    nz,.loop1               ; Do next spritle in Sprite 1
+    ret
+    
+;-----------------------------------------------------------------------------
+; Detect collision between two spritles
+; Input: B = Spritle1
+;        C = Spritle2
+; Returns: Carry Set if Collision Detected
+; Clobbered: AF, BC, DE, HL
+;-----------------------------------------------------------------------------
+spritle_collision:
+    push    bc                    ; Stack = Spritle1, RtnAdr
+    ld      a,c                   ; A = Spritle2
+    call    spritle_get_pos       ; BC = Xpos2, DE = Ypos2, HL = Height2
+    jp      nc,POPHRT             ; If disabled, return Carry Clear
+    exx                           ; BC' = Xpos2, DE' = Ypos2
+    pop     af                    ; A = Spritle1; Stack = RtnAdr
+    call    spritle_get_pos       ; BC = Xpos1, DE = Ypos1, HL = Height1
+    ret     nc                    ; If disabled, return Carry Clear
+    call    _check_y              ; BC = Xpos2, DE = Ypos2, BC' = Xpos1, DE' = Ypos1
+    ret     nc                    ; Return Carry Clear if Ypos2 >= Ypos1 + 8 
+    call    _check_y              ; BC = Xpos2, DE = Ypos2, BC' = Xpos1, DE' = Ypos1
+    ret     nc                    ; Return Carry Clear if Xpos1 >= Xpos2 + 8 
+    ld      hl,8                  ; SptWid = 8
+    call    _check_x              ; BC = Xpos2, DE = Ypos2, BC' = Xpos1, DE' = Ypos1
+    ret     nc                    ; Return Carry Clear if Xpos2 >= Xpos1 + 8 
+    call    _check_x              ; BC = Xpos1, DE = Ypos1, BC' = Xpos2, DE' = Ypos2, 
+    ret                           ; Return Carry Clear if Ypos1 >= Ypos2 + 8 
+
+; Input: BC = Xpos1, DE = Ypos1, HL = SprHgt1, BC' = Xpos2, DE' = Ypos2, HL' = SprHgt2
+_check_x:
+    push    hl                    ; Stack = Height1, RtnAdr
+    add     hl,bc                 ; HL = Xpos1 + 8
+    ex      (sp),hl               ; HL = Height1; Stack = Xpos1 + 8, RtnAdr
+    exx                           ; BC = Xpos2, DE = Ypos2, BC' = Xpos1, DE' = Ypos1, HL' = Height1
+    ex      (sp),hl               ; HL = Xpos1 + 8; Stack = Height2, RtnAdr
+    push    de                    ; Stack = Ypos1, Height2, RtnAdr
+    ex      de,hl                 ; DE = Xpos1 + 8
+    ld      h,b
+    ld      l,c                   ; DE = Xpos2
+    rst     COMPAR                ; Clear Carry if Xpos2 >= Xpos1 + 8 
+    pop     de                    ; DE = Ypos2; Stack = Height2, RtnAdr
+    pop     hl                    ; HL = Height2; Stack = RtnAdr
+    ret
+
+_check_y:
+    push    hl                    ; Stack = Height1, RtnAdr
+    add     hl,de                 ; HL = Ypos1 + Height1
+    ex      (sp),hl               ; HL = Height1; Stack = Ypos1 + Height1, RtnAdr
+    exx                           ; BC = Xpos2, DE = Ypos2, BC' = Xpos1, DE' = Ypos1
+    ex      (sp),hl               ; HL = Ypos1 + Height; Stack = Height2, RtnAdr
+    ex      de,hl                 ; HL = Ypos2, DE = Ypos1 + 8
+    rst     COMPAR                ; Clear Carry if Ypos2 >= Ypos1 + 8 
+    ex      de,hl                 ; DE = Ypos2
+    pop     hl                    ; HL = Height2
+    ret
+
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ; sprite_define - Define Sprite
 ; Builds spritedef from spritle list
@@ -213,7 +308,7 @@ sprite_defrect:
 ;  Input: HL: SpriteDef Address
 ; Output: BC: X-position
 ;         DE: Y-position
-; Clobbered: A, HL
+; Clobbered: A
 ;-----------------------------------------------------------------------------
 sprite_get_pos:
     inc     hl                    ; Skip SptCnt
@@ -261,13 +356,15 @@ spritle_set_pos:
 
 ;-----------------------------------------------------------------------------
 ; Get spritle position
-; Input: A: sprite #  0-63
+; Input: A: spritle#  0-63
 ; Output: BC: X-position
-;         DE  Y-position
+;         DE: Y-position
+;         HL: Spritle Height
+; Flags: Carry Set if enabled
 ;-----------------------------------------------------------------------------
 spritle_get_pos:
     out   (IO_VSPRSEL),a          ; Select sprite
-    ex    af,af'
+    push  af                      ; Stack = Spritle#, RtnAdr
     in    a,(IO_VSPRX_L)          ; Get X-position
     ld    c,a
     in    a,(IO_VSPRX_H)
@@ -275,7 +372,16 @@ spritle_get_pos:
     in    a,(IO_VSPRY)            ; Get Y-position
     ld    e,a
     ld    d,0
-    ex    af,af'
+    ld    hl,8
+    in    a,(IO_VSPRATTR)
+    bit   3,a
+    jr    z,.single_height
+    add   hl,hl
+.single_height
+    rla                           ; Carry = Enabled Bit
+    ex    (sp),hl                 ; H = SptNum; Stack = SptHgt, RtnAdr
+    ld    a,h                     ; A = SptNum
+    pop   hl                      ; HL = SptHgt; Stack = RtnAdr
     ret
 
 ;-----------------------------------------------------------------------------

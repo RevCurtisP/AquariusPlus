@@ -135,6 +135,90 @@ _swap_nybbles:
     adc     0                     ; 0 efgh abcd
     ret
 
+;-----------------------------------------------------------------------------
+; Draw Rectangle on Text Screen
+; Input: A: Mode: 1 = SCREEN, 2 = COLOR, 3 = Both
+;        B: Start Column
+;        C: End Column
+;        D: Start Row
+;        E: End Row
+;        HL: DrawChars Address
+; Output: Carry set if coordinates out of range
+; Clobbered: A, AF', BC, DE, HL, IX, IY
+;--------------`---------------------------------------------------------------
+screen_rect:
+    ex      af,af'
+    call    screen_convert_rect   ; A = RowCnt, C = ColCnt, DE = RowAdr
+    ret     c                     ; Return Carry Set if coords out of bounds
+    push    hl                    ; Stack = DrwChrs, RtnAdr
+    push    af                    ; Stack = RowCnt, DrwChrs, RtnAdr
+    push    de                    ; Stack = RowAdr, RowCnt, DrwChrs, RtnAdr
+    push    bc                    ; Stack = ColCnt, RowAdr, RowCnt, DrwChrs, RtnAdr
+    call    .fillcolor
+
+
+.fillcolor
+    push    af                    ; Stack = RowCnt, RtnAdr
+    ld      a,(LINLEN)
+    cp      40
+    jr      nz,.fill80
+    ld      hl,COLOR-SCREEN
+    add     hl,de
+    ex      de,hl                 ; DE = ClrAdr
+    pop     af                    ; A = RowCnt; Stack = RtnAdr
+.colorloop
+    push    af                    ; Stack = RowCnt, RtnAdr
+    push    de                    ; Stack = RowAdr, RowCnt, RtnAdr
+    push    bc                    ; Stack = ColCnt, RowAdr, RowCnt, RtnAdr
+    ex      af,af'                ; A = Colors
+    
+.fill80
+
+
+    dec     a
+    dec     a                     ; RowCnt -= 2
+    dec     bc
+    dec     bc                    ; ColCnt -= 1
+    call    .doline               ; Draw top line
+    call    .doline               ; Draw top line
+    inc     ix
+    inc     ix
+    inc     ix                    ; Point to middle line characters
+    call    .dolines
+    inc     ix
+    inc     ix
+    inc     ix                    ; Point to bottom line characters
+    call    .doline
+    ret
+  
+.dolines
+    call    .doline               ; Draw a line
+    dec     a                     ; RowCnt -= 1
+    jr      nz,.dolines           ; If RowCnt <> 0, draw next line
+    ret
+
+.doline:
+    push    af                    ; Stack = RowCnt, RtnAdr
+    push    de                    ; Stack = RowAdr, RowCnt, RtnAdr
+    push    bc                    ; Stack = ColCnt, RowAdr, RowCnt, RtnAdr
+    ld      a,(ix+0)              ; A = UpperLeft
+    ld      (de),a                ; Write to screen
+    inc     de
+    ld      a,(ix+1)
+.lineloop
+    ld      (de),a
+    inc     de
+    dec     c
+    jr      nz,.lineloop
+    ld      a,(ix+2)              ; A = UpperLeft
+    ld      (de),a                ; Write to screen
+    pop     bc                    ; BC = ColCnt; Stack = RowAdr, RtnAdr
+    pop     de                    ; DE = RowAdr; Stack = RtnAdr
+    pop     af
+    ld      hl,(LINLEN)
+    add     hl,de
+    ex      de,hl                 ; DE = RowAdr + LineLen
+    ret
 
 ;-----------------------------------------------------------------------------
 ; Read Text Screen Section into Buffer

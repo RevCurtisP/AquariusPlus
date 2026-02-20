@@ -2,6 +2,41 @@
 ; BASIC Graphics Statement and Function Code in GFX ROM Bank
 ;====================================================================
 
+; On entry A = Spritle 1, E = Spritle 2
+aux_spritlecol:
+  cp        64                    ; If Spritle# > 63
+  jp        nc,FCERR              ;   Illegal quantity error
+  ld        b,a                   ; B = Spritle 1
+  ld        a,e                   ; A = Spritle 2
+  cp        64                    ; If Spritle# > 63
+  jp        nc,FCERR              ;   Illegal quantity error
+  ld        c,a                   ; C = Spritle 2
+  call      spritle_collision     ; Carry Set if collision
+  ld        a,0                   
+  sbc       0                     ; If Carry Set return -1
+  ret
+
+; On entry DE = SprDsc1, FACC = SprDsc2
+aux_spritecol:
+  push      de                    ; Stack = SprDsc1
+  ex        de,hl                 ; HL = SprDsc1
+  call      string_addr_len       ; DE = SprDef1
+  jp        z,ESERR               ; Empty string error if StrLen = 0
+  push      de                    ; Stack = SprDef1, SprDsc1, RtnAdr
+  call      free_addr_len         ; DE = SprDef2
+  jp        z,ESERR               ; Empty string error if StrLen = 0
+  ex        de,hl                 ; HL = SprDef2
+  pop       de                    ; DE = SprDef1; Stack = SprDsc1, RtnAdr
+  call      sprite_collision      ; Set Carry if collision
+  ld        a,0
+  sbc       0
+  pop       hl                    ; HL = SprDsc1; Stack = RtnAdr
+  push      af                    ; Stack = Result, RtnAdr
+  call      FRETM2                ; Free SprDsc1
+  xor       a
+  ld        (VALTYP),a            ; Set return type to numeric
+  pop       af                    ; F = Result; Stack = RtnAdr
+  ret
 
 ; Called from FN_CURSOR
 ; On Entry B = CURSOR suffix

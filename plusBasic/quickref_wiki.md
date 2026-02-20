@@ -169,12 +169,12 @@
  - **GET ARGS _var_{,...}** - Read arguments from argument list after `GOSUB`.
  - **[GET SCREEN {CHRS|COLORS} (_x_,y_)-(_x_,_y_) \*_array_|^_strvar_](BASIC-GET-SCREEN-Statement#get-screen)** - Copy text screen clip to array or string variable.
  - **[GET TILEMAP (_x_,y_)-(_x_,_y_) \*_array_|^_strvar_](BASIC-GET-TILEMAP-Statement#get-tilemap)** - Copy tilemap clip to array or string variable.
- - **GETCHRDEF$(_char_{,_chrset_})** - Return character definition.
+ - **[GETCHRDEF$(_char_{,_chrset_})](BASIC-CHRSET-and-CHRDEF-Statements#getchrdef)** - Return character definition.
  - **[GETBORDERCHR](BASIC-Screen-Statements-and-Functions#getborderchr)** - Return screen border character.
  - **[GETBORDERCHR$](BASIC-Screen-Statements-and-Functions#getborderchr-1)** - Return screen border character as string.
  - **[GETBORDERCOLOR](BASIC-Screen-Statements-and-Functions#getbordercolor)** - Return screen border colors.
  - **[GETBORDERCOLOR$](BASIC-Screen-Statements-and-Functions#getbordercolor-1)** - Return screen border colors as string.
- - **GETCHRSET** - Return character set currently in use.
+ - **[GETCHRSET](BASIC-CHRSET-and-CHRDEF-Statements#getchrset)** - Return character set currently in use.
  - **[GETCOLOR](BASIC-Screen-Statements-and-Functions#getcolor)** - Return screen printing colors.
  - **GETCURSOR** - Return cursor display mode.
  - **[GETKEY](BASIC-KEY-Functions#getkey)** - Wait for key and return ASCII code.
@@ -240,8 +240,8 @@
  - **[LOAD _filespec_,\*_array_,ASC](BASIC-LOAD-Statement#load)** - Load multi-line ASCII file into string array.
  - **[LOAD _filespec_,^_stringvar_](BASIC-LOAD-Statement#load)** - Load up to 255 characters of file into string variable.
  - **[LOAD BITMAP _filespec_](BASIC-BITMAP-File-Statements#load-bitmap)** - Load bitmap file into Video RAM.
- - **LOAD CHRSET _filespec_** - Load character set into alternate character buffer.
- - **LOAD CHRSET _filespec_,SWAP** - Load character set into system character buffer.
+ - **[LOAD CHRSET _filespec_](BASIC-CHRSET-and-CHRDEF-Statements#load-chrset)** - Load character set into alternate character buffer.
+ - **[LOAD CHRSET _filespec_,SWAP](BASIC-CHRSET-and-CHRDEF-Statements#load-chrset)** - Load character set into system character buffer.
  - **[LOAD COLORMAP _filespec_](BASIC-BITMAP-File-Statements#load-colormap)** - Load 1bpp color map file into Video RAM.
  - **LOAD DIR \{_filespec_,}\*_array_** - Load disk directory filenames into string array.
  - **LOAD DIR \{_filespec_,}}\*_array_,ASC** - Load formatted disk directory into string array.
@@ -333,7 +333,7 @@
  - **[RESET USRDEF](BASIC-System-Statements-and-Functions#reset-usrdef)** - Reset `USR()` vector to default address
  - **[RESTORE {_lineref_}](BASIC-RESTORE-Statement#restore)** - Reset READ/DATA pointer to beginning of program or specified line.
  - **RESTORE BITMAP|TILEMAP** - _Not implemented._
- - **RESTORE CHRSET** - Copy current character set from system buffer.
+ - **[RESTORE CHRSET](BASIC-CHRSET-and-CHRDEF-Statements#restore-chrset)** - Copy current character set from system buffer.
  - **RESTORE SCREEN** - Copy respective screen buffer to current text screen.
  - **[RETURN {_expression_{,...}}](BASIC-Flow-Control-Statements#return)** - Resume program execution after GOSUB, optionally returning results.
  - **[RGB(«_r_,_g_,_b_»|«_rgbstr_»|«_string_,_delimiter_»)](BASIC-Palette-Statements-and-Functions#rgb)** - Return integer representing a single palette entry.
@@ -402,18 +402,20 @@
  - **[SIN(_float_)](BASIC-Math-Functions#sin)** - Return sine of argument.
  - **SOUND (_duration_,_frequency_)** - Generate a tone through the television speaker.
  - **SPLIT _string_ INTO \*_array$_ DEL _delimiter_** - Split delimited string into string array elements.
+ - **[SPRITECOL(_spritle_,_spritle_)](BASIC-Sprite-Statements-and-Functions#spritecol)** - Check for collision between spritles.
+ - **[SPRITECOL(_spritedef_,_spritedef_)](BASIC-Sprite-Statements-and-Functions#spritecol)** - Check for collision between sprites.
  - **[SQR(_float)](BASIC-Math-Functions#sqr)** - Return square root of argument.
  - **STASH BITMAP** - _Not implemented._
- - **STASH CHRSET** - Copy current character set to system buffer.
+ - **[STASH CHRSET](BASIC-CHRSET-and-CHRDEF-Statements#stash-chrset)** - Copy current character set to system buffer.
  - **STASH SCREEN** - Copy current text screen to respective screen buffer.
  - **STASH TILEMAP** - _Not implemented._
  - **[STOP](BASIC-Flow-Control-Statements#stop)** - Interrupt program execution.
  - **[STOP TRACK](BASIC-TRACK-Statements#stop-track)** - Stop currently playing track.
  - **[STR$(_float_)](BASIC-Conversion-Functions#str)** - Convert floating point number to ASCII string.
- - **STRING$(_length_{,_byte_|_string_})** - Create string of repeated character.
+ - **[STRING$(_length_{,_byte_|_string_})](BASIC-String-Functions#string)** - Create string of repeated character.
  - **STRPTR(_strvar_)** - Return address of text for string variable.
  - **SWAP BITMAP** - _Not implemented._
- - **SWAP CHRSET** - Swap current character set from character set in system buffer.
+ - **[SWAP CHRSET](BASIC-CHRSET-and-CHRDEF-Statements#swap-chrset)** - Swap current character set from character set in system buffer.
  - **SWAP SCREEN** - Swap current text screen with respective screen buffer.
  - **SWAP TILEMAP** - _Not implemented._
  - **SWAP VARS _var_,_var_** - Swap contents of two variables.
@@ -443,7 +445,7 @@
  - **UPRKEY** - Return uppercased ASCII code of last key presed.
  - **UPRKEY$** - Return uppercased string containing last key pressed.
  - **UPRKEY(_string_)** - Convert last key pressed to uppercase, and return position in string.
- - **USE CHRSET _0_|_1_|_filespec_** - Copy specified character set to character RAM.
+ - **[USE CHRSET _0_|_1_|_filespec_](BASIC-CHRSET-and-CHRDEF-Statements#use-chrset)** - Copy specified character set to character RAM.
  - **USE SCREEN {@_page_,}_text_mode_,_gfx_mode_** - _Not implemented._
  - **[USR(_float_)](BASIC-USR-Function#usr)** - Call user-defined machine language routine passing argument and returning result.
  - **[VAL(_string_)](BASIC-Conversion-Functions#val)** - Convert ASCII string to floating point number.

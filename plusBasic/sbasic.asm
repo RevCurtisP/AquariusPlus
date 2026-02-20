@@ -304,7 +304,7 @@ COLDST: ld      hl,DEFALT         ;Set System Variable Default Values
 FRMTYP: call    FRMEVL            ;; + Evaluate the formula                   0112  inc     hl    
                                   ;; +                                        0113  ld      c,(hl)
                                   ;; +                                        0114  ld      a,h   
-;; Get va;riable or formula type      +
+;; Get variable or formula type      +
 GETYPE: ld      a,(VALTYP)        ;; +                                        0115  or      l       
                                   ;; +                                        0116  jr      z,MEMCHK
         dec     a                 ;; +                                        0118  xor     c                 
