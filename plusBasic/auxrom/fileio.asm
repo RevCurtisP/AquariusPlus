@@ -49,7 +49,7 @@ _do_copy:
     ld      a,e                   ; A = DstFil
     push    de                    ; Stack = SrcDst, RtnAdr
     ld      de,BANK1_BASE         ; DE = LoadAdr
-    call    esp_writec_bytes      ; A = Result
+    call    esp_write_bytes       ; A = Result
     pop     de                    ; DE = SrcDst; Stack = RtnAdr
     ret     m                     ; Return if error
     jr      _do_copy

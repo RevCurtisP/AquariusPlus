@@ -1,7 +1,10 @@
 # plusBASIC Release History
- - v0.20h (2026-02-20)
+ - v0.70i (2026-02-22)
+    - Added statement `RECT`
+    - Fixed `SAVE` and `APPEND` writing to the first open file
+ - v0.70h (2026-02-20)
     - Added function `SPRITECOL()`
- - v0.20g (2026-02-18)
+ - v0.20h (2026-02-18)
     - Added statements `RESTORE CHRSET`, `STASH CHRSET`, `SWAP CHRSET`
     - Added `,SWAP` option to `LOAD CHRSET`
  - v0.70f (2026-02-17)

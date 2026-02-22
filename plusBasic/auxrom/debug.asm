@@ -447,7 +447,7 @@ _write_buff:
 
 _write_string:
     ld      a,(_CHANNEL)
-    jp      esp_writec_bytes
+    jp      esp_write_bytes
 
 _dtitle:
     byte    "# Aquarius+ Variable Dump",13,10

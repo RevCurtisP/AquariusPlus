@@ -318,6 +318,7 @@
  - **[READ _var_{,...}](BASIC-READ-Statement#read)** - Read values from DATA statements into variables.
  - **[READ \*_array_{,...}](BASIC-READ-Statement#read)** - Read values from DATA statements into an array.
  - **[READ #_channel_,^_strvar_,_length_)](BASIC-File-IO-Statements-and-Functions#read)** - Read string from open file.
+ - **[RECT (_x_,y_)-(_x_,_y_){,_drawchars_}{,_fgcolor_,_bgcolor_}}](BASIC-Screen-Statements-and-Functions#rect)** - Draw rectangle on text screen.
  - **[REM _text_](BASIC-REM-Statement#rem)** - Denotes comment.
  - **RENAME _filespec_ TO _filespec_** - Rename file or directory
  - **RESUME _lineref_** - Clear error condition and continues program execution at specified line

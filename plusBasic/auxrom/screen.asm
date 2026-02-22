@@ -101,7 +101,7 @@ screen_clear_color_a:
 ; Fill Color RAM with current/default colors
 ;-----------------------------------------------------------------------------
 screen_clear_color:
-    call    _screen_width_colors
+    call    screen_width_colors
 _clear_color
     jr      nz,_color_clear80
     jr      _color_clear40
@@ -122,7 +122,7 @@ screen_clear_a:
 ; Clobbered: A, BC, DE, HL
 ;-----------------------------------------------------------------------------
 screen_clear:
-    call    _screen_width_colors
+    call    screen_width_colors
 _clear_screen:
     jr      nz,_screen_clear80
     call    _color_clear40
@@ -159,11 +159,12 @@ _fill80
     jp      sys_fill_mem
 
 ; Output: A = Colors, BC = ScrWid, NZ = 80 columns
-_screen_width_colors:
+screen_width_colors:
     ld      a,(LINLEN)
     cp      40                    ; NZ = 80 columns
     ld      c,a
     ld      b,0
+screen_colors:
     ld      a,(SCREENCTL)         ; 
     rla                           ; Carry = SCRCOLOR
     ld      a,DFLTATTRS
@@ -287,7 +288,7 @@ _border_offset:
 border_reset:
     ld      a,' '
     call    set_border_chr
-    call    _screen_width_colors
+    call    screen_width_colors
 ; Input A: Character
 ; Clobbered: A,BC,DE,HL
 border_set_color:

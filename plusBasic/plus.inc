@@ -35,7 +35,7 @@ ROM_CART        equ 19
 VIDEO_RAM       equ 20
 CHAR_RAM        equ 21
     
-RAM_BAS_0       equ 56      ; RAM for Bank 0 (character ROM cache)
+RAM_BAS_0       equ 56      ; RAM for Bank 0 (might use for second pt3 player)
 RAM_BAS_1       equ 57      ; RAM for BASIC mapped into Bank 1
 RAM_BAS_2       equ 58      ; RAM for BASIC mapped into Bank 2
 RAM_BAS_3       equ 59      ; RAM for Bank 3 (unused by BASIC)
@@ -129,6 +129,7 @@ STARTROW    equ $3856
 ENDROW      equ $3857
 PSETCOLOR   equ $385A
 
+STRDSC      equ $3851
 
 ; CALL ARGS
 SAVEHL      equ $3852   ; [word] 
@@ -239,12 +240,6 @@ PSG_RIGHTCON    equ 14      ; Right Hand Controller
 PSG_LEFTCON     equ 15      ; Left Hand Controller
 
 ;-----------------------------------------------------------------------------
-; BASIC Extended character ROM buffers
-; Page 56 (RAM_BAS_0) 
-; See screen_swap.asm
-;-----------------------------------------------------------------------------
-
-;-----------------------------------------------------------------------------
 ; BASIC Extended System Constants, Variables and Buffers
 ; Page 54 (BAS_BUFFR), swapped into Bank 3
 ;-----------------------------------------------------------------------------
@@ -310,7 +305,7 @@ GFXSETMSK   equ $E0     ; Bit Mask for updating GFX_FLAGS
 
 NEWSTTHKS   equ $01     ; Active NEWSTT hooks
 SOUNDSLOW   equ $08     ; Play SOUNDs at standard clock speed
-BASOUTOVR   equ $10     ; EXT_FLAGS: Allow OUT to all ports
+TRK_PLAY2   equ $10     ; EXT_FLAGS: Allow OUT to all ports
 TRK_LOOPS   equ $20     ; EXT_FLAGS: PT3 songs repeat
 FERR_FLAG   equ $40     ; EXT_FLAGS: File operations generate BASIC errors
 TRON_FLAG   equ $80     ; EXT_FLAGS: Trace on/off

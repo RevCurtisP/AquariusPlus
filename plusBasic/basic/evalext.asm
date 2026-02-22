@@ -9,8 +9,7 @@
 ; Character Literal: 'x'
 ;-------------------------------------------------------------------------
 eval_extension:
-    xor     a                     ;
-    ld      (VALTYP),a            ; ASSUME VALUE WILL BE NUMERIC
+    call    VALNUM                ; ASSUME VALUE WILL BE NUMERIC
     rst     CHRGET                ;
     jp      z,MOERR               ; TEST FOR MISSING OPERAND - IF NONE GIVE ERROR
     jp      c,FIN                 ; IF NUMERIC, INTERPRET CONSTANT
@@ -59,8 +58,7 @@ fin_extension:
     cp      '$'                   ; If not '$'
     jp      nz,FIN                ;   Evaluate float
 eval_hex_long:
-    xor     a
-    ld      (VALTYP),a        ; Returning Number
+    call    VALNUM            ; Returning Number
     ld      b,a               ; Parse up to 255 characters
 eval_hex:
     ld      c,a
@@ -242,21 +240,12 @@ oper_mod:
 
 ; XOR operator - Copied from AND/OR
 oper_xor:
-    push    af                    ;[M80] SAVE THE PRECEDENCE or Operator...
-    call    CHKNUM                ;[M65] MUST BE NUMBER
-    call    FRCINT                ;COERCE RIGHT HAND ARGUMENT TO INTEGER
-    pop     af                    ;GET BACK THE PRECEDENCE TO DISTINGUISH "AND" AND "OR"
-    ex      de,hl
-    pop     bc
-    ex      (sp),hl
-    ex      de,hl
-    call    MOVFR
-    push    af
-    call    FRCINT
-    pop     af
-    pop     bc
-    ld      a,c
-    ld      hl,GIVINT             ;{M80} PLACE TO JUMP WHEN DONE
+    or      $01                     ; Clears Z flag for XOR
+    jp      DANDOR
+    
+xor_check:
+    jp      z,ISAND
+    jp      m,NOTAND                ; Do OR
     xor     e
     ld      c,a
     ld      a,b

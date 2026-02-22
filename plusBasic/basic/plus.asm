@@ -842,13 +842,13 @@ FN_EVAL:
     ld      a,(BAS_FLAGS)
     ld      b,a
     and     INEVALFLG         ; If already in EVAL
-    jp      nz,STERR          ;   Srting too complex error
+    jp      nz,STERR          ;   String too complex error
     ld      a,b
     or      INEVALFLG         ; Set In EVAL Flag
     ld      (BAS_FLAGS),a     ; and save it
     rst     CHRGET            ; Skip Token
     call    PARCHK            ; Get Argument
-    push    hl                ; Save Text Pointer
+    push    hl                ; Stack = TxtPtr, RtnAdr
     call    FRESTR            ; Free up temporary and get descriptor address
     call    string_addr_len   ; Get Argument String Length in BC, Address in HL
     ld      a,ENDBUF-BUF      ;
@@ -870,7 +870,7 @@ FN_EVAL:
     call    tokenize          ; Call KLOOP, restore Extended ROM
     ld      hl,BUF            ; Point to Line Buffer
     call    FRMEVL            ; Evaluate Formula
-    pop     hl                ; Restore Text Pointer
+    pop     hl                ; HL = TxtPtr; Stack = RtnAdr
 clear_inevalflg:
     ld      a,(BAS_FLAGS)
     and     $FF-INEVALFLG
@@ -1363,8 +1363,7 @@ FN_VARDEF:
     ld      a,(BAS_FLAGS)
     and     $FF-BASVARDEF         ; Clear Called by PTRGET flag
     ld      (BAS_FLAGS),a
-    ld      a,0
-    ld      (VALTYP),a
+    call    VALNUM
 push_hl_labbck_floats_b:
     ld      a,b                   ; A = Found
     jp      push_hl_labbck_float_sbyte

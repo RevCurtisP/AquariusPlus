@@ -95,6 +95,28 @@ bas_get_version:
     ex      de,hl                 ; HL = BufAdr
     ret
 
+bas_dim_setup:
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    ld      hl,(TEMP3)            ; HL = DimsPtr
+    dec     hl
+    dec     hl
+    ld      b,(hl)
+    inc     hl
+    ld      c,(hl)                ; BC = AryLen;
+    inc     hl
+    ld      (ARRAYLEN),bc         ; BC = AryLen
+    ld      a,(hl)                ; A = NumDims
+    or      a                     ; If no dimensions
+    jp      z,UDERR               ;   Undimensioned array error
+    inc     hl
+    add     a,a                   ; A = NumDims * 2
+    ld      b,0
+    ld      c,a                   ; BC = NumDims * 2
+    add     hl,bc                 ; HL = AryAdr    
+    ld      (ARRAYPTR),hl         ; ARRAYPTR = AryPtr
+    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
+    jp      CHRGTR                ; Skip = and return
+
 ; ------------------------------------------------------------------------------
 ; ERASE statement core code
 ; ------------------------------------------------------------------------------
@@ -180,6 +202,22 @@ _incdec:
     pop     hl                    ; HL = VarPtr; Stack = TxtPtr, RtnAdr
     call    MOVMF                 ; VarVal = FACC
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
+    ret
+
+bas_get_char:
+    jr      z,.string             ; If numeric
+    call    CONINT                ;   Convert to byte
+    ld      c,a
+    ret                           ; Else
+.string
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    call    free_addr_len         ; BC = StrLen, DE = StrAdr
+    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
+    xor     a
+    or      c
+    jp      z,FCERR               ; Error if LEN = 0
+    ld      a,(de)                ;   Get first character
+    ld      c,a
     ret
 
 ; Called from FN_KEY
@@ -321,6 +359,24 @@ bas_out:
     inc     de                  ;     Bump StrPtr
     dec     l                   ;     Count down
     jr      nz,.sloop           ;       OUT next character
+    ret
+
+; Called from FN_IN
+; On entry: C = Strlen, DE = IOPort
+bas_in_string:
+    ld      a,c
+    or      a                     ; If StrLen = 0
+    jp      z,FCERR               ;   Illegal quantity error
+    push    de                    ; Stack = IOPort, RtnAdr
+    call    STRINI                ; HL = StrDsc, DE = StrAdr, A = StrLen
+    pop     bc                    ; BC = IOPort; Stack = TxtPtr, RtnAdr
+    ld      l,a                   ; L = StrLen
+.loop
+    in      a,(c)
+    ld      (de),a
+    inc     de
+    dec     l
+    jr      nz,.loop
     ret
 
 ; Called from ST_SET_BIT, ST_RESET_BIT
@@ -662,7 +718,7 @@ bas_write_facc:
 _write_string_stack:
     pop     af                    ; A = Channel; Stack = RtnAdr
     push    af                    ; Stack = Channel, RtnAdr
-    call    esp_writec_bytes      ; A = Result
+    call    esp_write_bytes       ; A = Result
     pop     hl                    ; H = Channel; Stack = RtnAdr
     ret
 
@@ -687,7 +743,7 @@ bas_write_string:
     ex      de,hl
     call    string_addr_len       ; DE = StrAdr, BC = StrLen
     pop     af                    ; A = FilDsc; Stack = RtnAdr
-    jp      esp_writec_bytes      ; Write and return
+    jp      esp_write_bytes       ; Write and return
 
 ; Called from SAVE SCREEN
 ; On entry: A = SaveArgs
@@ -747,5 +803,22 @@ bas_swap_pages:
     ld      l,c                   ; to page start
     call    page_copy_bytes_sys
     jp      c,FCERR               ; Error if illegal RgtPg
+    ret
+
+bas_tron_troff:
+    rst     CHRGET            ; Skip TRO
+    cp      'N'
+    jr      nz,.troff         ; If TRON
+    rst     CHRGET            ;   Skip N
+    ld      a,(EXT_FLAGS)
+    or      TRON_FLAG         ;   Turn flag on
+    ld      (EXT_FLAGS),a
+    ret
+.troff
+    SYNCHKC 'F'
+    SYNCHKC 'F'               ; Require FF
+    ld      a,(EXT_FLAGS)
+    and     $FF-TRON_FLAG     ;   Turn flag on
+    ld      (EXT_FLAGS),a
     ret
 

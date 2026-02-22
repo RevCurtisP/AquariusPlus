@@ -104,10 +104,17 @@ null_desc:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.70h"
+    db "v0.70i"
     db 0
 plusver_len equ $ - plus_version
 plus_len   equ   $ - plus_text
+
+; Deault box draw characters
+boxdraw_text:
+    db      $DE,$AC,$CE,$D6,$20,$D6,$CF,$AC,$DF
+boxdraw_len = $ - boxdraw_text
+boxdraw_desc:
+    dw      boxdraw_len,boxdraw_text
 
 ; ROM Signature
     assert !($20F6<$)   ; Overflow into Kernel jump table
@@ -188,6 +195,7 @@ irq_done:
     ld      a,IRQ_VBLANK
     out     (IO_IRQSTAT),a
 
+    ld      sp,(IRQSAVSTK)
     pop     iy
     pop     ix
     pop     hl

@@ -1,9 +1,19 @@
 # plusBASIC Revision History
- - v0.20h (2026-02-20)
+ - v0.70i (2026-02-22)
+    - Added routine _check_screen_colors_, statement `RECT`
+    - Moved `DIM`, `IN`, `TRON`, and `TROFF` core code to Auxiliary ROM
+    - Replaced instances of `xor a;ld (VALTYP),a` with `call VALNUM`
+    - Refactored `XOR` code
+    - Fixed _file_append_binary_ and _file_save_binary_ always writing to filedesc 0
+      - This fixed `APPEND` and `SAVE` string and `SAVE` tokenized program
+    - Fixed `SAVE "progname",BIN` causing `Syntax error` then `File not found error`
+    - Fixed `SAVE "program"` always writing to filedesc 0
+    - Fixed `SAVE "file",*A`, `SAVE "file",*A$`, and `SAVE "file",*A$,ASC` always writing to filedesc 0
+ - v0.70h (2026-02-20)
     - Modified kernel routine _spritle_get_pos_ to also return spritle height and enabled flag
     - Added kernel routines _sprite_collision_ and _spritle_collision_ and function `SPRITECOL()`
     - Added unfinished kernel routine _screen_rect_
- - v0.20g (2026-02-18)
+ - v0.70g (2026-02-18)
     - Moved _init_chrsets_, _spritle_reset_all_, and _file_load_pt3play_ into _auxboot.asm_
     - Moved _select_chrset_, and  _init_chrsets_ to _chrset_select_, and _chrset_init_
     - Moved in _aqplusbas.asm_

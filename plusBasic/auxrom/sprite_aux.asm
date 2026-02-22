@@ -315,7 +315,9 @@ sprite_get_pos:
     inc     hl                    ; Skip SprWid
     inc     hl                    ; Skip SprHgt
     ld      a,(hl)                ; A = SptNum
+    push    hl                    ; Stack = SprPtr, RtnAdr
     call    spritle_get_pos       ; BC = SptXpos. DE = SptYpos
+    pop     hl                    ; HL = SprPtr; Stack = RtnAdr
     inc     hl                    ; Skip SptNum
     push    hl                    ; Stack = SprPtr, RtnAdr
     push    bc                    ; Stack = SptXpos, SprPtr, RtnAdr

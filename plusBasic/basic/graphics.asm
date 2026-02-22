@@ -200,9 +200,31 @@ ST_SETCOLOR:
 ; Draw rectangle on text screen
 ; RECT (x0,y0)-(x1,y1),boxchars${,fgcolor,bgcolor}
 ;-----------------------------------------------------------------------------
-; RECT (10,5)-(20,6),"+-+| |+-+"
+; RECT (10,5)-(20,9),"+-+| |+-+"
+; RECT (10,9)-(20,17),$"B7A3EBB5A0EAF5F0FA",7,2
+; RECT (10,9)-(20,17),$"FFFFFFB5A0EAF5F0FA",7,4
+; RECT (10,9)-(20,17),$"DEACCED620D6CFACDF"
 ST_RECT:
-    jp      GSERR
+    rst     CHRGET                ; Skip RECT
+    call    scan_rect             ; B = BgnCol, C = EndCol, D = BgnRow, E= EndRow
+    push    bc                    ; Stack = Cols, RtnAdr
+    push    de                    ; Stack = Rows, Cols, RtnAdr
+    ld      de,boxdraw_desc
+    dec     hl
+    rst     CHRGET
+    jr      z,.noboxdraw
+    call    get_comma
+    cp      ','
+    jr      z,.noboxdraw
+    call    FRMSTR
+    ld      de,(FACLO)
+.noboxdraw
+    ld      (STRDSC),de
+    call    check_screen_colors   ; A = Colors
+    pop     de
+    pop     bc
+    ld      iy,bas_rect
+    jp      aux_call_preserve_hl
 
 ;-----------------------------------------------------------------------------
 ; RESET PALETTE to default colors
@@ -1151,11 +1173,10 @@ _get_gfx:
     call    STRINI                ; Create TmpStr; HL = StrDsc, DE = StrAdr
     ld      bc,32                 ; BC = StrLen
     pop     hl                    ; HL = Palette#; Stack = DummyAdr, TxtPtr
+    call    VALSTR                ; Set return type to string
     ld      a,l
 gfx_call_finbck:
     call    gfx_call
-    ld      a,1
-    ld      (VALTYP),a            ; Set Type to String
     jp      FINBCK                ; Return String
 
 ;; E$=GETPALETTE$(0,1)
@@ -1570,10 +1591,13 @@ FN_GETSPRITE:
 ;-----------------------------------------------------------------------------
 ; Check for collision between spritles/sprites
 ; SPRITECOL(spritle1,spritle2)
-;-----------------------------------------------------------------------------
+;------------------------------------------------------------------r-----------
 FN_SPRITE:
     rst     CHRGET                ; Skip SPRITE
-    SYNCHKT COLTK                 ; Require COL
+    cp      COLTK
+    jr      nz,_sprite_rect
+FN_SPRITECOL:
+    rst     CHRGET
     call    FRMPRT                ; AF = Type
     jr      z,.string             ; If numeric
     call    CONINT                ;   A = Spritle 1
@@ -1594,6 +1618,10 @@ FN_SPRITE:
 .gfx_call_return
     jp      hl_labbck_gfx_call_float
     
+; SPRITEINRECT()
+; SPRITEONRECT()
+_sprite_rect:
+    jp      SNERR
 
 ;-----------------------------------------------------------------------------
 ; RGB(r,g,b)

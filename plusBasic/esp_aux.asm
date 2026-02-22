@@ -190,13 +190,14 @@ espx_set_keymode:
 ; Clobbered registers: A, HL
 ;-----------------------------------------------------------------------------
 espx_write_repbyte:
+    ld      l,a
+
     ld      a, ESPCMD_WRITE
     call    esp_cmd
 
     ; Send file descriptor
-    xor     a
+    ld      a,l
     call    esp_send_byte
-
     ; Send write size
     call    esp_send_bc
 

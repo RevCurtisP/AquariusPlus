@@ -75,8 +75,7 @@ FLOAT_DE:
 ;-----------------------------------------------------------------------------
 FLOAT_CDE:
     push    hl
-    xor     a
-    ld      (VALTYP),a            ; Force Return Type to numeric
+    call    VALNUM
     ld      a,c
     ld      b,$98                 ; Exponent = 2^24
     call    FLOATR                ; Float It
@@ -126,8 +125,7 @@ float_signed_int:
     ret
 
 return_float:
-    xor     a
-    ld      (VALTYP),a
+    call    VALNUM
     jp      MOVFR
 
 skip_check_dollar:
@@ -249,8 +247,7 @@ get_array_pointer:
 
 
 paren_coords:
-    SYNCHKC '('
-    call    get_coords
+    call    prn_coords
     jr      close_paren
 
 ; Returns C = Character
@@ -465,6 +462,8 @@ get_page_addr_len:
     pop     af                    ; AF = Page+Flag
     ret
 
+prn_coords:
+    SYNCHKC '('
 ;-----------------------------------------------------------------------------
 ; Parse Address, Length
 ; Output: BC = Length
@@ -682,22 +681,9 @@ skip_get_char:
 ; Clobbers: B,DE
 ;-----------------------------------------------------------------------------
 get_char:
-    call    FRMEVL                ; Evaluate Character
-    call    GETYPE
-    jr      z,.string             ; If numeric
-    call    CONINT                ;   Convert to byte
-    ld      c,a
-    ret                           ; Else
-.string
-    push    hl                    ; Stack = TxtPtr, RtnAdr
-    call    free_addr_len         ; BC = StrLen, DE = StrAdr
-    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
-    xor     a
-    or      c
-    jp      z,FCERR               ; Error if LEN = 0
-    ld      a,(de)                ;   Get first character
-    ld      c,a
-    ret
+    call    FRMTYP                ; Evaluate Character
+    ld      iy,bas_get_char
+    jp      aux_call
 
 skip_get_int512:
     rst     CHRGET
@@ -766,6 +752,13 @@ parse_colors:
     SYNCHKT ORTK                  ; Require COLOR
     jr      get_screen_colors
     
+check_screen_colors:
+    ld      a,(hl)
+    cp      ','
+    jr      z,get_comma_colors
+    ld      iy,screen_colors
+    jp      aux_call_preserve_hl
+
 get_comma_colors:
     call    get_comma             ; Missing opersand if comma
 ;-----------------------------------------------------------------------------

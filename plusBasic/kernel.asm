@@ -21,7 +21,7 @@ _jump_table:
     jp      just_ret              ; 212D
     jp      key_set_keymode       ; 2130 Set alternate keyboard buffer mode
     jp      page_call             ; 2133 Call subroutine in paged memory
-    jp      just_ret              ; 2136
+    jp      irq_done              ; 2136 Exit user IRQ routine
     jp      just_ret              ; 2139
 
 ; esp.asm <<ESP Interface>>
@@ -50,7 +50,7 @@ _jump_table:
     jp      esp_send_string       ; 217E Send String from main memory
     jp      esp_send_strdesc      ; 2181 Send BASIC string from main memory
     jp      esp_set_keymode       ; 2184 Set alternate keyboard port mode
-    jp      esp_write_byte        ; 2187 ** Not implemented **
+    jp      esp_write_byte        ; 2187 Write single byte
     jp      esp_write_bytes       ; 218A Write bytes from main memory
     jp      esp_write_repbyte     ; 218D Write byte repeatedly
     jp      esp_write_paged       ; 2190 Write bytes from paged memory

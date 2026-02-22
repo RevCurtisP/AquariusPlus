@@ -222,8 +222,7 @@ bas_getsprite:
     ex      (sp),hl               ;   HL = SprAdr; Stack = BufDsc, DummyAdr, TxtPtr, RtnAdr
     call    sprite_get_attrs
     jp      nz,OVERR              ;   Sprite and Buffer Size Mismtch
-    ld      a,1
-    ld      (VALTYP),a            ;   Set Type to String
+    call    VALSTR                ;   Set Type to String
     call    FRETM2
     pop     hl                    ;   HL = BufDsc; Stack = DummyAdr, TxtPtr, RtnAdr
     ld      ix,FINBCK             ;   Return String
@@ -408,6 +407,23 @@ bas_parse_attr:
     pop     hl
     ret
 
+; Called from ST_RECT
+bas_rect:
+    push    af
+    push    bc
+    push    de
+    ld      hl,(STRDSC)
+    call    free_hl_addr_len      ; DE = SrcAdr, BC = SrcLen, HL = SrcDsc
+    cp      9
+    jp      nz,SLERR
+    ex      de,hl                 ; HL = StrAdr
+    pop     de
+    pop     bc
+    pop     af
+    call    screen_rect
+    jp      c,FCERR
+    ret
+
 ; Called from ST_SET_TILE
 ; Input: BC: StrLen, DE: StrAdr, HL: TilIdx
 bas_set_tile_str:
@@ -439,7 +455,7 @@ bas_set_tile_ary:
     jp      nz,TMERR              ; Error if not string array
     ex      de,hl                 ; HL = DatAdr
 .loop
-    ld      a,b
+    ld      a,  b
     or      c
     ret     z                     ; End of array, return Z
     ld      a,(hl)                ; A = StrLen

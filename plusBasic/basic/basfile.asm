@@ -1,4 +1,4 @@
-  ;====================================================================
+;====================================================================
 ; File I/O Statements and Functions
 ;====================================================================
 
@@ -129,7 +129,7 @@ ST_RENAME:
     jr      _ret_p_doserror
 
 ;-----------------------------------------------------------------------------
-; CHECKDIR$(dirspec$) - Return TRUE if dirspec$ exists and is a directory
+; CHECKDIR(dirspec$) - Return TRUE if dirspec$ exists and is a directory
 ;-----------------------------------------------------------------------------
 FN_CHECKDIR:
     inc     hl                    ; Skip DIR
@@ -137,8 +137,7 @@ FN_CHECKDIR:
     ld      iy,file_checkdir
     call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
     call    free_addr_len         ; HL = StrDsc
-    xor     a
-    ld      (VALTYP),a
+    call    VALNUM
 aux_call_float:
     call    aux_call
     jp      FLOAT                 ; Float signed byte and return
@@ -1233,8 +1232,6 @@ ST_SAVE:
     jr      z,.array              ;   Load to array
     cp      ASCTK
     jp      z,save_ascii_program
-    cp      BINTK
-    jp      z,.save_bin_program
     cp      XTOKEN
     jp      z,.save_xtoken
     ; Save binary data
@@ -1304,11 +1301,13 @@ ST_SAVE:
     ld      b,h
     ld      c,l                   ; BC = StrLen
     pop     hl                    ; HL = NamDsc; Stack = TxtPtr, RtnAdr
-    jr      _save_bin             ; Save it
+    jr      _save_bin_hl          ; Save it
 
 ; 10 SAVE "/t/savecaq.baq",CAQ
 .save_xtoken
     rst     CHRGET                ; Skip XTOKEN
+    cp      BINTK
+    jp      z,.save_bin_program
     SYNCHKT CAQTK                 ; Require CAQ
     jp      save_caq_program
 
@@ -1348,8 +1347,9 @@ _file_string:
 _pop_save_bin:
     pop     af                    ; AF = Page, Stack = StrDsc, RtnAdr
 _save_bin:
-    ld      iy,file_save_binary
     ex      (sp),hl               ; HL = StrDsc, Stack = TxtPtr
+_save_bin_hl:
+    ld      iy,file_save_binary
     jr      c,_save_paged
 _save_append_bin:
     jp      _aux_call_hl_error
@@ -1358,6 +1358,7 @@ _save_append_bin:
 ; Save basic program in ASCII format
 ;-----------------------------------------------------------------------------
 ; 10 SAVE "/t/saveasc.bas",ASC
+;;; ToDo: Fix always writing to Filedesc 0
 save_ascii_program:
     rst     CHRGET                ; Skip ASC
 _save_ascii:
@@ -1398,6 +1399,8 @@ _save_ascii:
     sbc     hl,de                 ;   HL = LinLen
     ld      b,h
     ld      c,l                   ;   BC = LinLen
+    ld      a,(BAS_FDESC)
+    dec     a
     call    esp_write_bytes       ;   Write line to file
     pop     hl                    ;   HL = LinLnk; Stack = TxtPtr, RtnAdr
     jp      .loop
@@ -1413,20 +1416,24 @@ save_basic_program:
     ld      a,(BASYSCTL)
     and     BASSAVASC             ; If SET SAVE ASC ON
     jr      nz,_save_ascii        ;   SAVE as ASCII
+;;; ToDo: Fix always writing to Filedesc 0
 save_caq_program:
-    ex      (sp),hl               ; HL = String Descriptor, Stack = Text Pointer
+    ex      (sp),hl               ; HL = StrDsc, Stack = TxtPtr, RtnAdr
     call    _open_write           ; Create file
 
     ; Write CAQ header
     ld      de, sync_bytes        ; Sync bytes
     ld      bc, 13
-    call    esp_write_bytes
+    call    esp_write_bytes 
+    ld      a,l
     ld      de, .caq_filename     ; Filename
     ld      bc, 6
-    call    esp_write_bytes
+    call    esp_write_bytes 
+    ld      a,l 
     ld      de, sync_bytes        ; Sync bytes
     ld      bc, 13
-    call    esp_write_bytes
+    call    esp_write_bytes 
+    ld      a,l
 
     ; Write BASIC data
     ld      de, (TXTTAB)            ; DE = start of BASIC program
@@ -1434,8 +1441,8 @@ save_caq_program:
     sbc     hl, de
     ld      b,h                     ; BC = length of BASIC program
     ld      c,l
-    call    esp_write_bytes
-
+    call    esp_write_bytes 
+    ld      a,l
 
     ; Write trailer
     ld      bc,15
@@ -1457,6 +1464,7 @@ save_caq_program:
 ; SAVE "/t/array.caq",*A
 
 ; A = AryTyp, BC = AryLen, DE = AryPtr
+;;; ToDo: Fix always writing to Filedesc 0
 save_caq_array:
     jr      nz,.not_string
     ex      af,af'                ; F' = IsString
@@ -1472,19 +1480,23 @@ save_caq_array:
     ; Write CAQ header
     ld      de, sync_bytes        ; Sync bytes
     ld      bc, 13
-    call    esp_write_bytes
+    call    esp_write_bytes 
+    ld      a,l
     ld      bc, 6
     ld      de, _array_filename   ; Filename
-    call    esp_write_bytes
+    call    esp_write_bytes 
+    ld      a,l
 
     ; Write array data
     pop     de                    ; DE = AryAdr; Stack = AryLen, TxtPtr, RtnAdr
     pop     bc                    ; BC = AryLen; Stack = TxtPtr, RtnAdr
-    call    esp_write_bytes
+    call    esp_write_bytes 
+    ld      a,l
     ; Write trailer
     ld      bc,15
     ld      e,0
-    call    esp_write_repbyte
+    call    esp_write_bytes 
+    ld      a,l
 
 _close_pop_ret:
     call    close_bas_fdesc
@@ -1531,7 +1543,9 @@ save_string_array:
     push    af                    ; Stack = AscFlg, AryPtr, AryLen, TxtPtr, RtnAdr
     call    _open_write           ; Create file
 _string_array:
+    ld      c,a                   ; C = FilDsc
     pop     af                    ; F = AscFlg, Stack = AryPtr, AryLen, TxtPtr, RtnAdr
+    ld      a,c                   ; A = DscFlg
     pop     hl                    ; HL = AryPtr; Stack = AryLen, TxtPtr, RtnAdr
     pop     bc                    ; BC = AryLen; Stack = TxtPtr
     ld      iy,bas_save_string_array

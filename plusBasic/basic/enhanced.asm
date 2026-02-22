@@ -49,8 +49,7 @@ _asc_char:
     jp      c,FCERR               ;   Illegal quantity
     dec     hl                    ; Adjust ChrPos for add
     add     hl,de                 ; HL = ChrAdr
-    xor     a
-    ld      (VALTYP),a
+    call    VALNUM
     ld      a,(hl)                ; A = ChrVal
     jp      (iy)                  ; FloatIt
 

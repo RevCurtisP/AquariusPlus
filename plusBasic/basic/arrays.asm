@@ -18,27 +18,8 @@ dim_extension:
     ret     z                     ; Return if terminator
     cp      EQUATK                ; If not = 
     jp      nz,DIMNXT             ;   Do next DIM
-    rst     CHRGET                ; Skip =
-    push    hl                    ; Stack = TxtPtr, RtnAdr
-    ld      hl,(TEMP3)            ; HL = DimsPtr
-    dec     hl
-    dec     hl
-    ld      b,(hl)
-    inc     hl
-    ld      c,(hl)                ; BC = AryLen;
-    inc     hl
-    ld      (ARRAYLEN),bc         ; BC = AryLen
-    ld      a,(hl)                ; A = NumDims
-    or      a                     ; If no dimensions
-    jp      z,UDERR               ;   Undimensioned array error
-    inc     hl
-    add     a,a                   ; A = NumDims * 2
-    ld      b,0
-    ld      c,a                   ; BC = NumDims * 2
-    add     hl,bc                 ; HL = AryAdr    
-    ld      (ARRAYPTR),hl         ; ARRAYPTR = AryPtr
-    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
-    call    CHRGT2                ; Reget current character
+    ld      iy,bas_dim_setup
+    call    aux_call
     ret     z                     ; If terminator, return
     ld      a,$FF
     ld      (ARRAYREQ),a          ; Strings must be quoted

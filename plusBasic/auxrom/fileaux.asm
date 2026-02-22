@@ -43,18 +43,20 @@ bas_open:
     inc     a                     ; A = FilChn
     ret
 
-; On entry: F = AscFlg (Z = ASCII), BC = AryLen, HL = AryPtr
+; On entry: A = FilDsc, F = AscFlg (Z = ASCII), BC = AryLen, HL = AryPtr
 bas_save_string_array:
     push    bc                    ; Stack = AryLen, RtnAdr
 .strloop
     push    hl                    ; Stack = AryPtr, AryLen, RtnAdr
-    push    af                    ; Stack = AscFlg, AryPtr, AryLen, RtnAdr
+    push    af                    ; Stack = DscFlg, AryPtr, AryLen, RtnAdr
     call    string_addr_len       ; DE = StrAdr, BC = StrLen
-    pop     af                    ; F = AscFlag; Stack = AryPtr, AryLen, RtnAdr
-    push    af                    ; Stack = AscFlg, AryPtr, AryLen, TxtPtr, RtnAdr
+    pop     af                    ; F = DscAsc; Stack = AryPtr, AryLen, RtnAdr
+    push    af                    ; Stack = DscFlg, AryPtr, AryLen, TxtPtr, RtnAdr
     jr      z,.skip_len           ; If Not ASCII mode
     call    esp_write_byte        ;   Write string length
 .skip_len
+    pop     af                    ; F = AscFlag; Stack = AryPtr, AryLen, RtnAdr
+    push    af                    ; Stack = AscFlag, AryPtr, AryLen, RtnAdr
     call    esp_write_bytes       ; Write string data
     pop     af                    ; F = AscFlag; Stack = AryPtr, AryLen, RtnAdr
     push    af                    ; Stack = AscFlag, AryPtr, AryLen, RtnAdr
@@ -64,6 +66,8 @@ bas_save_string_array:
     call    esp_write_byte        ; Write CR
 .skip_cr
     ld      c,10                  
+    pop     af                    ; F = AscFlag; Stack = AryPtr, AryLen, RtnAdr
+    push    af                    ; Stack = AscFlag, AryPtr, AryLen, RtnAdr
     call    esp_write_byte        ; Write LF
 .skip_crlf
     pop     af                    ; F = AscFlag; Stack = AryPtr, AryLen, RtnAdr
@@ -74,11 +78,11 @@ bas_save_string_array:
     inc     hl
     dec     de
     djnz    .nextloop
-    ex      af,af'                ; F' = AscFlg
+    ex      af,af'                ; F' = DscFlg
     ld      a,d
     or      e
     ret     z
-    ex      af,af'                ; F = AscFlg
+    ex      af,af'                ; F = DscFlg
     push    de                    ; Stack = AryLen, RtnAdr
     jr      .strloop
 

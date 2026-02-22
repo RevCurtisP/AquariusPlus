@@ -15,7 +15,6 @@
 ;-----------------------------------------------------------------------------
 file_append_binary:
     call    dos_open_append
-    ret     m
     jr      _write_binary
 
 ;-----------------------------------------------------------------------------
@@ -33,8 +32,8 @@ file_save_binary:
     call    dos_open_write
 _write_binary:
     ret     m
-    ld      l,a                   ; L = FilDsc
-    call    esp_write_bytes
+    call    esp_write_bytes       ; L = FilDsc
+    ld      a,l                   ; A = FilDsc
     jp      _close
 
 ;-----------------------------------------------------------------------------

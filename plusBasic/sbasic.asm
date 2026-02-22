@@ -1988,8 +1988,8 @@ MINPLS: dec     d                 ;[M80] SET SIGN OF EXPONENT FLAG
         dec     hl                ;[M80] CHECK IF LAST CHARACTER WAS A DIGIT
         ret                       ;[M80] RETURN WITH NON-ZERO SET
 ;;AND and OR Operators
-OROP:   byte    $F6               ;[M80] OR $AF TO SET THE PRECEDENCE "OR"=70
-ANDOP:  xor     a                 ;;leave 0 in A for AND
+OROP:   byte    $F6               ; OR A,$AF sets Sets Sign flag
+ANDOP:  xor     a                 ; Sets Z flag
 DANDOR: push    af                ;[M80] SAVE THE PRECEDENCE or Operator...
         call    CHKNUM            ;[M65] MUST BE NUMBER
         call    FRCINT            ;COERCE RIGHT HAND ARGUMENT TO INTEGER
@@ -2005,8 +2005,10 @@ DANDOR: push    af                ;[M80] SAVE THE PRECEDENCE or Operator...
         pop     bc                ;
         ld      a,c               ;
         ld      hl,GIVINT         ;{M80} PLACE TO JUMP WHEN DONE
-        jp      nz,NOTAND         ;
-        and     e                 ;
+        jp      xor_check         ;                                           0AC3  jp      nz,NOTAND
+                                  ;                                           0AC4
+                                  ;                                           0AC5
+ISAND:  and     e                 ;
         ld      c,a               ;
         ld      a,b               ;
         and     d                 ;

@@ -79,6 +79,8 @@ extended_statement:
     dec     a                   ; $B6 BORDER
     dec     a                   ; $B7 CHECK
     jp      z,ST_CHECK
+    sub     RECTK-CHECKTK       ; $BE RECT
+    jp      z,ST_RECT
     jp      SNERR 
    
 extended_function:

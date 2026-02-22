@@ -120,7 +120,7 @@ esp_readc_bytes:
 
     ; Send read size
     call    esp_send_bc
-    
+        
     ; Get result
     call    esp_get_result 
     ret     m
@@ -304,12 +304,14 @@ esp_send_string:
 ; Read a byte from ESP to main memory
 ;  Input: C: Byte to write
 ; Output: A: Result
-;         C: 1 if succesful, else 0
+;         L: File descriptor
+;  Flags: Sign set if error
 ;-----------------------------------------------------------------------------
 esp_write_byte:
+    ld      l,a
     ld      a, ESPCMD_WRITE
     call    esp_cmd               ; Issue read command
-    xor     a
+    ld      a,l
     call    esp_send_byte         ; Send file descriptor
     ld      a,c
     push    bc                    
@@ -334,18 +336,17 @@ esp_write_byte:
 ; Clobbered registers: A, HL
 ;-----------------------------------------------------------------------------
 esp_write_bytes:
-    xor     a
-esp_writec_bytes:
-    push    af
+    ld      l,a
 
     ld      a, ESPCMD_WRITE
     call    esp_cmd
 
     ; Send file descriptor
-    pop     af
+    ld      a,l
     call    esp_send_byte
 
     ; Send write size
+    
     call    esp_send_bc
 
     ; Send bytes

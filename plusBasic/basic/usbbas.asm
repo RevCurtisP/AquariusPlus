@@ -104,35 +104,6 @@ FN_IN:
     in      a, (c)           ; A = in(port)
     jp      SNGFLT           ; Return with 8 bit input value in variable var
 
-.instring
-;;; ToDo: Replace with '(' get_coords ')'
-    rst     CHRGET                ; Skip $
-    call    FRMPRN                ; Evaluate formula following (
-    call    CHKNUM
-    call    FRCINT                ; DE = IOPort
-    push    de                    ; Stack = IOPort, RtnAdr
-    call    get_comma_byte        ; DE = StrLen
-    SYNCHKC ')'                   ; Require )
-    ex      (sp),hl               ; HL = IOPort; Stack = TxtPtr, RtnAdr
-;;; ToDo: Move following into AuxROM
-    push    hl                    ; Stack = IOPort, TxtPtr, RtnAdr
-    ld      a,e
-    or      a                     ; If StrLen = 0
-    jp      z,FCERR               ;   Illegal quantity error
-    call    STRINI                ; HL = StrDsc, DE = StrAdr, A = StrLen
-    pop     bc                    ; BC = IOPort; Stack = TxtPtr, RtnAdr
-    push    hl                    ; Stack = StrDsc, TxtPtr, RtnAdr
-    ld      l,a                   ; L = SrtLen
-.loop
-    in      a,(c)
-    ld      (de),a
-    inc     de
-    dec     l
-    jr      nz,.loop
-    pop     hl                    ; HL = StrDsc; Stack = TxtPtr, RtnAdr
-;;; AuxROM routine will return here
-    jp      PUTNEW
-
 .extended
     rst     CHRGET                ; Skip XTOKEN
     sub     KEYTK                 ; $86 KEY
@@ -144,6 +115,15 @@ FN_IN:
     sub     MEMTK-STRTK           ; $A7 MEM
     jp      z,FN_INMEM            ;
     jp      SNERR
+
+.instring
+    rst     CHRGET                ; Skip $
+    call    paren_coords          ; DE = IOPort, BC = StrLen
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    ld      iy,bas_in_string
+aux_call_putnew:
+    call    aux_call
+    jp      PUTNEW
 
 ;--------------------------------------------------------------------------------------------------------------------------------
 ; JOY() function

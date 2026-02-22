@@ -137,7 +137,7 @@ _swap_nybbles:
 
 ;-----------------------------------------------------------------------------
 ; Draw Rectangle on Text Screen
-; Input: A: Mode: 1 = SCREEN, 2 = COLOR, 3 = Both
+; Input: A: Colors
 ;        B: Start Column
 ;        C: End Column
 ;        D: Start Row
@@ -147,56 +147,47 @@ _swap_nybbles:
 ; Clobbered: A, AF', BC, DE, HL, IX, IY
 ;--------------`---------------------------------------------------------------
 screen_rect:
-    ex      af,af'
+    push    af
+    push    de                    ; Stack = Rows, DrwChrs, RtnAdr
+    push    bc                    ; Stack = Cols, Rows, DrwChrs, RtnAdr
+    call    _rect
+    pop     bc                    ; BC = Cols; Stack = Rows, DrwChrs
+    pop     de                    ; DE = Rows; Stack = DrwChrs
+    pop     af
+    ld      h,$FF                 ; Fill Color RAM
+    ld      l,a                   ; L = Colors
+    jp      screen_fill           ; Fill colors
+
+_rect:
+    push    hl
     call    screen_convert_rect   ; A = RowCnt, C = ColCnt, DE = RowAdr
-    ret     c                     ; Return Carry Set if coords out of bounds
-    push    hl                    ; Stack = DrwChrs, RtnAdr
-    push    af                    ; Stack = RowCnt, DrwChrs, RtnAdr
-    push    de                    ; Stack = RowAdr, RowCnt, DrwChrs, RtnAdr
-    push    bc                    ; Stack = ColCnt, RowAdr, RowCnt, DrwChrs, RtnAdr
-    call    .fillcolor
-
-
-.fillcolor
-    push    af                    ; Stack = RowCnt, RtnAdr
-    ld      a,(LINLEN)
-    cp      40
-    jr      nz,.fill80
-    ld      hl,COLOR-SCREEN
-    add     hl,de
-    ex      de,hl                 ; DE = ClrAdr
-    pop     af                    ; A = RowCnt; Stack = RtnAdr
-.colorloop
-    push    af                    ; Stack = RowCnt, RtnAdr
-    push    de                    ; Stack = RowAdr, RowCnt, RtnAdr
-    push    bc                    ; Stack = ColCnt, RowAdr, RowCnt, RtnAdr
-    ex      af,af'                ; A = Colors
-    
-.fill80
-
-
+    pop     ix                    ; IX = DrwChrs; Stack = RtnAdr
+    ret     c
+    cp      a,3
+    ret     c
+    ex      af,af'
+    ld      a,c
+    cp      a,3
+    ret     c
+    ex      af,af'
     dec     a
-    dec     a                     ; RowCnt -= 2
-    dec     bc
-    dec     bc                    ; ColCnt -= 1
-    call    .doline               ; Draw top line
-    call    .doline               ; Draw top line
-    inc     ix
-    inc     ix
-    inc     ix                    ; Point to middle line characters
+    dec     a
+    dec     c
+    dec     c
+    call    .oneline              ; Draw top line
     call    .dolines
-    inc     ix
-    inc     ix
-    inc     ix                    ; Point to bottom line characters
+.oneline
     call    .doline
-    ret
-  
+    jr      .donelines
 .dolines
     call    .doline               ; Draw a line
     dec     a                     ; RowCnt -= 1
     jr      nz,.dolines           ; If RowCnt <> 0, draw next line
+.donelines
+    inc     ix
+    inc     ix
+    inc     ix
     ret
-
 .doline:
     push    af                    ; Stack = RowCnt, RtnAdr
     push    de                    ; Stack = RowAdr, RowCnt, RtnAdr
@@ -216,6 +207,7 @@ screen_rect:
     pop     de                    ; DE = RowAdr; Stack = RtnAdr
     pop     af
     ld      hl,(LINLEN)
+    ld      h,0
     add     hl,de
     ex      de,hl                 ; DE = RowAdr + LineLen
     ret
