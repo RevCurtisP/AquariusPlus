@@ -152,6 +152,10 @@
  - [ ] **ELSE** - _Not implemented_.
  - [ ] **END** - Terminate program execution.<!--flow-->
  - [ ] **ENDKEY** - Return key used to exit enhanced INPUT.
+ - [ ] **ERR** - Return last error code.<!--error-->
+ - [ ] **ERRLINE** - Return line number of last error.
+ - [ ] **ERR$** - Return error message of last error.<!--error-->
+ - [ ] **ERR$(_errno_)** - Return error message of specified error code.<!--error-->
  - [ ] **ERASE _\*array_{,_\*array_...}** - Delete arrays.
  - [ ] **EVAL(_string_)** - Evaluate expression in string.
  - [x] **EXP(_float_)** - Return argument to the power of mathematical constant _e_.
@@ -315,7 +319,7 @@
  - [X] **POSX** - Return last pixel or bloxel x-position.<!--pixel-->
  - [X] **POSY** - Return 1bpp pixel or bloxel y-position.<!--pixel-->
  - [X] **PRESET (_x_,_y_)** - Erase bloxel or pixel.<!--pixel-->
- - [ ] **PRINT __ {@(_x_,_y_)} TAB(_integer_)|SPC(_integer_)|_expression_|;|,{...}** - Display data on screen.<!--print-->
+ - [ ] **PRINT @(_x_,_y_)|TAB(_integer_)|SPC(_integer_)|_expression_|;|,{...}** - Display data on screen.<!--print-->
  - [ ] **PSG _register_,_byte_{,...}** - Write bytes to PSG register
  - [ ] **PSG _register_,_byte_{;...}** - Not implemented
  - [X] **PSET (_x_,_y_){,color}** - Draw bloxel or pixel.<!--pixel-->
@@ -325,7 +329,7 @@
  - [ ] **READ _var_{,...}** - Read values from DATA statements into variables.<!--READ-->
  - [ ] **READ \*_array_{,...}** - Read values from DATA statements into an array.<!--READ-->
  - [.] **READ #_channel_,^_strvar_,_length_)** - Read string from open file.<!--fileio-->
- - [ ] **RECT (_x_,y_)-(_x_,_y_){,_drawchars_}{,_fgcolor_,_bgcolor_}}** - Draw rectangle on text screen.<!--screen-->
+ - [ ] **RECT (_x_,y_)-(_x_,_y_){,_drawchars_}{,_fgcolor_,_bgcolor_}}** - Draw rectangle on text screen.<!--screendraw-->
  - [ ] **REM _text_** - Denotes comment.<!--REM-->
  - [ ] **RENAME _filespec_ TO _filespec_** - Rename file or directory
  - [ ] **RESUME _lineref_** - Clear error condition and continues program execution at specified line

@@ -281,6 +281,7 @@ bas_put_chr:
     pop     bc                    ; BC = Col; Stack = RtnAdr
     jp      bitmap_putchar        ; Put char to bitmap and return
 
+
 ; Called from ST_RESET_CHR
 ; On entry: A = ChrASC
 bas_reset_chr:

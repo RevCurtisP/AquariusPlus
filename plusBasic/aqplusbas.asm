@@ -84,7 +84,7 @@ _coldboot:
 
     call    page_set_aux
     call    aux_init
-    call    page_set_plus
+    call    page_set_plus 
     jp      do_coldboot
 
 auto_cmd:
@@ -104,7 +104,7 @@ null_desc:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.70i"
+    db "v0.70j"
     db 0
 plusver_len equ $ - plus_version
 plus_len   equ   $ - plus_text
@@ -938,12 +938,12 @@ free_rom_sys = $2F00 - $
 ; 58 Bytes
 hook_table:                     ; ## caller   addr  performing function
     dw      0                   ;  0                Deprecated
-    dw      force_error         ;  1 ERRCRD   03E0  Print Error Message
+    dw      0                   ;  1                Deprecated
     dw      0                   ;  2                Deprecated 
     dw      0                   ;  3                Deprecated
     dw      0                   ;  4                Deprecated
-    dw      linker_hook         ;  5 LINKER   0485  Update BASIC Program Line Links
-    dw      print_hook          ;  6 PRINT    07BC  Execute PRINT Statement
+    dw      0                   ;  5                Deprecated
+    dw      0                   ;  6                Deprecated
     dw      0                   ;  7                Deprecated
     dw      0                   ;  8 
     dw      eval_extension      ;  9 EVAL     09FD  Evaluate Number or String
@@ -952,9 +952,9 @@ hook_table:                     ; ## caller   addr  performing function
     dw      0                   ; 12                Deprecated
     dw      0                   ; 13                Deprecated
     dw      0                   ; 14                Deprecated
-    dw      0                   ; 14                Deprecated
-    dw      FN_FN               ; 16 FNDOER   0B40  FNxx() call
-    dw      HOOK17+1            ; 17 LPTOUT   1AE8  Print Character to Printer
+    dw      0                   ; 15                Deprecated
+    dw      0                   ; 16                Deprecated
+    dw      0                   ; 17 LPTOUT   1AE8  Print Character to Printer
     dw      0                   ; 18                Deprecated
     dw      0                   ; 19                Deprecated
     dw      HOOK20+1            ; 20 CLOAD    1C2C  Load File from Tape
@@ -962,8 +962,8 @@ hook_table:                     ; ## caller   addr  performing function
     dw      token_to_keyword    ; 22 LISPRT   0598  expanding a token
     dw      exec_next_statement ; 23 GONE2    064B  interpreting next BASIC statement
     dw      0                   ; 24                Deprecated
-    dw      on_error            ; 25 ONGOTO   0780  ON statement
-    dw      HOOK26+1            ; 26 INPUT    0893  Execute INPUT, bypassing Direct Mode check
+    dw      0                   ; 25                Deprecated
+    dw      0                   ; 26                Deprecated
     dw      execute_function    ; 27 ISFUN    0A5F  Executing a Function
     dw      HOOK28+1            ; 28 DATBK    08F1  Doing a READ from DATA
     dw      0                   ; 29                Deprecated
@@ -1006,7 +1006,7 @@ _scan_label
 error_ext:
     call    page_set_plus         ; Bank 3 could be mapped to any page at this point.
     call    clear_inevalflg       ; Clear In EVAL Flag
-    xor     a
+    call    FINLPT                ; Returns A=0
     ld      (SUBFLG),a            ; In case it as a UD error
     jp      trap_error            ; so map to Extended ROM, before continuing
 
@@ -1100,7 +1100,6 @@ print_linbuf:
 
     include "tables.asm"          ; Lookup tables aligned to 256 byte boundaries
     include "dispatch.asm"        ; Statement/Function dispatch tables and routiness
-    include "error.asm"           ; Error lookup table, messages and handling routines
     include "args.asm"            ; ARGS statement and function
     include "arrays.asm"          ; Array handling extensions
     include "basic80.asm"         ; Statements and functions from MBASIC 80
@@ -1149,6 +1148,7 @@ print_linbuf:
     phase   $C400
 
     include "auxtables.asm"       ; Lookup tables
+    include "error.asm"           ; Error message lookup routines (must follow auxtables.asm
     include "auxboot.asm"         ; Cold Boot code moved to AuxROM
     include "arrayaux.asm"        ; Array auxiliary routines
     include "basbuf.asm"          ; Basic buffer read/write routines

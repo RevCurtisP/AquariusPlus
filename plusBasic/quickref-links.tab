@@ -54,6 +54,7 @@ RESTORE     BASIC-RESTORE-Statement
 runargs     BASIC-RUN-Command-and-ARGS-Functions
 SAVE        BASIC-SAVE-and-APPEND-Statements
 screen      BASIC-Screen-Statements-and-Functions
+screendraw  BASIC-Screen-Draw-Statements-and-Functions
 screenio    BASIC-Screen-IO-Statements-and-Functions
 SETFAST     BASIC-SET-FAST-Statement
 SETFNKEY    BASIC-SET-FNKEY-Statement

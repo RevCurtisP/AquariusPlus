@@ -743,6 +743,7 @@ REDDY:  byte    "Ok"
 CRLFT:  byte    13,10,0           ;;FINZER and NULRT rely on REDDY-1 being a 0!
 BRKTXT: byte    "Break",0
 ; [M65] ERROR MESSAGES
+;;; To Do: change to list of contants, so this can be reused for code
 ERRTAB: ;;List OF Error Messages
 ERRNF   equ     $-ERRTAB          ;;$00
         byte    "NF"              ;[M80] NEXT without FOR
@@ -830,22 +831,23 @@ TMERR:  ld      e,ERRTM           ;[M80] TYPE MISMATCH ERROR
 ERROR:  jp      error_ext         ;; + Trap Error                             03DB  call    STKINI
                                   ;; +                                        03DC  
                                   ;; +                                        03DD  
-;;; Eliminate UDF Hook for Error Trapping
-ERRINI: nop                       ;;                                          03DE  rst     HOOKDO 
+ERRINI: nop            ;;                                                     03DE  rst     HOOKDO 
         nop                       ;;                                          03DF  byte    0      
-ERRCRD: call    CRDONZ            ;;
-        ld      hl,ERRTAB         ;;
-        rst     HOOKDO            ;;call Hook Service Routine
-HOOK1:  byte    1                 ;
-        ld      d,a               ;;Add Error Offset
-        add     hl,de             ;
-        ld      a,'?'             ;[M65] PRINT A QUESTION MARK
-        rst     0            ;
-ERRFIN: ld      a,(hl)            ;[M65] GET FIRST CHR OF ERR MSG.
-        rst     OUTCHR            ;[M65] OUTPUT IT.
-        rst     CHRGET            ;[M65] GET SECOND CHR.
-        rst     OUTCHR            ;[M65] OUTPUT IT.
-        ld      hl,ERR            ;;" Error"
+        call    CRDONZ
+        nop                       ;                                           03E3  ld      hl,ERRTAB
+        nop                       ; In case get_errmsg becomes an aux_call    03E4
+        nop                       ;                                           03E5
+        ld      iy,print_errmsg   ;                                           03E6  rst     HOOKDO
+                                  ;                                           03E7  byte    1
+                                  ;                                           03E8  ld      d,a
+                                  ;                                           03E9  add     hl,de
+        ld      a,'?'             ;;Print error and return to Immediate mode
+        rst     OUTCHR            ;[M65] PRINT A QUESTION MARK
+        nop                       ;                                           03ED  ld      a,(hl)
+        call    aux_call          ;                                           03EE  rst     OUTCHR
+                                  ;                                           03EF  rst     CHRGET
+                                  ;                                           03F0  rst     OUTCHR
+ERRFNP: ld      hl,ERR            ;;" Error"
 ERRFN1: call    STROUT            ;[M80] PRINT MESSAGE
         ld      hl,(CURLIN)       ;[M80] RESTORE LINE NUMBER
         ld      a,h               ;[M80] SEE IF IN DIRECT MODE
@@ -947,10 +949,10 @@ MLOOPR: ld      a,(de)            ;[M80] NOW TRANSFERING LINE IN FROM BUF
 FINI:   nop                       ;                                           0480  rst     HOOKDO
         nop                       ;                                           0481  byte    4     
         call    RUNC              ;[M80] DO CLEAR & SET UP STACK
-LINKER: rst     HOOKDO            ;
-HOOK5:  byte    5                 ;
-LINKIT: inc     hl                ;;HL=TXTTAB
-        ex      de,hl             ;;DE=TXTTAB
+LINKER: jp      linker_hook       ;                                           0485  rst     HOOKDO
+                                  ;                                           0486  byte    5
+                                  ;                                           0487  inc     hl
+LINKIT: ex      de,hl             ;;DE=TXTTAB
 ;;Fix Basic Line Links
 CHEAD:  ld      h,d               ;[H,L]=[D,E]
         ld      l,e               ;
@@ -1504,8 +1506,8 @@ COPNUM: push    hl
         pop     hl                ;GET THE TEXT POINTER BACK
         ret
 ;{M80} ON..GOTO, ON GOSUB CODE
-ONGOTO: rst     HOOKDO            ;
-HOOK25: byte    25                ;
+        nop                       ;                                           0780  rst     HOOKDO
+        nop                       ;                                           0781  byte    25
 NTOERR: call    GETBYT            ;[M80] GET VALUE INTO [E]
 ;;Execute ON..GOTO
 OMGOTO: ld      a,(hl)            ;[M80] GET THE TERMINATOR BACK
@@ -1544,11 +1546,11 @@ NEWCHR: dec     hl                ;
 ;;; Code Change: PRINT and LPRINT Comma column width is now stored in System variable CLMWID
 ;;; To change the column width, POKE the width into 14405 and the last comma position into 14409
 ;;; The latter affects PRINT only. LPRINT has a hard coded last comma position of 112.
-PRINT:  rst     HOOKDO            ;
-HOOK6:  byte    6                 ;
+PRINT:  nop                       ;                                           07BC  rst   HOOKDO
+        nop                       ;                                           07BD  byte    6
         call    z,CRDO            ;[M80] PRINT CRLF IF END WITHOUT PUNCTUATION
-PRINTC: jp      z,FINPRT          ;{M80} FINISH BY RESETTING FLAGS, TERMINATOR SHOULD NOY CRLF
-        cp      TABTK             ;
+PRINTC: jp      print_hook        ;                                           07C1  jp      z,FINPRT
+PRINTR: cp      TABTK             ;
         jp      z,TABER           ;[M80] THE TAB FUNCTION?
         cp      SPCTK             ;
         jp      z,TABER           ;[M80] THE SPC FUNCTION?
@@ -1630,18 +1632,18 @@ ASPA2:  inc     a                 ;
 REPOUT: rst     OUTCHR            ;[M80] PRINT [A]
         djnz    REPOUT            ;[M80] DECREMENT THE COUNT
 NOTABR: pop     hl                ;[M80] PICK UP TEXT POINTER
-        rst     CHRGET            ;[M80] AND THE NEXT CHARACTER
+PRINTG: rst     CHRGET            ;[M80] AND THE NEXT CHARACTER
         jp      PRINTC            ;{M80} WE JUST PRINTED SPACES, DON'T CALL CRDO IF END OF THE LINE
 ;; sbasic.inc: Cleas LPRINT Flag and return
-FINPRT: nop                       ;                                                 0866 rst     HOOKDO
-        nop                       ;                                                 0867 byte    7
+FINPRT: nop                       ;                                           0866 rst     HOOKDO
+        nop                       ;                                           0867 byte    7
         xor     a                 ;
         ld      (PRTFLG),a        ;[M80] ZERO OUT PTRFIL
         ret                       ;
 TRYAGN: byte    "?Redo from start",13,10,0
 ;[M80]  HERE WHEN THE DATA THAT WAS TYPED IN OR IN "DATA" STATEMENTS
-TRMNOK: nop                       ;                                                 0880 rst     HOOKDO
-HOOK8:  nop                       ;                                                 0881 byte    8
+TRMNOK: nop                       ;                                           0880 rst     HOOKDO
+HOOK8:  nop                       ;                                           0881 byte    8
         ld      a,(FLGINP)        ;[M80] WAS IT READ OR INPUT?
         or      a                 ;[M80] ZERO=INPUT
         jp      nz,DATSNE         ;[M80] GIVE ERROR AT DATA LINE
@@ -1649,8 +1651,8 @@ HOOK8:  nop                       ;                                             
         ld      hl,TRYAGN         ;[M80] PRINT "?REDO FROM START"
         call    STROUT            ;
         jp      GTMPRT            ;
-INPUT:  rst     HOOKDO            ;
-HOOK26: byte    26                ;
+INPUT:  nop                       ;                                           0893  rst     HOOKDO
+        nop                       ;                                           0894  byte    26
         call    ERRDIR            ;[M65] DIRECT IS NOT OK
         ld      a,(hl)            ;
         cp      '"'               ;[M80] IS IT A QUOTE?
@@ -4800,8 +4802,8 @@ LPCRLF: ld      a,13              ;;Send CR to printer
         call    LPTOUT            ;
         ld      a,10              ;;Send LF to printer
 LPTOUT: ;Primitive print character to printer routine
-        rst     HOOKDO            ;;Call Extended ROM Hook Routine
-HOOK17: byte    17                ;
+        nop                       ;                                           1AE9  rst     HOOKDO
+HOOK17: nop                       ;                                           1AEA  byte    17
         push    af                ;;Save character
         push    af                ;;Save Registers
         exx                       ;

@@ -1,4 +1,7 @@
 # plusBASIC Release History
+ - V0.70j (2026-02-22)
+    - `PRINT` now supports multiple `@(col,row)`
+    - Added syntax `ERR$(errno)`
  - v0.70i (2026-02-22)
     - Added statement `RECT`
     - Fixed `SAVE` and `APPEND` writing to the first open file

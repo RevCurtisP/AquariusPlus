@@ -145,6 +145,10 @@
  - **ELSE** - _Not implemented_.
  - **[END](BASIC-Flow-Control-Statements#end)** - Terminate program execution.
  - **ENDKEY** - Return key used to exit enhanced INPUT.
+ - **ERR** - Return last error code.
+ - **ERRLINE** - Return line number of last error.
+ - **ERR$** - Return error message of last error.
+ - **ERR$(_errno_)** - Return error message of specified error code.
  - **ERASE _\*array_{,_\*array_...}** - Delete arrays.
  - **EVAL(_string_)** - Evaluate expression in string.
  - **EXP(_float_)** - Return argument to the power of mathematical constant _e_.
@@ -308,7 +312,7 @@
  - [X] **[POSX](BASIC-Bloxel-and-Pixel-Functions)** - Return last pixel or bloxel x-position.
  - [X] **[POSY](BASIC-Bloxel-and-Pixel-Functions)** - Return 1bpp pixel or bloxel y-position.
  - [X] **[PRESET (_x_,_y_)](BASIC-Bloxel-and-Pixel-Functions)** - Erase bloxel or pixel.
- - **[PRINT {@(_x_,_y_)} TAB(_integer_)|SPC(_integer_)|_expression_|;|,{...}](BASIC-PRINT-Statements#print)** - Display data on screen.
+ - **[PRINT @(_x_,_y_)|TAB(_integer_)|SPC(_integer_)|_expression_|;|,{...}](BASIC-PRINT-Statements#print-@)** - Display data on screen.
  - **PSG _register_,_byte_{,...}** - Write bytes to PSG register
  - **PSG _register_,_byte_{;...}** - Not implemented
  - [X] **[PSET (_x_,_y_){,color}](BASIC-Bloxel-and-Pixel-Functions)** - Draw bloxel or pixel.
@@ -318,7 +322,7 @@
  - **[READ _var_{,...}](BASIC-READ-Statement#read)** - Read values from DATA statements into variables.
  - **[READ \*_array_{,...}](BASIC-READ-Statement#read)** - Read values from DATA statements into an array.
  - **[READ #_channel_,^_strvar_,_length_)](BASIC-File-IO-Statements-and-Functions#read)** - Read string from open file.
- - **[RECT (_x_,y_)-(_x_,_y_){,_drawchars_}{,_fgcolor_,_bgcolor_}}](BASIC-Screen-Statements-and-Functions#rect)** - Draw rectangle on text screen.
+ - **[RECT (_x_,y_)-(_x_,_y_){,_drawchars_}{,_fgcolor_,_bgcolor_}}](BASIC-Screen-Draw-Statements-and-Functions#rect)** - Draw rectangle on text screen.
  - **[REM _text_](BASIC-REM-Statement#rem)** - Denotes comment.
  - **RENAME _filespec_ TO _filespec_** - Rename file or directory
  - **RESUME _lineref_** - Clear error condition and continues program execution at specified line

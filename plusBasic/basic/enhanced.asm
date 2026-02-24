@@ -749,6 +749,33 @@ parse_page_arg:
     ret
 
 ;-----------------------------------------------------------------------------
+; Enhanced PRINT statement
+;-----------------------------------------------------------------------------
+; PRINT @(10,10);"Skibidi"
+ST_PRINT:
+    jp      z,CRDO
+    cp      '#'
+    jr      nz,.newchr            ; If PRINT #
+    ld      a,(PRTFLG)
+    or      a                     ;   If not LPRINT
+    jp      z,print_to_file       ;     Do PRINT#
+.newchr
+    jp      NEWCHR                ; Do normal PRINT
+
+print_hook:
+    jp      z,FINPRT
+    cp      '@'                   ; If not @
+    jp      nz,PRINTR             ;   Continue normal PRINT
+    ld      a,(PRTFLG)
+    or      a                     ; If LPRINT
+    jp      nz,SNERR              ;   Syntax error
+    rst     CHRGET                ; Skip '@'
+    SYNCHKC '('                   ; Require open paren
+    call    ST_LOCATE             ;    Do LOCATE
+    SYNCHKC ')'                   ;   Require close paren
+    jr      print_hook            ; Do next character
+
+;-----------------------------------------------------------------------------
 ; Enhanced READ statement
 ;-----------------------------------------------------------------------------
 ST_READ:

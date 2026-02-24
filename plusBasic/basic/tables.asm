@@ -30,12 +30,12 @@ STJUMPS:
     dw      ST_RETURN             ;$8D RETURN            
     dw      $071E                 ;$8E REM               
     dw      ST_STOP               ;$8F STOP              
-    dw      $0780                 ;$90 ONGOTO            
+    dw      ST_ON                 ;$90 ON
     dw      $07B5                 ;$91 LPRINT            
     dw      ST_COPY               ;$92 COPY              
     dw      ST_DEF                ;$93 DEF               
     dw      ST_POKE               ;$94 POKE              
-    dw      $07BC                 ;$95 PRINT             
+    dw      ST_PRINT              ;$95 PRINT             
     dw      $0C4B                 ;$96 CONT              
     dw      ST_LIST               ;$97 LIST              
     dw      ST_LLIST              ;$98 LLIST             
@@ -49,7 +49,7 @@ STJUMPS:
 ;Miscellaneous Functions
     dw      SNERR                 ;$A0 TAB(   
     dw      SNERR                 ;$A1 TO     
-    dw      SNERR                 ;$A2 FN     
+    dw      FN_FN                 ;$A2 FN     
     dw      SNERR                 ;$A3 SPC(   
     dw      SNERR                 ;$A4 INKEY$ 
     dw      SNERR                 ;$A5 THEN   
@@ -96,7 +96,7 @@ STJUMPS:
     dw      SNERR                 ;$CB XOR
     dw      ST_PUT                ;$CC PUT
     dw      ST_GET                ;$CD GET
-    dw      GSERR                 ;$CE DRAW
+    dw      ST_DRAW               ;$CE DRAW
     dw      SNERR                 ;$CF unused
     dw      ST_LINE               ;$D0 LINE
     dw      ST_SWAP               ;$D1 SWAP 
@@ -296,47 +296,3 @@ endif
 ; Immediate follows STJUMPS, aligning it to a 256 byte boundary
 ;----------------------------------------------------------------------------
 
-; Pointers into err_mess
-err_codes:
-        word    MSGNF
-        word    MSGSN
-        word    MSGRG
-        word    MSGOD
-        word    MSGFC
-        word    MSGOV
-        word    MSGOM
-        word    MSGUS
-        word    MSGBS
-        word    MSGDD
-        word    MSGDV0
-        word    MSGID
-        word    MSGTM
-        word    MSGSO
-        word    MSGLS
-        word    MSGST
-        word    MSGCN
-        word    MSGUF
-        word    MSGMO
-        word    MSGNR
-        word    MSGRE
-        word    MSGUE
-        word    MSGLBO
-        word    MSGGS
-        word    MSGUL
-        word    MSGAG
-        word    MSGUD
-        word    MSGTO
-        word    MSGIM
-        word    MSGBR
-        word    MSGES
-        word    MSGSL
-err_disk:
-        word    MSGBDF
-        word    MSGFNF
-        word    MSGTMF
-        word    MSGIPR
-        word    MSGRPE
-        word    MSGFAE
-        word    MSGIOE
-        word    MSGNOD
-        word    MSGNEM

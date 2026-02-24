@@ -2,21 +2,6 @@
 ; Statements and Functions from Aquarius Extended BASIC
 ;====================================================================
 
-print_hook:
-    cp      '#'
-    jp      z,print_to_file
-    cp      '@'
-    jr      nz,.not_at            ; If '@'
-    rst     CHRGET                ;   Skip '@'
-    SYNCHKC '('                   ;   Require open paren
-    call    ST_LOCATE             ;    Do LOCATE
-    SYNCHKC ')'                   ;   Rwquire close paren
-    jr      .done
-.not_at:
-    call    CHRGT2
-.done
-    jp      HOOK6+1
-
 ;; ToDo: Add ELSE to IF THEN
 ; This routine is jumped to after a THEN if the expression is FALSE
 then_hook:

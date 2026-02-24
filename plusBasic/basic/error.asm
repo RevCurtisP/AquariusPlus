@@ -2,6 +2,9 @@
 ; Error messages, lookup table, and lookup routines
 ;===========================================================================
 
+;; If auxtables gets larger, then routines will need to be moved
+;; around to limit wasted space before err_codes
+
 ; S3BASIC errors
 ERRNF   equ     $00   ;  1 NF NEXT without FOR
 ERRSN   equ     $02   ;  2 SN Syntax error
@@ -55,18 +58,6 @@ LSTERR  equ     $72   ; 58 Last error used for range checks
 ; routines and the beginning of the error lookup table
 ;===========================================================================
 
-;----------------------------------------------------------------------------
-; Print error message and return to direct mode
-;----------------------------------------------------------------------------
-force_error:
-    call    CRDONZ                ; Print CR/LF if TTYPOS is not Zero
-    ld      a,7                   ; Ring the bell
-    rst     OUTCHR
-    call    get_errmsg_ptr        ; Get Pointer into Error Table
-    call    STROUT
-    ld      hl,ERRTXT
-    jp      ERRFN1
-
 ; -------------------------------------------------------------------------------
 ;  Error Message Lookup Routines`
 ; ------------------------------------------------------------------------------
@@ -99,13 +90,16 @@ ret_null:
 
 get_errno_msg:
     call    get_errno_ptr
-    jr      _errmag_ptr
+    call    _errmsg_ptr
+    push    hl                    ; Dummy Text Pointer
+    push    bc                    ; Dummy Return Address
+    jp      TIMSTR
 
 ; Get Pointer to Long Error Message
 ; E = Offset into Error Table - 0=NF, 2=SN, etc.
 get_errmsg_ptr:
     call    get_errcode_ptr       ; Get Pointer to Error Code for E
-_errmag_ptr:
+_errmsg_ptr:
     ld      a,(hl)                ; Read Address from Error Message Table
     inc     hl
     ld      h,(hl)
@@ -113,8 +107,6 @@ _errmag_ptr:
     ret
 
 
-; The word error
-ERRTXT: byte    " error",0
 
 ; Long Error Descriptions
 err_messages:
@@ -168,3 +160,61 @@ MSGNOD: byte    "No disk",0                     ; 56  -7: No disk
 MSGNEM: byte    "Not empty",0                   ; 57  -8: Not empty                           
         byte    0                               ; 58  Last error used for range checks
 
+;===========================================================================
+; Error message lookup tables
+; Aligned to next 256 byte boundary
+;===========================================================================
+
+;Put the lookup table at 256 byte boundary
+if $ & $FF
+    dc ($FF00&$)+256-$,$76
+endif
+
+err_codes:
+        word    MSGNF
+        word    MSGSN
+        word    MSGRG
+        word    MSGOD
+        word    MSGFC
+        word    MSGOV
+        word    MSGOM
+        word    MSGUS
+        word    MSGBS
+        word    MSGDD
+        word    MSGDV0
+        word    MSGID
+        word    MSGTM
+        word    MSGSO
+        word    MSGLS
+        word    MSGST
+        word    MSGCN
+        word    MSGUF
+        word    MSGMO
+        word    MSGNR
+        word    MSGRE
+        word    MSGUE
+        word    MSGLBO
+        word    MSGGS
+        word    MSGUL
+        word    MSGAG
+        word    MSGUD
+        word    MSGTO
+        word    MSGIM
+        word    MSGBR
+        word    MSGES
+        word    MSGSL
+err_disk:
+        word    MSGBDF
+        word    MSGFNF
+        word    MSGTMF
+        word    MSGIPR
+        word    MSGRPE
+        word    MSGFAE
+        word    MSGIOE
+        word    MSGNOD
+        word    MSGNEM
+
+print_errmsg:
+    ld      a,e
+    call    get_errmsg_ptr
+    jp      STROUT

@@ -6,8 +6,7 @@
 ; ON ERROR ... GOTO
 ; Copied from MX BASIC. Originally from CP/M MBASIC 80 - BINTRP.MAC
 ;----------------------------------------------------------------------------
-on_error:
-        cp      ERRTK             ; "ON...ERROR"?
+ST_ON:  cp      ERRTK             ; "ON...ERROR"?
         jr      nz,.noerr         ; NO. Do ON GOTO
         inc     hl                ; Check Following Byte
         ld      a,(hl)            ; Don't Skip Spaces
@@ -38,7 +37,7 @@ reset_trap:
         dec     a                 ; Convert to Offset
         add     a,a               ; and put
         ld      e,a               ; INTO E.
-        jp      force_error       ; FORCE THE ERROR TO HAPPEN
+        jp      ERRINI            ; FORCE THE ERROR TO HAPPEN
 
 
 ;----------------------------------------------------------------------------
@@ -67,10 +66,7 @@ trap_error:
         xor     a                 ; A MUST BE ZERO FOR CONTROL
         ld      (hl),a            ; RESET 3
         ld      e,c               ; GET BACK ERROR CODE
-        ld      a,(ERROR)         ; Get First Instruction of Error Routine
-        cp      $F7               ; If it's RST HOOKDO (S3 BASIC)
-        jp      z,ERRINI          ;   Clear Stack and Force Error
-        jp      force_error       ; FORCE THE ERROR TO HAPPEN
+        jp      ERRINI            ; FORCE THE ERROR TO HAPPEN
 
 set_error:
         ld      hl,(CURLIN)       ; GET CURRENT LINE NUMBER
@@ -89,24 +85,24 @@ set_error:
 ; ERRLINE - Error line number
 ;----------------------------------------------------------------------------
 FN_ERR: rst     CHRGET            ; Skip ERR Token
-;        jr      z,.push_it
-;        inc     hl                ; Skip Following Token
-;.push_it
-;        push    hl                ; Save Text Pointer
         jr      z,.err_no
         cp      '$'               ; If Next Character is $
-        jr      z,.err_desc       ;   Do ERR$
+        jr      z,.err_desc       ;   Do ERR$   
         cp      LINETK            ; If LINE
         jr      z,.err_line       ;   Do ERRLINE
-;        jp      SNERR
 .err_no:
         ld      a,(ERRFLG)        ; Get Error Number and float it
         jp      push_hl_labbck_sngflt
 .err_desc:
-        call    push_hlinc_labbck
+        rst     CHRGET            ; Skip $
+        cp      '('
         ld      a,(ERRFLG)        ; Get Error Number
-        call    get_errno_msg     ; Get Pointer to Error Message in HL
-        jp      TIMSTR            ; Turn into Temp String and Return it
+        jr      nz,.err_msg
+        call    PARCHK
+        call    CONINT
+.err_msg
+        ld      iy,get_errno_msg  ; Copy error message to temp string
+        jp      aux_call_preserve_hl
 .err_line:
         call    push_hlinc_labbck
         ld      de,(ERRLIN)       ; Get Error Line Number
@@ -300,7 +296,7 @@ ST_RESUME:
         jr      .error
 
 .reerr: ld      e,ERRRE           ; Load RE Error Code
-.error: jp      force_error       ; Do Error
+.error: jp      ERRINI            ; Do Error
 
 .token: SYNCHKT XTOKEN
         cp      TRKTK

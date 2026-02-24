@@ -65,6 +65,7 @@ text_screen:
 linker_hook:
     ld    de,MAIN                 ; DE will get trashed anyway
     push  de                      ; Make MAIN the return address
+    inc   hl
     jp    LINKIT                  ; Link the lines
     
 ;-----------------------------------------------------------------------------

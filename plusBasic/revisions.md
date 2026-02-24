@@ -1,4 +1,12 @@
 # plusBASIC Revision History
+ - V0.70j (2026-02-22)
+    - Added _ST_INPUT_, _ST_PRINT_, _ST_ON_ replacing UDF hooks 6, 25
+    - Rewrote _print_hook_ to be jumped to from _PRINTC_ allowing multiple `@(col,row)` in a `PRINT` statement
+    - Moved code from _force_error_ into _ERROR_ routine, eliminating UDF hook 1
+    - Added direct jump to _linker_hook_ to _LINKER_, eliminating UDF hook 5
+    - Removed unused UDF hooks 4 and 17
+    - Moved _error.asm_ to AuxROM, add _print_errmsg_, changed direct call to _get_errno_msg_ to aux call
+    - Added syntax `ERR$(errno)` to `ERR$`
  - v0.70i (2026-02-22)
     - Added routine _check_screen_colors_, statement `RECT`
     - Moved `DIM`, `IN`, `TRON`, and `TROFF` core code to Auxiliary ROM

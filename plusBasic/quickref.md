@@ -145,6 +145,10 @@
  - **ELSE** - _Not implemented_.
  - **END** - Terminate program execution.
  - **ENDKEY** - Return key used to exit enhanced INPUT.
+ - **ERR** - Return last error code.
+ - **ERRLINE** - Return line number of last error.
+ - **ERR$** - Return error message of last error.
+ - **ERR$(_errno_)** - Return error message of specified error code.
  - **ERASE _\*array_{,_\*array_...}** - Delete arrays.
  - **EVAL(_string_)** - Evaluate expression in string.
  - **EXP(_float_)** - Return argument to the power of mathematical constant _e_.
@@ -308,7 +312,7 @@
  - [X] **POSX** - Return last pixel or bloxel x-position.
  - [X] **POSY** - Return 1bpp pixel or bloxel y-position.
  - [X] **PRESET (_x_,_y_)** - Erase bloxel or pixel.
- - **PRINT {@(_x_,_y_)} TAB(_integer_)|SPC(_integer_)|_expression_|;|,{...}** - Display data on screen.
+ - **PRINT @(_x_,_y_)|TAB(_integer_)|SPC(_integer_)|_expression_|;|,{...}** - Display data on screen.
  - **PSG _register_,_byte_{,...}** - Write bytes to PSG register
  - **PSG _register_,_byte_{;...}** - Not implemented
  - [X] **PSET (_x_,_y_){,color}** - Draw bloxel or pixel.
