@@ -26,7 +26,7 @@ aux_load_caq_array:
     ; Load data into array
     pop     de                    ; DE = AryAdr; Stack = AryLen, FilDsc, RtnAdr
     pop     bc                    ; BC = AryLen; Stack = FilDsc, RtnAdr
-    call    esp_read_bytes
+    call    esp_readc_bytes
     xor     a                     ; Return no error
     jp      _load_array_done
 
@@ -48,7 +48,7 @@ aux_load_str_array:
     push    bc                    ; Stack = AryLen, FilDsc, RtnAdr
     push    de                    ; Stack = AryAdr, AryLen, FilDsc, RtnAdr
 .loop
-    call    esp_readc_byte        ; B = StrLen
+    call    esp_read_byte         ; B = StrLen
     jp      m,_load_array_error
     ex      af,af'                ; A' = FilDsc
     ld      a,b

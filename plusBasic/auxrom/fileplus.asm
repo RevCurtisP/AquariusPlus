@@ -12,7 +12,7 @@ aqplus_open:
 ; Load File Header
     ld      bc,6
     ld      de,FBUFFR
-    call    esp_read_bytes        ; Read aqx header
+    call    esp_readc_bytes       ; Read aqx header
     ret     m                     ; Return if Error
     ld      a,c                   ; If < 6 bytes read
     cp      6                     ;   Set Carry
@@ -64,7 +64,7 @@ aqplus_run_exec:
     ld      bc,5                  ; (FILNAM+6) = ExecAdr
     ldir                          ; (FILNAM+8) = LoadPg
 ; Load Program
-    ld      ix,esp_read_bytes
+    ld      ix,esp_readc_bytes
     ld      bc,$4000
     ex      af,af'                ; A' = FilDsc
     ld      a,(FILNAM+8)          ; A = Page
@@ -92,7 +92,7 @@ aqplus_read_cheader:
     push    hl                    ; Stack = StrBuf, RtnAdr
     ex      de,hl                 ; DE = StrBuf
     ld      bc,64
-    call    esp_read_bytes
+    call    esp_readc_bytes
     pop     de                    ; DE = StrBuf; Stack = RtnAdr
     ret     m                     ; Return if Error
     ld      a,c

@@ -77,8 +77,6 @@ esp_close_all:
 ;         B: Byte read (0 if none)
 ; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 esp_read_byte:
-    xor     a
-esp_readc_byte:
     push    af
     ld      a, ESPCMD_READ
     call    esp_cmd               ; Issue read command

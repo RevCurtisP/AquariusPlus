@@ -15,7 +15,6 @@
 ; To assemble:
 ;   zmac --zmac  -I basic -I gfx -o aqplusbas.cim -o aqplusbas.lst aqplusbas.asm
   
-;    include "sbasic.inc"
     include "plus.inc"
     include "screen.inc"
 
@@ -26,14 +25,6 @@
     org     $2000
     jp      _reset          ; $2000 XPLUS  Called from main ROM at reset vector
     jp      _coldboot       ; $2003 XCOLD  Called from main ROM for cold boot
-    jp      just_ret        ; $2006
-    jp      just_ret        ; $2009 
-    jp      just_ret        ; $200C
-    jp      _xkeyread       ; $200F
-    jp      just_ret        ; $2012 
-    jp      just_ret        ; $2015
-    jp      just_ret        ; $2018
-    jp      _check_cart     ; $201B RESETX Start-up screen extension
 
 just_ret:
     ret
@@ -104,10 +95,10 @@ null_desc:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.70j"
+    db "v0.71"
     db 0
 plusver_len equ $ - plus_version
-plus_len   equ   $ - plus_text
+plus_len   equ   $  - plus_text
 
 ; Deault box draw characters
 boxdraw_text:
@@ -134,6 +125,9 @@ init_banks:
     out     (IO_BANK1), a
     ld      a,RAM_BAS_2
     out     (IO_BANK2), a
+    
+    call    _check_gfxrom
+    call    z,_load_gfxrom
 
     ; Call routines in Aux ROM
     ld      a,ROM_AUX_RO
@@ -148,13 +142,71 @@ init_banks:
     ld      a,KB_ENABLE | KB_ASCII
     call    key_set_keymode
 
+    ; Verify complete SysROM loaded
+
     ; Initialize Bank 3
-    ld      a, ROM_EXT_RO          ; Soft Cartridge
+    ld      a, ROM_EXT_RO         ; Extended ROM
     out     (IO_BANK3), a
 
     ; Back to system ROM init
     jp      JMPINI
 
+gfxrom_text:
+    byte    "GfxROM",0
+gfxrom_len = $ - gfxrom_text
+
+_desc_altfile:
+    word    _sysfile_end - _sysfile_alt, _sysfile_alt
+_desc_espfile:
+    word    _sysfile_end - _sysfile_esp, _sysfile_esp
+
+; Check for Graphics ROM and load if not present
+_check_gfxrom:
+    ld      a,ROM_GFX_PG
+    out     (IO_BANK3), a
+    ld      de,gfxrom_text
+    ld      hl,ROM_SIG_ADDR
+    ld      b,gfxrom_len
+    call    string_cmp
+    ret     z
+
+; Expects ROM_GFX_PG in IO_BANK3
+_load_gfxrom:
+   ld      hl,_desc_altfile
+    call    _open_sysrom
+    jp      p,.load_it
+    ld      hl,_desc_espfile
+    call    _open_sysrom
+.load_it
+    ld      l,a
+    ld      a,ESPCMD_SEEK
+    call    esp_cmd
+    ld      a,l
+    call    esp_send_byte
+    ld      bc,$C000
+    ld      de,$0000
+    call    esp_send_long
+    call    esp_get_result
+    ld      a,l
+    ld      de,$C000
+    ld      bc,$4000
+    call    esp_readc_bytes
+    ld      a, ESPCMD_CLOSE
+    call    esp_cmd
+    ld      a,l
+    call    esp_send_byte
+    jp      esp_get_result
+
+_open_sysrom:
+    ld      a,ESPCMD_OPEN
+    call    esp_cmd
+    ld      a,FO_RDONLY
+    call    esp_send_byte
+    call    esp_send_strdesc
+;    call    esp_send_bytes
+;    xor     a
+;    call    esp_send_byte
+    jp      esp_get_result
 
 ;-----------------------------------------------------------------------------
 ; Default Interrupt Handler
@@ -278,16 +330,29 @@ check_topmem:
     ld      (STRSPC),hl           ;   Set bottom of string space
     ret                           ;   and Return
 
+bad_sysrom_text:
+    byte    "Incomplete System ROM!"
+bad_sysrom_len = $-bad_sysrom_text
+
+; Jumped to at the end of INIT
+finish_init:
+    call    _check_gfxrom
+    jr      z,check_aqplus_cart   ; If Graphics ROM signature not found
+    ld      hl,bad_sysrom_text
+    ld      de,SCREEN+489
+      ld      bc,bad_sysrom_len
+    ldir
+    halt
+
+
 ;-----------------------------------------------------------------------------
 ; Check for Aquarius+ cartridge and color cycle skip file
 ; Called from RESET
 ;-----------------------------------------------------------------------------
-_check_cart:
-
 check_aqplus_cart:
     ; Check for Aquarius+ specific cartridge goes here
 
-_start_screen:
+; Skip splash screen if trigger file exists
     ld      hl,.skipsplash_desc
     ld      de,BUF
     ld      iy,dos_stat
@@ -574,7 +639,7 @@ clear_vblank_irq:
 ;-----------------------------------------------------------------------------
 ; Read key for BASIC color cycle screen
 ;-----------------------------------------------------------------------------
-_xkeyread:
+splash_keyread:
     call    key_read
     cp      ' '
     ret     nz
@@ -761,7 +826,7 @@ get_prev_line:
 
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ; Call Graphics subsystem subroutine
-; - Maps Auxilarry ROM into Bank 3
+; - Maps Auxiliary ROM into Bank 3
 ; - Executes routine, passing all registers except AF' and IX
 ; - Restores Bank 3 and returns all registers exoept AF'
 ; Input: IY = Routine address
@@ -776,8 +841,8 @@ gfx_call:
     jr      aux_call
 
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-; Call Auxilary ROM subroutine
-; - Maps Auxilarry ROM into Bank 3
+; Call Auxiliary ROM subroutine
+; - Maps Auxiliary ROM into Bank 3
 ; - Executes routine, passing all registers except AF' and IX
 ; - Restores Bank 3 and returns all registers exoept AF'
 ; Input: IY = Routine address
@@ -1065,32 +1130,37 @@ print_linbuf:
     djnz    .loop
     ret
 
+
 ;-----------------------------------------------------------------------------
 ; SysROM File Name
 ;-----------------------------------------------------------------------------
-
-    dc $2FEF-$+1,$FF
+    dc $2FEA-$+1,$7F
+_sysfile_esp:
+    byte    "esp:"
+_sysfile_alt:
+    byte    "/"
+_sysrom_name:
     byte    "sysrom.bin"
+_sysfile_end
     dc $2FFF-$+1,$00
 
-;-----------------------------------------------------------------------------
-; Pad first 4k
-;-----------------------------------------------------------------------------
-    assert !($3000<>$)   ; ROM full!
-    dc $3000-$,$76
+    $assert !($<>$3000)           ; System ROM Full
 
 ;-----------------------------------------------------------------------------
-; Pad hidden 2k
+; Pad first 4k (SCREEN/COLOR RAM)
+; Hidden by overlay
 ;-----------------------------------------------------------------------------
-    free_rom_hid = $3800 - $
-    assert !($37FF<$)   ; ROM full!
-    dc $3800-$,$67
+    dc $3800-$,$76
 
 ;-----------------------------------------------------------------------------
 ; 2k RAM for bank 0 overlay
+; boot.bin does not load this section into memory
+; It is in sysrom.bin for completeness
 ;-----------------------------------------------------------------------------
-    dc $4000-$,0
-    assert !($4000<>$)   ; Incorrect ROM! length
+
+    dc SYS_SIG_ADDR-$,$76         ; Pad System ROM with HALT
+    byte    "SysROM",0,0          ; System ROM Signature
+    assert !($<>$4000)            ; System ROM Overflow
 
 ;-----------------------------------------------------------------------------
 ; plusBASIC Statements, Functions, and Operators
@@ -1121,11 +1191,10 @@ print_linbuf:
     include "tokens.asm"          ; Keyword lists and tokenize/expand routines
     include "usbbas.asm"          ; Statements and functions from USB BASIC
 
-    assert !($FFFF<$)   ; ROM full!
-
-    free_rom_ext = $10000 - $
-
-    dc $10000-$,$76
+    free_rom_ext = ROM_SIG_ADDR - $
+    dc ROM_SIG_ADDR-$,76           ; Pad Extended ROM with HALT
+    byte    "ExtROM",0,0           ; Extended ROM Signature
+    assert !($<>$0000)             ; Extended ROM Overflow!
 
     dephase
 
@@ -1133,15 +1202,15 @@ print_linbuf:
 ; Auxiliary ROM Routines
 ;-----------------------------------------------------------------------------
 
-    phase   $C000                 ;Assemble in ROM Page 1 which will be in Bank 3
+    phase   $C000                 ; Assemble in ROM Page 2 which will be in Bank 3
     include "jump_aux.asm"        ; Auxiliary routines jump tables
-    assert !($C1FF<$)             ; ROM full!
+    assert !($C1FF<$)             ; Auxiliary Jump Table Overflow!
     dc $C200-$,$76
     dephase
 
-    phase   $C000                 ;Assemble in ROM Page 1 which will be in Bank 3
+    phase   $C000
     include "jump_gfx.asm"        ; Graphics routines jump tables
-    assert !($C2FF<$)             ; ROM full!
+    assert !($C1FF<$)             ; ROM full!
     dc $C200-$,$76
     dephase
 
@@ -1157,10 +1226,10 @@ print_linbuf:
     include "dos.asm"             ; DOS routines
     include "esp_aux.asm"         ; ESP routines in auxiliary ROM
     include "evalaux.asm"         ; Core routine for evalext.asm
-    include "fileaux.asm"         ; Disk and File BASIC auxilarry routines 
+    include "fileaux.asm"         ; Disk and File BASIC auxiliary routines 
     include "fileio.asm"          ; Disk and File I/O kernel routines
     include "fileload.asm"        ; File LOAD I/O routines
-    include "filemisc.asm"        ; BASIC File auxilarry routines
+    include "filemisc.asm"        ; BASIC File auxiliary routines
     include "fileplus.asm"        ; AQPLUS resource run/load routines
     include "filesave.asm"        ; File SAVE I/O routines
     include "filestr.asm"         ; File related string assembly routines
@@ -1185,9 +1254,10 @@ print_linbuf:
     include "sprite_aux.asm"      ; Sprite graphics module
     include "tile.asm"            ; Tile graphics module
 
-    free_rom_aux = $10000 - $
-
-    dc $10000-$,$76
+    free_rom_aux = ROM_SIG_ADDR - $
+    dc ROM_SIG_ADDR-$,76           ; Pad Auxiliary ROM with HALT
+    byte    "AuxROM",0,0           ; Auxiliary ROM Signature
+    assert !($<>$0000)             ; Auxiliary ROM Overflow
 
     dephase
 
@@ -1195,23 +1265,16 @@ print_linbuf:
 ; Graphics ROM Routines
 ;-----------------------------------------------------------------------------
 
-ifdef xxxxx
-
-    ToDo: (Eventually) Modify boot.asm to load Graphics ROM into bank 3.
-
     phase   $C000                 ;Assemble in ROM Page 1 which will be in Bank 3
     ;jump_gfx here eventually
 
-    assert !($C1FF<$)             ; ROM full!
-    dc $C200-$,$76
 
-    byte    "Graphics ROM"
-    
-    free_rom_gfx = $10000 - $
+    free_rom_ext = ROM_SIG_ADDR - $
+    dc ROM_SIG_ADDR-$,76           ; Pad Graphics ROM with HALT
+    byte    "GfxROM",0,0           ; Graphics ROM Signature
+    assert !($<>$0000)             ; Graphics ROM Overflow
 
-    dc $10000-$,$76
-    
-endif    
+    dephase
     
 end
 

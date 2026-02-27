@@ -179,9 +179,6 @@ scan_label:
     xor     a                     ;   Treat like terminator
     ret
 
-;-----------------------------------------------------------------------------
-; Hook 33: Save MAIN Line Number Flag
-;-----------------------------------------------------------------------------
 main_ext:
     cp      '.'
     ld      iy,write_prevbuf
@@ -195,8 +192,52 @@ main_ext:
     push    de                      ; Return address back on stack
     jp      SCNLIN                ; Continue to SCNLIN
 
-; 10 ? 1:STOP:? 2:? 3:? 4
+crunch_hook:
+    ld      a,(TEMP3) 
+    and     $01
+    call    get_linbuf_de
+    jp      nz,KLOOP
+    ld      a,(hl)
+    cp      ':'
+    jr      nz,.notcolon
+    inc     hl
+.notcolon
+    ld      a,(hl)
+    ld      b,LISTK
+    cp      '/'
+    jr      z,.dores
+    ld      b,DIRTK
+    cp      '$'
+    jr      z,.dores
+    call    uppercase_char
+    cp      'L'
+    inc     hl
+    jr      z,.is_ls
+.kloop
+    dec     hl
+    jp      KLOOP
+.is_ls
+    ld      a,(hl)
+    call    uppercase_char
+    cp      'S'
+    jr      nz,.kloop
+    push    hl
+    inc     hl
+    ld      a,(hl)
+    or      a
+    jr      z,.popit
+    cp      ' '
+.popit
+    pop     hl
+    jr      nz,.kloop
+    ld      b,DIRTK
+.dores
+    ld      a,b
+    ld      (DORES),a
+    jp      STUFFH
 
+
+; 10 ? 1:STOP:? 2:? 3:? 4
 gone_hook:
     ld      de,NEWSTT
     jp      z,GONEC

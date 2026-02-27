@@ -1,8 +1,19 @@
 # plusBASIC Revision History
- - V0.70j (2026-02-22)
+ - v0.71 (2026-02-27)
+    - Added (currently unused) Graphics ROM to sysrom.bin
+    - Added ROM signatures "SysROM, "ExtROM", "AltROM", and "GfxROM" at position `$3FF8` of each respective ROM page
+    - Modified system reset startup code to load Graphics ROM into page 63, if it isn't already there
+    - System reset startup code displays "Incomplete System ROM!" if full 64k was not loaded into paged RAM
+    - Added system routine _string_comp_
+    - Renamed _esp_readc_byte_ to _esp_read_byte_
+    - Replaced all calls to _esp_read_bytes_ with _esp_readc_bytes_
+    - `END` now clears command line arguments
+    - Removed UDF hook 9, _eval_extension_
+    - Add direct mode aliases '/' for `LIST` and '$' and 'LS' for DIR
+ - v0.70j (2026-02-22)
     - Added _ST_INPUT_, _ST_PRINT_, _ST_ON_ replacing UDF hooks 6, 25
     - Rewrote _print_hook_ to be jumped to from _PRINTC_ allowing multiple `@(col,row)` in a `PRINT` statement
-    - Moved code from _force_error_ into _ERROR_ routine, eliminating UDF hook 1
+    - Moved code from _force_error_ into _ERROR_ routine, eliminating UDF hook 12
     - Added direct jump to _linker_hook_ to _LINKER_, eliminating UDF hook 5
     - Removed unused UDF hooks 4 and 17
     - Moved _error.asm_ to AuxROM, add _print_errmsg_, changed direct call to _get_errno_msg_ to aux call

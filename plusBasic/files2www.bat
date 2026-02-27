@@ -12,6 +12,7 @@ copy releases.html %_reldir%
 copy releases.md %_reldir%
 copy ..\util\bas2baq.py %_reldir%
 copy ..\util\baq2bas.py %_reldir%
+copy ..\pbutil\getsysrom.baq %_reldir%
 copy ..\pbutil\getver.bas %_reldir%
 copy ..\pbutil\myip.bas %_reldir%
 copy ..\dev\aqplus.inc %_devdir%

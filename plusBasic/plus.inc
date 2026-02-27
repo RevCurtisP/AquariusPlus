@@ -21,14 +21,12 @@ BANK_OVERLAY:   equ $40     ; RAM overlay
 ROM_SYS_PG      equ 60      ; Main System ROM, mapped into Bank 0 with overlay from $3000-$3FFF
 ROM_EXT_PG      equ 61      ; plusBASIC extended ROM, mapped into Bank 3 
 ROM_AUX_PG      equ 62      ; plusBASIC auxillary ROM, mapped into Bank 3 as needed
-ROM_GFX_PG      equ 62      ; plusBASIC graphics ROM, mapped into Bank 3 as needed
-ROM_CRT_PG      equ 63      ; Legacy cartridge image
+ROM_GFX_PG      equ 63      ; plusBASIC graphics ROM, mapped into Bank 3 as needed
 
 ROM_SYS_OV      equ ROM_SYS_PG | BANK_READONLY | BANK_OVERLAY
 ROM_EXT_RO      equ ROM_EXT_PG | BANK_READONLY 
 ROM_AUX_RO      equ ROM_AUX_PG | BANK_READONLY 
 ROM_GFX_RO      equ ROM_GFX_PG | BANK_READONLY 
-ROM_CRT_RO      equ ROM_CRT_PG | BANK_READONLY 
 
 ROM_CART        equ 19
 
@@ -56,6 +54,7 @@ RAM_END_PG      equ 63      ; Last page of RAM
 
 ROM_EXT_BANK    equ 3       ; Bank Extended ROM is mapped into
 ROM_AUX_BANK    equ 3       ; Bank Auxillary ROM is mapped into
+ROM_GFX_BANK    equ 3       ; Bank Auxillary ROM is mapped into
 
 CHAR_ROM_AQ     equ $3000   ; Standard Aquarius Character ROM Address in System ROM
 CHAR_ROM_L1     equ $3800   ; Latin-1 Aquarius Character ROM Address in System ROM
@@ -71,7 +70,8 @@ BMP_FILELEN     equ 9192    ; Length of 320x200 bitmap file
 TILE_DATA       equ $0000
 TILE_MAP_BASE   equ $0000
 TILE_MAP_LEN    equ 64*32*2
-
+SYS_SIG_ADDR    equ $3FF8
+ROM_SIG_ADDR    equ $FFF8   ; Position of ROM signature
 
 ;-----------------------------------------------------------------------------
 ; plusBASIC System variables

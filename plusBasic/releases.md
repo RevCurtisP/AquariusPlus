@@ -1,5 +1,8 @@
 # plusBASIC Release History
- - V0.70j (2026-02-22)
+ - v0.71 (2026-02-27)
+    - Add direct mode aliases '/' for `LIST` and '$' and 'LS' for DIR
+    - `END` now clears command line arguments
+ - v0.70j (2026-02-22)
     - `PRINT` now supports multiple `@(col,row)`
     - Added syntax `ERR$(errno)`
  - v0.70i (2026-02-22)

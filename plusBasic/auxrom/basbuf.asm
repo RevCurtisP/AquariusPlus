@@ -184,7 +184,7 @@ read_prev_hist_line:
     ret     m                     ;   Return if error
     ld      de,(BUFADR)           ; DE = BufAdr
     ld      bc,255                ; Read 256 characters
-    call    esp_read_bytes        ; C = Bytes Read
+    call    esp_readc_bytes       ; C = Bytes Read
     ret     m                     ;   Return if error
     ld      hl,(BUFADR)           ; HL = BufAdr
     xor     a                     ; A = 0

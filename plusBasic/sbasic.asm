@@ -92,24 +92,19 @@ RESHO   equ     $38F6   ;[M65] RESULT OF MULTIPLIER AND DIVIDER
 RESMO   equ     $38F7   ;;RESMO and RESLO are loaded into and stored from HL
 SAVSTK  equ     $38F9   ;[M80] NEWSTT SAVES STACK HERE BEFORE SO THAT ERROR REVERY CAN
 INTJMP  equ     $38FB   ;;RST 7 Interrupt JMP
-STRSPC  equ     $38FE   ;; + Start of String Space. TOPMEM is 512 bytes below this.               $38FE Unused
-                        ;;                                                                      $38FF Unused
+STRSPC  equ     $38FE   ;; + Start of String Space. TOPMEM is 512 bytes below this.     $38FE Unused
+                        ;;                                                              $38FF Unused
 ;;              $3900   ;;This is always 0
 BASTXT  equ     $3901   ;;Start of Basic Program
 XPLUS   equ     $2000   ;; + plusBASIC Reset
 XCOLD   equ     $2003   ;; + plusBASIC Cold Start`
 XCART   equ     $2006   ;; + plusBASIC Start Cartridge
-;;plusBASIC hard-coded intercepts
-XINTR   equ     $2009   ;; + plusBASIC Interrupt Handler
-XWARM   equ     $200C   ;; + plusBASIC Warm Start`
-XINCHR  equ     $200F   ;; + Alternate keyboard read
-RESETX  equ     $201B   ;; + Skip start screen, cold boot if ':' pressed
 
 ;;plusBASIC specific constants
 BUFSIZ  equ     240     ;; Max INPUT length
 
 EXTBAS  equ     $2000   ;;Start of Extended Basic
-XSTART  equ     $2010   ;;Extended BASIC Startup Routine
+XSTART  equ     $2010   ;; Deprecated
 XINIT   equ     $E010   ;;ROM Cartridge Initialization Entry Point
 
         org     $0000   ;;Starting Address of Standard BASIC
@@ -210,15 +205,12 @@ INIT:   ld      sp,TMPSTK         ;[M80] SET UP TEMP STACK
         out     ($FF),a           ;;Output 0 to I/O Port 255;
         ld      hl,$2FFF          ;
         ld      (INSYNC),hl       ;
-;; Don't check for legacy cart - handled by boot.bin                          Original Code
-        jp      check_aqplus_cart ; +                                         005C ld      de,XINIT+1
-;; Code moved from TAN to make room for hook replacements                     
-TANX:   call    COS               ; +                                         005F  ld      hl,CRTSIG-1
-                                  ; +                                         0060
-                                  ; +                                         0061
-CRTCH1: jp      FDIVT             ; +                                         0062  dec     de
-                                  ; +                                         0063  dec     de
-                                  ; +                                         0064  inc     hl
+        jp      finish_init       ;                                           005C ld      de,XINIT+1
+;; Aquarius+ Deprecated code
+        ld      hl,CRTSIG-1       ;
+CRTCH1: dec     de                ;
+        dec     de                ;
+        inc     hl                ;
         ld      a,(de)            ; +
         rrca                      ; +
         rrca                      ; +
@@ -240,6 +232,7 @@ CRTCH2: add     a,(hl)            ;
         ld      (SCRMBL),a        ;;Save Scramble Byte
         jp      XCART             ;; + Run Extended Cart Initialization Routine
 CRTSIG: byte    "+7$$3,",0        ;;$A000 Cartridge Signature
+;; End Deprecated code
 ;;Display Startup Screen
 RESET:  ld      de,SCREEN+417     ;;Display "BASIC"
         ld      hl,BASICT         ;;at line 10, column 17
@@ -272,7 +265,7 @@ COLOR1: ld      (hl),b            ;;memory, addresses $3400 through $3FFF
         ld      hl,$4000          ;;Loop 12,288 times
 COLOR2: 
 ;;; Directly read alt port so network key stuffing works                      Original code    
-        call    XINCHR            ;; + Read Keyboard                          00DC  call    INCHRC
+        call    splash_keyread    ;; + Read Keyboard                          00DC  call    INCHRC
         cp      13                ;{M80} IS IT A CARRIAGE RETURN?
         jr      z,COLDST          ;;Cold Start
         cp      3                 ;;Is it CTRL-C?
@@ -858,9 +851,9 @@ ERRFN1: call    STROUT            ;[M80] PRINT MESSAGE
 ;[M80] FOR "LIST" COMMAND STOPPING
 STPRDY: pop     bc
 ;;Enter Immediate Mode
-READY:  nop                       ;;Call hook routine                         0402 rst     HOOKDO 
-HOOK2:  nop                       ;                                           0403 byte    2     
-        call    direct_mode       ; Execute direct mode extensions            0404 call    FINLPT
+READY:  nop                       ;;Call hook routine                         0402  rst     HOOKDO 
+HOOK2:  nop                       ;                                           0403  byte    2     
+        call    direct_mode       ; Execute direct mode extensions            0404  call    FINLPT
                                   ; and csll FINLPT                           0405
                                   ;                                           0406
         xor     a                 ;
@@ -880,7 +873,7 @@ MAIN0:  inc     a                 ;[M80] SEE IF 0 SAVING THE CARRY FLAG
         dec     a                 ;
         jr      z,MAIN            ;[M80] IF SO, A BLANK LINE WAS INPUT
         push    af                ;[M80] SAVE STATUS INDICATOR FOR 1ST CHARACTER
-MAIN1:  call    main_ext          ;; +                                        0425  call SCNLIN
+MAIN1:  call    main_ext          ;; Write line to history buffers                                        0425  call SCNLIN
 ;;Tokenize Entered Line
 EDENT:  push    de                ;[M80] SAVE LINE #
         call    CRUNCH            ;[M80] CRUNCH THE LINE DOWN
@@ -889,8 +882,9 @@ EDENT:  push    de                ;[M80] SAVE LINE #
         pop     af                ;[M80] WAS THERE A LINE #?                  Original Code
         nop                       ;                                           042F  rst     HOOKDO
         nop                       ;                                           0430  byte    3
-        jp      nc,GONE           ;
-        push    de                ;
+        jp      nc,gone
+;        jp      gone_direct       ;                                           0431  jp      nc,GONE
+LDENT:  push    de                ;
         push    bc                ;[M80] SAVE LINE # AND CHARACTER COUNT
         xor     a                 ;
         ld      (USFLG),a         ;{M80} RESET THE FLAG
@@ -1004,7 +998,8 @@ LOOP:   ld      b,h               ;[M80] IF EXITING BECAUSE OF END OF PROGRAM,
 CRUNCH: xor     a                 ;SAY EXPECTING FLOATING NUMBERS
         ld      (DORES),a         ;ALLOW CRUNCHING
         ld      c,5               ;LENGTH OF KRUNCH BUFFER
-        call    get_linbuf_de     ;SETUP DESTINATION POINTER                  04C2  ld      de,BUF
+        jp      crunch_hook
+;        call    get_linbuf_de     ;SETUP DESTINATION POINTER                  04C2  ld      de,BUF
                                   ;                                           04C3
                                   ;                                           04C4
 KLOOP:  ld      a,(hl)            ;GET CHARACTER FROM BUF
@@ -1091,11 +1086,12 @@ STUFFH: inc     hl                ;[M80] ENTRY TO BUMP [H,L]
         inc     c                 ;;Increment buffer count
         sub     ':'               ;[M65] IS IT A ":"?"
         jr      z,COLIS           ;[M65] YES, ALLOW CRUNCHING AGAIN.
-;; + Tokenizer Mods
+
+; + Tokenizer Mods
         jp      stuffh_ext        ;; + Check for DATA and DOS statements      ; 0544  cp      DATATK-':'
                                   ;; +                                        ; 0545
                                   ;; +                                        ; 0546  jr      nz,NODATT
-        byte    $03                                                           ; 0547
+        byte    $03                                                            ; 0547
 COLIS:  ld      (DORES),a         ;[M65] SETUP FLAG.
 NODATT: sub     REMTK-':'         ;[M65] REM ONLY STOPS ON NULL.
         jp      nz,KLOOP          ;[M65] NO, CONTINUE CRUNCHING.
@@ -1274,8 +1270,7 @@ GONE:   rst     CHRGET
 GONEC:  push    de                ;[M80] STATEMENT
 GONE3:  ret     z                 ;[M80] IF A TERMINATOR TRY AGAIN
 ;[M80] "IF" COMES HERE
-GONE2:
-        jp      check_for_comment ;; + Check for ' and treat as REM           0651  sub     $80
+GONE2:  jp      check_for_comment ;; + Check for ' and treat as REM           0651  sub     $80
                                   ;; +                                        0652
                                   ;; +                                        0653  jp      c,LET
         byte    $31               ;; +                                        0654
@@ -1870,8 +1865,8 @@ LOPREL: sub     GREATK            ;[M80] IS THIS ONE RELATION?
         rst     CHRGET            ;[M80] GET THE NEXT CANDIDATE
         jr      LOPREL            ;
 ;[M80] EVALUATE VARIABLE, CONSTANT, FUNCTION CALL
-EVAL:   rst     HOOKDO            ;
-HOOK9:  byte    9                 ;
+EVAL:   nop                       ;                                           09FD rst     HOOKDO
+        nop                       ;                                           09FE byte    9
         xor     a                 ;
         ld      (VALTYP),a        ;[M65] ASSUME VALUE WILL BE NUMERIC
         rst     CHRGET            ;
@@ -1879,7 +1874,6 @@ HOOK9:  byte    9                 ;
         jp      c,FIN             ;[M80] IF NUMERIC, INTERPRET CONSTANT
         call    ISLETC            ;[M80] VARIABLE NAME?
         jp      nc,ISVAR          ;[M80] AN ALPHABETIC CHARACTER MEANS YES
-;; ToDo: mod eval_extension and jump to from here
         cp      PLUSTK            ;[M80] IGNORE "+"
         jr      z,EVAL            ;
 QDOT:   cp      '.'               ;[M65] LEADING CHARACTER OF CONSTANT?
@@ -1891,8 +1885,8 @@ QDOT:   cp      '.'               ;[M65] LEADING CHARACTER OF CONSTANT?
         cp      NOTTK             ;[M80] CHECK FOR "NOT" OPERATOR
         jp      z,NOTER           ;
         cp      INKETK            ;[M80] INKEY$ FUNCTION?
-        jp      z,INKEY           ;
-        cp      FNTK              ;
+        jp      eval_extension    ;                                           0A34 jp      z,INKEY
+ISFNTK: cp      FNTK              ;
         jp      z,FNDOER          ;
         sub     ONEFUN            ;[M80] IS IT A FUNCTION CALL
         jp      nc,ISFUN          ;[M80] YES, DO IT
@@ -5558,11 +5552,11 @@ STKSAV: dec     hl                ;TAKE INTO ACCOUNT FNDFOR STOPPER
         ld      (SAVSTK),hl       ;MAKE SURE SAVSTK OK JUST IN CASE
         ld      hl,TEMPST         ;INCREMENT BACK FOR SPHL
         ret                       ;
-;; AqPlus Deprecated
 ;;Power Up/Reset Routine: Jumped to from RST 0
 JMPINI: ld      a,$FF             ;;Turn off printer and Cold Start
         out     ($FE),a           ;;Write $FF to Printer Port
         jp      INIT              ;[M80] INIT IS THE INTIALIZATION ROUTINE
+;; AqPlus Deprecated
 XBASIC: ld      a,$AA             ;;
         out     ($FF),a           ;;Write Unlock Code to Port 255
         ld      (SCRMBL),a        ;;Save It

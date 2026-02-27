@@ -9,12 +9,7 @@
 ; Character Literal: 'x'
 ;-------------------------------------------------------------------------
 eval_extension:
-    call    VALNUM                ; ASSUME VALUE WILL BE NUMERIC
-    rst     CHRGET                ;
-    jp      z,MOERR               ; TEST FOR MISSING OPERAND - IF NONE GIVE ERROR
-    jp      c,FIN                 ; IF NUMERIC, INTERPRET CONSTANT
-    call    ISLETC                ; VARIABLE NAME?
-    jp      nc,ISVAR              ; AN ALPHABETIC CHARACTER MEANS YES
+    jp      z,INKEY
     cp      '$'
     jr      z,.eval_hex
     cp      $27                   ; Apostrophe
@@ -29,9 +24,7 @@ eval_extension:
     jp      z,eval_dim
     cp      LISTK
     jp      z,eval_list
-    cp      PLUSTK                ; IGNORE "+"
-    jp      z,eval_extension      ;
-    jp      QDOT
+    jp      ISFNTK
 
 .eval_hex:
     inc     hl                    ; Bump Text Pointer
@@ -194,7 +187,6 @@ _escaped:
 ;    HL: Text Pointer
 ; TEMP3: Saved Text Pointer
 ;-------------------------------------------------------------------------
-; ToDo: Add IMP(lowest precedence booleban operator)
 oper_extension:
     cp        '%'                 ; If string sub operator
     jr        z,oper_stringsub    ;   Go do it

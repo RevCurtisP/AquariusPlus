@@ -205,6 +205,23 @@ string_addr_len:
     ret                           
 
 ;-----------------------------------------------------------------------------
+; Compare string to another string
+;  Input:  B: Number of characters to compare
+;         DE: String to uppercase (returned as original string)
+;         HL: String to compare to
+; Output: Zero set if strings match, otherwise zero cleared
+; Clobbered: A, B
+;-----------------------------------------------------------------------------
+string_cmp:
+    ld      a,(de)                ;; Get char from First String
+    inc     de                    ;;
+    cp      (hl)                  ;; Compare to char in Second String
+    inc     hl                    ;;
+    ret     nz                    ;; Return NZ if not equal
+    djnz    string_cmp            ;;
+    xor     a                     ;;
+    ret                           ;; Return 0 = Equal
+;-----------------------------------------------------------------------------
 ; Compare uppercased string to another string
 ;  Input:  B: Number of characters to compare
 ;         DE: String to uppercase (returned as original string)

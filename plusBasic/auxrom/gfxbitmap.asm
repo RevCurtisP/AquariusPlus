@@ -441,6 +441,30 @@ _restore_rect
     pop     de                    ; DE = Y
     jp      (ix)                  ; Return
 
+
+;-----------------------------------------------------------------------------
+; Draw horizontal line of bloxels or pixels
+;  Input: A: Draw color - 0 = Default (4bpp), None (1bpp/Bloxel)
+;        BC: Start X-coordinate
+;        DE: Y-coordinate
+;        HL: End X-coordinate
+;      Sets: Carry if coordinates out of range
+; Clobbered: A, HL
+;-----------------------------------------------------------------------------
+bitmap_hline:
+    call    _line_addr
+    push    hl                    ; Stack = EndX, RtnAdr
+    push    de                    ; Stack = Y, EndX, RtnAdr
+    exx                           ; BC' = StartX, DE' = Y
+    pop     de                    ; DE = Y
+    pop     bc                    ; BC = EndX
+    exx                           ; BC = StartX, DE = Y, BC' = EndX, DE = Y
+    call    _check_rect           ; HL Clobbered
+    ret     c
+    
+_hline40:
+    call    _bloxel40             ; DE = Coordinate Address
+
 ;-----------------------------------------------------------------------------
 ; Draw line of bloxels or pixels screen
 ; Input: A: Color/Option
@@ -461,7 +485,7 @@ _line:
     exx
     ld      (BMP_X1),bc
     ld      (BMP_Y1),de
-    call    _line_addr
+    call    _line_addr            ; IX = SetPxlAdr
 .setup
     call    (jump_iy)
     ld      bc,$8000
@@ -743,32 +767,33 @@ _togglepixel_addr:
 ;-----------------------------------------------------------------------------
 ; Draw pixel
 ;  Input: A: Draw color - 0 = Default (4bpp), None (1bpp/Bloxel)
-;         C: Y-coordinate
+;        BC: Y-coordinate
 ;        DE: X-coordinate
 ;      Sets: Carry if coordinates out of range
 ; Clobbered: A, HL
 ;-----------------------------------------------------------------------------
 bitmap_setpixel:
     ld      (PSETCOLOR),a         ; Save DrwClr
-    call    _setpixel_addr
-; On Entry C = X-Coord, DE = Y-Coord, H = SaveXY, L = GfxMode 
+    call    _setpixel_addr        ; L = GfxMode, IX = SetPxlAdr
+; On Entry C = X-Coord, DE = Y-Coord, H = UpdateXY, L = GfxMode 
 _dopixel:
-    push    hl                    ; Stack = SaveXY, RtnAdr
+    push    hl                    ; Stack = UpdateXY, RtnAdr
     ld      a,l                   ; A = GfxMode
     call    _check_coords
-    pop     hl                    ; HL = SaveXY; Stack = RtnAdr
+    pop     hl                    ; HL = UpdateXY; Stack = RtnAdr
     ret     c
+; On Entry BC = X-Coord, DE = Y-Coord, H = UpdateXY, L = GfxMode 
 _drawpixel:
     in      a,(IO_BANK1)
     push    af                    ; Stack = OldPg, RtnAdr
     push    bc                    ; Stack = ColorY, OldPg, RtnAdr
     push    de                    ; Stack = X, ColorY, OldPg, RtnAdr
-    push    hl                    ; Stack = SaveXY, X, ColorY, OldPg, RtnAdr
+    push    hl                    ; Stack = UpdateXY, X, ColorY, OldPg, RtnAdr
     ld      a,VIDEO_RAM
     out     (IO_BANK1),a
     call    jump_ix
     ex      af,af'                ; A' = NewByte
-    pop     hl                    ; H = SaveXY; Stack = X, ColorY, OldPg, RtnAdr
+    pop     hl                    ; H = UpdateXY; Stack = X, ColorY, OldPg, RtnAdr
     pop     de                    ; DE = X; Stack = ColorY, OldPg, RtnAdr
     pop     bc                    ; BC = ColorY; Stack = OldPg, RtnAdr
     ld      a,h

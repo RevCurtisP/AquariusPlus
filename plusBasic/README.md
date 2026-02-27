@@ -61,6 +61,11 @@
  - [ ] **\__label_** - Line label. Valid at the beginining of a line, or as the operand of a GOTO or GOSUB.
  - [ ] **'comment** - Shortcut for REM. Valid at the beginning of a line, or after a statement terminating colon.
  
+## Direct Mode Aliases
+ - [ ] **/** -  Performs the `LIST` command.
+ - [ ] **$** -  Performs the `DIR` command.
+ - [ ] **LS** -  Performs the `DIR` command.
+ 
 ## Statements and Functions
  - [x] **ABS(_float_)** - Return absolute value of expression.<!--math-->
  - [x] **APPEND _filespec_,«!_ext_addr_»|«{@_page_,}_address_»,_length_** - Append memory to binary file.<!--SAVE-->

@@ -617,12 +617,13 @@ load_basic_program:
     call    check_sync_bytes      ; Sync bytes
     ld      bc, 6                 ; Read filename
     ld      de, FILNAM
-    call    esp_read_bytes
+    call    esp_readc_bytes
     call    check_sync_bytes      ; Sync bytes
     ld      de, (TXTTAB)
 .load_prog
     ld      bc, $FFFF
-    call    esp_read_bytes
+    call    esp_readc_bytes
+    ld      a,l
 
     ; Close file
     call    close_bas_fdesc
@@ -1358,7 +1359,6 @@ _save_append_bin:
 ; Save basic program in ASCII format
 ;-----------------------------------------------------------------------------
 ; 10 SAVE "/t/saveasc.bas",ASC
-;;; ToDo: Fix always writing to Filedesc 0
 save_ascii_program:
     rst     CHRGET                ; Skip ASC
 _save_ascii:
@@ -1416,7 +1416,6 @@ save_basic_program:
     ld      a,(BASYSCTL)
     and     BASSAVASC             ; If SET SAVE ASC ON
     jr      nz,_save_ascii        ;   SAVE as ASCII
-;;; ToDo: Fix always writing to Filedesc 0
 save_caq_program:
     ex      (sp),hl               ; HL = StrDsc, Stack = TxtPtr, RtnAdr
     call    _open_write           ; Create file
@@ -1464,7 +1463,6 @@ save_caq_program:
 ; SAVE "/t/array.caq",*A
 
 ; A = AryTyp, BC = AryLen, DE = AryPtr
-;;; ToDo: Fix always writing to Filedesc 0
 save_caq_array:
     jr      nz,.not_string
     ex      af,af'                ; F' = IsString
@@ -1559,7 +1557,7 @@ check_sync_bytes:
     ; Read 13 bytes into FBUFFR
     ld      bc, 13
     ld      de, FBUFFR
-    call    esp_read_bytes
+    call    esp_readc_bytes
     ld      a, c
     cp      13
     jp      nz, BDFERR
@@ -1578,6 +1576,7 @@ check_sync_bytes:
     ld      a, (de)
     or      a
     jp      nz, BDFERR
+    ld      a,l
     ret
 
 ;-----------------------------------------------------------------------------
