@@ -1285,7 +1285,7 @@ _def_sprite_rect:
     pop     bc                    ; BC = SpCols; Stack = BufPtr, VarPtr, RtnAdr
     ex      (sp),hl               ; HL = BufPtr; Stack = TxtPtr, VarPtr, RtnAdr
     ld      iy,sprite_defrect
-    call    gfx_call              ; C = DatLen, HL = BufPtr
+    call    gfxrom_call           ; C = DatLen, HL = BufPtr
     jp      c,FCERR
     ex      (sp),hl               ; HL = TxtPtr; Stack = BufPtr, VarPtr, RtnAdr
     ld      b,c                   ; B = DatLen
@@ -1307,7 +1307,7 @@ _def_sprite_string:
     jp      z,ESERR               ; Empty string error if ArgLen = 0
     pop     hl                    ; HL = BufPtr; Stack = TxtPtr, VarPtr, RtnAdr
     ld      iy,sprite_define
-    call    gfx_call              ; HL = BufPtr, BC = DatLen
+    call    gfxrom_call           ; HL = BufPtr, BC = DatLen
     jp      c,FCERR
     ex      (sp),hl               ; HL = TxtPtr; Stack = BufPtr, VarPtr, RtnAdr
     ld      b,c                   ; B = DatLen
@@ -1323,7 +1323,7 @@ _def_sprite_string:
 ST_RESET_SPRITE:
     call    _parse_sprite_star
     ld      iy,bas_reset_sprite
-    jp      gfx_call
+    jp      gfxrom_call
 
 ; Output: A: VALTYP, DE: SptNum or VarPtr
 _parse_sprite_star:
@@ -1421,7 +1421,7 @@ ST_SET_SPRITE:
     pop     iy                    ; IX = JmpOfs; Stack = SprAdr, RtnAdr
 .do_gfx
     ex      (sp),hl               ; HL = SprAdr; Stack = TxtPtr, RtnAdr
-    call    gfx_call              ; HL = SprAdr; Stack = TxtPtr, RtnAdr
+    call    gfxrom_call           ; HL = SprAdr; Stack = TxtPtr, RtnAdr
 .done_gfx
     jp      nz,FCERR
     ex      (sp),hl               ; HL = TxtPtr; Stack = SprAdr, RtnAdr
@@ -1462,7 +1462,7 @@ ST_SET_SPRITE:
     rst     CHRGET                ; Skip CLEAR
     ld      iy,spritle_reset_all
 .gfx_call
-    jp      gfx_call
+    jp      gfxrom_call
 
 ; On entry: HL = TxtPtr; Stack = SprAdr, RtnAdr
 .tilex
@@ -1510,7 +1510,7 @@ _set_spritle:
     call    skip_get_int          ; DE = Props
     pop     af                    ; A = SptNum, Stack = RtnAdr
     ld      iy,spritle_set_props
-    jp      gfx_call
+    jp      gfxrom_call
 .loop
     cp      POSTK
     jr      nz,.notpos
@@ -1552,7 +1552,7 @@ _set_spritle:
     ld      c,a
 .do_gfx
     pop     af                    ; A = SptNum; Stack = RtnAdr
-    call    gfx_call
+    call    gfxrom_call
     push    af                    ; Stack = SptNum, RtnAdr
     call    CHRGT2                ; If Terminator
     jp      z,pop_de_ret          ;   Do next statement
@@ -1591,7 +1591,7 @@ FN_GETSPRITE:
     pop     af                    ; A = FncSfx
     call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
     ld      iy,bas_getsprite      ; Get Int or StrzDsc  in HL
-    call    gfx_call              ; IX = FLOAT_HL or FINBCK
+    call    gfxrom_call           ; IX = FLOAT_HL or FINBCK
     jp      (ix)                  ; Return String
 
 ;-----------------------------------------------------------------------------
@@ -1611,7 +1611,7 @@ FN_SPRITECOL:
     call    get_comma_byte        ;   E = Spritle2
     call    close_paren           ;   Error if not )
     pop     af                    ;   A = Spritle 1
-    ld      iy,aux_spritlecol     ;   Check for collision and float result
+    ld      iy,bas_spritlecol     ;   Check for collision and float result
     jr      .gfx_call_return      ; Else
 .string
     ld      de,(FACLO)            ;   DE = ArgDsc1
@@ -1620,9 +1620,12 @@ FN_SPRITECOL:
     call    FRMSTR
     call    close_paren
     pop     de                    ;   DE = ArgDsc1
-    ld      iy,aux_spritecol      ;   Check for collision and float result
+    ld      iy,bas_spritecol      ;   Check for collision and float result
 .gfx_call_return
-    jp      hl_labbck_gfx_call_float
+hl_labbck_gfxrom_call_float:
+    call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
+    call    gfxrom_call
+    jp      FLOAT                 ; Float an return result
     
 ; SPRITEINRECT()
 ; SPRITEONRECT()

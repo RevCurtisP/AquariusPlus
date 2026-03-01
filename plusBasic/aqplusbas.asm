@@ -95,7 +95,7 @@ null_desc:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.71"
+    db "v0.71a"
     db 0
 plusver_len equ $ - plus_version
 plus_len   equ   $  - plus_text
@@ -837,6 +837,11 @@ gfx__call:
     inc     iy
     jr      aux_call
 
+
+gfxrom_call:
+    call    page_map_gfxrom
+    jr      _jumpiy
+
 gfx_call:
     jr      aux_call
 
@@ -1191,6 +1196,8 @@ _sysfile_end
     include "tokens.asm"          ; Keyword lists and tokenize/expand routines
     include "usbbas.asm"          ; Statements and functions from USB BASIC
 
+    used_rom_ext = $ - $C000
+
     free_rom_ext = ROM_SIG_ADDR - $
     dc ROM_SIG_ADDR-$,76           ; Pad Extended ROM with HALT
     byte    "ExtROM",0,0           ; Extended ROM Signature
@@ -1206,15 +1213,6 @@ _sysfile_end
     include "jump_aux.asm"        ; Auxiliary routines jump tables
     assert !($C1FF<$)             ; Auxiliary Jump Table Overflow!
     dc $C200-$,$76
-    dephase
-
-    phase   $C000
-    include "jump_gfx.asm"        ; Graphics routines jump tables
-    assert !($C1FF<$)             ; ROM full!
-    dc $C200-$,$76
-    dephase
-
-    phase   $C400
 
     include "auxtables.asm"       ; Lookup tables
     include "error.asm"           ; Error message lookup routines (must follow auxtables.asm
@@ -1251,8 +1249,9 @@ _sysfile_end
     include "screen.asm"          ; Text screen graphics subroutines
     include "screen_gfx.asm"      ; Screen graphics routines    
     include "screen_swap.asm"     ; Screen buffering routines
-    include "sprite_aux.asm"      ; Sprite graphics module
     include "tile.asm"            ; Tile graphics module
+
+    used_rom_aux = $ - $C000
 
     free_rom_aux = ROM_SIG_ADDR - $
     dc ROM_SIG_ADDR-$,76           ; Pad Auxiliary ROM with HALT
@@ -1265,14 +1264,21 @@ _sysfile_end
 ; Graphics ROM Routines
 ;-----------------------------------------------------------------------------
 
-    phase   $C000                 ;Assemble in ROM Page 1 which will be in Bank 3
-    ;jump_gfx here eventually
+    phase   $C000                 ;Assemble in RAM Page 63 which will be in Bank 3
+    include "jump_gfx.asm"        ; Graphics routines jump tables
+    assert !($C1FF<$)             ; ROM full!
+    dc $C200-$,$76
 
+    include "basgfx.asm"          ; BASIC sprite core routines
+    include "gfxboot.asm"
+    include "gfxsprites.asm"      ; Sprite graphics module
 
-    free_rom_ext = ROM_SIG_ADDR - $
-    dc ROM_SIG_ADDR-$,76           ; Pad Graphics ROM with HALT
-    byte    "GfxROM",0,0           ; Graphics ROM Signature
-    assert !($<>$0000)             ; Graphics ROM Overflow
+    used_rom_gfx = $ - $C000
+
+    free_rom_gfx = ROM_SIG_ADDR - $
+    dc ROM_SIG_ADDR-$,76          ; Pad Graphics ROM with HALT
+    byte    "GfxROM",0,0          ; Graphics ROM Signature
+    assert !($<>$0000)            ; Graphics ROM Overflow
 
     dephase
     

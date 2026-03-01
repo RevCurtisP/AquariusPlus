@@ -44,7 +44,7 @@ SPR_HFLIP     equ   $02
 ; Detect collision between two sprites
 ; Input: DE = SpriteDef 1 Address
 ;        HL = SpriteDef 2 Address
-; Returns: Carry Set if ???
+; Returns: Carry Set if invalid sprite definition
 ; Clobbered: AF, BC, DE, HL
 ;-----------------------------------------------------------------------------
 sprite_collision:
@@ -464,7 +464,7 @@ spritle_get_attrs:
     ret
 
 ; Input C: DefLen, HL: DefAdr; Output: B: SptCnt; Clobbers: A
-_check_sprite_length:
+sprite_check_length:
     ld      b,(hl)                ; B = SptCnt
     ld      a,b                   ; A = SptCnt
     add     a,a                   ; A = SptCnt * 2
@@ -479,13 +479,14 @@ _check_sprite_length:
 ; Reset spritles in spritedef to system boot vakues
 ; Input: C: SprLen, DE: SprAdr
 ; Clobbers: A,C
+; Returns: Carry set if invalid spritedef
 ;-----------------------------------------------------------------------------
 sprite_reset:
     ex      de,hl                 ; HL = SprDef
-    call    _check_sprite_length  ; B = SptCnt
+    call    sprite_check_length   ; B = SptCnt
     ret     c                     ; If bad length, return Carry set
-    inc     hl                    ; Skip SptCnt
 .loop
+    inc     hl                    ; Skip SptNum/SptCnt
     inc     hl                    ; Skip X-Offset
     inc     hl                    ; Skip Y-Offset
     ld      a,(hl)                ; A = SptNum

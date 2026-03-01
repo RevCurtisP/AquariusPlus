@@ -1,4 +1,7 @@
 # plusBASIC Release History
+ - v0.71a (2026-02-28)
+    - Fixed `RESET SPRITE sprite$` resetting incorrect spritles
+    - Updated `RESET SCREEN` to update relevant system variables
  - v0.71 (2026-02-27)
     - Add direct mode aliases '/' for `LIST` and '$' and 'LS' for DIR
     - `END` now clears command line arguments

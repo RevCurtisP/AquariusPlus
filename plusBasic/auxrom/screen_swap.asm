@@ -120,6 +120,11 @@ screen_reset:
     ld      a,VCTRL_TEXT_EN
     out     (IO_VCTRL),a
     call    bitmap_set_mode_nobuff
+    ld      a,(SCREENCTL)
+    and     SCRCHRSET+SCRCHRMOD
+    ld      (SCREENCTL),a
+    ld      a,40
+    ld      (LINLEN),a
     xor     a
     jp      palette_reset
 

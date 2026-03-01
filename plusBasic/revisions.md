@@ -1,4 +1,12 @@
 # plusBASIC Revision History
+ - v0.71a (2026-02-28)
+    - Moved auxrom/sprite_aux.asm to gfxrom/gfxsprites.asm
+    - Added internally routine _gfxrom_call_ to call routines moved to Graphics ROM
+    - Moved kernel graphics jump table from Auxiliary ROM to Graphics ROM
+    - Moved BASIC sprite core code routines from _basicgfx.asm_ 
+    - Modified all kernel sprite routine calls in Extended ROM to use _gfxrom_call_ instead of _gfx_call_
+    - Fixed _sprite_reset_ and `RESET SPRITE sprite$` resetting incorrect spritles.
+    - Updated _screen_reset_ and `RESET SCREEN` to update _SCREENCTL_ and set _LINLEN_ to 40
  - v0.71 (2026-02-27)
     - Added (currently unused) Graphics ROM to sysrom.bin
     - Added ROM signatures "SysROM, "ExtROM", "AltROM", and "GfxROM" at position `$3FF8` of each respective ROM page
@@ -16,7 +24,7 @@
     - Moved code from _force_error_ into _ERROR_ routine, eliminating UDF hook 12
     - Added direct jump to _linker_hook_ to _LINKER_, eliminating UDF hook 5
     - Removed unused UDF hooks 4 and 17
-    - Moved _error.asm_ to AuxROM, add _print_errmsg_, changed direct call to _get_errno_msg_ to aux call
+    - Moved _error.asmt_ to AuxROM, add _print_errmsg_, changed direct call to _get_errno_msg_ to aux call
     - Added syntax `ERR$(errno)` to `ERR$`
  - v0.70i (2026-02-22)
     - Added routine _check_screen_colors_, statement `RECT`

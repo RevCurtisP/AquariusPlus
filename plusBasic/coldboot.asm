@@ -39,8 +39,9 @@ do_coldboot:
 
     ld      iy,init_basbuf_vars
     call    aux_call
-    ld      iy,gfx_init
+    ld      iy,gfx_initvars
     call    gfx_call
+    ld      iy,gfx_init
 
 ;    ld      d,$10                 ; Row 5 = Shift
 ;    call    _modkey_check         ; If shift held down
