@@ -17,8 +17,8 @@ Run the .baq file to run the associated tests.
 | ps.baq  | POKE/POKE SCREEN   |
 | rg.baq  | RGB and PALETTE    |
 | sb.baq  | String Slicing     |
-| sc.baq  | COLOR and CURSOR   |
-| sg.baq  | Screen Graphics    |
+| sd.baq  | Screen drawing     |
+| sg.baq  | Screen graphics    |
 | sj.baq  | SPLIT and JOIN     |
 | sl.baq  | SAVE and LOAD      |
 | sp.baq  | SAVE/LOAD PALETTE  |
@@ -137,6 +137,10 @@ Run the .baq file to run the associated tests.
   - _string_\[_index_\]
   - _string_\[_index_ TO _index_\]
   - MID$(_strvar_,_pos_,_len_)=_string_
+- sd.baq
+  - FILL SCREEN (_x_,_y_)-(_x_,_y_) CHR _char_ COLOR _fg_,_bg_
+  - RECT (_x_,_y_)-(_x_,_y_)
+  - RECT (_x_,_y_)-(_x_,_y_),_border_chrs_$,_fg_,_bg_
 - sg.baq
   - PRINT CHR$(11)
   - CLS
@@ -209,8 +213,6 @@ Run the .baq file to run the associated tests.
 - ts.baq
   - DEF/APPEND ATTRLIST _var_$ = _attr_, ...
   - DEF/APPEND PALETTELIST  _var_$ = _palette_, ...
-  - DEF SPRITE _var_$ = _spritle_,_x_ofs_,_y_ofs_; ...
-  - SET SPRITE TILE _tlist_$ PALETTE _plist_$ ATTR _alist_$ POS _x_,_y_
   - DEF/APPEND TILELIST _var_$ = _tile_index_, ...
   - FILL TILEMAP TILE _tile_index_ PALETTE _palette_
   - FILL TILEMAP (_left_,_top_) - (_right_,_bottom_) TILE )_tile_index_ PALETTE _palette_ 
@@ -232,6 +234,14 @@ Run the .baq file to run the associated tests.
     - **ToDo: Add tests**
   - TILEOFFSET
   - TILEOFFSET(_gfxmode_)
+  - DEF SPRITE _var_$ = _spritle_,_x_ofs_,_y_ofs_; ...
+  - SET SPRITE _sprite_$ TILE _tlist_$ PALETTE _plist_$ ATTR _alist_$ POS _x_,_y_
+  - SET SPRITE #_spritle_ TILE _tile_index_ PALETTE _palette_ ATTR _attr_ POS _x_,_y_
+  - RESET SPRITE #_spritle_
+  - RESET SPRITE _sprite_$
+  - RESET SPRITE \*
+  - SPRITECOL(_spritle_,_spritle_)
+  - SPRITECOL(_sprite_$,_sprite_$)
 - tx.baq
   - SET PALETTE _palette_ TO _rgb_list_
   - SET TILE _tile_index_ TO _tile_data_

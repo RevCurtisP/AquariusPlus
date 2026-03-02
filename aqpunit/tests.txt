@@ -4,13 +4,13 @@
 | cu.baq  | CALL and USR       |
 | cv.baq  | Convert functions  |
 | dr.baq  | DIM and READ       |
-| gr.baq  | Graphics Init      |
+| io.baq  | File I/O           |
 | pp.baq  | POKE and PEEK      |
 | ps.baq  | POKE/POKE SCREEN   |
 | rg.baq  | RGB and PALETTE    |
 | sb.baq  | String Slicing     |
-| sc.baq  | COLOR and CURSOR   |
-| sg.baq  | Screen Graphics    |
+| sd.baq  | Screen drawing     |
+| sg.baq  | Screen graphics    |
 | sj.baq  | SPLIT and JOIN     |
 | sl.baq  | SAVE and LOAD      |
 | sp.baq  | SAVE/LOAD PALETTE  |

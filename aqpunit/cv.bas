@@ -20,8 +20,7 @@
 246 GOSUB _assert:ARGS "BYTE($`%%`)=127" % (U$)
 247 GOSUB _assert:ARGS "BYTE($`%%`)=-1" % (S$)
 
-270 GOSUB _title:ARGS "HEX$(), DEC() and DEC$()"
-272 GOSUB _assert:ARGS "HEX$(%%)=%%" % (H$,A$)
+270 GOSUB _title:ARGS "HEX$() and DEC()"
 276 DIM D$(7)="-8388608","-1","0","1","255","43981","1193046","8388607"
 278 DIM H$(7)="800000","FFFFFF","00","01","FF","ABCD","123456","7FFFFF"
 280 FOR I=0 TO 7
