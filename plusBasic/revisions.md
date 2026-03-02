@@ -1,4 +1,13 @@
 # plusBASIC Revision History
+ - v0.71b (2026-03-01)
+    - Replaced `call GTBYTC` in _\_get_tile_props_ with `call _skip_parse_attr`
+      - This allows string attrs in `SET TILEMAP` and `FILL TILEMAP`
+    - Moved _bas_set_tile_str_, _bas_set_tile_ary_ from _auxrom/basicgfx.asm_ to _gfxrom/basgfx.asm_
+    - Moved _tile_address_ from _auxrom/fileload.asm_ to _gfxrom/tile.asm_
+    - Moved _gfx_convert_rect_ in _auxrom/gfx.asm_ to _gfxrom_convert_rect_ in _gfxrom/gfxcommon.asm_
+    - Moved _gfx_rect_size_ in _auxrom/gfx.asm_ to _gfxrom_rect_size_ in _gfxrom/gfxcommon.asm_
+    - Moved additional code from _SET_TILE_ in _graphics.asm_ to _basgfx.asm_
+    - Replaced relevent calls to _gfx_call_ with _gfx_romcall_
  - v0.71a (2026-02-28)
     - Moved auxrom/sprite_aux.asm to gfxrom/gfxsprites.asm
     - Added internally routine _gfxrom_call_ to call routines moved to Graphics ROM

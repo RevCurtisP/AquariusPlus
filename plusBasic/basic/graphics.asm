@@ -483,13 +483,9 @@ ST_SET_TILE:
     jr      z,_set_tile_ext       ;   Do SET TILE ... TO CHR ...
     call    FRMEVL                ; Get DataAddr or String
     ex      (sp),hl               ; HL = Tile#; Stack = TxtPtr, RtnAdr
-    push    hl                    ; Stack = Tile#, TxtPtr, RtnAdr
-    call    free_addr_len         ; DE = DataAddr, BC = Count
     ld      iy,bas_set_tile_str
-_set_tile:
-    pop     hl                    ; HL = Tile#; Stack = TxtPtr, RtnAdr
 _gfx_tile_call:
-    call    gfx_call
+    call    gfxrom_call
 _check_nz_c:
     jp      nz,FCERR              ; Error if bad HEX length
     jp      c,OVERR               ; Error if Overflow
@@ -506,13 +502,8 @@ _set_tile_ext:
     call    comma_colors_bc       ; BC = Colors
     pop     af                    ; A = AscVal; Stack = Tile#, RtnAdr
     ex      (sp),hl               ; HL = Tile#; Stack = TxtPtr, RtnAdr
-    push    hl                    ; Stack = Tile#, TxtPtr, RtnAdr
-    call    get_strbuf_addr_no_bc ; HL = StrBuf
-    ex      de,hl                 ; DE = StrBuf, HL = Colors
-    ld      iy,tile_from_chrrom   ; Build tile in String Buffer
-    call    gfx_call              ; DE = StrBuf, BC = DatLen
-    ld      iy,tile_set
-    jr      _set_tile             ; Write the tile
+    ld      iy,bas_set_tile_to_chr
+    jr      _gfx_tile_call        ; Convert and write tile
 
 ;-----------------------------------------------------------------------------
 ; FILL COLORMAP (col,row)-(col,row) COLOR fgcolor, bgcolor
@@ -532,7 +523,10 @@ ST_FILL_COLORMAP:
     push    hl                    ; Stack = TxtPtr, RtnAdr
     ld      l,a                   ; L = Colors
     ld      iy,colormap_fill
-    jp      gfx_call_fc_popret
+gfx_call_fc_popret:
+    call    gfx_call              ;   Write tile to tilemap
+    jp      c,FCERR               ;   Error if invalid coordinates
+    pop     hl                    ;   HL = TxtPtr; Stack = RtnAdr
     ret
 
 ;-----------------------------------------------------------------------------
@@ -586,9 +580,8 @@ ST_FILL_SCREEN:
 ;-----------------------------------------------------------------------------
 ; FILL TILEMAP (5,4) - (12,11) TILE 128
 ; FILL TILEMAP TILE 511
-; SCRCOLOR
 ; FILL TILEMAP (-1,0)-(63,31) TILE 128 PALETTE 0
-ST_FILL_TILE:
+ST_FILL_TILEMAP:
     rst     CHRGET                ; Skip TILE
     SYNCHKT MAPTK                 ; Require MAP
     cp      '('
@@ -603,12 +596,12 @@ ST_FILL_TILE:
     push    bc                    ; Stack = Cols, Rows, RtnAdr
     call    _get_tile_props       ; BC = Props, DE = Tile #
     ld      iy,tile_combine_props
-    call    gfx_call              ; DE = TilPrp
+    call    gfxrom_call           ; DE = TilPrp
     pop     bc                    ; BC = Cols; Stack = Rows, RtnAdr
     ex      (sp),hl               ; HL = Rows; Stack = TxtPtr, RtnAdr
     ex      de,hl                 ; DE = Rows, HL = TilPrp
     ld      iy,tilemap_fill
-    jp      gfx_call_fc_popret
+    jp      gfxrom_call_fcerr
 
 ;-----------------------------------------------------------------------------
 ; GET SCREEN (col,row)-(col,row) *arrayvar
@@ -660,8 +653,8 @@ _get_to_string:
 _parse_get_string:
     push    hl                    ; Stack = TxtPtr, RtnAdr
     push    iy
-    ld      iy,gfx_rect_size
-    call    gfx_call              ; HL = Rectangle size
+    ld      iy,gfxrom_rect_size
+    call    gfxrom_call           ; HL = Rectangle size
     pop     iy
     inc     hl
     add     hl,hl                 ; HL = HL * 2 + 2
@@ -763,7 +756,7 @@ _get_put:
     ex      (sp),hl               ; HL = Row; Stack = TxtPtr, RtnAdr
     ex      de,hl                 ; E = Row, HL = AryAdr
     ld      a,(GPSCMODE+1)        ; A = Mode (GET/PUT SCREEN)
-    jp      gfx_call_fc_popret
+    jp      gfxrom_call_fcerr
 
 
 ;-----------------------------------------------------------------------------
@@ -799,13 +792,14 @@ get_byte_comma_byte
 ; SET TILEMAP (x,y) TO integer
 ; SET TILEMAP OFFSET x,y
 ;-----------------------------------------------------------------------------
+;; SET TILEMAP (2,2) TO TILE 501 ATTR "HV" PALETTE 3
 ST_SET_TILEMAP:
     rst     CHRGET                ; Skip MAP
     cp      XTOKEN
     jr      nz,.set_xy            ; If XTOKEN
     rst     CHRGET                ;   Skip it
-    cp      OFFTK                 ;   If OFF
-    jr      z,_tilemap_offset     ;   Do SET TILEMAP OFFSET
+    cp      OFFTK                 ;   
+    jr      z,ST_SET_TILEMAP_OFFSET
     jp      SNERR
 .set_xy                           ; Else
     call    SCAND                 ;   C = Column, E = Row
@@ -816,7 +810,7 @@ ST_SET_TILEMAP:
     jr      nz,.set_int           ;   If TILE
     call    _get_tile_props       ;     BC = Props, DE = Tile#
     ld      iy,tile_combine_props
-    call    aux_call              ; DE = TilPrp
+    call    gfxrom_call           ; DE = TilPrp
     jr      .set_tile             ;   Else
 .set_int
     call    get_int512            ;     DE = TilDef
@@ -825,8 +819,8 @@ ST_SET_TILEMAP:
     ex      (sp),hl               ;   L = Row; Stack = TxtPtr, RtnAdr
     ex      de,hl                 ;   E = Row, HL = TilDef
     ld      iy,tilemap_set_tile
-gfx_call_fc_popret:
-    call    gfx_call              ;   Write tile to tilemap
+gfxrom_call_fcerr:
+    call    gfxrom_call           ;   Write tile to tilemap
     jp      c,FCERR               ;   Error if invalid coordinates
     pop     hl                    ;   HL = TxtPtr; Stack = RtnAdr
     ret
@@ -846,12 +840,12 @@ _get_attr_palette:
     push    bc                    ; Stack = Props, Tile #, RtnAdr
     SYNCHKT XTOKEN                ; Must be extended token
     cp      ATTRTK                ; If ATTR
-    jr      nz,.notattrs
-    call    GTBYTC                ;   Get attributes
+    jr      nz,.notattr
+    call    _skip_parse_attr      ;   A = Attrs
     pop     bc                    ;   BC = Props; Stack = Tile#, RtnAdr
-    ld      b,a                   ;   B = attributes
+    ld      b,a                   ;   B = Attributes
     jr      .loop
-.notattrs
+.notattr
     SYNCHKT PALETK
     call    get_byte4             ;   Get palette#
     pop     bc                    ;   BC = Props; Stack = Tile#, RtnAdr
@@ -862,9 +856,9 @@ ST_RESET_TILEMAP:
     rst     CHRGET                ; Skip TILE
     SYNCHKT MAPTK                 ; Require MAP
     ld      iy,tilemap_reset
-    jp      aux_call_preserve_hl  ; Do it
+    jr      gfxrom_call_preserve_hl
 
-_tilemap_offset:
+ST_SET_TILEMAP_OFFSET:
     rst     CHRGET                ; Skip OFF
     SYNCHKT SETTK                 ; Require SET
     call    get_int512            ; DE = X-position
@@ -873,7 +867,13 @@ _tilemap_offset:
 _tilemap_set_offset:
     pop     bc                    ; BC = X-position, Stack = RtnAdr
     ld      iy,tilemap_set_offset ; Set Offset and return
-    jp      gfx_call
+gfxrom_call_preserve_hl:
+    push    hl
+gfxrom_call_pop_hl:
+    call    gfxrom_call
+    pop     hl
+    ret
+
 
 ;-----------------------------------------------------------------------------
 ; TILE functions stub
@@ -886,7 +886,8 @@ FN_TILE:
     SYNCHKT OFFTK                 ;   Require OFFSET
     SYNCHKT SETTK                 ;
 ;-----------------------------------------------------------------------------
-; TILEOFFSET
+; TILEOFFSET - First available tile index for current graphics mode
+; TILEOFFSET(gfxmode) - First available tile index for specified graphics mode
 ;-----------------------------------------------------------------------------
 FN_TILEOFFSET:
     cp      '('
@@ -910,7 +911,7 @@ FN_TILEMAP:
     push    af                    ; Stack = 'X'/'Y', RtnAdr
     rst     CHRGET                ; Skip X/Y
     ld      iy,tilemap_get_offset
-    call    gfx_call              ; BC = X-Offset, DE = Y-Offset
+    call    gfxrom_call           ; BC = X-Offset, DE = Y-Offset
     pop     af                    ; A = 'X'/'Y', Stack = RtnAdr
     cp      'Y'                   ; If not TILEMAPY
     jr      z,push_labbck_floatde
@@ -930,7 +931,7 @@ _tilemap_xy:
     call    SCAND                 ; Parse column and row
     call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
     ld      iy,tilemap_get_tile
-    call    gfx_call              ; BC = tile# + properties
+    call    gfxrom_call           ; BC = tile# + properties
     jp      c,FCERR               ; Carry set = bad args
     jp      FLOAT_BC              ; Return BC
 
@@ -955,7 +956,7 @@ ST_DEF_ATTR:
     rst     CHRGET                ; Skip ATTR/BYTE
     call    _setupdef             ; DatLen, BufAdr, VarPtr
 .loop
-    call    _parse_attr
+    call    _parse_attr           ; A = Attrs
     call    _write_byte_strbuf    ; Write it to string buffer
     call    CHRGT2                ; Reget next character
     jr      z,_finish_def         ; If not end of statement
@@ -1150,11 +1151,17 @@ _check_append_list:
 ; GETTILE$(tile#)
 ; tile# is a integer between 0 and 511
 ;-----------------------------------------------------------------------------
+; PRINT HEX$(GETTILE$(255))
 FN_GETTILE:
     call    skip_dollar_paren     ; Require $(
     call    get_int512            ; DE = Tile#
-    ld      iy,tile_get
-    jr      _get_gfx
+    ld      iy,bas_gettile
+gfx_romcall_finbck:
+    SYNCHKC ')'                   ; Require close_paren
+    push    hl                    ; Stack = TxtPtr
+    push    hl                    ; Stack = DummyAdr, TxtPtr
+    call    gfxrom_call
+    jp      FINBCK                ; Return String
 
 ;-----------------------------------------------------------------------------
 ; GETPALETTE Function

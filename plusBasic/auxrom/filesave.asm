@@ -222,7 +222,7 @@ file_save_tileset:
     push    hl                    ; Stack = StrDsc, RtnAdr
     push    bc                    ; Stack = TilCnt, StrDsc, RtnAdr
     ld      iy,tile_address
-    call    gfx_call              ; HL = TilAdr
+    call    gfxrom_call           ; HL = TilAdr
     pop     de                    ; DE = TilCnt; Stack = StrDsc, RtnAdr
     jp      c,POPHRT              ; If TileNo > 511 Return Carry Set
     push    hl                    ; Stack = TilAdr, StrDsc, RtnAdr

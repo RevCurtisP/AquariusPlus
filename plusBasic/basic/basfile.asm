@@ -844,8 +844,8 @@ _aux_call
     pop     hl
     ret
 
-; SAVE TILEMAP "/t/savemap.tmap"
-; SAVE TILESET 128,249,"/t/savetiles.tile"
+; SAVE TILEMAP "/u/tiles/savemap.tmap"
+; SAVE TILESET 128,249,"/u/tiles/savetiles.tile"
 _save_tile:
     rst     CHRGET                ; Skip TILE
     cp      MAPTK
@@ -869,8 +869,8 @@ _save_tileset
     ld      iy,file_save_tileset  ; Save tiles
     jr      _aux_call
 
-; LOAD TILEMAP "/t/level1.tmap"
-; LOAD TILESET "/au/assets/tiles.tset"
+; LOAD TILEMAP "/u/tiles/savemap.tmap"
+; LOAD TILESET "/u/tiles/savetiles.tile"
 ; LOAD TILESET INDEX 128,"/au/assets/tiles.tset"
 ; LOAD TILESET OFFSET 1,"/au/assets/tiles.tset"
 ;; Proposed LOAD TILESET OFFSET 1,"/au/assets/tiles.tset",RGB
@@ -1960,6 +1960,7 @@ _xor_a_ret:
     xor     a
     ret
 
+; ToDo: Move to tile.asm and call through bas_tile_offset and bas_tile_offset_a
 tile_offset:
     ld      a,(GFX_FLAGS)
 tile_offset_a:
@@ -1972,7 +1973,6 @@ tile_offset_a:
     ret     z
     ld      bc,128                  ; Tilemap mode
     ret
-
 
 ; Open File with error handling
 _open_append:

@@ -49,7 +49,10 @@ file_load_screen:
 ;-----------------------------------------------------------------------------
 file_load_tilemap:
     ld      iy,tilemap_read_tmpbfr
-    jr      _load_read_gfx
+_load_read_gfxrom:
+    call    file_load_tmpbuffr
+    ret     m                     ; Return if Error
+    jp      gfxrom_call
 
 ;-----------------------------------------------------------------------------
 ; Load bitmap image
@@ -420,14 +423,6 @@ file_load_tileset:
     pop     de                    ; DE = TileNo; Stack = RtnAdr
     ret     m                     ; Return if Error
     ld      iy,tileset_read_tmpbfr
-    jp      gfx_call
+    jp      gfxrom_call
 
-; Input: DE: Tile#; OutputL Tile Address; Clobbers: BC, DE
-tile_address:
-    ld      hl,511
-    rst     COMPAR                ; If TileNo > 511
-    ret     c                     ;   Return Carry Set
-    ex      de,hl                 ; HL = Ti
-    ld      b,5
-    jp      shift_hl_left         ; TilAdr = TileNo * 32
 

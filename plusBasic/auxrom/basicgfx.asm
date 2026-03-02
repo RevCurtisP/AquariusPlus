@@ -232,6 +232,7 @@ bas_defgotvar:
     SYNCHKT EQUATK                ; Require '='
     ret
 
+; Returns A = Attributes byte
 bas_parse_attr:
     call    GETYPE
     jr      z,.string             ; If numeric
@@ -290,70 +291,6 @@ bas_rect:
     call    screen_rect
     jp      c,FCERR
     ret
-
-; Called from ST_SET_TILE
-; Input: BC: StrLen, DE: StrAdr, HL: TilIdx
-bas_set_tile_str:
-    ld      a,b
-    cp      0
-    ret     nz
-    ld      a,c
-    cp      32
-    jr      z,.settile
-    cp      64
-    ret     nz
-    push    hl                    ; Stack = TilIdx, RtnAdr
-    push    bc                    ; Stack = StrLen, TilIdx, RtnAdr
-    call    get_strbuf_addr       ; HL = BinAdr
-    pop     bc                    ; BC = StrLen, Stack = TilIdx, RtnAdr
-    ld      iy,aux_hex_to_asc
-    call    aux_call              ; BC = BinLen, HL = BinAdr
-    ex      de,hl                 ; DE = BinAdr
-    pop     hl                    ; HL = TilIdx; Stack = RtnAdr
-.settile
-    call    tile_set
-    ret     c                     ; Return Carry set if overflow
-    xor     a                     ; Clear C, set Z flags
-    ret
-
-; Called from ST_SET_TILE
-; Input: A: AryTyp, DE: DatAdr, BC: DatLen
-bas_set_tile_ary:
-    jp      nz,TMERR              ; Error if not string array
-    ex      de,hl                 ; HL = DatAdr
-.loop
-    ld      a,  b
-    or      c
-    ret     z                     ; End of array, return Z
-    ld      a,(hl)                ; A = StrLen
-    inc     hl
-    inc     hl                    ; Skip unused byte
-    ld      e,(hl)
-    inc     hl
-    ld      d,(hl)                ; DE = StrAdr
-    inc     hl
-    or      a
-    jr      z,.next               ; If StrLen <> 0
-    cp      34                    ;   If StrLen <> 34
-    ret     nz                    ;     Return NZ
-    push    bc                    ;   Stack = AryCnt, RtnAdr
-    push    hl                    ;   Stack = AryPtr, AryCnt, RtnAdr
-    ld      bc,32                 ;   BC = TilLen
-    ex      de,hl                 ;   HL = TilAdr
-    ld      e,(hl)
-    inc     hl
-    ld      d,(hl)                ;   DE = TilIdx
-    inc     hl
-    ex      de,hl                 ;   DE = TilAdr, HL = TileIdx
-    call    tile_set              ;   Write Tile Data
-    pop     hl                    ;   HL = AryPtr; Stack = AryCnt, RtnAdr
-    pop     bc                    ;   BC = AryCnt; Stack = RtnAdr
-.next
-    dec     bc
-    dec     bc
-    dec     bc
-    dec     bc
-    jr      .loop
 
 ; Convert PSET Coordinates to Screen Position and Character Mask
 scale_xy:

@@ -308,7 +308,7 @@ tile_convert_rect:
     call    _tilemap_bounds       ; Check EndCol and EndRow
     ret     c
     ld      ix,tilemap_cell_addr
-    call    gfx_convert_rect      ; A = RowCnt, C = ColCnt, DE = RowAdr
+    call    gfxrom_convert_rect   ; A = RowCnt, C = ColCnt, DE = RowAdr
     ret
 
 
@@ -415,7 +415,6 @@ tilemap_copy:
     cp      32
     ccf                           ; If MapBot > 63
     ret                           ;   Return Error
-    
 
 ;-----------------------------------------------------------------------------
 ; Copy TileMap from TMP_BUFFR to Video RAM
@@ -467,8 +466,6 @@ _badfile
     scf                           ;   and Illegal file
     ret
 
-
-
 ;-----------------------------------------------------------------------------
 ; Copy TileSet from TMP_BUFFR to Video RAM
 ; Input: BC: length of data to copy (must be multiple of 32)
@@ -495,3 +492,12 @@ tileset_read_tmpbfr:
     ld      h,a
     ld      l,a                   ; HL = 0
     jp      copy_tmpbase_vidram   ; Copy tiles and return
+
+; Input: DE: Tile#; Output: HL: Tile Address; Clobbers: BC, DE
+tile_address:
+    ld      hl,511
+    rst     COMPAR                ; If TileNo > 511
+    ret     c                     ;   Return Carry Set
+    ex      de,hl                 ; HL = Ti
+    ld      b,5
+    jp      shift_hl_left         ; TilAdr = TileNo * 32

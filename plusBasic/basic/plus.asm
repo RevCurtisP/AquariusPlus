@@ -900,7 +900,7 @@ ST_FILL:
     cp      SCRNTK
     jp      z,ST_FILL_SCREEN
     cp      TILETK
-    jp      z,ST_FILL_TILE
+    jp      z,ST_FILL_TILEMAP
     cp      BITTK
     jp      z,ST_FILL_BITMAP
     cp      COLTK

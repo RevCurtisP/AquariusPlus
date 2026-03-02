@@ -1303,7 +1303,7 @@ bitmap_read_tmpbfr:
 .zero
     ld      hl,0
 .copy
-    jp      copy_tmpbfr_vidram
+    jp      _copy_tmpbfr_vidram
 ; Enter with DE pointing to bitmap data
 .palette
     call    page_map_tmpbfr_af
@@ -1326,16 +1326,16 @@ colormap_read_tmpbfr:
     rst     COMPAR
     jp      nz,ret_carry_set
     ld      de,8192
-    jr      copy_tmpbase_vidram
+    jr      _copy_tmpbase_vidram
 ; Input: BC: BytCnt
 ; Output: DE: NewDstAdr, HL: NewSrcAdr
-copy_tmpbase_vidbase:
+_copy_tmpbase_vidbase:
     ld      de,0
-copy_tmpbase_vidram:
+_copy_tmpbase_vidram:
     ld      hl,0
 ; Input: BC: BytCnt, DE: DstAdr, HL: SrcAdr
 ; Output: DE: NewDstAdr, HL: NewSrcAdr
-copy_tmpbfr_vidram:
+_copy_tmpbfr_vidram:
     ld      a,TMP_BUFFR           ; Copying from buffer
     ex      af,af'
     ld      a,VIDEO_RAM           ; to Video RAM

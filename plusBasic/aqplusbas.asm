@@ -95,7 +95,7 @@ null_desc:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.71a"
+    db "v0.71b"
     db 0
 plusver_len equ $ - plus_version
 plus_len   equ   $  - plus_text
@@ -1249,7 +1249,6 @@ _sysfile_end
     include "screen.asm"          ; Text screen graphics subroutines
     include "screen_gfx.asm"      ; Screen graphics routines    
     include "screen_swap.asm"     ; Screen buffering routines
-    include "tile.asm"            ; Tile graphics module
 
     used_rom_aux = $ - $C000
 
@@ -1271,7 +1270,9 @@ _sysfile_end
 
     include "basgfx.asm"          ; BASIC sprite core routines
     include "gfxboot.asm"
+    include "gfxcommon.asm"
     include "gfxsprites.asm"      ; Sprite graphics module
+    include "tile.asm"            ; Tile graphics module
 
     used_rom_gfx = $ - $C000
 
