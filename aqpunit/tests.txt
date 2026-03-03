@@ -7,8 +7,9 @@
 | io.baq  | File I/O           |
 | pp.baq  | POKE and PEEK      |
 | ps.baq  | POKE/POKE SCREEN   |
+| px.baq  | Pixel drawing      |
 | rg.baq  | RGB and PALETTE    |
-| sb.baq  | String Slicing     |
+| sb.baq  | String slicing     |
 | sd.baq  | Screen drawing     |
 | sg.baq  | Screen graphics    |
 | sj.baq  | SPLIT and JOIN     |

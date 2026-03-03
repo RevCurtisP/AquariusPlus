@@ -15,8 +15,9 @@ Run the .baq file to run the associated tests.
 | io.baq  | File I/O           |
 | pp.baq  | POKE and PEEK      |
 | ps.baq  | POKE/POKE SCREEN   |
+| px.baq  | Pixel drawing      |
 | rg.baq  | RGB and PALETTE    |
-| sb.baq  | String Slicing     |
+| sb.baq  | String slicing     |
 | sd.baq  | Screen drawing     |
 | sg.baq  | Screen graphics    |
 | sj.baq  | SPLIT and JOIN     |
@@ -119,6 +120,18 @@ Run the .baq file to run the associated tests.
   - PEEKSCREEN$(_addr_,_len_)
   - PEEKCOLOR(_addr_)
   - PEEKCOLOR$(_addr_,_len_)
+- px.baq
+  - POINT(_x_,_y_)
+  - POSX
+  - POSY
+  - PSET(_x_,_y_)
+  - PSET(_x_,_y_),_fg_  
+  - PSET(_x_,_y_),XOR
+  - PRESET(_x_,_y_)
+  - LINE (_x_,_y_)-(_x_,_y_)
+  - LINE (_x_,_y_)-(_x_,_y_),_fg_
+  - LINE (_x_,_y_)-(_x_,_y_),XOR
+  - LINE (_x_,_y_)-(_x_,_y_),PRESET
 - rg.baq 
   - RGB(_red_,_green_,_blue_)
   - RGB$(_red_,_green_,_blue_)
