@@ -72,7 +72,7 @@ ST_COLOR:
     SYNCHKT ORTK                  ; Require OR
     call    _color_args
     ld      iy,bitmap_write_color
-    call    gfx_call_preserve_hl
+    call    gfxrom_call_preserve_hl
     jp      no_more               ; Error if any more operands
 
 ; Output: B: Color(s)
@@ -154,6 +154,7 @@ _line_opt:
 ; Last X,Y position
 ;-----------------------------------------------------------------------------
 ; SCREEN 0,2:PSET (10,23):PRINT POSX;POSY
+; SCREEN 0,3:LINE (1,2)-(7,8):PRINT POSX;POSY
 FN_POS:
     inc     hl
     ld      a,(hl)
@@ -163,15 +164,10 @@ FN_POS:
     rst     CHRGET                ; Skip SfxChr
     call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
     ex      af,af'
-    push    af                    ; Stack = SfxChr, LABBCK, TxtPtr, RtnAdr
-    ld      iy,bitmap_read_sysvars
-    call    gfx_call              ; B = BmpClr, C = BmpY, DE = BmpX
-    pop     af                    ; A = SfxChr; Stack = LABBCK, TxtPtr, RtnAdr
-    cp      'X'                   ; If POSX
-    jp      z,FLOAT_DE            ;   Return X
-    cp      'Y'
-    jp      z,FLOAT_C
-    jp      SNERR
+    ld      iy,bas_pos
+gfxrom_call_floatde:
+    call    gfxrom_call           ; DE = Result
+    jp      FLOAT_DE              ;   Return X
 
 ;-----------------------------------------------------------------------------
 ; POINT(x,y)

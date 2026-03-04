@@ -1,4 +1,12 @@
 # plusBASIC Revision History
+ - v0.71c (2026-03-04)
+    - Moved the following routines from _auxrom/gfx.asm_ to new file _gfxrom/gfxrombitmap.asm_
+      - _bitmap_init_vars_
+      - _bitmap_read_sysvars_
+      - _bitmap_write_color_
+    - Modified _bitmp_line_ to update last x-coord and y-coord
+      - `LINE (x,y)-(x,y)` now correctly updates `POSX` and `POSY`
+    - Moved `POSX` and `POSY` core code to _bas_pos_ in _basgfx.asm_
  - v0.71b (2026-03-01)
     - Replaced `call GTBYTC` in _\_get_tile_props_ with `call _skip_parse_attr`
       - This allows string attrs in `SET TILEMAP` and `FILL TILEMAP`

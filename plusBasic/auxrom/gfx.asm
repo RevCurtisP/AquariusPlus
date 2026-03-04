@@ -9,7 +9,6 @@
 gfx_initvars:
     call    init_screen_buffers
     call    init_screen_vars
-    call    bitmap_init_vars
     call    bitmap_init_screen
     ret
     

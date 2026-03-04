@@ -1,4 +1,6 @@
 # plusBASIC Release History
+ - v0.71c (2026-03-04)
+    - Fixed `LINE (x,y)-(x,y)` incorrectly updating `POSX` and `POSY`
  - v0.71b (2026-03-01)
     - `SET TILEMAP` and `FILL TILEMAP` now allow a string argument in the `ATTR` clause
  - v0.71a (2026-02-28)

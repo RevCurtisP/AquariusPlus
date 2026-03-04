@@ -118,7 +118,7 @@ BMP_SX      equ $38F0
 BMP_SY      equ $38F2
 BMP_ERROR   equ $38F4
 BMP_E2      equ $38F6   ; RESHO
-
+BMP_GFXMODE equ $38F8   ; RESLO
 
 ; Temporary Variables stored in FILNAM+FILNAM ($3851-$385C), RESMO-RESLO ($38F7-$38F8)
 ; bitmap_get and bitmap_set

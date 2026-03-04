@@ -95,7 +95,7 @@ null_desc:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.71b"
+    db "v0.71c"
     db 0
 plusver_len equ $ - plus_version
 plus_len   equ   $  - plus_text
@@ -1271,6 +1271,7 @@ _sysfile_end
     include "basgfx.asm"          ; BASIC sprite core routines
     include "gfxboot.asm"
     include "gfxcommon.asm"
+    include "gfxrombitmap.asm"
     include "gfxsprites.asm"      ; Sprite graphics module
     include "tile.asm"            ; Tile graphics module
 

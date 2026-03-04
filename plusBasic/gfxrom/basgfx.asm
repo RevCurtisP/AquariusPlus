@@ -241,3 +241,17 @@ bas_set_tile_to_chr:
     ld      iy,tile_set
     pop     hl                    ; HL = Tile#; Stack = RtnAdr
     jp      tile_set              ; Write the tile
+
+; Called from FN_POS
+; Input: A = SfxChr; Output: DE = Result
+bas_pos:
+    push    af                    ; Stack = SfxChr, RtnAdr
+    call    bitmap_read_sysvars   ; B = BmpClr, C = BmpY, DE = BmpX
+    pop     af                    ; A = SfxChr; Stack = RtnAdr
+    cp      'X'                   ; If POSX
+    ret     z                     ;   Return X
+    cp      'Y'
+    jp      nz,SNERR
+    ld      d,0
+    ld      e,c
+    ret

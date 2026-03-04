@@ -2,36 +2,6 @@
 ; Bitmap Graphics Routines
 ;====================================================================
 
-;-----------------------------------------------------------------------------
-; Initialize bitmap sysvars
-;-----------------------------------------------------------------------------
-; Ofs Desription
-;  0  Screen 1 Bloxel Mode
-;  4  Screen 3 Bloxel Mode
-;  8  1bpp Pixel Mode
-; 12  4bpp Pixel Mode
-; 16  Screen 2 Bloxel Mode
-; +0  Default Colors
-; +1  Last Y-Coord
-; +2  Last X-Coord
-
-_bmp_defaults:
-    byte    $06,0,0,0,$06,0,0,0,$70,0,0,0,$07,0,0,0,$06,0,0,0
-_bmp_deflen = $ - _bmp_defaults   
-
-bitmap_init_vars:
-    ld      hl,_bmp_defaults
-    ld      de,BANK1_BASE+GFXVBASE
-    ld      bc,_bmp_deflen
-    in      a,(IO_BANK1)
-    ex      af,af'                ; A' = OldPg
-    ld      a,BAS_BUFFR
-    out     (IO_BANK1),a
-    ldir
-    ex      af,af'                ; A = OldPg, af' = BMP_DRAWCOLOR
-    out     (IO_BANK1),a          ; Map Original Page
-    ret
-
 bitmap_init_screen:
     ld      a,2
     ld      (GFX_FLAGS),a
@@ -75,30 +45,6 @@ bitmap_set_mode:
     ret                     
 
 ;-----------------------------------------------------------------------------
-; Read bitmap system variables
-; Output: B: Colors
-;         C: Y-coordinate
-;        DE: X-coordinate
-; Clobbered: A, HL
-;-----------------------------------------------------------------------------
-bitmap_read_sysvars:
-    call    _get_varbase          ; HL = VarBase
-    in      a,(IO_BANK1)
-    ex      af,af'                ; AF' = OldPg
-    ld      a,BAS_BUFFR
-    out     (IO_BANK1),a          ; Map Basic Buffers
-    ld      b,(hl)                ; A = BMP_DRAWCOLOR
-    inc     hl
-    ld      c,(hl)
-    inc     hl
-    ld      e,(hl)
-    inc     hl
-    ld      d,(hl)                ; DE = BMP_LASTX
-    ex      af,af'                ; A = OldPg, af' = BMP_DRAWCOLOR
-    out     (IO_BANK1),a          ; Map Original Page
-    ret
-
-;-----------------------------------------------------------------------------
 ; Read Bitmap Draw Color
 ; Output: A,B: Colors
 ;-----------------------------------------------------------------------------
@@ -126,23 +72,6 @@ _get_varbase:
     ld      l,a
     sla     l
     sla     l                     ; HL = SysVar Base (0-12)
-    ret
-
-
-;-----------------------------------------------------------------------------
-; Write to bitmap draw color system variable
-; Input: B: Color(s)
-; Clobbered: A, HL
-;-----------------------------------------------------------------------------
-bitmap_write_color:
-    call    _get_varbase          ; HL = VarBase
-    in      a,(IO_BANK1)
-    ex      af,af'                ; A' = OldPg
-    ld      a,BAS_BUFFR
-    out     (IO_BANK1),a
-    ld      (hl),b
-    ex      af,af'                ; A = OldPg, A' = Byte
-    out     (IO_BANK1),a          ; Restore Page
     ret
 
 ;-----------------------------------------------------------------------------
@@ -338,7 +267,6 @@ colormap_bounds:
     cp      e                     ; If EndRow > 24
     ret                           ;   Return Carry Set
 
-
 ;-----------------------------------------------------------------------------
 ; Draw rectangle of bloxels or pixels screen
 ; Input: A: Color/Option
@@ -485,7 +413,8 @@ _line:
     exx
     ld      (BMP_X1),bc
     ld      (BMP_Y1),de
-    call    _line_addr            ; IX = SetPxlAdr
+    call    _line_write_xy
+    call    _line_addr            ; IY = SetPxlAdr
 .setup
     call    (jump_iy)
     ld      bc,$8000
@@ -538,6 +467,7 @@ _line:
 ;    ld      a,(PSETCOLOR)
     ld      bc,(BMP_Y0)
     ld      de,(BMP_X0)
+    ld      h,0
     call    _drawpixel
 ; e2 = 2 * error
     ld      hl,(BMP_ERROR)
@@ -600,6 +530,23 @@ _line_addr:
     cp      XORTK
     ret     z
     ld      iy,_setpixel_addr
+    ret
+
+;Input: BC = X1, DE = Y1
+_line_write_xy:
+    in      a,(IO_BANK1)
+    push    af          
+    call    _get_varbase          ; HL = VarAdr
+    ld      a,BAS_BUFFR           ; Write sysvars
+    out     (IO_BANK1),a
+    inc     hl
+    ld      (hl),e
+    inc     hl
+    ld      (hl),c
+    inc     hl
+    ld      (hl),b
+    pop     af
+    out     (IO_BANK1),a
     ret
 
 abs_hl:
