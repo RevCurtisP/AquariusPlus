@@ -191,6 +191,68 @@ file_save_tmpbuffr:
     ld      a,TMP_BUFFR           ; A = SavePg
     jp      file_save_paged 
 
+; Input: HL = StrDsc
+file_save_screen_asc:
+    call    dos_open_write        ; A = FilDsc
+    ret     m 
+    ld      e,a                   ; E = FilDsc
+    ld      d,25                  ; D = LinCnt
+    call    get_strbuf_addr       ; HL = BufAdr
+    push    de                    ; Stack = LinCnt+FilDsc, RtnAdr
+    ld      de,SCREEN
+    ld      bc,(LINLEN)
+    ld      b,0
+.loop
+    call    _buff_line
+    ex      de,hl                 ; DE = BufAdr, HL = ScrPtr
+    ex      (sp),hl               ; H = LinCnt, L = FilDsc; Stack = ScrPtr, RtnAdr
+    ld      a,l
+    push    de                    ; Stack = BufAdr, SrcPtr, RtnAdr
+    push    bc                    ; Stack = LinLen, BufAdr, SrcPtr, RtnAdr
+    inc     c
+    inc     c                     ; Bump for CRLF
+    call    esp_write_bytes       ; 
+    pop     bc                    ; BC = LinLen; Stack = BufAdr, SrcPtr, RtnAdr
+    pop     de                    ; DE = BufAdr; Stack = SrcPtr, RtnAdr
+    jp      m,.done               ; If error, Discard SrcPtr and return
+    dec     h                     ; Count down
+    ex      (sp),hl               ; HL = SrcPtr; Stack = LinCnt + FilDsc
+    ex      de,hl                 ; DE = SrcPtr, HL = BifAdr
+    jr      nz,.loop
+    xor     a                     ; Return no error
+.done
+    pop     hl                    ; L - FilDsc; Stack = RtnAdr
+    jp      _close                ; Close file and return
+
+    
+; Input: DE = SrcAdr, HL = BufAdr, C = StrLen
+; Output: DE = NxtAdr
+_buff_line:
+    push    hl                    ; Stack = BufAdr, RtnAdr
+    push    bc                    ; Stack = StrLen, BufAdr, RtnAdr
+    ld      b,c
+    ld      c,' '
+.loop
+    ld      a,(de)
+    cp      $7F
+    jr      z,.spaceit
+    cp      c
+    jr      nc,.copychr
+.spaceit
+    ld      a,c
+.copychr
+    ld      (hl),a
+    inc     hl
+    inc     de
+    djnz    .loop
+    ld      (hl),13
+    inc     hl
+    ld      (hl),10
+    inc     hl 
+    pop     bc                    ; BC = StrLen; Stack = BufAdr, RtnAdr
+    pop     hl                    ; HL = BufAdr; Stack = RtnAdr
+    ret
+
 ;-----------------------------------------------------------------------------
 ; Save tilemap from Video RAM
 ;  Input: HL: String descriptor address

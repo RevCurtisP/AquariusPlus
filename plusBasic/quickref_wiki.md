@@ -365,6 +365,7 @@
  - **SAVE FNKEYS _filespec_** - Save function key definitions to file.
  - **[SAVE PALETTE _p_,_filespec_](BASIC-Palette-Statements-and-Functions#save-palette)** - Save palette contents to file.
  - **[SAVE SCREEN _filespec_{{,PALETTE},BORDERMAP}](BASIC-Screen-IO-Statements-and-Functions#save-screen)** - Save text screen to file.
+ - **[SAVE SCREEN _filespec_,ASC](BASIC-Screen-IO-Statements-and-Functions#save-screen)** - Save text screen to text file.
  - **SAVE SCREEN ATTR _filespec_** - _Not implemented_.
  - **SAVE SCREEN CHR _filespec_** - _Not implemented_.
  - **[SAVE TILEMAP _filespec_](BASIC-Tile-File-Statements#save-tilemap)** - Save tile map to file.

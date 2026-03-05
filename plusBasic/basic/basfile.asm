@@ -448,7 +448,7 @@ ST_LOAD:
     jp      z,_load_colormap
 
     cp      SCRNTK                ; $F6
-    jp      z,_load_screen
+    jp      z,ST_LOAD_SCREEN
 
     cp      XTOKEN                ; $FE
     jp      z,_load_extended
@@ -899,9 +899,7 @@ _load_tileset:
     pop     de                    ;   DE = TileNo; Stack = RtnAdr
     push    bc                    ;   Stack = TxtPtr, RtnAdr
     ld      iy,file_load_tileset  ;   Load tiles
-    jr      _aux_call_bdf
-
-
+    jp      _aux_call_bdf
 
 ;-----------------------------------------------------------------------------
 ; Bitmap file formats
@@ -915,7 +913,7 @@ _save_bitmap:
     sub     2                     ; 0 = 1bpp, 1 = 4bpp
     jp      c,IMERR               ; If GfxMode < 2, Invalid mode error
     ld      iy,file_save_bitmap
-    jr      _aux_call_bdf
+    jp      _aux_call_bdf
 _load_bitmap:
     ld      iy,file_load_bitmap
 _load_map:
@@ -941,77 +939,7 @@ _do_colormap:
     rst     CHRGET
     SYNCHKT ORTK                  ; Require OR
     SYNCHKT MAPTK                 ; Require MAP
-    jr      nz,_strdesc_auxcall
     jr      _strdesc_auxcall
-
-
-;-----------------------------------------------------------------------------
-; .SCR format: 2048 byte Screen+Color RAM ($3000-$3FFF)
-; .SCRN format
-;  40 column: 1024 byte Screen RAM + 1024 byte Color RAM {+ 32 byte palette} {+ 1 byte border flag}
-;  80 column: 2048 byte Screen RAM + 2048 byte Color RAM {+ 32 byte palette} {+ 1 byte border flag}
-;-----------------------------------------------------------------------------
-;; ToDo: Add SAVE/LOAD SCREEN CHR/ATTR
-; CD /u/tmp/scrn
-; SAVE SCREEN "screen-only.scrn"
-; SAVE SCREEN "screen+palt.scrn",PALETTE
-; SAVE SCREEN "screen+bmap.scrn",BORDERMAP
-; SAVE SCREEN "screen+both.scrn",PALETTE,BORDERMAP
-; SAVE SCREEN #2,"screen2.scrn"
-; SAVE SCREEN #7,"screen7.scrn"
-; LOAD SCREEN ATTR "/au/assets/rect80.sclr"
-; SCREEN 1:SAVE SCREEN "/t/test41.scrn"
-; SCREEN 2:SAVE SCREEN "/t/test42.scrn"
-; SCREEN 3:SAVE SCREEN "/t/test80.scrn"
-; SCREEN 1:LOAD SCREEN "/t/test41.scrn":PAUSE
-; SCREEN 2:LOAD SCREEN "/t/test42.scrn":PAUSE
-; SCREEN 3:LOAD SCREEN "/t/test80.scrn":PAUSE
-; SCREEN 2:LOAD SCREEN "/t/testrm.scrn":PAUSE
-; SCREEN 2:LOAD SCREEN "/t/testpl.scrn":PAUSE
-; SET FILE ERROR OFF:SCREEN 1:LOAD SCREEN "/t/test42.scrn":PRINT ERR
-; SET FILE ERROR OFF:LOAD SCREEN "/t/array.caq":PRINT ERR
-_save_screen:
-    ld      de,file_save_screen   ; DE = AuxAdr
-    ld      c,0                   ; Mode = Save
-    jr      _screen
-_load_screen:
-    rst     CHRGET                ; Skip SCREEN
-    call    screen_suffix
-    dec     b                     ; CHR
-    jp      z,GSERR
-    ld      de,file_load_color    ; DE = AuxAdr
-    dec     b                     ; ATTR
-    jr      z,_cur_scrn
-    ld      de,file_load_screen   ; DE = AuxAdr
-    byte    $0E                   ; LD C, over CHRGET; C = $D7 (Load)
-_screen:
-    rst     CHRGET                ; Skip SCREEN
-_screen_args:
-    push    de                    ; Stack = AuxAdr, RtnAdr
-    push    bc                    ; Stack = IsLoad, AuxAdr, RtnAdr
-    cp      a,'#'                 ; 
-    ld      e,0                   ; ScrnNum = 0 (Current Screen)
-    jr      nz,_cur_scrn          ; If CurChr is #
-    ld      c,8                   ;   Limit byte to 0 - 7
-    call    skip_get_byte_capped  ;   E = ScrnNum
-    call    get_comma             ;   MOERR if no comma
-_cur_scrn:
-    ld      a,e                   ; A = ScrnArgs
-    push    af                    ; Stack = ScrnArgs, IsLoad, AuxAdr, RtnAdr
-    call    get_strdesc_arg       ; HL = FilDsc; Stack = TxtPtr, ScrnArgs, IsLoad, AuxAdr, RtnAdr
-    pop     de                    ; DE = TxtPtr; Stack = ScrnArgs, IsLoad, AuxAdr, RtnAdr
-    pop     af                    ; A = ScrnArgs; Stack = IsLoad, AuxAdr, RtnAdr
-    pop     bc                    ; C = IsLoad; Stack = AuxAdr, RtnAdr
-    ex      de,hl                 ; DE = FilDsc, HL = TxtPtr
-    sla     c                     ; Set Carry if Loading
-    jr      c,_screen_aux_call    ; If Saving
-    ld      iy,bas_save_screen_opts
-    call    aux_call              ;   A = SaveArgs
-_screen_aux_call:
-    pop     iy                    ; IY = AuxAdr; Stack = RtnAdr
-    push    hl                    ; Stack = TxtPtr, RtnAdr
-    ex      de,hl                 ; HL = FilDsc
-    jr      _aux_call_bdf         ; Do LOAD/SAVE
 
 skip_strdesc_auxcall:
     rst     CHRGET                ; Skip SCREEN
@@ -1021,6 +949,106 @@ _aux_call_bdf:
     call    aux_call
     call    c,_badfile
     jp      _pop_hl_doserror
+
+
+;-----------------------------------------------------------------------------
+; .SCR format: 2048 byte Screen+Color RAM ($3000-$3FFF)
+; .SCRN format
+;  40 column: 1024 byte Screen RAM + 1024 byte Color RAM {+ 32 byte palette} {+ 1 byte border flag}
+;  80 column: 2048 byte Screen RAM + 2048 byte Color RAM {+ 32 byte palette} {+ 1 byte border flag}
+;-----------------------------------------------------------------------------
+;; ToDo: Add SAVE/LOAD SCREEN CHR/ATTR
+; CD /u/tmp/scrn/
+; SAVE SCREEN "/u/tmp/scrn/uscreen-only.scrn"
+; SAVE SCREEN "/u/tmp/scrn/screen+palt.scrn",PALETTE
+; SAVE SCREEN "/u/tmp/scrn/screen+bmap.scrn",BORDERMAP
+; SAVE SCREEN "/u/tmp/scrn/screen+both.scrn",PALETTE,BORDERMAP
+; SAVE SCREEN #2,"/u/tmp/scrn/screen2.scrn"
+; SAVE SCREEN #7,"/u/tmp/scrn/screen7.scrn"
+; SCREEN 1:SAVE SCREEN "/u/tmp/scrn/test41.scrn"
+; SCREEN 2:SAVE SCREEN "/u/tmp/scrn/test42.scrn"
+; SCREEN 3:SAVE SCREEN "/u/tmp/scrn/test80.scrn"
+; SCREEN 1:LOAD SCREEN "/u/tmp/scrn/test41.scrn":PAUSE
+; SCREEN 2:LOAD SCREEN "/u/tmp/scrn/test42.scrn":PAUSE
+; SCREEN 3:LOAD SCREEN "/u/tmp/scrn/test80.scrn":PAUSE
+; SCREEN 2:LOAD SCREEN "/u/tmp/scrn/testrm.scrn":PAUSE
+; SCREEN 2:LOAD SCREEN "/u/tmp/scrn/testpl.scrn":PAUSE
+; SET FILE ERROR OFF:SCREEN 1:LOAD SCREEN "/t/test42.scrn":PRINT ERR
+; SET FILE ERROR OFF:LOAD SCREEN "/t/array.caq":PRINT ERR
+; SAVE SCREEN "/u/tmp/scrn/screen.asc",ASC
+ST_SAVE_SCREEN:
+    rst     CHRGET                ; Skip SCREEN
+    ld      de,file_save_screen   ; DE = AuxAdr
+    push    de                    ; Stack = AuxAdr, RtnAdr
+    call    _screen_num           ; E = ScrnNum (0 = Current)
+    push    de                    ; Stack = ScrnNum, AuxAdr
+    call    get_strdesc_arg       ; HL = FilDsc; Stack = TxtPtr, ScrnNum, AuxAdr, RtnAdr
+    ex      de,hl                 ; DE = FilDsc
+    pop     hl                    ; HL = TxtPtr; Stack = ScrnNum, AuxAdr, RtnAdr
+    pop     bc                    ; C = ScrnNum; Stack = AuxAdr, RtnAdr
+    ld      iy,bas_screen_asc
+    call    aux_call
+    jr      nz,.save_opts         ; If ,ASC, do it
+    ld      iy,file_save_screen_asc
+    jr      _pop_screen_call_bdf  ; Else
+.save_opts
+    ld      a,c                   ; A = ScrArgs
+    ld      iy,bas_save_screen_opts
+    call    aux_call              ;   A = ArgsOpts
+    jr      _screen_aux_call_bdf
+ 
+_pop_screen_call_bdf:
+    ex      (sp),hl               ; HL = AuxAdr; Stack = TxtPtr, RtnAdr
+    jr      _exdehl_aux_call_bdf
+
+_screen_aux_call_bdf:
+    pop     iy                    ; IY = AuxAdr; Stack = RtnAdr
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+_exdehl_aux_call_bdf:
+    ex      de,hl                 ; HL = FilDsc
+    jp      _aux_call_bdf         ; Do LOAD/SAVE
+
+_screen_num:
+    cp      a,'#'                 ; 
+    ld      e,0                   ; ScrnNum = 0 (Current Screen)
+    ret     nz                    ; If CurChr is #
+    ld      c,8                   ;   Limit byte to 0 - 7
+    call    skip_get_byte_capped  ;   E = ScrnNum
+    jp      get_comma             ;   Require comma and return
+
+_screen_no_args:
+    push    de
+    call    get_strdesc_arg       ; HL = FilDsc; Stack = TxtPtr, ScrnNum, AuxAdr, RtnAdr
+
+; LOAD SCREEN ATTR "u/au/assets/rect80.sclr"
+ST_LOAD_SCREEN:
+    rst     CHRGET                ; Skip SCREEN
+    call    screen_suffix         ; A = 1 for CHR, 2 for ATTRS 
+    ld      a,b                   ; A = ScrnSfx
+    cp      3                     ; Set Z if no suffix
+    dec     b                     ; CHR
+    jp      z,GSERR
+    dec     b                     ; ATTR
+    ld      de,file_load_color
+    jp      z,.args
+    ld      de,file_load_screen
+.args
+    push    de                    ; Stack = AuxAdr, RtnAdr
+    push    af                    ; Stack = ScrnSfx, RtnAdr
+    call    _screen_num           ; E = ScrnNum (0 = Current)
+    push    de                    ; Stack = ScrnNum, ScrnSfx, AuxAdr, RtnAdr
+    call    get_strdesc_arg       ; HL = StrDsc; Stack = TxtPtr, ScrnArgs, ScrnSfx, AuxAdr, RtnAdr
+    ex      de,hl                 ; DE = StrDsc
+    pop     hl                    ; HL = TxtPtr; Stack = ScrnNum, ScrnSfx, AuxAdr, RtnAdr
+    pop     bc                    ; B = ScrnNum; Stack = ScrnSfx, AuxAdr, RtnAdr
+    pop     af                    ; A = ScrSfx, Stack = AuxAdr, RtnAdr
+    jr      nz,_screen_aux_call_bdf
+    ld      iy,bas_screen_asc
+    call    aux_call
+    ld      a,b                   ; A = ScrSfx
+    ld      iy,file_load_screen_asc
+    jr      z,_pop_screen_call_bdf    
+    jr      _screen_aux_call_bdf
 
 ;-----------------------------------------------------------------------------
 ; RUN command - hook 24
@@ -1210,7 +1238,7 @@ ST_SAVE:
     cp      FNTK
     jp      z,.save_fnkeys
     cp      SCRNTK
-    jp      z,_save_screen
+    jp      z,ST_SAVE_SCREEN
     cp      TILETK
     jp      z,_save_tile
     cp      COLTK

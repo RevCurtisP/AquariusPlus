@@ -15,6 +15,7 @@ PAGE_MAINRAM3       equ 59
 PAGE_SYSROM0        equ 60
 PAGE_SYSROM1        equ 61
 PAGE_SYSROM2        equ 62
+PAGE_SYSROM3        equ 63
 PAGE_CART_NONSCRAM  equ 63
 
 PAGE_CART_NSRO      equ PAGE_CART_NONSCRAM | BANK_READONLY
@@ -373,6 +374,10 @@ load_sysrom:
     ld      hl,$4000
     ld      de,$8000
     call    esp_read_bytes
+    ld      a,PAGE_SYSROM3
+    out     (IO_BANK2),a
+    ld      hl,$4000
+    ld      de,$8000
     call    esp_close
     xor     0
     ret

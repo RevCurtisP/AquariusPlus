@@ -704,7 +704,7 @@ ST_PUT_SCREEN:
     ld      iy,screen_put
     jr      _do_put
 
-screen_suffix:
+ screen_suffix:
     ld      b,3
     cp      XTOKEN                ; If Not Extended Token
     ret     nz                    ;   Return 3 (SCREEN+COLOR)

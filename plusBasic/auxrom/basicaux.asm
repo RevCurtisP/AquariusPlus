@@ -745,10 +745,28 @@ bas_write_string:
     pop     af                    ; A = FilDsc; Stack = RtnAdr
     jp      esp_write_bytes       ; Write and return
 
+; Returns Z if ,ASC
+bas_screen_asc:
+    ld      a,(hl)
+    cp      ','                   ; If not ,
+    ret     nz                    ;   Return
+    push    hl
+    rst     CHRGET                ; Skip ,
+    cp      ASCTK                 ; If not ASC
+    jp      nz,POPHRT             ;   Restore TxtPtr and Return
+    ex      af,af'
+    rst     CHRGET                ; Skip ASC
+    pop     af                    ; Discard old TxtPtr
+    ex      af,af'
+    ret
+
 ; Called from SAVE SCREEN
-; On entry: A = SaveArgs
+; On entry: A = SaveArgs: 0-1: Screen Number
 ;          HL = TxtPtr
-; Returns: A = SaveArgs + SaveOpts
+; Returns: A = Option Bits
+;          0-1: Screen Number, 2: Use Swap Buffer
+;            6: Save BordermMap, 7: Save Palette
+;          A = ASCTK, carry set if ,ASC
 ; Clobbers: B
 bas_save_screen_opts:
     ex      af,af'                ; A' = SaveArgs

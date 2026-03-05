@@ -1,4 +1,7 @@
 # plusBASIC Release History
+ - v0.71d (2026-03-05)
+    - Added syntax `SAVE SCREEN filename$,ASC`
+    - Fixed display of `Incomplete System ROM!` if full _sysrom.bin_ doesn't load
  - v0.71c (2026-03-04)
     - Fixed `LINE (x,y)-(x,y)` incorrectly updating `POSX` and `POSY`
  - v0.71b (2026-03-01)

@@ -39,6 +39,12 @@ file_load_screen:
     ld      iy,screen_read_tmpbfr
     jr      _load_read_gfx
 
+; Input: HL = StrDsc
+file_load_screen_asc:
+    ret
+    push    hl                    ; Stack = StrDsc, RtnAdr
+
+
 ;-----------------------------------------------------------------------------
 ; Load tilemap into Video RAM
 ;  Input: HL: String descriptor address

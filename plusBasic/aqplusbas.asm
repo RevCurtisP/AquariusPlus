@@ -95,7 +95,7 @@ null_desc:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.71c"
+    db "v0.71d"
     db 0
 plusver_len equ $ - plus_version
 plus_len   equ   $  - plus_text
@@ -127,7 +127,7 @@ init_banks:
     out     (IO_BANK2), a
     
     call    _check_gfxrom
-    call    z,_load_gfxrom
+    call    nz,_load_gfxrom
 
     ; Call routines in Aux ROM
     ld      a,ROM_AUX_RO
@@ -168,7 +168,7 @@ _check_gfxrom:
     ld      hl,ROM_SIG_ADDR
     ld      b,gfxrom_len
     call    string_cmp
-    ret     z
+    ret     
 
 ; Expects ROM_GFX_PG in IO_BANK3
 _load_gfxrom:
@@ -1245,7 +1245,7 @@ _sysfile_end
     include "basicgfx.asm"        ; BASIC graphics.asm subcalls
     include "chrset.asm"          ; Character set routines
     include "color.asm"           ; Color Palette module
-    include "gfxbitmap.asm"       ; Bitmap graphics routines
+    include "auxbitmap.asm"       ; Bitmap graphics routines
     include "screen.asm"          ; Text screen graphics subroutines
     include "screen_gfx.asm"      ; Screen graphics routines    
     include "screen_swap.asm"     ; Screen buffering routines
@@ -1271,7 +1271,7 @@ _sysfile_end
     include "basgfx.asm"          ; BASIC sprite core routines
     include "gfxboot.asm"
     include "gfxcommon.asm"
-    include "gfxrombitmap.asm"
+    include "gfxbitmap.asm"
     include "gfxsprites.asm"      ; Sprite graphics module
     include "tile.asm"            ; Tile graphics module
 

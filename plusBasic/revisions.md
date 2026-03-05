@@ -1,4 +1,18 @@
 # plusBASIC Revision History
+ - v0.71d (2026-03-05)
+    - Modified code in _aqplusbas.asm_ that loads GfxROM page if not present
+    - Fixed code in _aqplusbas.asm_ that displays `Incomplete System ROM!` if full _sysrom.bin_ didn't load
+    - Moved  _gfx.asm_ from _auxrom/_ to _gfxrom/_
+    - Moved _jump_gfx.asm_ from _auxrom/_ to _gfxrom/_
+    - Renamed _auxrom/gfxbitmap.asm_ to _auxrom/auxbitmap.asm_
+    - Renamed _gfxrom/gfxrombitmap.asm_ to _gfxrom/gfxbitmap.asm_
+    - Deleted now unused file _auxrom/sprite.asm_
+    - Added routine _file_save_screen_asc_ to _auxrom/filesave.asm_
+    - Added routine _bas_screen_asc_ to _auxrom/basicaux.asm_
+    - Renamed routine _\_load_screen_ to _ST_LOAD_SCREEN_ in _basic/basfile.asm_
+    - Renamed routine _\_save_screen_ to _ST_SAVE_SCREEN_ in _basic/basfile.asm_
+    - Refactored `SAVE SCREEN` code and added `SAVE SCREEN filename$,ASC`
+    - Updating _boot/boot.bas_ to load GfxROM portion of _sysrom.bin_
  - v0.71c (2026-03-04)
     - Moved the following routines from _auxrom/gfx.asm_ to new file _gfxrom/gfxrombitmap.asm_
       - _bitmap_init_vars_
@@ -10,7 +24,7 @@
  - v0.71b (2026-03-01)
     - Replaced `call GTBYTC` in _\_get_tile_props_ with `call _skip_parse_attr`
       - This allows string attrs in `SET TILEMAP` and `FILL TILEMAP`
-    - Moved _bas_set_tile_str_, _bas_set_tile_ary_ from _auxrom/basicgfx.asm_ to _gfxrom/basgfx.asm_
+    - Moved _bas_set_tile_str_, _bas_set_tile_ary_ from _auxrom/basicgfx.a_sm_ to _gfxrom/basgfx.asm_
     - Moved _tile_address_ from _auxrom/fileload.asm_ to _gfxrom/tile.asm_
     - Moved _gfx_convert_rect_ in _auxrom/gfx.asm_ to _gfxrom_convert_rect_ in _gfxrom/gfxcommon.asm_
     - Moved _gfx_rect_size_ in _auxrom/gfx.asm_ to _gfxrom_rect_size_ in _gfxrom/gfxcommon.asm_
