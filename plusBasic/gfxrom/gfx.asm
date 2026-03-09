@@ -8,9 +8,10 @@
 ;-----------------------------------------------------------------------------
 gfx_initvars:
     call    init_screen_buffers
+    call    init_screen_buffers
     call    init_screen_vars
-    call    bitmap_init_screen
-    ret
+    ld      iy,bitmap_init_screen
+    jp      gfxrom_call
     
 ;-----------------------------------------------------------------------------
 ; Get character definition from character RAM

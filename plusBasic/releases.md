@@ -1,4 +1,6 @@
 # plusBASIC Release History
+ - v0.71e (2026-03-09)
+    - Fixed 80-column bloxel mode bug in `FILL BITMAP COLOR`
  - v0.71d (2026-03-05)
     - Added syntax `SAVE SCREEN filename$,ASC`
     - Fixed display of `Incomplete System ROM!` if full _sysrom.bin_ doesn't load

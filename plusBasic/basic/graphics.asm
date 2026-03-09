@@ -329,8 +329,8 @@ ST_SCREEN:
     ld      a,c
     out     (IO_VCTRL),a          ; Write back out
 
-    ld      iy,bitmap_set_mode_nobuff
-    jp      aux_call              ; Set EXT_FLAGS and return
+    ld      iy,bitmap__set_mode_nobuff
+    jp      gfxrom_call           ; Set EXT_FLAGS and return
 
 .update_bit
     ld      a,b                   ; A = Option bit
@@ -669,7 +669,6 @@ _parse_get_string:
     pop     af                    ; A = StrLen; Stack = RtnAdr
     ret
 
-
 ;------------------------------------------------------------------------
 ; Print character to 1bpp Bitmap Screen
 ; PUT CHR (x1,y1),char
@@ -689,7 +688,12 @@ ST_PUT_CHR:
     pop     de                    ; DE = Row; Stack = Col, RtnAdr
     pop     bc                    ; BC = Col; Stack = RtnAdr
     ld      iy,bas_put_chr
-    jp      aux_call_fcerr        ; Execute PUT CHR and return
+aux_call_fcerr:
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    call    aux_call
+    jp      c,FCERR               ; Error if illegal coordinate
+    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
+    ret
 
 ;------------------------------------------------------------------------
 ; PUT SCREEN Statement

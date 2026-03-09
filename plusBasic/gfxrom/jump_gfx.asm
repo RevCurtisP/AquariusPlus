@@ -13,8 +13,8 @@ _jump_table:
     jp      bitmap_init_vars      ; C000 Initialize bitmap system variables
     jp      bitmap_set_mode       ; C003 Set bitmap mode system variable from video control register
     jp      bitmap_read_sysvars   ; C006 Read bitmap system variables
-    jp      bitmap_read_color     ; C009 Get Bitmap Draw Colors
-    jp      bitmap_write_color    ; C00C Set Bitmap Draw Colors
+    jp      bitmap_get_color      ; C009 Get Bitmap Draw Colors
+    jp      bitmap_set_color      ; C00C Set Bitmap Draw Colors
     jp      bitmap_clear_screen   ; C00F Clear Bitmap
     jp      bitmap_fill_byte      ; C012 Fill Bitmap with Byte
     jp      bitmap_fill_color     ; C015 Fill Bitmap Color RAM

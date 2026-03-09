@@ -25,13 +25,19 @@ FN_GETBORDER:
     ld      iy,border_get_color
 .getborder
     cp      '$'
-    jp      nz,gfx_call_sngflt
+    jr      nz,gfx_call_sngflt
 skip_aux_call_bufin:
     rst     CHRGET                ; Skip '$'
 aux_call_bufcin:
     push    hl
     call    aux_call
     jp      BUFCIN
+
+gfx_call_sngflt:
+    call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
+    call    gfx_call              ; A = Color
+    jp      SNGFLT
+
 
 ;-----------------------------------------------------------------------------
 ; Set border to character to space and colors to default

@@ -18,7 +18,7 @@ ST_CLEAR_BITMAP:
     ld      b,0
     call    nz,_color_args
     ld      iy,bitmap_clear_screen
-    jp      gfx_call_preserve_hl
+    jp      gfxrom_call_preserve_hl
 
 ;-----------------------------------------------------------------------------
 ; FILL BITMAP [BYTE byte] [COLOR foreground,background]
@@ -43,7 +43,7 @@ ST_FILL_BITMAP:
     ld      b,a                   ;   B = FillByte
     push    hl                    ;   Stack = TxtPtr, RtnAdr
     ld      iy,bitmap_fill_byte
-    call    gfx_call              ;   Do the fill
+    call    gfxrom_call           ;   Do the fill
     pop     hl                    ;   HL = TxtPtr; Stack = RtnAdr
     call    CHRGT2                ;   Reget next character
     ret     z                     ;   Return if end of statement
@@ -54,7 +54,7 @@ _fill_color:
     call    get_bitmap_mode
     push    hl                    ; Stack = TxtPtr, RtnAdr
     ld      iy,bitmap_fill_color
-    call    gfx_call              ; Do the fill
+    call    gfxrom_call           ; Do the fill
     jp      c,TOERR
     pop     hl                    ; HL = TxtPtr; Stack = NxtChr, RtnAdr
     ret
@@ -71,7 +71,7 @@ _fill_color:
 ST_COLOR:
     SYNCHKT ORTK                  ; Require OR
     call    _color_args
-    ld      iy,bitmap_write_color
+    ld      iy,bitmap_set_color
     call    gfxrom_call_preserve_hl
     jp      no_more               ; Error if any more operands
 
@@ -100,12 +100,11 @@ _color_args:
 FN_COLOR:
     rst     CHRGET                ; Skip COL
     SYNCHKT ORTK                  ; Require OR
-    ld      iy,bitmap_read_color
-gfx_call_sngflt:
+    ld      iy,bitmap_get_color
+gfxrom_call_sngflt:
     call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
-    call    gfx_call              ; A = Color
+    call    gfxrom_call           ; A = Color
     jp      SNGFLT
-
 
 ;----------------------------------------------------------------------------
 ; LINE Statement
@@ -133,9 +132,12 @@ ST_LINE:
     exx                           ; BC' = x1, DE' = y1
     pop     bc                    ; BC = x0; Stack = y0, RtnAdr
     pop     de                    ; DE = y0; Stack = RtnAdr
-gfx_call_fcerr:
     push    hl
-    jp      gfx_call_fc_popret
+;gfx_call_fc_popret:
+    call    gfx_call              ;   Write tile to tilemap
+    jp      c,FCERR               ;   Error if invalid coordinates
+    pop     hl                    ;   HL = TxtPtr; Stack = RtnAdr
+    ret
 
 _line_opt:
     SYNCHKC ','                   ; Require comma
@@ -190,7 +192,7 @@ gfxrom_call_floatde:
 FN_POINT:
     rst     CHRGET                ; Skip POINT
 _point:
-    ld      de,bitmap_getpixel
+    ld      de,bitmap__getpixel
     call    _do_pixel_no_color
     jp      push_hl_labbck_sngflt
 
@@ -205,13 +207,13 @@ _point:
 ; SCREEN 0,3:PSET (159,0),2:PAUSE
 ; SCREEN 0,3:PSET (159,0),0:PAUSE
 ST_PSET:
-    ld      de,bitmap_setpixel
+    ld      de,bitmap__setpixel
     or      $FF
     jr      _do_pixel
 
 ; SCREEN 0,2:PRESET (160,0)
 ST_PRESET:
-    ld      de,bitmap_resetpixel
+    ld      de,bitmap__resetpixel
 _do_pixel_no_color:
     xor     a
 _do_pixel:
@@ -220,17 +222,14 @@ _do_pixel:
     call    paren_coords          ; C = Y, DE = X
     pop     af
     call    nz,_pset_opt          ; A = Color
-iy_aux_call_fcerr
     pop     iy                    ; IY = SubAdr; Stack = RtnAdr
     cp      XORTK
-    jr      nz,aux_call_fcerr
-    ld      iy,bitmap_togglepixel
-aux_call_fcerr:
-    push    hl                    ; Stack = TxtPtr, RtnAdr
-    call    aux_call
-    jp      c,FCERR               ; Error if illegal coordinate
-    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
-    ret
+    jr      nz,gfxrom_call_push_fcerr
+    ld      iy,bitmap__togglepixel
+gfxrom_call_push_fcerr:
+    push    hl
+    jp      gfxrom_call_fcerr
+
 
 ; Return optional color arg in A
 _pset_opt:

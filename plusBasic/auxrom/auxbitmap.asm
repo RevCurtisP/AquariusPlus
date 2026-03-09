@@ -2,15 +2,6 @@
 ; Bitmap Graphics Routines
 ;====================================================================
 
-bitmap_init_screen:
-    ld      a,2
-    ld      (GFX_FLAGS),a
-    xor     a
-    call    bitmap_clear_screen
-    xor     a
-    ld      (GFX_FLAGS),a
-    ret
-
 ;-----------------------------------------------------------------------------
 ; Set bitmap mode system variable from video control register
 ; Input: A: Use buffer: $FF = Yes, 0 = No
@@ -74,108 +65,6 @@ _get_varbase:
     sla     l                     ; HL = SysVar Base (0-12)
     ret
 
-;-----------------------------------------------------------------------------
-; Fill Bitmap with Byte
-; Input: A: Mode (0: 40col, 1: 80col, 2: 1bpp, 3: 4bpp)
-;        B: Byte
-; Clobbered: AF,AF',BC,DE,HL
-;-----------------------------------------------------------------------------
-bitmap_fill_byte:
-    ld      a,(GFX_FLAGS)
-    and     GFXM_MASK             ; A = GfxMode
-    ld      d,b                   ; D = FillByte
-    ld      hl,$3000+40
-    ld      bc,1000-40
-    jp      z,sys_fill_mem_d
-    ld      hl,$3000+80
-    ld      bc,2000-80
-    dec     a
-    jp      z,sys_fill_mem_d
-    ld      hl,BANK1_BASE+BMP_BASE
-    dec     a
-    ld      bc,8000
-    jr      z,_fill_video_ram
-    ld      bc,16000
-_fill_video_ram:
-    in      a,(IO_BANK1)          ; A = OrigPg
-    ex      af,af'                ; A' = OrigPg
-    ld      a,VIDEO_RAM           ; A = NewPg
-    out     (IO_BANK1),a          ; Map video RAM
-    ld      a,d                   ; A = FillByte
-    call    sys_fill_mem          ; Do the fill
-    ex      af,af'                ; A = OrigPg
-    out     (IO_BANK1),a          ; Restore original page
-    ret
-
-;-----------------------------------------------------------------------------
-; Clear Bitmap
-; Input: B: Screen colors ($FF = use default)
-; Clobbered: AF,AF',BC,DE,HL
-;-----------------------------------------------------------------------------
-bitmap_clear_screen:
-    call    _get_varbase          ; HL = VarAdr
-    in      a,(IO_BANK1)
-    ex      af,af'
-    ld      a,BAS_BUFFR           ; Write sysvars
-    out     (IO_BANK1),a
-    inc     hl
-    ld      (hl),0
-    inc     hl
-    ld      (hl),0
-    inc     hl
-    ld      (hl),0
-    ex      af,af'
-    out     (IO_BANK1),a
-    ld      a,(GFX_FLAGS)
-    and     GFXM_MASK
-    push    af                    ; Stack = BmpMode, RtnAdr
-    push    bc                    ; Stack = Color, BmpMode, RtnAdr
-    and     GFXM_1BPP             ; If Text Screen
-    ld      b,$A0                 ;   Fill with $A0
-    jr      z,.fill               ; Else
-    ld      b,0                   ;   Fill with $00
-.fill
-    call    bitmap_fill_byte      ; Do the fill
-    pop     bc                    ; B = Color, Stack = BmpMode, RtnAdr
-    pop     af                    ; A = BmpMode; Stack = RtnAdr
-    cp      GFXM_4BPP             ; If 4bpp bitmap
-    ret     z                     ;   Return
-    ld      a,b                   ; A = Color
-    or      a                     ; If color = 0
-    call    z,bitmap_read_color   ;   Get default colors
-;-----------------------------------------------------------------------------
-; Fill Bitmap Color RAM
-; Input: B: Color Byte
-; Clobbered: AF,AF',BC,DE,HL
-;-----------------------------------------------------------------------------
-bitmap_fill_color:
-    ld      a,(GFX_FLAGS)
-    and     GFXM_MASK
-    ld      d,b
-    ld      hl,$3400+40
-    ld      bc,1000-40            ; BC = Count
-    or      a
-    jp      z,sys_fill_mem_d
-    dec     a
-    jr      z,.fill80
-    ld      hl,BANK1_BASE+BMP_BASE+8192
-    ld      bc,1000
-    dec     a
-    jr      z,_fill_video_ram
-    scf
-    ret
-.fill80
-    ld      hl,$3000+80
-    ld      bc,2000-40
-    in      a,(IO_VCTRL)
-    or      VCTRL_TEXT_PAGE       ; Select color page
-    out     (IO_VCTRL),a
-    ex      af,af'
-    call    sys_fill_mem_d
-    ex      af,af'
-    and     $FF-VCTRL_TEXT_PAGE
-    out     (IO_VCTRL),a
-    ret
 
 ;-----------------------------------------------------------------------------
 ; Fill 1bpp Color Map Rectangle with Byte

@@ -1,4 +1,16 @@
 # plusBASIC Revision History
+ - v0.71e (2026-03-09)
+    - Moved _bitmap_init_screen_, _bitmap_fill_byte_, _bitmap_clear_screen_, and _bitmap_fill_color_ from _auxrom/auxbitmap.asm_ to _gfxrom/gfxbitmap.asm_
+    - Renamed _bitmap_write_color_ to _bitmap_set_color_
+    - Copied _bitmap_read_color_ in _bitmap_read_color_ to _bitmap_get_color_ in _gfxrom\gfxbitmap.asm_
+    - Copied  _bitmap_setpixel_ in _auxrom/auxbitmap.asm_ to _bitmap__setpixel_ in new file _gfxrom\gfxpixel.asm_
+    - Copied  _bitmap_resetpixel_ in _auxrom/auxbitmap.asm_ to _bitmap__resetpixel_ in new file _gfxrom\gfxpixel.asm_
+    - Copied  _bitmap_togglepixel_ in _auxrom/auxbitmap.asm_ to _bitmap__togglepixel_ in new file _gfxrom\gfxpixel.asm_
+    - Copied _bitmap_set_mode_ in _bitmap__set_mode_nobuff_ to _bitmap__set_mode_ in _gfxrom\gfxbitmap.asm_
+    - Copied _bitmap_set_mode_nobuff_ in _bitmap__set_mode_nobuff_ to _bitmap__set_mode_nobuff_ in _gfxrom\gfxbitmap.asm_
+    - Renamed _\_get_varbase_ to _get_varbase_ in _gfxrom\gfxbitmap.asm_
+    - Copies _\_check_rect_ in _auxrom\auxbitmap.asm_ to _bitmap_check_rect_ in _gfxrom/gfxbitmap.asm_
+    - Fixed _bitmap_fill_color_ (and `FILL BITMAP COLOR`) writing past offset 1999 in 80-column bloxel mode
  - v0.71d (2026-03-05)
     - Modified code in _aqplusbas.asm_ that loads GfxROM page if not present
     - Fixed code in _aqplusbas.asm_ that displays `Incomplete System ROM!` if full _sysrom.bin_ didn't load
