@@ -1,4 +1,11 @@
 # plusBASIC Revision History
+ - v0.71f (2026-03-10)
+    - Added new functions `RGBR()`, `RGBG()`, and `RGBB()`
+    - Fixed cold start not filling 1bpp colormap
+    - Changed args from Y in `BC`and X in `DE` to X in `BC` and Y in `DE` in kernel routines
+      `bitmap__getpixel`, `bitmap__resetpixel`, `bitmap__setpixel`, and `bitmap__togglepixel`
+    - Fixed pixel drawing routines allowing X coordinate of 160 in 80 column bloxel and 4bpp modes
+    - Fixed pixel drawing routines incorrectly positioning X coordinates greater than 127 in 80 column bloxel mode
  - v0.71e (2026-03-09)
     - Moved _bitmap_init_screen_, _bitmap_fill_byte_, _bitmap_clear_screen_, and _bitmap_fill_color_ from _auxrom/auxbitmap.asm_ to _gfxrom/gfxbitmap.asm_
     - Renamed _bitmap_write_color_ to _bitmap_set_color_

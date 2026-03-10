@@ -7,6 +7,7 @@ bitmap_init_screen:
     ld      a,2
     ld      (GFX_FLAGS),a
     xor     a
+    ld      b,a                   ; Use default colors
     call    bitmap_clear_screen
     xor     a
     ld      (GFX_FLAGS),a
@@ -101,7 +102,7 @@ bitmap__set_mode:
 
 ;-----------------------------------------------------------------------------
 ; Clear Bitmap
-; Input: B: Screen colors ($FF = use default)
+; Input: B: Screen colors ($00 = use default)
 ; Clobbered: AF,AF',BC,DE,HL
 ;-----------------------------------------------------------------------------
 bitmap_clear_screen:

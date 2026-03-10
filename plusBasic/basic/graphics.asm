@@ -1170,7 +1170,9 @@ gfx_romcall_finbck:
 ;-----------------------------------------------------------------------------
 ; GETPALETTE Function
 ; Syntax: GETPALETTE$(palette#)
+;         GETPALETTE$(palette#,index)
 ; palette# is a integer between 0 and 3
+; index is an integer between 0 and 15
 ;-----------------------------------------------------------------------------
 FN_GETPALETTE:
     call    skip_dollar_paren     ; Require $(
@@ -1646,6 +1648,7 @@ _sprite_rect:
 ;-----------------------------------------------------------------------------
 ; RGB(r,g,b)
 ; RGB("RGB")
+; RGB($"GB0R")
 ; RGB$(r,g,b)
 ; RGB$("RGB")
 ;-----------------------------------------------------------------------------
@@ -1658,6 +1661,8 @@ _sprite_rect:
 ; PRINT RGB("123")
 ; PRINT RGB("1234")
 ; PRINT RGB("16,32,48",",")
+; PRINT RGBR($"23F1")
+; PRINT HEX$(RGB($"23F1"))
 ; PRINT HEX$(RGB$("16,32,48",","))
 FN_RGB:
     inc     hl                    ; Skip RGB
@@ -1666,16 +1671,19 @@ FN_RGB:
     jr      z,_rgbhex
     cp      DECTK
     jr      z,_rgbdec
-    cp      '$'                   ;
-    push    af                    ; Stack = '$', RtnAdr
-    call    z,CHRGTR              ; If $, skip it
+    push    af
+    cp      '('                   ; If single character suffix
+    call    nz,CHRGTR             ;   Skip it
     SYNCHKC '('                   ; Require Open Paren
     scf                           ; Carry Set = Allow `string$`,del`
     call    _get_rgb              ; DE = RGB value
     SYNCHKC ')'                   ; Require Close Paren
-    pop     af                    ; A = '$'; Stack = RrnAdr
+    pop     af                    ; A = SfxChr; Stack = RrnAdr
     push    hl                    ; Stack = TxtPtr, RtnAdr
+    cp      '$'
     jr      z,.string             ; If not RGB$()
+    ld      iy,bas_rgbx
+    call    gfx_call              ; Check for R, G, or B
     ld      bc,LABBCK
     push    bc                    ;   Push return address for FLOAT_DE
     jp      FLOAT_DE              ;   Float RGB and return.

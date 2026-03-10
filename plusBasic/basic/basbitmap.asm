@@ -219,7 +219,7 @@ _do_pixel_no_color:
 _do_pixel:
     push    de                    ; Stack = SubAdr, RtnAdr
     push    af
-    call    paren_coords          ; C = Y, DE = X
+    call    SCAND                 ; BC = X, DE = Y
     pop     af
     call    nz,_pset_opt          ; A = Color
     pop     iy                    ; IY = SubAdr; Stack = RtnAdr

@@ -1,4 +1,8 @@
 # plusBASIC Release History
+ - v0.71f (2026-03-10)
+    - Added new functions `RGBR()`, `RGBG()`, and `RGBB()`
+    - Fixed `PSET()`, `PRESET()`, and `POINT()` allowing X coordinate of 160 in 80 column bloxel and 4bpp modes
+    - Fixed `PSET()`, `PRESET()`, and `POINT()` incorrectly positioning X coordinates greater than 127 in 80 column bloxel mode
  - v0.71e (2026-03-09)
     - Fixed 80-column bloxel mode bug in `FILL BITMAP COLOR`
  - v0.71d (2026-03-05)

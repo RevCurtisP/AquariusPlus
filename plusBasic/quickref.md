@@ -347,6 +347,9 @@
  - **RESTORE SCREEN** - Copy respective screen buffer to current text screen.
  - **RETURN {_expression_{,...}}** - Resume program execution after GOSUB, optionally returning results.
  - **RGB(«_r_,_g_,_b_»|«_rgbstr_»|«_string_,_delimiter_»)** - Return integer representing a single palette entry.
+ - **RGBB(«_r_,_g_,_b_»|«_rgbstr_»|«_string_,_delimiter_»)** - Return blue component of a single palette entry.
+ - **RGBG(«_r_,_g_,_b_»|«_rgbstr_»|«_string_,_delimiter_»)** - Return green component of a single palette entry.
+ - **RGBR(«_r_,_g_,_b_»|«_rgbstr_»|«_string_,_delimiter_»)** - Return red component of a single palette entry.
  - **RGB$(«_r_,_g_,_b_»|«_rgbstr_»|«_string_,_delimiter_»)** - Return string representing a single palette entry.
  - **RGBDEC$(_string_{,_char_})** - Convert binary RGB value to decimal red,green, and blue.
  - **RGBHEX$(_string_{,_char_})** - Convert binary RGB value to decimal red,green, and blue.

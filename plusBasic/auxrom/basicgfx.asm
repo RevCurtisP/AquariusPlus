@@ -51,14 +51,27 @@ bas_rgb_string:
     call    _get_nybble           ;   A = Green
     push    af                    ;   Stack = Green, Red, RtnAdr
     inc     de                    ;   Skip Green LSB
-    jr      .do_blue              ; Else
+    jr      .do_blue
 .not_hex6
-    cp      3                     ;   If StrLen <> 3
-    jp      nz,SLERR              ;     String length error
+    cp      3           
+    jr      nz,.not_hex3          ; Else If StrLen = 3
     call    _get_nybble           ;   A = Red
     push    af                    ;   Stack = Red, RtnAdr
     call    _get_nybble           ;   A = Green
     push    af                    ;   Stack = Green, Red, RtnAdr
+    jr      .do_blue              ; Else
+.not_hex3
+    cp      2                     ;   If StrLen <> 2
+    jp      nz,SLERR              ;     String length error
+    ld      a,(de)
+    ex      af,af'
+    inc     de
+    ld      a,(de)                ; DE = RGB
+    and     $0F
+    ld      d,a
+    ex      af,af'
+    ld      e,a
+    ret
 .do_blue
     call    _get_nybble           ; A = Blue
     ld      e,a                   ; E = Blue
@@ -110,6 +123,40 @@ _rgbhexdec:
     push    hl
     call    jump_ix
     pop     hl
+    ret
+
+; On entry: A = Function Suffix, D = Red, E = Green+Blue
+; On Exit: DE = Result
+bas_rgbx:
+    cp      '('                   ; If no suffix
+    ret     z                     ;   Return RGB value
+    ex      de,hl                 ; H = Red, L = Green+Blue
+    ld      d,0                   ; Clear result MSB
+    cp      'R'
+    jr      z,.red
+    cp      'G'
+    jr      z,.green
+    cp      'B'
+    jr      z,.blue
+    jp      SNERR
+.red
+    ld      a,h
+    and     $0F
+    ld      e,a
+    ret
+.green
+    ld      a,l
+    and     $F0
+    rra
+    rra
+    rra
+    rra
+    ld      e,a
+    ret
+.blue
+    ld        a,l
+    and       $0F
+    ld        e,a
     ret
 
 ;Input: BC: StrLen, DE: StrAdr
