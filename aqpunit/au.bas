@@ -1,6 +1,6 @@
 100 REM Run unit tests
 105 SET SPEED 3
-110 CLEAR 4096,$BEFF:POKE $BFF8,STRING$(12,0)
+110 CLEAR 4096,$BEFF:POKE $BFF6,STRING$(10,0)
 111 '$BFF6 - Chain Test
 112 '$BFF7 - Run Continuous
 113 '$BFF8 - Total Passed
@@ -32,6 +32,7 @@
 256 POKE $BFF6,C
 
 310 IF Q=2 THEN SAVE "out/_results.txt",^Z$:'Create empty file
+315 SCREEN 3:CLS
 320 RUN P$+".baq"
 
 400 _select_test:

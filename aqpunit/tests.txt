@@ -1,3 +1,4 @@
+| bm.baq  | BITMAP and COLOR   |
 | bt.baq  | BIT and BIN$       |
 | cp.baq  | COPY and COMPARE   |
 | cs.baq  | COPY SCREEN        |

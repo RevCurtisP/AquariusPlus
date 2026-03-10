@@ -6,6 +6,7 @@ Run the .baq file to run the associated tests.
 
 | Program | Tests              |
 | :------ | :----------------- |
+| bm.baq  | BITMAP and COLOR   |
 | bt.baq  | BIT and BIN$       |
 | cp.baq  | COPY and COMPARE   |
 | cs.baq  | COPY SCREEN        |
@@ -33,6 +34,14 @@ Run the .baq file to run the associated tests.
 | vl.baq  | Variables/Literals |
 
 ## Test Details
+- bm.baq 
+  - COLOR
+  - COLOR _fg_
+  - COLOR _fg_,_bg_
+  - CLEAR BITMAP
+  - FILL BITMAP BYTES _byte_
+  - FILL BITMAP COLOR _fg_,_bg_
+  - FILL BITMAP BYTES _byte_ COLOR _fg_,_bg_
 - bt.baq 
   - BIN$(_long_)
   - BIT(_long_,_bitno_)
@@ -41,7 +50,6 @@ Run the .baq file to run the associated tests.
   - SET BIT _string_,_bitno_
   - RESET BIT _long_,_bitno_
   - RESET BIT _string_,_bitno_
-  
 - cp.baq 
   - COPY _fromaddr_,_count_ TO _toaddr_
   - COMPARE(_fromaddr_,_toaddr_,_count_)
@@ -70,7 +78,7 @@ Run the .baq file to run the associated tests.
   - ASC(_string_)
   - ASC$(_string_)
   - BYTE(_string_)
-  - CHR$(_byte)
+  - CHR$(_byte_)
   - DEC(_string_)
   - HEX$(_long_)
   - HEX$(_string_)
@@ -138,6 +146,9 @@ Run the .baq file to run the associated tests.
   - RGB("RGB")
   - RGB$("RGB")
   - RGB(_string_,_delimiter_)
+  - RGBR(_rgbstr_)
+  - RGBG(_rgbstr_)
+  - RGBB(_rgbstr_)
   - RGB$(_string_,_delimiter_)
   - RGBDEC$(_rgbstr_)
   - RGBDEC$(_rgbstr_,_delimiter_)
@@ -192,9 +203,11 @@ Run the .baq file to run the associated tests.
   - SAVE PALETTE ... ,HEX
   - SAVE PALETTE ... ,RGB
 - ss.baq
-  - LOAD SCREEN
-  - LOAD SCREEN ATTR
-  - LOAD SCREEN CHR
+  - SAVE SCREEN _filespec_$
+  - SAVE SCREEN _filespec_$,PALETTE
+  - SAVE SCREEN _filespec_$,BORDERMAP
+  - SAVE SCREEN _filespec_$,PALETTE,BORDERMAP
+  - LOAD SCREEN _filespec_$
 - sx.baq
   - SAVE/LOAD BITMAP
   - SAVE/LOAD COLORMAP

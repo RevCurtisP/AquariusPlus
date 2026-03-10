@@ -35,7 +35,12 @@
 
 258 IF QU THEN PRINT ".";
 
-270 'ToDo: Add SET PALETTE and GET PALETTE tests
+260 GOSUB _assert:ARGS "RGBR(%%)=%%" % (R$,R)
+262 GOSUB _assert:ARGS "RGBG(%%)=%%" % (R$,G)
+264 GOSUB _assert:ARGS "RGBB(%%)=%%" % (R$,B)
+
+268 IF QU THEN PRINT ".";
+
 
 290 NEXT
 295 IF QU THEN PRINT
