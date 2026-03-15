@@ -81,13 +81,13 @@ set_color_off:
 _write_screenctl:
     ld      (SCREENCTL),a
     and     SCRCOLOR              ; Isolate Screen Control bit
-    ld      c,a                   ; C = ScrColor
+    ld      e,a                   ; C = ScrColor
 .direct
-    call    in_direct
+    call    in_direct             ; Clobbers B and C
     ret     c                     ; If Direct mode
     ld      a,(BASYSCTL)
     and     $FF-SCRCOLOR
-    or      c
+    or      e
     ld      (BASYSCTL),a
     ret
 

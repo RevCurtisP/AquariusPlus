@@ -259,28 +259,6 @@ _restore_rect
     jp      (ix)                  ; Return
 
 
-;-----------------------------------------------------------------------------
-; Draw horizontal line of bloxels or pixels
-;  Input: A: Draw color - 0 = Default (4bpp), None (1bpp/Bloxel)
-;        BC: Start X-coordinate
-;        DE: Y-coordinate
-;        HL: End X-coordinate
-;      Sets: Carry if coordinates out of range
-; Clobbered: A, HL
-;-----------------------------------------------------------------------------
-bitmap_hline:
-    call    _line_addr
-    push    hl                    ; Stack = EndX, RtnAdr
-    push    de                    ; Stack = Y, EndX, RtnAdr
-    exx                           ; BC' = StartX, DE' = Y
-    pop     de                    ; DE = Y
-    pop     bc                    ; BC = EndX
-    exx                           ; BC = StartX, DE = Y, BC' = EndX, DE = Y
-    call    _check_rect           ; HL Clobbered
-    ret     c
-    
-_hline40:
-    call    _bloxel40             ; DE = Coordinate Address
 
 ;-----------------------------------------------------------------------------
 ; Draw line of bloxels or pixels screen

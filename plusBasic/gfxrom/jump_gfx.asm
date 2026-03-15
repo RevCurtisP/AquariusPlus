@@ -86,7 +86,7 @@ _jump_table:
     jp      screen_get            ; C0D2 Read Text Screen Section into Buffer
     jp      screen_put            ; C0D5 Write Text Screen Section from Buffer
     jp      screen_fill           ; C0D8 Fill Text or Color Screen Rectangle with Byte
-    jp      just_ret              ; C0DB 
+    jp      screen__rect          ; C0DB 
     jp      screen_mode           ; C0DE Return current Text Screen 
     jp      just_ret              ; C0E1 
 ; screen_swap.asm <<Text Screen Switch and Swap>>

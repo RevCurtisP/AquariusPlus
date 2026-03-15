@@ -98,6 +98,7 @@ home_cursor:
 ;-----------------------------------------------------------------------------
 ; DEF statement stub
 ;-----------------------------------------------------------------------------
+; ToDo: Create separate FN_DEF_BYTE
 ST_DEF:
     cp      FNTK
     jr      z,ST_DEF_FN
@@ -107,6 +108,8 @@ ST_DEF:
     jp      z,ST_DEF_TILE           ; DEF TILELIST
     cp      RGBTK
     jp      z,ST_DEF_RGB            ; DEF RGBLIST
+    cp      COLTK
+    jp      z,ST_DEF_COLOR          ; DEF COLORLIST
     cp      USRTK
     jr      z,ST_DEF_USR
     cp      XTOKEN

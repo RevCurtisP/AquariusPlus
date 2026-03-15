@@ -1,4 +1,8 @@
 # plusBASIC Release History
+ - v0.71g (2026-03-15)
+    - Added optional `HL'`, `DE'`, and `BC'` arguments to `CALL ... ARGS ... `
+    - Added syntax `RECT (x0,y0)-(x1,y1),{boxchars$},colorlist$`
+    - Added statement `DEF COLORLIST`
  - v0.71f (2026-03-10)
     - Added new functions `RGBR()`, `RGBG()`, and `RGBB()`
     - Fixed `PSET()`, `PRESET()`, and `POINT()` allowing X coordinate of 160 in 80 column bloxel and 4bpp modes

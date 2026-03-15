@@ -1,9 +1,16 @@
 # plusBASIC Revision History
+ - v0.71g (2026-03-15)
+    - Fixed BASIC restarting whne pressing Ctrl-C during display of splash screen
+    - Added statement `DEF COLORLIST`
+    - Refactored _ST_RECT_ and added syntax `RECT (x0,y0)-(x1,y1),{boxchars$},colorlist$`
+    - Added optional `HL'`, `DE'`, and `BC'` arguments to `CALL ... ARGS ... `
+    - Replaced routine _bas_rect_ in AuxROM with _bas__rect_ in GfxROM
+    - Modified bloxel mode _bitmap_setpixel_, _bitmap_resetpixel_, and _bitmap_togglepixel_ to use table lookup
  - v0.71f (2026-03-10)
     - Added new functions `RGBR()`, `RGBG()`, and `RGBB()`
     - Fixed cold start not filling 1bpp colormap
     - Changed args from Y in `BC`and X in `DE` to X in `BC` and Y in `DE` in kernel routines
-      `bitmap__getpixel`, `bitmap__resetpixel`, `bitmap__setpixel`, and `bitmap__togglepixel`
+      _bitmap__getpixel_, _bitmap__resetpixel_, _bitmap__setpixel_, and _bitmap__togglepixel_
     - Fixed pixel drawing routines allowing X coordinate of 160 in 80 column bloxel and 4bpp modes
     - Fixed pixel drawing routines incorrectly positioning X coordinates greater than 127 in 80 column bloxel mode
  - v0.71e (2026-03-09)

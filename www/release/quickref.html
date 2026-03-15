@@ -108,6 +108,12 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>_<em>label</em></strong> - Line label. Valid at the beginining of a line, or as the operand of a GOTO or GOSUB.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>'comment</strong> - Shortcut for REM. Valid at the beginning of a line, or after a statement terminating colon.</li>
 </ul>
+<h2 id="direct-mode-aliases">Direct Mode Aliases</h2>
+<ul class="contains-task-list">
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>/</strong> -  Performs the <code>LIST</code> command.</li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>$</strong> -  Performs the <code>DIR</code> command.</li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>LS</strong> -  Performs the <code>DIR</code> command.</li>
+</ul>
 <h2 id="statements-and-functions">Statements and Functions</h2>
 <ul class="contains-task-list">
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>ABS(<em>float</em>)</strong> - Return absolute value of expression.<!--math--></li>
@@ -200,6 +206,10 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>ELSE</strong> - <em>Not implemented</em>.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>END</strong> - Terminate program execution.<!--flow--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>ENDKEY</strong> - Return key used to exit enhanced INPUT.</li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>ERR</strong> - Return last error code.<!--error--></li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>ERRLINE</strong> - Return line number of last error.</li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>ERR$</strong> - Return error message of last error.<!--error--></li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>ERR$(<em>errno</em>)</strong> - Return error message of specified error code.<!--error--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>ERASE <em>*array</em>{,<em>*array</em>...}</strong> - Delete arrays.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>EVAL(<em>string</em>)</strong> - Evaluate expression in string.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>EXP(<em>float</em>)</strong> - Return argument to the power of mathematical constant <em>e</em>.</li>
@@ -363,7 +373,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>POSX</strong> - Return last pixel or bloxel x-position.<!--pixel--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>POSY</strong> - Return 1bpp pixel or bloxel y-position.<!--pixel--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>PRESET (<em>x</em>,<em>y</em>)</strong> - Erase bloxel or pixel.<!--pixel--></li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>PRINT __ {@(<em>x</em>,<em>y</em>)} TAB(<em>integer</em>)|SPC(<em>integer</em>)|<em>expression</em>|;|,</strong> - Display data on screen.<!--print--></li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>PRINT @(<em>x</em>,<em>y</em>)|TAB(<em>integer</em>)|SPC(<em>integer</em>)|<em>expression</em>|;|,</strong> - Display data on screen.<!--print--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>PSG <em>register</em>,<em>byte</em>{,...}</strong> - Write bytes to PSG register</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>PSG <em>register</em>,<em>byte</em>{;...}</strong> - Not implemented</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>PSET (<em>x</em>,<em>y</em>){,color}</strong> - Draw bloxel or pixel.<!--pixel--></li>
@@ -373,7 +383,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>READ <em>var</em>{,...}</strong> - Read values from DATA statements into variables.<!--READ--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>READ *<em>array</em>{,...}</strong> - Read values from DATA statements into an array.<!--READ--></li>
 <li>[.] <strong>READ #<em>channel</em>,^<em>strvar</em>,<em>length</em>)</strong> - Read string from open file.<!--fileio--></li>
-<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>RECT (<em>x</em>,y_)-(<em>x</em>,<em>y</em>){,<em>drawchars</em>}{,<em>fgcolor</em>,<em>bgcolor</em>}}</strong> - Draw rectangle on text screen.<!--screen--></li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>RECT (<em>x</em>,y_)-(<em>x</em>,<em>y</em>){,{,�_fgcolor_,_bgcolor_�|�_drawcolors_�}}</strong> - Draw rectangle on text screen.<!--screendraw--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>REM <em>text</em></strong> - Denotes comment.<!--REM--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>RENAME <em>filespec</em> TO <em>filespec</em></strong> - Rename file or directory</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>RESUME <em>lineref</em></strong> - Clear error condition and continues program execution at specified line</li>
@@ -393,6 +403,9 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>RESTORE SCREEN</strong> - Copy respective screen buffer to current text screen.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>RETURN {<em>expression</em>{,...}}</strong> - Resume program execution after GOSUB, optionally returning results.<!--flow--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>RGB(�_r_,<em>g</em>,<em>b_�|�_rgbstr_�|�_string</em>,_delimiter_�)</strong> - Return integer representing a single palette entry.<!--palette--></li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>RGBB(�_r_,<em>g</em>,<em>b_�|�_rgbstr_�|�_string</em>,_delimiter_�)</strong> - Return blue component of a single palette entry.<!--palette--></li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>RGBG(�_r_,<em>g</em>,<em>b_�|�_rgbstr_�|�_string</em>,_delimiter_�)</strong> - Return green component of a single palette entry.<!--palette--></li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>RGBR(�_r_,<em>g</em>,<em>b_�|�_rgbstr_�|�_string</em>,_delimiter_�)</strong> - Return red component of a single palette entry.<!--palette--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>RGB$(�_r_,<em>g</em>,<em>b_�|�_rgbstr_�|�_string</em>,_delimiter_�)</strong> - Return string representing a single palette entry.<!--palette--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>RGBDEC$(<em>string</em>{,<em>char</em>})</strong> - Convert binary RGB value to decimal red,green, and blue.<!--palette--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>RGBHEX$(<em>string</em>{,<em>char</em>})</strong> - Convert binary RGB value to decimal red,green, and blue.<!--palette--></li>
@@ -411,6 +424,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>SAVE FNKEYS <em>filespec</em></strong> - Save function key definitions to file.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>SAVE PALETTE <em>p</em>,<em>filespec</em></strong> - Save palette contents to file.<!--palette--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" checked="checked" /> <strong>SAVE SCREEN <em>filespec</em>{{,PALETTE},BORDERMAP}</strong> - Save text screen to file.<!--screenio--></li>
+<li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>SAVE SCREEN <em>filespec</em>,ASC</strong> - Save text screen to text file.<!--screenio--></li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>SAVE SCREEN ATTR <em>filespec</em></strong> - <em>Not implemented</em>.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>SAVE SCREEN CHR <em>filespec</em></strong> - <em>Not implemented</em>.</li>
 <li class="task-list-item"><input disabled="disabled" type="checkbox" /> <strong>SAVE TILEMAP <em>filespec</em></strong> - Save tile map to file.<!--tilefile--></li>

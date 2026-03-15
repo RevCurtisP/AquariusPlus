@@ -327,7 +327,7 @@
  - **READ _var_{,...}** - Read values from DATA statements into variables.
  - **READ \*_array_{,...}** - Read values from DATA statements into an array.
  - **READ #_channel_,^_strvar_,_length_)** - Read string from open file.
- - **RECT (_x_,y_)-(_x_,_y_){,_drawchars_}{,_fgcolor_,_bgcolor_}}** - Draw rectangle on text screen.
+ - **RECT (_x_,y_)-(_x_,_y_){,{_drawchars_}{,«_fgcolor_,_bgcolor_»|«_drawcolors_»}}** - Draw rectangle on text screen.
  - **REM _text_** - Denotes comment.
  - **RENAME _filespec_ TO _filespec_** - Rename file or directory
  - **RESUME _lineref_** - Clear error condition and continues program execution at specified line

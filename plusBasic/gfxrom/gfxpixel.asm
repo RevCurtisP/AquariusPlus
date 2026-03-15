@@ -29,6 +29,7 @@ bitmap__getpixel:
     jr      _dopixel
 
 
+
 ;-----------------------------------------------------------------------------
 ; Erase pixel on 1 bpp bitmap screen
 ;  Input: C: Y-coordinate
@@ -176,7 +177,7 @@ _bloxel_color
 ; 80 column bloxel subroutines
 ;--------------------------------------------------------------------
 _getpixelc:
-    call    _calc_4bpp_addr;         ; AF = NybOfs, DE = BytAdr; BC = PxlOfs
+    call    pixel_4bpp_addr;         ; AF = NybOfs, DE = BytAdr; BC = PxlOfs
     ld      hl,_getmask
     add     hl,bc                 ; HL = MskAdr
     ld      b,(hl)                ; B = BitMsk
@@ -244,66 +245,38 @@ _psetcolor:
     ld      b,a
     ret
 
-;new bloxel40
-; BC = X-Coord, DE = Y-Coord
-    ld      h,d                   ; HL = Y-Coord
-    ld      l,e
-    add     hl,hl
-    add     hl,de                 ; HL = Index into Table (Y-Coord * 3)
-    ld      de,_offsets40
-    add     hl,de                 ; HL = Table Addr
+
+;-----------------------------------------------------------------------------
+; Calculate Bloxel Screen Address and Bitmask
+;   Input: BC: X-Coord
+;          DE: Y-Coord
+; Output: A: Bitmask
+;        DE: BitMask Address
+;        HL: Screen Address
+; Clobbered: BC, HL
+;-----------------------------------------------------------------------------
+_bloxel80
+    ld      h,high(gfx_bloxeltab80)
+    jr      _bloxel
+_bloxel40:
+    ld      h,high(gfx_bloxeltab40)
+_bloxel:
+    ld      a,e                   ; A = Y-Coord
+    add     a,a                   ; A = A * 2
+    add     a,e                   ; A = A * 3
+    ld      l,a                   ; HL = TblAdr
     ld      e,(hl)
     inc     hl
     ld      d,(hl)                ; DE = LineAdr
     inc     hl
-    ld      a,(hl)                ; A  = BITTAB offset
-    ex      de,hl                 ; HL = LineAdr
-    
-    add     hl,bc
-
-
-_bloxel80:
-    ld      a,80
-    byte    $21                   ; LD HL, over LD A,
-;-----------------------------------------------------------------------------
-; Calculate 40 column bitmap coordinate address
-;   Input: BC: X-Coord (was Y-coordinate)
-;          DE: Y-Coord (was X-coordinate)
-; Output: A: Current Bloxel Char (0 if not a valid character)
-;        DE: BITTAB Offset
-;        HL: Screen Address
-; Clobbered: BC, HL
-;-----------------------------------------------------------------------------
-_bloxel40:
-    ld      a,40                  ; A = LinLen
-    push    bc                    ; Stack = X-Coord, RtnAdr
-    ld      b,0
-    ld      c,a                   ; BC = LineLen
-    ld      a,e                   ; A = Y-Coord
-    ld      hl,SCREEN             
-    add     hl,bc                 ; HL = PxlAdr
-.lineloop
-    cp      3        
-    jr      c,.xcoord             ; If A >= 3
-    sub     a,3                   ;   A = A - 3
-    add     hl,bc                 ;  PxlAdr += LinLen
-    jr      .lineloop
-.xcoord
-    rlca                          ; A = PxlOfs
-    pop     bc                    ; BC = X-Coord
-    srl     c                     ; Column = X-Coord / 2
-    jr      nc,.even              ; If Odd
-    inc     a                     ;   Bump PxlOfs
-.even
-    add     hl,bc                 ; PxlAdr += Column
-    ld      de,BITTAB
-.pxlloop
-    or      a
-    jr      z,.pxlmask
-    inc     de
-    dec     a
-    jr      .pxlloop
-.pxlmask
+    ld      a,(hl)                ; A = BitMskOfs
+    ex      de,hl                 ; HL = LinAdr
+    srl     b
+    rr      c                     ; BC = X-Coord / 2
+    adc     0                     ; Bump BitMskOfs if X-Coord is odd
+    add     hl,bc                 ; HL = ScrAdr
+    ld      d,high(gfx_bloxel_mask)
+    ld      e,a
     ld      a,(hl)                ; A = ScrnChr
     or      $A0                   ; Convert to GfxChr
     xor     (hl)                  ; Clear bits 5 and 7
@@ -312,7 +285,7 @@ _bloxel40:
 
 ; 1bpp pixel subroutines
 _getpixelm:
-    call    _calc_1bpp_addr           ; DE = BytAdr; BC = PxlOfs
+    call    pixel_1bpp_addr       ; DE = BytAdr; BC = PxlOfs
     ld      hl,_ormask1bpp
     add     hl,bc                 ; HL = MskAdr
     ld      b,(hl)                ; B = BitMsk
@@ -323,7 +296,7 @@ _getpixelm:
     ret
 
 _resetpixelm:
-    call    _calc_1bpp_addr           ; DE = BytAdr; BC = PxlOfs
+    call    pixel_1bpp_addr       ; DE = BytAdr; BC = PxlOfs
     ld      hl,_andmask1bpp
     add     hl,bc                 ; HL = MskAdr
     ld      b,(hl)                ; B = BitMsk
@@ -357,7 +330,7 @@ _setpixelm:
     ret
 
 _pixelm:
-    call    _calc_1bpp_addr       ; DE = BytAdr; BC = PxlOfs
+    call    pixel_1bpp_addr       ; DE = BytAdr; BC = PxlOfs
     ld      hl,_ormask1bpp
     add     hl,bc                 ; HL = MskAdr
     ld      b,(hl)                ; B = BitMsk
@@ -368,11 +341,12 @@ _pixelm:
 ; Calculate 1bpp bitmap coordinate address
 ;  Input: BC: X-coordinate
 ;         DE: Y-coordinate
-; Output: BC: Pixel Offset
+; Output:  A: BitMask
+;         BC: Pixel Offset
 ;         DE: Coordinate Address
 ; Clobbered: HL
 ;-----------------------------------------------------------------------------
-_calc_1bpp_addr:
+pixel_1bpp_addr:
     ld      a,c
     and     7                     ; A = X mod 8
     ex      af,af'                ; A' = PxlOfs
@@ -388,6 +362,9 @@ _calc_byte_addr:
     ex      af,af'
     ld      b,0
     ld      c,a                   ; BC = PxlOfs
+    ld      hl,_ormask1bpp
+    add     hl,bc                 ; HL = MskAdr
+    ld      a,(hl)                ; B = BitMsk
     ret
 
 ;-----------------------------------------------------------------------------
@@ -426,7 +403,7 @@ _setpixelc:
     and     $0F                   ; Force to 0 - 15
 _pixelc:
     push    af                    ; Stack = Color, RtnAdr
-    call    _calc_4bpp_addr       ; AF = NybOfs, DE = BytAdr; BC = PxlOfs
+    call    pixel_4bpp_addr       ; AF = NybOfs, DE = BytAdr; BC = PxlOfs
     pop     hl                    ; H = Color; Stack = RtnAdr
     ld      a,h                   ; A = Color (preserve flags)
     rla                           
@@ -486,7 +463,7 @@ _setpixel_addr:
 ;         DE: Coordinate Address
 ; Clobbered: HL
 ;-----------------------------------------------------------------------------
-_calc_4bpp_addr:
+pixel_4bpp_addr:
     ld      a,c
     and     1                     ; A = Nybble
     ex      af,af'                ; A' = PxlOfs
@@ -565,34 +542,3 @@ _setmask:
     byte    $0F,$F0
 _getmask:
     byte    $F0,$0F
-
-; Line Address LSB, MSB, ormask offset
-; Bloxel Address = Line Address + Column / 2
-; Bit Mask Offset = Line Offset + (Column & 1)
-_offsets40:
-    byte  $28,$30,$00, $50,$30,$02, $78,$30,$04, $A0,$30,$00, $C8,$30,$02, $F0,$30,$04
-    byte  $18,$31,$00, $40,$31,$02, $68,$31,$04, $90,$31,$00, $B8,$31,$02, $E0,$31,$04
-    byte  $08,$32,$00, $30,$32,$02, $58,$32,$04, $80,$32,$00, $A8,$32,$02, $D0,$32,$04
-    byte  $F8,$32,$00, $20,$33,$02, $48,$33,$04, $70,$33,$00, $98,$33,$02, $C0,$33,$04
-    byte  $E8,$33,$00, $10,$34,$02, $38,$34,$04, $60,$34,$00, $88,$34,$02, $B0,$34,$04
-    byte  $D8,$34,$00, $00,$35,$02, $28,$35,$04, $50,$35,$00, $78,$35,$02, $A0,$35,$04
-    byte  $C8,$35,$00, $F0,$35,$02, $18,$36,$04, $40,$36,$00, $68,$36,$02, $90,$36,$04
-    byte  $B8,$36,$00, $E0,$36,$02, $08,$37,$04, $30,$37,$00, $58,$37,$02, $80,$37,$04
-    byte  $A8,$37,$00, $D0,$37,$02, $F8,$37,$04, $20,$38,$00, $48,$38,$02, $70,$38,$04
-    byte  $98,$38,$00, $C0,$38,$02, $E8,$38,$04, $10,$39,$00, $38,$39,$02, $60,$39,$04
-    byte  $88,$39,$00, $B0,$39,$02, $D8,$39,$04, $00,$3A,$00, $28,$3A,$02, $50,$3A,$04
-    byte  $78,$3A,$00, $A0,$3A,$02, $C8,$3A,$04, $F0,$3A,$00, $18,$3B,$02, $40,$3B,$04
-
-_offsets80:
-    byte    $50,$40,$00, $A0,$40,$02, $F0,$40,$04, $40,$41,$00, $90,$41,$02, $E0,$41,$04
-    byte    $30,$42,$00, $80,$42,$02, $D0,$42,$04, $20,$43,$00, $70,$43,$02, $C0,$43,$04
-    byte    $10,$44,$00, $60,$44,$02, $B0,$44,$04, $00,$45,$00, $50,$45,$02, $A0,$45,$04
-    byte    $F0,$45,$00, $40,$46,$02, $90,$46,$04, $E0,$46,$00, $30,$47,$02, $80,$47,$04
-    byte    $D0,$47,$00, $20,$48,$02, $70,$48,$04, $C0,$48,$00, $10,$49,$02, $60,$49,$04
-    byte    $B0,$49,$00, $00,$4A,$02, $50,$4A,$04, $A0,$4A,$00, $F0,$4A,$02, $40,$4B,$04
-    byte    $90,$4B,$00, $E0,$4B,$02, $30,$4C,$04, $80,$4C,$00, $D0,$4C,$02, $20,$4D,$04
-    byte    $70,$4D,$00, $C0,$4D,$02, $10,$4E,$04, $60,$4E,$00, $B0,$4E,$02, $00,$4F,$04
-    byte    $50,$4F,$00, $A0,$4F,$02, $F0,$4F,$04, $40,$50,$00, $90,$50,$02, $E0,$50,$04
-    byte    $30,$51,$00, $80,$51,$02, $D0,$51,$04, $20,$52,$00, $70,$52,$02, $C0,$52,$04
-    byte    $10,$53,$00, $60,$53,$02, $B0,$53,$04, $00,$54,$00, $50,$54,$02, $A0,$54,$04
-    byte    $F0,$54,$00, $40,$55,$02, $90,$55,$04, $E0,$55,$00, $30,$56,$02, $80,$56,$04

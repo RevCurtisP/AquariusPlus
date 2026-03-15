@@ -250,6 +250,10 @@ get_varbase:
     sla     l                     ; HL = SysVar Base (0-12)
     ret
 
+
+; Input: BC = X1, DE = Y1, BC' = X2, DE' = Y2
+; Returns Carry set if out of bounds
+; Clobbers: A, HL
 bitmap_check_rect:    
     ld      a,(GFX_FLAGS)
     and     GFXM_MASK             ; Mask bits and set flags

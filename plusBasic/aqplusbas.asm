@@ -95,7 +95,7 @@ null_desc:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.71f"
+    db "v0.71g"
     db 0
 plusver_len equ $ - plus_version
 plus_len   equ   $  - plus_text
@@ -163,16 +163,20 @@ _desc_espfile:
 ; Check for Graphics ROM and load if not present
 _check_gfxrom:
     ld      a,ROM_GFX_PG
-    out     (IO_BANK3), a
+    out     (IO_BANK3),a
     ld      de,gfxrom_text
     ld      hl,ROM_SIG_ADDR
     ld      b,gfxrom_len
     call    string_cmp
+    ld      a,ROM_EXT_RO
+    out     (IO_BANK3),a
     ret     
 
 ; Expects ROM_GFX_PG in IO_BANK3
 _load_gfxrom:
-   ld      hl,_desc_altfile
+    ld      a,ROM_GFX_PG
+    out     (IO_BANK3),a
+    ld      hl,_desc_altfile
     call    _open_sysrom
     jp      p,.load_it
     ld      hl,_desc_espfile
@@ -195,6 +199,8 @@ _load_gfxrom:
     call    esp_cmd
     ld      a,l
     call    esp_send_byte
+    ld      a,ROM_EXT_RO
+    out     (IO_BANK3),a
     jp      esp_get_result
 
 _open_sysrom:
@@ -1268,11 +1274,14 @@ _sysfile_end
     assert !($C1FF<$)             ; ROM full!
     dc $C200-$,$76
 
-    include "basgfx.asm"          ; BASIC sprite core routines
+    include "gfxtables.asm"       ; Lookup tables for graphics routines   
+    include "basgfx.asm"          ; BASIC graphics core routines
     include "gfxboot.asm"
     include "gfxcommon.asm"
     include "gfxbitmap.asm"
+    include "gfxline.asm"         ; Line drawing routines
     include "gfxpixel.asm"        ; Pixel drawing routines
+    include "gfxscreen.asm"       ; Screen drawing routines
     include "gfxsprites.asm"      ; Sprite graphics module
     include "tile.asm"            ; Tile graphics module
 

@@ -198,33 +198,48 @@ ST_SETCOLOR:
 
 ;-----------------------------------------------------------------------------
 ; Draw rectangle on text screen
-; RECT (x0,y0)-(x1,y1),boxchars${,fgcolor,bgcolor}
+; RECT (x0,y0)-(x1,y1),{boxchars$}{,fgcolor,bgcolor}
+; RECT (x0,y0)-(x1,y1),{boxchars$}{,colors$}
 ;-----------------------------------------------------------------------------
 ; RECT (10,5)-(20,9),"+-+| |+-+"
 ; RECT (10,9)-(20,17),$"B7A3EBB5A0EAF5F0FA",7,2
 ; RECT (10,9)-(20,17),$"FFFFFFB5A0EAF5F0FA",7,4
 ; RECT (10,9)-(20,17),$"DEACCED620D6CFACDF"
 ST_RECT:
-    rst     CHRGET                ; Skip RECT
-    call    scan_rect             ; B = BgnCol, C = EndCol, D = BgnRow, E= EndRow
-    push    bc                    ; Stack = Cols, RtnAdr
-    push    de                    ; Stack = Rows, Cols, RtnAdr
-    ld      de,boxdraw_desc
-    dec     hl
+    call    skip_scan__rect
+    call    get_string_optional   ; DE = ChrDsc
+    ld      (STRDSC1),de
+    call    .get_colors_opt       ; DE = Colors
+    ld      (STRDSC2),de
+    ld      iy,bas__rect
+    jp      gfxrom_call_preserve_hl
+
+; DE = 0 if EOL
+; DE = StrDsc if ',string$' 
+; D = 0, E = Colors if ',fg,bg', 
+.get_colors_opt:
+    ld      de,0
+    ld      a,(hl)
+    cp      ','                   ; If no comma
+    ret     nz                    ;  Return DE = 0
+    rst     CHRGET                ; Skip comma
+    call    FRMTYP
+    ld      de,(FACLO)            ; If String
+    ret     z                     ;   Return = DE = ClrDsc
+    call    con_byte16            ;
+    jp      build_screen_colors   ; A, E = Colors, D = 0s
+
+skip_scan__rect
     rst     CHRGET
-    jr      z,.noboxdraw
-    call    get_comma
-    cp      ','
-    jr      z,.noboxdraw
-    call    FRMSTR
-    ld      de,(FACLO)
-.noboxdraw
-    ld      (STRDSC),de
-    call    check_screen_colors   ; A = Colors
-    pop     de
-    pop     bc
-    ld      iy,bas_rect
-    jp      aux_call_preserve_hl
+scan__rect:
+    call    SCAND                 ; BC = X1, DE = Y1
+    ld      (RECT_X1),BC
+    ld      (RECT_Y1),DE
+    SYNCHKT MINUTK                ; Require -
+    call    SCAND                 ; BC = X2, DE = Y2
+    ld      (RECT_X2),BC
+    ld      (RECT_Y2),DE
+    ret
 
 ;-----------------------------------------------------------------------------
 ; RESET PALETTE to default colors
@@ -992,6 +1007,19 @@ ST_DEF_PALETTE:
     jr      z,_finish_def        ; If not end of statement
     SYNCHKC ','                   ;   Require comma
     jr      .loop                 ;   and get next color
+
+; DEF COLORLIST C$=7,0;2,1;0,7
+ST_DEF_COLOR:
+    rst     CHRGET                ; Skip COL
+    SYNCHKT ORTK                  ; Require OR
+    call    _setupdef             ; Stack = DatLen, BufPtr, VarPtr, RtnAdr
+.loop
+    call    get_screen_colors     ; A = Colors
+    call    _write_byte_strbuf    ; Write it to string buffer
+    call    CHRGT2                ; Reget next character
+    jr      z,_finish_def         ; If not end of statement
+    SYNCHKC ';'                   ;   Require comma
+    jr      .loop                 ;   and get next tile#
 
 ;-----------------------------------------------------------------------------
 ; DEF INTLIST I$ = int, int, ...

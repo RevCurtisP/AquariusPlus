@@ -26,11 +26,17 @@ ST_CALL:
     inc     hl                    ;     TxtPtr to ARGS
 .args
     call    skip_get_int
-    ld      (SAVEHL),de           ;     SAVEHL = Arg1
-    call    .comma_arg
-    ld      (SAVEDE),de           ;     SAVEDE = Arg2
-    call    .comma_arg
-    ld      (SAVEBC),de           ;     SAVEBC = Arg3
+    ld      (ARGHL),de            ;     SAVEHL = Arg1
+    call    get_int_optional
+    ld      (ARGDE),de            ;     SAVEDE = Arg2
+    call    get_int_optional
+    ld      (ARGBC),de            ;     SAVEBC = Arg3
+    call    get_int_optional
+    ld      (ARGHLX),de           ;     SAVEHL = Arg4
+    call    get_int_optional
+    ld      (ARGDEX),de           ;     SAVEDE = Arg5
+    call    get_int_optional
+    ld      (ARGBCX),de           ;     SAVEBC = Arg6
     pop     af                    ;     A = Page; Stack = Addr, RtnAdr
     pop     iy                    ;     IY = Addr; Stack = RtnAdr
     push    hl                    ;     Stack = TxtPtr. RtnAdr
@@ -38,21 +44,19 @@ ST_CALL:
     push    hl                    ;     Stack = POPHRT, TxtPtr, RtnAdr
     push    iy                    ;     Stack = Addr, POPHRT, TxtPtr, RtnAdr
     push    af                    ;     Stack = Page, Addr, POPHRT, TxtPtr, RtnAdr
-    ld      hl,(SAVEHL)           ;     HL = Arg1
-    ld      de,(SAVEDE)           ;     DE = Arg2
-    ld      bc,(SAVEBC)           ;     BC = Arg3
+    exx                           
+    ld      hl,(ARGHLX)           ;     HL = Arg4
+    ld      de,(ARGDEX)           ;     DE = Arg5
+    ld      bc,(ARGBCX)           ;     BC = Arg6
+    exx                           ;     HL' = Arg4, DE' = Arg5, BC' = Arg6
+    ld      hl,(ARGHL)            ;     HL = Arg1
+    ld      de,(ARGDE)            ;     DE = Arg2
+    ld      bc,(ARGBC)            ;     BC = Arg3
 .call
     pop     af                    ; If no page specified
     ret     nc                    ;   Jump to user code, HL = BASIC text pointer
     pop     iy                    ; Else
     jp      page_call             ;   Jump to address in page 
-
-.comma_arg
-    ld      de,0
-    ld      a,(hl)
-    cp      ','                   ; Check for comma
-    ret     nz
-    jp      get_comma_int
 
 ;-----------------------------------------------------------------------------
 ; HEX$() function

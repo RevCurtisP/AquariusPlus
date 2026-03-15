@@ -255,3 +255,46 @@ bas_pos:
     ld      d,0
     ld      e,c
     ret
+
+; Called from ST_RECT
+bas__rect:
+    ld      hl,(STRDSC2)          ; HL = BoxClrDsc
+    call    .color_string
+    push    de                    ; Stack = BoxClrAdr, RtnAdrs
+    ld      hl,(STRDSC1)          ; DE = BoxChrDsc
+    ld      de,boxdraw_text
+    inc     h
+    dec     h
+    call    nz,.free_desc         ; DE = BoxChrAdr
+    ex      de,hl                 ; HL = BoxChrAdr
+    exx                           ; HL' = BoxChrAdr
+    ld      bc,(RECT_X2)          ; BC = X2
+    ld      de,(RECT_Y2)          ; DE = Y2
+    pop     hl                    ; HL = BoxClrAdr
+    exx                           ; HL = BoxChrAdr, BC' = X2, DE' = Y2, HL' = BoxClrAdr
+    ld      bc,(RECT_X1)          ; BC = X1
+    ld      de,(RECT_Y1)          ; DE = Y1
+    call    screen__rect
+    jp      c,FCERR
+    ret
+.free_desc
+    call    free_hl_addr_len      ; DE = StrAdr, A = StrLen
+    cp      9                     ; If StrLen <> 9
+    jp      nz,SLERR              ;   String Length Error
+    ret
+.color_string
+    inc     h
+    dec     h                     ; IF HL > 255
+    jr      nz,.free_desc
+    ld      a,e                   ; A = Colors
+    or      a                     ; If Colors = 0,0
+    call    z,screen__colors      ;   A = Default colors
+    ld      de,FBUFFR
+    push    de
+    ld      b,9
+.loop    
+    ld      (de),a
+    inc     de
+    djnz    .loop
+    pop     de
+    ret

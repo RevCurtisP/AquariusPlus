@@ -120,7 +120,7 @@ BMP_ERROR   equ $38F4
 BMP_E2      equ $38F6   ; RESHO
 BMP_GFXMODE equ $38F8   ; RESLO
 
-; Temporary Variables stored in FILNAM+FILNAM ($3851-$385C), RESMO-RESLO ($38F7-$38F8)
+; Temporary Variables stored in FILNAM+FILNAF ($3851-$385C), RESMO-RESLO ($38F7-$38F8)
 ; bitmap_get and bitmap_set
 BMPMODE     equ $3851   ; Bitmap Mode 0=1bpp, 2=4bpp
 STARTCOL    equ $3852
@@ -129,12 +129,23 @@ STARTROW    equ $3856
 ENDROW      equ $3857
 PSETCOLOR   equ $385A
 
-STRDSC      equ $3851
+RECT_X1     equ $3851
+RECT_Y1     equ $3853
+RECT_X2     equ $3855
+RECT_Y2     equ $3857
+STRDSC1     equ $3859
+STRDSC2     equ $385B
+
+; ToDo: Remove after bas_rect is removed from auxrom/basicgfx.asm
+STRDSC      equ STRDSC1
 
 ; CALL ARGS
-SAVEHL      equ $3852   ; [word] 
-SAVEDE      equ $3854   ; [word]
-SAVEBC      equ $3856   ; [word]
+ARGHL      equ $3851   ; [word] 
+ARGDE      equ $3853   ; [word]
+ARGBC      equ $3855   ; [word]
+ARGHLX     equ $3857   ; [word] 
+ARGDEX     equ $3859   ; [word]
+ARGBCX     equ $385B   ; [word]
 
 ; DEF SPRITE
 SPRTLCNT    equ $3851   ; Spritle Count

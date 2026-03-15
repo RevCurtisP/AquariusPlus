@@ -349,6 +349,37 @@ get_byte:
     or      a                     ; Set Flags
     ret
 
+;-----------------------------------------------------------------------------
+; Check for Comma
+; Output: A: CurChr, DE: 0, Zero Set if CurChr = ','
+;-----------------------------------------------------------------------------
+check_comma:
+    ld      de,0
+    ld      a,(hl)
+    cp      ','                   ; Check for comma
+    ret
+
+; Output: DE = StrDsc (0 if no string)
+get_string_optional:
+    call    check_comma
+    ret     nz                    ; Return DE = 0 if no comma
+get_comma_string:
+    SYNCHKC ','
+    cp      ','                   ; If empty argument
+    ret     z                     ;   Return DE = 0
+    call    FRMSTR
+    ld      de,(FACLO)
+    ret
+
+
+;------------------------------------------------------11-----------------------
+; Parse optional comma and integer argument
+;-----------------------------------------------------------------------------
+get_int_optional:
+    ld      de,0
+    ld      a,(hl)
+    cp      ','                   ; Check for comma
+    ret     nz
 ;------------------------------------------------------11-----------------------
 ; Require comma, then parse integer
 ;-----------------------------------------------------------------------------
@@ -763,11 +794,12 @@ get_comma_colors:
     call    get_comma             ; Missing opersand if comma
 ;-----------------------------------------------------------------------------
 ; Parse Foreground and Background Colors
-; Output: A,DE = Combined coloe
+; Output: A,DE = Combined colors
 ; Clobbers: BC
 ;-----------------------------------------------------------------------------
 get_screen_colors:
     call    get_byte16            ; A = FColor
+build_screen_colors:
     sla     a                     ;
     sla     a                     ;
     sla     a                     ;
