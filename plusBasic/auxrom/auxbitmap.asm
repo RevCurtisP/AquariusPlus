@@ -443,7 +443,8 @@ neg_hl:
 ;      Sets: Carry if new position out of bounds
 ; Clobbered: A, B, HL
 ;-----------------------------------------------------------------------------
-bitmap_move:
+;; ToDo: Rewrite and move to GfxROM
+;bitmap_move:
     ex      af,af'                ; AF' = Action
     xor     a                     ; A = 0
     sla     h                     ; Set Carry if Up, NotZero if Down
@@ -483,7 +484,7 @@ bitmap_move:
 .notright
     push    bc                    ; Stack = NewY, RtnAdr
     push    de                    ; Stack = NewX, NewY, RtnAdr
-    call    bitmap_setpixel       ; Set the pixel
+;    call    bitmap_setpixel       ; Set the pixel
     pop     de                    ; DE = NewX; Stack = NewY, RtnAdr
     pop     bc                    ; BC = NewY; Stack = RtnAdr
     ret
@@ -505,43 +506,6 @@ bitmap_setcell:
     cp      2                     ; If Mode < 2
     ret     c                     ;   Return carry (for now)
 
-;-----------------------------------------------------------------------------
-; Return pixel/bloxel at position
-;  Input: A: Mode
-;         C: Y-coordinate
-;        DE: X-coordinate
-;    Output: A = Pixel value
-;      Sets: Csrry if coordinates out of range
-; Clobbered: BC, DE, HL
-;-----------------------------------------------------------------------------
-bitmap_getpixel:
-    ld      a,(GFX_FLAGS)
-    and     GFXM_MASK             ; Mask bits and set flags
-    ld      l,a                   ; L = GfxMode
-    ld      h,0                   ; Don't update LastX, Last Y
-    ld      ix,_getpixel40        ; If 40 column
-    jr      z,_dopixel            ;   Do Bloxel 40
-    ld      ix,_getpixel80        ; 
-    dec     a                     ; If 80 column
-    jr      z,_dopixel            ;   Do Bloxel 80
-    ld      ix,_getpixelm         ;
-    dec     a                     ; If GfxMode = 2
-    jr      z,_dopixel            ;   Do Bitmap 1bpp
-    ld      ix,_getpixelc         ; Else fo Bitmap 4bpp
-    jr      _dopixel
-
-;-----------------------------------------------------------------------------
-; Erase pixel on 1 bpp bitmap screen
-;  Input: C: Y-coordinate
-;        DE: X-coordinate
-;    Output: AF': New byte containing pixel
-;      Sets: Csrry if coordinates out of range
-; Clobbered: A, BC, DE, HL
-;-----------------------------------------------------------------------------
-bitmap_resetpixel:
-    call    _resetpixel_addr
-    jr      _dopixel
-
 _resetpixel_addr:
     ld      a,(GFX_FLAGS)
     and     GFXM_MASK             ; Mask bits and set flags
@@ -557,10 +521,6 @@ _resetpixel_addr:
     ret     z                     ;   Do Bitmap 1bpp
     ld      ix,_resetpixelc       ; Else fo Bitmap 4bpp
     ret
-
-bitmap_togglepixel:
-    call    _togglepixel_addr
-    jr      _dopixel
 
 _togglepixel_addr:
     ld      a,(GFX_FLAGS)
@@ -578,17 +538,6 @@ _togglepixel_addr:
     ld      ix,_togglepixelc      ;
     ret
 
-;-----------------------------------------------------------------------------
-; Draw pixel
-;  Input: A: Draw color - 0 = Default (4bpp), None (1bpp/Bloxel)
-;        BC: Y-coordinate
-;        DE: X-coordinate
-;      Sets: Carry if coordinates out of range
-; Clobbered: A, HL
-;-----------------------------------------------------------------------------
-bitmap_setpixel:
-    ld      (PSETCOLOR),a         ; Save DrwClr
-    call    _setpixel_addr        ; L = GfxMode, IX = SetPxlAdr
 ; On Entry C = X-Coord, DE = Y-Coord, H = UpdateXY, L = GfxMode 
 _dopixel:
     push    hl                    ; Stack = UpdateXY, RtnAdr
@@ -644,17 +593,6 @@ _setpixel_addr:
     ld      ix,_setpixelc         ; Else fo Bitmap 4bpp
     ret
 
-_getpixelm:
-    call    _calc_1bpp_addr           ; DE = BytAdr; BC = PxlOfs
-    ld      hl,_ormask1bpp
-    add     hl,bc                 ; HL = MskAdr
-    ld      b,(hl)                ; B = BitMsk
-    ld      a,(de)                ; Get byte
-    and     b                     ; If bit not set
-    ret     z                     ;   Return 0
-    ld      a,1                   ; Else return 1
-    ret
-
 _resetpixelm:
     call    _calc_1bpp_addr           ; DE = BytAdr; BC = PxlOfs
     ld      hl,_andmask1bpp
@@ -664,28 +602,6 @@ _resetpixelm:
     and     b
     ld      (de),a
     ret
-
-_getpixelc:
-    call    _calc_4bpp_addr;         ; AF = NybOfs, DE = BytAdr; BC = PxlOfs
-    ld      hl,_getmask
-    add     hl,bc                 ; HL = MskAdr
-    ld      b,(hl)                ; B = BitMsk
-    ld      a,(de)
-    and     b
-    rl      b                     ; Set carry if mask = $F0
-    ret     nc                    ; Color in right nybble, so return
-    ccf                           ; Clear the carry flag
-    rr      a
-    rr      a
-    rr      a                     ; Move left nybble to right
-    rr      a                     ; and return it
-    ret
-
-
-; C = Y-coordinate, DE: X-coordinate
-_getpixel80:
-    call    _bloxel80
-    jr      _getbloxel
 
 _resetpixel80:
     call    _bloxel80
@@ -708,19 +624,6 @@ _setpixel80:
     pop     af                    ; A = IO_VCTRL; Stack = RtnAdr
     out     (IO_VCTRL),a
     ret
-
-_getpixel40:
-    call    _bloxel40
-_getbloxel
-    jr      nz,.notbloxel
-    and     (hl)
-    ret     z
-    xor     a
-    inc     a                     ; A = 1 with flags set
-    ret
-.notbloxel
-    xor     a
-    ret     
     
 _resetpixel40:
     call    _bloxel40

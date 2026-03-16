@@ -322,23 +322,6 @@ bas_parse_attr:
     pop     hl
     ret
 
-; Called from ST_RECT
-bas_rect:
-    push    af
-    push    bc
-    push    de
-    ld      hl,(STRDSC)
-    call    free_hl_addr_len      ; DE = SrcAdr, BC = SrcLen, HL = SrcDsc
-    cp      9
-    jp      nz,SLERR
-    ex      de,hl                 ; HL = StrAdr
-    pop     de
-    pop     bc
-    pop     af
-    call    screen_rect
-    jp      c,FCERR
-    ret
-
 ; Convert PSET Coordinates to Screen Position and Character Mask
 scale_xy:
     push    bc                    ; Stack = Xpos, RtnAdr

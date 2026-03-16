@@ -102,6 +102,8 @@ home_cursor:
 ST_DEF:
     cp      FNTK
     jr      z,ST_DEF_FN
+    ld      d,0                     ; D = 0 means DEF LIST
+def_append:
     cp      INTTK
     jp      z,ST_DEF_INT            ; DEF INTLIST
     cp      TILETK
@@ -113,7 +115,7 @@ ST_DEF:
     cp      USRTK
     jr      z,ST_DEF_USR
     cp      XTOKEN
-    jp      nz,SNERR                ; Extended Token Prefix
+    jp      nz,.not_xtoken          ; Extended Token Prefix
     inc     hl
     ld      a,(hl)                  ; Get Extended Token
     cp      SPRITK
@@ -121,10 +123,18 @@ ST_DEF:
     cp      ATTRTK
     jp      z,ST_DEF_ATTR           ; DEF ATTRLIST
     cp      BYTETK
-    jp      z,ST_DEF_ATTR           ; DEF BYTELIST
+    jp      z,ST_DEF_BYTE           ; DEF BYTELIST
     cp      PALETK
     jp      z,ST_DEF_PALETTE        ; DEF PALETTELIST
-    jp      SNERR
+    cp      RECTK
+    jp      z,ST_DEF_RECT           ; DEF PALETTELIST
+.not_xtoken
+    dec     d
+    inc     d                       ; If DEF
+    jp      z,SNERR                 ;   Syntax error
+    ex      de,hl                   ; Restore TxtPtr
+    jp      do_append
+
 
 ;-----------------------------------------------------------------------------
 ; DEF USR

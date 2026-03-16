@@ -205,6 +205,8 @@ ST_SETCOLOR:
 ; RECT (10,9)-(20,17),$"B7A3EBB5A0EAF5F0FA",7,2
 ; RECT (10,9)-(20,17),$"FFFFFFB5A0EAF5F0FA",7,4
 ; RECT (10,9)-(20,17),$"DEACCED620D6CFACDF"
+; RECT (16,12)-(23,14)
+; PRINT @(17,13);"Button"
 ST_RECT:
     call    skip_scan__rect
     call    get_string_optional   ; DE = ChrDsc
@@ -954,6 +956,19 @@ _tilemap_xy:
     jp      c,FCERR               ; Carry set = bad args
     jp      FLOAT_BC              ; Return BC
 
+
+ST_DEF_BYTE:
+    rst     CHRGET                ; Skip BYTE
+    call    _setupdef             ; Stack = DatLen, BufPtr, VarPtr
+.loop
+    call    GETBYT                ; A = Byte
+    call    _write_byte_strbuf    ; Write it to string buffer
+    call    CHRGT2                ; Reget next character
+    jp      z,_finish_def         ; If not end of statement
+    SYNCHKC ','                   ;   Require comma
+    jr      .loop                 ;   and get next tile#
+    ret
+
 ;-----------------------------------------------------------------------------
 ; DEF ATTRLIST A$ = attr#, attr#, ...
 ; attr# is an even integer between 0 and 127
@@ -968,9 +983,6 @@ _tilemap_xy:
 ; DEF ATTRLIST E$="B"
 ; APPEND TILELIST T$ = tile#, tile#, ...
 ;-----------------------------------------------------------------------------
-ST_APPEND_ATTR:
-    call    _check_append_list    ; Back to APPEND if not ATTRLIST
-    byte    $06                   ; LD B, over RST CHRGET
 ST_DEF_ATTR:
     rst     CHRGET                ; Skip ATTR/BYTE
     call    _setupdef             ; DatLen, BufAdr, VarPtr
@@ -978,7 +990,7 @@ ST_DEF_ATTR:
     call    _parse_attr           ; A = Attrs
     call    _write_byte_strbuf    ; Write it to string buffer
     call    CHRGT2                ; Reget next character
-    jr      z,_finish_def         ; If not end of statement
+    jp      z,_finish_def         ; If not end of statement
     SYNCHKC ','                   ;   Require comma
     jr      .loop                 ;   and get next tile#
 
@@ -994,9 +1006,6 @@ _parse_attr:
 ; palette# is an integer between 0 and 3
 ;-----------------------------------------------------------------------------
 ;DEF PALETTELIST P$ = 0,1,2,3
-ST_APPEND_PALETTE:
-    call    _check_append_list    ; Back to APPEND if not PALETTELIST
-    byte    $06                   ; LD B, over RST CHRGET
 ST_DEF_PALETTE:
     rst     CHRGET                ; Skip PALETTE
     call    _setupdef            ; Stack = DatLen, BufPtr, VarPtr, RtnAdr
@@ -1021,15 +1030,37 @@ ST_DEF_COLOR:
     SYNCHKC ';'                   ;   Require comma
     jr      .loop                 ;   and get next tile#
 
+
+;-----------------------------------------------------------------------------
+; DEF RECTLIST I$ = x1,y1,x2,y2; ...
+; APPEND RECTLIST I$ = x1,y1,x2,y2; ...
+; int is a integer between 0 and 65535
+;-----------------------------------------------------------------------------
+; DEF RECTLIST R$ = 5,6,10,11;7,8,13,14
+ST_DEF_RECT:
+    rst     CHRGET                ; Skip RECT
+    call    _setupdef             ; Stack = DatLen, BufPtr, VarPtr, RtnAdr
+.next
+    ld      b,4                   ; Parse 4 integers
+    byte    $11                   ; LD DE, over SYNCHKC
+.loop
+    SYNCHKC ','
+    push    bc
+    call    GETINT                ; DE = Integer
+    pop     bc
+    call    _write_word_strbuf
+    djnz    .loop
+    call    CHRGT2                ; Reget next character
+    jr      z,_finish_def         ; If not end of statement
+    SYNCHKC ';'                   ;   Require semicolon
+    jr      .next                 ;   and get rectangle
+
 ;-----------------------------------------------------------------------------
 ; DEF INTLIST I$ = int, int, ...
 ; APPEND INTLIST I$ = int, int, ...
 ; int is a integer between 0 and 65535
 ;-----------------------------------------------------------------------------
 ; DEF INTLIST I$ = 1234,$ABBA;0,$FFFF
-ST_APPEND_INT:
-    call    _check_append_list    ; Back to APPEND if not INTLIST
-    byte    $06                   ; LD B, over RST CHRGET
 ST_DEF_INT:
     rst     CHRGET                ; Skip INT
     call    _setupdef            ; Stack = DatLen, BufPtr, VarPtr, RtnAdr
@@ -1050,9 +1081,6 @@ ST_DEF_INT:
 ; DEF RGBLIST R$ = r,g,b; r,g,b; ...
 ; APPEND RGBLIST R$ = r,g,b; r,g,b; ...
 ;-----------------------------------------------------------------------------
-ST_APPEND_RGB:
-    call    _check_append_list    ; Back to APPEND if not RGBLIST
-    byte    $06                   ; LD B, over RST CHRGET
 ST_DEF_RGB:
     rst     CHRGET                ; Skip RGB, NZ set for DEF 
     call    _setupdef             ; Stack = DatLen, BufPtr, VarPtr
@@ -1077,6 +1105,16 @@ strbuf_to_strvar:
     jp      INBUFC                ; Copy Temporary to Variable and return
 
 _setupdef:
+    dec     d
+    inc     d
+    jr      z,_deflist            ; If APPEND
+    cp      LISTK
+    jr      z,_appendlist         ;   If not APPEND LIST
+    ex      de,hl                 ;     Reset TxtPtr
+    jp      do_append             ;     Do normal append
+_appendlist:
+    or      $FF                   ;    Set NZ for APPEND
+_deflist:
     push    af                    ; Stack = ApndFlg, RtnAdr
     SYNCHKT LISTK                 ; Require LIST
     byte    $06                   ; LD B, over PUSH AF
@@ -1091,7 +1129,7 @@ _defgotvar:
     push    bc                    ; Stack = RtnAdr, TxtPtr, VarAdr
     call    get_strbuf_addr       ; HL = BufAdr
     ld      a,0                   ; StrLen = 0
-    call    z,_defcopyvar         ; If APPEND, copy VarDat to StrBuf
+    call    nz,_defcopyvar        ; If APPEND, copy VarDat to StrBuf
     pop     bc                    ; BC = RtnAdr; Stack = TxtPtr, VarAdr
     ex      (sp),hl               ; HL = TxtPtr; Stack = BufPtr, TxtPtr, VarAdr
     push    af                    ; Stack = DatLen, BufPtr, VarPtr
@@ -1099,7 +1137,7 @@ _defgotvar:
     SYNCHKT EQUATK                ; Require '='
     ret
 
-_defcopyvar
+_defcopyvar:
     push    hl                    ; Stack = BufAdr, RtnAdr
     ex      de,hl                 ; HL = VarAdr
     call    string_addr_len       ; BE = StrAdr; BC = StrLen
@@ -1144,15 +1182,9 @@ _write_byte_strbuf:
     push    af                    ; Stack = DatLen, BufPtr, VarPtr
     jp      (ix)                  ; Return
 
-
-;-----------------------------------------------------------------------------
-; APPEND TILELIST T$ = tile#, tile#, ...
-;-----------------------------------------------------------------------------
-ST_APPEND_TILE:
-    call    _check_append_list    ; Back to APPEND if not TILELIST
-    byte    $06                   ; LD B, over RST CHRGET
 ;-----------------------------------------------------------------------------
 ; DEF TILELIST T$ = tile#, tile#, ...
+; APPEND TILELIST T$ = tile#, tile#, ...
 ; tile# is a integer between 0 and 511
 ;-----------------------------------------------------------------------------
 ST_DEF_TILE:
@@ -1165,18 +1197,6 @@ ST_DEF_TILE:
     jr      z,_finish_def         ; If not end of statement
     SYNCHKC ','                   ;   Require comma
     jr      .loop                 ;   and get next tile#
-
-; Verify it's APPEND tokenLIST rather than APPEND token$()
-_check_append_list:
-    push    hl                    ; Stack = TxtPtr, RtnAdr
-    rst     CHRGET                ; Skip Token
-    cp      LISTK                 ; If LIST, Z set for Append
-    ex      de,hl                 ; DE = NewTxtPtr
-    pop     hl                    ; Stack = OldTxtPtr
-    jp      nz,do_append          ; If not LIST normal APPEND
-    ex      de,hl                 ; HL = NewTxtPtr
-    ret
-
 
 ;-----------------------------------------------------------------------------
 ; GETTILE Function
@@ -1248,6 +1268,9 @@ push_ret_str_word:
 ;-----------------------------------------------------------------------------
 ST_DEF_SPRITE:
     rst     CHRGET                ; Skip SPRITE
+    dec     d
+    inc     d                     ; If APPEND SPRITE
+    jp      nz,SNERR              ;   Syntax error
     call    _defnolist            ; Stack = DatLen, BufPtr, VarPtr, RtnAdr
     cp      '('
     jr      z,_def_sprite_rect
@@ -1256,7 +1279,7 @@ ST_DEF_SPRITE:
     xor     a                     ; A = SptlCnt (0)
     ld      b,a                   ; B = MaxYoffset (0)
     ld      c,a                   ; C = MaxXoffset (0)
-    ld      (SPRTLCNT),a          ; 
+    ld      (SPRTLCNT),a          ;
     call    _write_byte_strbuf    ; Write E to string buffer
     call    _write_bc_strbuf      ; Write BC to string buffer
     ld      a,(hl)

@@ -102,8 +102,8 @@ screen__bounds:
     dec     hl
     sbc     hl,bc                 ; If Column >= LinLen
     ret     c                     ;   Return Carry Set
-    ld      hl,24
-    sbc     hl,de                 ; If Row > 24
+    ld      hl,23
+    sbc     hl,de                 ; If Row > 23
     ret                           ;   Return Carry Set
 
 ;-----------------------------------------------------------------------------
@@ -168,6 +168,7 @@ exx_check_rect:
 screen__pos_addr:
     push    de
     push    bc
+    inc     de                    ; Skip first row of screen
     ld      a,e                   ; A = Row
     ld      de,(LINLEN)           
     ld      d,0                   ; DE = Screen width

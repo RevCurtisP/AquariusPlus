@@ -118,6 +118,8 @@ FN_IN:
     jp      z,FN_INSTR            ;
     sub     MEMTK-STRTK           ; $A7 MEM
     jp      z,FN_INMEM            ;
+    sub     RECTK-MEMTK           ; $BE RECT
+    jp      z,FN_INRECT           ;
     jp      SNERR
 
 .instring

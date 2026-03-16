@@ -391,6 +391,31 @@ FN_INDEX:
     ld      iy,string_search_array
     jp      aux_call
 
+;----------------------------------------------------------------------------
+; Return index of first rectangle containing coordinates
+; INRECT(*array,string$)
+;----------------------------------------------------------------------------
+; PRINT INRECT($"0A000A0014001400",15,15)
+; PRINT INRECT($"0A000A0014001400",5,5)
+;0; PRINT INRECT($"0A0014000F001900",10,30)
+
+FN_INRECT:
+    rst     CHRGET                ; Skip RECT
+    SYNCHKC '('
+    call    FRMSTR  
+    ld      de,(FACLO)            ; DE = StrDsc
+    push    de                    ; Stack = StrDsc, RtnAdr
+    call    get_comma_int         ; DE = X
+    push    de                    ; Stack = X, StrDsc, RtnAdr
+    call    get_comma_int         ; DE = Y
+    call    close_paren
+    pop     bc                    ; BC = X; Stack = StrDsc, RtnAdr
+    ex      (sp),hl               ; HL = StrDsc; Stack = TxtPtr, RtnAdr
+    ld      iy,bas_inrect
+    call    gfxrom_call
+    ld      bc,LABBCK             ; A = Index
+    push    bc
+    jp      SNGFLT
 
 ;-----------------------------------------------------------------------------
 ; FLOAT(string)

@@ -220,6 +220,7 @@ bas_get_char:
     ld      c,a
     ret
 
+
 ; Called from FN_KEY
 ; Input: Arg Type
 bas_key:

@@ -256,6 +256,27 @@ bas_pos:
     ld      e,c
     ret
 
+; Called from FN_INRECT
+; Input: BC:X, DE: Y, HL: StrDsc
+; Output: A: Index
+bas_inrect:
+    push    bc                    ; Stack = X, RtnAdr
+    push    de                    ; Stack = Y, X, RtnAdr
+    call    free_hl_addr_len      ; DE = StrAdr, BC = Strlen
+    jp      z,ESERR               ; If StrLen = 0, Empty string error
+    and     $07                   ; If StrLen not multiple of 8
+    jp      nz,SLERR              ;   String length error
+    ld      a,c                   ; A = StrLen
+    rra
+    rra
+    rra                           ; A = RectCnt
+    ex      de,hl                 ; HL = StrAdr
+    pop     de                    ; DE = Y; Stack = X, RtnAdr
+    pop     bc                    ; BC = Y; Stack = RtnAdr
+    jp      gfx_in_rectlist
+    
+
+
 ; Called from ST_RECT
 bas__rect:
     ld      hl,(STRDSC2)          ; HL = BoxClrDsc

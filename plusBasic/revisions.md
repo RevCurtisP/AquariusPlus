@@ -1,4 +1,15 @@
 # plusBASIC Revision History
+ - v0.71h (2026-03-16)
+    - Added BASIC error codes to `README.md`
+    - Removed the following routines that have been copied from from AuxROM to GfxROM
+      - _auxbitmap.asm_: _bitmap_getpixel_, _bitmap_resetpixel_, _bitmap_setpixel_, _bitmap_togglepixel_
+      - _basicgfx.asm_: _bas_rect_
+      - _screen_gfx.asm_: _screen_rect_
+    - Consolidated `DEF` and `APPEND` extension checking into routine _def_append_
+    - Added _ST_DEF_BYTE_ instead of routing ` DEF BYTELIST` to _ST_DEF_ATTR_
+    - Added statement `DEF RECLIST`
+    - Added function `INRECT()`, kernel routines _gfx_in_rectlist_ and _gfx_in_rect_
+    - Modified `RECT` coordinates to match `LOCATE` and `PRINT @()`
  - v0.71g (2026-03-15)
     - Fixed BASIC restarting whne pressing Ctrl-C during display of splash screen
     - Added statement `DEF COLORLIST`

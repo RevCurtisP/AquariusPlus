@@ -24,10 +24,10 @@ _jump_table:
     jp      just_ret              ; C021 (bitmap_move)
     jp      just_ret              ; C024 (bitmap_setcell)
     jp      just_ret              ; C027 
-    jp      bitmap_togglepixel    ; C02A Toggle pixel
-    jp      bitmap_setpixel       ; C02D Draw pixel
-    jp      bitmap_resetpixel     ; C030 Erase pixel
-    jp      bitmap_getpixel       ; C033 Return pixel/bloxel at position
+    jp      bitmap__togglepixel   ; C02A Toggle pixel
+    jp      bitmap__setpixel      ; C02D Draw pixel
+    jp      bitmap__resetpixel    ; C030 Erase pixel
+    jp      bitmap__getpixel      ; C033 Return pixel/bloxel at position
     jp      bitmap_get            ; C036 [future] Read Bitmap Screen Section into Buffer
     jp      bitmap_put            ; C039 (bitmap_put)
     jp      bitmap_putchar        ; C03C (bitmap_putchar)

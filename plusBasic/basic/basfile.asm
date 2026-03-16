@@ -1188,23 +1188,9 @@ run_file:
 ;-----------------------------------------------------------------------------
 ST_APPEND:
     rst     CHRGET                ; Skip APPEND token
-    cp      INTTK
-    jp      z,ST_APPEND_INT
-    cp      RGBTK
-    jp      z,ST_APPEND_RGB
-    cp      TILETK
-    jp      z,ST_APPEND_TILE
-    cp      XTOKEN
-    jr      nz,do_append          ; If Extended Token
-    inc     hl
-    ld      a,(hl)                ;   Skip XTOKEN
-    cp      ATTRTK
-    jp      z,ST_APPEND_ATTR
-    cp      BYTETK
-    jp      z,ST_APPEND_ATTR
-    cp      PALETK
-    jp      z,ST_APPEND_PALETTE
-    jp      SNERR
+    ld      d,h                   ; DE = TxtPtr
+    ld      e,l                   ; D > 0 means APPEND LIST
+    jp      def_append
 do_append:
     call    get_strdesc_arg       ; HL = FileSpec
     ex      (sp),hl               ; HL = TxtPtr, Stack = StrDsc, RtnAdr
@@ -1220,8 +1206,6 @@ do_append:
     ld      iy,file_append_paged
 .aux_call
     jp      _aux_call_hl_error
-
-_append_list:
 
 ;-----------------------------------------------------------------------------
 ; SAVE

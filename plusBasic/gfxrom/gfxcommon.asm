@@ -52,7 +52,86 @@ gfxrom_rect_size:
     pop     de                    ; DE = RowSE; Stack = RtnAdr
     ret
 
+;-----------------------------------------------------------------------------
+; Input: A = RectCnt
+;       BC = X
+;       DE = Y
+;       HL = ListAdr
+; Output: A = RectIndex
+;-----------------------------------------------------------------------------
+gfx_in_rectlist:
+    push    af                    ; Stack = RectCnt, RtnAdr
+.loop
+    push    hl
+    call    gfx_in_rect
+    pop     hl
+    jr      z,.found_rect
+    jr      nc,.found_rect
+    inc     hl
+    inc     hl
+    inc     hl
+    inc     hl
+    inc     hl
+    inc     hl
+    inc     hl
+    inc     hl
+    dec     a
+    jr      nz,.loop
+    pop     hl                  ; Stack = RtnAdr
+    ret   
+.found_rect
+    ld      b,a
+    pop     af
+    sub     b
+    inc     a
+    ret
 
+;-----------------------------------------------------------------------------
+;       BC = X
+;       DE = Y
+;       HL = Rect`Adr
+;-----------------------------------------------------------------------------
+gfx_in_rect:
+    call    _check_x
+    jr      z,.y1
+    ccf
+.y1
+    ret     c                     ; If X < X1, return Carry Set
+    call    _check_y
+    jr      z,.y2
+    ccf
+    ret     c                     ; If Y < Y1, return Carry Set
+.y2
+    call    _check_x
+    ret     c                     ; If X > X2, return Carry Set
+    call    _check_y
+    ret                     
+
+_check_x:
+    push    de                    ; Stack = Y, RtnAdr
+    ld      e,(hl)
+    inc     hl
+    ld      d,(hl)
+    inc     hl                    ; DE = X-bound
+    ex      de,hl                 ; DE = RectPtr, HL = X-bound
+    or      a
+    sbc     hl,bc
+    ex      de,hl                 ; HL = RectPtr
+    pop     de                    ; DE = Y; Stack = RtnAdr
+    ret
+
+_check_y:
+    push    de                    ; Stack = Y, RtnAdr
+    ld      e,(hl)
+    inc     hl
+    ld      d,(hl)
+    inc     hl                    ; DE = Y-bound
+    ex      (sp),hl               ; HL = Y; Stack = RectPtr, RtnAdr
+    ex      de,hl                 ; DE = Y, HL = Y-bound
+    or      a
+    sbc     hl,de
+    pop     hl                    ; HL = RectPtr; Stack = RtnAdr
+    ret
 
 ; Input: BC: BytCnt
 copy_tmpbase_vidbase:
@@ -67,3 +146,4 @@ copy_tmpbfr_vidram:
     ex      af,af'
     ld      a,VIDEO_RAM           ; to Video RAM
     jp      page_fast_copy
+

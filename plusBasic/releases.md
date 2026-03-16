@@ -1,4 +1,8 @@
 # plusBASIC Release History
+ - v0.71h (2026-03-16)
+    - Added BASIC error codes to `README.md`
+    - Added statement `DEF RECLIST` and function `INRECT()`
+    - Modified `RECT` coordinates to match `LOCATE` and `PRINT @()`
  - v0.71g (2026-03-15)
     - Added optional `HL'`, `DE'`, and `BC'` arguments to `CALL ... ARGS ... `
     - Added syntax `RECT (x0,y0)-(x1,y1),{boxchars$},colorlist$`

@@ -129,6 +129,7 @@
  - **[DEF INTLIST _strvar_=_integer_,...](BASIC-Stringlist-Statements#def-intlist)** - Create a string list of integers.
  - **[DEF PALETTELIST _strvar_=_palette_,...](BASIC-Sprite-Statements-and-Functions#def-palettelist)** - Create a string list of palette numbers.
  - **DEF PSGLIST _strvar_=_register_,_value_{;...}** - _Proposed enhancement_.
+ - **[DEF RECTLIST _strvar_ = _x1_,_y1_,_x2_,_y2_{;...}](BASIC-Stringlist-Statements#def-rectlist)** - Create string list of rectangle coordinates
  - **[DEF RGBLIST _strvar_=_r_,_g_,_b_|_rgbstr_;...](BASIC-Palette-Statements-and-Functions#def-rgblist)** - Create a string list of RGB values.
  - **[DEF SPRITE _strvar_= _spritle_, _x-offset_, _y-offset_ ;...](BASIC-Sprite-Statements-and-Functions#def-sprite)** - Create a sprite definition.
  - **[DEF SPRITE _strvar_= ( _cols_, _rows_ ) , _spritle_](BASIC-Sprite-Statements-and-Functions#def-sprite)** - Create a sprite definition.
@@ -222,8 +223,9 @@
  - **INKEY$** - Return most recently pressed key as string.
  - **INPUT {_stringliteral_;}_var_{,...}** - Prompt for keyboard input and assigns entries to variables.
  - **INPUT (_col_,_row_),_minlen_,_maxlen_,INT _var_** - Enhanced keyboard input routine.
+ - **INRECT (_rectlist_,_x_,_y_)** - Return index of first rectangle containing coordinates.
  - **INSTR({_offset_,}_haystack_,_needle)** - Search for string _needle_ in string _haystack_.
- - **JOIN \*_array$_ INTO _string_ DEL _delimiter_** - Join string array elements into delimited string.
+ - **JOIN \*_array_$ INTO _string_ DEL _delimiter_** - Join string array elements into delimited string.
  - **[JOY(_stick_)](BASIC-JOY-Function#joy)** - Read one or both game controllers.
  - **[JOY$(_id_)](BASIC-JOY-Function#joy-1)** - Read wireless game controller.
  - **[KEY(_keycode_)](BASIC-KEY-Functions#key)** - Check if key is currently pressed.
@@ -479,6 +481,49 @@
  - **CHR$(10) / $"0A"** - Move cursor down one line or scroll screen up if on last line.
  - **CHR$(11) / $"0B"** - Clear screen to default colors and do `SET COLOR OFF` and `SET CURSOR ON`.
  - **CHR$(13) / $"0D"** - Move cursor to first column of line.
+
+## Error Codes
+ - **` 1`** - NEXT without FOR
+ - **` 2`** - Syntax
+ - **` 3`** - RETURN without GOSUB
+ - **` 4`** - Out of DATA
+ - **` 5`** - Illegal quantity
+ - **` 6`** - Overflow
+ - **` 7`** - Out of memory
+ - **` 8`** - Undefined line number
+ - **` 9`** - Subscript out of range
+ - **`10`** - Duplicate definition
+ - **`11`** - Division by zero
+ - **`12`** - Illegal direct
+ - **`13`** - Type mismatch
+ - **`14`** - Out of string space
+ - **`15`** - String too long
+ - **`16`** - String formula too complex
+ - **`17`** - Can't continue
+ - **`18`** - Undefined user function
+ - **`19`** - Missing operand
+ - **`20`** - No RESUME
+ - **`21`** - RESUME without GOSUB
+ - **`22`** - Unprintable
+ - **`23`** - Line buffer overflow
+ - **`24`** - Statement not implemented
+ - **`25`** - Undefined line label
+ - **`26`** - ARGS without GOSUB
+ - **`27`** - Undimensioned array
+ - **`28`** - Too many operands
+ - **`29`** - Invalid mode
+ - **`30`** - Bad range
+ - **`31`** - Empty string
+ - **`32`** - String length
+ - **`49`** - Bad file
+ - **`50`** - File not found
+ - **`51`** - Too many files
+ - **`52`** - Invalid parameter
+ - **`53`** - Input past end
+ - **`54`** - File already exists
+ - **`55`** - I/O
+ - **`56`** - No disk
+ - **`57`** - Not empty
 
  <!--
   331 statements+Functions
