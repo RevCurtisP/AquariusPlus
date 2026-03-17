@@ -309,6 +309,7 @@ _file_stat:
     pop     a                     ; A = StrSiz; Stack = AuxAdr, RtnAdr
     pop     iy                    ; IY = AuxAdr; Stack = RtnAdr
     push    hl                    ; Stack = TxtPtr, RtnAdr
+;;; ToDo: Move code to AuxROM
     ld      hl,(FACLO)            ; HL = ArgDsc
     push    hl                    ; Stack = ArgDsc, TxtPtr, RtnAdr
     call    GETSPA                ; DE = StrAdr
@@ -377,6 +378,7 @@ ST_DIR:
 .witharg:
     call    get_string_direct     ; HL = StrDsc; Stack = TxtPtr, RtnAdr
 
+;;; ToDo: Move into AuxROM routine?
 .esp_command:
     ld      iy,aux_open_dir
     call    aux_call
@@ -461,6 +463,8 @@ ST_LOAD:
 
     ; Check for second parameter
     call    CHRGT2
+    ld      iy,_exsp_aux_call_error
+
     cp      ','
     jr      nz,.basic             ; No parameter -> load as basic program
     rst     CHRGET
@@ -717,6 +721,15 @@ load_array:
 .load_array
     ex      (sp),hl               ; HL = StrDsc, Stack = TxtPtr, RtnAdr
     jp      _aux_call_hl_error
+
+_skip_exsp_aux_call_error:
+    ex      af,af'
+    rst     CHRGET
+    ex      af,af'
+_exsp_aux_call_error:
+    ex      (sp),hl               ; HL = StrDsc, Stack = TxtPtr, RtnAdr
+    jp      _aux_call_hl_error
+
 
 load_dir_array:
     rst     CHRGET                ; Skip DIR
@@ -1236,19 +1249,30 @@ ST_SAVE:
     ex      (sp),hl               ; HL = TxtPtr, Stack = StrDsc, RtnAdr
 
     ; Check for second parameter
-    call    CHRGT2
-    cp      ','
-    jp      nz,save_basic_program
-    rst     CHRGET
+    call    CHRGT2                ; Reget CurChr
+    ld      iy,bas_save_program
+    jp      z,save_basic_program
+    ;jp      z,_exsp_aux_call_error
+    SYNCHKC ','
+    cp      ASCTK
+    jp      z,save_ascii_program
+    ;jp      z,_skip_exsp_aux_call_error
+    cp      XTOKEN
+    jr      nz,.not_xtoken
+    inc     hl
+    ld      a,(hl)
+    cp      BINTK
+    jp      z,_skip_exsp_aux_call_error
+    cp      CAQTK
+    jp      z,_skip_exsp_aux_call_error
+    dec     hl
+    ld      a,(hl)
+.not_xtoken
     cp      EXPTK                 ; If ^
     jp      z,save_string             ;   Load to string variable
     cp      MULTK                 ; If *
     jr      z,.array              ;   Load to array
-    cp      ASCTK
-    jp      z,save_ascii_program
-    cp      XTOKEN
-    jp      z,.save_xtoken
-    ; Save binary data
+.save_bin_file
     cp      '!'
     jr      nz,.not_ext           ; If !
     call    get_ext_addr          ;   AF = PgFlg, DE = Addr
@@ -1299,31 +1323,12 @@ ST_SAVE:
     jp      save_caq_array
 
 
-;-----------------------------------------------------------------------------
-; Save basic program in tokenized format
-;-----------------------------------------------------------------------------
-; 10 SAVE "/t/savetok.bas",TOK
-.save_bin_program
-    rst     CHRGET                ; Skip BIN
-    ex      (sp),hl               ; HL = NamDsc; Stack = TxtPtr, RtnAdr
-    push    hl                    ; Stack = NamDsc, TxtPtr, RtnAdr
-    ld      de,(TXTTAB)
-    dec     de                    ; DE = SavAdr (0 before BASIC program)
-    ld      hl,(VARTAB)
-    xor     a                     ; Clear carry
-    sbc     hl,de                 ; HL = SavLen
-    ld      b,h
-    ld      c,l                   ; BC = StrLen
-    pop     hl                    ; HL = NamDsc; Stack = TxtPtr, RtnAdr
-    jr      _save_bin_hl          ; Save it
-
-; 10 SAVE "/t/savecaq.baq",CAQ
-.save_xtoken
-    rst     CHRGET                ; Skip XTOKEN
-    cp      BINTK
-    jp      z,.save_bin_program
-    SYNCHKT CAQTK                 ; Require CAQ
-    jp      save_caq_program
+save_basic_program:
+    ld      a,(BASYSCTL)
+    and     BASSAVASC             ; If SET SAVE ASC ON
+    jr      nz,_save_ascii        ;   SAVE as ASCII
+    ld      a,CAQTK               ; Force save as CAQ
+    jp      _exsp_aux_call_error  ;   Execute bas_save_program
 
 ; SAVE "t/paged.bin",@63,0,16384
 ; SAVE "t/paged.bin",@63
@@ -1425,50 +1430,6 @@ _save_ascii:
 ;-----------------------------------------------------------------------------
 ; Save basic program
 ;-----------------------------------------------------------------------------
-save_basic_program:
-    ld      a,(BASYSCTL)
-    and     BASSAVASC             ; If SET SAVE ASC ON
-    jr      nz,_save_ascii        ;   SAVE as ASCII
-save_caq_program:
-    ex      (sp),hl               ; HL = StrDsc, Stack = TxtPtr, RtnAdr
-    call    _open_write           ; Create file
-
-    ; Write CAQ header
-    ld      de, sync_bytes        ; Sync bytes
-    ld      bc, 13
-    call    esp_write_bytes 
-    ld      a,l
-    ld      de, .caq_filename     ; Filename
-    ld      bc, 6
-    call    esp_write_bytes 
-    ld      a,l 
-    ld      de, sync_bytes        ; Sync bytes
-    ld      bc, 13
-    call    esp_write_bytes 
-    ld      a,l
-
-    ; Write BASIC data
-    ld      de, (TXTTAB)            ; DE = start of BASIC program
-    ld      hl, (VARTAB)            ; HL = end of BASIC program
-    sbc     hl, de
-    ld      b,h                     ; BC = length of BASIC program
-    ld      c,l
-    call    esp_write_bytes 
-    ld      a,l
-
-    ; Write trailer
-    ld      bc,15
-    ld      e,0
-    call    esp_write_repbyte
-
-    ; Close file
-    call    close_bas_fdesc
-
-    pop     hl
-    ret
-
-.caq_filename: db "BASPRG"
-
 ;-----------------------------------------------------------------------------
 ; Save array
 ;-----------------------------------------------------------------------------
@@ -1938,6 +1899,7 @@ get_strdesc_arg:
     pop     bc                    ; Stack = TxtPtr
     jp      (ix)                  ; Fast Return
 
+;;; ToDo: Move to fileaux.asm
 _index_offset:
     ld      bc,0
     push    hl

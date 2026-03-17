@@ -339,7 +339,7 @@
  - **[RESET BORDER](BASIC-Screen-Statements-and-Functions#reset-border)** - Set border character and colors to default values.
  - **[RESET CHRDEF _char_](BASIC-CHRSET-and-CHRDEF-Statements#reset-chrdef)** - Revert character to default definition.
  - **RESET CHRSET _byte_** - _Not implemented_.
- - **[RESET PALETTE _palette_](BASIC-Palette-Statements-and-Functions#reset-palette)** - Reset palette to default RGB values.
+ - **[RESET PALETTE _palette_|\*](BASIC-Palette-Statements-and-Functions#reset-palette)** - Reset single palette or all palettes to default RGB values.
  - **RESET SCREEN** - Reset current text screen to default settings.
  - **[RESET SPRITE _spritedef_|#_spritle_|\*](BASIC-Sprite-Statements-and-Functions#reset-sprite)** - Reset all spritle properties.
  - **[RESET USRDEF](BASIC-System-Statements-and-Functions#reset-usrdef)** - Reset `USR()` vector to default address

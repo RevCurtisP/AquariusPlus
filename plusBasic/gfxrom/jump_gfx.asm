@@ -1,4 +1,4 @@
-; Graphics module jump table
+; Graphics module j ump table
 ;; ToDo: Add screen_aux routines as they are moved in from screen.asm
 ;; Comment all routines
 
@@ -6,9 +6,16 @@ _jump_table:
 ; .
 ; *****************
 ; * Graphics ROM  *
-; * LD   IY,label *
-; * CALL gfx_call *
+; * This module   *
+; * is being      *
+; * refactored.   *
+; * Many of the   *
+; * routines will *
+; * crash the     *
+; * Aquarius+     *
 ; *****************
+; LD   IY,label
+; CALL gfx_call
 ; gfxbitmap.asm <<Bitmap Graphics>>
     jp      bitmap_init_vars      ; C000 Initialize bitmap system variables
     jp      bitmap_set_mode       ; C003 Set bitmap mode system variable from video control register
@@ -43,7 +50,7 @@ _jump_table:
     jp      palette_set           ; C057 Write one or more entries to palette
     jp      palette_get           ; C05A Read entire palette
     jp      palette_get_entry     ; C05D Read single palette entry
-    jp      just_ret              ; C060 
+    jp      palette_reset_all     ; C060 Reset all palettes to default colors
     jp      just_ret              ; C063 
     jp      just_ret              ; C066 
     jp      just_ret              ; C069 

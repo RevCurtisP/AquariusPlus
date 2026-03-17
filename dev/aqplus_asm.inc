@@ -17,6 +17,7 @@ asm_key_clear_fifo         equ $2127 ; 2127 Clear alternate keyboard buffer
 asm_key_read               equ $212A ; 212A Read from alternate keyboard buffer
 asm_key_set_keymode        equ $2130 ; 2130 Set alternate keyboard buffer mode
 asm_page_call              equ $2133 ; 2133 Call subroutine in paged memory
+asm_irq_done               equ $2136 ; 2136 Exit user IRQ routine
 
 asm_esp_cmd                equ $213C ; 213C Issue command
 asm_esp_cmd_string         equ $213F ; 213F Issue ESP command with string argument
@@ -42,7 +43,7 @@ asm_esp_send_bytes         equ $217B ; 217B Send bytes from main memory
 asm_esp_send_string        equ $217E ; 217E Send String from main memory
 asm_esp_send_strdesc       equ $2181 ; 2181 Send BASIC string from main memory
 asm_esp_set_keymode        equ $2184 ; 2184 Set alternate keyboard port mode
-asm_esp_write_byte         equ $2187 ; 2187 ** Not implemented **
+asm_esp_write_byte         equ $2187 ; 2187 Write single byte
 asm_esp_write_bytes        equ $218A ; 218A Write bytes from main memory
 asm_esp_write_repbyte      equ $218D ; 218D Write byte repeatedly
 asm_esp_write_paged        equ $2190 ; 2190 Write bytes from paged memory
@@ -196,29 +197,40 @@ asm_version_to_long        equ $C108 ; C108 Convert string version to long int
 
 ; *****************
 ; * Graphics ROM  *
-; * LD   IY,label *
-; * CALL gfx_call *
+; * This module   *
+; * is being      *
+; * refactored.   *
+; * Many of the   *
+; * routines will *
+; * crash the     *
+; * Aquarius+     *
 ; *****************
 
 asm_bitmap_init_vars       equ $C000 ; C000 Initialize bitmap system variables
 asm_bitmap_set_mode        equ $C003 ; C003 Set bitmap mode system variable from video control register
 asm_bitmap_read_sysvars    equ $C006 ; C006 Read bitmap system variables
-asm_bitmap_read_color      equ $C009 ; C009 Get Bitmap Draw Colors
-asm_bitmap_write_color     equ $C00C ; C00C Set Bitmap Draw Colors
+asm_bitmap_get_color       equ $C009 ; C009 Get Bitmap Draw Colors
+asm_bitmap_set_color       equ $C00C ; C00C Set Bitmap Draw Colors
 asm_bitmap_clear_screen    equ $C00F ; C00F Clear Bitmap
 asm_bitmap_fill_byte       equ $C012 ; C012 Fill Bitmap with Byte
 asm_bitmap_fill_color      equ $C015 ; C015 Fill Bitmap Color RAM
-asm_bitmap_line            equ $C018 ; C018 [Future]
+asm_bitmap_line            equ $C018 ; C018 Draw Line
+asm_bitmap_togglepixel     equ $C02A ; C02A Toggle pixel
 asm_bitmap_setpixel        equ $C02D ; C02D Draw pixel
-asm_bitmap_resetpixel      equ $C030 ; C030 Erase pixel on 1 bpp bitmap screen
+asm_bitmap_resetpixel      equ $C030 ; C030 Erase pixel
 asm_bitmap_getpixel        equ $C033 ; C033 Return pixel/bloxel at position
 asm_bitmap_get             equ $C036 ; C036 [future] Read Bitmap Screen Section into Buffer
+asm_bitmap_put             equ $C039 ; C039 (bitmap_put)
+asm_bitmap_putchar         equ $C03C ; C03C (bitmap_putchar)
 asm_colormap_fill          equ $C045 ; C045 Fill 1bpp Color Map Rectangle with Byte
+asm_bitmap_rect            equ $C048 ; C048 Draw Unfilled Rectange
+asm_bitmap_frect           equ $C04B ; C04B Draw Filled Rectange
 
 asm_palette_reset          equ $C054 ; C054 Reset palette to default colors
 asm_palette_set            equ $C057 ; C057 Write one or more entries to palette
 asm_palette_get            equ $C05A ; C05A Read entire palette
 asm_palette_get_entry      equ $C05D ; C05D Read single palette entry
+asm_palette_reset_all      equ $C060 ; C060 Reset all palettes to default colors
 
 asm_screen_clear_color     equ $C078 ; C078 Fill Color RAM with current/default colors
 asm_screen_read_byte       equ $C084 ; C084 Read byte from screen
@@ -239,6 +251,7 @@ asm_screen_invert_cursor   equ $C0C9 ; C0C9
 asm_screen_get             equ $C0D2 ; C0D2 Read Text Screen Section into Buffer
 asm_screen_put             equ $C0D5 ; C0D5 Write Text Screen Section from Buffer
 asm_screen_fill            equ $C0D8 ; C0D8 Fill Text or Color Screen Rectangle with Byte
+asm_screen_rect            equ $C0DB ; C0DB
 asm_screen_mode            equ $C0DE ; C0DE Return current Text Screen
 
 asm_init_screen_buffers    equ $C0E4 ; C0E4
@@ -250,23 +263,31 @@ asm_screen_stash           equ $C0FF ; C0FF
 asm_screen_swap            equ $C102 ; C102
 asm_screen_switch          equ $C105 ; C105
 
-asm_tile_set               equ $C10E ; C10E
-asm_tile_get               equ $C111 ; C111
-asm_tile_from_chrrom       equ $C114 ; C114
-asm_tile_combine_props     equ $C117 ; C117
-asm_tilemap_set_offset     equ $C120 ; C120
-asm_tilemap_get_offset     equ $C123 ; C123
-asm_tilemap_set_tile       equ $C126 ; C126
-asm_tilemap_get_tile       equ $C129 ; C129
-asm_tilemap_fill           equ $C12C ; C12C
-asm_tilemap_get            equ $C12F ; C12F
-asm_tilemap_put            equ $C132 ; C132
+asm_tile_set               equ $C10E ; C10E Write Tile definition to Video RAM
+asm_tile_get               equ $C111 ; C111 Read Tile definition from Video RAM
+asm_tile_from_chrrom       equ $C114 ; C114 Build Tile from Character definition
+asm_tile_combine_props     equ $C117 ; C117 Combine Tile Index, Palette# and Attributes
+asm_tilemap_set_offset     equ $C120 ; C120 Move Tilemap to specified offset
+asm_tilemap_get_offset     equ $C123 ; C123 Return current Tilemap offset
+asm_tilemap_set_tile       equ $C126 ; C126 Write Tilemap cell contents
+asm_tilemap_get_tile       equ $C129 ; C129 Read Tilemap cell contents
+asm_tilemap_fill           equ $C12C ; C12C Fill Tilemap section with specified Tile
+asm_tilemap_get            equ $C12F ; C12F Read clip from Tilemap into buffer
+asm_tilemap_put            equ $C132 ; C132 Write clip from buffer to tilemap
+asm_tilemap_copy           equ $C135 ; C135 Copy clip from Virtual tilemap to Tilemap
+asm_tilemap_reset          equ $C138 ; C138 Reset tilemap to home position
+
 asm_sprite_define          equ $C141 ; C141
 asm_sprite_defrect         equ $C144 ; C144
 asm_sprite_set_attrs       equ $C147 ; C147
 asm_sprite_get_attrs       equ $C14A ; C14A
 asm_spritle_set_pos        equ $C14D ; C14D
 asm_spritle_get_pos        equ $C150 ; C150
-asm_spritle_string_attrs   equ $C153 ; C153
-asm_spritle_reset          equ $C156 ; C156
-asm_spritle_reset_all      equ $C159 ; C159
+asm_spritle_set_props      equ $C153 ; C153
+asm_spritle_get_props      equ $C156 ; C156
+asm_spritle_string_attrs   equ $C159 ; C159
+asm_spritle_reset          equ $C15C ; C15C
+asm_spritle_reset_all      equ $C15F ; C15F
+asm_sprite_collision       equ $C162 ; C162
+asm_spritle_collision      equ $C165 ; C165
+

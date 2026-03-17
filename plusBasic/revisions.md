@@ -1,4 +1,8 @@
 # plusBASIC Revision History
+ - v0.71i (2026-03-17)
+    - Moved kernel routine _palette_reset_ from _color.asm_ in AuxROM to _gfxcolor.asm_ in GfxROM`
+    - Added kernel routine _palette_reset_all_, option `SET PALETTE *`
+    - Replaced _.save_bin_program_ and _save_caq_program_ in _basfile.asm_ with _bas_save_program_ in _fileaux.asm_
  - v0.71h (2026-03-16)
     - Added BASIC error codes to `README.md`
     - Removed the following routines that have been copied from from AuxROM to GfxROM

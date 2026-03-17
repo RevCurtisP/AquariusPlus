@@ -139,8 +139,8 @@ check_xtoken:
 check_bang:
     ld      b,'!'
     byte    $11                   ; LD DE, over LD B,
-check_star:
-    ld      b,'*'
+check_multk:
+    ld      b,MULTK
 ;-----------------------------------------------------------------------------
 ; Read character at (HL) into A and compare with B
 ; Increments HL if match

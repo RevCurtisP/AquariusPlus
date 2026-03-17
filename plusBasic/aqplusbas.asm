@@ -95,7 +95,7 @@ null_desc:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.71h"
+    db "v0.71i"
     db 0
 plusver_len equ $ - plus_version
 plus_len   equ   $  - plus_text
@@ -1279,6 +1279,7 @@ _sysfile_end
     include "gfxboot.asm"
     include "gfxcommon.asm"
     include "gfxbitmap.asm"
+    include "gfxcolor.asm"        ; Color and Palette routines
     include "gfxline.asm"         ; Line drawing routines
     include "gfxpixel.asm"        ; Pixel drawing routines
     include "gfxscreen.asm"       ; Screen drawing routines

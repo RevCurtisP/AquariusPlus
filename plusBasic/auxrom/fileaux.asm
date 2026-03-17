@@ -139,3 +139,108 @@ bas_lookup_prog:
     inc     de                    ; Bump BufPtr
     ret
 
+;-----------------------------------------------------------------------------
+; Save BASIC Program
+;  Input: A: File Type: ASCTK, BINTK, CAQTK, 0 = Default
+;       HL: String descriptor address
+; Output: A: result code
+;-----------------------------------------------------------------------------
+bas_save_program:
+    or      a
+    call    z,.default_save_type
+    ex      af,af'                ; A' = FilTyp
+    call    _open_basfdesc_write
+    ret     m
+    ex      af,af'                ; A = FilTyp, A' = FilDsc
+    cp      ASCTK
+    jp      z,save_asc_prog
+    cp      BINTK
+    jr      z,save_bin_prog
+    jr      save_caq_prog
+
+.default_save_type
+    ld      a,(BASYSCTL)
+    and     BASSAVASC
+    ret     z
+    ld      a,ASCTK
+    retn
+
+save_bin_prog:
+    ex      af,af'
+    ld      de,(TXTTAB)
+    dec     de
+    call    _write_bin_prog
+    jp      _close_basfdesc
+
+save_caq_prog:
+    ex      af,af'                ; A = FilDsc
+    call    write_sync_bytes
+    ld      de,_bas_filnam
+    call    p,_write_filnam
+    call    p,_write_sync_bytes
+    call    p,_write_prog
+    call    p,_write_trailer
+    jp      _close_basfdesc
+
+_write_prog
+    ld      a,l
+    ld      de,(TXTTAB)             ; DE = start of BASIC program
+_write_bin_prog
+    ld      hl,(VARTAB)             ; HL = end of BASIC program
+    sbc     hl,de
+    ld      b,h                     ; BC = length of BASIC program
+    ld      c,l
+    jp      esp_write_bytes 
+
+_write_filnam:
+    ld      a,l
+write_filnam:
+    ld      bc,6
+    jp      esp_write_bytes
+_bas_filnam:
+    byte    "BASPRG"
+    
+_write_sync_bytes:
+    ld      a,l
+write_sync_bytes:
+    ld      de,.sync_bytes        ; Sync bytes
+    ld      bc, 13
+    jp      esp_write_bytes 
+.sync_bytes
+    byte    $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$00
+
+_write_trailer:
+    ld      a,l
+write_trailer:
+    ld      de,.trailer
+    ld      bc,15
+    jp      esp_write_bytes
+.trailer
+    byte    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+
+;; Still using routine in basfile.asm (for now)
+save_asc_prog:
+    ret
+
+_open_basfdesc_read:
+    call    dos_open_read
+    jr      _set_basfdesc
+
+_open_basfdesc_write:
+    call    dos_open_write
+_set_basfdesc:
+    ret     m
+    inc     a
+    ld      (BAS_FDESC),a
+    dec     a
+    ret
+
+_close_basfdesc:
+    push    af
+    ld      a,(BAS_FDESC)
+    dec     a
+    call    dos_close
+    xor     a
+    ld      (BAS_FDESC),a
+    pop     af
+    ret

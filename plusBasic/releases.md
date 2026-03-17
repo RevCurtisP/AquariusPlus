@@ -1,4 +1,6 @@
 # plusBASIC Release History
+ - v0.71i (2026-03-17)
+    - Added `SET PALETTE *`
  - v0.71h (2026-03-16)
     - Added BASIC error codes to `README.md`
     - Added statement `DEF RECLIST` and function `INRECT()`

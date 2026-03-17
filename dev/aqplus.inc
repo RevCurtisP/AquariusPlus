@@ -18,6 +18,7 @@ key_clear_fifo         equ $2127 ; 2127 Clear alternate keyboard buffer
 key_read               equ $212A ; 212A Read from alternate keyboard buffer
 key_set_keymode        equ $2130 ; 2130 Set alternate keyboard buffer mode
 page_call              equ $2133 ; 2133 Call subroutine in paged memory
+irq_done               equ $2136 ; 2136 Exit user IRQ routine
 
 ; ESP Interface
 esp_cmd                equ $213C ; 213C Issue command
@@ -44,7 +45,7 @@ esp_send_bytes         equ $217B ; 217B Send bytes from main memory
 esp_send_string        equ $217E ; 217E Send String from main memory
 esp_send_strdesc       equ $2181 ; 2181 Send BASIC string from main memory
 esp_set_keymode        equ $2184 ; 2184 Set alternate keyboard port mode
-esp_write_byte         equ $2187 ; 2187 ** Not implemented **
+esp_write_byte         equ $2187 ; 2187 Write single byte
 esp_write_bytes        equ $218A ; 218A Write bytes from main memory
 esp_write_repbyte      equ $218D ; 218D Write byte repeatedly
 esp_write_paged        equ $2190 ; 2190 Write bytes from paged memory
@@ -209,31 +210,42 @@ version_to_long        equ $C108 ; C108 Convert string version to long int
 
 ; *****************
 ; * Graphics ROM  *
-; * LD   IY,label *
-; * CALL gfx_call *
+; * This module   *
+; * is being      *
+; * refactored.   *
+; * Many of the   *
+; * routines will *
+; * crash the     *
+; * Aquarius+     *
 ; *****************
 
 ; Bitmap Graphics
 bitmap_init_vars       equ $C000 ; C000 Initialize bitmap system variables
 bitmap_set_mode        equ $C003 ; C003 Set bitmap mode system variable from video control register
 bitmap_read_sysvars    equ $C006 ; C006 Read bitmap system variables
-bitmap_read_color      equ $C009 ; C009 Get Bitmap Draw Colors
-bitmap_write_color     equ $C00C ; C00C Set Bitmap Draw Colors
+bitmap_get_color       equ $C009 ; C009 Get Bitmap Draw Colors
+bitmap_set_color       equ $C00C ; C00C Set Bitmap Draw Colors
 bitmap_clear_screen    equ $C00F ; C00F Clear Bitmap
 bitmap_fill_byte       equ $C012 ; C012 Fill Bitmap with Byte
 bitmap_fill_color      equ $C015 ; C015 Fill Bitmap Color RAM
-bitmap_line            equ $C018 ; C018 [Future]
+bitmap_line            equ $C018 ; C018 Draw Line
+bitmap_togglepixel     equ $C02A ; C02A Toggle pixel
 bitmap_setpixel        equ $C02D ; C02D Draw pixel
-bitmap_resetpixel      equ $C030 ; C030 Erase pixel on 1 bpp bitmap screen
+bitmap_resetpixel      equ $C030 ; C030 Erase pixel
 bitmap_getpixel        equ $C033 ; C033 Return pixel/bloxel at position
 bitmap_get             equ $C036 ; C036 [future] Read Bitmap Screen Section into Buffer
+bitmap_put             equ $C039 ; C039 (bitmap_put)
+bitmap_putchar         equ $C03C ; C03C (bitmap_putchar)
 colormap_fill          equ $C045 ; C045 Fill 1bpp Color Map Rectangle with Byte
+bitmap_rect            equ $C048 ; C048 Draw Unfilled Rectange
+bitmap_frect           equ $C04B ; C04B Draw Filled Rectange
 
 ; Palette and Colors
 palette_reset          equ $C054 ; C054 Reset palette to default colors
 palette_set            equ $C057 ; C057 Write one or more entries to palette
 palette_get            equ $C05A ; C05A Read entire palette
 palette_get_entry      equ $C05D ; C05D Read single palette entry
+palette_reset_all      equ $C060 ; C060 Reset all palettes to default colors
 
 ; Text Screen Read and Write
 screen_clear_color     equ $C078 ; C078 Fill Color RAM with current/default colors
@@ -255,6 +267,7 @@ screen_invert_cursor   equ $C0C9 ; C0C9
 screen_get             equ $C0D2 ; C0D2 Read Text Screen Section into Buffer
 screen_put             equ $C0D5 ; C0D5 Write Text Screen Section from Buffer
 screen_fill            equ $C0D8 ; C0D8 Fill Text or Color Screen Rectangle with Byte
+screen_rect            equ $C0DB ; C0DB
 screen_mode            equ $C0DE ; C0DE Return current Text Screen
 
 ; Text Screen Switch and Swap
@@ -268,23 +281,33 @@ screen_swap            equ $C102 ; C102
 screen_switch          equ $C105 ; C105
 
 ; Tilemap
-tile_set               equ $C10E ; C10E
-tile_get               equ $C111 ; C111
-tile_from_chrrom       equ $C114 ; C114
-tile_combine_props     equ $C117 ; C117
-tilemap_set_offset     equ $C120 ; C120
-tilemap_get_offset     equ $C123 ; C123
-tilemap_set_tile       equ $C126 ; C126
-tilemap_get_tile       equ $C129 ; C129
-tilemap_fill           equ $C12C ; C12C
-tilemap_get            equ $C12F ; C12F
-tilemap_put            equ $C132 ; C132
+tile_set               equ $C10E ; C10E Write Tile definition to Video RAM
+tile_get               equ $C111 ; C111 Read Tile definition from Video RAM
+tile_from_chrrom       equ $C114 ; C114 Build Tile from Character definition
+tile_combine_props     equ $C117 ; C117 Combine Tile Index, Palette# and Attributes
+tilemap_set_offset     equ $C120 ; C120 Move Tilemap to specified offset
+tilemap_get_offset     equ $C123 ; C123 Return current Tilemap offset
+tilemap_set_tile       equ $C126 ; C126 Write Tilemap cell contents
+tilemap_get_tile       equ $C129 ; C129 Read Tilemap cell contents
+tilemap_fill           equ $C12C ; C12C Fill Tilemap section with specified Tile
+tilemap_get            equ $C12F ; C12F Read clip from Tilemap into buffer
+tilemap_put            equ $C132 ; C132 Write clip from buffer to tilemap
+tilemap_copy           equ $C135 ; C135 Copy clip from Virtual tilemap to Tilemap
+tilemap_reset          equ $C138 ; C138 Reset tilemap to home position
+
+; Sprite Definition and Manipulation
 sprite_define          equ $C141 ; C141
 sprite_defrect         equ $C144 ; C144
 sprite_set_attrs       equ $C147 ; C147
 sprite_get_attrs       equ $C14A ; C14A
 spritle_set_pos        equ $C14D ; C14D
 spritle_get_pos        equ $C150 ; C150
-spritle_string_attrs   equ $C153 ; C153
-spritle_reset          equ $C156 ; C156
-spritle_reset_all      equ $C159 ; C159
+spritle_set_props      equ $C153 ; C153
+spritle_get_props      equ $C156 ; C156
+spritle_string_attrs   equ $C159 ; C159
+spritle_reset          equ $C15C ; C15C
+spritle_reset_all      equ $C15F ; C15F
+sprite_collision       equ $C162 ; C162
+spritle_collision      equ $C165 ; C165
+
+; Character Set Manipulation

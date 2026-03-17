@@ -136,9 +136,6 @@ RECT_Y2     equ $3857
 STRDSC1     equ $3859
 STRDSC2     equ $385B
 
-; ToDo: Remove after bas_rect is removed from auxrom/basicgfx.asm
-STRDSC      equ STRDSC1
-
 ; CALL ARGS
 ARGHL      equ $3851   ; [word] 
 ARGDE      equ $3853   ; [word]

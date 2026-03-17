@@ -126,7 +126,8 @@ screen_reset:
     ld      a,40
     ld      (LINLEN),a
     xor     a
-    jp      palette_reset
+    ld      iy,palette_reset
+    jp      gfxrom_call
 
 ;-----------------------------------------------------------------------------
 ; Expand Convert IO_VCTRL to screen status

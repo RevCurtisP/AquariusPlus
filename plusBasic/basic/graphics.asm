@@ -249,9 +249,16 @@ scan__rect:
 ;-----------------------------------------------------------------------------
 ST_RESET_PALETTE:
     rst     CHRGET                ; Skip PALETTE
-    call    get_byte4             ; A = palette#
+    cp      MULTK
+    jr      nz,.notstar
+    ld      iy,palette_reset_all
+    rst     CHRGET                ; Skip *
+    jr      .reset
+.notstar
+    call    get_byte4          ; A = palette#
     ld      iy,palette_reset
-    jp      gfx_call_preserve_hl
+.reset
+    jp      gfxrom_call_preserve_hl
 
 ;-----------------------------------------------------------------------------
 ; SET PALETTE statement
