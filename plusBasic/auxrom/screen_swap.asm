@@ -112,22 +112,35 @@ init_screen_vars:
     ldir
     ret
 
+default_palette:
+    dw $111, $F11, $1F1, $FF1, $22E, $F1F, $3CC, $FFF
+    dw $CCC, $3BB, $C2C, $419, $FF7, $2D4, $B22, $333
+
 ;-----------------------------------------------------------------------------
 ; Reset Screen to Text only and default palette
 ; Clobbers: A,BC,D,HL
 ;-----------------------------------------------------------------------------
 screen_reset:
-    ld      a,VCTRL_TEXT_EN
+    in      a,(IO_VCTRL)
+    and     VCTRL_TEXT_BITS
+    or      VCTRL_TEXT_EN
     out     (IO_VCTRL),a
+    call    .linlen
+    ld      (LINLEN),a
     call    bitmap_set_mode_nobuff
     ld      a,(SCREENCTL)
     and     SCRCHRSET+SCRCHRMOD
     ld      (SCREENCTL),a
-    ld      a,40
-    ld      (LINLEN),a
     xor     a
     ld      iy,palette_reset
     jp      gfxrom_call
+
+.linlen
+    and     VCRTL_80COL_EN
+    ld      a,40
+    ret     z
+    add     a,a                   ; Set LinLen to 80
+    ret
 
 ;-----------------------------------------------------------------------------
 ; Expand Convert IO_VCTRL to screen status

@@ -1,12 +1,8 @@
+;====================================================================
+; Graphics Pixel and Bloxel Line Drawing Kernel Routines
+;====================================================================
 
-; SCREEN 0,2:CALL @63,$8DF ARGS 60,50,20:PAUSE
 
-
-test_hline:
-    push    hl
-    exx
-    pop     bc
-    exx
 ;-----------------------------------------------------------------------------
 ; Draw horizontal line of bloxels or pixels
 ; Input: A: Color/Option
@@ -14,9 +10,12 @@ test_hline:
 ;       DE: Y-Coord
 ;      BC': End X-Coord
 ; Clobbered: All
-; Derived from code written by Mack Wharton
 ;-----------------------------------------------------------------------------
+; SCREEN 0,2:CLEAR BITMAP 7,0:CALL @63,$04E ARGS 0,50,20,0,0,63:PAUSE
+; SCREEN 0,3:CLEAR BITMAP:CALL @63,$04E ARGS 0,50,20,0,0,63:PAUSE
+; CALL @63,$04E ARGS 0,50,20,0,0,63
 bitmap_hline:
+    ld      a,2
     ld      (PSETCOLOR),a
     push    de                    ; Stack = Y1, RtnAdr
     exx
@@ -30,8 +29,6 @@ bitmap_hline:
     pop     hl                    ; HL = X2; Stack = RtnAdr
     sbc     hl,bc                 ; HL = Width
     ret     c
-    push    hl                    ; Stack = Width, RtnAdr
-
     ld      a,(BMPMODE)
     or      a
     jr      z,_hline40
@@ -40,50 +37,127 @@ bitmap_hline:
     dec     a
     jr      z,_hline1bpp
     jr      _hline4bpp
+
     
 _hline40:
-    ret
-
+    call    bloxel_40col_addr   ; HL = ScrAdr, DE = MskAdr, A = BitMask
+    jr      _xloop
 _hline80:
-    ret
+    call    bloxel_80col_addr   ; HL = ScrAdr, DE = MskAdr, A = BitMask
+_xloop
+    ld      a,(hl)                ; A = ScrnChr
+    or      $A0                   ; Convert to GfxChr
+    xor     (hl)                  ; Clear bits 5 and 7
+    jr      z,.ploop              ; If not GfxChr
+    ld      a,$A0                 ;   Set to blank
+.ploop
+    ex      af,af'
+    ld      a,b
+    or      c
+    ret     z
+    ex      af,af'
+    dec     bc
+    ex      de,hl                 ; HL = MskAdr, DE = ScrAdr
+    or      (hl)                  ; Set Pixel in Mask
+    ex      de,hl                 ; DE = MskAdr, HL = ScrAdr
+    inc     e                     ; Next Pixel
+    bit     0,e                   ; If not next byte
+    jr      nz,.ploop             ;   Do next pixel
+    ld      (hl),a                ; Write GfxChr
+    inc     hl
+    dec     e
+    dec     e                     ; Back up to left pixel
+    jr      _xloop
+
 
 
 _hline1bpp:
+    in      a,(IO_BANK1)
+    push    af                  ; Stack = OldPg, RtnAdr
     ld      a,VIDEO_RAM
     out     (IO_BANK1),a
+    push    hl                  ; Stack = Width, OldPg, RtnAdr
     call    pixel_1bpp_addr     ; A = BitMsk, DE = BytAdr
+    pop     bc                  ; BC = Width; Stack = OldPg, RtnAdr
     ex      de,hl               ; HL = BytAdr
-    ld      d,a                 ; D = BitMsk
-    pop     bc                  ; BC = Width; Stack = RtnAdr
-    in      a,(IO_BANK1)
-    push    af
-.orbytes
-    ld      e,(hl)              ; A = ScrByt
+    ld      d,a
+    call    draw_hline1bpp      ; D = BitMsk
+.done
+    pop     af                  ; A = OldPg; Stack = RtnAdr
+    out     (IO_BANK1),a
+    ret
+
+draw_hline1bpp:
+    ld      e,(hl)              ; E = ScrByt
 .orbits:
     ld      a,b
     or      c
-    jr      z,.done
+    ret     z
     dec     bc
     ld      a,e                 ; A = ScrByt
     or      d                   ; A = NewByt
     ld      e,a
     rr      d                   ; Shift Bitmask
-;    jr      nc,.bitloop         ; Do next bit
+    jr      nc,.orbits          ; Do next bit
     rr      d
     ld      (hl),e              ; Store Byte
     inc     hl                  ; Next Byte
- ;   jr      .byteloop
+    jr      draw_hline1bpp
+
+_hline4bpp:
+    in      a,(IO_BANK1)
+    push    af                  ; Stack = OldPg, RtnAdr
+    ld      a,VIDEO_RAM
+    out     (IO_BANK1),a
+    push    hl                  ; Stack = Width, OldPg, RtnAdr
+    call    pixel_4bpp_addr     ; BC = PxlOfs, DE = BytAdr
+    ld      a,(PSETCOLOR)
+    call    pixel_4bpp_mask     ; B = BitMsk, C = Color
+    or      a
+    rla
+    rla
+    rla
+    rla
+    or      c                   ; A = Colors
+    ex      af,af'              ; A' = Colors
+    ex      de,hl               ; HL = BytAdr
+    ld      d,b                 ; D = BitMsk
+    pop     bc                  ; BC = Width; Stack = OldPg, RtnAdr
+    call    .orbytes            ; D = BitMsk
 .done
-    pop     af
+    pop     af                  ; A = OldPg; Stack = RtnAdr
     out     (IO_BANK1),a
     ret
 
+.orbytes
+    ld      e,(hl)              ; E = ScrByt
+.orbits:
+    ld      a,b
+    or      c
+    ret     z
+    dec     bc
+    ex      af,af'              ; A = Colors
+    push    af                  ; Stack = Colors, RtnAdr
+    and     d                   ; A = ClrNyb
+    ex      af,af'              ; A' = ClrNyb
+    ld      a,d                 ; A = BitMsk
+    xor     $FF                 ; A = AndMsk
+    push    af                  ; Stack = NewMsk, Colors, RtnAdr
+    and     e                   ; Clear Nybble
+    ld      e,a
+    ex      af,af'              ; A = ClrNyb
+    or      e                   ; OR into byte
+    ld      e,a                 ; E = New Byte
+    pop     af                  ; A = NewMsk; Stack = Colors, RtnAdr
+    ex      af,af'              ; A' = NewMsk
+    pop     af                  ; A = Colors; Stack = RtnAdr
+    ex      af,af'              ; A = NewMsk, A' = Colors
+    ld      d,a                 ; D = NewMsk
+    jp      p,.orbits           ; Loop if right nybble
+    ld      (hl),e              ; Store Byte
+    inc     hl                  ; Next Byte
+    jr      .orbytes
     
-.and_pxl
-
-_hline4bpp:
-    ret
-
 
 ;-----------------------------------------------------------------------------
 ; Draw line of bloxels or pixels screen
@@ -96,7 +170,6 @@ _hline4bpp:
 ; Derived from code written by Mack Wharton
 ;-----------------------------------------------------------------------------
 bitmap__line:
-    ld      (PSETCOLOR),a
     call    bitmap_check_rect
     ret     c
 _line:

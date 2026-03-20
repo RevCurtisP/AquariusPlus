@@ -324,13 +324,20 @@ _float_de:
 ; Enhanced INPUT
 ; syntax: INPUT (col,row),minlen,maxlen,INT var
 ;-----------------------------------------------------------------------------
-; 10 INPUT (20,15),1,3,INT I
+; INPUT (5,15),1,3,INT I:?:? I
+; INPUT (5,15),1,8,STR A$:?:? A$
+; INPUT (5,15),1,8,HEX H:?:? H
+;; Proposed: INPUT (col,row)-(col,row),...
 ST_INPUT:
     push    af
+    call    get_cursor_mode
+    ex      af,af'                ; A' = CrsrMode
     call    set_cursor_on
     pop     af
     cp      '('                   ; If not INPUT (...
     jp      nz,INPUT              ;   Do regular INPUT
+    ex      af,af'
+    push    af                    ; Stack = CrsrMode, RtnAdr
     call    SCAND                 ; C = Col, E = Row
     ld      d,c                   ; D = Col
     push    de                    ; Stack = ColRow, RtnAdr
@@ -340,24 +347,19 @@ ST_INPUT:
     pop     af                    ; A = MinLen; Stack = ColRow, RtnAdr
     ld      d,a                   ; D = MinLen
     push    de                    ; Stack = MinMax, ColRow, RtnAdr
-    call    get_comma             ; Missing operand error if no comma
-    SYNCHKT INTTK                 ; Require INT (for now)
+    call    get_comma_token       ; A = Type Token
+    push    af                    ; Stack = TypTok, MinMax, ColRow, RtnAdr
     call    PTRGET                ; DE = VarPtr
+    pop     af                    ; A = TypTok; Stack = MinMax, ColRow, RtnAdr
     pop     bc                    ; BC = MinMax; Stack = ColRow, RtnAdr
     ex      (sp),hl               ; HL = ColRow; Stack = TxtPtr, RtnAdr
     ex      de,hl                 ; DE = ColRow; HL = VarPtr
-    push    hl                    ; Stack = VarPtr, TxtPtr, RtnAdr
-    call    GETYPE                ; A = VarTyp
-    jp      z,TMERR               ; If string, Type mismatch error (for now)
-    call    con_input_int
-    jp      c,FCERR               ; If bad parameters, Illegal quantity error
-    jp      m,pop2hl_ret          ; If aborted, don't change variable
-    call    FIN                   ; FACC = Entry
-    pop     hl                    ; HL = VarPtr
-    call    MOVMF                 ; Copy FACC to Variable
-    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
-    ret
-
+    ld      iy,bas_input
+    call    aux_call
+    pop     hl                    ; HL = TxtPtr; Stack = CrsrMode, RtnAdr
+    pop     af                    ; A = CrsrMode; Stack = RtnAdr
+    jp      set_cursor_mode       ; Restore Cursor Mode and return
+    
 ;-----------------------------------------------------------------------------
 ; Enhanced INT function
 ; INT(string$)
@@ -546,12 +548,12 @@ ST_POKE:
 ;-----------------------------------------------------------------------------
 ST_DOKE:
     call    get_page_addr         ; AF = PgFlg, DE = Addr
-    push    af                    ; Stack = PgFlag, RtnAd
-    push    de                    ; Stack = Addr, PgFlag, RtnAd
+    push    af                    ; Stack = PgFlag, RtnAdr
+    push    de                    ; Stack = Addr, PgFlag, RtnAdr
     call    get_comma_int         ; DE = Word
     ld      b,d
-    ld      c,e                   ; BC = Word; Stack = PgFlag, RtnAd
-    pop     de                    ; DE = Addr; Stack = RtnAd
+    ld      c,e                   ; BC = Word; Stack = PgFlag, RtnAdr
+    pop     de                    ; DE = Addr; Stack = RtnAdr
     pop     af                    ; A = PgFlg
     jr      c,.write_paged_word   ; If page specified, write to it
     ld      a,c                   ; Get LSB
@@ -715,7 +717,7 @@ FN_DEEK:
     push    af                    ; Save it
     SYNCHKC ')'                   ; Require close paren
     pop     af                    ; Get page
-    call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAd
+    call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
     jr      c,.read_page_word     ; If not specified
     ld      a,(de)                ;   Get LSB
     ld      c,a

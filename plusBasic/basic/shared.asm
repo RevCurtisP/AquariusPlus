@@ -336,7 +336,9 @@ get_comma_token:
     call    get_comma             ; Require comma
     cp      XTOKEN                ; If extended token
     call    z,CHRGTR              ;   Get next byte
-    inc     hl                    ; Skip Token
+    push    af
+    rst     CHRGET                ; Skip Token
+    pop     af
     ret
 
 ;-----------------------------------------------------------------------------

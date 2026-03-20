@@ -26,14 +26,14 @@ gfx_bloxeltab40:
     byte    $48,$33,$F0, $48,$33,$F2, $48,$33,$F4, $70,$33,$F0, $70,$33,$F2, $70,$33,$F4
     byte    $98,$33,$F0, $98,$33,$F2, $98,$33,$F4, $C0,$33,$F0, $C0,$33,$F2, $C0,$33,$F4
 
-;bloxel tables require the following offset
-    dc ($FF00&$)+240-$,$76
+;bloxel table must be aligned to $xxF0
+    dc ($FF00&$)+$F0-$,$76
 gfx_bloxel_mask:
     byte  $01,$02,$04,$08,$10,$40
 ;          *.  .*  ..  ..  ..  ..
 ;          ..  ..  *.  .*  ..  ..
 ;          ..  ..  ..  ..  *.  .*
-
+;         2F0 2F1 2F2 2F3 2F4 2F5
     dc ($FF00&$)+256-$,$76
 
 ; Line Address LSB, MSB, Bitmask

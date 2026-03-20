@@ -132,7 +132,7 @@ FN_DATE:
 .notime
     ld      iy,bas_date 
 _datetime:
-    SYNCHKC '$'                   ; Require Dollar Sign
+    SYNCHKC '$'                   ; Require Dollar Sign 
     call    push_hl_labbck
     call    aux_call              ; Read DATE/TINE into FBUFFR
     jp      TIMSTR                ; Create and return temporary string
@@ -688,6 +688,8 @@ aux_call_popret:
 ;-----------------------------------------------------------------------------
 ; OFFSET Function
 ; OFFSET ( row, column)
+; Note: Coordinates match those used by LOCATE
+;       (0,0) returns LINELEN+1
 ;-----------------------------------------------------------------------------
 FN_OFF:
     inc     hl                    ; Skip OFF

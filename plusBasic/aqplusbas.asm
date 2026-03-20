@@ -95,7 +95,7 @@ null_desc:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.71i"
+    db "v0.71j"
     db 0
 plusver_len equ $ - plus_version
 plus_len   equ   $  - plus_text
@@ -1187,7 +1187,6 @@ _sysfile_end
     include "baslines.asm"        ; (De)tokenize, add, insert, delete program lines
     include "coldboot.asm"        ; Cold boot code
     include "basbitmap.asm"       ; Bitmap drawing statements and functions
-    include "edit.asm"            ; Enhanced INPUT and line editor
     include "enhanced.asm"        ; Enhanced stardard BASIC statements and functions
     include "evalext.asm"         ; EVAL extension - hook 9
     include "extended.asm"        ; Statements and functions from Aquarius Extended BASIC
@@ -1228,6 +1227,7 @@ _sysfile_end
     include "basicaux.asm"        ; BASIC auxiliary
     include "debug.asm"           ; Debugging routines
     include "dos.asm"             ; DOS routines
+    include "edit.asm"            ; Enhanced INPUT and line editor
     include "esp_aux.asm"         ; ESP routines in auxiliary ROM
     include "evalaux.asm"         ; Core routine for evalext.asm
     include "fileaux.asm"         ; Disk and File BASIC auxiliary routines 
@@ -1282,6 +1282,7 @@ _sysfile_end
     include "gfxcolor.asm"        ; Color and Palette routines
     include "gfxline.asm"         ; Line drawing routines
     include "gfxpixel.asm"        ; Pixel drawing routines
+    include "gfxrect.asm"         ; Rectangle drawing routines
     include "gfxscreen.asm"       ; Screen drawing routines
     include "gfxsprites.asm"      ; Sprite graphics module
     include "tile.asm"            ; Tile graphics module

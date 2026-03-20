@@ -250,6 +250,33 @@ get_varbase:
     sla     l                     ; HL = SysVar Base (0-12)
     ret
 
+; Input: BC = X1, DE = Y1, BC' = X2, DE' = Y2
+; Output: BC' = Width, DE' = Height, HL = Width
+; Returns Carry Set if out of bounds
+; Must not alter A
+bitmap_rect_size:
+    call    bitmap_check_rect     ; If coords out of bounds
+    ret     c                     ;   Return Carry Set
+    exx                           ; BC = X2, DE = Y2
+    push    bc                    ; Stack = X2, RtnAdr
+    push    de                    ; Stack = Y2, X2, RtnAdr
+    exx                           ; BC = X1, DE = Y1
+    pop     hl                    ; HL = Y2; Stack = X2, RtnAdr
+    sbc     hl,de                 ; If Y2 - Y1 < 0
+    jp      c,POPHRT              ;   Discard X2 and Return
+    inc     hl                    ; HL = Height
+    ex      (sp),hl               ; HL = X2; Stack = Height, RtnAdr
+    sbc     hl,bc                 ; If X2 - X1 < 0
+    jp      c,POPHRT              ;   Discard Width and Return
+    inc     hl                    ; HL = Width
+    push    hl                    ; Stack = Width, Height, RtnAdr
+    exx                           ; BC' = X1, DE' = Y1
+    pop     bc                    ; BC = Width; Stack = Height, RtnAdr
+    pop     de                    ; DE = Height; Stack = RtnAdr
+    exx                           ; BC = X1, DE = Y1, BC' = Width, DE' = Height
+    ret
+
+
 
 ; Input: BC = X1, DE = Y1, BC' = X2, DE' = Y2
 ; Returns Carry set if out of bounds

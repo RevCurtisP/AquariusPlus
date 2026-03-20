@@ -133,7 +133,7 @@ _togglepixel_addr:
 ; 40 column bloxel subroutines
 ;--------------------------------------------------------------------
 _getpixel40:
-    call    _bloxel40
+    call    bloxel_40col_addr
 _getbloxel
     jr      nz,.notbloxel
     and     (hl)
@@ -146,7 +146,7 @@ _getbloxel
     ret     
     
 _resetpixel40:
-    call    _bloxel40
+    call    bloxel_40col_addr
 _resetbloxel:
     jr      z,.reset
     ld      (hl),$A0              ;   Set to blank
@@ -158,7 +158,7 @@ _resetbloxel:
     ret
 
 _setpixel40:
-    call    _bloxel40
+    call    bloxel_40col_addr
     jr      z,.set
     ld      (hl),$A0              ;   Set to blank
 .set
@@ -194,15 +194,15 @@ _getpixelc:
 
 ; C = Y-coordinate, DE: X-coordinate
 _getpixel80:
-    call    _bloxel80
+    call    bloxel_80col_addr
     jr      _getbloxel
 
 _resetpixel80:
-    call    _bloxel80
+    call    bloxel_80col_addr
     jr      _resetbloxel
 
 _setpixel80:
-    call    _bloxel80
+    call    bloxel_80col_addr
     jr      z,.set
     ld      (hl),$A0              ;   Set to blank
 .set
@@ -220,10 +220,10 @@ _setpixel80:
     ret
 
 _togglepixel80:
-    call    _bloxel80
+    call    bloxel_80col_addr
     jr      _togglepixel
 _togglepixel40:
-    call    _bloxel40
+    call    bloxel_40col_addr
 _togglepixel:
     jr      z,.set
     ld      (hl),$A0              ;   Set to blank
@@ -255,10 +255,10 @@ _psetcolor:
 ;        HL: Screen Address
 ; Clobbered: BC, HL
 ;-----------------------------------------------------------------------------
-_bloxel80
+bloxel_80col_addr
     ld      h,high(gfx_bloxeltab80)
     jr      _bloxel
-_bloxel40:
+bloxel_40col_addr:
     ld      h,high(gfx_bloxeltab40)
 _bloxel:
     ld      a,e                   ; A = Y-Coord
@@ -321,7 +321,7 @@ _setpixelm:
     pop     de                    ; DE = Y; Stack = X, RtnAdr
     pop     bc                    ; BC = X; Stack = RtnAdr
     ret     m
-    call    _calc_1bpp_cell       ; HL = Cell address
+    call    pixel_1bpp_cell       ; HL = Cell address
     ld      b,a
     ld      a,(hl)
     and     $0F
@@ -344,7 +344,6 @@ _pixelm:
 ; Output:  A: BitMask
 ;         BC: Pixel Offset
 ;         DE: Coordinate Address
-; Clobbered: HL
 ;-----------------------------------------------------------------------------
 pixel_1bpp_addr:
     ld      a,c
@@ -359,14 +358,26 @@ pixel_1bpp_addr:
 _calc_byte_addr:
     add     hl,bc                 ; HL = BytAdr
     ex      de,hl                 ; DE = BytAdr
+; Possible extension: Return Color Cell Address in HL
+;    sra     h
+;    rr      l
+;    sra     h
+;    rr      l
+;    sra     h
+;    rr      l                     ; HL = RowAdr / 8
+;    ld      a,$20
+;    add     a,b
+;    ld      b,a
+;    add     hl,bc                 ; HL = CellAdr
+;    push    hl                    ; Stack = CellAdr, RtnAdr
     ex      af,af'
     ld      b,0
     ld      c,a                   ; BC = PxlOfs
     ld      hl,_ormask1bpp
     add     hl,bc                 ; HL = MskAdr
     ld      a,(hl)                ; B = BitMsk
+;    pop     bc                    ; BC = CellAdr; Stack = RtnAdr
     ret
-
 ;-----------------------------------------------------------------------------
 ; Calculate 1bpp bitmap color cell address
 ;  Input: BC: X-coordinate
@@ -374,7 +385,7 @@ _calc_byte_addr:
 ; Output: HL: Cell address
 ; Clobbered: BC, DE
 ;-----------------------------------------------------------------------------
-_calc_1bpp_cell:
+pixel_1bpp_cell:
     sra     b
     rr      c
     srl     c
@@ -409,7 +420,7 @@ _pixelc:
     rla                           
     jr      nc,.notxor            ; If $FF
     push    bc
-    call    .getmask              ;   B = Mask, C = $FF
+    call    pixel_4bpp_mask       ;   B = Mask, C = $FF
     ld      a,b
     xor     $FF
     ld      b,a                   ;   B = Mask ^ $FF
@@ -426,13 +437,13 @@ _pixelc:
     rla
     rla
 .noshift
-    call    .getmask              ; B = Mask, C = Color
+    call    pixel_4bpp_mask       ; B = Mask, C = Color
     ld      a,(de)
     and     b
     or      c
     ld      (de),a
     ret
-.getmask
+pixel_4bpp_mask:
     ld      hl,_setmask
     add     hl,bc                 ;   HL = MskAdr
     ld      b,(hl)                ;   B = BitMsk

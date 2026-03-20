@@ -171,6 +171,18 @@ ARRAYREQ    equ $38F7   ; 3839                         *                     *
 ARRAYTYP    equ $38F8   ; 383C                         *                     *
 SPLITDEL    equ $38F8   ; 383C         *                           *
 
+; Enhanced INPUT
+INPVAR      equ $3851   ; [HL] Variable Pointer
+INPBUF      equ $3853   ;      String Buffer Address
+INPMAX      equ $3855   ;  [C] Maximum Length
+INPMIN      equ $3856   ;  [B] Minimum Length
+INPROW      equ $3857   ;  [E] Row
+INPCOL      equ $3858   ;  [D] Columns
+INPLEN      equ $3859   ; [LO] Length of Current Entry
+;               $385A   ; [HI] Garbage Byte
+INPPAD      equ $385B   ; [LO] Max Length - Entry Length
+;               $385C   ; [HI] Garbage Byte
+
 ;-----------------------------------------------------------------------------
 ; Variables
 ;-----------------------------------------------------------------------------

@@ -1,4 +1,9 @@
 # plusBASIC Release History
+ - v0.71j (2026-03-20)
+    - Modified `CURSORY` to return value used in `LOCATE`
+    - Added function `OFFSET()`
+    - Upgraded enhanced `INPUT` routine
+    - Fixed incorrect palette initialization for screens 2 and 3
  - v0.71i (2026-03-17)
     - Added `SET PALETTE *`
  - v0.71h (2026-03-16)

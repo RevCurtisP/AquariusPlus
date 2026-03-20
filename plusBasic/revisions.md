@@ -1,4 +1,28 @@
 # plusBASIC Revision History
+ - v0.71j (2026-03-20)
+    - Modified _bas_offset_ to match `LOCATE` coordinates, added _FN_OFF_ to _extended_function_ in _dispatch.asm_
+    - Modified _cursor_offset_location_ to return `LOCATE` coordinates, fixing `CURSORY`
+    - Fixed incorrect palette initialization
+      - Copied _default_palette_ table from _gfxcolor.asm_ in GfxROMM to _screen_swap.asm_ in AuxROM
+      - Renamed _default_palette_ to _default__palette_ in _gfxcolor.asm_
+    - Fixed _screen_reset_ and `RESET SCREEN` setting incorrect line length in 80 column mode
+    - Added temporary variables _INPVAR_, _INPBUF_, _INPMAX_, _INPMIN_, _INPROW_, _INPCOL_, _INPLEN_, and  _INPPAD_ to _plus.inc_
+    - Moved _edit.asm_ from ExtROM to AuxRom and added features to input routine
+      - Added mode `STR` for string variables
+      - Display and edit current contents of variable
+      - Control-X clears entry during editing
+      - Tailing spaces are trimmed before validating entry length 
+      - Control-C abort redisplays original variable contents
+    - Modified _ST_INPUT_ to restore cursor mode after enhanced `INPUT`
+    - Added routine _bitmap_rect_size_ to _gfxbitmap.asm_
+    - Added 4bpp and bloxel modes to _bitmap_hline_
+    - Renamed routines in _gfxpixel.asm_
+      - _\_bloxel80_ to _bloxel_80col_addr_
+      - _\_bloxel40_ to _bloxel_40col_addr_
+      - _\_calc_1bpp_cell_ to _pixel_1bpp_cell_
+      - _.getmask_ under _\_pixelc_ to _pixel_4bpp_mask_
+    - Added _PSETK_ definition and label _INBUFD_ to _sbasic.asm_
+    - Added and commited files _gfxcolor.asm_ and _gfxrect.asm_
  - v0.71i (2026-03-17)
     - Moved kernel routine _palette_reset_ from _color.asm_ in AuxROM to _gfxcolor.asm_ in GfxROM`
     - Added kernel routine _palette_reset_all_, option `SET PALETTE *`

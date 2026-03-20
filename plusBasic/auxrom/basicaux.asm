@@ -316,8 +316,9 @@ bas_offset:
     cp      c                     ; If LinLen - 1 < Column
     jp      c,FCERR               ;   Illegal Quantity error
     ld      a,24
-    cp      e                     ; If 24 < Row
+    cp      e                     ; If 23 < Row
     jp      c,FCERR               ;   Illegal Quantity error
+    inc     e                     ; Bump Row to match LOCATE
     ld      d,c                   ; D = Column
     ex      de,hl                 ; H = Column, L = Row
     call    cursor_offset         ; HL = Offset

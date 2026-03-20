@@ -587,6 +587,7 @@ TK      =            TK+1
 TK      =            TK+1
         byte    'C'+$80,"SAVE"    ;;$9B
 TK      =            TK+1
+PSETK   equ     TK                ;
         byte    'P'+$80,"SET"     ;;$9C
 TK      =            TK+1
 PRESETK equ     TK                ;
@@ -1487,7 +1488,8 @@ INPCOM: push    hl                ; Stack = VarPtr, TxtPtr
         ;; To assign a temporary string to a string variable
         ;; JP here with Stack = StrDsc, VarPtr, TxtPtr
 INBUFC: pop     de                ; DE = StrDsc; Stack = VarPtr, TxtPtr
-        call    FRETMS            ; Free Temporary, but no StringSpace
+        ;; JP here with DE = StrDsc; Stack = VarPtr, TxtPtr
+INBUFD: call    FRETMS            ; Free Temporary, but no StringSpace
         ex      de,hl             ; HL = StrDsc; Stack = TxtPtr
         call    STRCPY            ; Copy to Temp String. DE = TmpDsc
 DNTCPY: call    FRETMS            ; Free Temporary, but no StringSpace

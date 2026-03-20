@@ -65,7 +65,7 @@ cursor_offset_location:
     push  hl                      ; Stack = CurOfs, RtnAdr
     ld    d,b
     ld    e,c                     ; DE = LinLen
-    ld    bc,$FF                  ; Xpos = 0, Ypos = -1
+    ld    bc,$FE                    ; Xpos = 0, Ypos = -2
 .loop
     sbc   hl,de                   ; Offset -= LinLen
     inc   c                       ; Bump Ypos
