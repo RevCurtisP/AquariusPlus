@@ -281,7 +281,6 @@ bas_defgotvar:
 
 ; Returns A = Attributes byte
 bas_parse_attr:
-    call    GETYPE
     jr      z,.string             ; If numeric
     call    CONINT                ;   Convert to byte in A
     and     $7E                   ; Strip Index MSB

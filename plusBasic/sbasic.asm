@@ -314,7 +314,7 @@ FRMPRT: call    FRMPRN            ;; +                                        01
 PARTYP: call    PARCHK            ;; +                                        0120  cp      b       
                                   ;; +                                        0121  jr      z,MEMTST
                                   ;; +                                        0122
-        jr       GETYPE           ;; +                                        0123  dec     hl           
+        jr      GETYPE            ;; +                                        0123  dec     hl           
                                   ;; +                                        0124  ld      de,BASTXT+299
 ;; Evaluate String Expression
 FRMSTR: call    FRMEVL            ;; +                                        0125
@@ -499,7 +499,7 @@ FUNDSP: word    SGN               ;;$14F5
         word    SIN               ;;$18DD
         word    TAN               ;;$1970
         word    ATN               ;;$1985
-        word    PEEK              ;;$0B63
+        word    0                 ;;$0B63 PEEK
         word    LEN               ;;$0FF3
         word    STR               ;;$0E29
         word    VAL               ;;$1084
@@ -1309,7 +1309,7 @@ CHRCON: cp      ' '               ;[M80] MUST SKIP SPACES
 ;[M80] INTIDX READS A FORMULA FROM THE CURRENT POSITION AND
 INTIDX: rst     CHRGET            ;
 INTID2: call    FRMNUM            ;{M80} READ FORMULA AND GET RESULT AS INTEGER IN [D,E]
-INTFR2: rst     FSIGN             ;[M80] DON'T ALLOW NEGATIVE NUMBERS
+INTFRC: rst     FSIGN             ;[M80] DON'T ALLOW NEGATIVE NUMBERS
         jp      m,FCERR           ;[M80] TOO BIG. FUNCTION CALL ERROR
 ;;Convert FAC to Integer and Return in [D,E]
 ;;; Code Change: FAC Exponent <= 145 instead of 144 to allow numbers 
@@ -1887,10 +1887,13 @@ QDOT:   cp      '.'               ;[M65] LEADING CHARACTER OF CONSTANT?
         cp      NOTTK             ;[M80] CHECK FOR "NOT" OPERATOR
         jp      z,NOTER           ;
         cp      INKETK            ;[M80] INKEY$ FUNCTION?
-        jp      eval_extension    ;                                           0A34 jp      z,INKEY
-ISFNTK: cp      FNTK              ;
-        jp      z,FNDOER          ;
-        sub     ONEFUN            ;[M80] IS IT A FUNCTION CALL
+        jp      z,INKEY           ;
+        nop                       ;                                           0A2D  cp      FNTK
+        nop                       ;                                           0A2E
+        jp      eval_extension    ;                                           0A2F  jp      z,FNDOER
+                                  ;                                           0A30
+                                  ;                                           0A31
+SUBFUN: sub     ONEFUN            ;[M80] IS IT A FUNCTION CALL
         jp      nc,ISFUN          ;[M80] YES, DO IT
 ;[M80] ONLY POSSIBILITY LEFT IS A FORMULA IN PARENTHESES
 ;;Recursively Evaluate Formula in Parentheses
@@ -2090,9 +2093,11 @@ SNGFLT: ld      b,a               ;[M80] MAKE [A] AN UNSIGNED INTEGER
         nop                       ;                                           0B3E
         nop                       ;                                           0B3F
 ;;FNx Stub
-FNDOER: rst     HOOKDO            ;;If not hooked
-HOOK16: byte    16
-        jp      SNERR             ;;Syntax Error
+        nop                       ;                                           0B40  rst     HOOKDO
+        nop                       ;                                           0B41  byte    16
+        nop                       ;                                           0B42  jp      SNERR
+        nop                       ;                                           0B43
+        nop                       ;                                           0B44
 ;[M65] SUBROUTINE TO SEE IF WE ARE IN DIRECT MODE AND COMPLAIN IF SO.
 ERRDIR: push    hl                ;
         ld      hl,(CURLIN)       ;[M65] DIR MODE HAS [CURLIN]=$FFFF
@@ -2107,27 +2112,31 @@ GTBYTC: rst     CHRGET            ;
 ;;Evaluate 8 bit Numeric Value
 GETBYT: call    FRMNUM            ;[M80] EVALUATE A FORMULA
 ;;Convert FAC to Byte in [A]
-CONINT: call    FRCINT            ;; DE = int(FACC)                           0B57  call    INTFR2   
-        inc     d                 ;; If D = -1                                0B5A  ld      a,d      
-        jr      z,CONINC          ;;   Return E                               0B5B  or      a        
-                                  ;;                                          0B5C  jp      nz,FCERR
-        dec     d                 ;; Else if D = 0                            0B5D
-        jr      z,CONINC          ;;   Return E                               0B5E   
-                                  ;;                                          0B5F  dec     hl    
-        jp      FCERR             ;; Else FC error                            0B60  rst     CHRGET  
-                                  ;;                                          0B61  ld      a,e     
-                                  ;;                                          0B62  ret
-;;; Code Change: Remove Memory Protection
-PEEK:   call    FRCINT            ;[M80] GET AN INTEGER IN [D,E]
-        ld      a,(de)            ;[M80] GET THE VALUE TO RETURN              0B66  call    PROMEM
-        jr      SNGFLT            ;[M80] AND FLOAT IT                         0B67
-CONINC: dec     hl                ;; Back up TxtPtr                           0B69  ld      a,(de)
-        rst     CHRGET            ;; Set flags for next character             0B6A  jp      SNGFLT
-RETBYT: ld      a,e               ;;                                          0B6B
-        ret                       ;;                                          OB6C
-;;; Code Change: Remove Memory Protection
-POKE:   call    FRMNUM            ;[M80] READ A FORMULA
-        call    FRCINT            ;{M80} FORCE VALUE INTO INT IN [D,E]        Original Code
+CONINT: call    INTFRC            ;[M80] CONVERT THE FAC TO AN INTEGER IN [D,E]
+CONIND: ld      a,d               ;[M80] SET THE CONDITION CODES BASED ON THE HIGH ORDER
+        or      a                 ;
+        jp      nz,FCERR          ;[M80] WASN'T ERROR
+CONINC: dec     hl                ;[M80] FUNCTIONS CAN GET HERE WITH BAD [H,L] BUT NOT SERIOUS
+        rst     CHRGET            ;[M80] SET CONDITION CODES ON TERMINATOR
+        ld      a,e               ;[M80] RETURN THE RESULT IN [A] AND [E]
+        ret                       ;
+;;Evaluate Signed Byte
+FRMBYT: call    FRMNUM            ;[M80] EVALUATE A FORMULA                   0B63  call    FRCINT
+                                  ;;                                          OB64
+                                  ;;                                          OB65
+;;Convert FAC to Signed Byte in [A]
+CONBYT: call    FRCINT            ;; DE = int(FACC)                           0B66  call    PROMEM
+                                  ;;                                          OB67
+                                  ;;                                          OB68
+        inc     d                 ;; If D = -1                                0B69  ld      a,(de)
+        jr      z,CONINC          ;;   Return E                               0B6A  jp      SNGFLT
+                                  ;; Else                                     OB6B
+        dec     d                 ;;   Restore D                              0B6C
+        jr      CONIND            ;; Else Force 0 - 255                       OB6D  call    FRMNUM
+                                  ;;                                          0B6E
+        nop                       ;;                                          0B6F
+;; Deprecated POKE code
+        call    FRCINT            ;{M80} FORCE VALUE INTO INT IN [D,E]        
         nop                       ;;                                          0B73  call    PROMEM
         nop                       ;;                                          0B74
         nop                       ;;                                          0B75
@@ -2138,6 +2147,7 @@ POKE:   call    FRMNUM            ;[M80] READ A FORMULA
         pop     de                ;[M80] GET THE ADDRESS BACK
         ld      (de),a            ;[M80] STORE IT AWAY
         ret                       ;[M80] SCANNED EVERYTHING
+;;; End Deprecated Code
 
 ;;; Code Change: New Default USR Routine - Execute Code at Argument Address
 ;;; Replaces orphan routine FRMINT  (use GETINT instead)- 9 bytes             Original Code

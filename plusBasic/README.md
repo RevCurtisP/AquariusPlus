@@ -228,8 +228,8 @@
  - [x] **INKEY** - Return ASCII code of most recently pressed key.<!--KEY-->
  - [x] **INKEY(_string_)** - Return position in string of most recently pressed key.<!--KEY-->
  - [x] **INKEY$** - Return most recently pressed key as string.<!--KEY-->
- - [ ] **INPUT {_stringliteral_;}_var_{,...}** - Prompt for keyboard input and assigns entries to variables.<!--input-->
- - [ ] **INPUT (_col_,_row_),_minlen_,_maxlen_,{INT|STR} _var_** - Enhanced keyboard input routine.<!--input-->
+ - [ ] **INPUT {_stringliteral_;}_var_{,...}** - Prompt for keyboard input and assigns entries to variables.<!--INPUT-->
+ - [ ] **INPUT (_col_,_row_),_minlen_,_maxlen_,{INT|STR} _var_** - Enhanced keyboard input routine.<!--INPUT-->
  - [ ] **INRECT (_rectlist_,_x_,_y_)** - Return index of first rectangle containing coordinates.
  - [ ] **INSTR({_offset_,}_haystack_,_needle)** - Search for string _needle_ in string _haystack_.
  - [ ] **JOIN \*_array_$ INTO _string_ DEL _delimiter_** - Join string array elements into delimited string.

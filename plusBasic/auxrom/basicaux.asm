@@ -346,7 +346,7 @@ bas_out_bang:
 bas_out:
     push    bc                    ; Stack = Port, RtnAdr
     jr      z,.string             ; If numeric
-    call    CONINT                ;   E = Byte
+    call    CONBYT                ;   E = Byte
     pop     bc                    ;   BC = Port; Stack = RtnAdr
     out     (c), a                ;   Write byte to port
     ret                           ; Else

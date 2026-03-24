@@ -4,7 +4,6 @@
 
 ; Input: A: Type, DE: Array Start, BC = Array Length
 clear_array:
-    call    GETYPE                ; A = AryTyp
     push    hl                    ; Stack = TxrPtr, RtnAdr
     push    de                    ; Stack = AryAdr, TxtPtr, RtnAdr
     push    bc                    ; Stack = AryLen, AryAdr, TxtPtr, RtnAdr

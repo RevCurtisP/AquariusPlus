@@ -34,6 +34,14 @@ gfx_bloxel_mask:
 ;          ..  ..  *.  .*  ..  ..
 ;          ..  ..  ..  ..  *.  .*
 ;         2F0 2F1 2F2 2F3 2F4 2F5
+
+    dc ($FF00&$)+$F0-$,$76
+; Preset Mask: 
+    byte  $FE,$FD,$FB,$F7,$EF,$BF
+;          .*  *.  **  **  **  **
+;          **  **  .*  *.  **  **
+;          **  **  **  **  .*  *.
+
     dc ($FF00&$)+256-$,$76
 
 ; Line Address LSB, MSB, Bitmask

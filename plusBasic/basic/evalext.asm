@@ -9,7 +9,6 @@
 ; Character Literal: 'x'
 ;-------------------------------------------------------------------------
 eval_extension:
-    jp      z,INKEY
     cp      '$'
     jr      z,.eval_hex
     cp      $27                   ; Apostrophe
@@ -24,7 +23,7 @@ eval_extension:
     jp      z,eval_dim
     cp      LISTK
     jp      z,eval_list
-    jp      ISFNTK
+    jp      SUBFUN
 
 .eval_hex:
     inc     hl                    ; Bump Text Pointer
@@ -256,8 +255,7 @@ oper_stringsub:
     push    hl                  ; Stack = TxtPtr, ArgDsc, FunRtn, RtnAdr
     call    alloc_temp_buffer   ; HL = BufAdr
     ex      (sp),hl             ; HL = TxtPtr; Stack = BufPtr, FunRtn, RtnAdr
-    call    GETYPE              ; If expression is not a string
-    jp      nz,TMERR            ;   Type mismatch error
+    call    CHKSTR              ; Type mismatch error if not a string
     rst     CHRGET              ; Skip %
     SYNCHKC '('                 ; Require (
     ex      (sp),hl             ; HL = BufPtr; Stack = TxtPtr, ArgDsc, FunRtn, RtnAdr

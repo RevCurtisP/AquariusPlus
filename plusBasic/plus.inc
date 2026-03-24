@@ -127,7 +127,11 @@ STARTCOL    equ $3852
 ENDCOL      equ $3854
 STARTROW    equ $3856
 ENDROW      equ $3857
-PSETCOLOR   equ $385A
+
+SCRWIDTH    equ $385A
+PSETCOLOR   equ $385C
+
+
 
 RECT_X1     equ $3851
 RECT_Y1     equ $3853

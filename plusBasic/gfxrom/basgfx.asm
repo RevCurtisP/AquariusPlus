@@ -142,13 +142,13 @@ bas_getsprite:
 ; On entry DE = Palette#, 
 bas_getpalette:
     ld      bc,palette_get
-    jr      _get_gfx
+    jr      _get_gfx_string
 ; Called from FN_GETTILE
 ; On entry DE = Tile#, 
 bas_gettile:
     ld      bc,tile_get
 ; Builds 32 byte temporary string and populates with 
-_get_gfx:
+_get_gfx_string:
     push    bc                    ; Stack = GfxCall
     push    de                    ; Stack = Tile/Palt, GfxCall, RtnAdr
     ld      a,32                  ; Reading 32 bytes

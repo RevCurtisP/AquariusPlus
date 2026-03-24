@@ -1,4 +1,6 @@
 # plusBASIC Release History
+ - v0.71k (2026-03-24)
+    - Added 40-column and 80-column support to `FILL COLORMAP` as an alternate to `FILL SCREEN ... COLOR`
  - v0.71j (2026-03-20)
     - Modified `CURSORY` to return value used in `LOCATE`
     - Added function `OFFSET()`

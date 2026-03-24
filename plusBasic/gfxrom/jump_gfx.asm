@@ -43,7 +43,7 @@ _jump_table:
     jp      colormap_fill         ; C045 Fill 1bpp Color Map Rectangle with Byte
     jp      bitmap_rect           ; C048 Draw Unfilled Rectange
     jp      bitmap__frect         ; C04B Draw Filled Rectange
-    jp      bitmap_hline          ; C04E 
+    jp      just_ret              ; C04E 
     jp      just_ret              ; C051 
 ; color.asm <<Palette and Colors>>
     jp      palette_reset         ; C054 Reset palette to default colors

@@ -1,4 +1,26 @@
 # plusBASIC Revision History
+ - v0.71k (2026-03-24)
+    - Renamed _auxrom/edit.asm_ to _auxrom/auxinput.asm_
+    - Moved _colormap_fill_, _colormap_convert_rect_, _colormap_pos_addr_, and _colormap_bounds_ from _auxrom/auxbitmap.asm_ to _gfxrom/gfxcolormap.asm_
+      - Added 40-column and 80-column modes to _colormap_fill_ for future use with _bitmap__frect_
+        - This adds 40-column and 80-column modes to `FILL COLORMAP` as an alternate to `FILL SCREEN ... COLOR`
+    - Moved _bitmap_read_tmpbfr_, _bitmap_write_tmpbfr_ from _auxrom/auxbitmap.asm_ to _gfxtmpbfr.asm_
+    - Moved _palette_set_, _palette_get_, and _palette_get_entry_ from _auxrom/color.asm_ to _gfxrom/gfxcolor.asm_
+    - Added 40-column, 80-column, and 4bpp modes to _bitmap__frect_
+    - Moved ?? to   _bas_file_datetime_ in _auxrom/fileaux.asm_
+    - Moved `FILEDATETIME` and `FILESTATUS$` core code to _bas_file_datetime_ and _bas_file_status_ in _auxrom/fileaux.asm_
+    - Moved `RENAME` and `COPY FILE` core code to _bas_file_from_to_ in _auxrom/loadaux.asm_
+    - Renamed _\_get_gfx_ to _\get_gfx_string_ in _gfxrom/basgfx.asm_
+    - Renamed _INTFR2_ to _INTFRC_ in _sbasic.asm_
+    - Removed deprecated `cp FNTK:jp z,FNDOER` from _sbasic.asm_
+    - Reverted _CONINT_ to original code and added _FRMBYT_ and _CONBYT_, replacing deprecated `POKE` and `PEEK` code in _sbasic.asm_
+      - Replaced `call GETBYTE` with `call FRMBYTE` in _ST_DEF_BYTE_
+      - Replaced `call CONINT` with `call CONBYT` in `ST_POKE`, _bas_out_, _bas_joy_, and _joy_gamectrl_
+    - Replaced `call FRMPRN:call GETYPE` with `call FRMPRT` in _pad_arg_
+    - Replaced `call PARCHK:call GETYPE` with `call PARTYP` in `FN_FRE`
+    - Replaced `call FRMEVL:call GETYPE` with `call FRMTYP` in `ST_POKE`
+    - Replaced `call FRMEVL` in _\_parse_attr_ and `call GETYPE` in _bas_parse_attr_ with `call FRMTYP` in _\_parse_attr_
+    - Removed superfluous `call GETYPE` in _clear_array_
  - v0.71j (2026-03-20)
     - Modified _bas_offset_ to match `LOCATE` coordinates, added _FN_OFF_ to _extended_function_ in _dispatch.asm_
     - Modified _cursor_offset_location_ to return `LOCATE` coordinates, fixing `CURSORY`

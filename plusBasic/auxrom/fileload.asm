@@ -69,10 +69,7 @@ _load_read_gfxrom:
 ;-----------------------------------------------------------------------------
 file_load_bitmap:
     ld      iy,bitmap_read_tmpbfr
-_load_read_gfx:
-    call    file_load_tmpbuffr
-    ret     m                     ; Return if Error
-    jp      gfx_call
+    jr      _load_read_gfxrom
 
 ;-----------------------------------------------------------------------------
 ; Load Color RAM only
@@ -105,7 +102,10 @@ file_load_text:
 ;-----------------------------------------------------------------------------
 file_load_colormap:
     ld      iy,colormap_read_tmpbfr
-    jr      _load_read_gfx
+_load_read_gfx:
+    call    file_load_tmpbuffr
+    ret     m                     ; Return if Error
+    jp      gfx_call
 
 ;-----------------------------------------------------------------------------
 ; Load file into character RAM buffer
@@ -378,7 +378,7 @@ _ex_de_palette_set:
     xor     a
 _palette_set:
     ld      iy,palette_set        ; Write out palette and return
-    jp      gfx_call
+    jp      gfxrom_call
 
 _pallete_asc:
     push    de                    ; Stack = PalNum, RtnAdr

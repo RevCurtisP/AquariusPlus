@@ -637,7 +637,8 @@ screen_read_tmpbfr:
     ld      e,a
     ld      l,a                   ; HL = PalAdr
     ld      bc,32
-    call    palette_set
+    ld      iy,palette_set
+    call    gfxrom_call
     pop     hl
     pop     bc
     xor     a
@@ -748,7 +749,8 @@ _scrn_write_tmpbfr:
     jr      nc,.dont_palette      ; If WritePalette
     xor     a                     ;   Start at palette index 0
     ld      bc,32                 ;   Total 32 bytes
-    call    palette_get           ;   Write palette to buffer. DE = NxtAdr
+    ld      iy,palette_get
+    call    gfxrom_call           ;   Write palette to buffer. DE = NxtAdr
 .dont_palette
     pop     af                    ; A = IO_VCTRL; Stack = RtnAdr
     out     (IO_VCTRL),a          ; Restore VCTRL

@@ -2,6 +2,26 @@
 ; Core routines for BASIC File I/O statements and functions
 ;=====================================================================================
 
+bas_file_datetime:
+    ld      bc,file_datetime
+    ld      a,14
+    jr      aux_file_stat
+
+; FN_FILESTATUS core code
+; Input: FACC = StrDsc
+bas_file_status:
+    ld      bc,dos_stat           ; HL = DosAdr
+    ld      a,9                   ; A = ResLen
+aux_file_stat:
+    push    bc                    ; Stack = DosAdr, RtnAdr
+    ld      hl,(FACLO)            ; HL = ArgDsc
+    push    hl                    ; Stack = ArgDsc, DosAdr, RtnAdr
+    call    GETSPA                ; DE = ResAdr
+    call    FRETMS                ; Free temporary but not string space
+    pop     hl                    ; HL = ArgDsc; Stack = DosAdr, RtnAdr
+    pop     ix                    ; IX = DosAdr; Stack = RtnAdr
+    jp      (ix)
+
 ; Called from ST_OPEN
 ; On entry: DE = StrDsc, HL = TxtPtr
 bas_open:
@@ -43,6 +63,7 @@ bas_open:
     inc     a                     ; A = FilChn
     ret
 
+;;; ToDo: Move to new file auxrom/saveaux.asm
 ; On entry: A = FilDsc, F = AscFlg (Z = ASCII), BC = AryLen, HL = AryPtr
 bas_save_string_array:
     push    bc                    ; Stack = AryLen, RtnAdr
@@ -145,6 +166,7 @@ bas_lookup_prog:
 ;       HL: String descriptor address
 ; Output: A: result code
 ;-----------------------------------------------------------------------------
+;;; ToDo: Move to new file auxrom/saveaux.asm
 bas_save_program:
     or      a
     call    z,.default_save_type
@@ -218,6 +240,7 @@ write_trailer:
 .trailer
     byte    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 
+;;; ToDo: Move to new file auxrom/saveaux.asm
 ;; Still using routine in basfile.asm (for now)
 save_asc_prog:
     ret

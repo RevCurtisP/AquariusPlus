@@ -276,8 +276,6 @@ bitmap_rect_size:
     exx                           ; BC = X1, DE = Y1, BC' = Width, DE' = Height
     ret
 
-
-
 ; Input: BC = X1, DE = Y1, BC' = X2, DE' = Y2
 ; Returns Carry set if out of bounds
 ; Clobbers: A, HL
@@ -318,3 +316,4 @@ _check_coords2:
     ret     c                     ;   Return carry set
     cp      e                     ; If Y >= MaxY
     ret                           ;   Return carry set
+

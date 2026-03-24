@@ -386,26 +386,6 @@ screen_pos_addr:
     pop     hl
     ret
 
-    ld      a,e
-    add     a,a
-    add     a,a
-    add     a,e
-    ld      e,a
-    ld      d,0                   ; DE = Row * 5
-    ex      de,hl                 ; HL = Row * 5
-    add     hl,hl
-    add     hl,hl
-    add     hl,hl                 ; HL = Row * 40
- 
-    push    bc
-    ld      b,0                   ; BC = Column
-    add     hl,bc                 ; HL = Row * 40 + Column
-    ld      bc,SCREEN             ; Screen character-matrix (= 12288 dec)
-    add     hl,bc                 ; HL = Cell Address
-    pop     bc
-    ex      de,hl                 ; DE = Cell Address
-    ret
-
 ; In: C=Column, E=Row
 ; Out: Carry set if out of bounds
 screen_bounds:

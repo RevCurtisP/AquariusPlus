@@ -98,7 +98,7 @@ _get_palette:
     ld      bc,32                 ; Read 16 palette entries
     ld      iy,palette_get        ; Read palette into string buffer
 aux_gfxcall_pop_iy:
-    call    gfx_call
+    call    gfxrom_call
 aux_pop_iy_ret:
     pop     iy
     ret
@@ -155,7 +155,7 @@ file_save_string:
 file_save_bitmap:
     push    hl                    ; Stack = StrDsc, RtnAdr
     ld      iy,bitmap_write_tmpbfr
-    jr      _gfx_call_save_tmpbuffr
+    jr      _gfxrom_call_save_tmpbuffr
 
 ;-----------------------------------------------------------------------------
 file_save_colormap:
@@ -184,6 +184,10 @@ file_save_screen:
     ld      iy,screen_write_tmpbfr
 _gfx_call_save_tmpbuffr:
     call    gfx_call              ; BC = SavLen
+    jr      _pop_save_tmpbuffer
+_gfxrom_call_save_tmpbuffr:
+    call    gfxrom_call
+_pop_save_tmpbuffer:
     pop     hl                    ; HL = StrDsc; Stack = RtnAdr
 ; Input: BC: Save length
 file_save_tmpbuffr:

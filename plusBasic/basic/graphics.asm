@@ -262,10 +262,11 @@ ST_RESET_PALETTE:
 
 ;-----------------------------------------------------------------------------
 ; SET PALETTE statement
-; syntax: SET PALETTE palette# [, index] TO rgblist$
+; syntax: SET PALETTE palette# [INDEX index] TO rgblist$
 ;-----------------------------------------------------------------------------
 ; SET PALETTE 0 TO $"111122223333444455556666777788889999"
-ST_SETPALETTE:
+; SET PALETTE 0 INDEX 0 TO RGB$(8,0,0)
+ST_SET_PALETTE:
     rst     CHRGET                ; Skip PALETTE
     call    get_byte4             ; E = Palette#
     ld      c,0                   ; Default Entry# to 0
@@ -297,7 +298,7 @@ ST_SETPALETTE:
     ld      l,h                   ; L = PltOfs
     scf                           ; Palette already shifted
     ld      iy,palette_set        ; Set the entry (increments C)
-    call    gfx_call
+    call    gfxrom_call
     jp      c,OVERR               ; Error if Overflow
     pop     hl                    ; HL = TxtPtr
     ret
@@ -534,6 +535,7 @@ _set_tile_ext:
 ;-----------------------------------------------------------------------------
 ; FILL COLORMAP (0,0)-(4,5) COLOR 7,1
 ; FILL COLORMAP (10,5)-(20,15) COLOR 7,1
+; SCREEN 0,2:FILL COLORMAP (10,5)-(20,15) COLOR 7,1:PAUSE
 ST_FILL_COLORMAP:
     rst     CHRGET                ; Skip COL
     SYNCHKT ORTK
@@ -547,6 +549,8 @@ ST_FILL_COLORMAP:
     push    hl                    ; Stack = TxtPtr, RtnAdr
     ld      l,a                   ; L = Colors
     ld      iy,colormap_fill
+    jp      gfxrom_call_fcerr
+
 gfx_call_fc_popret:
     call    gfx_call              ;   Write tile to tilemap
     jp      c,FCERR               ;   Error if invalid coordinates
@@ -968,7 +972,7 @@ ST_DEF_BYTE:
     rst     CHRGET                ; Skip BYTE
     call    _setupdef             ; Stack = DatLen, BufPtr, VarPtr
 .loop
-    call    GETBYT                ; A = Byte
+    call    FRMBYT                ; A = Byte
     call    _write_byte_strbuf    ; Write it to string buffer
     call    CHRGT2                ; Reget next character
     jp      z,_finish_def         ; If not end of statement
@@ -1004,7 +1008,7 @@ ST_DEF_ATTR:
 _skip_parse_attr:
     rst     CHRGET
 _parse_attr:
-    call    FRMEVL
+    call    FRMTYP
     ld      iy,bas_parse_attr
     jp      gfx_call              ; A = Attributes
 ;-----------------------------------------------------------------------------
@@ -1233,25 +1237,13 @@ FN_GETPALETTE:
     call    skip_dollar_paren     ; Require $(
     call    get_byte4             ; E = Palette#
     push    af                    ; Stack = Palette#, RtnAdr
-    ld      iy,palette_get
+;    ld      iy,palette_get
+    ld      iy,bas_getpalette
     ld      a,(hl)
     cp      ','
     jr      z,_get_palette_entry
     pop     af                    ; A = Palette#, Stack = RtnAdr
-_get_gfx:
-    SYNCHKC ')'
-    push    hl                    ; Stack = TxtPtr
-    push    hl                    ; Stack = DummyAdr, TxtPtr
-    push    de                    ; Stack = Palette#, DummyAdr, TxtPtr
-    ld      a,32                  ; Reading 32 bytes
-    call    STRINI                ; Create TmpStr; HL = StrDsc, DE = StrAdr
-    ld      bc,32                 ; BC = StrLen
-    pop     hl                    ; HL = Palette#; Stack = DummyAdr, TxtPtr
-    call    VALSTR                ; Set return type to string
-    ld      a,l
-gfx_call_finbck:
-    call    gfx_call
-    jp      FINBCK                ; Return String
+    jr      gfx_romcall_finbck
 
 ;; E$=GETPALETTE$(0,1)
 ;; PRINT HEX$(E$)
@@ -1262,7 +1254,7 @@ _get_palette_entry:
     SYNCHKC ')'                   ; Require )
     pop     af                    ; A = Palette #
     ld      iy,palette_get_entry
-    call    gfx_call              ; DE = Palette Entry
+    call    gfxrom_call           ; DE = Palette Entry
 push_ret_str_word:
     push    hl                    ; Stack = TxtPtr, RtnAdr
     jp      ret_str_word          ; Return Entry as binary string

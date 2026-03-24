@@ -283,10 +283,9 @@ ST_END:
 ;-----------------------------------------------------------------------------
 FN_FRE:
     rst     CHRGET
-    call    PARCHK
+    call    PARTYP
     call    push_hl_labbck
-    call    GETYPE          ; If FRE(string)
-    jp      z,FRE_STR       ;   Garbage Collect and Return Free String Space
+    jp      z,FRE_STR       ; If String, Garbage Collect and Return Free String Space
     rst     FSIGN           ; If argument < 0, A = -1
     call    p,CONINT        ; Else A = argument
     ld      hl,(STREND)     ;
@@ -433,10 +432,9 @@ ST_POKE:
     push    af                    ; Stack = Page, RtnAdr
     push    de                    ; Stack = Addr, Page, RtnAdr
     call    get_comma             ; Require comma
-    call    FRMEVL                ; Evaluate argumenr
-    call    GETYPE                ; If String
+    call    FRMTYP                ; Evaluate argumenr
     jr      z,.pokestring         ;   Poke It
-    call    CONINT                ; Convert to Byte
+    call    CONBYT                ; Convert Signed to Byte
     ld      c,a                   ; C = Byte
     pop     de                    ; DE = Addr; Stack = Page, RtnAdr
     pop     af                    ; AF = Page, Stack = RtnAdr
@@ -534,12 +532,12 @@ ST_POKE:
     call    GET_POS_INT           ; DE = Address Offset
     push    de                    ; Stack = AdrOfs, RtnAdr
     call    get_comma             ; Require comma
-    call    FRMEVL                ; Evaluate argumenr
+    call    FRMTYP                ; Evaluate argumenr
     pop     de                    ; DE = AdrOfs; Stack = RtnAdr
     ex      (sp),hl               ; HL = RtnAdr; Stack = TxtPtr
     push    de                    ; Stack = AdrOfs, TxtPtr
     push    hl                    ; Stack = RtnAdr, AdrOfs, TxtPtr
-    jp      GETYPE                ; Get Operand Type
+    ret
 
 ;-----------------------------------------------------------------------------
 ; DOKE

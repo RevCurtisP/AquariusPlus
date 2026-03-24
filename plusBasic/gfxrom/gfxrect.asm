@@ -8,10 +8,10 @@
 ; SCREEN 0,2:CALL @63,$04B ARGS $9D00,60,30,0,160,130:PAUSE
 ; SCREEN 0,3:CLEAR BITMAP:CALL @63,$04B ARGS 3,50,20,0,150,120:PAUSE
 ; CALL @63,$04B ARGS 0,20,30,0,50,45
-
+; CALL @63,$04B ARGS $9D00,20,30,0,50,45
 
 ;-----------------------------------------------------------------------------
-; Draw rectangle of bloxels or pixels screen
+; Draw filled rectangle of bloxels or pixels
 ; Input: BC: Start X-Coord
 ;        DE: Start Y-Coord
 ;         H: Option: 0, PSET (colors)PRESET, XOR
@@ -31,14 +31,24 @@ bitmap__frect:
     dec     a
     jr      z,_frect80
     dec     a
-    jr      z,_frect1bpp
+    jp      z,_frect1bpp
     jp      _frect4bpp
 
-; Next X: DE += 1, Next Byte if DE & 2
-; Next Y: DE += 2, Next Row if E > $F5
- 
+_frect80:
+    call    _bloxelop
+    call    bloxel_80col_addr   ; HL = ScrAdr, DE = MskAdr, A = BitMask
+    ld      bc,80
+    jr      _frectb
 _frect40:
+    call    _bloxelop
+    call    nz,_color40
     call    bloxel_40col_addr   ; HL = ScrAdr, DE = MskAdr, A = BitMask
+    ld      bc,40               ; BC = SrcWid
+_frectb:
+    push    bc                  ; Stack = SrcWid, RtnAdr
+    exx
+    pop     hl                  ; HL = ScrWid
+    exx                         ; HL' = ScrWid
 .vloop:
     exx                         ; DE = VertCount
     push    bc                  ; Stack = Width, RtnAdr
@@ -51,8 +61,8 @@ _frect40:
     push    hl                  ; Stack = BytAdr, RtnAdr
     push    de                  ; Stack = MskAdr, BytAdr, RtnAdr
     call    _xloop
-    pop     de
-    pop     hl
+    pop     de                  ; DE = MskAdr; Stack = BytAdr, RtnAdr
+    pop     hl                  ; HL = BytAdr; Stack = RtnAdr
     ld      a,e
     add     a,2
     cp      low(gfx_bloxel_mask)+6
@@ -60,8 +70,11 @@ _frect40:
     jr      c,.vloop
     sub     a,6
     ld      e,a
-    push    de
-    ld      de,40
+    push    de                  ; Stack = MskAdr, RtnAdr
+    exx
+    push    hl                  ; Stack = ScrWid, MskAdr, RtnAdr
+    exx
+    pop     de                  ; DE = ScrWid; Stack = MskAdr, RtnAdr
     add     hl,de               ; HL = Next BytAdr
     pop     de                  ; D = BitMsk Stack = RtnAdr
     jr      .vloop              ; Do next line
@@ -71,29 +84,58 @@ _xloop:
     or      $A0                   ; Convert to GfxChr
     xor     (hl)                  ; Clear bits 5 and 7
     ld      a,(hl)                ; Reload ScrnChr
-    jr      z,.ploop              ; If not GfxChr
+    jr      z,_ploop              ; If not GfxChr
     ld      a,$A0                 ;   Set to blank
-.ploop
-    ex      af,af'
+_ploop
+    ex      af,af'                ; A' = BitMsk
     ld      a,b
-    or      c
-    ret     z
-    ex      af,af'
-    dec     bc
+    or      c                     ; If HrzCnt = 0
+    ret     z                     ;   Return
+    ex      af,af'                ; A = BitMsk
+    dec     bc                    ; HrzCnt -= 1
     ex      de,hl                 ; HL = MskAdr, DE = ScrAdr
-    or      (hl)                  ; Set Pixel in Mask
+    call    jump_ix
     ex      de,hl                 ; DE = MskAdr, HL = ScrAdr
     inc     e                     ; Next Pixel
     bit     0,e                   ; If not next byte
-    jr      nz,.ploop             ;   Do next pixel
+    jr      nz,_ploop             ;   Do next pixel
     ld      (hl),a                ; Write GfxChr
     inc     hl
     dec     e
     dec     e                     ; Back up to left pixel
     jr      _xloop
 
+_bloxelop
+    ld      a,h
+    ld      ix,_presetb
+    cp      PRESETK
+    ret     z
+    ld      ix,_xorb
+    cp      XORTK
+    ret     z
+    ld      ix,_psetb
+    sub     PSETK
+    inc     a                    ; Return NZ if PSET
+    ret
 
-_frect80:
+_psetb:
+    or      (hl)
+    ret
+
+_presetb:
+    push    de
+    ld      de,8
+    add     hl,de
+    and     (hl)
+    sbc     hl,de
+    pop     de
+    ret
+
+_xorb:
+    xor     (hl)
+    ret
+
+_color40:
     ret
 
 ; PSETTK = $9C %10011100

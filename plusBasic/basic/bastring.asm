@@ -139,9 +139,8 @@ _trim_arg:
     rst     CHRGET                ; Skip L/R
 _pad_arg:
     SYNCHKC '$'                   ;
-    call    FRMPRN                ; Evaluate argument after (
-    call    GETYPE                ; If numeric
-    call    nz,facc_to_string     ;   DE = StrDsc
+    call    FRMPRT                ; Evaluate argument after (
+    call    nz,facc_to_string     ; If numeric, DE = StrDsc
     ld      de,(FACLO)            ; DE = ArgDsc
     ld      a,(hl)                ; A = Next character
     ret

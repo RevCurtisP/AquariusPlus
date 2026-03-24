@@ -358,18 +358,6 @@ pixel_1bpp_addr:
 _calc_byte_addr:
     add     hl,bc                 ; HL = BytAdr
     ex      de,hl                 ; DE = BytAdr
-; Possible extension: Return Color Cell Address in HL
-;    sra     h
-;    rr      l
-;    sra     h
-;    rr      l
-;    sra     h
-;    rr      l                     ; HL = RowAdr / 8
-;    ld      a,$20
-;    add     a,b
-;    ld      b,a
-;    add     hl,bc                 ; HL = CellAdr
-;    push    hl                    ; Stack = CellAdr, RtnAdr
     ex      af,af'
     ld      b,0
     ld      c,a                   ; BC = PxlOfs

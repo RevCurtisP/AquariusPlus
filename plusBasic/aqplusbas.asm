@@ -95,7 +95,7 @@ null_desc:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.71j"
+    db "v0.71k"
     db 0
 plusver_len equ $ - plus_version
 plus_len   equ   $  - plus_text
@@ -1022,7 +1022,7 @@ hook_table:                     ; ## caller   addr  performing function
     dw      0                   ;  6                Deprecated
     dw      0                   ;  7                Deprecated
     dw      0                   ;  8 
-    dw      eval_extension      ;  9 EVAL     09FD  Evaluate Number or String
+    dw      0                   ;  9                Deprecated
     dw      keyword_to_token    ; 10 NOTGOS   0536  Converting Keyword to Token
     dw      0                   ; 11                Deprecated
     dw      0                   ; 12                Deprecated
@@ -1227,7 +1227,7 @@ _sysfile_end
     include "basicaux.asm"        ; BASIC auxiliary
     include "debug.asm"           ; Debugging routines
     include "dos.asm"             ; DOS routines
-    include "edit.asm"            ; Enhanced INPUT and line editor
+    include "auxinput.asm"        ; Enhanced INPUT and line editor
     include "esp_aux.asm"         ; ESP routines in auxiliary ROM
     include "evalaux.asm"         ; Core routine for evalext.asm
     include "fileaux.asm"         ; Disk and File BASIC auxiliary routines 
@@ -1280,11 +1280,13 @@ _sysfile_end
     include "gfxcommon.asm"
     include "gfxbitmap.asm"
     include "gfxcolor.asm"        ; Color and Palette routines
+    include "gfxcolormap.asm"     ; Colormap routines
     include "gfxline.asm"         ; Line drawing routines
     include "gfxpixel.asm"        ; Pixel drawing routines
     include "gfxrect.asm"         ; Rectangle drawing routines
     include "gfxscreen.asm"       ; Screen drawing routines
     include "gfxsprites.asm"      ; Sprite graphics module
+    include "gfxtmpbfr.asm"       ; Read/write TMP_BUFR
     include "tile.asm"            ; Tile graphics module
 
     used_rom_gfx = $ - $C000

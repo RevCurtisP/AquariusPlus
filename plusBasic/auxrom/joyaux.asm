@@ -41,7 +41,7 @@ bas_joy:
     ld      a,b                   ; A = FnSfx1
     or      a                     ; If JOY()
     jr      nz,.extended
-    call    CONINT
+    call    CONBYT
     call    read_gamepad          ;
     xor     a                     ;   Clear Carry and Sign
     ld      a,e                   ;   Return inverted port value
@@ -116,7 +116,7 @@ _joy_gamectrl:
     push    bc                    ; Stack = FnSfxs, RtnAdr
     call    GETYPE
     jr      z,.stringarg          ; If FnArg is numeric
-    call    CONINT                ;   Convert to byte
+    call    CONBYT                ;   Convert to byte
     ld      de,FBUFFR
     call    espx_get_gamectrl
     ld      a,c

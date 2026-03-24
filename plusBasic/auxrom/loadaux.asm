@@ -2,6 +2,24 @@
 ; BASIC LOAD Statement Auxillary ROM routines
 ;====================================================================
 
+;;; ToDo: Move this to fileaux.asm
+; Core code for ST_RENAME and ST_COPY_FILE
+; Input: DE = SrcDesc, FACC = DstDsc, HL = CallAdr
+bas_file_from_to:
+    push    hl                    ; Stack = CallAdr, RtnAdr
+    push    de                    ; Stack = SrcDsc, CallAdr, RtnAdr
+    call    FRESTR                ; Free DstStr
+    ex      de,hl                 ; DE = DstDsc
+    pop     hl                    ; HL = SrcDst; Stack = CallAdr, RtnAdr
+    pop     iy                    ; IY = CallAdr; Stack = RtnAdr
+    push    hl                    ; Stack = SrcDsc, RtnAdr
+    call    jump_iy               ; Execute DOS routine
+    pop     de                    ; DE = SrcDsc; Stack = RtnAdr
+    push    af                    ; Stack = Result, RtnAdr
+    call    FRETMP                ; Free SrcStr
+    pop     af                    ; AF = Result; Stack = RtnAdr
+    ret
+
 ;-----------------------------------------------------------------------------
 ; Load BC bytes of CAQ array file to address DE
 ; Input: A: File descriptor

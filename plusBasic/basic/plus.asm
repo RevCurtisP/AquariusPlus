@@ -122,6 +122,9 @@ ST_CHECK_VER:
 ; DATE$ - Get Current Date
 ; DATETIME$ - Get Current Date & Time
 ;-----------------------------------------------------------------------------
+; Proposed: DATE$(delimiter)
+;           DATE$(date$,delimiter)
+;           DATE$(year,month,day{,delimiter})
 FN_DATE:
     rst     CHRGET                ; Skip Token
     ld      c,0                   ; Return Just Date
@@ -764,6 +767,9 @@ _swap_pages:
 ;-----------------------------------------------------------------------------
 ; TIME$ - Get Current Time
 ;-----------------------------------------------------------------------------
+; Proposed: TIME$(delimiter)
+;           TIME$(time$,delimiter)
+;           TIME$(hour,minutes,seconds{,delimiter})
 FN_TIME:
     rst     CHRGET                ; Skip Token
     cp      'R'                   ; If TIMER
@@ -1047,7 +1053,7 @@ ST_SET:
 
     SYNCHKT XTOKEN                ; Must be extended Token
     cp      PALETK                ; $81
-    jp      z,ST_SETPALETTE
+    jp      z,ST_SET_PALETTE
     cp      SPRITK                ; $84
     jp      z,ST_SET_SPRITE
     cp      CHRTK                 ; $85
@@ -1270,9 +1276,8 @@ ST_PAUSE:
     cp      TRKTK                 ;   If token is TRACK
     jp      z,ST_PAUSE_TRACK      ;     Do PAUSE TRACK
 .notxtoken
-    call    FRMEVL                ; Get Operand
+    call    FRMTYP                ; Get Operand 
     push    hl                    ; Stack = TxtPtr, RtnAdr
-    call    GETYPE                ;
     jp      z,.string             ; If Numeric
     call    FRCINT                ; DE = Jiffies
     ld      a,(BASYSCTL)
@@ -1348,7 +1353,6 @@ reset_usrdef:
 _reset_array:
     call    skip_star_array       ; DE = AryAdr, BC = AryLen
     push    hl                    ; Stack = TxtPtr, RtnAdr
-    call    GETYPE                ; A = 0 and Z set if string
     push    af                    ; Stack = TypFlg, TxtPtr, RtnAdr
     ex      de,hl                 ; HL = AryAdr
     call    sys_fill_zero         ; Fill array data with zeros
@@ -1433,7 +1437,7 @@ FN_VER:
     cp      '$'                   ; StrFlg = 0 if StrFn, else StrNum
     push    af                    ; Stack = StrFlg, RtnAdr
     call    z,CHRGTR              ; If String, Skip $
-    call    PARTYP                ; FACC = Arg, A = ArgTyp
+    call    PARCHK                ; FACC = Arg
     pop     af                    ; AF = StrFlg
     call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
     ld      iy,aux_ver

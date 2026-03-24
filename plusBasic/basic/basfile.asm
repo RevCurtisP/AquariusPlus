@@ -158,24 +158,17 @@ ST_COPY_FILE:
 
 _file_from_to:
     push    de                    ; Stack = CallAdr, RtnAdr
-    call    FRMSTR                ; Parse oldname
+    call    FRMSTR                ; FACC = SrcNam
     SYNCHKT TOTK                  ; Require TO token
     push    hl                    ; Stack = TxtPtr, CallAdr, RtnAdr
-    ld      hl,(FACLO)            ; HL = OldDsc
-    ex      (sp),hl               ; HL = TxtPtr, Stack = OldDsc, CallAdr, RtnAdr
-    call    FRMEVL                ; Parse newname
-    push    hl                    ; Stack = TxtPtr, OldDsc, CallAdr, RtnAdr
-    call    FRESTR                ; HL = NewDsc
-    ex      de,hl                 ; DE = NewDsc
-    pop     bc                    ; BC = TxtPtr, Stack = OldDsc, CallAdr, RtnAdr
-    pop     hl                    ; HL = OldDsc; Stack = CallAdr, RtnAdr
-    pop     iy                    ; IY = CallAdr; Stack = RtnAdr
-    push    bc                    ; Stack = TxtPtr, RtnAdr
-    push    de                    ; Stack = NewDsc, TxtPtr, RtnAdr
-    call    FRETM2                ; HL = OldDsc
-    pop     de                    ; DE = NewDsc, Stack = TxtPtr, RtnAdr
+    ld      hl,(FACLO)            ; HL = SrcDsc
+    ex      (sp),hl               ; HL = TxtPtr, Stack = SrcDsc, CallAdr, RtnAdr
+    call    FRMEVL                ; FACC = DstDsc
+    pop     de                    ; DE = SrcDsc; Stack = CallAdr, RtnAdr
+    ex      (sp),hl               ; HL = CallAdr; Stack = TxtPtr, RtnAdr
+    ld      iy,bas_file_from_to
     jp      aux_call_popret
-
+    
 ;-----------------------------------------------------------------------------
 ; FILE Functions stub
 ;-----------------------------------------------------------------------------
@@ -287,10 +280,8 @@ FN_FILEATTR:
 FN_FILEDATETIME:
     inc     hl                    ; Skip DATE
     SYNCHKT TIMETK
-    ld      iy,file_datetime
-    push    iy                    ; Stack = AuxAdr, RtnAdr
-    ld      a,14                  ; A = StrSiz
-    jr      _file_stat            ; Go do it
+    ld      bc,bas_file_datetime
+    jr      _file_stat
 
 ;-----------------------------------------------------------------------------
 ; FILESTATUS$(filespec$)
@@ -298,27 +289,15 @@ FN_FILEDATETIME:
 ; S$=FILESTATUS$("1.palt")
 ; ? HEX$(S$)
 FN_FILESTATUS:
-    ld      iy,dos_stat
-    push    iy                    ; Stack = AuxAdr, RtnAdr
-    ld      a,9                   ; A = StrSiz
-    inc     hl                    ; Skip STATUS
+    inc     hl
+    ld      bc,bas_file_status
 _file_stat:
-    push    af                    ; Stack = StrSiz, AuxAdr, RtnAdr
+    push    bc                    ; Stack = AuxAdr, RtnAdr
     SYNCHKC '$'                   ; Require $
-    call    PARSTR                ; Parse string agument
-    pop     a                     ; A = StrSiz; Stack = AuxAdr, RtnAdr
+    call    PARSTR                ; FACC = StrDsc
     pop     iy                    ; IY = AuxAdr; Stack = RtnAdr
     push    hl                    ; Stack = TxtPtr, RtnAdr
-;;; ToDo: Move code to AuxROM
-    ld      hl,(FACLO)            ; HL = ArgDsc
-    push    hl                    ; Stack = ArgDsc, TxtPtr, RtnAdr
-    call    GETSPA                ; DE = StrAdr
-    call    FRETMS                ; Free temporary but not string space
-    pop     hl                    ; HL = ArgDsc; Stack = TxtPtr, RtnAdr
-    push    de                    ; Stack = StrAdr, TxtPtr, RtnAdr
-    call    FRETM2                ; Free ArgDsc
-    pop     de                    ; DE = StrAdr; Stack = TxtPtr, RtnAdr
-    call    _aux_call_doserror    ; Populate string
+    call    _aux_call_doserror    ; DE = StrAdr, BC = StrLen
     jp      STRNEL                ; Return the string
 
 ;-----------------------------------------------------------------------------
@@ -435,7 +414,7 @@ ST_LOAD:
 
     ld      a,(hl)
     cp      BITTK                 ; $EB
-    jp      z,_load_bitmap
+    jp      z,ST_LOAD_BITMAP
 
     cp      FNTK                  ; $A2
     jp      z,_load_fnkeys
@@ -917,7 +896,8 @@ _load_tileset:
 ;-----------------------------------------------------------------------------
 ; Bitmap file formats
 ;-----------------------------------------------------------------------------
-_save_bitmap:
+; LOAD BITMAP "/u/au/assets/worldmap.bmp1"
+ST_SAVE_BITMAP:
     rst     CHRGET                ; Skip BIT
     SYNCHKT MAPTK                 ; Require MAP
     call    get_strdesc_arg       ; HL = StrDsc, Stack = TxtPtr, RtnAdr
@@ -927,14 +907,12 @@ _save_bitmap:
     jp      c,IMERR               ; If GfxMode < 2, Invalid mode error
     ld      iy,file_save_bitmap
     jp      _aux_call_bdf
-_load_bitmap:
+ST_LOAD_BITMAP:
     ld      iy,file_load_bitmap
 _load_map:
     rst     CHRGET                ; Skip BIT
     SYNCHKT MAPTK                 ; Require MAP
     jr      _strdesc_auxcall
-
-
 
 ;-----------------------------------------------------------------------------
 ; Load Text Screen Color Matrix
@@ -960,6 +938,11 @@ _strdesc_auxcall:
     call    get_strdesc_arg       ; HL = FilDsc; Stack = TxtPtr
 _aux_call_bdf:
     call    aux_call
+    call    c,_badfile
+    jp      _pop_hl_doserror
+
+_gfxrom_call_bdf:
+    call    gfxrom_call
     call    c,_badfile
     jp      _pop_hl_doserror
 
@@ -1241,7 +1224,7 @@ ST_SAVE:
     cp      COLTK
     jp      z,_save_colormap
     cp      BITTK
-    jp      z,_save_bitmap
+    jp      z,ST_SAVE_BITMAP
     cp      XTOKEN
     jp      z,.save_extended
 
