@@ -2,33 +2,133 @@
 ; Text Screen Graphics Assembly Routines
 ;=============================================================================
 
+;-----------------------------------------------------------------------------
+; Fill Color RAM Rectangle with Colors
+; Input: A: Screen# (0 = Current)
+;       BC: Start Column
+;       DE: Start Row
+;      BC': End Column
+;      DE': End Row
+;        H: Reserved (Set to 0)
+;        L: Combined Colors
+; Flags: Sign set if illegal Screen#
+;        Carry set if coordinates out of range
+; Clobbered: All
+;-----------------------------------------------------------------------------
+color__fill:
+    call    _setup_fill           ; IXH = AndMsk, IXL = Colors
+    ret     c                     ;   Return Carry if Screen# <> 0
+do_color_fill:
+    ld      iy,$3400              ; BasAdr = Color RAM
+    cp      40                    ; If ScrWid = 40
+    jr      z,fill_rect           ;   Do the fill and Return
+    ex      af,af'                ; A' = ScrWid
+    in      a,(IO_VCTRL)          ; A = VCTRL
+    push    af                    ; Stack = VCTRL, RtnAdr
+    or      VCTRL_TEXT_PAGE
+    out     (IO_VCTRL),a          ; Switch to Color RAM Page
+    ld      iy,$3000              ; BasAdr = Screen RAM
+    ex      af,af'                ; A = ScrWid
+    call    fill_rect             ; Do the fill
+    pop     a                     ; A = Original VCTRL, Stack = RtnAdr
+    out     (IO_VCTRL),a          ; Restore VCTRL
+    ret
 
+;----------------------------------------------------------------------------
+; Fill Screen RAM Rectangle with Character
+; Input: A: Screen# (0 = Current)
+;       BC: Start Column
+;       DE: Start Row
+;      BC': End Column
+;      DE': End Row
+;        L: Character
+; Flags: Sign set if illegal Screen#
+;        Carry set if coordinates out of range
+; Clobbered: All
+;-----------------------------------------------------------------------------
+screen__fill:
+    call    _setup_fill           ; A = ScrWid, IXH = AndMsk, IXL = Colors
+    ret     c                     ;   Return Carry if Screen# <> 0
+    ld      iy,$3000              ; ScrOfs = Screen RAM
+; This is the master Screen RAM, Color RAM, and 1bpp Colormap fill routine
+; The calling routine must set up any bank switching ahead of time
+; Input: A: Screen Width
+;        IXL: Fill Byte, IXH: AND Mask, IY: Base Address
+;        BC, DE, BC', DE': Rectangle coordinates
+fill_rect:
+    call    screen__convert_rect  ; B = RctWid, C = RctHgt, DE = ScrWid, HL = ScrOfs
+    ret     c                     ; Return Carry Set if invalid coordinates
+    push    de                    ; Stack = ScrWid, RtnAdr
+    push    iy                    ; Stack = BasAdr, ScrWid, RtnAdr
+    pop     de                    ; DE = BasAdr; Stack = ScrWid, RtnAdr
+    add     hl,de                 ; HL = ScrAdr
+    ex      de,hl                 ; DE = ScrAdr
+    pop     hl                    ; HL = SrcWid; Stack = RtnAdr
+    push    ix                    ; Stack = Mask+Byte, RtnAdr
+.vloop
+    ex      (sp),hl               ; HL = Mask+Byte; Stack = ScrWid, RtnAdr
+    push    bc                    ; Stack = RowWid+RowCnt, ScrWid, RtnAdr
+    push    de                    ; Stack = RowAdr, RctWid+RowCnt, ScrWid, RtnAdr
+.hloop
+    ld      a,(de)
+    and     h
+    or      l
+    ld      (de),a                ; Update Cell
+    inc     de
+    djnz    .hloop
+    pop     de                    ; DE = ScrAdr; Stack = RctWid+RowCnt, ScrWid, RtnAdr
+    pop     bc                    ; B = ColCnt, C = RowCnt; Stack = ScrWid, RtnAdr
+    ex      (sp),hl               ; HL = ScrWid; Stack = Mask+Byte, RtnAdr
+    ex      de,hl                 ; DE = ScrWid, HL = ScrAdr
+    add     hl,de                 ; HL = NewAdr
+    ex      de,hl                 ; DE = NewAdr, HL = ScrWid
+    dec     c
+    jr      nz,.vloop
+.popret
+    pop     hl                    ; Stack = RtnAdr
+    ret
+
+_setup_fill:
+    ld      h,0                   ; AndMsk = 0
+    push    hl
+    pop     ix                    ; IXH = AndMsk, IXL = Colors
+_screen_num:
+    or      a                     ; If ScrnNo = 0
+    ld      a,(LINLEN)            ;   A = ScrWid
+    ret     z                     ;   Return Positive
+    or      $FF                   ; Else
+    ret                           ;   Returns Negative
+    
 ;-----------------------------------------------------------------------------
 ; Draw Rectangle on Text Screen
-; Input: BC: Start Column
-;        DE: Start Row
-;        BC': End Column
-;        DE': End Row
-;        HL: DrawChars Address
-;        HL': DrawColors Address
-; Output: Carry set if coordinates out of range
-; Clobbered: A, BC, DE, HL, BC', DE', HL'
+; Input: A: Screen# (0 = Current)
+;       BC: Start Column
+;       DE: Start Row
+;      BC': End Column
+;      DE': End Row
+;       HL: DrawChars Address
+;      HL': DrawColors Address
+; Flags: Sign set if illegal Screen#
+;        Carry set if coordinates out of range
+; Clobbered: All
 ;--------------`---------------------------------------------------------------
 screen__rect:
+    call    _screen_num           ; A = ScrWid
+    ret     m
     exx                           ; HL = DrwClrs
     push    hl                    ; Stack = DrwClrs, RtnAdr
     exx
     push    hl                    ; Stack = DrwChrs, DrwClrs, RtnAdr
-    call    .convert_rect         ; B = RowCnt-2, C = ColCnt-2, HL = RowAdr
-    pop     de                    ; DE = ChrAdr; Stack = DrwClrs, RtnAdr
+    call    .convert_rect         ; B = ColCnt-2, C = RowCnt-2, DE = ScrWid, HL = RowAdr
+    pop     ix                    ; DE = ChrAdr; Stack = DrwClrs, RtnAdr
     jp      c,POPHRT              ; Discard DrwClrs and Return if error
     push    bc                    ; Stack = Counts, DrwClrs, RtnAdr
     push    hl                    ; Stack = RowAdr, Counts, DrwClrs, RtnAdr
     call    .do_rect              ; Draw Rectangle Characters
     pop     hl                    ; HL = RowAdr, Stack = Counts, DrwClrs, RtnAdr
     pop     bc                    ; BC = Counts; Stack = DrwClrs, RtnAdr
-    pop     de                    ; DE = DrwClrs; Stack = RtnAdr
-    ld      a,(LINLEN)
+    pop     ix                    ; IX = DrwClrs; Stack = RtnAdr
+    ld      a,e                   ; A = ScrWid
     cp      40
     jr      z,.do40               ; If 80 columns
     in      a,(IO_VCTRL)
@@ -45,139 +145,92 @@ screen__rect:
     ld      h,a                   ; ScrAdr += $4000
 .do_rect
     call    .doline               ; Draw top line
+    inc     ix
+    inc     ix
+    inc     ix
 .dolines
-    push    de
-    call    .doline               ; Draw a line
-    pop     de
+    call    .doline               ; Draw middle lines
     dec     c
     jr      nz,.dolines
-    inc     de
-    inc     de
-    inc     de
+    inc     ix
+    inc     ix
+    inc     ix                    ; Then draw bottom line
 .doline:
     push    bc                    ; Stack = RowCnt+ColCnt, RtnAdr
     push    hl                    ; Stack = RowAdr, RowCnt+ColCnt, RtnAdr
-    ld      a,(de)                ; A = UpperLeft
+    ld      a,(ix+0)              ; A = UpperLeft
     ld      (hl),a                ; Write to screen
     inc     hl
-    inc     de
-    ld      a,(de)                ; A = UpperMiddle
+    ld      a,(ix+1)              ; A = UpperMiddle
 .lineloop
     ld      (hl),a
     inc     hl
     djnz    .lineloop
-    inc     de
-    ld      a,(de)                ; A = UpperRight
+    ld      a,(ix+2)              ; A = UpperRight
     ld      (hl),a                ; Write to screen
-    inc     de                    ; Bump ChrPtr
     pop     hl                    ; HL = RowAdr; Stack = RowCnt+ColCnt, RtnAdr
-    ld      bc,(LINLEN)
-    ld      b,0
-    add     hl,bc                 ; HL = Next RowAdr
+    add     hl,de                 ; HL = Next RowAdr
     pop     bc                    ; BC = RowCnt+ColCnt, Stack = RtnAdr
     ret
 
+
 .convert_rect
-    call    screen__convert_rect  ; BC = RowCnt, DE = ColCnt, HL = ScrAdr
+    call    screen__convert_rect  ; B = ColCnt, C = RowCnt, DE = ScrWid, HL = ScrAdr
     ret     c
-    ld      a,c                   ; A = ColCnt
+    push    de
+    ld      de,SCREEN
+    add     hl,de
+    ld      a,b                   ; A = ColCnt
     cp      3                     ; If ColCnt < 3
     ret     c                     ;   Return Carry Set
     dec     a
     dec     a
     ld      b,a                   ; B = ColCnt-2
-    ld      a,e                   ; A = RowCnt
+    ld      a,c                   ; A = RowCnt
     cp      3                     ; Set Carry if RowCnt < 3
     dec     a
     dec     a
     ld      c,a                   ; C = RowCnt-2
+    pop     de                    ; IX = ScrWid
     ret
-
-; In: BC=Column, DE=Row
-; Out: Carry set if out of bounds
-; Clobbered: HL
-screen__bounds:
-    ld      hl,(LINLEN)
-    ld      h,0
-    dec     hl
-    sbc     hl,bc                 ; If Column >= LinLen
-    ret     c                     ;   Return Carry Set
-    ld      hl,23
-    sbc     hl,de                 ; If Row > 23
-    ret                           ;   Return Carry Set
 
 ;-----------------------------------------------------------------------------
 ; Convert Screen Coordinates to Size and Start Address
-; Input: BC: Start Column
-;        DE: Start Row
-;        BC': End Column
-;        DE': End Row
-; Output: BC = Column Count
-;         DE = Row Count
-;         HL = Start Address
+; Input: A: Screen Width
+;       BC: Start X
+;       DE: Start Y
+;      BC': End X
+;      DE': End Y
+; Output: B = Rect Width
+;         C = Rect Height
+;        DE = Screen Width
+;        HL = Start Offset
+; Clobbers: All
 ;  Flags: Carry set if out of bounds
-; Clobbered: HL
 ;-----------------------------------------------------------------------------
 screen__convert_rect:
-    exx                           ; BC = EndCol, DE = EndRow, BC' = BgnCol, DE' = BgnRow
-    call    screen__bounds        ; If out of bounds
-    ret     c                     ;   Return Carry Set
-    call    exx_check_rect        ; BC' = ColCnt, DE' = RowCnt
-    ret     c                     ;   Return Carry Set
-    call    screen__pos_addr      ; HL = ScrAdr
-    push    hl                    ; Stack = ScrAdr, RtnAdr
-    exx                           ; BC = ColCnt, DE = RowCnt
-    pop     hl                    ; HL - ScrAdr; Stack = RtnAdr
-    ret
-
-; Input: BC: Start Column, DE: Start Row, BC': End Column, DE': End Row
-; Output: BC': Column Count, DE'; Row Count
-; Enter with Carry Clear
-; Clobbers: HL
-gfx_check_rect:
-    exx                           ; BC = EndCol, DE = EndRow, BC' = BgnCol, DE' = BgnRow
-exx_check_rect:
-    push    bc                    ; Stack = EndCol, RtnAdr
-    exx                           ; BC = BgnCol, DE = BgnRow, BC' = EndCol, DE' = EndRow
-    pop     hl                    ; HL = EndCol; Stack = RtnAdr
-    sbc     hl,bc                 ; If HL = EndCol - BgnCol
-    ret     c                     ; If < 0, return Carry Set
-    inc     hl                    ; HL = ColCnt
-    push    hl                    ; Stack = ColCnt, RtnAdr
-    exx                           ; BC = EndCol, DE = EndRow, BC' = BgnCol, DE' = BgnRow
-    pop     bc                    ; BC = ColCnt; Stack = RtnAdr
-    push    de                    ; Stack = EndRow, RtnAdr
-    exx                           ; BC = BgnCol, DE = BgnRow, BC' = ColCnt, DE' = EndRow
-    pop     hl                    ; HL = EndRow; Stack = RtnAdr
-    sbc     hl,de                 ; HL = EndRow - BgnRow
-    ret     c                     ; If < 0, return Carry Set
-    inc     hl                    ; HL = RowCnt
-    push    hl                    ; Stack = ColCnt, RtnAdr
-    exx                           ; BC = ColCnt, DE = EndRow, BC' = BgnCol, DE' = BgnRow
-    pop     de                    ; DE = RowCnt; Stack = RtnAdr
-    exx                           ; BC = BgnCol, DE = BgnRow, BC' = ColCnt, DE' = RowCnt
-    ret
-
-;-----------------------------------------------------------------------------
-; Calculate screen position address
-; Input: C: Column
-;        E: Row
-; Output: HL = Cell Address
-; Clobbered: A
-;-----------------------------------------------------------------------------
-screen__pos_addr:
-    push    de
-    push    bc
-    inc     de                    ; Skip first row of screen
-    ld      a,e                   ; A = Row
-    ld      de,(LINLEN)           
-    ld      d,0                   ; DE = Screen width
-    call    mult_a_de             ; HL = Row Address, BC = Column, A = 0
-    add     hl,bc                 ; Add column address
-    ld      bc,SCREEN             ; Add to Text Screen base address
-    add     hl,bc                 ; HL = ScrAdr
-    pop     bc
-    pop     de
+    ld      l,a
+    ld      h,0                   ; HL = ScrWid
+    push    hl                    ; Stack = ScrWid, RtnAdr
+    inc     de                    ; Bump StartY
+    exx
+    inc     de                    ; Bump EndY
+    ld      hl,25                 ; ScrHgt = 25
+    exx       
+    call    gfx_rect_size         ; BC' = RctWid, DE' = RctHgt
+    pop     hl                    ; HL = ScrWid, Stack = RtnAdr
+    ret     c                     ;   Return Carry if Coords invalid
+    push    hl                    ; Stack = ScrWid, RtnAdr
+    ld      a,l                   ; A = ScrWid
+    call    mult_a_de             ; HL = RowAdr
+    add     hl,bc                 ; Hl = ScrOfs
+    exx                           ; BC = RctWid, DE = RctHgt, HL' = ScrOfs
+    ld      b,c                   ; B = RctWid
+    ld      c,e                   ; C = RctHgt
+    push    bc                    ; Stack = WidHgt, ScrWid,RtnAdr
+    exx                           ; HL = ScrOfs
+    pop     bc                    ; BC = WidHgt; Stack = ScrWid, RtnAdr
+    pop     de                    ; DE = ScrWid; Stack = RtnAdr
     ret
 
 screen__colors:
@@ -186,4 +239,18 @@ screen__colors:
     ld      a,DFLTATTRS
     ret     nc
     ld      a,(SCOLOR)
+    ret
+
+; Set RECT_
+; Set RECT_X1, RECT_Y1, RECT_X2, RECT_Y2 to full screen
+screen__size:
+    ld      bc,0
+    ld      (RECT_X1),bc          ; Start Column = 0
+    ld      (RECT_Y1),bc          ; Start Row = 0
+    ld      bc,(LINLEN)
+    ld      b,0
+    dec     bc
+    ld      (RECT_X2),bc          ; End Column = LinLen -1
+    ld      bc,23
+    ld      (RECT_Y2),bc          ; End Row = 23
     ret

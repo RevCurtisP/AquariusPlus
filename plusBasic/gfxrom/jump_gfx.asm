@@ -40,8 +40,8 @@ _jump_table:
     jp      bitmap_putchar        ; C03C (bitmap_putchar)
     jp      just_ret              ; C03F (bitmap_putstring)
     jp      just_ret              ; C042 (bitmap_putclip)
-    jp      colormap_fill         ; C045 Fill 1bpp Color Map Rectangle with Byte
-    jp      bitmap_rect           ; C048 Draw Unfilled Rectange
+    jp      colormap_fill_rect    ; C045 Fill Color Map Rectangle
+    jp      bitmap_rect           ; C048 Draw Unfilled Rectangle
     jp      bitmap__frect         ; C04B Draw Filled Rectange
     jp      just_ret              ; C04E 
     jp      just_ret              ; C051 

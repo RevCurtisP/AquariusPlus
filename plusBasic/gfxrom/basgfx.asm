@@ -274,8 +274,6 @@ bas_inrect:
     pop     de                    ; DE = Y; Stack = X, RtnAdr
     pop     bc                    ; BC = Y; Stack = RtnAdr
     jp      gfx_in_rectlist
-    
-
 
 ; Called from ST_RECT
 bas__rect:
@@ -295,7 +293,9 @@ bas__rect:
     exx                           ; HL = BoxChrAdr, BC' = X2, DE' = Y2, HL' = BoxClrAdr
     ld      bc,(RECT_X1)          ; BC = X1
     ld      de,(RECT_Y1)          ; DE = Y1
+    xor     a                     ; A = Default Screen
     call    screen__rect
+    jp      m,IMERR
     jp      c,FCERR
     ret
 .free_desc
@@ -318,4 +318,88 @@ bas__rect:
     inc     de
     djnz    .loop
     pop     de
+    ret
+
+
+bas_fill_colormap:
+    ex      de,hl                 ; H = 0, L = Colors
+    call    _read_rect;           ; BC = X2, DE = Y2, BC' = X2, DE' = Y2
+    xor     a
+    jp      colormap_fill_rect
+
+_read_rect:
+    exx
+    ld      bc,(RECT_X2)          ; BC = X2
+    ld      de,(RECT_Y2)          ; DE = Y2
+    exx                           ; BC' = X2, DE' = Y2
+    ld      bc,(RECT_X1)          ; BC = X1
+    ld      de,(RECT_Y1)          ; DE = Y1
+    ret
+
+; ST_FILL_SCREEN core code
+; BC: ScrFlg+ScrChr, DE: ClrFlg+ScrClr
+; RECT_X1, RECT_Y1, RECT_X2, RECT_Y2 = Coordinates
+bas_fill_screen:
+    ld      a,b                   ; If no CHR
+    or      d                     ;   or COLOR
+    jp      z,MOERR               ;   Missing operand error
+    push    de                    ; Stack = ClrFlg+ScrClr, RtnAdr
+    inc     b                     ; If ScrFlg
+    call    z,.fill_chr           ;   Fill Screen with CHR
+    jp      c,FCERR
+    pop     de                    ; BC = ClrFlg+ScrClr; Stack = RtnAdr
+    inc     d                     ; If ClrFlg
+    call    z,.fill_color         ;   Fill Screen with COLOR
+    jp      m,IMERR
+    jp      c,FCERR
+    ret
+.fill_chr
+    ld      l,c                   ; L = ScrChr
+    call    _rect_coords          ; A = Screen#, C = X1, D = Y1, C' = X
+    jp      screen__fill          ; Fill Screen
+.fill_color
+    ld      l,e                   ; L = ScrClr
+    call    _rect_coords          ; A = Screen#, C = X1, D = Y1, C' = X
+    jp      color__fill           ; Fill Screen
+
+_rect_coords
+    xor     a                     ; Use Current Screen  
+    ld      bc,(RECT_X1)
+    ld      de,(RECT_Y1)
+    exx
+    ld      bc,(RECT_X2)
+    ld      de,(RECT_Y2)
+    exx
+    ret
+
+bas_line_rect:
+    
+    ld      a,(GFX_FLAGS)
+    and     GFXM_MASK
+
+bas_frect:
+    ld      a,(PSETOPT)
+    or      a                     ; If LinOpt < 128
+    call    p,.color_frect        ;   Fill ColorMap Rectangle
+    call    _rect_coords          ; A = Screen#, C = X1, D = Y1, C' = X1, D' = Y1, Carry Clear       
+    ld      a,(PSETOPT)
+    ld      h,a
+    ld      l,0
+    call    bitmap__frect
+    jr      .done
+.color_frect
+    cp      16
+    jp      nc,FCERR
+    call    _rect_coords          ; A = Screen#, C = X1, D = Y1, C' = X1, D' = Y1, Carry Clear
+    ld      hl,(PSETOPT)          ; L = Color
+    ld      h,0
+    rl      l                     ; A = Color * 2
+    rl      l                     ; A = Color * 4
+    rl      l                     ; A = Color * 8
+    rl      l                     ; A = Color * 16
+    ld      h,$0F                 ; AndMsk = FgColor Only
+    call    colormap_fill_rect    ; Fill Colormap Rectangle
+.done
+    jp      m,IMERR
+    jp      c,FCERR
     ret

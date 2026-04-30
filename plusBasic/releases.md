@@ -1,4 +1,9 @@
 # plusBASIC Release History
+ - v0.71l (2026-04-30)
+    - Implemented _color_ argument in `LINE ... ,FILL`
+    - Fixed `LINE ... ,RECT` x-coordinates greater than 127 in 80-column bloxel mode
+    - `LINE ... ,RECT` now generates _Illegal quantity error_ when coordinates out of bounds
+    - `RECT` now generates _Invalid mode error_ if text screen is turned off
  - v0.71k (2026-03-24)
     - Added 40-column and 80-column support to `FILL COLORMAP` as an alternate to `FILL SCREEN ... COLOR`
  - v0.71j (2026-03-20)

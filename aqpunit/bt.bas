@@ -1,5 +1,5 @@
 100 REM Bitwise Statements and Functions
-110 QG$="cp"
+110 QG$="cm"
 130 GOSUB _init
 
 200 GOSUB _title:ARGS "Bitwise Functions"

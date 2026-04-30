@@ -1,5 +1,5 @@
 100 REM Pixel Drawing Statements and Functions
-110 QG$="rg"
+110 QG$="rc"
 130 GOSUB _init
 
 200 GOSUB _title:ARGS "Bloxel and Pixel Statements and Functions"

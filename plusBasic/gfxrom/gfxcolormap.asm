@@ -1,138 +1,94 @@
 ;-----------------------------------------------------------------------------
-; Fill 1bpp Color Map Rectangle with Byte
-; Input: B: Start Column
-;        C: End Column
-;        D: Start Row
-;        E: End Row
-;        L: Byte
-; Clobbered: A, BC, DE, H
+; Fill Color Map Rectangle with Byte
+; Takes bloxel/pixel coordinates as input
+; Input: A: Reserved (Set to 0)
+;       BC: Start Column
+;       DE: Start Row
+;      BC': End Column
+;      DE': End Row
+;        H: Reserved (Set to 0)
+;        L: Combined Colors
+; Clobbered: All
 ;-----------------------------------------------------------------------------
-colormap_fill:
-    push    hl                    ; Stack = Colors, RtnAdr
+colormap_fill_rect:
+    push    hl                    ; Stack = AndMsk+Colors, RtnAdr
+    pop     ix                    ; IXh = AndMsk, IXl = Colors; Stack = RtnAdr
     ld      a,(GFX_FLAGS)
     and     GFXM_MASK
-    ld      (BMPMODE),a
-    cp      GFXM_4BPP
-    ret     z
-    call    colormap_convert_rect ; A = RowCnt, C = ColCnt, DE = RowAdr
-    pop     hl                    ; L = Colors; Stack = RtnAdr
+    call    colormap_scale_rect
+    ret     m
     ret     c
-    ld      h,a                   ; H = RowCnt
-    ld      a,(BMPMODE)
+    cp      2
+    jr      z,.colormap           ; If Bloxels
     or      a
-    jr      z,_fill_40
-    dec     a
-    jr      z,_fill_80
-_fill_1bpp
+    ld      a,40
+    jp      z,do_color_fill
+    ld      a,80
+    jp      do_color_fill         ; Else
+.colormap    
+    in      a,(IO_BANK1)
+    push    af
     ld      a,VIDEO_RAM
-    call    page_map_bank1        ; Stack = OrigPg, RtnAdr
-    call    _fill_40
-    jp      page_restore_bank1
-
-_fill_80:
-    in      a,(IO_VCTRL)
-    push    af                   ; Stack = IO_VCTRL, RtnAdr
-    or      VCTRL_TEXT_PAGE
-    out     (IO_VCTRL),a         ; Switch to Color RAM
-    ld      a,80                 ; A = RowWid
-    call    _fill_color
-    pop     af                   ; A = OrigVCTRL; Stack = RtnAdr
-    out     (IO_VCTRL),a         ; Switch to Color RAM
+    out     (IO_BANK1),a
+    ld      a,40
+    ld      iy,BANK1_BASE+BMP_COLORRAM
+    call    fill_rect
+    pop     af
+    out     (IO_BANK1),a
+    xor     a
     ret
-
-_fill_40:
-    ld      a,40                  ; A = RowWid
-_fill_color:
-    ex      af,af'                ; A' = RowWid
-    ld      a,h                   ; A = RowCnt
-    ex      de,hl                 ; E = Byte, HL = RowAdr
-    ex      af,af'                ; A = RowWid, A' = RowCnt
-    ld      d,a                   ; D = RowWid
-    ld      a,c                   ; A = ColCnt
-    ex      af,af'                ; A = RowCnt, A' = ColCnt
-.loop
-    push    hl                    ; Stack = RowAdr, RtnAdr
-    ex      af,af'                ; A = ColCnt, A' = RowCnt
-    ld      b,a                   ; B = ColCnt
-.row
-    ld      (hl),e                ; Write Byte
-    inc     hl
-    djnz    .row                  ; Next Column
-    pop     hl                    ; HL = RowAdr; Stack = RtnAdr
-    ld      c,d
-    add     hl,bc                 ; HL = Next RowAdr
-    ex      af,af'                ; A = RowCnt, A' = ColCnt
-    dec     a
-    jr      nz,.loop
-    ret
-
+    
 ;-----------------------------------------------------------------------------
 ; Convert Color Map Coordinates to Size and Start Address
-; Input: B: Start Column
-;        C: End Column
-;        D: Start Row
-;        E: End Row
-; Output: A = Row Count
-;         C = Column Count
-;        DE = Start Address
-; Clobbered: IX
+; Input: A: GfxMode
+;       BC: Start X
+;       DE: End Y
+;      BC': Start X
+;      DE': End Y
+; Output: BC: Start Col
+;         DE: Start Row
+;        BC': Start X
+;        DE': End Y
+; Clobbered: HL
 ;-----------------------------------------------------------------------------
-colormap_convert_rect:
-    ld      a,(BMPMODE)
-    call    colormap_bounds         ; Check EndCol and EndRow
+colormap_scale_rect:
+    cp      4
+    jr      c,.convert
+    or      $FF                   ; If GfxMode > 3
+    ret                           ;   Return Minus
+.convert
+    call    bitmap__check_rect
     ret     c
-    call    _ix_pos_addr
-    call    gfxrom_convert_rect     ; A = RowCnt, C = ColCnt, DE = RowAdr
+    cp      2
+    jr      z,.pixel_rect         ; If not 1bpp
+    exx                           ;   BC = X2, DE = Y2, BC' = X1, DE' = Y1
+    call    .bloxel_convert       ;   BC = EndCol, DE = EndRow
+    exx                           ;   BC = Y1, DE = Y2, BC = EndCol, DE = EndRow
+.bloxel_convert
+    srl     b
+    rr      c                     ;   BC = StartCol
+    ld      hl,gfx_bloxel_row
+    add     hl,de
+    ld      e,(hl)
+    ld      d,0                   ;   DE = StartRow
+    ret                           ; Else
+.pixel_rect:
+    exx                           ;   BC = X2, DE = Y2, BC' = X1, DE' = Y1
+    call    .pixel_convert        ;   BC = EndCol, DE = EndRow
+    exx                           ;   BC = Y1, DE = Y2, BC = EndCol, DE = EndRow
+.pixel_convert:
+    srl     b
+    rr      c
+    srl     c
+    srl     c                     ;   Column = X / 8
+    srl     d
+    rr      e
+    srl     e
+    srl     e                     ;   Row = Y / 8
+    or      a                     ;   Clear Carry after shifts
+    dec     de                    ;   Adjust for Bloxel Y Offset
     ret
 
-_ix_pos_addr:
-    ld      a,(BMPMODE)
-    ld      ix,_pos_addr_40
-    or      a
-    ret     z
-    ld      ix,_pos_addr_80
-    dec     a
-    ret     z
-    ld      ix,_pos_addr_1bpp
-    ret
-    
-;-----------------------------------------------------------------------------
-; Calculate screen position address
-; Input: C: Column
-;        E: Row
-; Output: DE = Cell Address
-; Clobbered: A
-;-----------------------------------------------------------------------------
-_pos_addr_1bpp:
-    push    hl
-    push    bc
-    ld      a,e                   ; A = Row
-    ld      de,40           
-    call    mult_a_de             ; HL = Row Address, BC = Column, A = 0
-    add     hl,bc                 ; Add column address
-    ld      bc,BANK1_BASE+8192    ; Add to ColorMap base address
-    add     hl,bc
-    ex      de,hl                 ; DE = Cursor address
-    pop     bc
-    pop     hl
-    ret
-
-_pos_addr_40:
-    push    hl
-    call    screen__pos_addr      ; HL = ScrnAddr
-    ld      de,1024
-    add     hl,de                 ; HL = ColorAddr
-    ex      de,hl                 ; DE = ColorAddr
-    pop     hl
-    ret
-
-_pos_addr_80:
-    push    hl
-    call    screen__pos_addr      ; HL = ScrnAddr
-    ex      de,hl                 ; DE = ColorAddr
-    pop     hl
-    ret
-    
 ; In: A = GfxMode, D=Column, E=Row
 ; Out: Carry set if out of bounds
 colormap_bounds:

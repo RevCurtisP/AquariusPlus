@@ -95,7 +95,7 @@ null_desc:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.71k"
+    db "v0.71l"
     db 0
 plusver_len equ $ - plus_version
 plus_len   equ   $  - plus_text
@@ -1067,24 +1067,14 @@ fast_hook_handler:
     ex      af,af'              ; Restore AF
     jp      (ix)
 
-;-----------------------------------------------------------------------------
-; S3 BASIC extensions routines in Extended ROM Page
-;-----------------------------------------------------------------------------
-
-_next_statement:
-    call    page_set_plus
-    jp      exec_next_statement   ; Go do the Statement
-
-_scan_label
-    call    page_set_plus
-    jp      scan_label
-
+; Extended Error Processing
 error_ext:
     call    page_set_plus         ; Bank 3 could be mapped to any page at this point.
     call    clear_inevalflg       ; Clear In EVAL Flag
     call    FINLPT                ; Returns A=0
     ld      (SUBFLG),a            ; In case it as a UD error
     jp      trap_error            ; so map to Extended ROM, before continuing
+
 
 ;-----------------------------------------------------------------------------
 ; S3 BASIC extensions routines in Auxiliary ROM Page

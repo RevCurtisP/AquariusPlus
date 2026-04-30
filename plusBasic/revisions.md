@@ -1,4 +1,15 @@
 # plusBASIC Revision History
+ - v0.71l (2026-04-20)
+    - Removed deprecated jump vectors _\_next_statement_ and _\_scan_label_ from aqbasplus.asm
+    - Updated _bitmap_rect_ to return carry set when coordinates out of bounds so `LINE ... ,RECT` generates _Illegal quantity error_
+    - Fixed _bitmap_rect_ and `LINE ... ,RECT` x-coords > 127 in 80-column bloxel mode
+    - Optimized _bitmap_frect_, added _bas_frect_ which calls _colormap_fill_rect_ when color specified in `LINE ... ,FILL`
+    - Renamed _colormap_fill_ to _colormap_fill_rect_ and _colormap_convert_rect_ to _colormap_scale_rect_
+    - Added _screen__size_ which populates _RECT_X1_, _RECT_Y1_, _RECT_X2_, and _RECT_Y2_
+    - Modified _ST_FILL_SCREEN_ to call _screen__size_ and _scan__rect_ instead of _screen_size_ and _scan_rect_
+    - Added hook for calculated `GOTO` to _scan_label_
+    - Modified _bas__rect_ to always use default screen, and generate _Invalid mode error_ in `RECT` command
+    - Added _bitmap__check_rect_, _bitmap__check_coords_, _color__fill_, _do_color_fill_, _fill_rect_, _screen__bounds_, _screen__fill_
  - v0.71k (2026-03-24)
     - Renamed _auxrom/edit.asm_ to _auxrom/auxinput.asm_
     - Moved _colormap_fill_, _colormap_convert_rect_, _colormap_pos_addr_, and _colormap_bounds_ from _auxrom/auxbitmap.asm_ to _gfxrom/gfxcolormap.asm_
@@ -999,7 +1010,7 @@
  - v0.16d (2023-11-01)
   - Simplified SCREEN statement operand list
  - v0.16c (2023-10-30)
-  - Refactore screen_save, screen_restore, ad screen_swap to use either set of screen buffers
+  - Refactored screen_save, screen_restore, ad screen_swap to use either set of screen buffers
  - v0.16b (2023-10-30)
   - CLEAR issues OVERR if trying to set TOPMEM less than $8400.
  - v0.16a (2023-10-29)

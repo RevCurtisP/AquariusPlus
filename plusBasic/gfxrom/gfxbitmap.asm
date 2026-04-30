@@ -276,6 +276,55 @@ bitmap_rect_size:
     exx                           ; BC = X1, DE = Y1, BC' = Width, DE' = Height
     ret
 
+
+;-----------------------------------------------------------------------------
+; Validate Bitmap Rectangle Coordinates
+; Input: A = GfxMode
+; BC = X1, DE = Y1, BC' = X2, DE' = Y2
+; Returns Carry set if out of bounds
+; Clobbers: A, HL
+bitmap__check_rect:    
+    exx
+    call    bitmap__check_coords
+    exx
+    ret     c                     ; Return Carry Set if (X0,Y0) out of range
+;-----------------------------------------------------------------------------
+; Validate Bitmap Rectangle Coordinates
+; Input: A = GfxMode
+;       BC = X
+;       DE = Y
+; Flags: Carry Set if out of bounds
+; Clobbered: HL
+;-----------------------------------------------------------------------------
+bitmap__check_coords:
+    cp    2
+    jr    nc,.bitmap              ; If GfxMode < 2
+    call  .bloxelx                ;   HL = -BmpWid
+    add   hl,bc                   ;   If X >= BmpWid
+    ret   c                       ;     Return Carry Set
+    ld    hl,-72                  ;   If Y >= BmpHgt
+    add   hl,de                   ;     Return Carry Sets
+    ret                           ; Else
+.bitmap    
+    call  .pixelx                 ;   HL = -BmpWid
+    add   hl,bc                   ;   If X >= BmpWid
+    ret   c                       ;     Return Carry Set
+    ld    hl,-200                 ;   If Y >= BmpHgt
+    add   hl,de                   ;     Return Carry Sets
+    ret
+.bloxelx:
+    ld    hl,-80                  ; If GfxMode = 0
+    or    a                       ;   Return BmpWid = -80
+    ret   z                       ; Else
+    ld    hl,-160                 ;   Return BmpWid = -160
+    ret
+.pixelx:
+    ld    hl,-320                 ; If GfxMode = 2
+    cp    2                       ;   Return BmpWid = -320
+    ret   z                       ; Else
+    ld    hl,-160                 ;   Return BmpWid = -160
+    ret
+
 ; Input: BC = X1, DE = Y1, BC' = X2, DE' = Y2
 ; Returns Carry set if out of bounds
 ; Clobbers: A, HL

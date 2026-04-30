@@ -28,8 +28,6 @@ bitmap__getpixel:
     ld      ix,_getpixelc         ; Else fo Bitmap 4bpp
     jr      _dopixel
 
-
-
 ;-----------------------------------------------------------------------------
 ; Erase pixel on 1 bpp bitmap screen
 ;  Input: C: Y-coordinate
@@ -255,7 +253,7 @@ _psetcolor:
 ;        HL: Screen Address
 ; Clobbered: BC, HL
 ;-----------------------------------------------------------------------------
-bloxel_80col_addr
+bloxel_80col_addr:
     ld      h,high(gfx_bloxeltab80)
     jr      _bloxel
 bloxel_40col_addr:
@@ -275,7 +273,7 @@ _bloxel:
     rr      c                     ; BC = X-Coord / 2
     adc     0                     ; Bump BitMskOfs if X-Coord is odd
     add     hl,bc                 ; HL = ScrAdr
-    ld      d,high(gfx_bloxel_mask)
+    ld      d,high(bloxel_pset_mask)
     ld      e,a
     ld      a,(hl)                ; A = ScrnChr
     or      $A0                   ; Convert to GfxChr
@@ -378,10 +376,11 @@ pixel_1bpp_cell:
     rr      c
     srl     c
     srl     c
-    ld      b,0                   ; DE = ColOfs
+    ld      b,0                   ; BC = Column
     srl     e
     srl     e
-    srl     e                     ; C = Y/8
+    srl     e  
+    ld      d,0                   ; DE = Row
     call    _mult40e              ; HL = RowOfs
     add     hl,bc                 ; HL = BytOfs
     ld      de,BANK1_BASE+BMP_COLORRAM

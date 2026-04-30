@@ -1,3 +1,135 @@
+;====================================================================
+; Shared Graphics Subroutines
+;====================================================================
+
+;-----------------------------------------------------------------------------
+; Verify Rectangle Coordinate and Calculate Size
+; Input: BC: Start X
+;        DE: Start Y
+;       BC': End X
+;       DE': End Y
+;        HL: Screen Width
+;       HL': Screen Height
+; Output: BC' = Rect Width
+;         DE' = Rect Height
+; Clobbers: HL, HL'
+;  Flags: Carry set if out of bounds
+;-----------------------------------------------------------------------------
+gfx_rect_size:
+      push    hl                  ; Stack = ScrWid, RtnAdr
+      exx                         ; HL = ScrHgt
+      ex      (sp),hl             ; HL = ScrWid, Stack = ScrHgt, RtnAdr
+      exx                         ; HL' = ScrWid
+      pop     hl                  ; HL = ScrHgt; Stack = RtnAdr
+      exx                         ; BC = EndX, CD = EndY, HL = ScrWid, HL' = ScrHgt
+      call    gfx_check_rect      ; If EndX >= ScrWid or EndY >= ScrHgt
+      ret     c                   ;   Return Carry Set
+      push    bc                  ; Stack = EndX, RtnAdr
+      exx                         ; BC = StartX, DE = StartY, BC' = EndX, EndY
+      pop     hl                  ; HL = EndX; Stack = RtnAdr
+      sbc     hl,bc               ; HL = EndX - StartX
+      ret     c                   ; Return Carry Set if EndX < StartX
+      inc     hl                  ; HL = RctWid
+      push    hl                  ; Stack = RctWid, RtnAdr
+      exx                         ; BC = EndX, DE = EndY, BC' = StartX, DE' = StartY
+      pop     bc                  ; BC = RctWid; Stack = RtnAdr
+      push    de                  ; Stack = EndY, RtnAdr
+      exx                         ; BC = StartX, DE = StartY, BC' = RctWid, DE' = EndY
+      pop     hl                  ; HL = EndY; Stack = RtnAdr
+      sbc     hl,de               ; HL = EndY - EndX
+      ret     c                   ; Return Carry Set if EndY < StartY
+      inc     hl                  ; HL = RctHgt
+      push    hl                  ; Stack = RctHgt, RtnAdr
+      exx                         ; BC = RctWod, DE' = EndY, BC' = StartX, DE' = StartY
+      pop     de                  ; DE = RctWid; Stack = RtnAdr
+      exx                         ; BC = StartX, DE = StartY, BC' = RctWid, DE' = RctHgt
+      ret
+
+;-----------------------------------------------------------------------------
+; Verify X2 >= X1 and Y2 >= Y1
+; Input: BC: X1
+;        DE: Y1
+;        HL: MaxX
+;       HL': MaxY
+; Clobbers: HL
+;-----------------------------------------------------------------------------
+gfx_check_rect:
+    or      a                     ; Clear Carry
+    dec     hl                    ; HL = MaxX
+    sbc     hl,bc                 ; If X > MaxX
+    ret     c                     ;   Return Carry Set
+    exx
+    push    hl                    ; Stack = Height, RtnAdr
+    exx
+    pop     hl                    ; HL = Height; Stack = RtnAdr
+    dec     hl                    ; HL - MaxY
+    sbc     hl,de                 ; If Y > MaxY
+    ret                           ;   Return Carry Set
+
+
+;-----------------------------------------------------------------------------
+; Convert Bitmap Rectangle to Screen Rectangle
+; Input: C: X1
+;        E: Y1
+;       C': X2
+;        E: Y2
+; Output: C: Col1
+;         E: Row1
+;        C': Col2
+;        D': Row2
+; Clobbers: A
+;-----------------------------------------------------------------------------
+bitmap_rect_to_screen:
+    exx                           ; C = X2, E = Y2
+    call    bitmap_to_screen      ; C = Col2, E = Row2
+    exx                           ; C' = Col2, E' = Row2
+;-----------------------------------------------------------------------------
+; Convert Bloxel Coordinates to Screen Coordinates
+; Input: C: X
+;        E: Y
+; Output: C: Col
+;         E: Row
+; Clobbers: A
+;-----------------------------------------------------------------------------
+bitmap_to_screen:
+    srl     c
+    srl     c
+    srl     c                     ; Col = X/8
+    srl     e
+    srl     e
+    srl     e                     ; Row = X/8
+    ret
+
+;-----------------------------------------------------------------------------
+; Convert Bloxel Rectangle to Screen Rectangle
+; Input: C: X1
+;        E: Y1
+;       C': X2
+;        E: Y2
+; Output: C: Col1
+;         E: Row1
+;        C': Col2
+;        D': Row2
+; Clobbers: A
+;-----------------------------------------------------------------------------
+bloxel_rect_to_screen:
+    exx                           ; C = X2, E = Y2
+    call    bloxel_to_screen      ; C = Col2, E = Row2
+    exx                           ; C' = Col2, E' = Row2
+;-----------------------------------------------------------------------------
+; Convert Bloxel Coordinates to Screen Coordinates
+; Input: C: X
+;        E: Y
+; Output: C: Col
+;         E: Row
+; Clobbers: A
+;-----------------------------------------------------------------------------
+bloxel_to_screen:
+    srl     c                     ; Col = X/2
+    ld      d,high(gfx_bloxel_row)
+    ld      a,(de)                ; Row = Y/3
+    ret
+
 ;-----------------------------------------------------------------------------
 ; Convert rectangular coordinates to address, columns and row count
 ; Input: B: Start Column

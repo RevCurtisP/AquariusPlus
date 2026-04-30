@@ -78,6 +78,7 @@ _get_varbase:
 bitmap_frect:
     ld      (PSETCOLOR),a
     call    _check_rect
+    ret     c
     push    de                    ; Stack = y0, RtnAdr
     exx                           ; BC = x1, DE = y1, BC' = x0, DE' = y0
     pop     hl                    ; HL = y0; Stack = RtnAdr
@@ -119,6 +120,7 @@ bitmap_frect:
 bitmap_rect:
     ld      (PSETCOLOR),a
     call    _check_rect
+    ret     c
     ld      h,d
     ld      l,e                   ; HL = y0
     call    _save_rect            ; BC = x1, DE = y1, BC' = x0, DE' = y0; Stack = x1, y1, x0, y0, RtnAdr
@@ -137,14 +139,18 @@ bitmap_rect:
     call    _save_rect            ; BC = x1, DE = y1, BC' = x0, DE' = y0; Stack = x1, y1, x0, y0, RtnAdr
     ld      b,h
     ld      c,l                   ; BC = x0
-    exx                           ; BC = x0, DE = y0, BC' = x0, DE' = y1
-    call    _line                 ; Draw Top Line
+    dec     de                    ; DE = y1-1
+    exx                           ; BC = x0, DE = y0, BC' = x0, DE' = y1-1
+    inc     de                    ; DE = y0+1
+    call    _line                 ; Draw Left Line
     call    _restore_rect         ; BC = x0, DE = y0, BC' = x1, DE' = y1
     call    _save_rect            ; BC = x1, DE = y1, BC' = x0, DE' = y0; Stack = x1, y1, x0, y0, RtnAdr
+    dec     de                    ; DE = y1-1
     push    bc                    ; Stack = x1, x1, y1, x0, y0
     exx                           ; BC = x0, DE = y0, BC' = x1, DE' = y1
-    pop     bc                    ; BC = x1, DE = y1, BC' = x1, DE' = y1
-    call    _line                 ; Draw Bottom Line
+    pop     bc                    ; BC = x1, DE = y0, BC' = x1, DE' = y1
+    inc     de                    ; DE = y0+1
+    call    _line                 ; Draw Right Line
     call    _restore_rect         ; BC = x0, DE = y0, BC' = x1, DE' = y1
     ret
 
@@ -763,7 +769,7 @@ _bloxel40:
 .xcoord
     rlca                          ; A = PxlOfs
     pop     de                    ; DE = X-Coord
-    sra     e                     ; Column = X-Coord / 2
+    srl     e                     ; Column = X-Coord / 2
     jr      nc,.even              ; If Odd
     inc     a                     ;   Bump PxlOfs
 .even

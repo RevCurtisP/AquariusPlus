@@ -23,7 +23,6 @@ ST_CLEAR_BITMAP:
 ;-----------------------------------------------------------------------------
 ; FILL BITMAP [BYTE byte] [COLOR foreground,background]
 ;-----------------------------------------------------------------------------
-; To Do: FILL COLORMAP (x,y)-(x,y),fg,bg
 ; SCREEN 1,0:FILL BITMAP BYTES $EE:PAUSE
 ; SCREEN 1,0:FILL BITMAP BYTES $AA COLOR 7,0:PAUSE
 ; SCREEN 1,0:FILL BITMAP COLOR 2,8:PAUSE
@@ -106,37 +105,92 @@ gfxrom_call_sngflt:
     call    gfxrom_call           ; A = Color
     jp      SNGFLT
 
+;-----------------------------------------------------------------------------
+; FILL COLORMAP (col,row)-(col,row) COLOR fgcolor, bgcolor
+;-----------------------------------------------------------------------------
+; FILL COLORMAP (0,0)-(1,2) COLOR 7,1
+; FILL COLORMAP (2,3)-(7,8) COLOR 7,1
+; FILL COLORMAP (0,0)-(79,0) COLOR 1,7
+; SCREEN 0,2:CLEAR BITMAP:PSET (0,0):FILL COLORMAP (0,0)-(8,8) COLOR 7,1:PAUSE
+; SCREEN 0,2:FILL COLORMAP (0,0)-(319,199) COLOR 7,1:PAUSE
+ST_FILL_COLORMAP:
+    rst     CHRGET                ; Skip COL
+    SYNCHKT ORTK
+    SYNCHKT MAPTK                 ; Require ORMAP
+    call    scan__rect            ;   Populate RECT_X1, RECT_Y1, RECT_X2. RECT_Y2
+    call    parse_colors          ; A,E = Colors
+    ld      iy,bas_fill_colormap
+    jp      gfxrom_call_push_fcerr
+
 ;----------------------------------------------------------------------------
 ; LINE Statement
-; LINE (x0,y0)-(x1,y1){,color|XOR}
+; LINE (x0,y0)-(x1,y1){,{color|XOR}{,RECT|FILL}}
 ;----------------------------------------------------------------------------
+; LINE (3,4)-(4,5),,RECT
+; LINE (3,4)-(5,6),,RECT
+; LINE (3,4)-(5,6),XOR,RECT
+; LINE (0,0)-(79,71),3,RECT
+; LINE (2,3)-(77,68),1,FILL
+; LINE (0,0)-(80,72),,RECT
+; LINE (0,0)-(159,71),,RECT
+; LINE (127,0)-(128,1)
+
+
+; LINE (3,4)-(30,10)
+; LINE (3,4)-(30,10),,RECT
+; LINE (3,4)-(30,10),,FILL
+; LINE (5,5)-(28,8),PRESET,FILL
+; SCREEN 0,2:CLEAR BITMAP:LINE (2,2)-(317,197),,FILL:PAUSE
+
+; CLEAR BITMAP:LINE (0,0)-(79,71),,RECT:PAUSE
+; LINE (2,2)-(77,69),2,FILL:PAUSE
+; LINE (4,4)-(75,67),PRESET,FILL:PAUSE
+; LINE (0,0)-(79,71),XOR,FILL:PAUSE
+
+
+; SCREEN 0,2:CLEAR BITMAP:LINE (0,0)-(319,199):PAUSE
+; SCREEN 0,2:CLEAR BITMAP:LINE (0,0)-(319,199),,RECT:PAUSE
+; SCREEN 0,2:LINE (2,2)-(317,197),2,FILL:PAUSE
+; SCREEN 0,2:LINE (4,4)-(315,195),PRESET,FILL:PAUSE
+; SCREEN 0,2:LINE (0,0)-(319,199),XOR,FILL:PAUSE
+
+; SCREEN 0,3:CLEAR BITMAP:LINE (0,0)-(159,199),,RECT:PAUSE
+; SCREEN 0,3:LINE (2,2)-(157,197),2,FILL:PAUSE
+; SCREEN 0,3:LINE (4,4)-(155,195),PRESET,FILL:PAUSE
+; SCREEN 0,3:LINE (0,0)-(150,199),XOR,FILL:PAUSE
 ST_LINE:
     cp      INPUTK
     jp      z,ST_LINE_INPUT
     call    SCAND                 ; BC = x0, DE = y0
     push    de                    ; Stack = y0, RtnAdr
     push    bc                    ; Stack = x0, y0, RtnAdr
+    ld      (RECT_X1),bc
+    ld      (RECT_Y1),de
     SYNCHKT MINUTK                ; Require -
     call    SCAND                 ; BC = x0, DE = y0
     push    de                    ; Stack = y1, x0, y0, RtnAdr
     push    bc                    ; Stack = x1, y1, x0, y0, RtnAdr
+    ld      (RECT_X2),bc
+    ld      (RECT_Y2),de
     call    _pset_opt             ; A = Color, $FF, or XORTK
+    ld      (PSETOPT),a
     ld      iy,bitmap_line
-    ex      af,af'
+    ex      af,af'                ; A' = Color
+    ld      ix,gfx_call
     call    CHRGT2                ; A = CurChr
     call    nz,_line_opt
-    ex      af,af'
+    ex      af,af'                ; A = Color
     exx
     pop     bc                    ; BC = x1; Stack = y1, x0, y0, RtnAdr
     pop     de                    ; DE = y1; Stack = x0, y0, RtnAdr
-    exx                           ; BC' = x1, DE' = y1
+    exx                           ;   
     pop     bc                    ; BC = x0; Stack = y0, RtnAdr
     pop     de                    ; DE = y0; Stack = RtnAdr
     push    hl
 ;gfx_call_fc_popret:
-    call    gfx_call              ;   Write tile to tilemap
-    jp      c,FCERR               ;   Error if invalid coordinates
-    pop     hl                    ;   HL = TxtPtr; Stack = RtnAdr
+    call    jump_ix               ; Execute kernel routine  
+    jp      c,FCERR               ; Error if invalid coordinates
+    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     ret
 
 _line_opt:
@@ -147,8 +201,9 @@ _line_opt:
     ld      iy,bitmap_rect
     jp      CHRGTR
 .not_rect
+    ld      ix,gfxrom_call
     SYNCHKT FILLTK
-    ld      iy,bitmap_frect
+    ld      iy,bas_frect
     ret
 
 ;-----------------------------------------------------------------------------

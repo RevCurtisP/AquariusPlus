@@ -201,12 +201,12 @@ ST_SETCOLOR:
 ; RECT (x0,y0)-(x1,y1),{boxchars$}{,fgcolor,bgcolor}
 ; RECT (x0,y0)-(x1,y1),{boxchars$}{,colors$}
 ;-----------------------------------------------------------------------------
+; RECT (16,12)-(23,14)
 ; RECT (10,5)-(20,9),"+-+| |+-+"
 ; RECT (10,9)-(20,17),$"B7A3EBB5A0EAF5F0FA",7,2
-; RECT (10,9)-(20,17),$"FFFFFFB5A0EAF5F0FA",7,4
-; RECT (10,9)-(20,17),$"DEACCED620D6CFACDF"
-; RECT (16,12)-(23,14)
-; PRINT @(17,13);"Button"
+; RECT (9,10)-(21,18),$"C020C1202020C120C0",$"067006700670607060"
+; RECT (10,9)-(20,17),$"FFFFFFB5A0EAF5F0FA",$"747474F474F4F4F4F4"
+; RECT (11,10)-(19,16),$"D71FC9EA20B5C71FD9",$"060606060606066006"
 ST_RECT:
     call    skip_scan__rect
     call    get_string_optional   ; DE = ChrDsc
@@ -530,27 +530,6 @@ _set_tile_ext:
     ld      iy,bas_set_tile_to_chr
     jr      _gfx_tile_call        ; Convert and write tile
 
-;-----------------------------------------------------------------------------
-; FILL COLORMAP (col,row)-(col,row) COLOR fgcolor, bgcolor
-;-----------------------------------------------------------------------------
-; FILL COLORMAP (0,0)-(4,5) COLOR 7,1
-; FILL COLORMAP (10,5)-(20,15) COLOR 7,1
-; SCREEN 0,2:FILL COLORMAP (10,5)-(20,15) COLOR 7,1:PAUSE
-ST_FILL_COLORMAP:
-    rst     CHRGET                ; Skip COL
-    SYNCHKT ORTK
-    SYNCHKT MAPTK                 ; Require ORMAP
-    call    scan_rect             ; B = BgnCol, C = EndCol, D = BgnRow, E= EndRow
-    push    bc                    ; Stack = Cols, RtnAdr
-    push    de                    ; Stack = Rows, Cols, RtnAdr
-    call    parse_colors          ; A = Colors
-    pop     de                    ; DE = Rows; Stack = Cols, RtnAdr
-    pop     bc                    ; BC = Cols; Stack = RtnAdr
-    push    hl                    ; Stack = TxtPtr, RtnAdr
-    ld      l,a                   ; L = Colors
-    ld      iy,colormap_fill
-    jp      gfxrom_call_fcerr
-
 gfx_call_fc_popret:
     call    gfx_call              ;   Write tile to tilemap
     jp      c,FCERR               ;   Error if invalid coordinates
@@ -562,45 +541,41 @@ gfx_call_fc_popret:
 ;-----------------------------------------------------------------------------
 ; Will not change to FILL SCREEN CHR/ATTR because this is easier to parse
 ; FILL SCREEN (10,5)-(20,15) CHR '*' COLOR 7,0
+; FILL SCREEN CHR '@'
+; FILL SCREEN COLOR 0,2
+; FILL SCREEN (1,0)-(2,1) CHR '*'
+; FILL SCREEN (0,0)-(2,2) CHR '#'
+; FILL SCREEN (0,0)-(2,2) COLOR 7,0
+; FILL SCREEN (0,-1)-(3,2) CHR '%'
 ST_FILL_SCREEN:
-    ld      iy,screen_size
-    call    gfx_call              ; Default to entire screen
+    ld      iy,screen__size       ; Set RECT_X1, RECT_Y1, RECT_X2. RECT_Y2
+    call    gfxrom_call           ;   to entire screen
     rst     CHRGET                ; Skip SCREEN
     cp      '('                   ; If open paren
-    call    z,scan_rect           ;   B = BgnCol, C = EndCol, D = BgnRow, E= EndRow
+    call    z,scan__rect          ;   Populate RECT_X1, RECT_Y1, RECT_X2. RECT_Y2
 .params
-    push    de                    ; Stack = Rows, RtnAdr
-    push    bc                    ; Stack = Cols, Rows, RtnAdr
+    ld      b,0                   ; ScrFlg = False
+    push    bc                    ; Stack = ScrFlg+ScrChr, RtnAdr
     ld      a,(hl)                ; Reget next character
     cp      XTOKEN                ;
-    jr      nz,.notx              ; If extended token
+    jr      nz,.nochr             ; If extended token
     inc     hl                    ;   Skip XTOKEN
     SYNCHKT CHRTK                 ;   Require CHR
-    call    get_char              ;   Parse fill character
-    pop     bc                    ;   BC = Cols; Stack = Rows, RtnAdr
-    pop     de                    ;   DE = Rows; Stack = RtnAdr
-    push    de                    ;   Stack = Rows, RtnAdr
-    push    bc                    ;   Stack = Cols, Rows, RtnAdr
-    push    hl                    ;   Stack = TxtPtr, Cols, Rows, RtnAdr
-    ld      h,0                   ;   H = Fill Text
-    ld      l,a                   ;   L = Fill Byte
-    ld      iy,screen_fill
-    call    gfx_call              ;   Do the fill
-    pop     hl                    ;   HL = TxtPtr; Stack = Cols, Rows, RtnAdr
+    call    get_char              ;   A = ScrChr
+    ld      b,$FF                 ;   ScrFlg = True
+    ld      c,a                   ;   C = ScrChr
+    pop     de                    ;   Stack = RtnAdr
+    push    bc                    ;   Stack = ScrFlg+ScrChr, RtnAdr
+.nochr
+    ld      d,0                   ; ClrFlg = False
     call    CHRGT2                ;   Reget next character
-    jr      nz,.notx              ;   If terminator
-    pop     bc                    ;      Stack = Rows, RtnAdr
-    pop     de                    ;      Stack = RtnAdr
-    ret                           ;      Return
-.notx
-    call    parse_colors          ;   A = Colors
-    pop     bc                    ;   BC = Cols; Stack = Rows, RtnAdr
-    pop     de                    ;   DE = Rows; Stack = RtnAdr
-    push    hl                    ;   Stack = TxtPtr, RtnAdr
-    ld      h,-1                  ;   H = Fill Text
-    ld      l,a                   ;   L = Fill Byte
-    ld      iy,screen_fill
-    jp      gfx_call_fc_popret
+    jr      z,.nocolor            ; If not terminator
+    call    parse_colors          ;   E = ScrClrs
+    ld      d,$FF                 ;   ClrFlg = True
+.nocolor
+    pop       bc                  ; BC = ScrFlg+ScrChr
+    ld        iy,bas_fill_screen
+    jp        gfxrom_call_preserve_hl
 
 ;-----------------------------------------------------------------------------
 ; FILL TILEMAP TILE tile# ATTR attrs PALETTE palette#

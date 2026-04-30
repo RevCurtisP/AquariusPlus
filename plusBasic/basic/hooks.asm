@@ -102,8 +102,13 @@ init_bas_fdesc:
 scan_label:
     dec     hl                    ; Back up in case of space
     rst     CHRGET                ; Reget current character
-    cp      '_'
-    jr      nz,.not_label         ; If not underscore
+    cp      '_'                   ; If underscore
+    jr      z,_dolabel            ;   Search for label and Return
+    cp      '('                   ; If left paren
+    jr      z,_calcline
+    jp      SCNLIN                ; Else Scan line number and return GOTO
+
+_dolabel:
     ex      de,hl                 ; DE = Text Pointer
     ld      (TEMP8),de            ; Save it
     ld      hl,(TXTTAB)           ; HL = start of program,
@@ -165,9 +170,6 @@ scan_label:
     ld      de,(TEMP2)            ; DE = Pointer to Line
     jp      reset_trap            ; Finish ON ERROR GOTO
 
-.not_label:
-    jp      SCNLIN                ;   Scan line number and return to GOTO
-
 .check_colon:
     cp      ' '                   ; If space
     jr      z,.ret_zero           ;
@@ -178,6 +180,9 @@ scan_label:
 .ret_zero
     xor     a                     ;   Treat like terminator
     ret
+
+_calcline:
+    jp      SNERR
 
 main_ext:
     cp      '.'

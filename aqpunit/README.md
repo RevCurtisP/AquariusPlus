@@ -8,6 +8,7 @@ Run the .baq file to run the associated tests.
 | :------ | :----------------- |
 | bm.baq  | BITMAP and COLOR   |
 | bt.baq  | BIT and BIN$       |
+| cm.baq  | FILL COLORMAP      |
 | cp.baq  | COPY and COMPARE   |
 | cs.baq  | COPY SCREEN        |
 | cu.baq  | CALL and USR       |
@@ -17,9 +18,10 @@ Run the .baq file to run the associated tests.
 | pp.baq  | POKE and PEEK      |
 | ps.baq  | POKE/POKE SCREEN   |
 | px.baq  | Pixel drawing      |
+| rc.baq  | RECT               |
 | rg.baq  | RGB and PALETTE    |
 | sb.baq  | String slicing     |
-| sd.baq  | Screen drawing     |
+| sf.baq  | FILL SCREEN        |
 | sg.baq  | Screen graphics    |
 | sj.baq  | SPLIT and JOIN     |
 | sl.baq  | SAVE and LOAD      |
@@ -50,6 +52,8 @@ Run the .baq file to run the associated tests.
   - SET BIT _string_,_bitno_
   - RESET BIT _long_,_bitno_
   - RESET BIT _string_,_bitno_
+- cm.baq
+  - FILL COLORMAP (_row_,_col_)-(_row_,_col_) COLOR _fg_,_bg_
 - cp.baq 
   - COPY _fromaddr_,_count_ TO _toaddr_
   - COMPARE(_fromaddr_,_toaddr_,_count_)
@@ -140,6 +144,13 @@ Run the .baq file to run the associated tests.
   - LINE (_x_,_y_)-(_x_,_y_),_fg_
   - LINE (_x_,_y_)-(_x_,_y_),XOR
   - LINE (_x_,_y_)-(_x_,_y_),PRESET
+- rc.baq
+  - RECT (_x_,_y_)-(_x_,_y_)
+  - RECT (_x_,_y_)-(_x_,_y_),,_fg_,_bg_
+  - RECT (_x_,_y_)-(_x_,_y_),,_border_colors_
+  - RECT (_x_,_y_)-(_x_,_y_),_border_chrs_
+  - RECT (_x_,_y_)-(_x_,_y_),_border_chrs_,_fg_,_bg_
+  - RECT (_x_,_y_)-(_x_,_y_),_border_chrs_,_border_colors_
 - rg.baq 
   - RGB(_red_,_green_,_blue_)
   - RGB$(_red_,_green_,_blue_)
@@ -155,16 +166,18 @@ Run the .baq file to run the associated tests.
   - RGBHEX$(_rgbstr_)
   - RGBHEX$(_rgbstr_,_prefixchar_)
   - SET PALETTE _palette_ TO _rgb_list_
-  - RESET PALETTE
   - GETPALETTE$(_palette_)
+  - RESET PALETTE {_palette_}
+  - **_ToDo:_**
+    - RESET PALETTE \*
 - sb.baq
   - _string_\[_index_\]
   - _string_\[_index_ TO _index_\]
   - MID$(_strvar_,_pos_,_len_)=_string_
-- sd.baq
+- sf.baq
+  - FILL SCREEN (_x_,_y_)-(_x_,_y_) CHR _char_
+  - FILL SCREEN (_x_,_y_)-(_x_,_y_) COLOR _fg_,_bg_
   - FILL SCREEN (_x_,_y_)-(_x_,_y_) CHR _char_ COLOR _fg_,_bg_
-  - RECT (_x_,_y_)-(_x_,_y_)
-  - RECT (_x_,_y_)-(_x_,_y_),_border_chrs_$,_fg_,_bg_
 - sg.baq
   - PRINT CHR$(11)
   - CLS

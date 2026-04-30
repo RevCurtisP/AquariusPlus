@@ -137,6 +137,7 @@ RECT_X1     equ $3851
 RECT_Y1     equ $3853
 RECT_X2     equ $3855
 RECT_Y2     equ $3857
+PSETOPT     equ $3859
 STRDSC1     equ $3859
 STRDSC2     equ $385B
 

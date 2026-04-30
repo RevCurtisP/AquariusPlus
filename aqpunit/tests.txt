@@ -1,5 +1,6 @@
 | bm.baq  | BITMAP and COLOR   |
 | bt.baq  | BIT and BIN$       |
+| cm.baq  | FILL COLORMAP      |
 | cp.baq  | COPY and COMPARE   |
 | cs.baq  | COPY SCREEN        |
 | cu.baq  | CALL and USR       |
@@ -9,9 +10,10 @@
 | pp.baq  | POKE and PEEK      |
 | ps.baq  | POKE/POKE SCREEN   |
 | px.baq  | Pixel drawing      |
+| rc.baq  | RECT               |
 | rg.baq  | RGB and PALETTE    |
 | sb.baq  | String slicing     |
-| sd.baq  | Screen drawing     |
+| sf.baq  | FILL SCREEN        |
 | sg.baq  | Screen graphics    |
 | sj.baq  | SPLIT and JOIN     |
 | sl.baq  | SAVE and LOAD      |

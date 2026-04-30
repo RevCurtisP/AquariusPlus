@@ -14,8 +14,7 @@
 ; Draw filled rectangle of bloxels or pixels
 ; Input: BC: Start X-Coord
 ;        DE: Start Y-Coord
-;         H: Option: 0, PSET (colors)PRESET, XOR
-;         L: Colors
+;         H: Option: 0, PRESET, XOR
 ;        BC': End X-Coord
 ;        DE': End Y-Coord
 ; Clobbered: All
@@ -35,19 +34,23 @@ bitmap__frect:
     jp      _frect4bpp
 
 _frect80:
-    call    _bloxelop
-    call    bloxel_80col_addr   ; HL = ScrAdr, DE = MskAdr, A = BitMask
+    call    _bloxelop           ; IX = BxlAdr, HL = TblOfs
+    push    hl                  ; Stack = TblMSB, RtnAdr
+    call    bloxel_80col_addr   ; HL = ScrAdr, DE = MskAdr
     ld      bc,80
     jr      _frectb
 _frect40:
-    call    _bloxelop
-    call    nz,_color40
-    call    bloxel_40col_addr   ; HL = ScrAdr, DE = MskAdr, A = BitMask
-    ld      bc,40               ; BC = SrcWid
+    call    _bloxelop           ; IX = BxlAdr, HL = TblOfs
+    push    hl                  ; Stack = TblMSB, RtnAdr
+    call    bloxel_40col_addr   ; HL = ScrAdr, DE = MskAdr
+    ld      bc,40
 _frectb:
-    push    bc                  ; Stack = SrcWid, RtnAdr
+    pop     af                  ; A = TblMSB; Stack = RtnAdr
+    ld      d,a                 ; DE = MskAdr
+    push    bc                  ; Stack = ScrWid, RtnAdr
     exx
-    pop     hl                  ; HL = ScrWid
+    inc     de                  ; Bump Height for decrement
+    pop     hl                  ; HL = ScrWid; Stack = RtnAdr
     exx                         ; HL' = ScrWid
 .vloop:
     exx                         ; DE = VertCount
@@ -65,7 +68,7 @@ _frectb:
     pop     hl                  ; HL = BytAdr; Stack = RtnAdr
     ld      a,e
     add     a,2
-    cp      low(gfx_bloxel_mask)+6
+    cp      $F6
     ld      e,a
     jr      c,.vloop
     sub     a,6
@@ -105,11 +108,13 @@ _ploop
     dec     e                     ; Back up to left pixel
     jr      _xloop
 
-_bloxelop
+_bloxelop:
     ld      a,h
     ld      ix,_presetb
     cp      PRESETK
+    ld      h,high(bloxel_preset_mask)
     ret     z
+    ld      h,high(bloxel_pset_mask)
     ld      ix,_xorb
     cp      XORTK
     ret     z
@@ -122,20 +127,13 @@ _psetb:
     or      (hl)
     ret
 
+; On Entry, A = GfxChr, HL = MskAdr, DE = ScrAdr
 _presetb:
-    push    de
-    ld      de,8
-    add     hl,de
     and     (hl)
-    sbc     hl,de
-    pop     de
     ret
 
 _xorb:
     xor     (hl)
-    ret
-
-_color40:
     ret
 
 ; PSETTK = $9C %10011100
@@ -144,14 +142,14 @@ _color40:
 _frect1bpp:
     ld      a,h                   ; A = Mode
     ld      h,$FF                 ; H = Flip BitMsk
-    ld      ix,andbit1bpp
+    ld      ix,.andbit1bpp
     cp      PRESETK
     jr      z,.frect
     inc     h                     ; H = 0
-    ld      ix,xorbit1bpp
+    ld      ix,.xorbit1bpp
     cp      XORTK
     jr      z,.frect
-    ld      ix,orbit1bpp
+    ld      ix,.orbit1bpp
 .frect
     ld      a,l                 ; A = Color
     ex      af,af'              ; A' = Color
@@ -200,32 +198,34 @@ _frect1bpp:
     ret     z
     dec     bc
     ld      a,e                 ; A = ScrByt
-    call    jump_ix
-    jr      nc,.bloop           ; Do next bit
+    jp      (ix)
+.bnext
     rr      d
     ld      (hl),e              ; Store Byte
     inc     hl                  ; Next Byte
     jr      .hloop
 
-orbit1bpp:
+.orbit1bpp:
     or      d                   ; A = NewByt
     ld      e,a
     rr      d                   ; Shift Bitmask
-    ret
+    jr      nc,.bloop           ; Do next bit
+    jr      .bnext
 
-xorbit1bpp:
+.xorbit1bpp:
     xor     d                   ; A = NewByt
     ld      e,a
     rr      d                   ; Shift Bitmask
-    ret
+    jr      nc,.bloop           ; Do next bit
+    jr      .bnext
 
-andbit1bpp:
+.andbit1bpp:
     and     d                   ; A = NewByt
     ld      e,a
-    rr      d                   ; Shift Bitmask
     scf
-    ret
-
+    rr      d                   ; Shift Bitmask
+    jr      c,.bloop            ; Do next bit
+    jr      .bnext
 
 _frect4bpp:
     in      a,(IO_BANK1)

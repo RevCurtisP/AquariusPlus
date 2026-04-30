@@ -79,7 +79,7 @@
 280 GOSUB _nloutput:ARGS "Invalid Bitmap Files":RESTORE 278
 281 FOR I=1 TO 8:READ S:F$="work/badsize%%.bmp" % (S)
 282 SAVE F$,@20,0,S
-283 GOSUB _outquoted:ARGS "LOAD BITMAP '%%'" % (F$)
+283 GOSUB _outquoted:ARGS "LOAD BITMAP `%%`" % (F$)
 284 SET FILE ERROR OFF:LOAD BITMAP F$:SET FILE ERROR ON
 285 GOSUB _assert:ARGS "ERR=49"
 286 DEL F$
