@@ -80,11 +80,11 @@ _coldboot:
 
 auto_cmd:
     db      ':RUN "'
-auto_text
+auto_text:
     db      "autoexec"
 auto_len = $ - auto_text
     db      $0D
-auto_desc
+auto_desc:
     dw      auto_len,auto_text
 
 ; Null string descriptor
@@ -95,7 +95,7 @@ null_desc:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.71l"
+    db "v0.71m"
     db 0
 plusver_len equ $ - plus_version
 plus_len   equ   $  - plus_text
@@ -128,11 +128,10 @@ init_banks:
     
     call    _check_gfxrom
     call    nz,_load_gfxrom
-
-    ; Call routines in Aux ROM
-    ld      a,ROM_AUX_RO
-    out     (IO_BANK3), a
-    call    screen_reset          ; Init video mode
+    ; Bank 3 is now ExtROM
+    
+    ld      iy,screen_reset       ; Init video mode
+    call    gfxrom_call
 
     ; Initialize ESP
     ld      a, ESPCMD_RESET
@@ -209,9 +208,6 @@ _open_sysrom:
     ld      a,FO_RDONLY
     call    esp_send_byte
     call    esp_send_strdesc
-;    call    esp_send_bytes
-;    xor     a
-;    call    esp_send_byte
     jp      esp_get_result
 
 ;-----------------------------------------------------------------------------
@@ -288,7 +284,7 @@ _user_irq:
     pop     af
     ret
 
-_pt3tick
+_pt3tick:
     ld      iy,pt3tick
     call    pt3call
     ret     z
@@ -575,7 +571,7 @@ sys_ver_plusbasic:
 ;       HL: Start Address
 ; Clobbers: BC, DE, HL
 ;-----------------------------------------------------------------------------
-sys_fill_mem_d
+sys_fill_mem_d:
     ld      a,d                   ; A = Byte
     byte    $1E                   ; LD E over XOR
 sys_fill_zero:
@@ -915,7 +911,7 @@ issec_ext:
     rst     CHRGET                ; Get following character
     cp      '~'                   ; If not tilde
     jp      nz,DEATEM             ;   Backup and reat rest of variable
-_eat_suffix
+_eat_suffix:
     ld      iy,aux_eat_suffix
     call    aux_call
     jp      NOSEC
@@ -1021,7 +1017,7 @@ hook_table:                     ; ## caller   addr  performing function
     dw      0                   ;  5                Deprecated
     dw      0                   ;  6                Deprecated
     dw      0                   ;  7                Deprecated
-    dw      0                   ;  8 
+    dw      0                   ;  8                Deprecated
     dw      0                   ;  9                Deprecated
     dw      keyword_to_token    ; 10 NOTGOS   0536  Converting Keyword to Token
     dw      0                   ; 11                Deprecated
@@ -1030,18 +1026,18 @@ hook_table:                     ; ## caller   addr  performing function
     dw      0                   ; 14                Deprecated
     dw      0                   ; 15                Deprecated
     dw      0                   ; 16                Deprecated
-    dw      0                   ; 17 LPTOUT   1AE8  Print Character to Printer
+    dw      0                   ; 17                Deprecated
     dw      0                   ; 18                Deprecated
     dw      0                   ; 19                Deprecated
-    dw      HOOK20+1            ; 20 CLOAD    1C2C  Load File from Tape
-    dw      HOOK21+1            ; 21 CSAVE    1C09  Save File to Tape
-    dw      token_to_keyword    ; 22 LISPRT   0598  expanding a token
+    dw      0                   ; 20                Deprecated
+    dw      0                   ; 21                Deprecated
+    dw      0                   ; 22                Deprecated
     dw      exec_next_statement ; 23 GONE2    064B  interpreting next BASIC statement
     dw      0                   ; 24                Deprecated
     dw      0                   ; 25                Deprecated
     dw      0                   ; 26                Deprecated
     dw      execute_function    ; 27 ISFUN    0A5F  Executing a Function
-    dw      HOOK28+1            ; 28 DATBK    08F1  Doing a READ from DATA
+    dw      0                   ; 28                Deprecated
     dw      0                   ; 29                Deprecated
 
 ; ------------------------------------------------------------------------------
@@ -1142,7 +1138,7 @@ _sysfile_alt:
     byte    "/"
 _sysrom_name:
     byte    "sysrom.bin"
-_sysfile_end
+_sysfile_end:
     dc $2FFF-$+1,$00
 
     $assert !($<>$3000)           ; System ROM Full
@@ -1269,6 +1265,7 @@ _sysfile_end
     include "gfxboot.asm"
     include "gfxcommon.asm"
     include "gfxbitmap.asm"
+    include "gfxchar.asm"         ; Character Set routines
     include "gfxcolor.asm"        ; Color and Palette routines
     include "gfxcolormap.asm"     ; Colormap routines
     include "gfxline.asm"         ; Line drawing routines
@@ -1277,6 +1274,7 @@ _sysfile_end
     include "gfxscreen.asm"       ; Screen drawing routines
     include "gfxsprites.asm"      ; Sprite graphics module
     include "gfxtmpbfr.asm"       ; Read/write TMP_BUFR
+    include "screenctl.asm"       ; Screen control routines
     include "tile.asm"            ; Tile graphics module
 
     used_rom_gfx = $ - $C000

@@ -36,10 +36,10 @@ PlayQuark:
       ld      a,6
       ld      (CountDn),a
       ret
-_decrement
+_decrement:
       dec     a
       ld      (CountDn),a
-_play
+_play:
       LD      HL,SongData
       CALL    PLAY        
       ld      hl,SETUP

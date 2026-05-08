@@ -237,9 +237,9 @@ file_load_page
     ld      bc, $4000
     jp      xfile_load_paged
 
-_bootbin
+_bootbin:
     byte    "esp:boot.bin"
-_bootdesc 
+_bootdesc: 
     word    $ - _bootbin, _bootbin
 
 ;-----------------------------------------------------------------------------
@@ -299,7 +299,7 @@ file_load_tmpbuffr:
 ; Clobbered: AF', L
 ; Clobbered: AF', L
 ;-----------------------------------------------------------------------------
-;; ToDo: Return carry set if BC + DE > 116384
+;; ToDo: Return carry set if BC + DE > 16384
 file_load_buffer:
     push    af                    ; Stack = Page, RtnAdr
     call    dos_open_read         ; A = FilDsc

@@ -222,7 +222,7 @@ s3_string_ext:
     jr      c,.stuff_suffix       ;   Stuff it
     call    ISLETC                ; If letter
     jr      nc,.stuff_suffix      ;   Stuff it
-_strngr
+_strngr:
     ld      ix,STRNGR
     ret
 

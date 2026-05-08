@@ -1311,7 +1311,6 @@ ST_PAUSE_UNTIL
 ;-----------------------------------------------------------------------------
 ; RESET Statement stub
 ;-----------------------------------------------------------------------------
-;; ToDo: RESET CHRSET set#
 ST_RESET:
     rst     CHRGET                ; Skip RESET
     cp      BITTK

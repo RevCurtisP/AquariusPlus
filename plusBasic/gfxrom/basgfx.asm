@@ -1,6 +1,109 @@
 ;====================================================================
-; BASIC Graphics Statement and Function Code in GfxROM
+; BASIC Graphics Statements and Functions Core Code in GfxROM
 ;====================================================================
+
+; On entry, A = ValTyp, FACC = attribute argument
+; Returns A = Attributes byte
+bas_convert_attr:
+    jr      z,.string             ; If numeric
+    call    CONINT                ;   Convert to byte in A
+    and     $7E                   ; Strip Index MSB
+    ret
+.string
+    push    hl
+    xor     a
+    ex      af,af'                ; AF' = Properties
+    call    free_addr_len         ; DE = StrAdr, C = StrLen
+.loop
+    jr      z,.done               ; Pop HL and return if end of string
+    ld      a,(de)                ; A = PropChar
+    inc     de                    ; Bump StrPtr
+    and     $5F                   ; Convert to upper case
+    ld      b,SPR_HFLIP
+    cp      'H'
+    jr      z,.set
+    ld      b,SPR_VFLIP
+    cp      'V'
+    jr      z,.set
+    ld      b,SPR_HEIGHT
+    cp      'D'
+    jr      z,.set
+    ld      b,SPR_PRIORITY
+    cp      'P'
+    jr      z,.set
+    jp      FCERR
+.set
+    ex      af,af'
+    or      a,b
+    ex      af,af'
+.next
+    dec     c
+    jr      .loop
+.done
+    ex      af,af'
+    ld      e,a
+    pop     hl
+    ret
+
+; Called from FN_GETCHRDEF
+bas_getcolor:
+    ld      a,(SCREENCTL)         ; 
+    rla                           ; Carry = SCRCOLOR
+    ld      ix,float_minus_one
+    ret     nc
+    ld      a,(SCOLOR)
+    ld      ix,SNGFLT
+    ret
+
+; Called from FN_GETCHRDEF
+; Input: B: ChrASCl
+bas_getchrdef:
+    push    bc                    ; Stack = ChrASC, RtnAdr
+    push    hl                    ; Stack = ChrSet, ChrASC, RtnAdr
+    ld      a,8                   ; A = BufLen
+    call    STRINI                ; DE = BufAdr
+    pop     hl                    ; L = ChrSet; Stack = ChrASC, RtnAdr
+    pop     af                    ; A = ChrASC; Stack = RtnAdr
+_getchrdef:
+    ld      bc,8                  ; BC = BufLen
+    jp      gfx_get_char_def
+
+; Called from FN_GETCHRSET
+; Output: ChrSet
+bas_get_chrset:
+    ld      a,(SCREENCTL)
+    ld      b,a
+    and     SCRCHRMOD
+    ld      a,-1
+    ret     nz
+    ld      a,b
+    and     SCRCHRSET             ; A = 0 if default character Set
+    ret     z
+    ld      a,1                   ;   A = 1
+    ret
+
+; Called from ST_RESET_CHR
+; On entry: A = ChrASC
+bas_reset_chrdef:
+    push    hl                    ;  Stack = TxtPtr
+    ld      bc,8
+    ld      de,FBUFFR
+    call    gfx_reset_char_def
+    jp      c,LSERR
+    pop     hl
+    ret
+
+; Called from ST_SET_CHR
+; On entry: A = ChrASC, E = ChrSet, HL = TxtPtr
+bas_set_chr:
+    push    hl
+    call    gfx_redefine_char
+    jp      c,LSERR
+    ld      a,(SCREENCTL)         ; Set character set modified flag
+    or      a,SCRCHRMOD
+    ld      (SCREENCTL),a
+    pop     hl
+    ret
 
 ; On entry A =  le 1, E = Spritle 2
 bas_spritlecol:
@@ -276,7 +379,7 @@ bas_inrect:
     jp      gfx_in_rectlist
 
 ; Called from ST_RECT
-bas__rect:
+bas_rect:
     ld      hl,(STRDSC2)          ; HL = BoxClrDsc
     call    .color_string
     push    de                    ; Stack = BoxClrAdr, RtnAdrs
@@ -294,7 +397,7 @@ bas__rect:
     ld      bc,(RECT_X1)          ; BC = X1
     ld      de,(RECT_Y1)          ; DE = Y1
     xor     a                     ; A = Default Screen
-    call    screen__rect
+    call    screen_rect
     jp      m,IMERR
     jp      c,FCERR
     ret
@@ -318,6 +421,41 @@ bas__rect:
     inc     de
     djnz    .loop
     pop     de
+    ret
+
+; Core code for RGBR(), RGBG(), RGB(B)
+; On entry: A = Function Suffix, D = Red, E = Green+Blue
+; On Exit: DE = Result
+bas_rgbx:
+    cp      '('                   ; If no suffix
+    ret     z                     ;   Return RGB value
+    ex      de,hl                 ; H = Red, L = Green+Blue
+    ld      d,0                   ; Clear result MSB
+    cp      'R'                   ; If RGBR()
+    jr      z,.red                ;   Return Red component
+    cp      'G'                   ; If RGBG()
+    jr      z,.green              ;   Return Green component
+    cp      'B'                   ; If RGBB()
+    jr      z,.blue               ;   Return Red component
+    jp      SNERR                 ; Else Syntax Error
+.red
+    ld      a,h
+    and     $0F
+    ld      e,a
+    ret
+.green
+    ld      a,l
+    and     $F0
+    rra
+    rra
+    rra
+    rra
+    ld      e,a
+    ret
+.blue
+    ld        a,l
+    and       $0F
+    ld        e,a
     ret
 
 
@@ -356,11 +494,11 @@ bas_fill_screen:
 .fill_chr
     ld      l,c                   ; L = ScrChr
     call    _rect_coords          ; A = Screen#, C = X1, D = Y1, C' = X
-    jp      screen__fill          ; Fill Screen
+    jp      screen_fill           ; Fill Screen
 .fill_color
     ld      l,e                   ; L = ScrClr
     call    _rect_coords          ; A = Screen#, C = X1, D = Y1, C' = X
-    jp      color__fill           ; Fill Screen
+    jp      color_fill            ; Fill Screen Color RAM
 
 _rect_coords
     xor     a                     ; Use Current Screen  
@@ -385,7 +523,7 @@ bas_frect:
     ld      a,(PSETOPT)
     ld      h,a
     ld      l,0
-    call    bitmap__frect
+    call    bitmap_frect
     jr      .done
 .color_frect
     cp      16

@@ -61,7 +61,7 @@ dim_extension:
 ; 40 DATA $"414243",$"313233"
 ; 50 DATA $"..2A.."
 
-read_array
+read_array:
     xor     a
     ld      (ARRAYREQ),a          ; Unquoted strings allowed
     call    get_star_array        ; DE = AryAdr, BC = AryLen    

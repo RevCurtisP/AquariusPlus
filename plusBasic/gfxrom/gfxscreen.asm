@@ -15,7 +15,7 @@
 ;        Carry set if coordinates out of range
 ; Clobbered: All
 ;-----------------------------------------------------------------------------
-color__fill:
+color_fill:
     call    _setup_fill           ; IXH = AndMsk, IXL = Colors
     ret     c                     ;   Return Carry if Screen# <> 0
 do_color_fill:
@@ -46,7 +46,7 @@ do_color_fill:
 ;        Carry set if coordinates out of range
 ; Clobbered: All
 ;-----------------------------------------------------------------------------
-screen__fill:
+screen_fill:
     call    _setup_fill           ; A = ScrWid, IXH = AndMsk, IXL = Colors
     ret     c                     ;   Return Carry if Screen# <> 0
     ld      iy,$3000              ; ScrOfs = Screen RAM
@@ -112,7 +112,7 @@ _screen_num:
 ;        Carry set if coordinates out of range
 ; Clobbered: All
 ;--------------`---------------------------------------------------------------
-screen__rect:
+screen_rect:
     call    _screen_num           ; A = ScrWid
     ret     m
     exx                           ; HL = DrwClrs
@@ -243,7 +243,7 @@ screen__colors:
 
 ; Set RECT_
 ; Set RECT_X1, RECT_Y1, RECT_X2, RECT_Y2 to full screen
-screen__size:
+screen_size:
     ld      bc,0
     ld      (RECT_X1),bc          ; Start Column = 0
     ld      (RECT_Y1),bc          ; Start Row = 0

@@ -1016,7 +1016,7 @@ STRNGR: or      a                 ;END OF LINE?
         or      a
         ld      a,(hl)            ;GET THE CHARACTER AGAIN
         jp      nz,STUFFH         ;IF NO CRUNCHING JUST STORE THE CHARACTER
-        cp      '?'               ;A QMARK?
+CHCKQM: cp      '?'               ;A QMARK?
         ld      a,PRINTK          ;
         jp      z,STUFFH          ;THEN USE A "PRINT" TOKEN
         ld      a,(hl)            ;
@@ -1152,10 +1152,11 @@ LISPRT: ld      a,(hl)            ;;Detokenize and Print Line
         or      a                 ;[M80] SET CC
         jr      z,LIST4           ;[M80] IF =0 THEN END OF LINE
         jp      p,PLOOP           ;
-        rst     HOOKDO            ;;Handle Extended BASIC Tokens
-HOOK22: byte    22                ;
-        sub     $7F               ;
-        ld      c,a               ;
+        nop                       ;                                           05A0  rst     HOOKDO
+        jp      token_to_keyword  ;                                           05A1  byte    22
+                                  ;                                           05A2  sub     $7F
+                                  ;                                           05A3
+NOTXTK: ld      c,a               ;
         ld      de,RESLST         ;[M80] GET PTR TO START OF RESERVED WORD LIST
 RESSRC: ld      a,(de)            ;[M80] GET CHAR FROM RESLST
         inc     de                ;[M80] BUMP SOURCE PTR
@@ -1707,8 +1708,8 @@ LOPDT2: rst     SYNCHK
         push    bc                ;[M80] PUT BACK  SINCE DIDN'T LEAVE
         jp      z,DATAH
         push    de                ;{M80} SAVE THE POINTER TO THE VARIABLE
-DATBK:  rst     HOOKDO            ;;Call Extended Hook 28
-HOOK28: byte    28                ;
+DATBK:  nop                       ;                                           08F0  rst     HOOKDO
+        nop                       ;                                           08F1  byte    28    
         ld      a,(VALTYP)        ;[M80] IS IT A STRING?
         or      a                 ;
         jr      z,NUMINS          ;[M80] IF NUMERIC, USE FIN TO GET IT
@@ -4809,7 +4810,7 @@ LPCRLF: ld      a,13              ;;Send CR to printer
         ld      a,10              ;;Send LF to printer
 LPTOUT: ;Primitive print character to printer routine
         nop                       ;                                           1AE9  rst     HOOKDO
-HOOK17: nop                       ;                                           1AEA  byte    17
+        nop                       ;                                           1AEA  byte    17
         push    af                ;;Save character
         push    af                ;;Save Registers
         exx                       ;
@@ -4983,10 +4984,10 @@ RDSYN3: call    RDBYTE            ;
 RDSYN4: pop     bc                ;
         pop     af                ;;Restore registers
         ret                       ;
-PLAYT:  byte    "Press <PLAY>",13,10,0          ;
-RECORT: byte    "Press <RECORD>",13,10,0        ;
-CSAVE:  rst     HOOKDO            ;
-HOOK21: byte    21                ;
+PLAYT:  byte    "Press <PLAY>",13,10,0
+RECORT: byte    "Press <RECORD>",13,10,0
+CSAVE:  nop                       ;                                           1C08  rst     HOOKDO
+        nop                       ;                                           1C09  byte    21
         cp      MULTK             ;;If * Token
         jp      z,CSARY           ;;Do CSAVE*
         call    NAMFIL            ;;Scan filename
@@ -5002,10 +5003,10 @@ CSAVE3: call    WRBYTE            ;
         call    SLEEP             ;;Delay 200,000 cycles ~ 50 milliseconds
         pop     hl                ;;Restore Text Pointer
         ret                       ;
-CLOAD:  rst     HOOKDO
-HOOK20: byte    20
-        cp      MULTK             ;;Check for token after CLOAD
-        jp      z,CLARY           ;;If *, CLOAD variable
+CLOAD:  nop                       ;                                           1C2C  rst     HOOKDO
+        nop                       ;                                           1C2D  byte    20
+        cp      MULTK             ;;Check for token afte`
+        jp      z,CLARY           ;;If *, CLOAD variable`
         sub     PRINTK            ;
         jr      z,CLOADQ          ;;If ?, A will be $FF (verify)
         xor     a                 ;;otherwise it will be 0 (load)

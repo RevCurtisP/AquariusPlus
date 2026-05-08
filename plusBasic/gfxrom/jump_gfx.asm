@@ -29,12 +29,12 @@ _jump_table:
     jp      just_ret              ; C01B (bitmap_circle)
     jp      just_ret              ; C01E (bitmap_box)
     jp      just_ret              ; C021 (bitmap_move)
-    jp      just_ret              ; C024 (bitmap_setcell)
+    jp      just_ret              ; C024
     jp      just_ret              ; C027 
-    jp      bitmap__togglepixel   ; C02A Toggle pixel
-    jp      bitmap__setpixel      ; C02D Draw pixel
-    jp      bitmap__resetpixel    ; C030 Erase pixel
-    jp      bitmap__getpixel      ; C033 Return pixel/bloxel at position
+    jp      bitmap_togglepixel    ; C02A Toggle pixel
+    jp      bitmap_setpixel       ; C02D Draw pixel
+    jp      bitmap_resetpixel     ; C030 Erase pixel
+    jp      bitmap_getpixel       ; C033 Return pixel/bloxel at position
     jp      bitmap_get            ; C036 [future] Read Bitmap Screen Section into Buffer
     jp      bitmap_put            ; C039 (bitmap_put)
     jp      bitmap_putchar        ; C03C (bitmap_putchar)
@@ -42,7 +42,7 @@ _jump_table:
     jp      just_ret              ; C042 (bitmap_putclip)
     jp      colormap_fill_rect    ; C045 Fill Color Map Rectangle
     jp      bitmap_rect           ; C048 Draw Unfilled Rectangle
-    jp      bitmap__frect         ; C04B Draw Filled Rectange
+    jp      bitmap_frect         ; C04B Draw Filled Rectange
     jp      just_ret              ; C04E 
     jp      just_ret              ; C051 
 ; color.asm <<Palette and Colors>>
@@ -93,7 +93,7 @@ _jump_table:
     jp      screen_get            ; C0D2 Read Text Screen Section into Buffer
     jp      screen_put            ; C0D5 Write Text Screen Section from Buffer
     jp      screen_fill           ; C0D8 Fill Text or Color Screen Rectangle with Byte
-    jp      screen__rect          ; C0DB 
+    jp      screen_rect           ; C0DB Draw Rectange on Text Screen
     jp      screen_mode           ; C0DE Return current Text Screen 
     jp      just_ret              ; C0E1 
 ; screen_swap.asm <<Text Screen Switch and Swap>>

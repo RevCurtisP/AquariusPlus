@@ -1,5 +1,34 @@
 # plusBASIC Revision History
- - v0.71l (2026-04-20)
+   - v0.71m (2026-05-07)
+      - Implemented `ELSE` after `IF` ... `THEN`
+    - Added missing colons to ends of labels begining with underscore
+    - Moved following routines from _auxrom/basicgfx.asm_ to _gfxrom/basgfx.asm_
+      - _bas_set_chr_, _bas_getchrdef_, _bas_get_chrset_, and _bas_rgbx_
+      - _bas_parse_attr_ in to _bas_convert_attr_
+      - _bas_reset_chr_ to _bas_reset_chrdef_
+    - Moved _gfx_get_char_def_, _gfx_reset_char_def_, and _gfx_redefine_char_ from _gfx.asm_ to new file _gfxchar.asm_
+    - Moved following routines to new file _screenctl.asm_ in GfxROM
+    - Moved _set_color_ and _set_color_off_ in _auxrom/screen.asm_
+    - Moved _screen_reset_ and _screen_status_ in _auxrom/screen_swap.asm_
+    - Removed deprecated AuxROM routines _bitmap_frect_, _bitmap_setcell_
+    - Renamed following routines in _gfxrom/gfxpixel.asm_
+      - _bitmap__getpixel_ to _bitmap_getpixel_
+      - _bitmap__resetpixel_ to _bitmap_resetpixel_
+      - _bitmap__togglepixel_ to _bitmap_togglepixel_
+    - - _bitmap__setpixel_ to _bitmap_setpixel_ 
+    - Renamed _bitmap__check_coords_ to _bitmap_check_coords_ in _gfxrom/gfxbitmap.asm_
+    - Renamed _bitmap__frect_ to _bitmap_frect_ in _gfxrom/gfxrect.asm_
+    - Renamed following routine in _gfxrom/gfxscreen.asm_
+      - _color__fill_ to _color_fill_
+      - _screen__fill_ to _screen_fill_
+      - _screen__rect_ to _screen_rect_
+      - _screen__size_ to _screen_size_ 
+    - Renamed _screen__size_ to _screen_size_ and _bas__rect_ to _bas_rect_ in _gfxrom/basgfx.asm_
+    - Moved `GETCOLOR` core code to _bas_getcolor_ in _gfxrom/basgfx.asm_
+    - Removed deprecated routine _bitmap_hline_ from _gfxrom/gfxline.asm_
+    - Removed unused UDF Hooks 17, 20, 21, and 28
+    - Replaced UDF Hook 22 with direct jump to _token_to_keyword_
+ - v0.71l (2026-04-30)
     - Removed deprecated jump vectors _\_next_statement_ and _\_scan_label_ from aqbasplus.asm
     - Updated _bitmap_rect_ to return carry set when coordinates out of bounds so `LINE ... ,RECT` generates _Illegal quantity error_
     - Fixed _bitmap_rect_ and `LINE ... ,RECT` x-coords > 127 in 80-column bloxel mode
@@ -10,11 +39,11 @@
     - Added hook for calculated `GOTO` to _scan_label_
     - Modified _bas__rect_ to always use default screen, and generate _Invalid mode error_ in `RECT` command
     - Added _bitmap__check_rect_, _bitmap__check_coords_, _color__fill_, _do_color_fill_, _fill_rect_, _screen__bounds_, _screen__fill_
- - v0.71k (2026-03-24)
+ - v0.71k_ (2026-03-24)
     - Renamed _auxrom/edit.asm_ to _auxrom/auxinput.asm_
     - Moved _colormap_fill_, _colormap_convert_rect_, _colormap_pos_addr_, and _colormap_bounds_ from _auxrom/auxbitmap.asm_ to _gfxrom/gfxcolormap.asm_
       - Added 40-column and 80-column modes to _colormap_fill_ for future use with _bitmap__frect_
-        - This adds 40-column and 80-column modes to `FILL COLORMAP` as an alternate to `FILL SCREEN ... COLOR`
+        - T_, his_ adds 40-column and 80-column modes to `FILL COLORMAP` as an alternate to `FILL SCREEN ... COLOR`
     - Moved _bitmap_read_tmpbfr_, _bitmap_write_tmpbfr_ from _auxrom/auxbitmap.asm_ to _gfxtmpbfr.asm_
     - Moved _palette_set_, _palette_get_, and _palette_get_entry_ from _auxrom/color.asm_ to _gfxrom/gfxcolor.asm_
     - Added 40-column, 80-column, and 4bpp modes to _bitmap__frect_

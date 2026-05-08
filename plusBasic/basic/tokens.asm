@@ -289,8 +289,9 @@ keyword_to_token:
 ;-----------------------------------------------------------------------------
 token_to_keyword:
     cp      BTOKEN              ; Is it one of our tokens?
-    jr      nc, .expand_token   ; Yes, expand it
-    jp      HOOK22+1            ; No, return to system for expansion
+    jr      nc,.expand_token    ; Yes, expand it
+    sub     $7F
+    jp      NOTXTK              ; No, return to system for expansion
 
 .expand_token:
     cp      XTOKEN             ; If extended token prefix

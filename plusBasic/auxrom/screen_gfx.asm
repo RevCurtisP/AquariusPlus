@@ -256,63 +256,6 @@ _put:
     ld      (de),a                ; to screen
     inc     hl
     ret
-
-;-----------------------------------------------------------------------------
-; Fill Text or Color Screen Rectangle with Byte
-; Input: B: Start Column
-;        C: End Column
-;        D: Start Row
-;        E: End Row
-;        H: 0 = Screen, $FF = Color
-;        L: Byte
-; Clobbered: A, BC, DE
-;-----------------------------------------------------------------------------
-screen_fill:
-    in      a,(IO_VCTRL)
-    and     VCRTL_80COL_EN
-    jr      z,.not80              ; If 80 column mode
-    and     h                     ;   If Fill Screen
-    jr      z,.fill               ;   Do the fill
-;fill 80 column color
-    in      a,(IO_VCTRL)          ; Else
-    push    af                    ;   Save IO_VCTRL
-    or      VCTRL_TEXT_PAGE       ;   Switch to color page
-    out     (IO_VCTRL),a
-    inc     h                     ;   AdrOfs = 0
-    call    .fill
-    pop     af
-    out     (IO_VCTRL),a
-    ret
-.not80    
-    or      h                     
-    jr      z,.fill               ; If filling color
-    ld      h,$04                 ;   AdrOfs = $0400
-.fill    
-    call    screen_convert_rect   ; A = RowCnt, C = ColCnt, DE = RowAdr
-    ret     c
-    ex      de,hl                 ; D = AdrOfs, E = Byte, HL = RowAdr
-    ex      af,af'                ; A' = RowCnt
-    ld      a,d
-    add     h                     ; Add offset to RowAdr
-    ld      h,a
-    ld      a,c                   ; A = ColCnt
-    ex      af,af'                ; A = RowCnt, A' = ColCnt
-.loop
-    push    hl                    ; Save RowAdr
-    ex      af,af'                ; A = ColCnt, A' = RowCnt
-    ld      b,a                   ; B = ColCnt
-.row
-    ld      (hl),e                ; Write Byte
-    inc     hl
-    djnz    .row                  ; Next Column
-    ld      hl,LINLEN
-    ld      c,(hl)                ; BC = Line Length
-    pop     hl                    ; HL = RowAdr
-    add     hl,bc                 ; HL = Next RowAdr
-    ex      af,af'                ; A = RowCnt, A' = ColCnt
-    dec     a
-    jr      nz,.loop
-    ret
    
 ;-----------------------------------------------------------------------------
 ; Set screen color page
@@ -395,17 +338,4 @@ screen_bounds:
     ld      a,25
     cp      e                     ; If EndRow > 24
     ret                           ;   Return Carry Set
-
-; Out: B = BgnCol, C = EndCol, D = BgnRow, E= EndRow
-screen_size:
-    push    af
-    ld      a,(LINLEN)
-    dec     a
-    ld      c,a
-    ld      e,24
-    xor     a
-    ld      b,a
-    ld      d,a
-    pop     af
-    ret
     

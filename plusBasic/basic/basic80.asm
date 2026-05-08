@@ -2,6 +2,22 @@
 ; Statements and Functions from MBASIC 80 for CP/M
 ;====================================================================
 
+
+; This routine is jumped to after a THEN if the expression is FALSE
+; IF 1 THEN PRINT "one" ELSE PRINT "zero"
+; IF 1 THEN A$="one" ELSE A$="zero"
+; IF 0 THEN PRINT "one" ELSE PRINT "zero"
+; IF A THEN PRINT "ok":A=A+1:ELSE PRINT "nope"
+then_hook:
+    ld      iy,scan_else
+    call    aux_call              ; Scan else
+    ret     c                     ; If EOL, return to NEWSTT
+    rst     CHRGET                ; Else skip ELSE
+    jp      GONE3                 ; and execute next statement
+
+ST_ELSE:
+    jp      REM
+
 ;----------------------------------------------------------------------------
 ; ON ERROR ... GOTO
 ; Copied from MX BASIC. Originally from CP/M MBASIC 80 - BINTRP.MAC

@@ -903,9 +903,9 @@ page_check_write:
 page_check_read:
     cp      RAM_END_PG+1
     jr      nc,set_zero_flag      ;   error out
-_page_ok
+_page_ok:
     cp      $FF                   ; Clear zero flag
-_ret
+_ret:
     ccf                           ; Clear carry flag
     ret
 

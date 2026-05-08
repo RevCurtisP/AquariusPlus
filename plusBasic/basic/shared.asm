@@ -36,9 +36,9 @@ FRC_LONG:
     jp      FCERR                 ; Else Illegal Quantity
 
 ;-----------------------------------------------------------------------------
-; Parse positiv integer into DE
+; Parse positive integer into DE
 ;-----------------------------------------------------------------------------
-GET_POS_INT
+GET_POS_INT:
     call    FRMEVL                ; FACC = address
     call    CHKNUM                ; Error if not number
     rst     FSIGN                 ; If Adress < 0
@@ -86,7 +86,7 @@ FLOAT_CDE:
 ; Convert BCDE into an unsigned Floating Point number in FACC
 ; Clobbers: A,BC,DE
 ;-----------------------------------------------------------------------------
-;; ToDo: Make this actually float the entire 32-bit integer
+;; ToDo: Make this actually float the entire 24-bit integer
 FLOAT_DEBC:
     push    de
     ld      d,b
@@ -418,7 +418,7 @@ req_page_arg:
 setcarry_ret:
     scf                           ;   Return Carry Set
     ret
-_notat
+_notat:
     or      a                     ; Else return Carry Clear
     ret     
 

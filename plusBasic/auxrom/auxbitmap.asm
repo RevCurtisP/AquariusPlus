@@ -75,48 +75,6 @@ _get_varbase:
 ; Clobbered: All
 ; Derived from code written by Mack Wharton
 ;-----------------------------------------------------------------------------
-bitmap_frect:
-    ld      (PSETCOLOR),a
-    call    _check_rect
-    ret     c
-    push    de                    ; Stack = y0, RtnAdr
-    exx                           ; BC = x1, DE = y1, BC' = x0, DE' = y0
-    pop     hl                    ; HL = y0; Stack = RtnAdr
-    ex      de,hl                 ; DE = y0, HL = y1
-    rst     COMPAR                ; Set carry if HL < DE
-    jr      nc,.skip              ; If y1 < y0
-    ex      de,hl                 ; Swap y1 and y0
-.skip
-    push    hl                    ; Stack = y1, RtnAdr
-    push    de                    ; Stack = y0, RtnAdr
-    exx                           ; BC = x0, DE = Old_y0, BC' = x1, DE' = y0
-    pop     de                    ; BC = x0, DE = y0, BC' = x1, DE' = y0
-.loop
-    call    _save_rect            ; BC = x1, DE = y1, BC' = x0, DE' = y0; Stack = x1, y0, x0, y0, y1, RtnAdr
-    exx                           ; BC = x0, DE = y0, BC' = x1, DE' = y0
-    call    _line
-    call    _restore_rect         ; BC = x0, DE = y0, BC' = x1, DE' = y0; Stack = y1, RtnAdr
-    pop     hl                    ; HL = y1; Stack = RtnAdr
-    rst     COMPAR                ; If y0 = y1
-    ret     z                     ;   Return
-    push    hl                    ; Stack = y1, RtnAdr
-    inc     de                    ; y0 += 1
-    push    de                    ; Stack = y0, y1, RtnAdr
-    exx
-    pop     de
-    exx                           ; BC = x0, DE = y0, BC' = x1, DE' = y0
-    jr      .loop
-
-;-----------------------------------------------------------------------------
-; Draw rectangle of bloxels or pixels screen
-; Input: A: Color/Option
-;       BC: Start X-Coord
-;       DE: Start Y-Coord
-;      BC': End X-Coord
-;      DE': End Y-Coord
-; Clobbered: All
-; Derived from code written by Mack Wharton
-;-----------------------------------------------------------------------------
 bitmap_rect:
     ld      (PSETCOLOR),a
     call    _check_rect
@@ -164,7 +122,7 @@ _save_rect:
     push    de                    ; Stack = Y', X, Y
     push    bc                    ; Stack = X', Y', X, Y
     jp      (ix)                  ; Return
-_restore_rect
+_restore_rect:
     pop     ix                    ; IX = RtnAdr; Stack = SavCrd
     pop     bc                    ; BC = X'; Stack = Y', X, Y
     pop     de                    ; DE = Y'; Stack = X, Y
@@ -404,23 +362,6 @@ neg_hl:
     pop     bc                    ; BC = NewY; Stack = RtnAdr
     ret
 
-;-----------------------------------------------------------------------------
-; Set foreground and background colors of bitmap cell
-;  Input: A: Mode (0: 40col, 1: 80col, 2: 1bpp, 3: 4bpp)
-;         B: Cell colors
-;         C: Y-coordinate
-;        DE: X-coordinate
-;    Output: A: New byte containing pixel
-;      Sets: Carry if coordinates out of range
-; Clobbered: A, BC, DE, HL
-;-----------------------------------------------------------------------------
-bitmap_setcell:
-    cp      3                     ; If Mode >= 3
-    ccf                           ;   Set carry
-    ret     c                     ;   and return
-    cp      2                     ; If Mode < 2
-    ret     c                     ;   Return carry (for now)
-
 _resetpixel_addr:
     ld      a,(GFX_FLAGS)
     and     GFXM_MASK             ; Mask bits and set flags
@@ -575,7 +516,7 @@ _setpixel40:
     call    _psetcolor
     ret     m
     set     2,h
-_bloxel_color    
+_bloxel_color:
     ld      a,(hl)
     and     $0F
     or      b

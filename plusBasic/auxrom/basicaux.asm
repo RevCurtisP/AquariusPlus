@@ -591,13 +591,13 @@ aux_split_fill:
 _skipone:
     ld    de,(ARRAYPTR)
     ld    bc,(ARRAYLEN)
-bas_skipfirst
+bas_skipfirst:
     inc   de
     inc   de
     inc   de
     inc   de
     jr    _arrayptr
-_clearfirst
+_clearfirst:
     xor     a
     ld      b,4
 .skiploop
@@ -612,7 +612,7 @@ _countdown:
     dec     bc
     dec     bc                    ; AryLen = AryLen - 4
     ld      (ARRAYLEN),bc         ; ARRAYLEN = AryLen
-_array_len
+_array_len:
     ld      a,b
     or      c                     ;   If not last element
     ret

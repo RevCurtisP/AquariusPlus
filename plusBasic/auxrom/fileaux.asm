@@ -204,10 +204,10 @@ save_caq_prog:
     call    p,_write_trailer
     jp      _close_basfdesc
 
-_write_prog
+_write_prog:
     ld      a,l
     ld      de,(TXTTAB)             ; DE = start of BASIC program
-_write_bin_prog
+_write_bin_prog:
     ld      hl,(VARTAB)             ; HL = end of BASIC program
     sbc     hl,de
     ld      b,h                     ; BC = length of BASIC program

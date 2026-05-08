@@ -774,6 +774,7 @@ print_hook:
     call    ST_LOCATE             ;    Do LOCATE
     SYNCHKC ')'                   ;   Require close paren
     jr      print_hook            ; Do next character
+.
 
 ;-----------------------------------------------------------------------------
 ; Enhanced READ statement

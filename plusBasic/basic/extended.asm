@@ -2,15 +2,6 @@
 ; Statements and Functions from Aquarius Extended BASIC
 ;====================================================================
 
-;; ToDo: Add ELSE to IF THEN
-; This routine is jumped to after a THEN if the expression is FALSE
-then_hook:
-    jp      REM
-    ld      iy,scan_else
-    call    aux_call              ; Scan else
-    ret     z                     ; If EOL, return to NEWSTT
-    jp      GONE3                 ; Else execute statement after ELSE
-
 ;-----------------------------------------------------------------------------
 ; ATN function
 ;-----------------------------------------------------------------------------
@@ -56,7 +47,7 @@ ST_CLS:
     push    af
     push    hl
     ld      iy,screen_status
-    call    gfx_call              ; A = Screen Status
+    call    gfxrom_call           ; A = Screen Status
     and     $C0                   ; If SCREEN 0
     jp      z,IMERR               ;   Invalid mode error
     pop     hl

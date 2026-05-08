@@ -19,7 +19,7 @@
 ;        DE': End Y-Coord
 ; Clobbered: All
 ;-----------------------------------------------------------------------------
-bitmap__frect:
+bitmap_frect:
     push    hl                    ; Stack = ModClr, RtnAdr
     call    bitmap_rect_size      ; BC' = Width, DE' = Height
     pop     hl                    ; H = Option, L = Colors; Stack = RtnAdr

@@ -417,7 +417,7 @@ key_pressed:
     ret     z                     ; Return 0 if not set
     or      -1                    ; Else return -1 with flags set
     ret
-_bitmask
+_bitmask:
     ld      b,a
     inc     b
     xor     a
@@ -488,9 +488,10 @@ read_keys:
 scan_else:
     ld      a,(hl)                ; A = Current character
     or      a                     ; If null terminator
+    scf                           ;   Return Carry Setr
     ret     z                     ;   Return Z set
-    cp      a,ELSETK              ; If ELSE
-    jp      z,CHRGTR              ;   Return next character with flags set
+    cp      ELSETK                ; If ELSE
+    ret     z                     ;   Return Carry Clear
     cp      '"'                   ; If quote
     jr      z,.skip_string        ;   Skip to end of literal string
     cp      92                    ; If backslash
@@ -500,15 +501,16 @@ scan_else:
     jr      scan_else
 
 .skip_string
-    inc     (hl)
+    inc     hl
     ld      a,(hl)                ; A = Next Character
     or      a                     ; If null terminator
     ret     z                     ;   Return Z set
     cp      '"'                   ; If quote
     jr      z,.next               ;   Skip it and continue
+    jr      .skip_string
    
 .skip_escaped
-    inc     (hl)
+    inc     hl
     ld      a,(hl)                ; A = Next Character
     or      a                     ; If null terminator
     ret     z                     ;   Return Z set

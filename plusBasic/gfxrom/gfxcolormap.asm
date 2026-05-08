@@ -91,7 +91,7 @@ colormap_scale_rect:
 
 ; In: A = GfxMode, D=Column, E=Row
 ; Out: Carry set if out of bounds
-colormap_bounds:
+;colormap_bounds:
     cp      GFXM_WIDE
     ld      a,40
     jr      nz,.not80

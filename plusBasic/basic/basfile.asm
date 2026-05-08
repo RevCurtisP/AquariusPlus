@@ -241,7 +241,6 @@ FN_FILEEXT:
 ;-----------------------------------------------------------------------------
 ; FILEDIR$(filespec$)
 ;-----------------------------------------------------------------------------
-;; ToDo: Fix FILEDIR$(CD$)
 ; ? FILEDIR$("file.ext")
 ; ? FILEDIR$("/no_ext")
 ; ? FILEDIR$("/a/b/file.tmp")
@@ -830,7 +829,7 @@ _load_pt3:
     ld      iy,file_load_pt3      ; Load character set and copy to character RAM
     jp      skip_strdesc_auxcall
 
-_aux_call
+_aux_call:
     call    aux_call
     jp      m,_dos_error
     pop     hl
@@ -1055,7 +1054,7 @@ run_cmd:
     call    key_set_keymode       ; Turn off key repeat
     call    clear_all_errvars
     ld      iy,set_color_off
-    call    gfx_call
+    call    gfxrom_call
     pop     af
 
     jr      z,run_c               ; If no argument then RUN from 1st line
@@ -1316,7 +1315,7 @@ save_basic_program:
 ; SAVE "t/paged.bin",@63,0,16384
 ; SAVE "t/paged.bin",@63
 ; SAVE "t/paged.bin",@19
-_save_paged
+_save_paged:
     call    check_paged_address   ; Verify pages address is between 0 and 16383
     ld      iy,file_save_paged
     call    aux_call

@@ -1,4 +1,6 @@
 # plusBASIC Release History
+ - v0.71m (2026-05-07)
+    - Implemented `ELSE` after `IF` ... `THEN`
  - v0.71l (2026-04-30)
     - Implemented _color_ argument in `LINE ... ,FILL`
     - Fixed `LINE ... ,RECT` x-coordinates greater than 127 in 80-column bloxel mode

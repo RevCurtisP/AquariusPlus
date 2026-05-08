@@ -210,7 +210,8 @@
  - **[GOTO _lineref_](BASIC-Flow-Control-Statements#goto)** - Branch to line specified by line number or label.
  - **[HEX$(_number_)](BASIC-Conversion-Functions#hex)** - Convert byte or integer into hexadecimal string.
  - **[HEX$(_string_)](BASIC-Conversion-Functions#hex)** - Convert ASCII string into hexadecimal string.
- - **IF _expression_ GOTO _linefref_|THEN _lineno_|_statement_** - Branch to line or execute statements if expression evaluates to true.
+ - **IF _expression_ GOTO|THEN _linefref_** - Branch to line or if expression evaluates to true.
+ - **IF _expression_ THEN _statements_ {ELSE _statements_}** - Execute statements if expression evaluates to true {else false}.
  - **[IN(_port_)](BASIC-System-Statements-and-Functions#in)** - Read byte from Z80 I/O port.
  - **[IN$(_port_,_length_)](BASIC-System-Statements-and-Functions#in-1)** - Read multiple bytes from Z80 I/O port.
  - **INC _numvar_** - Increment numeric variable.

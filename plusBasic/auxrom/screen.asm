@@ -62,35 +62,6 @@ reset_bordermap:
     out     (IO_VCTRL),a
     ret
 
-set_color:
-    ld      (SCOLOR),a
-    ld      a,(SCREENCTL)
-    or      SCRCOLOR
-    jr      _write_screenctl
-
-set_color_off:
-    ld      a,(SCREENCTL)
-    push    af
-    and     $FF-SCRCOLOR
-    call    _write_screenctl
-    pop     af      
-    and     CRSR_OFF
-    ret     nz
-    ret
-
-_write_screenctl:
-    ld      (SCREENCTL),a
-    and     SCRCOLOR              ; Isolate Screen Control bit
-    ld      e,a                   ; C = ScrColor
-.direct
-    call    in_direct             ; Clobbers B and C
-    ret     c                     ; If Direct mode
-    ld      a,(BASYSCTL)
-    and     $FF-SCRCOLOR
-    or      e
-    ld      (BASYSCTL),a
-    ret
-
 screen_clear_color_a:
     ld      c,a
     ld      a,(LINLEN)
@@ -102,7 +73,7 @@ screen_clear_color_a:
 ;-----------------------------------------------------------------------------
 screen_clear_color:
     call    screen_width_colors
-_clear_color
+_clear_color:
     jr      nz,_color_clear80
     jr      _color_clear40
 
@@ -133,7 +104,7 @@ _color_clear40:
 _text_clear40:
     ld      a,' '
     ld      hl,SCREEN
-_fill40
+_fill40:
     ld      bc,1000
     jp      sys_fill_mem
     
@@ -153,7 +124,7 @@ _color_clear80:
     ret
 _text_clear80:
     ld      a,' '
-_fill80
+_fill80:
     ld      hl,SCREEN
     ld      bc,2000
     jp      sys_fill_mem
@@ -179,6 +150,7 @@ screen_colors:
 ;       DE: Address
 ; Clobbered: A,AF',BC,DE,HL
 ;-----------------------------------------------------------------------------
+;;; ToDo: Move to new file gfxrom/screencopy.asm
 ; COPY SCREEN TO @32,0
 ; COPY SCREEN TO @34,0 FAST
 ; SCREEN 3:COPY SCREEN TO @33,0:SCREEN 1

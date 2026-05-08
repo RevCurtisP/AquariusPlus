@@ -2,8 +2,6 @@
 ; Graphics Statements and Functions
 ;====================================================================
 
-; ToDo: Fix and _check_coords, test screen_bounds, colormap_bounds
-
 ;-----------------------------------------------------------------------------
 ; Set charcater in character RAM to default definition
 ; RESET CHRDEF 127
@@ -11,10 +9,11 @@
 ; RESET CHRDEF 127
 ST_RESET_CHR:
     rst     CHRGET                ; Skip CHR
+    cp      SETTK
     SYNCHKT DEFTK                 ; Require DEF
     call    get_char              ; A = ChrASC
-    ld      iy,bas_reset_chr
-    jp      gfx_call
+    ld      iy,bas_reset_chrdef
+    jp      gfxrom_call
 
 ;-----------------------------------------------------------------------------
 ; Redefine character in Character RAM
@@ -33,10 +32,8 @@ ST_SET_CHR:
     jp      nz,SLERR              ;   Illegal quantity error
     pop     hl                    ; HL = TxtPtr; Stack = ChrASC,RtnAdr
     pop     af                    ; A = ChrASC; Stack = RtnAdr
-    push    hl                    ; Stack = TxtPtr, RtnAdr
     ld      iy,bas_set_chr
-    jp      gfx_call_popret
-
+    jp      gfxrom_call
 
 ;-----------------------------------------------------------------------------
 ; USE CHRSET - Change Character Set
@@ -111,7 +108,7 @@ FN_CURSOR:
 ;-----------------------------------------------------------------------------
 ; GETATTR(X,Y) - Get Colors at (X,Y)
 ;-----------------------------------------------------------------------------
-FN_GETATTR
+FN_GETATTR:
     rst     CHRGET                ; Skip ATTR
     jp      GSERR                 ; Not implemented error
 
@@ -149,7 +146,10 @@ FN_GETCHRDEF:
     push    hl                    ; Stack = TxtPtr, RtnAdr
     ld      l,e                   ; L = ChrSet
     ld      iy,bas_getchrdef
-    jp      gfx_call_putnew
+gfxrom_call_putnew:
+    call    gfxrom_call
+    jp      c,FCERR
+    jp      PUTNEW                ; and return it
 
 ;-----------------------------------------------------------------------------
 ; GETCHRSET - Return Corrent Character Set
@@ -159,9 +159,8 @@ FN_GETCHRDEF:
 FN_GETCHRSET:
     rst     CHRGET                ; Skip SET
     ld      iy,bas_get_chrset
-hl_labbck_gfx_call_float:
     call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
-    call    gfx_call
+    call    gfxrom_call
     jp      FLOAT                 ; Float an return result
 
 ;-----------------------------------------------------------------------------
@@ -170,12 +169,8 @@ hl_labbck_gfx_call_float:
 FN_GETCOLOR:
     inc     hl                    ; Skip COL
     SYNCHKT ORTK                  ; Require OR
-    call    push_hl_labbck
-    ld      a,(SCREENCTL)         ; 
-    rla                           ; Carry = SCRCOLOR
-    jp      nc,float_minus_one    ; If Color Print disabled Return -1
-    ld      a,(SCOLOR)
-    jp      SNGFLT
+    ld      iy,bas_getcolor
+    jp      hl_labbck_gfxrom_call_ix
 
 ;-----------------------------------------------------------------------------
 ; SET COLOR statements
@@ -188,13 +183,13 @@ ST_SETCOLOR:
     jr      z,.extended
     call    get_screen_colors     ; A,E = Colors
     ld      iy,set_color
-    jr      .gfx_call
+    jr      .gfxrom_call
 .extended
     rst     CHRGET                ; Skip XTOKEN
     SYNCHKT OFFTK                 ; Require OFF
     ld      iy,set_color_off
-.gfx_call
-    jp      gfx_call   
+.gfxrom_call
+    jp      gfxrom_call   
 
 ;-----------------------------------------------------------------------------
 ; Draw rectangle on text screen
@@ -213,7 +208,7 @@ ST_RECT:
     ld      (STRDSC1),de
     call    .get_colors_opt       ; DE = Colors
     ld      (STRDSC2),de
-    ld      iy,bas__rect
+    ld      iy,bas_rect
     jp      gfxrom_call_preserve_hl
 
 ; DE = 0 if EOL
@@ -311,12 +306,8 @@ ST_SET_PALETTE:
 ;-----------------------------------------------------------------------------
 FN_SCREEN:
     rst     CHRGET                ;
-    push    hl                    ; Stack = TxtPtr, RtnAdr
-    ld      bc,LABBCK
-    push    bc                    ; Stack = LABBCK, TxtPtr, RtnAdr
     ld      iy,screen_status
-    call    gfx_call              ; A = Screen status
-    jp      SNGFLT                ; Float it and return
+    jp      gfxrom_call_sngflt
 
 ;-----------------------------------------------------------------------------
 ; SCREEN [text],[graphics],[sprites],[priority],[remap]
@@ -426,6 +417,8 @@ ST_RESET_SCREEN:
     rst     CHRGET                ; Skip SCREEN
 _reset_screen:
     ld      iy,screen_reset
+    jp      gfxrom_call_preserve_hl
+
 gfx_call_preserve_hl:
     push    hl
 gfx_call_popret:
@@ -548,7 +541,7 @@ gfx_call_fc_popret:
 ; FILL SCREEN (0,0)-(2,2) COLOR 7,0
 ; FILL SCREEN (0,-1)-(3,2) CHR '%'
 ST_FILL_SCREEN:
-    ld      iy,screen__size       ; Set RECT_X1, RECT_Y1, RECT_X2. RECT_Y2
+    ld      iy,screen_size        ; Set RECT_X1, RECT_Y1, RECT_X2. RECT_Y2
     call    gfxrom_call           ;   to entire screen
     rst     CHRGET                ; Skip SCREEN
     cp      '('                   ; If open paren
@@ -984,8 +977,9 @@ _skip_parse_attr:
     rst     CHRGET
 _parse_attr:
     call    FRMTYP
-    ld      iy,bas_parse_attr
-    jp      gfx_call              ; A = Attributes
+    ld      iy,bas_convert_attr
+    jp      gfxrom_call           ; Return A = Attributes
+    
 ;-----------------------------------------------------------------------------
 ; DEF PALETTELIST P$ = palette#, palette#, ...
 ; APPEND PALETTELIST P$ = palette#, palette#, ...
@@ -1279,7 +1273,7 @@ ST_DEF_SPRITE:
     jr      z,_sprite_done
     SYNCHKC ';'
     jr      .loop
-_sprite_done
+_sprite_done:
     push    hl                    ; Stack = TxtPtr, Datlen, BufPtr, VarPtr, RtnAdr
     push    bc                    ; Stack = MaxOfs, TxtPtr, Datlen, BufPtr, VarPtr, RtnAdr
     call    get_strbuf_addr       ; HL = BufAdr
@@ -1627,8 +1621,9 @@ FN_GETSPRITE:
     call    nz,CHRGTR             ;   Skipl
     call    PARCHK                ; FACLO = Arg
     pop     af                    ; A = FncSfx
-    call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
     ld      iy,bas_getsprite      ; Get Int or StrzDsc  in HL
+hl_labbck_gfxrom_call_ix:
+    call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
     call    gfxrom_call           ; IX = FLOAT_HL or FINBCK
     jp      (ix)                  ; Return String
 
@@ -1708,9 +1703,9 @@ FN_RGB:
     cp      '$'
     jr      z,.string             ; If not RGB$()
     ld      iy,bas_rgbx
-    call    gfx_call              ; Check for R, G, or B
     ld      bc,LABBCK
-    push    bc                    ;   Push return address for FLOAT_DE
+    push    bc
+    call    gfxrom_call           ; Check for R, G, or B
     jp      FLOAT_DE              ;   Float RGB and return.
 .string
     push    de                    ; Stack = RGB, TxtPtr, RtnAdr
@@ -1731,7 +1726,7 @@ _get_rgb:
     jr      nz,.numeric           ; If String
     push    bc                    ;   Stack = FnFlag, RtnAdr
     pop     af                    ;   F = FnFlag; Stack = RtnAdr
-    jr      nc,.no_del            ;   If Carry sET
+    jr      nc,.no_del            ;   If Carry Set
     ld      a,(hl)                
     cp      ','
     jr      nz,.no_del            ;   and comma
@@ -1786,5 +1781,3 @@ _rgbdechex:
     call    push_hl_labbck
     call    gfx_call              ; HL = StrPtr
     jp      TIMSTR                ; Return "red,grn,blu"
-
-

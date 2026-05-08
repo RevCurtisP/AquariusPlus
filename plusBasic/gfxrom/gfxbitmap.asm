@@ -285,7 +285,7 @@ bitmap_rect_size:
 ; Clobbers: A, HL
 bitmap__check_rect:    
     exx
-    call    bitmap__check_coords
+    call    bitmap_check_coords
     exx
     ret     c                     ; Return Carry Set if (X0,Y0) out of range
 ;-----------------------------------------------------------------------------
@@ -296,7 +296,7 @@ bitmap__check_rect:
 ; Flags: Carry Set if out of bounds
 ; Clobbered: HL
 ;-----------------------------------------------------------------------------
-bitmap__check_coords:
+bitmap_check_coords:
     cp    2
     jr    nc,.bitmap              ; If GfxMode < 2
     call  .bloxelx                ;   HL = -BmpWid

@@ -210,7 +210,8 @@
  - **GOTO _lineref_** - Branch to line specified by line number or label.
  - **HEX$(_number_)** - Convert byte or integer into hexadecimal string.
  - **HEX$(_string_)** - Convert ASCII string into hexadecimal string.
- - **IF _expression_ GOTO _linefref_|THEN _lineno_|_statement_** - Branch to line or execute statements if expression evaluates to true.
+ - **IF _expression_ GOTO|THEN _linefref_** - Branch to line or if expression evaluates to true.
+ - **IF _expression_ THEN _statements_ {ELSE _statements_}** - Execute statements if expression evaluates to true {else false}.
  - **IN(_port_)** - Read byte from Z80 I/O port.
  - **IN$(_port_,_length_)** - Read multiple bytes from Z80 I/O port.
  - **INC _numvar_** - Increment numeric variable.

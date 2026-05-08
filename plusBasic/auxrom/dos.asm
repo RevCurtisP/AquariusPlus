@@ -43,7 +43,7 @@ dos_close_dir:
 dos_close:
     push    af
     ld      a, ESPCMD_CLOSE
-_close
+_close:
     call    esp_cmd
     pop     af
     call    esp_send_byte

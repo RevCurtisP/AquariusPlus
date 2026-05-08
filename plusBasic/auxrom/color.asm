@@ -146,7 +146,7 @@ _check_delimiter:
     dec     e                     ; Decrement StrCnt
     cp      d                     ; If CurChr = DelChr
     ret     z                     ;   Return Carry Clear (from CP D)
-_scf
+_scf:
     scf                           ; Return Carry Set
     ret     
 

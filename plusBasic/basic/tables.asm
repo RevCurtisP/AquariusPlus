@@ -129,7 +129,7 @@ STJUMPS:
     dw      SNERR                 ;$EC unused
     dw      SNERR                 ;$ED EVAL
     dw      ST_PAUSE              ;$EE PAUSE
-    dw      SNERR                 ;$EF ELSE
+    dw      ST_ELSE               ;$EF ELSE
     dw      SNERR                 ;$F0 TILE
     dw      SNERR                 ;$F1 RGB
     dw      SNERR                 ;$F2 MAP

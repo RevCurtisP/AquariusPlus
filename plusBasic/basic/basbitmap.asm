@@ -247,7 +247,7 @@ gfxrom_call_floatde:
 FN_POINT:
     rst     CHRGET                ; Skip POINT
 _point:
-    ld      de,bitmap__getpixel
+    ld      de,bitmap_getpixel
     call    _do_pixel_no_color
     jp      push_hl_labbck_sngflt
 
@@ -262,13 +262,13 @@ _point:
 ; SCREEN 0,3:PSET (159,0),2:PAUSE
 ; SCREEN 0,3:PSET (159,0),0:PAUSE
 ST_PSET:
-    ld      de,bitmap__setpixel
+    ld      de,bitmap_setpixel
     or      $FF
     jr      _do_pixel
 
 ; SCREEN 0,2:PRESET (160,0)
 ST_PRESET:
-    ld      de,bitmap__resetpixel
+    ld      de,bitmap_resetpixel
 _do_pixel_no_color:
     xor     a
 _do_pixel:
@@ -280,7 +280,7 @@ _do_pixel:
     pop     iy                    ; IY = SubAdr; Stack = RtnAdr
     cp      XORTK
     jr      nz,gfxrom_call_push_fcerr
-    ld      iy,bitmap__togglepixel
+    ld      iy,bitmap_togglepixel
 gfxrom_call_push_fcerr:
     push    hl
     jp      gfxrom_call_fcerr

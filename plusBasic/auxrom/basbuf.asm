@@ -224,7 +224,7 @@ _read_word:
 _histname:
     db      "/_history"
 _histlen = $ - _histname
-_histdesc
+_histdesc:
     dw      _histlen,_histname
 
 ; On entry: HL = BufAdr

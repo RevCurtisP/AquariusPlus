@@ -80,7 +80,7 @@ _arrays:
     jr      _arrays
 
 ; Assuming one dimension for now
-_walk_array
+_walk_array:
     ld      a,'['                 ; Open bracket
     rst     OUTCHR
     ld      c,(hl)

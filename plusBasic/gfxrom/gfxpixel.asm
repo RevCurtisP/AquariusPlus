@@ -12,7 +12,7 @@
 ;      Sets: Csrry if coordinates out of range
 ; Clobbered: BC, DE, HL
 ;-----------------------------------------------------------------------------
-bitmap__getpixel:
+bitmap_getpixel:
     ld      a,(GFX_FLAGS)
     and     GFXM_MASK             ; Mask bits and set flags
     ld      l,a                   ; L = GfxMode
@@ -36,7 +36,7 @@ bitmap__getpixel:
 ;      Sets: Csrry if coordinates out of range
 ; Clobbered: A, BC, DE, HL
 ;-----------------------------------------------------------------------------
-bitmap__resetpixel:
+bitmap_resetpixel:
     call    _resetpixel_addr
     jr      _dopixel
 
@@ -64,7 +64,7 @@ _resetpixel_addr:
 ;      Sets: Carry if coordinates out of range
 ; Clobbered: A, HL
 ;-----------------------------------------------------------------------------
-bitmap__setpixel:
+bitmap_setpixel:
     ld      (PSETCOLOR),a         ; Save DrwClr
     call    _setpixel_addr        ; L = GfxMode, IX = SetPxlAdr
 ; On Entry C = X-Coord, DE = Y-Coord, H = UpdateXY, L = GfxMode 
@@ -106,7 +106,7 @@ _drawpixel:
     ex      af,af'                ; A = NewByte
     ret
 
-bitmap__togglepixel:
+bitmap_togglepixel:
     call    _togglepixel_addr
     jr      _dopixel
 

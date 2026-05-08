@@ -305,7 +305,7 @@ file_save_tileset:
     pop     de                    ; DE = TilAdr; Stack = StrDsc, RtnAdr
     pop     hl                    ; HL = StrDsc; Stack = RtnAdr
     ret     c                     ; If EndAdr > $4000, return Carry Set
-_save_video_ram
+_save_video_ram:
     ld      a,VIDEO_RAM           ; A = Page
     jp      file_save_paged
 

@@ -23,7 +23,7 @@ lf_hook:
 ttyclr_hook:
     push    bc
     ld      iy,set_color_off
-    call    gfx_call
+    call    gfxrom_call
     ld      iy,reset_bordermap
     call    gfx_call
     call    set_cursor_on

@@ -125,39 +125,6 @@ _rgbhexdec:
     pop     hl
     ret
 
-; On entry: A = Function Suffix, D = Red, E = Green+Blue
-; On Exit: DE = Result
-bas_rgbx:
-    cp      '('                   ; If no suffix
-    ret     z                     ;   Return RGB value
-    ex      de,hl                 ; H = Red, L = Green+Blue
-    ld      d,0                   ; Clear result MSB
-    cp      'R'
-    jr      z,.red
-    cp      'G'
-    jr      z,.green
-    cp      'B'
-    jr      z,.blue
-    jp      SNERR
-.red
-    ld      a,h
-    and     $0F
-    ld      e,a
-    ret
-.green
-    ld      a,l
-    and     $F0
-    rra
-    rra
-    rra
-    rra
-    ld      e,a
-    ret
-.blue
-    ld        a,l
-    and       $0F
-    ld        e,a
-    ret
 
 ;Input: BC: StrLen, DE: StrAdr
 ;Output: HL: FBUFFR
@@ -194,54 +161,9 @@ bas_put_chr:
     pop     bc                    ; BC = Col; Stack = RtnAdr
     jp      bitmap_putchar        ; Put char to bitmap and return
 
-
-; Called from ST_RESET_CHR
-; On entry: A = ChrASC
-bas_reset_chr:
-    push    hl                    ;  Stack = TxtPtr
-    ld      bc,8
-    ld      de,FBUFFR
-    call    gfx_reset_char_def
-    jp      c,LSERR
-    pop     hl
-    ret
-
-; Called from ST_SET_CHR
-; On entry: A = ChrASC, E = ChrSet, HL = TxtPtr
-bas_set_chr:
-    call    gfx_redefine_char
-    jp      c,LSERR
-    ld      a,(SCREENCTL)         ; Set character set modified flag
-    or      a,SCRCHRMOD
-    ld      (SCREENCTL),a
-    ret
-
-; Called from FN_GETCHRDEF
-; Input: B: ChrASCl
-bas_getchrdef:
-    push    bc                    ; Stack = ChrASC, RtnAdr
-    push    hl                    ; Stack = ChrSet, ChrASC, RtnAdr
-    ld      a,8                   ; A = BufLen
-    call    STRINI                ; DE = BufAdr
-    pop     hl                    ; L = ChrSet; Stack = ChrASC, RtnAdr
-    pop     af                    ; A = ChrASC; Stack = RtnAdr
-_getchrdef
+_getchrdef:
     ld      bc,8                  ; BC = BufLen
     jp      gfx_get_char_def
-
-; Called from FN_GETCHRSET
-; Output: ChrSet
-bas_get_chrset:
-    ld      a,(SCREENCTL)
-    ld      b,a
-    and     SCRCHRMOD
-    ld      a,-1
-    ret     nz
-    ld      a,b
-    and     SCRCHRSET             ; A = 0 if default character Set
-    ret     z
-    ld      a,1                   ;   A = 1
-    ret
 
 ; Called from SCREEN
 bas_do_gfx_mode:
@@ -279,47 +201,6 @@ bas_defgotvar:
     SYNCHKT EQUATK                ; Require '='
     ret
 
-; Returns A = Attributes byte
-bas_parse_attr:
-    jr      z,.string             ; If numeric
-    call    CONINT                ;   Convert to byte in A
-    and     $7E                   ; Strip Index MSB
-    ret
-.string
-    push    hl
-    xor     a
-    ex      af,af'                ; AF' = Properties
-    call    free_addr_len         ; DE = StrAdr, C = StrLen
-.loop
-    jr      z,.done               ; Pop HL and return if end of string
-    ld      a,(de)                ; A = PropChar
-    inc     de                    ; Bump StrPtr
-    and     $5F                   ; Convert to upper case
-    ld      b,SPR_HFLIP
-    cp      'H'
-    jr      z,.set
-    ld      b,SPR_VFLIP
-    cp      'V'
-    jr      z,.set
-    ld      b,SPR_HEIGHT
-    cp      'D'
-    jr      z,.set
-    ld      b,SPR_PRIORITY
-    cp      'P'
-    jr      z,.set
-    jp      FCERR
-.set
-    ex      af,af'
-    or      a,b
-    ex      af,af'
-.next
-    dec     c
-    jr      .loop
-.done
-    ex      af,af'
-    ld      e,a
-    pop     hl
-    ret
 
 ; Convert PSET Coordinates to Screen Position and Character Mask
 scale_xy:
