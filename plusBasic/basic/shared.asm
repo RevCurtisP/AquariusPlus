@@ -18,7 +18,9 @@ ABORT_FN:
     dec     hl                    ; Back up to Function Token
     ld      a,(hl)                ; Re-Read Token
     sub     ONEFUN                ; Convert to Offset
-    jp      HOOK27+1              ; Continue with Standard Function Code
+DO_BASFUN:
+    cp      POINTK-ONEFUN
+    jp      BASFUN                ; Continue with Standard Function Code
 
 ;-----------------------------------------------------------------------------
 ; Parse to 23-bit integer in CDE
@@ -790,7 +792,7 @@ check_screen_colors:
     cp      ','
     jr      z,get_comma_colors
     ld      iy,screen_colors
-    jp      aux_call_preserve_hl
+    jp      gfxrom_call_preserve_hl
 
 get_comma_colors:
     call    get_comma             ; Missing opersand if comma

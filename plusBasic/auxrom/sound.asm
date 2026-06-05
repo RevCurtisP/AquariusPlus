@@ -29,6 +29,30 @@ get_soundfast:
     ret
 
 
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+; Input: HL: Filespec string descriptor
+; Output: A: Result
+;  Flags: Sign Set if File I/O error
+;         Carry Set if file larger than 16k
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+play_sample_file:
+    ld      a,TMP_BUFFR
+    ld      de,0                  ; DE = PageOfs
+    ld      bc,16384              ; BC = MaxLen
+    call    xfile_load_paged      ; BC = LoadLen
+    ret     m                     ; Return if I/O error  
+    push    bc                    ; Stack = LoadLen, RtnAdr
+    ld      a,TMP_BUFFR
+    ld      de,0
+    call    page_read_word        ; BC = SampLen
+    ld      hl,4
+    add     hl,bc                 ; HL = SampLen + 4
+    pop     de                    ; DE = LoadLen
+    rst     COMPAR                ; If LoadLen <> SampLen + 4
+    scf                           ;   Return Carry Set
+    ret     nz
+    ld      a,TMP_BUFFR
+    ld      hl,0
 ;-----------------------------------------------------------------------------
 ; Play Raw Sample in Paged Memory
 ; Input: A: Page

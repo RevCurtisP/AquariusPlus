@@ -267,3 +267,5 @@ _close_basfdesc:
     ld      (BAS_FDESC),a
     pop     af
     ret
+
+bas_play_sample_file:

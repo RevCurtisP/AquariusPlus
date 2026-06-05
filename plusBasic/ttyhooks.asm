@@ -25,7 +25,7 @@ ttyclr_hook:
     ld      iy,set_color_off
     call    gfxrom_call
     ld      iy,reset_bordermap
-    call    gfx_call
+    call    gfxrom_call
     call    set_cursor_on
     call    set_scroll_on
     pop     bc

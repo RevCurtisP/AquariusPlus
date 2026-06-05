@@ -261,6 +261,7 @@
  - **[LOAD FNKEYS _filespec_](BASIC-LOAD-FNKEYS-Statement#load-fnkeys)** - Load function key definitions from file.
  - **LOAD MODULE** - _Proposed enhancement._
  - **[LOAD PALETTE _p_,_filespec_](BASIC-Palette-Statements-and-Functions#load-palette)** - Load file data ino palette.
+ - **LOAD SAMPLE _filespec_,«!_ext_addr_»|«{@_page_,}_address_»** - Load digitized sound file into paged RAM.
  - **[LOAD SCREEN _filespec_](BASIC-Screen-IO-Statements-and-Functions#load-screen)** - Load text screen from file.
  - **LOAD SCREEN ATTR _filespec_** - Load text colors from file.
  - **LOAD SCREEN CHR _filespec_** - _Not implemented_.
@@ -311,6 +312,7 @@
  - **[PEEKSCREEN(_address_)](BASIC-PEEK-and-DEEK-Functions#peekscreen)** - Read byte from screen RAM.
  - **[PEEKSCREEN$(_address_,_length_)](BASIC-PEEK-and-DEEK-Functions#peekscreen-1)** - Read string from screen RAM.
  - **[PLAY SAMPLE «!_ext_addr_»|«@_page_,_address_»](BASIC-PLAY-SAMPLE-Statement#play-sample)** - Play digital sample from previously loaded file.
+ - **[PLAY SAMPLE "_filespec_"](BASIC-PLAY-SAMPLE-Statement#play-sample-")** - Load and play digitized sound file.
  - **[PLAY TRACK \{_filespec_}](BASIC-TRACK-Statements#play-track)** - Play specified or previously loaded tracker file.
  - [X] **[POINT(_x_,_y_)](BASIC-Bloxel-and-Pixel-Functions)** - Return status of bloxel or pixel.
  - **[POKE «!_ext_addr_»|«{@_page_,}_address_»,_byte_|_string_{;..}.](BASIC-POKE-and-DOKE-Statements#poke)** - Write bytes and/or strings to memory.

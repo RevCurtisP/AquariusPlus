@@ -105,7 +105,7 @@ file_load_colormap:
 _load_read_gfx:
     call    file_load_tmpbuffr
     ret     m                     ; Return if Error
-    jp      gfx_call
+    jp      gfxrom_call
 
 ;-----------------------------------------------------------------------------
 ; Load file into character RAM buffer
@@ -185,7 +185,44 @@ file_load_pt3play:
     byte    "esp:ptplay.bin"
 .ptdesc:
     word    $-.ptplay,.ptplay
-   
+
+load_sample_tmpbuffr:
+    ld      ix,xfile_load_paged
+    ld      a,TMP_BUFFR
+    ld      de,0
+    ld      bc,16384
+    jr      _load_sample
+
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+; Load Digitized Sample File
+;  Input: A: Page
+;        DE: Offset
+;        HL: Filespec string descriptor
+; Output: A: Result
+;  Flags: Sign Set if File I/O error
+;         Carry Set if invalid sample
+;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+file_load_sample:
+    ld      ix,file_load_paged    ; Normal paged load
+    ld      bc,65535              ; Up to 64k
+_load_sample:    
+    push    af                    ; Stack = Page, RtnAdr
+    push    de                    ; Stack = Offset, Page, RtnAdr
+    call    jump_ix               ; BC = LoadLen
+    pop     de                    ; DE = Offset; Stack = Page, RtnAdr
+    pop     hl                    ; H = Page, Stack = RtnAdr
+    ret     m                     ; If error, return it
+    push    bc                    ; Stack = LoadLen, RtnAdr
+    ld      a,h                   ; A = Page
+    call    page_read_word        ; BC = Sample Length
+    ld      hl,4
+    add     hl,bc                 ; HL = SampLen + 4
+    pop     de                    ; DE = LoadLen; Stack = RtnAdr
+    sbc     hl,de                 ; If LoadLen = SampLen + 4
+    ret     z                     ;   Return Zero Set and Carry Clear
+    scf                           ; Else
+    ret                           ;  return Carry set
+    
 ;-----------------------------------------------------------------------------
 ; Load binary file into paged memory`
 ; Input: A: Page

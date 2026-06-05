@@ -282,8 +282,11 @@ bas_mouse:
     ld      a,e
     ret
 .not_found:
-    pop     af                    ; Stack = RtnAdr
-    ld      a,-1                  ; Return Not found
+    pop     af                    ; A = SfxChr. Stack = RtnAdr
+    sub     'W'                   ; If MOUSEW
+    jr      z,.nowheel            ;   Return 0
+    ld      a,-1                  ; Else Return Not found
+.nowheel
     or      a                     ; Signed result
     ret
 .xpos:

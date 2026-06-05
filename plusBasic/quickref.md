@@ -261,6 +261,7 @@
  - **LOAD FNKEYS _filespec_** - Load function key definitions from file.
  - **LOAD MODULE** - _Proposed enhancement._
  - **LOAD PALETTE _p_,_filespec_** - Load file data ino palette.
+ - **LOAD SAMPLE _filespec_,«!_ext_addr_»|«{@_page_,}_address_»** - Load digitized sound file into paged RAM.
  - **LOAD SCREEN _filespec_** - Load text screen from file.
  - **LOAD SCREEN ATTR _filespec_** - Load text colors from file.
  - **LOAD SCREEN CHR _filespec_** - _Not implemented_.
@@ -311,6 +312,7 @@
  - **PEEKSCREEN(_address_)** - Read byte from screen RAM.
  - **PEEKSCREEN$(_address_,_length_)** - Read string from screen RAM.
  - **PLAY SAMPLE «!_ext_addr_»|«@_page_,_address_»** - Play digital sample from previously loaded file.
+ - **PLAY SAMPLE "_filespec_"** - Load and play digitized sound file.
  - **PLAY TRACK \{_filespec_}** - Play specified or previously loaded tracker file.
  - [X] **POINT(_x_,_y_)** - Return status of bloxel or pixel.
  - **POKE «!_ext_addr_»|«{@_page_,}_address_»,_byte_|_string_{;..}.** - Write bytes and/or strings to memory.

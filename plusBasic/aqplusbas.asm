@@ -95,7 +95,7 @@ null_desc:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.71m"
+    db "v0.71n"
     db 0
 plusver_len equ $ - plus_version
 plus_len   equ   $  - plus_text
@@ -997,72 +997,6 @@ ctrlx_hook:
   ld      a,7                     ;   Ring the bell and continue   
   jp      OUTBEL
 
-free_rom_sys = $2F00 - $
-
-;------------------------------------------------------------------------------
-; Hook Jump Table
-; ------------------------------------------------------------------------------
-
-    assert !($2EFF<$)   ; ROM full!
-    dc $2F00-$,$76
-
-; BASIC Hook Jump Table
-; 58 Bytes
-hook_table:                     ; ## caller   addr  performing function
-    dw      0                   ;  0                Deprecated
-    dw      0                   ;  1                Deprecated
-    dw      0                   ;  2                Deprecated 
-    dw      0                   ;  3                Deprecated
-    dw      0                   ;  4                Deprecated
-    dw      0                   ;  5                Deprecated
-    dw      0                   ;  6                Deprecated
-    dw      0                   ;  7                Deprecated
-    dw      0                   ;  8                Deprecated
-    dw      0                   ;  9                Deprecated
-    dw      keyword_to_token    ; 10 NOTGOS   0536  Converting Keyword to Token
-    dw      0                   ; 11                Deprecated
-    dw      0                   ; 12                Deprecated
-    dw      0                   ; 13                Deprecated
-    dw      0                   ; 14                Deprecated
-    dw      0                   ; 15                Deprecated
-    dw      0                   ; 16                Deprecated
-    dw      0                   ; 17                Deprecated
-    dw      0                   ; 18                Deprecated
-    dw      0                   ; 19                Deprecated
-    dw      0                   ; 20                Deprecated
-    dw      0                   ; 21                Deprecated
-    dw      0                   ; 22                Deprecated
-    dw      exec_next_statement ; 23 GONE2    064B  interpreting next BASIC statement
-    dw      0                   ; 24                Deprecated
-    dw      0                   ; 25                Deprecated
-    dw      0                   ; 26                Deprecated
-    dw      execute_function    ; 27 ISFUN    0A5F  Executing a Function
-    dw      0                   ; 28                Deprecated
-    dw      0                   ; 29                Deprecated
-
-; ------------------------------------------------------------------------------
-;  Execute Hook Routine
-; ------------------------------------------------------------------------------
-
-fast_hook_handler:
-    ex      af,af'              ; save AF
-    exx                         ; save BC,DE,HL
-    ld      a,ROM_EXT_RO        ; Ensure Extended ROM is paged in
-    out     (IO_BANK3),a
-    pop     hl                  ; get hook return address
-    ld      a,(hl)              ; A = byte (RST $30 parameter)
-    add     a,a                 ; A * 2 to index WORD size vectors
-    ld      l,a
-    ld      h,high(hook_table)
-    ld      a,(hl)
-    ld      ixl,a
-    inc     hl
-    ld      a,(hl)
-    ld      ixh,a
-    exx                         ; Restore BC,DE,HL
-    ex      af,af'              ; Restore AF
-    jp      (ix)
-
 ; Extended Error Processing
 error_ext:
     call    page_set_plus         ; Bank 3 could be mapped to any page at this point.
@@ -1070,7 +1004,6 @@ error_ext:
     call    FINLPT                ; Returns A=0
     ld      (SUBFLG),a            ; In case it as a UD error
     jp      trap_error            ; so map to Extended ROM, before continuing
-
 
 ;-----------------------------------------------------------------------------
 ; S3 BASIC extensions routines in Auxiliary ROM Page
@@ -1092,7 +1025,7 @@ check_for_comment:
     jr      z,.rem                ;   Treat as REM
     sub     $80                   ; If not token
     jp      c,LET                 ;   Do LET
-    jp      GONEX                 ; Else evauate token
+    jp      exec_next_statement   ; Else evauate token
 .rem
     rst     CHRGET                ; Skip '
     jp      REM                   ;   and do REM
@@ -1127,6 +1060,7 @@ print_linbuf:
     djnz    .loop
     ret
 
+free_rom_sys = $2FEA - $
 
 ;-----------------------------------------------------------------------------
 ; SysROM File Name
@@ -1275,6 +1209,7 @@ _sysfile_end:
     include "gfxsprites.asm"      ; Sprite graphics module
     include "gfxtmpbfr.asm"       ; Read/write TMP_BUFR
     include "screenctl.asm"       ; Screen control routines
+    include "screenio.asm"        ; Screen read/write routines
     include "tile.asm"            ; Tile graphics module
 
     used_rom_gfx = $ - $C000

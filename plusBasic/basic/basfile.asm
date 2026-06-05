@@ -768,6 +768,8 @@ _load_extended:
     jr      z,_load_palette
     cp      TRKTK                 ; $8C
     jr      z,_load_pt3
+    cp      SAMPTK                ; $8D
+    jr      z,_load_sample
     SYNCHKT CHRTK                 ; $85
     SYNCHKT SETTK                 ; Must be CHRSET
 ; load chrset "/chrsets/linedraw.char"
@@ -821,6 +823,7 @@ _do_palette:
     push    de                    ; Stack = TxtPtr, RtnAdr
     jp      _aux_call_bdf
 
+
 ; load pt3 "/music/songs1/dontstop.pt3"
 ; load pt3 "/music/songs1/dance.pt3"
 load_pt3:
@@ -828,6 +831,16 @@ load_pt3:
 _load_pt3:
     ld      iy,file_load_pt3      ; Load character set and copy to character RAM
     jp      skip_strdesc_auxcall
+
+; LOAD SAMPLE "/u/au/assets/fiesta-trio.saq",!0
+_load_sample:
+    call    chrget_strdesc_arg    ; HL = StrDsc; Stack = TxtPtr, RtnAdr
+    ex      (sp),hl               ; HL = TxtPtr; Stack = StrDsc, RtnAdr
+    call    get_comma             ; Require comma
+    call    require_ext_addr      ; AF = PgFlg, DE = Addr
+    ex      (sp),hl               ; HL = StrDsc; Stack = TxtPtr, RtnAdr
+    ld      iy,file_load_sample
+    jp      _aux_call_bdf
 
 _aux_call:
     call    aux_call
@@ -1044,6 +1057,11 @@ ST_LOAD_SCREEN:
     ld      iy,file_load_screen_asc
     jr      z,_pop_screen_call_bdf    
     jr      _screen_aux_call_bdf
+
+st_play_sample_file:
+    call    get_strdesc_arg       ; HL = StrDsc; Stack = TxtPtr, RtnAdr
+    ld      iy,play_sample_file
+    jp      _aux_call_bdf
 
 ;-----------------------------------------------------------------------------
 ; RUN command - hook 24

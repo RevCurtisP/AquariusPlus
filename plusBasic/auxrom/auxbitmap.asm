@@ -808,52 +808,6 @@ _getmask:
     byte    $F0,$0F
 
 ;-----------------------------------------------------------------------------
-; Copy 1bpp ColorMAP data in TMP_BUFFR to Video RAM
-; Input: BC = Length of data to copy
-; Sets flags: Carry if invalid data length
-; Clobbers: A, AF', BC, DE, HL
-;-----------------------------------------------------------------------------
-colormap_read_tmpbfr:
-    ld      h,b
-    ld      l,c
-    ld      de,1000
-    rst     COMPAR
-    jp      nz,ret_carry_set
-    ld      de,8192
-    jr      _copy_tmpbase_vidram
-; Input: BC: BytCnt
-; Output: DE: NewDstAdr, HL: NewSrcAdr
-_copy_tmpbase_vidbase:
-    ld      de,0
-_copy_tmpbase_vidram:
-    ld      hl,0
-; Input: BC: BytCnt, DE: DstAdr, HL: SrcAdr
-; Output: DE: NewDstAdr, HL: NewSrcAdr
-_copy_tmpbfr_vidram:
-    ld      a,TMP_BUFFR           ; Copying from buffer
-    ex      af,af'
-    ld      a,VIDEO_RAM           ; to Video RAM
-    jp      page_fast_copy
- 
-;-----------------------------------------------------------------------------
-; Copy 1bpp ColorMap data in Video RAM to TMP_BUFFR
-; Output: BC: ColorMap length
-; Clobbers: A, AF', DE, HL
-;-----------------------------------------------------------------------------
-colormap_write_tmpbfr:
-    ld      bc,1000               ; Copying 1000 bytes 
-    push    bc                    ; Stack = DatLen, RtnAdr
-    ld      hl,8192               ; from ColorMap
-    ld      de,0                  ; to Start of buffer
-copy_vidram_tmpbfr
-    ld      a,VIDEO_RAM           ; Copying from Video RAM
-    ex      af,af'
-    ld      a,TMP_BUFFR           ; to buffer
-    call    page_fast_copy_sys
-    pop     bc                    ; BC = DatLen, Stack = RtnAdr
-    ret
-
-;-----------------------------------------------------------------------------
 ; Read Bitmap Screen Section into Buffer
 ; Input: BMPMODE: Mode: 0 = 1bpp, 1 = 4bpp
 ;        STARTCOL: Start Column

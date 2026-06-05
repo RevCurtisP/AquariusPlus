@@ -41,7 +41,7 @@ _jump_table:
     jp      file_load_rom         ; C051 Load ROM file into page 35
     jp      file_load_screen      ; C054 Load screen image
     jp      file_load_strbuf      ; C057 Load file into BASIC string buffer
-    jp      just_ret              ; C05A 
+    jp      file_load_sample      ; C05A Load digitized sample into paged memory
     jp      just_ret              ; C05D 
     jp      file_save_binary      ; C060 Save binary file from main memory
     jp      file_save_paged       ; C063 Save file from paged memory

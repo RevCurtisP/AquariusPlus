@@ -48,9 +48,9 @@ do_coldboot:
 ;    call    _modkey_check         ; If shift held down
 ;    jp      nz,CLDCON             ;   Boot into S3 BASIC  
 
-; Install BASIC HOOK
-    ld      hl,fast_hook_handler
-    ld      (HOOK), hl
+; Load vector for RST 6
+    ld      hl,just_ret
+    ld      (HOOK),hl
 
     ; Install Interrupt Handler
     ld      a,$C3               ; Jump Instruction

@@ -1,6 +1,18 @@
 # plusBASIC Revision History
-   - v0.71m (2026-05-07)
-      - Implemented `ELSE` after `IF` ... `THEN`
+ - v0.71n (2026-06-04)
+    - Replaced hooks `10`, `23`, and `27` with direct jumps, removed _fast_hook_handler_ routine and hook table
+    - Moved _colormap_read_tmpbfr_ and _colormap_write_tmpbfr_, from _auxrom/auxbitmap.asm_ to _gfxtmpbfr.asm_
+    - Moved following routines from _auxrom/screen.asm_ to _gfxrom/screenio.asm_
+      - _oolor_read_byte_, _color_write_byte_, _color_read_bytes_, _color_write_bytes_,
+      - _screen_read_byte_, _screen_write_byte_, _screen_read_bytes_, _screen_write_bytes_
+      - _reset_bordermap_, _border_offset, _border_set_color_, 
+    - Moved _get_border_chr_ and _set_border_chr_ in _auxrom/screen.asm_ to _border_get_color_ and _border_set_chr_ in _gfxrom/screenio.asm_
+    - Copied _screen_max_ofs_, _screen_width_colors_, and _screen_colors_ from _auxrom/screen.asm_ to _gfxrom/screenio.asm_
+    - Added _file_load_sample_ and `LOAD SAMPLE`
+    - Added _play_sample_file_ and `PLAY SAMPLE "filename"`
+    - Modified `MOUSEW` to return `0` instead of `-1` when no mouse is detected
+ - v0.71m (2026-05-07)
+    - Implemented `ELSE` after `IF` ... `THEN`
     - Added missing colons to ends of labels begining with underscore
     - Moved following routines from _auxrom/basicgfx.asm_ to _gfxrom/basgfx.asm_
       - _bas_set_chr_, _bas_getchrdef_, _bas_get_chrset_, and _bas_rgbx_

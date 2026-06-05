@@ -108,3 +108,4 @@ file_size:
     call    esp_get_long          ; BCDE = FilZiz
     xor     a                     ; Return no errors
     ret       
+

@@ -100,10 +100,7 @@ FN_COLOR:
     rst     CHRGET                ; Skip COL
     SYNCHKT ORTK                  ; Require OR
     ld      iy,bitmap_get_color
-gfxrom_call_sngflt:
-    call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
-    call    gfxrom_call           ; A = Color
-    jp      SNGFLT
+    jp      gfxrom_call_sngflt
 
 ;-----------------------------------------------------------------------------
 ; FILL COLORMAP (col,row)-(col,row) COLOR fgcolor, bgcolor

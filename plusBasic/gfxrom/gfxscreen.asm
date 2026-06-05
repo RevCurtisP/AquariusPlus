@@ -98,6 +98,33 @@ _screen_num:
     ret     z                     ;   Return Positive
     or      $FF                   ; Else
     ret                           ;   Returns Negative
+
+;-----------------------------------------------------------------------------
+; Get Current Text Screen Mode
+; Output: A: Screen Mode
+; Clobbers: C 
+; 
+; | Mode | Description                 |
+; | :--: | :--------------------       |
+; |  0   | Text screen disabled        |
+; |  1   | Primary 40-column screen    |
+; |  2   | Seconndary 40-column screen |
+; |  3   | 80-column screen            |
+;-----------------------------------------------------------------------------
+screen_mode:
+    in      a,(IO_VCTRL)          
+    ld      c,a                   ; E = VCTRL
+    xor     a
+    bit     0,c                   ; If Text Screen disabled
+    ret     nz                    ;   Return Mode 0
+    ld      a,3
+    bit     6,c                   ; If 80-Column mode
+    ret     nz                    ;   Return Mode 3
+    dec     a   
+    bit     7,c                   ; If Alternate Text Page
+    ret     nz                    ;   Return Mode 2
+    dec     a                     ; Retunr Mode 1
+    ret
     
 ;-----------------------------------------------------------------------------
 ; Draw Rectangle on Text Screen
@@ -254,3 +281,4 @@ screen_size:
     ld      bc,23
     ld      (RECT_Y2),bc          ; End Row = 23
     ret
+

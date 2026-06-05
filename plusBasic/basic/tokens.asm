@@ -235,9 +235,8 @@ RECTK     equ     $BE
 ;-----------------------------------------------------------------------------
 keyword_to_token:
     ld      a,b                   ; A = current index
-    
     cp      BTOKEN                ; If < BTOKEN then keyword was found in BASIC table
-    jp      c,HOOK10+1            ;   So go do it
+    jr      c,.not_ext            ;   So go do it
 
 ; Use plusBASIC simple token table
     ld      ix,.ext_tokens
@@ -250,10 +249,10 @@ keyword_to_token:
         
     jp      CRUNCX                ; Continue searching using our keyword table
     
-.ext_tokens:    
+.ext_tokens:   
     ld      a,b                   ; A = current index
     cp      XTOKEN
-    jp      c,HOOK10+1
+    jr      c,.not_ext
 
     ex      de,hl                 ; HL = Line buffer
     ld      de,EXTCMDS - 1        ; DE = our keyword table
@@ -263,10 +262,10 @@ keyword_to_token:
     push    ix
     jp      CRUNCX                ; Continue searching using our keyword table
     
-.ext_done:
+.ext_done
     ld      a,b                   ; A = current index
     cp      EXTOKEN               ;
-    jp      nc,HOOK10+1
+    jr      nc,.not_ext
     ld      a,c                   ; Get token
     ex      af,af'                ; Save token
     ex      de,hl                 
@@ -279,6 +278,9 @@ keyword_to_token:
     ex      af,af'
     jp      STUFFH
 
+.not_ext
+    ex      de,hl
+    jp      NOTXKW
 
 ;-----------------------------------------------------------------------------
 ; Convert token to keyword - hook 22

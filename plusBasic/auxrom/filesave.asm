@@ -161,7 +161,7 @@ file_save_bitmap:
 file_save_colormap:
     push    hl                    ; Stack = StrDsc, RtnAdr
     ld      iy,colormap_write_tmpbfr
-    jr      _gfx_call_save_tmpbuffr
+    jr      _gfxrom_call_save_tmpbuffr
 
 ;-----------------------------------------------------------------------------
 ; Save screen image
@@ -182,9 +182,6 @@ file_save_colormap:
 file_save_screen:
     push    hl                    ; Stack = StrDsc, RtnAdr
     ld      iy,screen_write_tmpbfr
-_gfx_call_save_tmpbuffr:
-    call    gfx_call              ; BC = SavLen
-    jr      _pop_save_tmpbuffer
 _gfxrom_call_save_tmpbuffr:
     call    gfxrom_call
 _pop_save_tmpbuffer:

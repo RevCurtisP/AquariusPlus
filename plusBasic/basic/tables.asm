@@ -154,30 +154,30 @@ STJUMPS:
 ;----------------------------------------------------------------------------
 FNJUMPS:
 ; Standard BASIC Functions
-    dw      HOOK27+1              ;$B2 SGN     
+    dw      DO_BASFUN             ;$B2 SGN     
     dw      FN_INT                ;$B3 INT     
-    dw      HOOK27+1              ;$B4 ABS     
-    dw      HOOK27+1              ;$B5 USR  
+    dw      DO_BASFUN             ;$B4 ABS     
+    dw      DO_BASFUN             ;$B5 USR  
     dw      FN_FRE                ;$B6 FRE     
-    dw      HOOK27+1              ;$B7 LPOS    
+    dw      DO_BASFUN             ;$B7 LPOS    
     dw      FN_POS                ;$B8 POS     
-    dw      HOOK27+1              ;$B9 SQR     
-    dw      HOOK27+1              ;$BA RND     
-    dw      HOOK27+1              ;$BB LOG     
-    dw      HOOK27+1              ;$BC EXP     
-    dw      HOOK27+1              ;$BD COS     
-    dw      HOOK27+1              ;$BE SIN     
-    dw      HOOK27+1              ;$BF TAN     
-    dw      HOOK27+1              ;$C0 ATN     
+    dw      DO_BASFUN             ;$B9 SQR     
+    dw      DO_BASFUN             ;$BA RND     
+    dw      DO_BASFUN             ;$BB LOG     
+    dw      DO_BASFUN             ;$BC EXP     
+    dw      DO_BASFUN             ;$BD COS     
+    dw      DO_BASFUN             ;$BE SIN     
+    dw      DO_BASFUN             ;$BF TAN     
+    dw      DO_BASFUN             ;$C0 ATN     
     dw      FN_PEEK               ;$C1 PEEK    
     dw      FN_LEN                ;$C2 LEN     
-    dw      HOOK27+1              ;$C3 STR$     
-    dw      HOOK27+1              ;$C4 VAL     
+    dw      DO_BASFUN             ;$C3 STR$     
+    dw      DO_BASFUN             ;$C4 VAL     
     dw      FN_ASC                ;$C5 ASC     
-    dw      HOOK27+1              ;$C6 CHR$     
-    dw      HOOK27+1              ;$C7 LEFT$    
-    dw      HOOK27+1              ;$C8 RIGHT$   
-    dw      HOOK27+1              ;$C9 MID$     
+    dw      DO_BASFUN             ;$C6 CHR$     
+    dw      DO_BASFUN             ;$C7 LEFT$    
+    dw      DO_BASFUN             ;$C8 RIGHT$   
+    dw      DO_BASFUN             ;$C9 MID$     
     dw      FN_POINT              ;$CA POINT
 ; PlusBASIC Statements and Functions
     dw      SNERR                 ;$CB XOR

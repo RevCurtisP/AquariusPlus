@@ -179,21 +179,23 @@ FSIGN:  ld      a,(FAC)           ;
         jp      nz,SIGNC          ;;Check sign of mantissa if not 0
         ret                       ;
 ;;RST 6 - Extended BASIC Hook Dispatch
-;;
+;; No longer used, RST can be repurposed
 HOOKDO: ld      ix,(HOOK)         ;;Get hook routine address
 JUMPIX: jp      (ix)              ;;and jump to it
         byte    0,0               ;;Pad out RST routine
+;; End Deprecated Code
 ;;RST 7 - Execute USR Routine
 ;;;Code change: Jump to new Interrupt Vector instead of USRPOK
 ;; sbasic,inc: RST 7 - Interrupt
 USRFN:  jp      INTJMP            ;;Execute Interrupt routine
-;;Default Extended BASIC Hook Routine
+;; Deprecated
 NOHOOK: exx                       ;;Save BC, DE, and HL
         pop     hl                ;;Get return address off stack
         inc     hl                ;;Increment to skip byte after RST
         push    hl                ;;Put new return address on stack
         exx                       ;;Restore BC, DE, and HL
         ret                       ;;and Return
+;; End Deprecated Code
 INIT:   ld      sp,TMPSTK         ;[M80] SET UP TEMP STACK
         ld      a,11              ;
         call    TTYOUT            ;;Print CLS to Clear Screen
@@ -999,8 +1001,7 @@ LOOP:   ld      b,h               ;[M80] IF EXITING BECAUSE OF END OF PROGRAM,
 CRUNCH: xor     a                 ;SAY EXPECTING FLOATING NUMBERS
         ld      (DORES),a         ;ALLOW CRUNCHING
         ld      c,5               ;LENGTH OF KRUNCH BUFFER
-        jp      crunch_hook
-;        call    get_linbuf_de     ;SETUP DESTINATION POINTER                  04C2  ld      de,BUF
+        jp      crunch_hook       ;                                           04C2  ld      de,BUF
                                   ;                                           04C3
                                   ;                                           04C4
 KLOOP:  ld      a,(hl)            ;GET CHARACTER FROM BUF
@@ -1008,7 +1009,7 @@ KLOOP:  ld      a,(hl)            ;GET CHARACTER FROM BUF
         jp      z,STUFFH          ;JUST STUFF AWAY
         ld      b,a               ;SETUP B WITH A QUOTE IF IT IS A STRING
         cp      '"'               ;QUOTE SIGN?
-;;; + Extended literal string handling                                        Original Code
+;;; + Extended literal string handling
         jp      string_ext        ;; + Patch to handle both " and '           04CE  jp      z,STRNG
 STRNGR: or      a                 ;END OF LINE?
         jp      z,CRDONE          ;YES, DONE CRUNCHING
@@ -1074,10 +1075,10 @@ NOTFNT: ld      c,b               ;
         pop     af                ;
         ex      de,hl             ;
         ret                       ;
-NOTGOS: rst     HOOKDO            ;
-HOOK10: byte    10                ;
-        ex      de,hl             ;;HL=text pointer, DE=krunch pointer
-        ld      a,c               ;;Get token
+NOTGOS: jp      keyword_to_token  ;                                           0536  rst     HOOKDO
+                                  ;                                           0537  byte    10
+                                  ;                                           0538  ex      de,hl
+NOTXKW: ld      a,c               ;;Get token
         pop     bc                ;
         pop     de                ;
 ;;Copy character to crunch buffer
@@ -1275,11 +1276,12 @@ GONE3:  ret     z                 ;[M80] IF A TERMINATOR TRY AGAIN
 GONE2:  jp      check_for_comment ;; + Check for ' and treat as REM           0651  sub     $80
                                   ;; +                                        0652
                                   ;; +                                        0653  jp      c,LET
+;; Deprecated code (replaced by exec_next_statement)
         byte    $31               ;; +                                        0654
         byte    $07               ;; +                                        0655
-GONEX:  cp      TABTK-$80         ;;End of Statement Tokens
-        rst     HOOKDO            ;;Handle Extended BASIC Statement Tokens`
-HOOK23: byte    23                ;
+GONEX:  cp      TABTK-$80
+        nop                       ;;                                          0658  rst     HOOKDO
+HOOK23: nop                       ;;                                          0659  byte    23                ;
         jp      nc,SNERR          ;;Not a Statement Token
         rlca                      ;[M80] MULTIPLY BY 2
         ld      c,a               ;
@@ -1939,10 +1941,11 @@ RETVAR: push    hl                ;[M80] SAVE THE TEXT POINTER
 ;[M80] ARGUMENT (2 BYTES)
 ;
 NUMGFN  =       (CHRSTK-ONEFUN)*2+1
-ISFUN:  rst     HOOKDO            ;
-HOOK27: byte    27                ;
-        cp      POINTK-ONEFUN     ;;Is it POINT()
-        jp      z,POINT           ;;Yes, go do it
+ISFUN:  jp      execute_function  ;                                           0A5F  rst     HOOKDO
+                                  ;                                           0A60  byte    27
+                                  ;                                           0A61  cp      POINTK-ONEFUN
+        nop                       ;                                           0A62
+BASFUN: jp      z,POINT           ;;Yes, go do it
         ld      b,0               ;
         rlca                      ;[M80] MULTIPLY BY 2
         ld      c,a               ;

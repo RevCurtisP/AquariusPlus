@@ -23,14 +23,20 @@ ST_PLAY:
 ;-----------------------------------------------------------------------------
 ; Play digitized sample 
 ; Syntax: PLAY SAMPLE @page, address
-; TBD: PLAY SAMPLE sampledef$
 ;-----------------------------------------------------------------------------
-; CD "sounds"
+;;; ToDo: PLAY SAMPLE filename$
+; CD "sounds" 
 ; LOAD "bigben1.saq",@40,0
 ; PLAY SAMPLE @40,0
 ; PLAY SAMPLE !131072
+; PLAY SAMPLE "/u/au/assets/fiesta-trio.saq"
 ST_PLAY_SAMPLE:
     rst     CHRGET                ; Skip SAMPLE
+    cp      '@'
+    jr      z,.play_sample
+    cp      '!'
+    jp      nz,st_play_sample_file
+.play_sample
     call    require_ext_addr      ; AF = PgFlg, DE = Addr
     ld      iy,play_sample
     push    hl                    ; Stack = TxtPtr, RtnAdr

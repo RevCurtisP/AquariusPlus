@@ -494,7 +494,7 @@ ST_POKE:
     pop     de                    ;   DE = AdrOfs; Stack = TxtPtr, RtnAdr
     ld      iy,screen_write_bytes
 .gfx_call_next_screen
-    call    gfx_call              ;   Write string
+    call    gfxrom_call           ;   Write string
     jp      c,FCERR               ; Error if Offset too large
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     ld      a,(hl)
@@ -519,7 +519,7 @@ ST_POKE:
     pop     de                    ;   DE = AdrOfs; Stack = TxtPtr, RtnAdr
     ld      iy,color_write_bytes ;   Write wtring
 .gfx_call_next_color
-    call    gfx_call
+    call    gfxrom_call
     jp      c,FCERR               ; Error if Offset too large
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     ld      a,(hl)
@@ -677,11 +677,11 @@ FN_PEEK:
     push    hl                    ;   Stack = TxtPtr, RtnAdr
     jr      z,.color
     ld      iy,screen_read_byte
-    jr      .gfx_call
+    jr      .gfxrom_call
 .color
     ld      iy,oolor_read_byte
-.gfx_call
-    call    gfx_call
+.gfxrom_call
+    call    gfxrom_call
     jp      c,FCERR
     ld      bc,LABBCK             ;
     push    bc                    ; Stack = LABBCK, TxtPtr, RtnAdr
@@ -696,13 +696,11 @@ FN_PEEK:
     ex      de,hl                 ; DE = ScrOfs, HL = StrPtr
     jr      z,.colorstring
     ld      iy,screen_read_bytes ; Read string
-    jr      gfx_call_putnew
+    jr      .gfxrom_call_putnew
 .colorstring
     ld      iy,color_read_bytes
-gfx_call_putnew:
-    call    gfx_call
-    jp      c,FCERR
-    jp      PUTNEW                ; and return it
+.gfxrom_call_putnew:
+    jp      gfxrom_call_putnew
 
 ;-----------------------------------------------------------------------------
 ; DEEK

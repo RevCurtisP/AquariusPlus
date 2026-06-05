@@ -307,7 +307,10 @@ ST_SET_PALETTE:
 FN_SCREEN:
     rst     CHRGET                ;
     ld      iy,screen_status
-    jp      gfxrom_call_sngflt
+gfxrom_call_sngflt:
+    call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
+    call    gfxrom_call           ; A = Color
+    jp      SNGFLT
 
 ;-----------------------------------------------------------------------------
 ; SCREEN [text],[graphics],[sprites],[priority],[remap]
@@ -869,7 +872,7 @@ _tilemap_set_offset:
     ld      iy,tilemap_set_offset ; Set Offset and return
 gfxrom_call_preserve_hl:
     push    hl
-gfxrom_call_pop_hl:
+gfxrom_call_popret:
     call    gfxrom_call
     pop     hl
     ret

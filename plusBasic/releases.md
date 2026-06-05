@@ -1,4 +1,7 @@
 # plusBASIC Release History
+ - v0.71n (2026-06-04)
+    - Added `LOAD SAMPLE` and `PLAY SAMPLE "filename"`
+    - `MOUSEW` now returns `0` instead of `-1` if no mouse detected
  - v0.71m (2026-05-07)
     - Implemented `ELSE` after `IF` ... `THEN`
  - v0.71l (2026-04-30)

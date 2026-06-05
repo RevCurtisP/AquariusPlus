@@ -1,0 +1,1100 @@
+<!DOCTYPE html []>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="author" content="MarkdownViewer++" />
+    <title>quickref.md</title>
+    <style type="text/css">
+            
+/* Avoid page breaks inside the most common attributes, especially for exports (i.e. PDF) */
+td, h1, h2, h3, h4, h5, p, ul, ol, li {
+    page-break-inside: avoid; 
+}
+
+        </style>
+  </head>
+  <body>
+    <h1 id="plusbasic-quick-reference-guide">plusBASIC Quick Reference Guide</h1>
+    <!-- Do not edit this page. Contents are copied from file quickref_wiki.md which is generated from README.md-->
+    <h2 id="literals">Literals</h2>
+    <ul>
+      <li>
+        <em>Numeric literals</em> evaluate to floating point or integer numbers.
+<ul><li><strong>{<em>+</em>|<em>-</em>}{<em>digit</em>...|}{<em>E</em>{<em>+</em>|<em>-</em>}<em>digit</em>...}</strong> - A floating point decimal number.</li><li><strong>{<em>+</em>|<em>-</em>}</strong> - An integer decimal number.</li><li><strong>$<em>hexdigit</em>...</strong> - An integer hexadecimal number.</li><li><strong>'<em>character</em>'</strong> - An integer number equal to the ASCII code of <em>character</em>.</li></ul></li>
+      <li>
+        <em>String literals</em> evaluate to a string of ASCII characters.
+<ul><li><strong>""</strong> - A string containing the specified characters.</li><li><strong>$""</strong> - A string containing the characters specified by each two-digit hexadecimal number.</li><li><strong>\"{{<em>\</em>}<em>character</em>}..."</strong> - A string containing C style escape codes.</li></ul></li>
+    </ul>
+    <h2 id="variables">Variables</h2>
+    <ul>
+      <li>
+        <em>Numeric variables</em> contain an floating point or integer numbers.
+<ul><li><strong><em>alpha</em>{<em>alphanum</em>|~...}</strong> - Numeric variable.</li><li><strong><em>alpha</em>{<em>alphanum</em>|~...}((<em>index</em>{,<em>index</em>...})</strong> - Numeric array element.</li></ul></li>
+      <li>
+        <em>String variables</em> contain a string of ASCII characters.
+<ul><li><strong><em>alpha</em>{<em>alphanum</em>|~...}$</strong> - String variable.</li><li><strong><em>alpha</em>{<em>alphanum</em>|~...}$((<em>index</em>{,<em>index</em>...})</strong> - String array element.</li></ul></li>
+      <li>
+        <em>String slices</em> represent a substring of a string variable.
+<ul><li><strong><em>var$</em>[<em>pos</em>]</strong> - Character <em>pos</em> of string variable <em>var$</em>.</li><li><strong><em>var$</em>[<em>start</em> TO <em>end</em>]</strong> - Characters <em>start</em> through <em>end</em> of string variable <em>var$</em>.</li><li><strong><em>array$(...)</em>[<em>pos</em>]</strong> - Character <em>pos</em> of string array element <em>array$(...)</em>.</li><li><strong><em>array$(...)</em>[<em>start</em> TO <em>end</em>]</strong> - Characters <em>start</em> through <em>end</em> of string array element <em>array$(...)</em>.</li></ul></li>
+    </ul>
+    <h2 id="operators">Operators</h2>
+    <ul>
+      <li>
+        <em>Arithmetic operations</em> evaluate performed using floating point math.
+<ul><li><strong>- <em>expression</em></strong> - Negate expression</li><li><strong><em>expression</em> + <em>expression</em></strong> - Add second expression to first expression.</li><li><strong><em>expression</em> - <em>expression</em></strong> - Subtract second expression from first expression.</li><li><strong><em>expression</em> * <em>expression</em></strong> - Multiply first expression by second expression.</li><li><strong><em>expression</em> / <em>expression</em></strong> - Divide  first expression by second expression.</li><li><strong><em>expression</em> ^ <em>expression</em></strong> - Raise first expression to power second expression.</li><li><strong><em>expression</em> MOD <em>expression</em></strong> - Calculate the remainder of the first expression divided by the second expression.</li></ul></li>
+      <li>
+        <em>Relational operations</em> return -1 if true, 0 if false.
+<ul><li><strong><em>expression</em> &gt; <em>expression</em></strong> - True if first expression is greater than second expression.</li><li><strong><em>expression</em> = <em>expression</em></strong> - True if first expression is equal second expression.</li><li><strong><em>expression</em> &lt; <em>expression</em></strong> - True if first expression is less than second expression.</li><li><strong><em>expression</em> &gt;= <em>expression</em></strong> - True if first expression is greater than or equal to second expression.</li><li><strong><em>expression</em> &lt;= <em>expression</em></strong> - True if first expression is less than or equal to second expression.</li></ul></li>
+      <li>
+        <em>Logical operators</em> perform the corresponding boolean operation on the bits of the each integer expression.
+<ul><li><strong>NOT <em>integer</em></strong> - Sets resulting bit to 1 if the operand bit is 0.</li><li><strong><em>integer</em> AND <em>integer</em></strong> - Sets resulting bit to 1 if both operand bits are 1.</li><li><strong><em>integer</em> OR <em>integer</em></strong> - Sets the resulting bit to 1 if either operand bit is 1.</li><li><strong><em>integer</em> XOR <em>integer</em></strong> - Sets resulting bit to 1 if one operand bits is 1, and the other is 0.</li><li><strong><em>integer</em> IMP <em>integer</em></strong> - <em>Not implemented</em>.</li></ul></li>
+      <li>
+        <em>String operators</em> create new temporary string.
+<ul><li><strong><em>string</em> + <em>string</em></strong> - Concatenates second string to the end of first string.</li><li><strong><em>string</em> %% (<em>expression</em>{,...})</strong> - Perform string substitution.</li></ul></li>
+    </ul>
+    <h2 id="special-characters">Special Characters</h2>
+    <ul>
+      <li>
+        <strong>_<em>label</em></strong> - Line label. Valid at the beginining of a line, or as the operand of a GOTO or GOSUB.</li>
+      <li>
+        <strong>'comment</strong> - Shortcut for REM. Valid at the beginning of a line, or after a statement terminating colon.</li>
+    </ul>
+    <h2 id="direct-mode-aliases">Direct Mode Aliases</h2>
+    <ul>
+      <li>
+        <strong>/</strong> -  Performs the <code>LIST</code> command.</li>
+      <li>
+        <strong>$</strong> -  Performs the <code>DIR</code> command.</li>
+      <li>
+        <strong>LS</strong> -  Performs the <code>DIR</code> command.</li>
+    </ul>
+    <h2 id="statements-and-functions">Statements and Functions</h2>
+    <ul class="contains-task-list">
+      <li>
+        <strong>ABS(<em>float</em>)</strong> - Return absolute value of expression.</li>
+      <li>
+        <strong>APPEND <em>filespec</em>,�!_ext_addr_�|�{@<em>page</em>,}_address_�,<em>length</em></strong> - Append memory to binary file.</li>
+      <li>
+        <strong>APPEND <em>filespec</em>,^<em>strvar</em></strong> - Append string to file.</li>
+      <li>
+        <strong>APPEND <em>filespec</em>,*<em>array</em>{,ASC|ASCX}</strong> - Append string array to file.</li>
+      <li>
+        <strong>APPEND ATTRLIST <em>strvar</em>=<em>attr</em>,...</strong> - Add to string list of sprite and/or tile attributes.</li>
+      <li>
+        <strong>APPEND BYTELIST <em>strvar</em>=<em>byte</em>,...</strong> - Add to a string list of bytes.</li>
+      <li>
+        <strong>APPEND INTLIST <em>strvar</em>=<em>integer</em>,...</strong> - Add to a string list of integers.</li>
+      <li>
+        <strong>APPEND PALETTELIST <em>strvar</em>=<em>palette</em>,...</strong> - Add to a string list of palette numbers.</li>
+      <li>
+        <strong>APPEND PSGLIST <em>strvar</em>=<em>register</em>,<em>value</em>{;...}</strong> - <em>Proposed enhancement</em>.</li>
+      <li>
+        <strong>APPEND RGBLIST <em>strvar</em>=<em>r</em>,<em>g</em>,<em>b</em>|<em>rgbstr</em>;...</strong> - Add to a string list of RGB values.</li>
+      <li>
+        <strong>APPEND TILELIST <em>strvar</em>=<em>tileno</em>,...</strong> - Add to a string list of tile indexes.</li>
+      <li>
+        <strong>ARGS  <em>arg</em>{,...} {RETURN <em>var</em>{,...}}</strong> - Specify subroutine arguments and return variables.</li>
+      <li>
+        <strong>ARGS</strong> - Return number of RUN arguments</li>
+      <li>
+        <strong>ARGS$(<em>argno</em>)</strong> - Return RUN argument number <em>index</em>.</li>
+      <li>
+        <strong>ASC(<em>string</em>{,<em>pos</em>})</strong> - Return ASCII value of specified character in <em>string</em>.</li>
+      <li>
+        <strong>ASC$(<em>hexstring</em>)</strong> - Convert hexadecimal string to ASCII string.</li>
+      <li>
+        <strong>ATN(<em>float</em>)</strong> - Return arctangent of argument.</li>
+      <li>
+        <strong>ATTR(<em>fgcolor</em>,<em>bgcolor</em>)</strong> - Build color attribute byte.</li>
+      <li>
+        <strong>ATTR$(<em>fgcolor</em>,<em>bgcolor</em>,<em>count</em>)</strong> - Build color attributes string.</li>
+      <li>
+        <strong>BIN$(_long))</strong> - Convert number to into string of binary digits.</li>
+      <li>
+        <strong>BIT(<em>long</em>,<em>bit#</em>)</strong> - Return status of bit in 23 bit number.</li>
+      <li>
+        <strong>BIT(<em>string</em>,<em>bit#</em>)</strong> - Return status of bit in binary string.</li>
+      <li>
+        <strong>BYTE(<em>string</em>{,<em>pos</em>})</strong> - Return signed byte value of specified character in <em>string</em>.</li>
+      <li>
+        <strong>CALL {@<em>page</em>,}<em>address</em> {ARGS <em>hl</em>,<em>de</em>,<em>bc</em>}</strong> - Executes machine language routine at address, optionally passing arguments into the associated registers.</li>
+      <li>
+        <strong>CALL MODULE</strong> - <em>Proposed enhancement.</em></li>
+      <li>
+        <strong>CD </strong> - Display current path or change directory.</li>
+      <li>
+        <strong>CD$</strong> - Return current path.</li>
+      <li>
+        <strong>CHR$(<em>byte</em>)</strong> - Convert ASCII value to string.</li>
+      <li>
+        <strong>CIRCLE (<em>x</em>,<em>y</em>),<em>radius</em>{,{,,{,<em>aspect</em>}}}</strong> - <em>Not implemented.</em></li>
+      <li>
+        <strong>CLEAR {<em>integer</em>{,<em>address</em>}}</strong> - Clear all variables, optionally allocating string text space and top of BASIC RAM.</li>
+      <li>
+        <strong>CLEAR *<em>array</em>{,...}</strong> - Clear numeric or string array data.</li>
+      <li>
+        <strong>CLEAR BITMAP {<em>fgcolor</em>,<em>bgcolor</em>}</strong> - Clear bitmap layer.</li>
+      <li>
+        <strong>CLEAR CURSOR</strong> - Temporarily remove cursor from screen.</li>
+      <li>
+        <strong>CLEAR KEYS</strong> - Clear keyboard and autotype buffers.</li>
+      <li>
+        <strong>CLOAD {{?}<em>filename</em>}|*<em>array</em></strong> - Load or verify program or load array data from cassette.</li>
+      <li>
+        <strong>CLOSE #<em>channel</em></strong> - Close file.</li>
+      <li>
+        <strong>CLS {<em>fgcolor</em>,<em>bgcolor</em>}</strong> - Clear the text screen.</li>
+      <li>
+        <strong>CLS COLOR {<em>fgcolor</em>,<em>bgcolor</em>}</strong> - Fill Color RAM with current or specified foreground and background colors.</li>
+      <li>
+        <strong>COLOR <em>fgcolor</em>{,<em>bgcolor</em>}</strong> - Set or get bitmap default color(s).</li>
+      <li>
+        <strong>COMPARE (<em><em>array</em>,</em><em>array</em>)</strong> - Compare the binary contents of two numeric arrays.</li>
+      <li>
+        <strong>COMPARE (�!_ext_addr_�|�{@<em>page</em>,}_address_�,�!_ext_addr_�|�{@<em>page</em>,}_address_�,<em>length</em>)</strong> - Compare two blocks of memory.</li>
+      <li>
+        <strong>COMPARE (<em>filespec</em>,<em>filespec</em>)</strong> - <em>Not implemented.</em></li>
+      <li>
+        <strong>CONT</strong> - Resume program execution after STOP, Ctrl-C/Escape, or error.</li>
+      <li>
+        <strong>COPY</strong> - Copy text screen to serial printer.</li>
+      <li>
+        <strong>COPY *<em>array</em> TO *array</strong> - Copy contents of one numeric array to another.</li>
+      <li>
+        <strong>COPY *<em>array</em> TO �!_ext_addr_�|�{@<em>page</em>,}_address_� </strong> - Copy numeric array contents to memory.</li>
+      <li>
+        <strong>COPY �!_ext_addr_�|�{@<em>page</em>,}_address_�,<em>length</em> TO �!_ext_addr_�|�{@<em>page</em>,}_address_� </strong> - Copy bytes from one section of memory to another.</li>
+      <li>
+        <strong>COPY �!_ext_addr_�|�{@<em>page</em>,}_address_�{,<em>length(=</em>} TO *<em>array</em></strong> - Copy memory to array contents.</li>
+      <li>
+        <strong>COPY �!_ext_addr_�|�@<em>page</em>,_address_� TO SCREEN {CHR|ATTR}</strong> - Copy paged memory to screen.</li>
+      <li>
+        <strong>COPY FILE <em>filespec</em> TO <em>filespec</em></strong> - Copy file.</li>
+      <li>
+        <strong>COPY SCREEN {CHR|ATTR} TO �!_ext_addr_�|�@<em>page</em>,_address_� </strong> - Copy screen to paged memory.</li>
+      <li>
+        <strong>COPY TILEMAP @page,width,height,x,y</strong> - <em>Not implemented</em>.</li>
+      <li>
+        <strong>COS(<em>float</em>)</strong> - Return cosine of argument.</li>
+      <li>
+        <strong>CSAVE <em>filename</em>|*<em>array</em></strong> - Save program or array data to cassette.</li>
+      <li>
+        <strong>CURSOROFFSET</strong> - Return text screen relative address at cursor location.</li>
+      <li>
+        <strong>CURSORX</strong> - Return text screen cursor column.</li>
+      <li>
+        <strong>CURSORY</strong> - Return text screen cursor line.</li>
+      <li>
+        <strong>DATA <em>literal</em>{,...}</strong> - Define data for <code>READ</code> statement.</li>
+      <li>
+        <strong>DATE$</strong> - Return the current date.</li>
+      <li>
+        <strong>DATETIME$</strong> - Return the current date and time.</li>
+      <li>
+        <strong>DEC <em>numvar</em></strong> - Decrement numeric variable.</li>
+      <li>
+        <strong>DEC(<em>hexstring</em>)</strong> - Convert hexadecimal string to long.</li>
+      <li>
+        <strong>DEEK(�!_ext_addr_�|�@<em>page</em>,_address_�)</strong> - Read integer from memory.</li>
+      <li>
+        <strong>DEF ATTRLIST <em>strvar</em>=<em>attr</em>,...</strong> - Create a string list of sprite and/or tile attributes.</li>
+      <li>
+        <strong>DEF BYTELIST <em>strvar</em>=<em>byte</em>,...</strong> - Create a string list of bytes.</li>
+      <li>
+        <strong>DEF FN <em>var</em>(<em>var</em>) = <em>expression</em></strong> - Define user-defined function.</li>
+      <li>
+        <strong>DEF INTLIST <em>strvar</em>=<em>integer</em>,...</strong> - Create a string list of integers.</li>
+      <li>
+        <strong>DEF PALETTELIST <em>strvar</em>=<em>palette</em>,...</strong> - Create a string list of palette numbers.</li>
+      <li>
+        <strong>DEF PSGLIST <em>strvar</em>=<em>register</em>,<em>value</em>{;...}</strong> - <em>Proposed enhancement</em>.</li>
+      <li>
+        <strong>DEF RECTLIST <em>strvar</em> = <em>x1</em>,<em>y1</em>,<em>x2</em>,<em>y2</em>{;...}</strong> - Create string list of rectangle coordinates</li>
+      <li>
+        <strong>DEF RGBLIST <em>strvar</em>=<em>r</em>,<em>g</em>,<em>b</em>|<em>rgbstr</em>;...</strong> - Create a string list of RGB values.</li>
+      <li>
+        <strong>DEF SPRITE <em>strvar</em>= <em>spritle</em>, <em>x-offset</em>, <em>y-offset</em> ;...</strong> - Create a sprite definition.</li>
+      <li>
+        <strong>DEF SPRITE <em>strvar</em>= ( <em>cols</em>, <em>rows</em> ) , <em>spritle</em></strong> - Create a sprite definition.</li>
+      <li>
+        <strong>DEF SPRITE <em>strvar</em>=^<em>strvar</em></strong> - Create a sprite definition.</li>
+      <li>
+        <strong>DEF TILELIST <em>strvar</em>=<em>tileno</em>,...</strong> - Create a string list of tile indexes.</li>
+      <li>
+        <strong>DEF USR=<em>address</em></strong> - Set USR() machine language routine address.</li>
+      <li>
+        <strong>DEF USRINT=<em>address</em></strong> - Set user interupt machine language routine address.</li>
+      <li>
+        <strong>DEL <em>filespec</em></strong> - Delete file or directory.</li>
+      <li>
+        <strong>DIM <em>array</em>(<em>dim</em>{,...}),...</strong> - Create and allocate one or more arrays.</li>
+      <li>
+        <strong>DIM <em>array</em>(<em>dim</em>{,...})=expr,...</strong> - Create and populate array.</li>
+      <li>
+        <strong>DIM(*<em>array</em>)</strong> - Return number of dimensions in array.</li>
+      <li>
+        <strong>DIM(*<em>array</em>,<em>dim</em>)</strong> - Return size of array dimension.</li>
+      <li>
+        <strong>DIR </strong> - Display disk directory.</li>
+      <li>
+        <strong>DOKE {�!_ext_addr_�|�@<em>page</em>,_address_�,<em>integer</em>{;...}</strong> - Write one or more integers to memory.</li>
+      <li>
+        <strong>DRAW <em>command_string</em></strong> - <em>Not implemented.</em></li>
+      <li>
+        <strong>DRAW TEXT (<em>col</em>,<em>row)</em>),<em>string</em></strong> - <em>Not implemented.</em></li>
+      <li>
+        <strong>DUMP VARS "<em>filespec</em>"</strong> - Dump system and BASIC variables to YAML file.</li>
+      <li>
+        <strong>EDIT <em>lineno</em></strong> - Edit specified BASIC line.</li>
+      <li>
+        <strong>ELSE</strong> - <em>Not implemented</em>.</li>
+      <li>
+        <strong>END</strong> - Terminate program execution.</li>
+      <li>
+        <strong>ENDKEY</strong> - Return key used to exit enhanced INPUT.</li>
+      <li>
+        <strong>ERR</strong> - Return last error code.</li>
+      <li>
+        <strong>ERRLINE</strong> - Return line number of last error.</li>
+      <li>
+        <strong>ERR$</strong> - Return error message of last error.</li>
+      <li>
+        <strong>ERR$(<em>errno</em>)</strong> - Return error message of specified error code.</li>
+      <li>
+        <strong>ERASE <em>*array</em>{,<em>*array</em>...}</strong> - Delete arrays.</li>
+      <li>
+        <strong>EVAL(<em>string</em>)</strong> - Evaluate expression in string.</li>
+      <li>
+        <strong>EXP(<em>float</em>)</strong> - Return argument to the power of mathematical constant <em>e</em>.</li>
+      <li>
+        <strong>FILEDATETIME$(<em>filespec</em>)</strong> - Return file timestamp.</li>
+      <li>
+        <strong>FILEATTR(<em>filespec</em>)</strong> - Return file attribute byte.</li>
+      <li>
+        <strong>FILEDIR$(<em>filespec</em>)</strong> - Extract path from filespec.</li>
+      <li>
+        <strong>FILEEXT$(<em>filespec</em>)</strong> - Extract extension from filespec.</li>
+      <li>
+        <strong>FILELEN(<em>filespec</em>)</strong> - Return file length.</li>
+      <li>
+        <strong>FILEPOS(<em>channel</em>)</strong> - Return current position in open file.</li>
+      <li>
+        <strong>FILESTATUS$(<em>filespec</em>)</strong> - Return file information as binary string.</li>
+      <li>
+        <strong>FILL BYTES {@<em>page</em>},<em>address</em>,<em>oount</em>,<em>byte</em></strong> - Fill block of memory with byte.</li>
+      <li>
+        <strong>FILL WORDS {@<em>page</em>},<em>address</em>,<em>oount</em>,<em>integer</em></strong> - Fill block of memory with integer.</li>
+      <li>
+        <strong>FILL BITMAP (<em>x</em>,<em>y</em>){,<em>color</em>}</strong> - <em>Proposed enhancement</em>.</li>
+      <li>
+        <strong>FILL BITMAP  {COLOR <em>fgcolor</em>, <em>bgcolor</em>}</strong> - Fill bitmap and/or colormap with byte and/or color(s).</li>
+      <li>
+        <strong>FILL COLORMAP (<em>x</em>,y_)-(<em>x</em>,<em>y</em>) COLOR <em>fgcolor</em>, <em>bgcolor</em></strong> - Fill rectangular section of 1bpp colormap.</li>
+      <li>
+        <strong>FILL SCREEN {(<em>x</em>,y_)-(<em>x</em>,<em>y</em>)} {CHR _char) {COLOR <em>fgcolor</em>,<em>bgcolor</em>}</strong> - Fill screen with character and/or colors.</li>
+      <li>
+        <strong>FILL TILEMAP {(<em>x</em>,y_)-(<em>x</em>,<em>y</em>)} TILE <em>tileno</em></strong> - Fill tilemap with specified tile, attributes and palette.</li>
+      <li>
+        <strong>FLOAT(<em>string</em>{,<em>offset</em>})</strong> - Convert four consecutive bytes in string to float.</li>
+      <li>
+        <strong>FLOAT$(<em>long</em>)</strong> - Convert float to four byte binary string.</li>
+      <li>
+        <strong>FOR <em>var</em>=<em>expression</em> TO <em>expression</em> {STEP <em>expression</em>]</strong> - Initiate a <em>FOR</em> loop.</li>
+      <li>
+        <strong>FRE(<em>float</em>|<em>string</em>)</strong> - Return amount of unused variable and array or string space (after forcing garage collection).</li>
+      <li>
+        <strong>GET ARGS <em>var</em>{,...}</strong> - Read arguments from argument list after <code>GOSUB</code>.</li>
+      <li>
+        <strong>GET SCREEN {CHRS|COLORS} (<em>x</em>,y_)-(<em>x</em>,<em>y</em>) *<em>array</em>|^<em>strvar</em></strong> - Copy text screen clip to array or string variable.</li>
+      <li>
+        <strong>GET TILEMAP (<em>x</em>,y_)-(<em>x</em>,<em>y</em>) *<em>array</em>|^<em>strvar</em></strong> - Copy tilemap clip to array or string variable.</li>
+      <li>
+        <strong>GETCHRDEF$(<em>char</em>{,<em>chrset</em>})</strong> - Return character definition.</li>
+      <li>
+        <strong>GETBORDERCHR</strong> - Return screen border character.</li>
+      <li>
+        <strong>GETBORDERCHR$</strong> - Return screen border character as string.</li>
+      <li>
+        <strong>GETBORDERCOLOR</strong> - Return screen border colors.</li>
+      <li>
+        <strong>GETBORDERCOLOR$</strong> - Return screen border colors as string.</li>
+      <li>
+        <strong>GETCHRSET</strong> - Return character set currently in use.</li>
+      <li>
+        <strong>GETCOLOR</strong> - Return screen printing colors.</li>
+      <li>
+        <strong>GETCURSOR</strong> - Return cursor display mode.</li>
+      <li>
+        <strong>GETKEY</strong> - Wait for key and return ASCII code.</li>
+      <li>
+        <strong>GETKEY$</strong>  - Wait for key and return as string.</li>
+      <li>
+        <strong>GETKEY(<em>string</em>)</strong> - Wait for key and return position in string.</li>
+      <li>
+        <strong>GETKEYREPEAT</strong> - Return Direct mode key repeat status.</li>
+      <li>
+        <strong>GETLWR</strong> - Wait for key and return lowercased ASCII code.</li>
+      <li>
+        <strong>GETLWR$</strong> - Wait for key and return as lowercased string.</li>
+      <li>
+        <strong>GETLWR(<em>string</em>)</strong> - Wait for key, convert to lowercase, and return position in string.</li>
+      <li>
+        <strong>GETPALETTE$(<em>palette</em>)</strong> - Return palette contents.</li>
+      <li>
+        <strong>GETPALETTE$(<em>palette</em>,<em>index</em>)</strong> - Return palette entry.</li>
+      <li>
+        <strong>GETSOUNDFAST</strong> - Return <code>SOUND FAST</code> status.</li>
+      <li>
+        <strong>GETSPEED</strong> - Return current turbo setting.</li>
+      <li>
+        <strong>GETSPRITE(<em>spritle</em>)</strong> - Return spritle properties.</li>
+      <li>
+        <strong>GETSPRITE$(<em>spritedef</em>)</strong> - Return properties of each spritle in the spritedef.</li>
+      <li>
+        <strong>GETSPRITEX(<em>spritedef</em>|<em>spritle</em>)</strong> - Return sprite or spritle x-position.</li>
+      <li>
+        <strong>GETSPRITEY(<em>spritedef</em>|<em>spritle</em>)</strong> - Return sprite or spritle y-position.</li>
+      <li>
+        <strong>GETTILE$(<em>tileno</em>)</strong> - Return tile pixels.</li>
+      <li>
+        <strong>GETUPR</strong> - Wait for key and return uppercased ASCII code.</li>
+      <li>
+        <strong>GETUPR$</strong> - Wait for key and return as uppercased string.</li>
+      <li>
+        <strong>GETUPR(<em>string</em>)</strong> - Wait for key, convert to uppercase, and return position in string.</li>
+      <li>
+        <strong>GOSUB <em>lineref</em>{:ARGS <em>expression</em>{,...} {RETURN <em>var</em>{,...}}</strong> - Branch to subroutine with optional call and return arguments.</li>
+      <li>
+        <strong>GOTO <em>lineref</em></strong> - Branch to line specified by line number or label.</li>
+      <li>
+        <strong>HEX$(<em>number</em>)</strong> - Convert byte or integer into hexadecimal string.</li>
+      <li>
+        <strong>HEX$(<em>string</em>)</strong> - Convert ASCII string into hexadecimal string.</li>
+      <li>
+        <strong>IF <em>expression</em> GOTO|THEN <em>linefref</em></strong> - Branch to line or if expression evaluates to true.</li>
+      <li>
+        <strong>IF <em>expression</em> THEN <em>statements</em></strong> - Execute statements if expression evaluates to true .</li>
+      <li>
+        <strong>IN(<em>port</em>)</strong> - Read byte from Z80 I/O port.</li>
+      <li>
+        <strong>IN$(<em>port</em>,<em>length</em>)</strong> - Read multiple bytes from Z80 I/O port.</li>
+      <li>
+        <strong>INC <em>numvar</em></strong> - Increment numeric variable.</li>
+      <li>
+        <strong>INDEX(*<em>array</em>,<em>string</em>)</strong> - Search for string in element of array</li>
+      <li>
+        <strong>INMEM({@<em>page</em>,}<em>address</em>,<em>string</em>)</strong> - Search for string in memory.</li>
+      <li>
+        <strong>INT(<em>number</em>)</strong> - Return expression rounded down to nearest integer.</li>
+      <li>
+        <strong>INT(<em>string</em>{,<em>offset</em>})</strong> - Convert two consecutive bytes in string to signed integer.</li>
+      <li>
+        <strong>INKEY</strong> - Return ASCII code of most recently pressed key.</li>
+      <li>
+        <strong>INKEY(<em>string</em>)</strong> - Return position in string of most recently pressed key.</li>
+      <li>
+        <strong>INKEY$</strong> - Return most recently pressed key as string.</li>
+      <li>
+        <strong>INPUT {<em>stringliteral</em>;}<em>var</em>{,...}</strong> - Prompt for keyboard input and assigns entries to variables.</li>
+      <li>
+        <strong>INPUT (<em>col</em>,<em>row</em>),<em>minlen</em>,<em>maxlen</em>,{INT|STR} <em>var</em></strong> - Enhanced keyboard input routine.</li>
+      <li>
+        <strong>INRECT (<em>rectlist</em>,<em>x</em>,<em>y</em>)</strong> - Return index of first rectangle containing coordinates.</li>
+      <li>
+        <strong>INSTR({<em>offset</em>,}<em>haystack</em>,_needle)</strong> - Search for string <em>needle</em> in string <em>haystack</em>.</li>
+      <li>
+        <strong>JOIN *<em>array</em>$ INTO <em>string</em> DEL <em>delimiter</em></strong> - Join string array elements into delimited string.</li>
+      <li>
+        <strong>JOY(<em>stick</em>)</strong> - Read one or both game controllers.</li>
+      <li>
+        <strong>JOY$(<em>id</em>)</strong> - Read wireless game controller.</li>
+      <li>
+        <strong>KEY(<em>keycode</em>)</strong> - Check if key is currently pressed.</li>
+      <li>
+        <strong>KEY(<em>string</em>)</strong> - Return position in in string of keycodes of currently pressed key.</li>
+      <li>
+        <strong>KEY REPEAT ON|OFF</strong> - Temporarily enable or disable key repeat during program execution.</li>
+      <li>
+        <strong>LEFT$(<em>string</em>,<em>len</em>)</strong> - Return the first up to <em>len</em> characters of string.</li>
+      <li>
+        <strong>LEN(<em>string</em>)</strong> - Return length of string.</li>
+      <li>
+        <strong>LEN(*<em>array</em>)</strong> - Return total length of array data.</li>
+      <li>
+        <strong>{LET} <em>var</em>=<em>expression</em></strong> - Define and assigns value to variable.</li>
+      <li>
+        <strong>LINE (<em>x1</em>,<em>y1</em>)-(<em>x2</em>,<em>y2</em>){,<em>color</em>|PRESET|XOR}</strong> - Draw, erase, or toggle line of bloxels or pixels.</li>
+      <li>
+        <strong>LINE (<em>x1</em>,<em>y1</em>)-(<em>x2</em>,<em>y2</em>),{<em>color</em>|PRESET|XOR},RECT</strong> - Draw, erase, or toggle rectangle of bloxels or pixels.</li>
+      <li>
+        <strong>LINE (<em>x1</em>,<em>y1</em>)-(<em>x2</em>,<em>y2</em>),{<em>color</em>|PRESET|XOR},FILL</strong> - Draw, erase, or toggle filled rectangle of bloxels or pixels.</li>
+      <li>
+        <strong>LINE INPUT stringvar</strong> - Read an entire line of input from keyboard.</li>
+      <li>
+        <strong>LINE INPUT #channel,stringvar</strong> - Read an entire line of input from file.</li>
+      <li>
+        <strong>LIST </strong> - Display program lines starting at beginning of program or specified line.</li>
+      <li>
+        <strong>LIST *<em>array</em></strong> - Display contents of specified string array.</li>
+      <li>
+        <strong>LIST$(<em>lineno</em>|NEXT)</strong> - Detokenize program line.</li>
+      <li>
+        <strong>LLIST </strong> - Outputs program lines to printer starting at beginning of program or specified line.</li>
+      <li>
+        <strong>LLIST *<em>array</em></strong> - Outputs contemts of specified string array to printer.</li>
+      <li>
+        <strong>LOAD <em>filespec</em></strong> - Load BASIC program into memory.</li>
+      <li>
+        <strong>LOAD <em>filespec</em>,�!_ext_addr_�|�{@<em>page</em>,}_address_�</strong> - Load binary file into memory.</li>
+      <li>
+        <strong>LOAD <em>filespec</em>,*<em>array</em></strong> - Load binary file data into numeric or string array.</li>
+      <li>
+        <strong>LOAD <em>filespec</em>,*<em>array</em>,ASC</strong> - Load multi-line ASCII file into string array.</li>
+      <li>
+        <strong>LOAD <em>filespec</em>,^<em>stringvar</em></strong> - Load up to 255 characters of file into string variable.</li>
+      <li>
+        <strong>LOAD BITMAP <em>filespec</em></strong> - Load bitmap file into Video RAM.</li>
+      <li>
+        <strong>LOAD CHRSET <em>filespec</em></strong> - Load character set into alternate character buffer.</li>
+      <li>
+        <strong>LOAD CHRSET <em>filespec</em>,SWAP</strong> - Load character set into system character buffer.</li>
+      <li>
+        <strong>LOAD COLORMAP <em>filespec</em></strong> - Load 1bpp color map file into Video RAM.</li>
+      <li>
+        <strong>LOAD DIR {<em>filespec</em>,}*<em>array</em></strong> - Load disk directory filenames into string array.</li>
+      <li>
+        <strong>LOAD DIR {<em>filespec</em>,}}*<em>array</em>,ASC</strong> - Load formatted disk directory into string array.</li>
+      <li>
+        <strong>LOAD DIR {<em>filespec</em>,}*<em>array</em></strong>,BIN - Load binary disk directory into string array.</li>
+      <li>
+        <strong>LOAD FNKEYS <em>filespec</em></strong> - Load function key definitions from file.</li>
+      <li>
+        <strong>LOAD MODULE</strong> - <em>Proposed enhancement.</em></li>
+      <li>
+        <strong>LOAD PALETTE <em>p</em>,<em>filespec</em></strong> - Load file data ino palette.</li>
+      <li>
+        <strong>LOAD SAMPLE <em>filespec</em>,�!_ext_addr_�|�{@<em>page</em>,}_address_�</strong> - Load digitized sound file into paged RAM.</li>
+      <li>
+        <strong>LOAD SCREEN <em>filespec</em></strong> - Load text screen from file.</li>
+      <li>
+        <strong>LOAD SCREEN ATTR <em>filespec</em></strong> - Load text colors from file.</li>
+      <li>
+        <strong>LOAD SCREEN CHR <em>filespec</em></strong> - <em>Not implemented</em>.</li>
+      <li>
+        <strong>LOAD TILEMAP <em>filespec</em></strong> - Load tile map into Video RAM.</li>
+      <li>
+        <strong>LOAD TILESET {INDEX <em>tileno</em>|OFFSET <em>tileofs</em>}  <em>filespec</em></strong> - Load tile definitions to Video RAM.</li>
+      <li>
+        <strong>LOAD TRACK <em>filespec</em></strong> - Load tracker file track into tracker player buffer.</li>
+      <li>
+        <strong>LOCATE <em>x</em>,<em>y</em></strong> - Move text cursor to specified position.</li>
+      <li>
+        <strong>LOG(<em>float</em>)</strong> - Return natural logarithm of argument.</li>
+      <li>
+        <strong>LONG(<em>string</em>{,<em>offset</em>})</strong> - Convert four consecutive bytes in string to unsigned long.</li>
+      <li>
+        <strong>LONG$(<em>long</em>)</strong> - Convert long to unsigned four byte binary string.</li>
+      <li>
+        <strong>LOOP TRACK </strong> - Play specified or previously loaded tracker file repeatedly.</li>
+      <li>
+        <strong>LPOS(<em>expression</em>)</strong> - Return current column position of printer.</li>
+      <li>
+        <strong>LPRINT TAB(<em>integer</em>)|SPC(<em>integer</em>)|<em>expression</em>|;|,</strong> - Output data to printer.</li>
+      <li>
+        <strong>LWR(<em>char</em>)</strong> - Lowercases numeric ASCII code or ASCII code of first character of string</li>
+      <li>
+        <strong>LWR$(<em>string</em>|<em>byte</em>)</strong> - Lowercases argument string or argument ASCII code converted to string.</li>
+      <li>
+        <strong>LWRKEY</strong> - Return lowercased ASCII code of last key presed.</li>
+      <li>
+        <strong>LWRKEY$</strong> - Return lowercased string containing last key pressed.</li>
+      <li>
+        <strong>LWRKEY(<em>string</em>)</strong> - Convert last key pressed to lowercase, and return position in string.</li>
+      <li>
+        <strong>MENU</strong> - <em>Not implemented.</em></li>
+      <li>
+        <strong>MID$(<em>string</em>,<em>start</em>{,<em>len</em>})</strong> - Return first up to <em>len</em> or all remaining characters starting at character <em>start</em> of string.</li>
+      <li>
+        <strong>MID$(<em>strvar</em>,<em>start</em>_{,<em>len</em>})=<em>string</em></strong> - Replace text in string variable.</li>
+      <li>
+        <strong>MKDIR <em>dirname</em></strong> - Create directory.</li>
+      <li>
+        <strong>MOUSEB</strong> - Return mouse button state.</li>
+      <li>
+        <strong>MOUSEW</strong> - Return mouse wheel delta.</li>
+      <li>
+        <strong>MOUSEX</strong> - Return mouse x-position.</li>
+      <li>
+        <strong>MOUSEY</strong> - Return mouse y-position.</li>
+      <li>
+        <strong>NEXT {<em>var</em>,...}</strong> - Terminate one or more <em>FOR</em> loops.</li>
+      <li>
+        <strong>NEW</strong> - Delete program and clears all variables.</li>
+      <li>
+        <strong>OFFSET(<em>column</em>,<em>row</em>)</strong> - Return offset into Screen or Color RAM.</li>
+      <li>
+        <strong>ON <em>integer</em> GOSUB <em>lineref</em>,...</strong> - <code>GOSUB</code> one of several line numbers based on <em>expression</em>.</li>
+      <li>
+        <strong>ON <em>integer</em> GOTO <em>lineref</em>,...</strong> - <code>GOTO</code> one of several line numbers based on <em>expression</em>.</li>
+      <li>
+        <strong>ON ERROR GOTO <em>lineref</em></strong> - Enable or disable error trapping.</li>
+      <li>
+        <strong>ON MOUSE GOTO|GOSUB <em>lineref</em></strong> - <em>Proposed enhancement</em></li>
+      <li>
+        <strong>ON TIMER GOTO|GOSUB <em>lineref</em></strong> - <em>Proposed enhancement</em></li>
+      <li>
+        <strong>OPEN <em>filespec</em> FOR INPUT|OUTPUT|APPEND|RANDOM as <em>numvar</em></strong> - Open file.</li>
+      <li>
+        <strong>OUT <em>port</em>,<em>byte</em>|<em>string</em>{,...}{;...}</strong> - Write to a Z80 port.</li>
+      <li>
+        <strong>OUTPUT #<em>channel</em>,<em>expression</em>;|,</strong> - Write data to file.</li>
+      <li>
+        <strong>PAD$(<em>string</em>,<em>length</em>{,<em>char</em>})</strong> - Pad string on left or right with optional fill character.</li>
+      <li>
+        <strong>PAD$(<em>number</em>,<em>length</em>{,<em>char</em>})</strong> - Convert number to padded string.</li>
+      <li>
+        <strong>PAUSE</strong> - Halt program execution until key is pressed.</li>
+      <li>
+        <strong>PAUSE <em>jiffies</em></strong> - Pauses program execution for the specified amount of time.</li>
+      <li>
+        <strong>PAUSE UNTIL <em>expression</em></strong> - Pauses program execution until <em>expression</em> evaluates to true.</li>
+      <li>
+        <strong>PAUSE TRACK</strong> - Pause currently playing track.</li>
+      <li>
+        <strong>PEEK(�!_ext_addr_�|�{@<em>page</em>,}_address_�)</strong> - Read byte from memory.</li>
+      <li>
+        <strong>PEEK$(�!_ext_addr_�|�{@<em>page</em>,}_address_�,<em>length</em>)</strong> - Read string from memory.</li>
+      <li>
+        <strong>PEEKCOLOR(<em>address</em>)</strong> - Read byte from color RAM.</li>
+      <li>
+        <strong>PEEKCOLOR$(<em>address</em>,<em>length</em>)</strong> - Read string from color RAM.</li>
+      <li>
+        <strong>PEEKSCREEN(<em>address</em>)</strong> - Read byte from screen RAM.</li>
+      <li>
+        <strong>PEEKSCREEN$(<em>address</em>,<em>length</em>)</strong> - Read string from screen RAM.</li>
+      <li>
+        <strong>PLAY SAMPLE �!_ext_addr_�|�@<em>page</em>,_address_�</strong> - Play digital sample from previously loaded file.</li>
+      <li>
+        <strong>PLAY SAMPLE "<em>filespec</em>"</strong> - Load and play digitized sound file.</li>
+      <li>
+        <strong>PLAY TRACK {<em>filespec</em>}</strong> - Play specified or previously loaded tracker file.</li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" checked="checked" />
+        <strong>POINT(<em>x</em>,<em>y</em>)</strong> - Return status of bloxel or pixel.</li>
+      <li>
+        <strong>POKE �!_ext_addr_�|�{@<em>page</em>,}_address_�,<em>byte</em>|<em>string</em>{;..}.</strong> - Write bytes and/or strings to memory.</li>
+      <li>
+        <strong>POKE COLOR <em>address</em>,<em>byte</em>|<em>string</em>{;...}</strong> - Write bytes and/or strings to color RAM.</li>
+      <li>
+        <strong>POKE SCREEN <em>address</em>,<em>byte</em>|<em>string</em>{;...}</strong> - Write bytes and/or strings to screen RAM.</li>
+      <li>
+        <strong>POS(<em>expression</em>)</strong> - Return cursor position in current line.</li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" checked="checked" />
+        <strong>POSX</strong> - Return last pixel or bloxel x-position.</li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" checked="checked" />
+        <strong>POSY</strong> - Return 1bpp pixel or bloxel y-position.</li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" checked="checked" />
+        <strong>PRESET (<em>x</em>,<em>y</em>)</strong> - Erase bloxel or pixel.</li>
+      <li>
+        <strong>PRINT @(<em>x</em>,<em>y</em>)|TAB(<em>integer</em>)|SPC(<em>integer</em>)|<em>expression</em>|;|,</strong> - Display data on screen.</li>
+      <li>
+        <strong>PSG <em>register</em>,<em>byte</em>{,...}</strong> - Write bytes to PSG register</li>
+      <li>
+        <strong>PSG <em>register</em>,<em>byte</em>{;...}</strong> - Not implemented</li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" checked="checked" />
+        <strong>PSET (<em>x</em>,<em>y</em>){,color}</strong> - Draw bloxel or pixel.</li>
+      <li class="task-list-item">
+        <input disabled="disabled" type="checkbox" checked="checked" />
+        <strong>PSET (<em>x</em>,<em>y</em>),XOR</strong> - Toggle bloxel or pixel.</li>
+      <li>
+        <strong>PUT SCREEN {CHR|ATTR} (<em>x</em>,y_) *<em>array</em>|^<em>strvar</em></strong> - Copy clip from array or string variable to text screen.</li>
+      <li>
+        <strong>PUT TILEMAP (<em>x</em>,y_),*<em>array</em>|^<em>strvar</em></strong> - Copy clip from array or string variable to tilemap.</li>
+      <li>
+        <strong>READ <em>var</em>{,...}</strong> - Read values from DATA statements into variables.</li>
+      <li>
+        <strong>READ *<em>array</em>{,...}</strong> - Read values from DATA statements into an array.</li>
+      <li>
+        <strong>READ #<em>channel</em>,^<em>strvar</em>,<em>length</em>)</strong> - Read string from open file.</li>
+      <li>
+        <strong>RECT (<em>x</em>,y_)-(<em>x</em>,<em>y</em>){,{,�_fgcolor_,_bgcolor_�|�_drawcolors_�}}</strong> - Draw rectangle on text screen.</li>
+      <li>
+        <strong>REM <em>text</em></strong> - Denotes comment.</li>
+      <li>
+        <strong>RENAME <em>filespec</em> TO <em>filespec</em></strong> - Rename file or directory</li>
+      <li>
+        <strong>RESUME <em>lineref</em></strong> - Clear error condition and continues program execution at specified line</li>
+      <li>
+        <strong>RESUME TRACK</strong> - Resume playing paused track.</li>
+      <li>
+        <strong>RESET *<em>array</em></strong> - Set all array elements to 0 or empty string and collect garbage if string array.</li>
+      <li>
+        <strong>RESET BIT <em>var</em>,<em>bit#</em></strong> - Set specified bit in numeric ot string variable to 0.</li>
+      <li>
+        <strong>RESET BORDER</strong> - Set border character and colors to default values.</li>
+      <li>
+        <strong>RESET CHRDEF <em>char</em></strong> - Revert character to default definition.</li>
+      <li>
+        <strong>RESET CHRSET <em>byte</em></strong> - <em>Not implemented</em>.</li>
+      <li>
+        <strong>RESET PALETTE <em>palette</em>|*</strong> - Reset single palette or all palettes to default RGB values.</li>
+      <li>
+        <strong>RESET SCREEN</strong> - Reset current text screen to default settings.</li>
+      <li>
+        <strong>RESET SPRITE <em>spritedef</em>|#<em>spritle</em>|*</strong> - Reset all spritle properties.</li>
+      <li>
+        <strong>RESET USRDEF</strong> - Reset <code>USR()</code> vector to default address</li>
+      <li>
+        <strong>RESTORE </strong> - Reset READ/DATA pointer to beginning of program or specified line.</li>
+      <li>
+        <strong>RESTORE BITMAP|TILEMAP</strong> - <em>Not implemented.</em></li>
+      <li>
+        <strong>RESTORE CHRSET</strong> - Copy current character set from system buffer.</li>
+      <li>
+        <strong>RESTORE SCREEN</strong> - Copy respective screen buffer to current text screen.</li>
+      <li>
+        <strong>RETURN {<em>expression</em>{,...}}</strong> - Resume program execution after GOSUB, optionally returning results.</li>
+      <li>
+        <strong>RGB(�_r_,<em>g</em>,<em>b_�|�_rgbstr_�|�_string</em>,_delimiter_�)</strong> - Return integer representing a single palette entry.</li>
+      <li>
+        <strong>RGBB(�_r_,<em>g</em>,<em>b_�|�_rgbstr_�|�_string</em>,_delimiter_�)</strong> - Return blue component of a single palette entry.</li>
+      <li>
+        <strong>RGBG(�_r_,<em>g</em>,<em>b_�|�_rgbstr_�|�_string</em>,_delimiter_�)</strong> - Return green component of a single palette entry.</li>
+      <li>
+        <strong>RGBR(�_r_,<em>g</em>,<em>b_�|�_rgbstr_�|�_string</em>,_delimiter_�)</strong> - Return red component of a single palette entry.</li>
+      <li>
+        <strong>RGB$(�_r_,<em>g</em>,<em>b_�|�_rgbstr_�|�_string</em>,_delimiter_�)</strong> - Return string representing a single palette entry.</li>
+      <li>
+        <strong>RGBDEC$(<em>string</em>{,<em>char</em>})</strong> - Convert binary RGB value to decimal red,green, and blue.</li>
+      <li>
+        <strong>RGBHEX$(<em>string</em>{,<em>char</em>})</strong> - Convert binary RGB value to decimal red,green, and blue.</li>
+      <li>
+        <strong>RIGHT$(<em>string</em>,<em>len</em>)</strong> - Return the last up to <em>byte</em> characters of string.</li>
+      <li>
+        <strong>RND(<em>integer</em>)</strong> - Return new or previous psuedo-random number or seeds the random number generator.</li>
+      <li>
+        <strong>RUN </strong> - Start program execution at first or specified line.</li>
+      <li>
+        <strong>RUN <em>filespec</em></strong> - Load and run specified program, cartridge image, or FPGA core.</li>
+      <li>
+        <strong>RUN <em>filespec</em><em class="..">arg</em></strong> - <em>Not implemented</em>.</li>
+      <li>
+        <strong>SAVE <em>filespec</em>{,ASC|CAQ|BIN}</strong> - Save BASIC program to CAQ or ASCII or raw tokenized file.</li>
+      <li>
+        <strong>SAVE <em>filespec</em>,�!_ext_addr_�|�{@<em>page</em>,}_address_�,<em>length</em></strong> - Save memory to binary file.</li>
+      <li>
+        <strong>SAVE <em>filespec</em>,*<em>array</em></strong> {ASC|ASCX} - Save numeric or string array data to file.</li>
+      <li>
+        <strong>SAVE <em>filespec</em>,^<em>strvar</em></strong> - Save string to file.</li>
+      <li>
+        <strong>SAVE BITMAP <em>filespec</em></strong> - Save bitmap screen data from Video RAM to file.</li>
+      <li>
+        <strong>SAVE CHRSET <em>filespec</em></strong> - Save curent character set to file.</li>
+      <li>
+        <strong>SAVE COLORMAP <em>filespec</em></strong> - Save 1bpp color map from Video RAM to file.</li>
+      <li>
+        <strong>SAVE FNKEYS <em>filespec</em></strong> - Save function key definitions to file.</li>
+      <li>
+        <strong>SAVE PALETTE <em>p</em>,<em>filespec</em></strong> - Save palette contents to file.</li>
+      <li>
+        <strong>SAVE SCREEN <em>filespec</em>{{,PALETTE},BORDERMAP}</strong> - Save text screen to file.</li>
+      <li>
+        <strong>SAVE SCREEN <em>filespec</em>,ASC</strong> - Save text screen to text file.</li>
+      <li>
+        <strong>SAVE SCREEN ATTR <em>filespec</em></strong> - <em>Not implemented</em>.</li>
+      <li>
+        <strong>SAVE SCREEN CHR <em>filespec</em></strong> - <em>Not implemented</em>.</li>
+      <li>
+        <strong>SAVE TILEMAP <em>filespec</em></strong> - Save tile map to file.</li>
+      <li>
+        <strong>SAVE TILESET <em>tileno</em>,<em>tilecount</em>,<em>filespec</em></strong> - Save tile definitions to disk.</li>
+      <li>
+        <strong>SCREEN ,,,,</strong> - Set screen mode.</li>
+      <li>
+        <strong>SCREEN</strong> - Return screen settings.</li>
+      <li>
+        <strong>SCROLL BITMAP</strong> - Not implemented.</li>
+      <li>
+        <strong>SCROLL SCREEN</strong> - Not implemented.</li>
+      <li>
+        <strong>SET BIT <em>var</em>,<em>bit#</em></strong> - Set specified bit in numeric ot string variable to 1.</li>
+      <li>
+        <strong>SET BORDER  {COLOR <em>fgcolor</em>,<em>bgcolor</em>}</strong> - Enable color printing mode.</li>
+      <li>
+        <strong>SET BREAK ON|OFF</strong> - Enable or disable control-c checking.</li>
+      <li>
+        <strong>SET CHRDEF <em>char</em>,<em>string</em></strong> - Redefine character.</li>
+      <li>
+        <strong>SET COLOR <em>fgcolor</em>,<em>bgcolor</em></strong> - Enable color printing mode.</li>
+      <li>
+        <strong>SET COLOR OFF</strong> - Disable color printing mode.</li>
+      <li>
+        <strong>SET CURSOR ON|OFF</strong> - Enable or disable cursor display.</li>
+      <li>
+        <strong>SET FAST ON|OFF</strong> - Enable or disable turbo mode.</li>
+      <li>
+        <strong>SET FILE <em>channel</em> POS TO <em>long</em></strong> - Set current position in opened file.</li>
+      <li>
+        <strong>SET FILE ERROR ON|OFF</strong> - Enable or disable file operations generating BASIC errors.</li>
+      <li>
+        <strong>SET FNKEY <em>key</em> TO <em>string</em></strong> - Set auto-typed text when function key is pressed.</li>
+      <li>
+        <strong>SET KEY <em>byte</em></strong> - Temporarily change keyboard buffer settings.</li>
+      <li>
+        <strong>SET KEY REPEAT ON|OFF</strong> - Enable or disable key repeat in direct mode.</li>
+      <li>
+        <strong>SET MOUSE ON|OFF</strong> - <em>Proposed enhancement</em>.</li>
+      <li>
+        <strong>SET MOUSE TILE</strong> - <em>Proposed enhancement</em>.</li>
+      <li>
+        <strong>SET PALETTE <em>palette</em>  TO <em>rgblist</em></strong> - Set palette entries.</li>
+      <li>
+        <strong>SET SAVE ASC ON|OFF</strong> - Enable or disable forced saving of BASIC programs in ASCII format.</li>
+      <li>
+        <strong>SET SCROLL ON|OFF</strong> - Enable or disable scrolling of text screen when PRINTing.</li>
+      <li>
+        <strong>SET SOUND FAST ON|OFF_</strong> - Set whether SOUND is affected by turbo mode.</li>
+      <li>
+        <strong>SET SPEED <em>speed</em></strong> - Set turbo mode.</li>
+      <li>
+        <strong>SET SPRITE #<em>spritle</em> {ON|OFF} {POS <em>x</em>,<em>y</em>}   </strong> - Set spritle properties.</li>
+      <li>
+        <strong>SET SPRITE #<em>spritle</em> TO <em>props</em></strong> - Set combined spritle properties.</li>
+      <li>
+        <strong>SET SPRITE <em>spritedef</em> TILECLIP *<em>array</em>|^<em>strvar</em></strong> - Set sprite to tile indexes and properties in tilemap clip.</li>
+      <li>
+        <strong>SET SPRITE <em>spritedef</em> TO <em>proplist</em></strong> - Set sprite properties from combined properties list.</li>
+      <li>
+        <strong>SET SPRITE * OFF|CLEAR</strong> - Disable or clears all sprites.</li>
+      <li>
+        <strong>SET TILE <em>tileno</em> TO <em>tiledata</em></strong> - Write tile definition Video RAM.</li>
+      <li>
+        <strong>SET TILE_ <em>tileno</em> TO CHR <em>char</em>, <em>fg_color</em>, <em>bg_color</em></strong> - Convert character definition to tile data and write to Video RAM.</li>
+      <li>
+        <strong>SET TILE *array$</strong> - Set multiple tiles from tile array.</li>
+      <li>
+        <strong>SET TILEMAP (<em>x</em>,<em>y</em>) TO TILE <em>tileno</em></strong> - Set tilemap cell to tile index, attributes, and palette.</li>
+      <li>
+        <strong>SET TILEMAP (<em>x</em>,<em>y</em>) TO <em>integer</em></strong> - Set tilemap cell to integer represeting combined tile index, attributes, and palette.</li>
+      <li>
+        <strong>SET TILEMAP OFFSET <em>x</em>,<em>y</em></strong> - Scroll tilemap to specified position.</li>
+      <li>
+        <strong>SET TRACK FAST {ON|OFF}</strong> - Set tracker playback to 50Hz or 60Hz mode.</li>
+      <li>
+        <strong>SET TRACK LOOP {ON|OFF}</strong> - Set loop status of active or paused track.</li>
+      <li>
+        <strong>SET TRACK SPEED <em>hertz</em></strong> - Set tracker playback rate.</li>
+      <li>
+        <strong>SET USRINT ON|OFF</strong> - Enable disable user interrupt.</li>
+      <li>
+        <strong>SGN(<em>expression</em>)</strong> - Return signum of expression.</li>
+      <li>
+        <strong>SIN(<em>float</em>)</strong> - Return sine of argument.</li>
+      <li>
+        <strong>SOUND (<em>duration</em>,<em>frequency</em>)</strong> - Generate a tone through the television speaker.</li>
+      <li>
+        <strong>SPLIT <em>string</em> INTO *<em>array$</em> DEL <em>delimiter</em></strong> - Split delimited string into string array elements.</li>
+      <li>
+        <strong>SPRITECOL(<em>spritle</em>,<em>spritle</em>)</strong> - Check for collision between spritles.</li>
+      <li>
+        <strong>SPRITECOL(<em>spritedef</em>,<em>spritedef</em>)</strong> - Check for collision between sprites.</li>
+      <li>
+        <strong>SQR(_float)</strong> - Return square root of argument.</li>
+      <li>
+        <strong>STASH BITMAP</strong> - <em>Not implemented.</em></li>
+      <li>
+        <strong>STASH CHRSET</strong> - Copy current character set to system buffer.</li>
+      <li>
+        <strong>STASH SCREEN</strong> - Copy current text screen to respective screen buffer.</li>
+      <li>
+        <strong>STASH TILEMAP</strong> - <em>Not implemented.</em></li>
+      <li>
+        <strong>STOP</strong> - Interrupt program execution.</li>
+      <li>
+        <strong>STOP TRACK</strong> - Stop currently playing track.</li>
+      <li>
+        <strong>STR$(<em>float</em>)</strong> - Convert floating point number to ASCII string.</li>
+      <li>
+        <strong>STRING$(<em>length</em>{,<em>byte</em>|<em>string</em>})</strong> - Create string of repeated character.</li>
+      <li>
+        <strong>STRPTR(<em>strvar</em>)</strong> - Return address of text for string variable.</li>
+      <li>
+        <strong>SWAP BITMAP</strong> - <em>Not implemented.</em></li>
+      <li>
+        <strong>SWAP CHRSET</strong> - Swap current character set from character set in system buffer.</li>
+      <li>
+        <strong>SWAP SCREEN</strong> - Swap current text screen with respective screen buffer.</li>
+      <li>
+        <strong>SWAP TILEMAP</strong> - <em>Not implemented.</em></li>
+      <li>
+        <strong>SWAP VARS <em>var</em>,<em>var</em></strong> - Swap contents of two variables.</li>
+      <li>
+        <strong>TAN(<em>float</em>)</strong> - Return tangent of argument.</li>
+      <li>
+        <strong>TILEMAP(<em>x</em>,<em>y</em>)</strong> - Return tile index and properties in tile cell.</li>
+      <li>
+        <strong>TILEMAPX</strong> - Return X-offset of tilemap.</li>
+      <li>
+        <strong>TILEMAPY</strong> - Return X-offset of tilemap.</li>
+      <li>
+        <strong>TILEOFFSET</strong> - Return first free tile index for current graphics mode.</li>
+      <li>
+        <strong>TILEOFFSET(<em>gfx_mode</em>)</strong> - Return first free tile index for specified graphics mode.</li>
+      <li>
+        <strong>TIME$</strong> - Return the current time.</li>
+      <li>
+        <strong>TIMER</strong> - Return timer count..</li>
+      <li>
+        <strong>TIMER = <em>long</em></strong> - Set and start jiffy timer..</li>
+      <li>
+        <strong>TRACKFAST</strong> - Return -1 if tracker playback is set to fast, else 0.</li>
+      <li>
+        <strong>TRACKLOOP</strong> - Return -1 if tracker playback is set to loop, else 0.</li>
+      <li>
+        <strong>TRACKSPEED</strong> - Return tracker playback speed in Hertz.</li>
+      <li>
+        <strong>TRACKSTATUS</strong> - Return -1 if track is playing, else 0.</li>
+      <li>
+        <strong>TRIM$(<em>string</em>{,<em>string</em>})</strong> - Remove characters from both ends of string.</li>
+      <li>
+        <strong>TRIM$(<em>number</em>)</strong> - Convert number to string with no leading space.</li>
+      <li>
+        <strong>TRIMDIR$(<em>filespec</em>)</strong> - Remove path from filespec.</li>
+      <li>
+        <strong>TRIMEXT$(<em>filespec</em>)</strong> - Remove extension from filespec.</li>
+      <li>
+        <strong>TRIML$(<em>expression</em>{,<em>string</em>})</strong> - Remove characters from left end of string.</li>
+      <li>
+        <strong>TRIMR$(<em>expression</em>{,<em>string</em>})</strong> - Remove characters from right end of string.</li>
+      <li>
+        <strong>TRON</strong> - Enable line tracing.</li>
+      <li>
+        <strong>TROFF</strong> - Disable line tracing.</li>
+      <li>
+        <strong>UPR(<em>char</em>)</strong> - Uppercases numeric ASCII code or ASCII code of first character of string</li>
+      <li>
+        <strong>UPR$(<em>string</em>|<em>byte</em>)</strong> - Uppercases argument string or argument ASCII code converted to string.</li>
+      <li>
+        <strong>UPRKEY</strong> - Return uppercased ASCII code of last key presed.</li>
+      <li>
+        <strong>UPRKEY$</strong> - Return uppercased string containing last key pressed.</li>
+      <li>
+        <strong>UPRKEY(<em>string</em>)</strong> - Convert last key pressed to uppercase, and return position in string.</li>
+      <li>
+        <strong>USE CHRSET <em>0</em>|<em>1</em>|<em>filespec</em></strong> - Copy specified character set to character RAM.</li>
+      <li>
+        <strong>USE SCREEN {@<em>page</em>,}<em>text_mode</em>,<em>gfx_mode</em></strong> - <em>Not implemented.</em></li>
+      <li>
+        <strong>USR(<em>float</em>)</strong> - Call user-defined machine language routine passing argument and returning result.</li>
+      <li>
+        <strong>VAL(<em>string</em>)</strong> - Convert ASCII string to floating point number.</li>
+      <li>
+        <strong>VARDEF(*<em>array{$}</em>)</strong> - Return True if array is defined.</li>
+      <li>
+        <strong>VARDEF(<em>variable</em>)</strong> - <em>Proposed enhancement</em>.</li>
+      <li>
+        <strong>VARPTR(<em>var{<span class="math">}_|\*_array{</span>}</em>)</strong> - Return address of variable, array element, or array</li>
+      <li>
+        <strong>VER(<em>expression</em>)</strong> - Return System or plusBASIC version as integer.</li>
+      <li>
+        <strong>VER$(<em>expression</em>)</strong> - Return System or plusBASIC version as printable string.</li>
+      <li>
+        <strong>WAIT <em>port</em>,<em>xor_mask</em>{,<em>and_mask</em>}</strong> - Pause until specifie bit pattern received from IO port.</li>
+      <li>
+        <strong>WORD(<em>string</em>{,<em>offset</em>})</strong> - Convert two consecutive bytes in string to unsigned integer.</li>
+      <li>
+        <strong>WORD$(<em>integer</em>)</strong> - Convert integer to unsigned two byte binary string.</li>
+      <li>
+        <strong>WRITE #<em>channel</em>,^<em>strvar</em></strong> - Write string to open file.</li>
+      <li>
+        <strong>WRITE KEYS <em>string</em></strong> - Write string to auto-type buffer.</li>
+    </ul>
+    <h2 id="print-control-characters">PRINT control characters</h2>
+    <ul>
+      <li>
+        <strong>CHR$(8) / $"08"</strong> - Move cursor left, wrapping to previous line, and delete character in the new position.</li>
+      <li>
+        <strong>CHR$(10) / $"0A"</strong> - Move cursor down one line or scroll screen up if on last line.</li>
+      <li>
+        <strong>CHR$(11) / $"0B"</strong> - Clear screen to default colors and do <code>SET COLOR OFF</code> and <code>SET CURSOR ON</code>.</li>
+      <li>
+        <strong>CHR$(13) / $"0D"</strong> - Move cursor to first column of line.</li>
+    </ul>
+    <h2 id="error-codes">Error Codes</h2>
+    <ul>
+      <li>
+        <strong>
+          <code>1</code>
+        </strong> - NEXT without FOR</li>
+      <li>
+        <strong>
+          <code>2</code>
+        </strong> - Syntax</li>
+      <li>
+        <strong>
+          <code>3</code>
+        </strong> - RETURN without GOSUB</li>
+      <li>
+        <strong>
+          <code>4</code>
+        </strong> - Out of DATA</li>
+      <li>
+        <strong>
+          <code>5</code>
+        </strong> - Illegal quantity</li>
+      <li>
+        <strong>
+          <code>6</code>
+        </strong> - Overflow</li>
+      <li>
+        <strong>
+          <code>7</code>
+        </strong> - Out of memory</li>
+      <li>
+        <strong>
+          <code>8</code>
+        </strong> - Undefined line number</li>
+      <li>
+        <strong>
+          <code>9</code>
+        </strong> - Subscript out of range</li>
+      <li>
+        <strong>
+          <code>10</code>
+        </strong> - Duplicate definition</li>
+      <li>
+        <strong>
+          <code>11</code>
+        </strong> - Division by zero</li>
+      <li>
+        <strong>
+          <code>12</code>
+        </strong> - Illegal direct</li>
+      <li>
+        <strong>
+          <code>13</code>
+        </strong> - Type mismatch</li>
+      <li>
+        <strong>
+          <code>14</code>
+        </strong> - Out of string space</li>
+      <li>
+        <strong>
+          <code>15</code>
+        </strong> - String too long</li>
+      <li>
+        <strong>
+          <code>16</code>
+        </strong> - String formula too complex</li>
+      <li>
+        <strong>
+          <code>17</code>
+        </strong> - Can't continue</li>
+      <li>
+        <strong>
+          <code>18</code>
+        </strong> - Undefined user function</li>
+      <li>
+        <strong>
+          <code>19</code>
+        </strong> - Missing operand</li>
+      <li>
+        <strong>
+          <code>20</code>
+        </strong> - No RESUME</li>
+      <li>
+        <strong>
+          <code>21</code>
+        </strong> - RESUME without GOSUB</li>
+      <li>
+        <strong>
+          <code>22</code>
+        </strong> - Unprintable</li>
+      <li>
+        <strong>
+          <code>23</code>
+        </strong> - Line buffer overflow</li>
+      <li>
+        <strong>
+          <code>24</code>
+        </strong> - Statement not implemented</li>
+      <li>
+        <strong>
+          <code>25</code>
+        </strong> - Undefined line label</li>
+      <li>
+        <strong>
+          <code>26</code>
+        </strong> - ARGS without GOSUB</li>
+      <li>
+        <strong>
+          <code>27</code>
+        </strong> - Undimensioned array</li>
+      <li>
+        <strong>
+          <code>28</code>
+        </strong> - Too many operands</li>
+      <li>
+        <strong>
+          <code>29</code>
+        </strong> - Invalid mode</li>
+      <li>
+        <strong>
+          <code>30</code>
+        </strong> - Bad range</li>
+      <li>
+        <strong>
+          <code>31</code>
+        </strong> - Empty string</li>
+      <li>
+        <strong>
+          <code>32</code>
+        </strong> - String length</li>
+      <li>
+        <strong>
+          <code>49</code>
+        </strong> - Bad file</li>
+      <li>
+        <strong>
+          <code>50</code>
+        </strong> - File not found</li>
+      <li>
+        <strong>
+          <code>51</code>
+        </strong> - Too many files</li>
+      <li>
+        <strong>
+          <code>52</code>
+        </strong> - Invalid parameter</li>
+      <li>
+        <strong>
+          <code>53</code>
+        </strong> - Input past end</li>
+      <li>
+        <strong>
+          <code>54</code>
+        </strong> - File already exists</li>
+      <li>
+        <strong>
+          <code>55</code>
+        </strong> - I/O</li>
+      <li>
+        <strong>
+          <code>56</code>
+        </strong> - No disk</li>
+      <li>
+        <strong>
+          <code>57</code>
+        </strong> - Not empty</li>
+    </ul>
+    <!--
+  331 statements+Functions
+   22 not implemented
+    9 proposed
+ -->
+  </body>
+</html>

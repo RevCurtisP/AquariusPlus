@@ -11,7 +11,7 @@
 ;-----------------------------------------------------------------------------
 FN_GETBORDER:
     rst     CHRGET                ; Skip BORDER
-    ld      iy,get_border_chr
+    ld      iy,border_get_chr
     cp      CHRSTK
     jr      z,skip_aux_call_bufin
     cp      COLTK
@@ -25,7 +25,7 @@ FN_GETBORDER:
     ld      iy,border_get_color
 .getborder
     cp      '$'
-    jr      nz,gfx_call_sngflt
+    jp      nz,gfxrom_call_sngflt
 skip_aux_call_bufin:
     rst     CHRGET                ; Skip '$'
 aux_call_bufcin:
@@ -33,10 +33,6 @@ aux_call_bufcin:
     call    aux_call
     jp      BUFCIN
 
-gfx_call_sngflt:
-    call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
-    call    gfx_call              ; A = Color
-    jp      SNGFLT
 
 
 ;-----------------------------------------------------------------------------
@@ -46,7 +42,7 @@ ST_RESET_BORDER:
     rst     CHRGET                ; Skip BORDER
     push    hl
     ld      iy,border_reset
-    jp      gfx_call_popret
+    jp      gfxrom_call_popret
 
 ;-----------------------------------------------------------------------------
 ; SET BORDER {CHR byte} {COLOR fg,bg}
@@ -59,13 +55,13 @@ ST_SET_BORDER:
     cp      COLTK
     jr      z,.color              ; If Not COL
     call    parse_char            ;   A = Character
-    ld      iy,set_border_chr
-    call    gfx_call_preserve_hl  ;   Set border color and return
+    ld      iy,border_set_chr     ;   Set border color and return
+    call    gfxrom_call_preserve_hl
     ld      a,(hl)
     or      a                     ;   Return if end of statement
     ret     z
 .color
     call    parse_colors          ; A = Colors
-    ld      iy,border_set_color
-    jp      gfx_call_preserve_hl  ; Set border color and return
+    ld      iy,border_set_color   ; Set border color and return
+    jp      gfxrom_call_preserve_hl
 
