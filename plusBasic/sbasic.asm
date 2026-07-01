@@ -542,6 +542,7 @@ TK      =            TK+1
 RUNTK   equ     TK                ;
         byte    'R'+$80,"UN"      ;;$89
 TK      =            TK+1
+IFTK    equ     TK                ;
         byte    'I'+$80,"F"       ;;$8A
 TK      =            TK+1
         byte    'R'+$80,"ESTORE"  ;;$8B
@@ -782,8 +783,8 @@ ERRMO   equ     $-ERRTAB          ;;$24
 
 ;[M80] FIND A "FOR" ENTRY ON THE STACK WITH THE VARIABLE POINTER PASSED IN [D,E]
 FORSIZ  equ     13                ;;Size of a FOR entry on the stack
-FNDFOR: ld      hl,4+0            ;[M80] IGNORING THE RETURN ADDRESS OF
-        add     hl,sp             ;[M80] THIS SUBROUTINE, SET [H,L]=SP
+FNDFOR: ld      hl,4              ; Skip return addresses RETURN and NEWSTT
+        add     hl,sp             ; 
 LOOPER: ld      a,(hl)            ;[M80] SEE WHAT TYPE OF THING IS ON THE STACK
         inc     hl                ;
         cp      FORTK             ;[M80] IS THIS STACK ENTRY A "FOR"?
@@ -855,7 +856,7 @@ ERRFN1: call    STROUT            ;[M80] PRINT MESSAGE
 STPRDY: pop     bc
 ;;Enter Immediate Mode
 READY:  nop                       ;;Call hook routine                         0402  rst     HOOKDO 
-HOOK2:  nop                       ;                                           0403  byte    2     
+        nop                       ;                                           0403  byte    2     
         call    direct_mode       ; Execute direct mode extensions            0404  call    FINLPT
                                   ; and csll FINLPT                           0405
                                   ;                                           0406
@@ -1176,13 +1177,13 @@ MORLNP: and     $7F               ;[M80] AND OFF HIGH ORDER BIT
 ;;; Proposed: allow multiple loop specifiers separated by semicolon
 FOR:    ld      a,100
         ld      (SUBFLG),a        ;[M80] DONT RECOGNIZE SUBSCRIPTED VARIABLES
-        call    LET               ;[M65] READ VARIABLE AND ASSIGN INITIAL VALUE
-        pop     bc                ;; BC = RtnAdr
-        push    hl                ;; Stack = TxtPtr
-        call    DATA              ;[M80] SET [H,L]=END OF STATEMENT
-        ld      (ENDFOR),hl       ;[M80] SAVE FOR COMPARISON
-        ld      hl,2              ;[M80] SET UP POINTER INTO STACK
-        add     hl,sp             ;
+        call    LET               ; DE = VarPtr, (SAVTXT) = VarPtr
+        pop     bc                ; Take NEWSTT off stack because routine drops into it
+        push    hl                ; Stack = TxtPtr
+        call    DATA              ; HL = End of Statement
+        ld      (ENDFOR),hl       ; (ENDFOR) = End of Statement
+        ld      hl,2              ; Skip TxtPtr so Stack Points to top loop structure
+        add     hl,sp             ; StkPtr += 2
 LPFORM: call    LOOPER            ;[M80] MUST HAVE VARIABLE POINTER IN [D,E]
         jr      nz,NOTOL          ;[M80] NO MATCHING ENTRY, DON'T ELIMINATE ANYTHING
         add     hl,bc             ;[M80] ELIMINATE THE MATCHING ENTRY
@@ -1207,44 +1208,44 @@ NOTOL:  pop     de                ;;Should only happen if we came from jr after 
         ex      de,hl             ;[M80] [H,L]=TEXT POINTER
         ld      c,8               ;[M80] MAKE SURE 16 BYTES ARE AVAILABLE
         call    GETSTK            ;[M80] OFF OF THE STACK
-        push    hl                ;[M80] REALLY SAVE THE TEXT POINTER
-        ld      hl,(ENDFOR)       ;[M80] PICK UP POINTER AT END OF "FOR"
-        ex      (sp),hl           ;[M80] PUT POINTER ON STACK AND RESTORE TEXT POINTER
-        push    hl                ;[M80] PUSH POINTER TO VARIABLE ONTO THE STACK
-        ld      hl,(CURLIN)       ;[M80] [H,L] GET THE CURRENT LINE #
-        ex      (sp),hl           ;[M80] LINE # ON THE STACK AND [H,L] IS THE TEXT POINTER
-        call    CHKNUM            ;
+        push    hl                ; Stack = TxtPtr
+        ld      hl,(ENDFOR)       ; HL = EndPtr
+        ex      (sp),hl           ; HL = TxtPtr; Stack = EndPtr
+        push    hl                ; Stack = TxtPtr, EndPtr
+        ld      hl,(CURLIN)       ; HL = CurLin
+        ex      (sp),hl           ; HL = TxtPtr; Stack = CurLin, EndPtr
+        call    CHKNUM            ; Error if FOR variable is not numeric
         rst     SYNCHK            ;
-        byte    TOTK              ;[M80] "TO" IS NECESSARY
-        call    FRMNUM            ;[M65] VALUE MUST BE A NUMBER
-        push    hl                ;
-        call    MOVRF             ;[M80] GET THE STUFF
-        pop     hl                ;[M80] REGAIN TEXT POINTER
-        push    bc                ;[M80] OPPOSITE OF PUSHR
-        push    de                ;[M80] SAVE THE SIGN OF THE INCREMENT
-        ld      bc,$8100          ;[M80] DEFAULT THE STEP TO BE 1
+        byte    TOTK              ; Require TO
+        call    FRMNUM            ; FACC = ToValue
+        push    hl                ; Stack = TxtPtr, CurLin, EndPtr
+        call    MOVRF             ; BCDE = ToValue
+        pop     hl                ; HL = TxtPtr; Stack = CurLin, EndPtr
+        push    bc                ; 
+        push    de                ; Stack = ToValue, CurLin, EndPtr
+        ld      bc,$8100          ;
         ld      d,c               ;
-        ld      e,d               ;[M80] GET 1.0 IN THE REGISTERS
-        ld      a,(hl)            ;[M80] GET TERMINATING CHARACTER
-        cp      STEPTK            ;[M80] DO WE HAVE "STEP" ?
-        ld      a,1               ;[M80] SETUP DEFAULT SIGN
-        jr      nz,ONEON          ;[M65] NO. ASSUME 1.0.
-        rst     CHRGET            ;[M65] YES. ADVANCE POINTER
-        call    FRMNUM            ;
-        push    hl                ;
-        call    MOVRF             ;[M80] SET UP THE REGISTERS
-        rst     FSIGN             ;[M80] GET THE SIGN OF THE INCREMENT
-        pop     hl                ;[M80] POP OFF THE TEXT POINTER
-ONEON:  push    bc                ;[M80] PUT VALUE ON BACKWARDS
-        push    de                ;[M80] OPPOSITE OF PUSHR
-        push    af                ;
-        inc     sp                ;
-        push    hl                ;; Text pointer onto stack
-        ld      hl,(SAVTXT)       ;
-        ex      (sp),hl           ;; HL = text pointer, FOR? sddress onto stack
-NXTCON: ld      b,FORTK           ;[M80] PUT A 'FOR' TOKEN ONTO THE STACK
-        push    bc                ;
-        inc     sp                ;[M80] THE "TOKEN" ONLY TAKES ONE BYTE OF STACK SPACE
+        ld      e,d               ; BCDE = 1
+        ld      a,(hl)            ; A = CurChr
+        cp      STEPTK            ;
+        ld      a,1               ; StpSgn = 1
+        jr      nz,ONEON          ; If STEP
+        rst     CHRGET            ;   Skip STEP
+        call    FRMNUM            ;   FACC = StepVal
+        push    hl                ;   Stack = TxtPtr, ToValue, CurLin, EndPtr
+        call    MOVRF             ;   BCDE = StepVal
+        rst     FSIGN             ;   A = StpSign
+        pop     hl                ;   HL = TxtPtr; Stack = ToValue, CurLin, EndPtr
+ONEON:  push    bc                ; 
+        push    de                ; Stack = StepVal, ToValue, CurLin, EndPtr
+        push    af                ; Stack = StepSgn, StepVal, ToValue, CurLin, EndPtr
+        inc     sp                ; Make StepSgn 1 byte
+        push    hl                ; Stack = TxtPtr, StepSgn, StepVal, ToValue, CurLin, EndPtr
+        ld      hl,(SAVTXT)       ; HL = VarPtr
+        ex      (sp),hl           ; HL = TxtPtr; Stack = VarPtr, StepSgn, StepVal, ToValue, CurLin, EndPtr
+NXTCON: ld      b,FORTK           ; 
+        push    bc                ; Stack = FORTK, VarPtr, StepSgn, StepVal, ToValue, CurLin, EndPtr
+        inc     sp                ; Make FORTK into 1 byte
 ;[M80] NEW STATEMENT FETCHER
 ;;; ToDo: Add hook mechanism (user defined, ON TIMER, ON MOUSE, etc...)
 ;;;       Allow direct mode shortcuts LS and $ for DIR, / for LIST, etx.
@@ -1281,7 +1282,7 @@ GONE2:  jp      check_for_comment ;; + Check for ' and treat as REM           06
         byte    $07               ;; +                                        0655
 GONEX:  cp      TABTK-$80
         nop                       ;;                                          0658  rst     HOOKDO
-HOOK23: nop                       ;;                                          0659  byte    23                ;
+        nop                       ;;                                          0659  byte    23                ;
         jp      nc,SNERR          ;;Not a Statement Token
         rlca                      ;[M80] MULTIPLY BY 2
         ld      c,a               ;
@@ -1371,31 +1372,27 @@ MORLIN: rst     CHRGET            ;;Get next character
 POPHSR: pop     af                ;[M80] GET OFF TERMINATING DIGIT
         pop     hl                ;[M80] GET BACK OLD TEXT POINTER
         ret                       ;
-RUN:    nop                       ;Call Hook Routine                          06BE rst     HOOKDO
-HOOK24: nop                       ;                                           06BF byte    24
-        jp      run_cmd           ;                                           06C0 jp      z,RUNC
+RUN:    nop                       ;Call Hook Routine                          06BE  rst     HOOKDO
+        nop                       ;                                           06BF  byte    24
+        jp      run_cmd           ;                                           06C0  jp      z,RUNC
                                   ;                                           06C1
                                   ;                                           06C2
 CONRUN: call    CLEARC            ;RESET THE STACK,DATPTR,VARIABLES ...     
         ld      bc,NEWSTT         ;
         jr      RUNC2             ;[M80] PUT "NEWSTT" ON AND FALL INTO "GOTO"
-;[M80] GOSUB STATEMENT
 GOSUB:  ld      c,3               ;[M80] "GOSUB" ENTRIES ARE 5 BYTES LONG
         call    GETSTK            ;[M80] MAKE SURE THERE IS ROOM
-        pop     bc                ;[M80] POP OFF RETURN ADDRESS OF "NEWSTT"
-        push    hl                ;[M80] REALLY PUSH THE TEXT POINTER
-        push    hl                ;[M80] SAVE TEXT POINTER
-        ld      hl,(CURLIN)       ;[M80] GET THE CURRENT LINE #
-        ex      (sp),hl           ;[M80] PUT CURLIN ON THE STACK AND [H,L]=TEXT PTR
-        ld      a,GOSUTK          ;
-        push    af                ;[M80] PUT GOSUB TOKEN ON THE STACK
-        inc     sp                ;[M80] THE GOSUB TOKEN TAKES ONLY ONE BYTE
-RUNC2:  push    bc                ;[M80] RESTORE RETURN ADDRESS OF "NEWSTT"
-   
-;; <<
-;; + Allow GOTO and GOSUB to line label
-GOTO:   call    scan_label        ; + Scan label or line number               06DC  call    SCNLIN
-;; >>
+        pop     bc                ; BC = RtnAdr
+        push    hl                ; Stack = TxtPtr
+        push    hl                ; Stack = TxtPtr, TxtPtr
+        ld      hl,(CURLIN)       ; HL = Current line#
+        ex      (sp),hl           ; HL = TxtPtr, Stack = CurLin, TxtPtr
+        jp      gosub_hook        ;                                           06D7  ld      a,GOSUTK
+                                  ;                                           06D8  
+                                  ;                                           06D9  push    af
+        nop                       ;                                           06DA  inc     sp
+RUNC2:  push    bc                ; Stack = RtnAdr, GOSUB, CurLin, TxtPtr
+GOTO:   call    scan_label        ; Enhancement: Scan label or line number    06DC  call    SCNLIN
 GOTOLN: call    REM               ;[M80] SKIP TO THE END OF THIS LINE
         inc     hl                ;[M80] POINT AT THE LINK BEYOND IT
         push    hl                ;[M80] SAVE THE POINTER
@@ -1411,15 +1408,14 @@ GOTOLN: call    REM               ;[M80] SKIP TO THE END OF THIS LINE
 ;{M80} GIVE A "US" ERROR
 USERR:  ld      e,ERRUS           ;[M80] C=MATCH, SO IF NO MATCH WE
         jp      ERROR             ;[M80] GIVE A "US" ERROR
-;[M80] RETURN STATEMENT
 RETURN: ret     nz                ;[M80] BLOW HIM UP IF THERE ISN'T A TERMINATOR
         ld      d,255             ;[M80] MAKE SURE VARIABLE POINTER IN [D,E] NEVER GETS MATCHED
-        call    FNDFOR            ;[M80] GO PAST ALL THE "FOR" ENTRIES
-        ld      sp,hl             ;[M80] UPDATE THE STACK
+        call    return_hook       ; A = StkToken, HL = GOSUB entry            06FB  call    FNDFOR
+        ld      sp,hl             ; Stack = CurLin, RtnPtr
         cp      GOSUTK            ;
         ld      e,ERRRG           ;[M80] ERROR ERRRG IS "RETURN WITHOUT GOSUB"
         jp      nz,ERROR          ;
-        pop     hl                ;GET LINE # "GOSUB" WAS FROM
+        pop     hl                ; HL = CurLin; Stack = RtnPtr
         ld      (CURLIN),hl       ;PUT IT INTO CURLIN
         inc     hl                ;
         ld      a,h               ;
@@ -1428,8 +1424,8 @@ RETURN: ret     nz                ;[M80] BLOW HIM UP IF THERE ISN'T A TERMINATOR
         ld      a,(USFLG)         ;
         or      a                 ;;Is flag set?
         jp      nz,STPRDY         ;;Yes, abort to direct mode
-RETU1:  ld      hl,NEWSTT         ;[M80] PUT RETURN ADDRESS OF "NEWSTT" BACK ON STACK
-        ex      (sp),hl           ;[M80] GET TEXT POINTER FROM "GOSUB"
+RETU1:  ld      hl,NEWSTT         ; RtnAdr = NEWSTT
+        ex      (sp),hl           ; HL = RtnPtr; Stack = RtnAdr
         byte    $3E               ;{M80} "LD A," AROUND POP HL
 DATAH:  pop     hl                ;[M80] GET TEXT POINTER OFF STACK
 ;;The DATA Statement
@@ -1453,57 +1449,59 @@ REMER:  ld      a,(hl)            ;[M80] GET A CHAR
         jr      REMER             ;
 
                                   ;; + Allow string splicing in LET
-LET:    jp      let_extension     ;; + LET extension                          0731  call    PTRGET
+LET:    jp      let_extension     ;; DE = VarPtr                              0731  call    PTRGET
 LETEQ:  rst     SYNCHK            ; Require '='
         byte    EQUATK            ;
-LETDO:  push    de                ; Stack = VarPtr
+LETDO:  push    de                ; Stack = VarPtr, RtnAdr
         ld      a,(VALTYP)        ; A = VarTyp
-        push    af                ; Stack = VarTyp, VarPtr
+        push    af                ; Stack = VarTyp, VarPtr, RtnAdr
         call    FRMEVL            ; Evaluate Formula
-        pop     af                ; A = VarTyp; Stack = VarPtr
-        ex      (sp),hl           ; HL = VarPtr, Stack = TxtPtr
+        pop     af                ; A = VarTyp; Stack = VarPtr, RtnAdr
+        ex      (sp),hl           ; HL = VarPtr, Stack = TxtPtr, RtnAdr
+        ;;; ToDo: Change this to a location unused by the formula evaluator
+        ;;; to allow RESUME NEXT to be implemented
         ld      (SAVTXT),hl       ; SAVTXT = VarPtr
         rra                       ;
         call    CHKVAL            ; Error if VarTyp <> ValTyp, Return 0 if Numeric
-        jp      z,COPNUM          ; If Numeric, Go Copy it
-INPCOM: push    hl                ; Stack = VarPtr, TxtPtr
-        ld      hl,(FACLO)        ; HL = StrDsc
-        push    hl                ; Stack = StrDsc, VarPtr, TxtPtr
+        jp      z,COPNUM          ; If String
+INPCOM: push    hl                ;   Stack = VarPtr, TxtPtr, RtnAdr
+        ld      hl,(FACLO)        ;   HL = StrDsc
+        push    hl                ;   Stack = StrDsc, VarPtr, TxtPtr, RtnAdr
         inc     hl                ;
         inc     hl                ;
-        ld      e,(hl)            ; DE = TxtAdr
+        ld      e,(hl)            ;   DE = TxtAdr, RtnAdr
         inc     hl                ;
         ld      d,(hl)            ;                                           Original Code
-        call    in_buffer         ; If TxtAdr is in a buffer                  0754  ld      hl,(TXTTAB)
+        call    in_buffer         ;   If TxtAdr is in a buffer                0754  ld      hl,(TXTTAB)
                                   ;                                           0755
                                   ;                                           0756
-        jp      nc,INBUFC         ;   Force copy of literals                  0757  rst     COMPAR
+        jp      nc,INBUFC         ;     Force copy of literals                0757  rst     COMPAR`
                                   ;                                           0758  jr      nc,INBUFC
                                   ;                                           0759
-        ld      hl,(STREND)       ; HL = End of Arrays
+        ld      hl,(STREND)       ;   HL = End of Arrays
         rst     COMPAR            ; 
-        pop     de                ; DE = StrDsc; Stack = VarPtr, TxtPtr
-        jr      nc,DNTCPY         ;[M80] DON'T COPY LITERALS
-        ld      hl,DSCTMP         ;[M80] NOW, SEE IF ITS A VARIABLE BY SEEING IF THE DESCRIPTOR
-        rst     COMPAR            ;[M80] IS IN THE TEMPORARY STORAGE AREA (BELOW DSCTMP)
-        jr      nc,DNTCPY         ;[M80] DON'T COPY IF ITS NOT A VARIABLE
-        byte    $3E               ;[M80] SKIP THE NEXT BYTE WITH A "MVI A,"
+        pop     de                ;   DE = StrDsc; Stack = VarPtr, TxtPtr
+        jr      nc,DNTCPY         ;   DON'T COPY LITERALS
+        ld      hl,DSCTMP         ;   NOW, SEE IF ITS A VARIABLE BY SEEING IF THE DESCRIPTOR
+        rst     COMPAR            ;   IS IN THE TEMPORARY STORAGE AREA (BELOW DSCTMP)
+        jr      nc,DNTCPY         ;   DON'T COPY IF ITS NOT A VARIABLE
+        byte    $3E               ;   SKIP THE NEXT BYTE WITH A "MVI A,"
         ;; To assign a temporary string to a string variable
         ;; JP here with Stack = StrDsc, VarPtr, TxtPtr
-INBUFC: pop     de                ; DE = StrDsc; Stack = VarPtr, TxtPtr
+INBUFC: pop     de                ;   DE = StrDsc; Stack = VarPtr, TxtPtr, RtnAdr
         ;; JP here with DE = StrDsc; Stack = VarPtr, TxtPtr
-INBUFD: call    FRETMS            ; Free Temporary, but no StringSpace
-        ex      de,hl             ; HL = StrDsc; Stack = TxtPtr
-        call    STRCPY            ; Copy to Temp String. DE = TmpDsc
-DNTCPY: call    FRETMS            ; Free Temporary, but no StringSpace
-        pop     hl                ; Stack = VarPtr
-        call    MOVE              ; Copy TmpDsc to VarPtr
-        pop     hl                ; HL = TxtPtr
-        ret                       ;
-COPNUM: push    hl                
-        call    MOVMF             ;COPY A DESCRIPTOR OR A VALUE
-        pop     de                ;FOR "FOR" POP OFF POINTER AT LOOP VARIABLE INTO [D,E]
-        pop     hl                ;GET THE TEXT POINTER BACK
+INBUFD: call    FRETMS            ;   Free Temporary, but no StringSpace
+        ex      de,hl             ;   HL = StrDsc; Stack = TxtPtr, RtnAdr
+        call    STRCPY            ;   Copy to Temp String. DE = TmpDsc
+DNTCPY: call    FRETMS            ;   Free Temporary, but no StringSpace
+        pop     hl                ;   Stack = VarPtr, RtnAdr
+        call    MOVE              ;   Copy TmpDsc to VarPtr
+        pop     hl                ;   HL = TxtPtr
+        ret                       ; Else
+COPNUM: push    hl                ;   Stack = VarPtr, TxtPtr, RtnAdr
+        call    MOVMF             ; 
+        pop     de                ;   DE = VarPtr; Stack = TxtPtr, RtnAdr
+        pop     hl                ;   HL = TxtPtr; Stack = RtnAdr
         ret
 ;{M80} ON..GOTO, ON GOSUB CODE
         nop                       ;                                           0780  rst     HOOKDO
@@ -1643,7 +1641,7 @@ FINPRT: nop                       ;                                           08
 TRYAGN: byte    "?Redo from start",13,10,0
 ;[M80]  HERE WHEN THE DATA THAT WAS TYPED IN OR IN "DATA" STATEMENTS
 TRMNOK: nop                       ;                                           0880 rst     HOOKDO
-HOOK8:  nop                       ;                                           0881 byte    8
+        nop                       ;                                           0881 byte    8
         ld      a,(FLGINP)        ;[M80] WAS IT READ OR INPUT?
         or      a                 ;[M80] ZERO=INPUT
         jp      nz,DATSNE         ;[M80] GIVE ERROR AT DATA LINE
@@ -5402,7 +5400,7 @@ SDELAL: ld      a,h               ;
         jr      SDELAL            ;;Decrement and loop
 ;;INCHRH, INCHRC, and INCHRI - Get Character from Keyboard
 INCHRH: nop                       ;; +                                        1E7E  rst     HOOKDO
-HOOK18: nop                       ;; +                                        1E7F  byte    18
+        nop                       ;; +                                        1E7F  byte    18
 INCHRC: nop                       ;; +                                        1E80  exx
 INCHRI: jp      read_key          ;; +                                        1E81  ld      hl,(RESPTR)
                                   ;; +                                        1E82

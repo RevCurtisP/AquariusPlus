@@ -25,8 +25,8 @@ STJUMPS:
     dw      $06DC                 ;$88 GOTO              
     dw      $06BE                 ;$89 RUN               
     dw      $079C                 ;$8A IF               
-    dw      $ST_RESTORE           ;$8B RESTOR            
-    dw      $06CB                 ;$8C GOSUB             
+    dw      ST_RESTORE            ;$8B RESTOR            
+    dw      ST_GOSUB              ;$8C GOSUB             
     dw      ST_RETURN             ;$8D RETURN            
     dw      $071E                 ;$8E REM               
     dw      ST_STOP               ;$8F STOP              

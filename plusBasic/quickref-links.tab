@@ -41,7 +41,6 @@ OUT         BASIC-OUT-Statement
 palette     BASIC-Palette-Statements-and-Functions
 PAUSE       BASIC-PAUSE-Statement
 pixel       BASIC-Bloxel-and-Pixel-Functions
-PLAYSAMPLE  BASIC-PLAY-SAMPLE-Statement
 PEEK        BASIC-PEEK-and-DEEK-Functions
 POKE        BASIC-POKE-and-DOKE-Statements
 POKESCREEN  BASIC-POKE-SCREEN-and-POKE-COLOR-Statements
@@ -52,6 +51,7 @@ READ        BASIC-READ-Statement
 REM         BASIC-REM-Statement
 RESTORE     BASIC-RESTORE-Statement
 runargs     BASIC-RUN-Command-and-ARGS-Functions
+sample      BASIC-SAMPLE-Statements
 SAVE        BASIC-SAVE-and-APPEND-Statements
 screen      BASIC-Screen-Statements-and-Functions
 screendraw  BASIC-Screen-Draw-Statements-and-Functions

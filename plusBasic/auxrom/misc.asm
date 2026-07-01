@@ -480,25 +480,42 @@ read_keys:
     ret
 
 ;-----------------------------------------------------------------------------
-; Scan for ELSE
-;  Input: HL = TxtPtr (pointing at character after THEN)
-; Output: Terminating 0 byte or Character after ELSE
-;  Flags: As set by CHRGET
+; Scan for ELSE and/or ENDIF
+;  Input: A = 0 if search for ELSE
+;        HL = TxtPtr (pointing at character after THEN or ELSE)
+; Output: A = Terminating 0 byte or Character after ELSE or ENDIF
+;  Flags: Carry Set if ELSE not found (EOL)
 ;-----------------------------------------------------------------------------
-scan_else:
+scan_else_endif:
+    or      a                     ; Set Zero flag if scanning for ELSE
+    ex      af,af'                ; Save ElseFlag
+.loop
     ld      a,(hl)                ; A = Current character
     or      a                     ; If null terminator
-    scf                           ;   Return Carry Setr
-    ret     z                     ;   Return Z set
+    scf                           ;   Return Zero and Carry Set
+    ret     z                     ; 
     cp      ELSETK                ; If ELSE
-    ret     z                     ;   Return Carry Clear
+    jr      z,.iselse             ;   Check ElseFlag
+    cp      ENDTK                 ; If END
+    jr      z,.isend              ;   Check for ENDIF
     cp      '"'                   ; If quote
     jr      z,.skip_string        ;   Skip to end of literal string
     cp      92                    ; If backslash
     jr      z,.skip_escaped       ;   Skip to end of escaped string
 .next
     inc     hl
-    jr      scan_else
+    jr      .loop
+.iselse
+    ex      af,af'                ; If called from THEN
+    ret     z                     ;   Return Zero and Carry Set
+    ex      af,af'                ; Save ElseFlag
+    jr      .next
+.isend
+    inc     hl                    ; Skip END
+    ld      a,(hl)
+    cp      IFTK                  ; If ENDIF
+    ret     z                     ;   Return Zero and Carry Set
+    jr      .loop
 
 .skip_string
     inc     hl

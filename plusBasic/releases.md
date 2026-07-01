@@ -1,4 +1,9 @@
 # plusBASIC Release History
+ - v0.71o (2026-06-30)
+    - Added `EVAL$()`, implemented `ENDIF` and `REPEAT`/`LOOP`/`UNTIL`/`END REPEAT`
+    - `LOAD` ignores lines beginning with apostrophe in ASCII format BASIC programs
+    - `VARPTR()` accepts string containing arbitrary variable or array name
+    - Fixed spurious _Invalid mode error_ in `FILL SCREEN ... COLOR`
  - v0.71n (2026-06-04)
     - Added `LOAD SAMPLE` and `PLAY SAMPLE "filename"`
     - `MOUSEW` now returns `0` instead of `-1` if no mouse detected

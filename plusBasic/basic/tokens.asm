@@ -131,10 +131,12 @@ EXTCMDS:
     db $80 + 'E',"XT"             ; $BC
     db $80 + 'S',"CROLL"          ; $BD
     db $80 + 'R',"ECT"            ; $BE
+    db $80 + 'E',"XEC"            ; $BF
+    db $80 + 'S',"TACK"           ; $C0
     
     db $80                        ; End of table marker
 
-EXTOKEN = $BF                     ; Last Token + 1
+EXTOKEN = $C1                     ; Last Token + 1
 
 ;-----------------------------------------------------------------------------
 ; plusBASIC tokens
@@ -231,6 +233,8 @@ DOMTK     equ     $BB
 EXTK      equ     $BC
 SCROLTK   equ     $BD
 RECTK     equ     $BE
+EXECTK    equ     $BF
+STACKTK   equ     $C0
 
 ;-----------------------------------------------------------------------------
 keyword_to_token:

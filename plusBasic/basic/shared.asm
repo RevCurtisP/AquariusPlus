@@ -130,6 +130,15 @@ return_float:
     call    VALNUM
     jp      MOVFR
 
+function_type:
+    rst     CHRGET                ; A = Function Suffix
+    cp      '$'                   ; If not $
+    ld      a,$FF                 ;   Return Type = Numeric
+    ret     nz                    ; Else
+    rst     CHRGET                ;   Skip $
+    xor     a                     ;   Return Type = String
+    ret
+
 skip_check_dollar:
     inc     hl
 check_dollar:

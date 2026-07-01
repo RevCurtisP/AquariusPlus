@@ -34,46 +34,30 @@ tokenize_string:
 ; Output: BC: Line# ($FFFF if no line number and line is not tokenized)
 ; Sets Flags: Zero if line is blank
 ;             No Carry if no line number
-; Clobbers: A, IX
+; Clobbers: A, HL, IX
 ;-----------------------------------------------------------------------------
 tokenize_line:
     ld      bc,-1                 ; Default line number to 65535
     ld      (TEMP3),bc            ; Set line number flag for s3_stuffh_ext
     dec     hl                    ; Back up for CHRGET
     rst     CHRGET                ; Get first non-space character
-    ret     nc                    ; If not a digit, return no line number
-    cp      0                     ; If NULL
-    ret     z                     ;   Return empty, no line number
-    push    de                    ; Stack = OutBuf, RtnAdr
-    call    SCNLIN                ; DE = Line#, HL = InpPtr
-    ex      de,hl                 ; HL = Line#, DE = InpPtr
-    ex      (sp),hl               ; HL = OutBuf, Stack = Line#, RtnAdr
-    ex      de,hl                 ; DE = OutBuf, HL = InpPtr
-    call    tokenize_string       ; Tokenize rest of line
-    pop     bc                    ; BC = Line#; Stack = RtnAdr
-    sub     a,1                   ; Return Not Zero, Carry Set
+    ccf                           ; Set Carry if not digit
+    jr      c,.notdigit           ; If Digit
+    push    de                    ;   Stack = OutBuf, RtnAdr
+    call    SCNLIN                ;   DE = Line#, HL = InpPtr
+    ex      de,hl                 ;   HL = Line#, DE = InpPtr
+    ex      (sp),hl               ;   HL = OutBuf, Stack = Line#, RtnAdr
+    ex      de,hl                 ;   DE = OutBuf, HL = InpPtr
+    call    tokenize_string       ;   Tokenize rest of line
+    pop     bc                    ;   BC = Line#; Stack = RtnAdr
+    or      $FF                   ;   Return Not Zero, Carry Clear
+    ret                           ; Else
+.notdigit
+    or      a                     ;   If NULL terminator
+    ret     z                     ;     Return Zero Set, Carry Clear
+    cp      39                    ;   Set Zero if apostrophe
+    scf                           ;   and return Carry Set
     ret
-
-; PRINT HEX$(DEEK($384B))
-; POKE DEEK($384B),"10 FOR I=1 TO 10"
-; CALL $C2FB ARGS DEEK($384B)
-
-
-;-----------------------------------------------------------------------------
-; Tokenize and add basic line
-; Input: HL: Buffer address
-; Output: BC: Line#
-;         HL: New VARTAB
-; Clobbered: A, DE
-;-----------------------------------------------------------------------------
-basic_add_line:
-    ld      d,h                   ; OutBuf = Inbuf
-    ld      e,l
-    call    tokenize_line         ; BC = Line#
-    ld      a,b                   
-    and     c                     ; A = $FF iff BC = $FFFF          
-    inc     a                     ; If No line number
-    ret     z                     ;   Don't add it
 
 ;-----------------------------------------------------------------------------
 ; Append Tokenized Line from Program
@@ -107,22 +91,12 @@ basic_append_line:
     ld      (VARTAB),hl
     ret
 
-; POKE DEEK($384B),"10 FOR I=1 TO 10"+CHR$(0)      
-; POKE DEEK($384B),"20 PRINT I;"+CHR$(0)      
-; POKE DEEK($384B),"40 NEXT"+CHR$(0)      
-; CALL $C320 ARGS DEEK($384B)
-
-_test:
-    call    basic_add_line
-        
 ;-----------------------------------------------------------------------------
 ; Relink BASIC program lines, starting from beginning of program
 ;---------------------------------  --------------------------------------------
 basic_link_lines:
     ld      de,(TXTTAB)           ; Star at beginning of program
     jp      CHEAD                 ; Link lines and return
-
-;; LOAD "/t/test.txt",ASC
 
 skip_unpack_line:
     inc     hl

@@ -167,9 +167,13 @@ ST_DUMP:
     jp      z,MOERR
     call    str_literal
     push    hl                    ; Stack = TxtPtr, RtnAdr
+    ld      hl,4
+    add     hl,sp                 ; HL = Last Stack Entry
+    push    hl                    ; Stack = StkPtr, TxtPtr, RtnAdr
     call    get_strbuf_addr
     ex      de,hl                 ; DE = StrBuf
     ld      hl,FACLO              ; HL = FilNam
+    pop     bc                    ; BC = StkPtr; Stack = TxtPtr, RtnAdr
     ld      iy,dump_vars
     jp      aux_call_popret       ; Do the dump, pop TxtPtr, and return
 
@@ -507,11 +511,53 @@ str_float:
 ; LOOP statements stub
 ;-----------------------------------------------------------------------------
 ST_LOOP:
-    rst     CHRGET                ; Skip LOOP token
-    SYNCHKT XTOKEN
-    cp      TRKTK                 ;   If token is TRACK
-    jp      z,ST_LOOP_TRACK       ;     Do PAUSE TRACK
-    jp      SNERR
+    rst     CHRGET                ; If no operands
+    jr      z,loop_repeat         ;   Just LOOP
+    SYNCHKT XTOKEN                ; Else
+    SYNCHKT TRKTK                 ;   Require TRACK
+    jp      ST_LOOP_TRACK         ;   and do LOOP TRACK
+
+ST_UNTIL:
+    rst     CHRGET                ; Skip UNTIL
+    call    FRMNUM                ; Evaluate Conditional
+    call    _get_repeat_entry     ; BC = RptPtr, DE = CurLin, Stack = TxtPtr, RtnAdr
+    rst     FSIGN                 ; If FACC <> 0
+    jr      nz,end_repeat         ;   Pop REPEAT off stack and continue on
+    jr      _repeat               ; Else back to statement after REPEAT
+
+loop_repeat:
+    call    _get_repeat_entry     ; BC = RptPtr, DE = CurLin, Stack = TxtPtr, RtnAdr
+_repeat:
+    ld      (CURLIN),de           ; Put back CurLin
+    pop     de                    ; Stack = RtnAdr
+    ld      h,b
+    ld      l,c                   ; TxtPtr = RptPtr
+    ret                           ; Back to NEWSTT
+
+ST_END_REPEAT:
+    call    _get_repeat_entry     ; BC = RptPtr, DE = CurLin, HL = StkNxt, Stack = TxtPtr, RtnAdr
+end_repeat:
+    pop     de                    ; DE = TxtPtr, Stack = RtnAdr
+    pop     bc                    ; BC = RtnAdr
+    ld      sp,hl                 ; SP = StkNxt
+    ex      de,hl                 ; HL = TxtPtr
+    push    bc                    ; Stack = RtnAdr
+    ret
+
+_get_repeat_entry:
+    ex      (sp),hl               ; HL = RtnAdr; Stack = TxtPtr
+    push    hl                    ; Stack = RtnAdr, TxtPtr
+    ld      hl,6
+    add     hl,sp                 ; Skip RtnAdr, TxtPtr, NEWSTT
+    ld      a,(hl)                ; If top entry
+    cp      REPEATK               ; If not REPEAT
+    jr      nz,LRERR              ;   LOOP without REPEAT error
+    inc     hl                    ; Skip REPEAT token
+    jp      MOVRM                 ; Return BC = RptPtr, DE = CurLin, HL = StkNxt, Stack = TxtPtr
+
+LRERR:
+    ld      e,ERRLR
+    jp      ERROR
 
 ;-----------------------------------------------------------------------------
 ; UPR(), UPR$(), LWR(), LWR$
@@ -706,6 +752,40 @@ aux_call_float_de:
     jp      FLOAT_DE
 
 ;-----------------------------------------------------------------------------
+; REPEAT/LOOP/UNTIL
+;-----------------------------------------------------------------------------
+; REPEAT:PRINT GETKEY$;:LOOP
+; REPEAT:K$=GETKEY$:PRINT K$;:UNTIL K$=CHR$(13)
+
+; 10 REPEAT 
+; 20 GOSUB _subroutine
+; 30 END REPEAT
+; 40 END
+; 70 _subroutine:
+; 75 REPEAT
+; 80 PRINT "Subroutine"
+; 90 RETURN
+
+ST_REPEAT:
+    rst     CHRGET                ; Skip REPEAT
+    jp      nz,SNERR              ; Require terminator
+    ld      a,REPEATK             ; Pushing REPEAT onto stack
+    byte    $01                   ; LD BC, over LD A
+ST_GOSUB:
+    ld      a,GOSUTK              ; Pushing GOSUB onto stack
+    ex      af,af'                ; A' = Token
+    jp      GOSUB                 ; Push Token then come back to hook
+
+gosub_hook:
+    ex      af,af'                ; A = Token
+    push    af                    ; Stack = Token, CurLin, TxtPtr
+    inc     sp                    ; Make top entry 1 byte
+    push    bc                    ; Stack = RtnAdr, Token, CurLin, TxtPtr
+    cp      GOSUTK                ; If GOSUB
+    jp      z,GOTO                ;   Continue on to GOSUB
+    ret                           ; Else execute next statement
+
+;-----------------------------------------------------------------------------
 ; SPLIT Statement
 ; Syntax: SPLIT string$ INTO *array$ DEL delimiter
 ;-----------------------------------------------------------------------------
@@ -867,32 +947,37 @@ FN_COMPARE:
     xor     a                     ; Return 0
     jp      push_hl_labbck_sngflt
 
+
+;----------------------------------------------------------------------------
+; EXEC - Execute string
+; Only supports explicit LET
+;----------------------------------------------------------------------------
+ST_EXEC:
+    jp      GSERR
+    call    ERRDIR            ; Issue Error if in Direct Mode
+    call    FRMSTR            ; Evaluate String
+    call    faclo_addr_len    ; HL = StrDsc, DE = StrAdr, BC = StrLen
+    jp      z,ESERR           ; Empty string error if ""
+ 
 ;----------------------------------------------------------------------------
 ; EVAL - Evaluate string
 ;----------------------------------------------------------------------------
+; 10 ? EVAL("1+1")
+; 20 ? EVAL$("STR$(2+2)")
+; 30 ? EVAL$("1+1")
+; 40 ? EVAL("STR$(2+2)")
+
 FN_EVAL:
     call    ERRDIR            ; Issue Error if in Direct Mode
-    ld      a,(BAS_FLAGS)
-    ld      b,a
-    and     INEVALFLG         ; If already in EVAL
-    jp      nz,STERR          ;   String too complex error
-    ld      a,b
-    or      INEVALFLG         ; Set In EVAL Flag
-    ld      (BAS_FLAGS),a     ; and save it
-    rst     CHRGET            ; Skip Token
+    call    set_inevalflag    ; STERR if already in EVAL()
+    call    function_type     ; A = 0 if String, $FF is Numeric
+    push    af                ; Stack = FunTyp, RtnAdr
     call    PARCHK            ; Get Argument
     push    hl                ; Stack = TxtPtr, RtnAdr
     call    FRESTR            ; Free up temporary and get descriptor address
-    call    string_addr_len   ; Get Argument String Length in BC, Address in HL
-    ld      a,ENDBUF-BUF      ;
-    cp      c
-    jp      c,LSERR           ; Error if longer than 127 bytes
-    ex      de,hl             ; Text address into HL
-    ld      de,BUF            ;
-    ldir                      ; Copy String to Buffer
-    xor     a
-    ld      (de),a            ; Terminate String
-    ld      hl,BUF            ; Reading Line Buffer
+    ld      iy,string_to_buf
+    call    aux_call          ; Copy String to Buffer
+    jp      c,LSERR           ; Error if longer than Buffer
     ld      d,h               ; Writing Line Buffers
     ld      e,l
     xor     a                 ; Tokenize String
@@ -902,12 +987,25 @@ FN_EVAL:
     ld      c,5               ;
     call    tokenize          ; Call KLOOP, restore Extended ROM
     ld      hl,BUF            ; Point to Line Buffer
-    call    FRMEVL            ; Evaluate Formula
+    call    FRMTYP            ; Evaluate Formula, A = ValTyp
     pop     hl                ; HL = TxtPtr; Stack = RtnAdr
+    pop     bc                ; A = IsStr; Stack = RtnAdr
+    cp      b                 ; If ValTyp <> FunTyp
+    jp      nz,TMERR          ;   Type Mismatch error
 clear_inevalflg:
     ld      a,(BAS_FLAGS)
     and     $FF-INEVALFLG
     ld      (BAS_FLAGS),a
+    ret
+
+set_inevalflag:
+    ld      a,(BAS_FLAGS)
+    ld      b,a
+    and     INEVALFLG         ; If already in EVAL
+    jp      nz,STERR          ;   String too complex error
+    ld      a,b
+    or      INEVALFLG         ; Set In EVAL Flag
+    ld      (BAS_FLAGS),a     ; and save it
     ret
 
 ;-----------------------------------------------------------------------------

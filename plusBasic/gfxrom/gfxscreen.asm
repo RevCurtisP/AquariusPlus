@@ -32,6 +32,7 @@ do_color_fill:
     call    fill_rect             ; Do the fill
     pop     a                     ; A = Original VCTRL, Stack = RtnAdr
     out     (IO_VCTRL),a          ; Restore VCTRL
+    xor     a                     ; Clear Carry and Sign flags
     ret
 
 ;----------------------------------------------------------------------------

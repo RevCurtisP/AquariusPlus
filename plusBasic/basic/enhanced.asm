@@ -266,7 +266,13 @@ ST_COPY:
 ; Closes all files
 ;-----------------------------------------------------------------------------
 ST_END:
-    ret     nz                    ; Return if no terminator
+    jr      z,.do_end             ; If not terminated
+    cp      IFTK                  ;   If ENDIF
+    jp      z,CHRGTR              ;     Skip IF and Return
+    SYNCHKT XTOKEN                ;   Else
+    SYNCHKT REPEATK               ;     Require REPEAT
+    jp      ST_END_REPEAT       ;       and do END REPEAT
+.do_end
     push    af
     call    end_extension         ; Close files, clear error trapping sysvars, etc.
     pop     af
@@ -799,6 +805,20 @@ ST_READ_KEYS:
     call    strbuf_temp_str_c     ; Copy Buffer to Temporary. Return HL = StrDsc
     push    hl                    ; Stack = StrDsc, VarPtr, TxtPtr, RtnAdr
     jp      INBUFC                ; Copy Temporary to Variable and return
+
+; Make RETURN skip REPEAT structures non Stack
+return_hook:
+find_stack_entry:
+    ld      hl,4                  ; Skip return addresses RETURN and NEWSTT
+    add     hl,sp
+.loop    
+    call    LOOPER                ; A = StkToken, HL = Stack entry address
+    cp      REPEATK               ; If not REPEAT entry
+    ret     nz                    ;   Continue with RETURN
+    ld      bc,4
+    add     hl,bc                 ; Skip REPEAT entry
+    ld      d,255                 ; DE = Non-existant variable name
+    jr      .loop                 ; Skip more FORs
 
 ;-----------------------------------------------------------------------------
 ; Enhanced RESTORE statement stub

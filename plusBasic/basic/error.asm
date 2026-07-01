@@ -39,7 +39,8 @@ ERRIM   equ     $38   ; 29 Invalid mode
 ERRBR   equ     $3A   ; 30 Bad range
 ERRES   equ     $3C   ; 31 Empty string
 ERRSL   equ     $3E   ; 32 String length
-NONDSK  equ     $40   ; 33 Last non disk error
+ERRLR   equ     $40   ; 33 LOOP/UNTIL without REPEAT
+NONDSK  equ     $42   ; 34 Last non disk error
 ; Disk errors
 DSKERRS equ     $60   ; Start of Disk Errors
 ERRBDF  equ     $60   ; 49 Bad File
@@ -136,16 +137,17 @@ MSGRE:  byte    "RESUME without GOSUB",0        ; 21
 MSGUE:  byte    "Unprintable",0                 ; 22
 MSGLBO: byte    "Line buffer overflow",0        ; 23      
 MSGGS:  byte    "Statement not implemented",0   ; 24
+; plusBASIC errors
 MSGUL:  byte    "Undefined line label",0        ; 25
 MSGAG:  byte    "ARGS without GOSUB",0          ; 26
-; plusBASIC errors
 MSGUD:  byte    "Undimensioned array",0         ; 27 
 MSGTO:  byte    "Too many operands",0           ; 28
 MSGIM:  byte    "Invalid mode",0                ; 29
 MSGBR:  byte    "Bad range",0                   ; 30
 MSGES:  byte    "Empty string",0                ; 31
 MSGSL:  byte    "String length",0               ; 32
-        byte    0                               ; 33  Last non disk error                             
+MSGLR:  byte    "LOOP/UNTIL without REPEAT",0   ; 33
+        byte    0                               ; 34  Last non disk error                             
 
 ; File System Errors                            ;     ESP32 Error
 doserr_messages:
@@ -203,6 +205,7 @@ err_codes:
         word    MSGBR
         word    MSGES
         word    MSGSL
+        word    MSGLR
 err_disk:
         word    MSGBDF
         word    MSGFNF

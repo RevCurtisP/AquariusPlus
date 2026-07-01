@@ -10,6 +10,7 @@
 bas_input:
     ld      (INPVAR),hl
     ld      (INPMAX),bc
+    inc     de                    ; Adjust row to match LOCATE
     ld      (INPROW),de
     call    get_strbuf_addr
     ld      (INPBUF),hl

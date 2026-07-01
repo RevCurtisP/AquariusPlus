@@ -2,21 +2,27 @@
 ; Statements and Functions from MBASIC 80 for CP/M
 ;====================================================================
 
-
-; This routine is jumped to after a THEN if the expression is FALSE
-; IF 1 THEN PRINT "one" ELSE PRINT "zero"
-; IF 1 THEN A$="one" ELSE A$="zero"
-; IF 0 THEN PRINT "one" ELSE PRINT "zero"
+; IF 1 THEN PRINT "one":ELSE PRINT "not-one"
+; IF 0 THEN PRINT "not-zero":ELSE PRINT "zero"
+; IF 1 THEN PRINT "true":ENDIF:PRINT "done"
+; IF 0 THEN PRINT "true":ENDIF:PRINT "done"
+; IF 1 THEN A$="true":ELSE A$="false":ENDIF:PRINT A$
+; IF 0 THEN A$="true":ELSE A$="false":ENDIF:PRINT A$
 ; IF A THEN PRINT "ok":A=A+1:ELSE PRINT "nope"
+; IF 1 THEN PRINT "true":END:PRINT "done"
+; IF 0 THEN PRINT "true":END:PRINT "oops":ELSE:PRINT "false"
+; IF 0 THEN PRINT "true":END:PRINT "oops":ELSE:PRINT "false":ENDIF:print "done"
+ST_ELSE:
+    byte    $3E                   ; LD A,$AF over XOR 
+; Jumped to after a THEN if the expression is FALSE
 then_hook:
-    ld      iy,scan_else
-    call    aux_call              ; Scan else
+    xor     a
+    ld      iy,scan_else_endif
+    call    aux_call              ; Scan for ELSE or ENDIF
     ret     c                     ; If EOL, return to NEWSTT
     rst     CHRGET                ; Else skip ELSE
     jp      GONE3                 ; and execute next statement
 
-ST_ELSE:
-    jp      REM
 
 ;----------------------------------------------------------------------------
 ; ON ERROR ... GOTO
@@ -452,6 +458,31 @@ FN_VAR:
     SYNCHKT XTOKEN                ; Else
     SYNCHKT PTRTK                 ;  Require PTR
     SYNCHKC '('
+    call    _varptr               ; F = AryFlg, DE = VarPtr, BC = AryPtr
+    ex      af,af'                ; F'  = AryFlg
+    SYNCHKC ')'                   ; Require ')'
+    ex      af,af'                ; F  = AryFlg
+    call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
+    jp      nz,FLOAT_DE           ; If not *, Return variable address
+    dec     bc                    ; Else
+    dec     bc                    ;   Back up to beginning of array definition
+    jp      FLOAT_BC              ;   and Float It
+
+_varptr:
+    cp      EXPTK                 ; If not ^
+    jr      nz,get_varptr         ;   Do normal VARPTR
+    rst     CHRGET                ; Skip ^
+    call    FRMSTR                ; Parse String
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    ld      iy,frestr_upper_buf
+    call    aux_call              ; HL = BufAdr
+    jp      c,LSERR
+    call    get_varptr            ; F = AryFlg, DE = VarPtr, BC = AryPtr
+    pop     hl                    ; HL = TxtPtr, RtnAdr
+    ret
+
+; Input: A = CurChr, HL = TxtPtr
+get_varptr:
     cp      MULTK                 ; Check Next Character
     push    af                    ; Stack = VarPfx, RtnAdr
     jr      nz,.not_multk         ; If '*'
@@ -464,15 +495,10 @@ FN_VAR:
     ld      (SUBFLG),a            ; Evaluate Array Indexes
     call    PTRGET                ; Get Pointer
     jp      nz,FCERR              ; FC Error if Not There
-    SYNCHKC ')'                   ; Require ')'
     xor     a
     ld      (SUBFLG),a            ; Reset Sub Flag
     pop     af                    ; A = VarPfx; Stack = RtnAdr
-    call    push_hl_labbck        ; Stack = LABBCK, TxtPtr, RtnAdr
-    jp      nz,FLOAT_DE           ; If not *, Return variable address
-    dec     bc                    ; Else
-    dec     bc                    ;   Back up to beginning of array definition
-    jp      FLOAT_BC              ;   and Float It
+    ret
 
 ;----------------------------------------------------------------------------
 ; WAIT port, xor_mask, and_mask

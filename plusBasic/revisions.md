@@ -1,4 +1,13 @@
 # plusBASIC Revision History
+ - v0.71o (2026-06-30)
+    - Added `EVAL$()`, modified `EVAL()` to generate _Type mismatch error_ if result is not numeric
+    - Implemented `ENDIF`
+    - Implemented `REPEAT`/`LOOP`/`UNTIL`/`END REPEAT`
+    - Added `EXEC` token and _ST_EXEC_ stub.
+    - Modified `LOAD` to ignore lines beginning with apostrophe when loading program in ASCII format
+    - Modified enhanced `INPUT` so that specified screen row matches _LOCATE_
+    - Modified `VARPTR()` to allow string parameter containing name of variable
+    - Fixed _Invalid mode error_ in `FILL SCREEN ... COLOR` in 80 column mode with border remapped
  - v0.71n (2026-06-04)
     - Replaced hooks `10`, `23`, and `27` with direct jumps, removed _fast_hook_handler_ routine and hook table
     - Moved _colormap_read_tmpbfr_ and _colormap_write_tmpbfr_, from _auxrom/auxbitmap.asm_ to _gfxtmpbfr.asm_

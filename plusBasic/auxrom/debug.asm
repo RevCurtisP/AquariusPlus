@@ -10,7 +10,8 @@ _STRLEN     equ   $3858
 
 ;-----------------------------------------------------------------------------
 ; Dump BASIC variables to file vardump.txt
-; Input: DE: String Buffer Address
+; Input: BC: Address of Top Stack Entry
+;        DE: String Buffer Address
 ;        HL: Filename String Desc Address
 ; Clobbers: AF,AF',BC,DE,HL,IX
 ;-----------------------------------------------------------------------------
@@ -25,6 +26,7 @@ dump_vars:
     ret
 
 _dump:
+    push    bc                    ; Stack = StkPtr, RtnAdr
     ld      de,_dtitle
     ld      bc,_dtitlen
     call    _write_string
@@ -32,6 +34,8 @@ _dump:
     call    _variables
 ;    call    _arrays
 ;    call    _tempbuffs
+    pop     hl                    ; HL = StkPtr; Stack = RtnAdr
+;    call    _stack
     ret
 
 ; Dump Simple Variables
@@ -232,6 +236,9 @@ _tempbuffs:
     call    _write_tempbuff
     inc     h
     jr      .loop
+
+_stack:
+    
 
 ; Updates: BC: BufPtr, HL: VarPtr; Clobbers: AF, DE
 _out_strlen:

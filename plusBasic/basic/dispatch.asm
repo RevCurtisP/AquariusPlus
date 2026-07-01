@@ -79,8 +79,14 @@ extended_statement:
     dec     a                   ; $B6 BORDER
     dec     a                   ; $B7 CHECK
     jp      z,ST_CHECK
-    sub     RECTK-CHECKTK       ; $BE RECT
+    dec     a                   ; $B8 REPEAT
+    jp      z,ST_REPEAT
+    dec     a                   ; $B9 UNTIL
+    jp      z,ST_UNTIL
+    sub     RECTK-UNTILTK       ; $BE RECT
     jp      z,ST_RECT
+    dec     a                   ; $BF EXEC
+    jp      z,ST_EXEC
     jp      SNERR 
    
 extended_function:
@@ -141,6 +147,7 @@ extended_function:
     jp      z,FN_FLOAT
     sub     a,CHECKTK-FLOATK    ; $B7 CHECK
     jp      z,FN_CHECK
+
     jp      SNERR
 
 

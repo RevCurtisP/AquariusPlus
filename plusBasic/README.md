@@ -33,7 +33,7 @@
     - [ ] **_array$(...)_[_start_ TO _end_]** - Characters _start_ through _end_ of string array element _array$(...)_.
     
 ## Operators
- - *Arithmetic operations* evaluate performed using floating point math.<!--operators.arithmetic-->
+ - _Arithmetic operations_ evaluate performed using floating point math.<!--operators.arithmetic-->
    - [x] **- _expression_** - Negate expression<!--operators.arithmetic-->
    - [x] **_expression_ + _expression_** - Add second expression to first expression.
    - [x] **_expression_ - _expression_** - Subtract second expression from first expression.
@@ -41,24 +41,24 @@
    - [x] **_expression_ / _expression_** - Divide  first expression by second expression.
    - [x] **_expression_ ^ _expression_** - Raise first expression to power second expression.
    - [x] **_expression_ MOD _expression_** - Calculate the remainder of the first expression divided by the second expression.
- - *Relational operations* return -1 if true, 0 if false.<!--operators.relational-->
+ - _Relational operations_ return -1 if true, 0 if false.<!--operators.relational-->
    - [x] **_expression_ > _expression_** - True if first expression is greater than second expression.
    - [x] **_expression_ = _expression_** - True if first expression is equal second expression.
    - [x] **_expression_ < _expression_** - True if first expression is less than second expression.
    - [x] **_expression_ >= _expression_** - True if first expression is greater than or equal to second expression.
    - [x] **_expression_ <= _expression_** - True if first expression is less than or equal to second expression.
- - *Logical operators* perform the corresponding boolean operation on the bits of the each integer expression.
+ - _Logical operators_ perform the corresponding boolean operation on the bits of the each integer expression.
    - [-] **NOT _integer_** - Sets resulting bit to 1 if the operand bit is 0.<!--logical:NOT-->
    - [-] **_integer_ AND _integer_** - Sets resulting bit to 1 if both operand bits are 1.<!--logical:AND-->
    - [-] **_integer_ OR _integer_** - Sets the resulting bit to 1 if either operand bit is 1.<!--logical:OR-->
    - [ ] **_integer_ XOR _integer_** - Sets resulting bit to 1 if one operand bits is 1, and the other is 0.
    - [ ] **_integer_ IMP _integer_** - _Not implemented_.
- - *String operators* create new temporary string.<!--operators.string-->
+ - _String operators_ create new temporary string.<!--operators.string-->
    - [ ] **_string_ + _string_** - Concatenates second string to the end of first string.
    - [x] **_string_ %% (_expression_{,...})** - Perform string substitution.
 
 ## Special Characters
- - [ ] **\__label_** - Line label. Valid at the beginining of a line, or as the operand of a GOTO or GOSUB.
+ - [ ] **\__label_** - Line label. Valid at the beginning of a line, or as the operand of a GOTO or GOSUB.
  - [ ] **'comment** - Shortcut for REM. Valid at the beginning of a line, or after a statement terminating colon.
  
 ## Direct Mode Aliases
@@ -155,15 +155,19 @@
  - [ ] **DRAW TEXT (_col_,_row)_),_string_** - _Not implemented._
  - [ ] **DUMP VARS "_filespec_"** - Dump system and BASIC variables to YAML file.
  - [ ] **EDIT _lineno_** - Edit specified BASIC line.
- - [ ] **ELSE** - _Not implemented_.
+ - [ ] **ELSE** - Execute following statements if condition was false.
  - [ ] **END** - Terminate program execution.<!--flow-->
+ - [ ] **ENDIF** - Execute statements following `IF`/`THEN`/`ELSE`.
  - [ ] **ENDKEY** - Return key used to exit enhanced INPUT.
+ - [ ] **END REPEAT** - Unconditionally terminate _REPEAT_ loop.
  - [ ] **ERR** - Return last error code.<!--error-->
  - [ ] **ERRLINE** - Return line number of last error.
  - [ ] **ERR$** - Return error message of last error.<!--error-->
  - [ ] **ERR$(_errno_)** - Return error message of specified error code.<!--error-->
  - [ ] **ERASE _\*array_{,_\*array_...}** - Delete arrays.
- - [ ] **EVAL(_string_)** - Evaluate expression in string.
+ - [ ] **EVAL(_string_)** - Evaluate arbitrary numeric expression.
+ - [ ] **EVAL$(_string_)** - Evaluate arbitrary string expression.
+ - [ ] **EXEC _string_** - _Not implemented_.
  - [x] **EXP(_float_)** - Return argument to the power of mathematical constant _e_.
  - [ ] **FILEDATETIME$(_filespec_)** - Return file timestamp.<!--filesystem-->
  - [ ] **FILEATTR(_filespec_)** - Return file attribute byte.<!--filesystem-->
@@ -268,7 +272,7 @@
  - [ ] **LOAD FNKEYS _filespec_** - Load function key definitions from file.<!--FNKEYS-->
  - [ ] **LOAD MODULE** - _Proposed enhancement._
  - [ ] **LOAD PALETTE _p_,_filespec_** - Load file data ino palette.<!--palette-->
- - [ ] **LOAD SAMPLE _filespec_,«!_ext_addr_»|«{@_page_,}_address_»** - Load digitized sound file into paged RAM.
+ - [ ] **LOAD SAMPLE _filespec_,«!_ext_addr_»|«{@_page_,}_address_»** - Load digitized sound file into paged RAM.<!--sample-->
  - [x] **LOAD SCREEN _filespec_** - Load text screen from file.<!--screenio-->
  - [ ] **LOAD SCREEN ATTR _filespec_** - Load text colors from file.
  - [ ] **LOAD SCREEN CHR _filespec_** - _Not implemented_.
@@ -279,6 +283,7 @@
  - [x] **LOG(_float_)** - Return natural logarithm of argument.<!--math-->
  - [.] **LONG(_string_{,_offset_})** - Convert four consecutive bytes in string to unsigned long.<!--convert-->
  - [.] **LONG$(_long_)** - Convert long to unsigned four byte binary string.<!--convert-->
+ - [ ] **LOOP** - Jump to beginning of _REPEAT_ loop.
  - [.] **LOOP TRACK {_filespec_}** - Play specified or previously loaded tracker file repeatedly.<!--track-->
  - [ ] **LPOS(_expression_)** - Return current column position of printer.
  - [ ] **LPRINT __ TAB(_integer_)|SPC(_integer_)|_expression_|;|,{...}** - Output data to printer.<!--print-->
@@ -318,8 +323,8 @@
  - [ ] **PEEKCOLOR$(_address_,_length_)** - Read string from color RAM.<!--PEEK-->
  - [ ] **PEEKSCREEN(_address_)** - Read byte from screen RAM.<!--PEEK-->
  - [ ] **PEEKSCREEN$(_address_,_length_)** - Read string from screen RAM.<!--PEEK-->
- - [ ] **PLAY SAMPLE «!_ext_addr_»|«@_page_,_address_»** - Play digital sample from previously loaded file.<!--PLAYSAMPLE-->
- - [ ] **PLAY SAMPLE "_filespec_"** - Load and play digitized sound file.<!--PLAYSAMPLE-->
+ - [ ] **PLAY SAMPLE «!_ext_addr_»|«@_page_,_address_»** - Play digital sample from previously loaded file.<!--sample-->
+ - [ ] **PLAY SAMPLE "_filespec_"** - Load and play digitized sound file.<!--s-->
  - [-] **PLAY TRACK \{_filespec_}** - Play specified or previously loaded tracker file.<!--track-->
  - [X] **POINT(_x_,_y_)** - Return status of bloxel or pixel.<!--pixel-->
  - [ ] **POKE «!_ext_addr_»|«{@_page_,}_address_»,_byte_|_string_{;..}.** - Write bytes and/or strings to memory.<!--POKE-->
@@ -330,7 +335,7 @@
  - [X] **POSY** - Return 1bpp pixel or bloxel y-position.<!--pixel-->
  - [X] **PRESET (_x_,_y_)** - Erase bloxel or pixel.<!--pixel-->
  - [ ] **PRINT @(_x_,_y_)|TAB(_integer_)|SPC(_integer_)|_expression_|;|,{...}** - Display data on screen.<!--print-->
- - [ ] **PSG _register_,_byte_{,...}** - Write bytes to PSG register
+ - [ ] **PSG _register_,_byte_{,...}** - Write bytes to PSG register(s).
  - [ ] **PSG _register_,_byte_{;...}** - Not implemented
  - [X] **PSET (_x_,_y_){,color}** - Draw bloxel or pixel.<!--pixel-->
  - [X] **PSET (_x_,_y_),XOR** - Toggle bloxel or pixel.<!--pixel-->
@@ -342,6 +347,7 @@
  - [ ] **RECT (_x_,y_)-(_x_,_y_){,{_drawchars_}{,«_fgcolor_,_bgcolor_»|«_drawcolors_»}}** - Draw rectangle on text screen.<!--screendraw-->
  - [ ] **REM _text_** - Denotes comment.<!--REM-->
  - [ ] **RENAME _filespec_ TO _filespec_** - Rename file or directory
+ - [ ] **REPEAT** - Initiate _REPEAT_ loop.
  - [ ] **RESUME _lineref_** - Clear error condition and continues program execution at specified line
  - [-] **RESUME TRACK** - Resume playing paused track.<!--track-->
  - [ ] **RESET \*_array_** - Set all array elements to 0 or empty string and collect garbage if string array.
@@ -466,8 +472,9 @@
  - [x] **TRIMR$(_expression_{,_string_})** - Remove characters from right end of string.<!--string-->
  - [ ] **TRON** - Enable line tracing.
  - [ ] **TROFF** - Disable line tracing.
- - [x] **UPR(_char_)** - Uppercases numeric ASCII code or ASCII code of first character of string
- - [x] **UPR$(_string_|_byte_)** - Uppercases argument string or argument ASCII code converted to string.
+ - [ ] **UNTIL _expression_** - Jump to beginning of or terminate _REPEAT_ loop.
+ - [x] **UPR(_char_)** - Return uppercased numeric ASCII code or ASCII code of first character of string.
+ - [x] **UPR$(_string_|_byte_)** - Return uppercased argument string or argument ASCII code converted to string.
  - [x] **UPRKEY** - Return uppercased ASCII code of last key presed.
  - [x] **UPRKEY$** - Return uppercased string containing last key pressed.
  - [x] **UPRKEY(_string_)** - Convert last key pressed to uppercase, and return position in string.
@@ -477,7 +484,7 @@
  - [x] **VAL(_string_)** - Convert ASCII string to floating point number.<!--convert-->
  - [ ] **VARDEF(\*_array{$}_)** - Return True if array is defined.
  - [ ] **VARDEF(_variable_)** - _Proposed enhancement_.
- - [ ] **VARPTR(_var{$}_|\*_array{$}_)** - Return address of variable, array element, or array
+ - [ ] **VARPTR(_var{$}_|\*_array{$}_|^_string_)** - Return address of variable, array element, or array
  - [ ] **VER(_expression_)** - Return System or plusBASIC version as integer.<!--system-->
  - [ ] **VER$(_expression_)** - Return System or plusBASIC version as printable string.<!--system-->
  - [ ] **WAIT _port_,_xor_mask_{,_and_mask_}** - Pause until specifie bit pattern received from IO port.<!--system-->

@@ -5,7 +5,7 @@ import re
 md_in = open("README.md")
 md_out = open("quickref.md","w")
 wiki_out = open("quickref_wiki.md","w")
-#html_out = open("quickref.html","w")
+html_out = open("quickref.html","w")
 links_in = open("quickref-links.tab")
 
 html_header = [
@@ -37,7 +37,7 @@ for line in links_in:
 
 out_lines = []
 
-#html_out.writelines(html_header)
+html_out.writelines(html_header)
 
 kwords = []
 
@@ -122,36 +122,36 @@ for line in md_in.readlines():
     md_out.write(line + "\n")
     wiki_out.write(wiki + "\n")
 
-#   # Convert to html
-#   html = line
-#   # headings
-#   if len(line) > 3 and line[:2] == "# ":
-#       html = "    <h1>%s</h1>" % line[2:].strip()
-#   if len(line) > 4 and line[:3] == "## ":
-#       html = "    <h2>%s</h2>" % line[3:].strip()
-#   # list elements
-#   if len(line) > 4 and line[:4] == "  - ":
-#       if list_level < 1:
-#           html_out.write("    <ul>\n")
-#           list_level = 1
-#       html = "    <li>%s</li>" % (html)
-#       if list_level > 1:
-#           html_out.write("      </ul>\n")
-#           list_level = 1
-#   elif len(line) > 6 and line[:6] == "    - ":
-#       if list_level < 2:
-#           html_out.write("      <ul>\n")
-#           list_level = 2
-#       html = "      <li>%s</li>" % (html)
-#   else:
-#       html_out.write("    </ul>\n")
-#       list_level = 0
-#  
-#   if html != line:
-#       html_out.write(html + "\n")
+    # Convert to html
+    html = line
+    # headings
+    if len(line) > 3 and line[:2] == "# ":
+        html = "    <h1>%s</h1>" % line[2:].strip()
+    if len(line) > 4 and line[:3] == "## ":
+        html = "    <h2>%s</h2>" % line[3:].strip()
+    # list elements
+    if len(line) > 4 and line[:4] == "  - ":
+        if list_level < 1:
+            html_out.write("    <ul>\n")
+            list_level = 1
+            indent = "    "
+        html =  indent + "<li>%s</li>" % (html[4:])
+        if list_level > 1:
+            html_out.write("      </ul>\n")
+            list_level = 1
+    elif len(line) > 6 and line[:6] == "    - ":
+        if list_level < 2:
+            html_out.write("      <ul>\n")
+            list_level = 2
+        html = indent + "  <li>%s</li>" % (html)
+    elif list_level == 1:
+        html_out.write("    </ul>\n")
+        list_level = 0
+   
+    if html != line:
+        html_out.write(html + "\n")
 
-#html_out.writelines(html_trailer)
-
+html_out.writelines(html_trailer)
 
 # Inserting wiki links into .md
 # - **syntax** - description<!--link_id>

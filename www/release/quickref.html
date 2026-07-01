@@ -55,7 +55,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
     <h2 id="special-characters">Special Characters</h2>
     <ul>
       <li>
-        <strong>_<em>label</em></strong> - Line label. Valid at the beginining of a line, or as the operand of a GOTO or GOSUB.</li>
+        <strong>_<em>label</em></strong> - Line label. Valid at the beginning of a line, or as the operand of a GOTO or GOSUB.</li>
       <li>
         <strong>'comment</strong> - Shortcut for REM. Valid at the beginning of a line, or after a statement terminating colon.</li>
     </ul>
@@ -247,11 +247,15 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
       <li>
         <strong>EDIT <em>lineno</em></strong> - Edit specified BASIC line.</li>
       <li>
-        <strong>ELSE</strong> - <em>Not implemented</em>.</li>
+        <strong>ELSE</strong> - Execute following statements if condition was false.</li>
       <li>
         <strong>END</strong> - Terminate program execution.</li>
       <li>
+        <strong>ENDIF</strong> - Execute statements following <code>IF</code>/<code>THEN</code>/<code>ELSE</code>.</li>
+      <li>
         <strong>ENDKEY</strong> - Return key used to exit enhanced INPUT.</li>
+      <li>
+        <strong>END REPEAT</strong> - Unconditionally terminate <em>REPEAT</em> loop.</li>
       <li>
         <strong>ERR</strong> - Return last error code.</li>
       <li>
@@ -263,7 +267,11 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
       <li>
         <strong>ERASE <em>*array</em>{,<em>*array</em>...}</strong> - Delete arrays.</li>
       <li>
-        <strong>EVAL(<em>string</em>)</strong> - Evaluate expression in string.</li>
+        <strong>EVAL(<em>string</em>)</strong> - Evaluate arbitrary numeric expression.</li>
+      <li>
+        <strong>EVAL$(<em>string</em>)</strong> - Evaluate arbitrary string expression.</li>
+      <li>
+        <strong>EXEC <em>string</em></strong> - <em>Not implemented</em>.</li>
       <li>
         <strong>EXP(<em>float</em>)</strong> - Return argument to the power of mathematical constant <em>e</em>.</li>
       <li>
@@ -495,6 +503,8 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
       <li>
         <strong>LONG$(<em>long</em>)</strong> - Convert long to unsigned four byte binary string.</li>
       <li>
+        <strong>LOOP</strong> - Jump to beginning of <em>REPEAT</em> loop.</li>
+      <li>
         <strong>LOOP TRACK </strong> - Play specified or previously loaded tracker file repeatedly.</li>
       <li>
         <strong>LPOS(<em>expression</em>)</strong> - Return current column position of printer.</li>
@@ -601,7 +611,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
       <li>
         <strong>PRINT @(<em>x</em>,<em>y</em>)|TAB(<em>integer</em>)|SPC(<em>integer</em>)|<em>expression</em>|;|,</strong> - Display data on screen.</li>
       <li>
-        <strong>PSG <em>register</em>,<em>byte</em>{,...}</strong> - Write bytes to PSG register</li>
+        <strong>PSG <em>register</em>,<em>byte</em>{,...}</strong> - Write bytes to PSG register(s).</li>
       <li>
         <strong>PSG <em>register</em>,<em>byte</em>{;...}</strong> - Not implemented</li>
       <li class="task-list-item">
@@ -626,6 +636,8 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
         <strong>REM <em>text</em></strong> - Denotes comment.</li>
       <li>
         <strong>RENAME <em>filespec</em> TO <em>filespec</em></strong> - Rename file or directory</li>
+      <li>
+        <strong>REPEAT</strong> - Initiate <em>REPEAT</em> loop.</li>
       <li>
         <strong>RESUME <em>lineref</em></strong> - Clear error condition and continues program execution at specified line</li>
       <li>
@@ -875,9 +887,11 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
       <li>
         <strong>TROFF</strong> - Disable line tracing.</li>
       <li>
-        <strong>UPR(<em>char</em>)</strong> - Uppercases numeric ASCII code or ASCII code of first character of string</li>
+        <strong>UNTIL <em>expression</em></strong> - Jump to beginning of or terminate <em>REPEAT</em> loop.</li>
       <li>
-        <strong>UPR$(<em>string</em>|<em>byte</em>)</strong> - Uppercases argument string or argument ASCII code converted to string.</li>
+        <strong>UPR(<em>char</em>)</strong> - Return uppercased numeric ASCII code or ASCII code of first character of string.</li>
+      <li>
+        <strong>UPR$(<em>string</em>|<em>byte</em>)</strong> - Return uppercased argument string or argument ASCII code converted to string.</li>
       <li>
         <strong>UPRKEY</strong> - Return uppercased ASCII code of last key presed.</li>
       <li>
@@ -897,7 +911,7 @@ td, h1, h2, h3, h4, h5, p, ul, ol, li {
       <li>
         <strong>VARDEF(<em>variable</em>)</strong> - <em>Proposed enhancement</em>.</li>
       <li>
-        <strong>VARPTR(<em>var{<span class="math">}_|\*_array{</span>}</em>)</strong> - Return address of variable, array element, or array</li>
+        <strong>VARPTR(<em>var{<span class="math">}_|\*_array{</span>}</em>|^<em>string</em>)</strong> - Return address of variable, array element, or array</li>
       <li>
         <strong>VER(<em>expression</em>)</strong> - Return System or plusBASIC version as integer.</li>
       <li>

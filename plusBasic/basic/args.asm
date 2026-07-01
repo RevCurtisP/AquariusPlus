@@ -88,7 +88,7 @@ ST_RETURN:
     jp      z,RETURN              ; If no Args, do standard Return
     ld      (SAVTXT),hl           ; Save Pointer to RetVals
     ld      d,255                 ; MAKE SURE VARIABLE POINTER IN [D,E] NEVER GETS MATCHED
-    call    FNDFOR                ; GO PAST ALL THE "FOR" ENTRIES
+    call    return_hook           ; Skip FOR and 
     ld      sp,hl                 ; UPDATE THE STACK
     cp      GOSUTK                ;
     ld      e,ERRRG               ; ERROR ERRRG IS "RETURN WITHOUT GOSUB"

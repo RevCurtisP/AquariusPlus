@@ -84,7 +84,7 @@ auto_text:
     db      "autoexec"
 auto_len = $ - auto_text
     db      $0D
-auto_desc:
+auto_desc:  
     dw      auto_len,auto_text
 
 ; Null string descriptor
@@ -95,7 +95,7 @@ null_desc:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.71n"
+    db "v0.71o"
     db 0
 plusver_len equ $ - plus_version
 plus_len   equ   $  - plus_text

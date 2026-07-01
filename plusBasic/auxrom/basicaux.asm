@@ -845,3 +845,50 @@ bas_tron_troff:
     ld      (EXT_FLAGS),a
     ret
 
+; Copy String to S
+string_to_strbuf:
+    push    hl                ; Stack = StrDsc, RtnAdr
+    call    get_strbuf_addr   ; HL = BufAdr, C = BufLen
+    ld      a,c               ; A = BufLen
+    ex      de,hl             ; DE = BufAdr
+    pop     hl                ; HL  = StrDsc
+    jr      string_to_buffer
+
+
+
+frestr_to_buf:
+    call    FRESTR            ; HL = StrDsc
+string_to_buf:
+    ld      de,BUF
+    ld      a,ENDBUF-BUF      ;
+; Input: A = BufLen, DE = BufAdr, HL = StrDsc
+; Output: A = 0, HL = BufAdr, Carry Set if StrLen > BufLen
+string_to_buffer:
+    push    de                ; Stack = BufAdr, RtnAdr
+    push    de                ; Stack = BufAdr, BufAdr, RtnAdr
+    push    af                ; Stack = Buflen, BufAdr, BufAdr, RtnAdr
+    call    string_addr_len   ; DE = StrAdr, BC = StrLen
+    pop     af                ; A = BufLen; Stack = BufAdr, BufAdr, RtnAdr
+    cp      c                 ; If StrLen > BufLen
+    ret     c                 ;   Return Carry Set
+    ex      de,hl             ; HL = StrAdr
+    pop     de                ; DE = BufAdr; Stack = BufAdr, RtnAdr
+    ldir                      ; Copy String to Buffer
+    xor     a
+    ld      (de),a            ; Terminate String
+    pop     hl                ; HL = BufAdr
+    ret
+
+frestr_upper_buf:
+    call    frestr_to_buf
+uppercase_buffer:
+    push    hl                ; Stack = BufAdr, RtnAdr
+.loop
+    ld      a,(hl)
+    or      a
+    jp      z,POPHRT
+    call    uppercase_char
+    ld      (hl),a
+    inc     hl
+    jr      .loop
+

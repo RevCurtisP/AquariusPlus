@@ -535,15 +535,15 @@ _load_ascii:
 
 .lineloop
     call    get_strbuf_addr       ; HL = StrBuf
+    ld      a,(BAS_FDESC)         ; A = Channel
+    dec     a                     ; A = FilDsc
     call    esp_read_line         ; BC = LinLen; D = FilDsc; HL = StrBuf
     jp      m,.done
-    ld      a,(hl)
-    cp      39                    ; If first character is '
-    jr      z,.lineloop           ;   Skip line
     ld      d,h                   ; DE = StrBuf
     ld      e,l
     call    tokenize_line         ; BC = LinNum
     jr      z,.lineloop           ; If blank, read next line
+    jr      c,.badline            ; US error if no line number
     ex      de,hl                 ; HL = StrBuf
     ld      d,b
     ld      e,c                   ; DE = LinNum
