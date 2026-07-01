@@ -1,4 +1,4 @@
-
+    
 880 _finish: GOSUB _outnewline
 882 IF DEEK($38AF)<>$38B1 THEN GOSUB _adderror:ARGS "Error: hanging temp descriptors"
 885 _passed: GOSUB _output:ARGS "Passed:"+STR$(QR(1))
@@ -9,7 +9,7 @@
 890 FOR I=0 TO 2:QA=$BFF8+I*2:DOKE QA,DEEK(QA)+QR(I):NEXT
 892 QS$=ARGS$(0)+\" - Passed: %%, Failed: %%, Errors: %%\n" % (QR(1), QR(0), QR(2))
 894 APPEND "out/_results.txt",^QS$:IF QU<>0 THEN GOSUB _outscreen:ARGS QS$
-896 IF QC=0 THEN PRINT "Unit Tests Complete":END
+896 IF QC=0 THEN PRINT "Unit Tests Complete":PLAY SAMPLE "assets/fiesta-trio.saq":END
 897 IF QM AND QG THEN RUN QG$+".baq"
 898 _theend:GOSUB _nlscreen:ARGS "F3=Run Again, F4=Run Next":END
 899 _failend:GOSUB _nlscreen:ARGS "Test `%%` failed" % (QA$):goto _theend
@@ -23,8 +23,7 @@
 908 GOSUB _outscreen:ARGS "Running Tests":QQ$=CHR$(34):QR$(0)="Fail: ":QR$(1)="Pass: ":RETURN
 
 910 _title:GETARGS QT$:GOSUB _outnewline:GOSUB _output:ARGS "Testing "+QT$
-912 IF QU<>0 THEN GOTO _outstring
-914 RETURN
+912 IF QU<>0 THEN GOTO _outstring:ELSE RETURN
 
 918 _adderror: QR(2)=QR(2)+1:GETARGS QA$:GOSUB _output:ARGS QA$:GOTO _failcheck
 919 _assert_bool:GETARGS QV,QA$:GOSUB _quotes:GOTO 924
@@ -34,7 +33,7 @@
 924 GOSUB _output:ARGS QR$(QV)+QA$:QR(QV)=QR(QV)+1:GOTO _failcheck
 926 DOKE $38AF,$38B1:GOSUB _output:ARGS ERR$+" error in "+QA$
 927 RESUME:ON ERROR GOTO 0:QV=0:QR(2)=QR(2)+1
-928 _failcheck: ON -(QF AND QV-1) GOTO _failend:RETURN
+928 _failcheck: IF -(QF AND QV-1) THEN GOTO _failend:ELSE RETURN
 
 940 _assert_err:GETARGS QA$,QE:GOSUB _quotes
 942 ON ERROR GOTO _yes_err:QV=EVAL(QA$)
@@ -42,16 +41,14 @@
 946 _yes_err:QV=-(ERR=QE):QR(QV)=QR(QV)+1:GOSUB _output:ARGS QR$(QV)+"Error"+STR$(QE)+" in "+QA$
 948 RESUME:ON ERROR GOTO 0:GOTO _failcheck
 
-950 _outnewline:IF QU=0 THEN PRINT:QL=QL+1:RETURN
-952 IF QU=1 THEN LPRINT:RETURN
-954 QN$=\"\n":APPEND QF$,^QN$:RETURN
+950 _outnewline:IF QU=0 THEN PRINT:QL=QL+1:RETURN 
+952 IF QU=1 THEN LPRINT:ELSE QN$=\"\n":APPEND QF$,^QN$:ENDIF:RETURN
 
 956 _outnlquote:GOSUB _outnewline
 958 _outquoted:GOSUB _quotes:GOTO _output:ARGS QU$
 
 960 _outpart: GETARGS QU$:ON QU GOTO _outprinter,_outfile
-962 IF QL>20 THEN GOSUB _pause
-964 PRINT QU$;:QL=QL+1:RETURN
+962 IF QL>20 THEN GOSUB _pause:ENDIF:PRINT QU$;:QL=QL+1:RETURN
 966 _outprinter:LPRINT QU$;:RETURN
 
 970 _quotes:FOR QI=1 TO LEN(QA$):QC$=QA$[QI]:IF QC$="`" THEN QA$[QI]=QQ$
@@ -62,13 +59,10 @@
 977 _outscreen:GETARGS QU$:GOTO _outstring
 978 _nloutput:GOSUB _outnewline
 980 _output:GETARGS QU$:ON QU GOTO _outprinter,_outfile
-982 _outstring:IF QL>20 THEN GOSUB _pause
-984 PRINT QU$:QL=QL+1:RETURN
+982 _outstring:IF QL>20 THEN GOSUB _pause:ENDIF:PRINT QU$:QL=QL+1:RETURN
 986 _outprinter:LPRINT QU$:RETURN
 988 _outfile:QN$=\"%%\n" % (QU$):APPEND QF$,^QN$:RETURN
 
-992 _pause:IF QU OR QK='c' THEN RETURN
-994 PRINT:PRINT "...Press a key...":QL=0:QK=GETKEY:PRINT:RETURN
+992 _pause:IF QU=0 AND QK<>'c' THEN PRINT:PRINT "...Press a key...":QL=0:QK=GETKEY:PRINT:ENDIF:RETURN
 
-996 _getkey:IF QU=0 AND QK<>'c' THEN QK=GETKEY
-998 RETURN
+996 _getkey:IF QU=0 AND QK<>'c' THEN QK=GETUPR:ENDIF:RETURN

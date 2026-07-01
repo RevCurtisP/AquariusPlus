@@ -5,7 +5,7 @@
 200 GOSUB _title:ARGS "Bloxel and Pixel Statements and Functions"
 
 300 SC=40
-302 _bloxels:
+302 REPEAT
 304 GOSUB _init_screen
 306 GOSUB _title:ARGS "%%-Column Bloxel mode" % (SC)
 308 PS=SC*2+1:GOSUB _output:ARGS "PS=%%" % (PS)
@@ -62,7 +62,8 @@
 358 GOSUB _assert:ARGS "PX=7"
 359 GOSUB _assert:ARGS "PY=5"
 
-390 IF SC=40 THEN SC=80:GOTO _bloxels
+390 IF SC=40 THEN SC=80:LOOP
+395 END REPEAT
 
 400 GOSUB _title:ARGS "1bpp Bitmap mode"
 402 SCREEN 0,2:COLOR 7,0:CLEAR BITMAP
