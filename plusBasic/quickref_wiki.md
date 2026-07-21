@@ -149,8 +149,8 @@
  - **DUMP VARS "_filespec_"** - Dump system and BASIC variables to YAML file.
  - **EDIT _lineno_** - Edit specified BASIC line.
  - **ELSE** - Execute following statements if condition was false.
- - **[END](BASIC-Flow-Control-Statements#end)** - Terminate program execution.
- - **ENDIF** - Execute statements following `IF`/`THEN`/`ELSE`.
+ - **[END](BASIC-Loop-Control-Statements#end)** - Terminate program execution.
+ - **[ENDIF](BASIC-Flow-Control-Statements#endif)** - Execute statements following `IF`/`THEN`/`ELSE`.
  - **ENDKEY** - Return key used to exit enhanced INPUT.
  - **END REPEAT** - Unconditionally terminate _REPEAT_ loop.
  - **ERR** - Return last error code.
@@ -178,7 +178,7 @@
  - **[FILL TILEMAP {(_x_,y_)-(_x_,_y_)} TILE _tileno_ { ATTR _attrs_} { PALETTE _palette_}](BASIC-FILL-TILEMAP-Statement#fill-tilemap)** - Fill tilemap with specified tile, attributes and palette.
  - **[FLOAT(_string_{,_offset_})](BASIC-Conversion-Functions#float)** - Convert four consecutive bytes in string to float.
  - **[FLOAT$(_long_)](BASIC-Conversion-Functions#float-1)** - Convert float to four byte binary string.
- - **FOR _var_=_expression_ TO _expression_ {STEP _expression_]** - Initiate a _FOR_ loop.
+ - **[FOR _var_=_expression_ TO _expression_ {STEP _expression_}](BASIC-Loop-Control-Statements#for)** - Initiate a _FOR_ loop.
  - **FRE(_float_|_string_)** - Return amount of unused variable and array or string space (after forcing garage collection).
  - **GET ARGS _var_{,...}** - Read arguments from argument list after `GOSUB`.
  - **[GET SCREEN {CHRS|COLORS} (_x_,y_)-(_x_,_y_) \*_array_|^_strvar_](BASIC-GET-SCREEN-Statement#get-screen)** - Copy text screen clip to array or string variable.
@@ -276,7 +276,7 @@
  - **[LOG(_float_)](BASIC-Math-Functions#log)** - Return natural logarithm of argument.
  - **[LONG(_string_{,_offset_})](BASIC-Conversion-Functions#long)** - Convert four consecutive bytes in string to unsigned long.
  - **[LONG$(_long_)](BASIC-Conversion-Functions#long-1)** - Convert long to unsigned four byte binary string.
- - **LOOP** - Jump to beginning of _REPEAT_ loop.
+ - **[LOOP](BASIC-Loop-Control-Statements#loop)** - Jump to beginning of _REPEAT_ loop.
  - **[LOOP TRACK {_filespec_}](BASIC-TRACK-Statements#loop-track)** - Play specified or previously loaded tracker file repeatedly.
  - **LPOS(_expression_)** - Return current column position of printer.
  - **[LPRINT TAB(_integer_)|SPC(_integer_)|_expression_|;|,{...}](BASIC-PRINT-Statements#lprint)** - Output data to printer.
@@ -293,7 +293,7 @@
  - **[MOUSEW](BASIC-MOUSE-Functions#mousew)** - Return mouse wheel delta.
  - **[MOUSEX](BASIC-MOUSE-Functions#mousex)** - Return mouse x-position.
  - **[MOUSEY](BASIC-MOUSE-Functions#mousey)** - Return mouse y-position.
- - **[NEXT {_var_,...}](BASIC-Flow-Control-Statements#next)** - Terminate one or more _FOR_ loops.
+ - **[NEXT {_var_,...}](BASIC-Loop-Control-Statements#next)** - Terminate one or more _FOR_ loops.
  - **NEW** - Delete program and clears all variables.
  - **[OFFSET(_column_,_row_)](BASIC-Screen-Statements-and-Functions#offset)** - Return offset into Screen or Color RAM.
  - **ON .. _integer_ .. GOSUB _lineref_,...** - `GOSUB` one of several line numbers based on _expression_.
@@ -465,7 +465,7 @@
  - **[TRIMR$(_expression_{,_string_})](BASIC-String-Functions#trimr)** - Remove characters from right end of string.
  - **TRON** - Enable line tracing.
  - **TROFF** - Disable line tracing.
- - **UNTIL _expression_** - Jump to beginning of or terminate _REPEAT_ loop.
+ - **[UNTIL _expression_](BASIC-Loop-Control-Statements#until)** - Jump to beginning of or terminate _REPEAT_ loop.
  - **UPR(_char_)** - Return uppercased numeric ASCII code or ASCII code of first character of string.
  - **UPR$(_string_|_byte_)** - Return uppercased argument string or argument ASCII code converted to string.
  - **UPRKEY** - Return uppercased ASCII code of last key presed.

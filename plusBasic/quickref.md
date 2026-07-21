@@ -178,7 +178,7 @@
  - **FILL TILEMAP {(_x_,y_)-(_x_,_y_)} TILE _tileno_ { ATTR _attrs_} { PALETTE _palette_}** - Fill tilemap with specified tile, attributes and palette.
  - **FLOAT(_string_{,_offset_})** - Convert four consecutive bytes in string to float.
  - **FLOAT$(_long_)** - Convert float to four byte binary string.
- - **FOR _var_=_expression_ TO _expression_ {STEP _expression_]** - Initiate a _FOR_ loop.
+ - **FOR _var_=_expression_ TO _expression_ {STEP _expression_}** - Initiate a _FOR_ loop.
  - **FRE(_float_|_string_)** - Return amount of unused variable and array or string space (after forcing garage collection).
  - **GET ARGS _var_{,...}** - Read arguments from argument list after `GOSUB`.
  - **GET SCREEN {CHRS|COLORS} (_x_,y_)-(_x_,_y_) \*_array_|^_strvar_** - Copy text screen clip to array or string variable.
