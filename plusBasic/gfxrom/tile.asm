@@ -501,3 +501,19 @@ tile_address:
     ex      de,hl                 ; HL = Ti
     ld      b,5
     jp      shift_hl_left         ; TilAdr = TileNo * 32
+
+; Input: A = Graphics mode ($FF for currently enabled mode).
+; Output: BC = Base Index for current graphics mode
+; Clobbered: A
+tile_offset:
+    cp      $FF                   ; If GfxMode = -1
+    call    z,gfx_get_mode        ;   A = CurGfxMode
+    and     GFXM_MASK
+    ld      bc,288
+    sub     a,2
+    ret     z
+    ld      bc,500
+    dec     a
+    ret     z
+    ld      bc,128                  ; Tilemap mode
+    ret

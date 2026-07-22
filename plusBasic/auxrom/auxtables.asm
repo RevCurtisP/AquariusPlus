@@ -63,3 +63,15 @@ button_table:
     byte    $A0                   ; K3
     byte    $84                   ; K2
     byte    $40                   ; K1
+
+; For run_search_files
+; Must not cross 256 byte boundary
+run_ext_list:
+    byte    4,"AQEX"
+    byte    3,"AQX"
+    byte    3,"BAQ"
+    byte    3,"BAS"
+    byte    3,"CAQ"
+    byte    4,"CORE"
+    byte    3,"ROM"
+    byte    $FF

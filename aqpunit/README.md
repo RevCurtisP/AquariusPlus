@@ -226,8 +226,9 @@ Run the .baq file to run the associated tests.
   - SAVE/LOAD COLORMAP
   - SAVE/LOAD CHRSET
   - SAVE/LOAD FNKEYS
-  - **_ToDo:_**
-    - LOAD TILESET
+  - LOAD TILESET _filespec_$
+  - LOAD TILESET INDEX _tile_index_,_filespec_$
+  - LOAD TILESET OFFSET _tile_offset_,_filespec_$
 - sy.baq
   - SET KEY REPEAT ON/OFF
   - GETKEYREPEAT

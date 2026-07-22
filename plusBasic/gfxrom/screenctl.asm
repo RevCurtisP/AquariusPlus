@@ -50,7 +50,7 @@ screen_reset:
     out     (IO_VCTRL),a
     call    .linlen
     ld      (LINLEN),a
-    call    bitmap__set_mode_nobuff
+    call    bitmap_set_mode_nobuff
     ld      a,(SCREENCTL)
     and     SCRCHRSET+SCRCHRMOD
     ld      (SCREENCTL),a

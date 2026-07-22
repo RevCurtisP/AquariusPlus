@@ -143,28 +143,6 @@ bytes_to_fbuffr:
     pop     hl                    ; HL = FBUFFR, Stack = RtnAdr
     ret
 
-; Called from ST_PUT_CHR
-; On entry, A = ChrASC, BC = Col, DE = Row
-bas_put_chr:
-    push    bc                    ; Stack = Col, RtnAdr
-    ex      de,hl                 ; HL = Row
-    add     hl,hl                 ; HL = Row * 2
-    add     hl,hl                 ; HL = Row * 4
-    add     hl,hl                 ; HL = Row * 6
-    push    hl                    ; Stack = Line, Col, RtnAdr
-    ld      de,FBUFFR             ; DE = BufAdr
-    push    de                    ; Stack = BufAdr, Row, Col, RtnAdr
-    ld      l,0                   ; L = ChrSet
-    call    _getchrdef            ; Copy ChrData to buffer
-    pop     hl                    ; HL = BufAdr, Stack = Row, Col, RtnAdr
-    pop     de                    ; DE = Line; Stack = Col, RtnAdr
-    pop     bc                    ; BC = Col; Stack = RtnAdr
-    jp      bitmap_putchar        ; Put char to bitmap and return
-
-_getchrdef:
-    ld      bc,8                  ; BC = BufLen
-    jp      gfx_get_char_def
-
 ; Called from SCREEN
 bas_do_gfx_mode:
     cp      4

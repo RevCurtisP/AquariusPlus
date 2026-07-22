@@ -2,6 +2,20 @@
 ; BASIC Graphics Statements and Functions Core Code in GfxROM
 ;====================================================================
 
+bas_bmp_fill_color:
+    call    bitmap_get_mode       ; A = BmpMode
+    ld      iy,bitmap_fill_color
+    call    gfxrom_call           ; Do the fill
+    ret     nc
+    jp      TOERR
+    
+
+bas_check_bmp_mode:
+    call    bitmap_get_mode       ; A = BmpMode
+    cp      2                     ; If BmpMode = 2 (1bpp)
+    ret     z                     ;   Return
+    jp      IMERR                 ; Else Invalid mode error
+
 ; On entry, A = ValTyp, FACC = attribute argument
 ; Returns A = Attributes byte
 bas_convert_attr:
@@ -66,7 +80,7 @@ bas_getchrdef:
     pop     af                    ; A = ChrASC; Stack = RtnAdr
 _getchrdef:
     ld      bc,8                  ; BC = BufLen
-    jp      gfx_get_char_def
+    jp      gfx_get_chrdef
 
 ; Called from FN_GETCHRSET
 ; Output: ChrSet
@@ -88,7 +102,7 @@ bas_reset_chrdef:
     push    hl                    ;  Stack = TxtPtr
     ld      bc,8
     ld      de,FBUFFR
-    call    gfx_reset_char_def
+    call    gfx_reset_chrdef
     jp      c,LSERR
     pop     hl
     ret
@@ -97,7 +111,7 @@ bas_reset_chrdef:
 ; On entry: A = ChrASC, E = ChrSet, HL = TxtPtr
 bas_set_chr:
     push    hl
-    call    gfx_redefine_char
+    call    gfx_set_chrdef
     jp      c,LSERR
     ld      a,(SCREENCTL)         ; Set character set modified flag
     or      a,SCRCHRMOD
@@ -329,10 +343,45 @@ bas_set_tile_str:
     xor     a                     ; Clear C, set Z flags
     ret
 
-bas_tile_offset:
-    ld      a,(GFX_FLAGS)
-bas_tile_offset_a:
-    jp      tile_offset
+; Called from LOAD TILESET
+; Input: HL = Text Pointer
+; Output: BC = Base Index
+;         DE = 0
+bas_index_offset:
+    ld      de,0                  ; Offset = 0
+    ld      bc,0                  ; BaseIdx = 0
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    call    .index                ; If not INDEX
+    call    nz,.offset            ;   BC = BaseIdx if OFFSET
+    jp      nz,POPHRT             ; Return NZ if neither INDEX or OFFSET
+    pop     de                    ; Stack = RtnAdr
+    ret
+.index:
+    cp      INTK                  ; If not INDEX
+    ret     nz                    ;   Return Zero Clear
+    rst     CHRGET
+    cp      XTOKEN
+    ret     nz    
+    rst     CHRGET
+    cp      DEXTK 
+    ret     nz    
+    jr      .done                 ; Else Return Zero Set
+.offset:
+    cp      XTOKEN                ; If not OFFSET 
+    ret     nz                    ;   Return Zero Clear
+    rst     CHRGET
+    cp      OFFTK
+    ret     nz
+    rst     CHRGET
+    cp      SETTK
+    ret     nz                    ; Else
+    ld      a,$FF                 ;   A = UseCurMode
+    call    tile_offset           ;   BC = BaseIdx
+.done
+    rst     CHRGET
+_xor_a_ret:
+    xor     a
+    ret
 
 ; On entry: A = ChrASC, BC = Colors, HL = Tile#
 bas_set_tile_to_chr:
@@ -510,11 +559,6 @@ _rect_coords
     exx
     ret
 
-bas_line_rect:
-    
-    ld      a,(GFX_FLAGS)
-    and     GFXM_MASK
-
 bas_frect:
     ld      a,(PSETOPT)
     or      a                     ; If LinOpt < 128
@@ -541,3 +585,17 @@ bas_frect:
     jp      m,IMERR
     jp      c,FCERR
     ret
+    
+; Called from ST_PUT_CHR
+; On entry, A = ChrASC, BC = X, DE = Y
+bas_put_chr:
+    push    bc                    ; Stack = X, RtnAdr
+    push    de                    ; Stack = Y, X, RtnAdr
+    ld      de,FBUFFR             ; DE = BufAdr
+    push    de                    ; Stack = BufAdr, Y, X, RtnAdr
+    ld      l,0                   ; L = ChrSet
+    call    _getchrdef            ; Copy ChrData to buffer
+    pop     hl                    ; HL = BufAdr, Stack = Y, X, RtnAdr
+    pop     de                    ; DE = X; Stack = Y, RtnAdr
+    pop     bc                    ; BC = Y; Stack = RtnAdr
+    jp      bitmap_drawchr        ; Put char to bitmap and return

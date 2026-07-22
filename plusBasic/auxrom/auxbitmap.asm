@@ -3,39 +3,6 @@
 ;====================================================================
 
 ;-----------------------------------------------------------------------------
-; Set bitmap mode system variable from video control register
-; Input: A: Use buffer: $FF = Yes, 0 = No
-; Clobbered: A, B, C
-;-----------------------------------------------------------------------------
-bitmap_set_mode_nobuff:
-    xor     a
-bitmap_set_mode:
-    and     GFXBUFLAG
-    ld      b,a                   ; B = BufFlg
-    in      a,(IO_VCTRL)          
-    ld      c,a
-    rra                           ; A = 2: 1bpp, 3: 4bpp
-    and     GFXM_MASK             ; Isolate bits
-    cp      2                     ; If Text
-    jr      nc,.write             ;   
-    ld      a,c                   ;   A = VCTRL
-    and     a,VCRTL_80COL_EN      ;   If 80 column
-    ld      a,1                   ;     A = 1
-    jr      nz,.write     
-    ld      a,c                   ;   A = VCTRL
-    and     VCTRL_TEXT_PAGE 
-    jr      z,.write              ;   If Screen 2
-    ld      a,GFXM_TXPG           ;     A = 16
-.write 
-    or      b                     ; Include BufFlg
-    ld      c,a                   ; C = New flags
-    ld      a,(GFX_FLAGS)         
-    and     GFXSETMSK             ; Clear old flags
-    or      c                     ; Set new flags
-    ld      (GFX_FLAGS),a
-    ret                     
-
-;-----------------------------------------------------------------------------
 ; Read Bitmap Draw Color
 ; Output: A,B: Colors
 ;-----------------------------------------------------------------------------
@@ -75,6 +42,7 @@ _get_varbase:
 ; Clobbered: All
 ; Derived from code written by Mack Wharton
 ;-----------------------------------------------------------------------------
+;;; ToDo: Move to gfx/gfxbitmap after bitmap_line is moved
 bitmap_rect:
     ld      (PSETCOLOR),a
     call    _check_rect
@@ -143,6 +111,7 @@ _restore_rect:
 ; Clobbered: All
 ; Derived from code written by Mack Wharton
 ;-----------------------------------------------------------------------------
+;;; ToDo: Move to gfxbitmap.asm
 bitmap_line:
     ld      (PSETCOLOR),a
     call    _check_rect
@@ -304,63 +273,6 @@ neg_hl:
     ret
    
  
-;-----------------------------------------------------------------------------
-; Move one pixel and set/reset point
-;  Input: A: 0 = Move, 1 = Set, 255 = Reset
-;         C: Y-coordinate
-;        DE: X-coordinate
-;         H: 255 = Up, 1 = Down
-;         L: 255 = Left, 1 = Right
-; Output: C: New Y-coordinate
-;        DE: New X-coordinate
-;      Sets: Carry if new position out of bounds
-; Clobbered: A, B, HL
-;-----------------------------------------------------------------------------
-;; ToDo: Rewrite and move to GfxROM
-;bitmap_move:
-    ex      af,af'                ; AF' = Action
-    xor     a                     ; A = 0
-    sla     h                     ; Set Carry if Up, NotZero if Down
-    jr      nc,.notup             ; If Up
-    dec     a                     ;   A = -1
-    add     a,c                   ;   NewY = Y - 1
-    ret     c                     ;   If NewY < 0, return Carry Set
-    ld      c,a                   ;   Else C = NewY
-    jr      .notdown
-.notup
-    jr      nz,.notdown           ; ElseIf Down
-    inc     a                     ;   A = 1
-    add     a,c                   ;   NewY = Y + 1
-    cp      200
-    ccf                           ; ``If NewY >= 100
-    ret     c                     ;     Return Carry Set
-    ld      c,a                   ;   Else C = NewY
-.notdown:
-    ld      h,a                   ; H = 0
-    sla     l                     ; Set Carry if Up, NotZero if Down
-    ld      l,a                   ; HL = 0
-    jr      nc,.notleft           ; If Up
-    dec     hl                    ;   HL = -1
-    add     hl,de                 ;   NewX = X - 1
-    ex      de,hl                 ;   DE = NewX
-    ret     c                     ;   If NewX < 0, return Carry Set
-    jr      .notright             ;
-.notleft
-    jr      nz,.notright          ; ElseIf Down
-    inc     hl                    ;   HL = 1
-    add     hl,de                 ;   NewX = X + 1
-    ex      de,hl                 ;   DE = NewX
-    ld      hl,-320               ;
-    add     hl,de                 ;   HL = HL - 320
-    ccf                           ;   If NewY >= 320
-    ret     c                     ;     Return Carry Set
-.notright
-    push    bc                    ; Stack = NewY, RtnAdr
-    push    de                    ; Stack = NewX, NewY, RtnAdr
-;    call    bitmap_setpixel       ; Set the pixel
-    pop     de                    ; DE = NewX; Stack = NewY, RtnAdr
-    pop     bc                    ; BC = NewY; Stack = RtnAdr
-    ret
 
 _resetpixel_addr:
     ld      a,(GFX_FLAGS)
@@ -806,80 +718,6 @@ _setmask:
     byte    $0F,$F0
 _getmask:
     byte    $F0,$0F
-
-;-----------------------------------------------------------------------------
-; Read Bitmap Screen Section into Buffer
-; Input: BMPMODE: Mode: 0 = 1bpp, 1 = 4bpp
-;        STARTCOL: Start Column
-;        STARTROW: Start Row
-;        HL: End Row
-;        ENDCOL: End Row
-;        BUFADR: Buffer Address
-;        BUFLEN: Buffer Length
-;  Flags: Carry Set if invalid coordinates
-;         Not Zero if buffer overflow
-; Clobbered: A, AF', BC, DE, HL, IX, IY
-;--------------`---------------------------------------------------------------
-bitmap_get:
-    call    get_set_init         ; If coordinates out of range
-    ret     c                     ;   Return Carry Set
-    ret
-    
-    jr      nz,.get_4bpp          ; If A <> 0
-
-.get_4bpp
-    
-bitmap_put:
-    ret
-    
-    
-;------------------------------------------------------------------------------
-; Draw Character on 1bpp Bitmap Screen
-; Input: BC: Column (0-39)
-;        DE: Line (0-199)
-;        HL: Character Data Address
-; Sets: Carry if coordinate out of range
-; Clobbered: A, B, DE, HL
-;------------------------------------------------------------------------------
-bitmap_putchar:
-    call    _char_bounds          ; If ColRow out of bounds
-    ret     c                     ; Return Carry Set
-    push    hl                    ; Stack = ChrAdr, RtnAdr
-    call    _char_offset          ; HL = Offset
-    pop     hl                    ; DE = ChrAdr; Stack RtnAdr
-_put_char:    
-    ld      a,VIDEO_RAM           ; A = Bank
-    ld      b,8                   ; B = LinCnt
-    ld      c,40                  ; C = LinLen
-    jp      page_skip_write
-
-; In: C=Column, E=Line
-; Out: Carry set if out of bounds
-_char_bounds:
-    ld      a,39
-    cp      c                     ; If EndCol > 39
-    ret     c                     ;   Return Carry Set
-    ld      a,19
-    cp      e                     ; If EndRow > 191
-    ret                           ;   Return Carry Set
-    
-; Input: BC = Column, DE = Line
-; Output: HL = VRAM Offset
-; Clobbered: DE
-_char_offset:
-    ex      de,hl                 ; HL = Row
-    add     hl,hl                 ; HL = Row * 2
-    add     hl,hl                 ; HL = Row * 4
-    add     hl,hl                 ; HL = Row * 8
-    ld      d,h
-    ld      e,l                   ; DE = Row * 8
-    add     hl,hl                 ; HL = Row * 16
-    add     hl,hl                 ; HL = Row * 32
-    add     hl,de                 ; HL = Row * 40
-    add     hl,bc                 ; HL = Row * 40 + Col
-_swap_de_hl:
-    ex      de,hl                 ; DE = Row * 40 + Col
-    ret
 
 get_set_init:
     ld      hl,(BUFADR)           

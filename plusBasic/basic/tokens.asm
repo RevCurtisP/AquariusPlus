@@ -78,7 +78,7 @@ EXTCMDS:
     db $80 + 'T',"EXT"            ; $89             
     db $80 + 'A',"RGS"            ; $8A             
     db $80 + 'S',"AMPLE"          ; $8B             
-    db $80 + 'T',"RACK"           ; $`
+    db $80 + 'T',"RACK"           ; $8C
     db $80 + 'P',"IXEL"           ; $8D             
     db $80 + ' '                  ; $8E unused (REM)             
     db $80 + 'N',"AME"            ; $8F             
@@ -128,7 +128,7 @@ EXTCMDS:
     db $80 + 'U',"NTIL"           ; $B9
     db $80 + 'R',"AN"             ; $BA
     db $80 + 'D',"OM"             ; $BB
-    db $80 + 'E',"XT"             ; $BC
+    db $80 + ' '                  ; $BC Available (was duplicate EXT)
     db $80 + 'S',"CROLL"          ; $BD
     db $80 + 'R',"ECT"            ; $BE
     db $80 + 'E',"XEC"            ; $BF
@@ -171,7 +171,7 @@ COLTK     equ     $F5
 SCRNTK    equ     $F6
 SETTK     equ     $F7
 USETK     equ     $F9
-
+  
 ;-----------------------------------------------------------------------------
 ; Extended tokens
 ;-----------------------------------------------------------------------------
@@ -230,7 +230,7 @@ REPEATK   equ     $B8
 UNTILTK   equ     $B9
 RANTK     equ     $BA
 DOMTK     equ     $BB
-EXTK      equ     $BC
+;unused   equ     $BC             l was duplicate EXT
 SCROLTK   equ     $BD
 RECTK     equ     $BE
 EXECTK    equ     $BF

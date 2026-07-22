@@ -34,6 +34,7 @@ list        BASIC-LIST-Statements-and-Functions
 LOAD        BASIC-LOAD-Statement
 LOCATE      BASIC-LOCATE-Statement
 logical     BASIC-Logical-Operators
+loop        BASIC-Loop-Control-Statements
 math        BASIC-Math-Functions
 mouse       BASIC-MOUSE-Functions
 ON          BASIC-ON-Statement

@@ -542,3 +542,52 @@ scan_else_endif:
     cp      '"'                   ; Else If quote
     jr      z,.next               ;   Skip and continue
     jr      .skip_escaped         ; Else skip and check next
+
+;-----------------------------------------------------------------------------
+; Disable Turbo Mode
+; Output: A: New Turbo Mode (0 = 3.88 Mhz)
+;-----------------------------------------------------------------------------
+reset_turbo_mode:
+    xor     a
+;-----------------------------------------------------------------------------
+; Enable/Disable Turbo Mode
+; Input: A: New Turbo Mode
+;           0 = 3.88 Mhz
+;           1 = 7.16 Mhz
+;           2 = Undefined (returns carry set)
+;           3 = Unlimited
+; Output: A: Turbo mode actually set
+;-----------------------------------------------------------------------------
+set_turbo_mode:
+    cp      4                     ; If A > 4
+    ccf
+    ret     c                     ;   Return Carry Set
+    cp      2                     ; or A = 2
+    jr      z,ret_c               ;   Return Carry Set
+.turbo
+    rla
+    rla                           ; Rotate bits into place
+    and     SYSCTRL_TURBO         ; Isolate turbo bits
+    push    bc
+    ld      b,a                   ;   and copy to B
+    in      a,(IO_SYSCTRL)        ; Read SYSCTRL
+    and     ~SYSCTRL_TURBO & 127  ;   mask out Fast Mode bit
+    or      b                     ;   and copy the new Fast Mode bit in
+    out     (IO_SYSCTRL),a        ; Write back to SYSCTRL
+    pop     bc
+;-----------------------------------------------------------------------------
+; Return current Turbo Mode setting
+; Output: A = Current Turbo Mode
+;             0 = 3.88 Mhz
+;             1 = 7.16 Mhz
+;             3 = Unlimited
+;-----------------------------------------------------------------------------
+get_turbo_mode:
+    in      a,(IO_SYSCTRL)        ; Read SYSCTRL
+    and     SYSCTRL_TURBO         ;   mask out Fast Mode bit
+    rra
+    rra
+    ret
+ret_c:
+    scf
+    ret

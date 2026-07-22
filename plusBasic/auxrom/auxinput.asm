@@ -334,8 +334,6 @@ _copy_buf:
 ; Clobbers: A, DE
 _disp_entry:
     push    iy
-;    xor     a                    ; Turn off cursor
-;    call    set_cursor_mode      ; ToDo: Move this to AuxROM
     ld      de,(INPBUF)
     call    _out_buff
     ld      a,(INPPAD)
@@ -347,7 +345,6 @@ _disp_entry:
     call    _ttyout
     djnz    .bloop
 .done
-;    call    set_cursor_on
     pop     iy
     ret
 

@@ -17,40 +17,40 @@ _jump_table:
 ; LD   IY,label
 ; CALL gfx_call
 ; gfxbitmap.asm <<Bitmap Graphics>>
-    jp      bitmap_init_vars      ; C000 Initialize bitmap system variables
-    jp      bitmap_set_mode       ; C003 Set bitmap mode system variable from video control register
-    jp      bitmap_read_sysvars   ; C006 Read bitmap system variables
-    jp      bitmap_get_color      ; C009 Get Bitmap Draw Colors
-    jp      bitmap_set_color      ; C00C Set Bitmap Draw Colors
-    jp      bitmap_clear_screen   ; C00F Clear Bitmap
-    jp      bitmap_fill_byte      ; C012 Fill Bitmap with Byte
-    jp      bitmap_fill_color     ; C015 Fill Bitmap Color RAM
+    jp      bitmap_init_vars      ; * C000 Initialize bitmap system variables
+    jp      bitmap_set_mode       ; * C003 Set bitmap mode system variable from video control register
+    jp      bitmap_read_sysvars   ; * C006 Read bitmap system variables
+    jp      bitmap_get_color      ; * C009 Get Bitmap Draw Colors
+    jp      bitmap_set_color      ; * C00C Set Bitmap Draw Colors
+    jp      bitmap_clear_screen   ; * C00F Clear Bitmap
+    jp      bitmap_fill_byte      ; * C012 Fill Bitmap with Byte
+    jp      bitmap_fill_color     ; * C015 Fill Bitmap Color RAM
     jp      bitmap_line           ; C018 Draw Line
     jp      just_ret              ; C01B (bitmap_circle)
     jp      just_ret              ; C01E (bitmap_box)
     jp      just_ret              ; C021 (bitmap_move)
     jp      just_ret              ; C024
     jp      just_ret              ; C027 
-    jp      bitmap_togglepixel    ; C02A Toggle pixel
-    jp      bitmap_setpixel       ; C02D Draw pixel
-    jp      bitmap_resetpixel     ; C030 Erase pixel
-    jp      bitmap_getpixel       ; C033 Return pixel/bloxel at position
-    jp      bitmap_get            ; C036 [future] Read Bitmap Screen Section into Buffer
-    jp      bitmap_put            ; C039 (bitmap_put)
-    jp      bitmap_putchar        ; C03C (bitmap_putchar)
+    jp      bitmap_togglepixel    ; * C02A Toggle pixel
+    jp      bitmap_setpixel       ; * C02D Draw pixel
+    jp      bitmap_resetpixel     ; * C030 Erase pixel
+    jp      bitmap_getpixel       ; * C033 Return pixel/bloxel at position
+    jp      bitmap_get            ; + C036 [unfinished] Read Bitmap Screen Section into Buffer
+    jp      bitmap_put            ; + C039 [unfinished] 
+    jp      bitmap_drawchr        ; + C03C [unfinished] 
     jp      just_ret              ; C03F (bitmap_putstring)
-    jp      just_ret              ; C042 (bitmap_putclip)
-    jp      colormap_fill_rect    ; C045 Fill Color Map Rectangle
+    jp      just_ret              ; C042 (bitmap_putclip) same as pitmap_put?
+    jp      colormap_fill_rect    ; * C045 Fill Color Map Rectangle
     jp      bitmap_rect           ; C048 Draw Unfilled Rectangle
-    jp      bitmap_frect         ; C04B Draw Filled Rectange
+    jp      bitmap_frect          ; * C04B Draw Filled Rectange
     jp      just_ret              ; C04E 
     jp      just_ret              ; C051 
 ; color.asm <<Palette and Colors>>
-    jp      palette_reset         ; C054 Reset palette to default colors
-    jp      palette_set           ; C057 Write one or more entries to palette
-    jp      palette_get           ; C05A Read entire palette
-    jp      palette_get_entry     ; C05D Read single palette entry
-    jp      palette_reset_all     ; C060 Reset all palettes to default colors
+    jp      palette_reset         ; * C054 Reset palette to default colors
+    jp      palette_set           ; * C057 Write one or more entries to palette
+    jp      palette_get           ; * C05A Read entire palette
+    jp      palette_get_entry     ; * C05D Read single palette entry
+    jp      palette_reset_all     ; * C060 Reset all palettes to default colors
     jp      just_ret              ; C063 
     jp      just_ret              ; C066 
     jp      just_ret              ; C069 
@@ -63,10 +63,10 @@ _jump_table:
     jp      just_ret              ; C07B 
     jp      just_ret              ; C07E 
     jp      just_ret              ; C081 
-    jp      screen_read_byte      ; C084 Read byte from screen
-    jp      screen_write_byte     ; C087 Write byte to screen
-    jp      screen_read_bytes     ; C08A Read string from Screen RAM
-    jp      screen_write_bytes    ; C08D Write string to Screen RAM
+    jp      screen_read_byte      ; * C084 Read byte from screen
+    jp      screen_write_byte     ; * C087 Write byte to screen
+    jp      screen_read_bytes     ; * C08A Read string from Screen RAM
+    jp      screen_write_bytes    ; * C08D Write string to Screen RAM
     jp      just_ret              ; C090 
     jp      just_ret              ; C093 
     jp      screen_read_paged     ; C096 
@@ -75,10 +75,10 @@ _jump_table:
     jp      screen_write_fast     ; C09F 
     jp      just_ret              ; C0A2 
     jp      just_ret              ; C0A5 
-    jp      oolor_read_byte       ; C0A8 Read byte from Color RAM
-    jp      color_write_byte      ; C0AB Write byte to Color RAM
+    jp      oolor_read_byte       ; * C0A8 Read byte from Color RAM
+    jp      color_write_byte      ; * C0AB Write byte to Color RAM
     jp      color_read_bytes      ; C0AE Read string from Color RAM
-    jp      color_write_bytes     ; C0B1 Write string to Color RAM
+    jp      color_write_bytes     ; * C0B1 Write string to Color RAM
     jp      just_ret              ; C0B4 
     jp      just_ret              ; C0B7 
     jp      just_ret              ; C0BA 
@@ -92,9 +92,9 @@ _jump_table:
     jp      just_ret              ; C0CF 
     jp      screen_get            ; C0D2 Read Text Screen Section into Buffer
     jp      screen_put            ; C0D5 Write Text Screen Section from Buffer
-    jp      screen_fill           ; C0D8 Fill Text or Color Screen Rectangle with Byte
-    jp      screen_rect           ; C0DB Draw Rectange on Text Screen
-    jp      screen_mode           ; C0DE Return current Text Screen 
+    jp      screen_fill           ; C0D8 * Fill Text or Color Screen Rectangle with Byte
+    jp      screen_rect           ; C0DB * Draw Rectange on Text Screen
+    jp      screen_mode           ; C0DE * Return current Text Screen 
     jp      just_ret              ; C0E1 
 ; screen_swap.asm <<Text Screen Switch and Swap>>
     jp      init_screen_buffers   ; C0E4 
@@ -112,42 +112,55 @@ _jump_table:
     jp      just_ret              ; C108 
     jp      just_ret              ; C10B 
 ; tile.asm <<Tilemap>>
-    jp      tile_set              ; C10E Write Tile definition to Video RAM
-    jp      tile_get              ; C111 Read Tile definition from Video RAM
-    jp      tile_from_chrrom      ; C114 Build Tile from Character definition
-    jp      tile_combine_props    ; C117 Combine Tile Index, Palette# and Attributes
-    jp      just_ret              ; C11A 
+    jp      tile_set              ; * C10E Write Tile definition to Video RAM
+    jp      tile_get              ; * C111 Read Tile definition from Video RAM
+    jp      tile_from_chrrom      ; * C114 Build Tile from Character definition
+    jp      tile_combine_props    ; * C117 Combine Tile Index, Palette# and Attributes
+    jp      tile_offset           ; * C11A Calculate base tile index
     jp      just_ret              ; C11D 
-    jp      tilemap_set_offset    ; C120 Move Tilemap to specified offset
-    jp      tilemap_get_offset    ; C123 Return current Tilemap offset
-    jp      tilemap_set_tile      ; C126 Write Tilemap cell contents
-    jp      tilemap_get_tile      ; C129 Read Tilemap cell contents
-    jp      tilemap_fill          ; C12C Fill Tilemap section with specified Tile
-    jp      tilemap_get           ; C12F Read clip from Tilemap into buffer
-    jp      tilemap_put           ; C132 Write clip from buffer to tilemap
-    jp      tilemap_copy          ; C135 Copy clip from Virtual tilemap to Tilemap
-    jp      tilemap_reset         ; C138 Reset tilemap to home position
-    jp      just_ret              ; C13B 
+    jp      tilemap_set_offset    ; * C120 Move Tilemap to specified offset
+    jp      tilemap_get_offset    ; * C123 Return current Tilemap offset
+    jp      tilemap_set_tile      ; * C126 Write Tilemap cell contents
+    jp      tilemap_get_tile      ; * C129 Read Tilemap cell contents
+    jp      tilemap_fill          ; * C12C Fill Tilemap section with specified Tile
+    jp      tilemap_get           ; * C12F Read clip from Tilemap into buffer
+    jp      tilemap_put           ; * C132 Write clip from buffer to tilemap
+    jp      tilemap_copy          ; * C135 Copy clip from Virtual tilemap to Tilemap
+    jp      tilemap_reset         ; * C138 Reset tilemap to home position
+    jp      just_ret              ; C13B
     jp      just_ret              ; C13E 
 ; sprite_aux.asm <<Sprite Definition and Manipulation>>
-    jp      sprite_define         ; C141 
-    jp      sprite_defrect        ; C144 
-    jp      sprite_set_attrs      ; C147 
-    jp      sprite_get_attrs      ; C14A 
-    jp      spritle_set_pos       ; C14D 
-    jp      spritle_get_pos       ; C150 
-    jp      spritle_set_props     ; C153 
-    jp      spritle_get_props     ; C156 
-    jp      spritle_string_attrs  ; C159
-    jp      spritle_reset         ; C15C
-    jp      spritle_reset_all     ; C15F
-    jp      sprite_collision      ; C162 
-    jp      spritle_collision     ; C165
-    jp      just_ret              ; C168
-    jp      just_ret              ; C16B
-    jp      just_ret              ; C16E
+    jp      sprite_define         ; * C141 
+    jp      sprite_defrect        ; * C144 
+    jp      sprite_set_attrs      ; * C147 
+    jp      sprite_get_attrs      ; * C14A 
+    jp      spritle_set_pos       ; * C14D 
+    jp      spritle_get_pos       ; * C150 
+    jp      spritle_set_props     ; * C153
+    jp      spritle_get_props     ; * C156 
+    jp      spritle_string_attrs  ; * C159
+    jp      spritle_reset         ; * C15C
+    jp      spritle_reset_all     ; * C15F
+    jp      sprite_collision      ; * C162 
+    jp      spritle_collision     ; * C165
+    jp      sprite_toggle         ; * C168 
+    jp      spritle_toggle        ; * C16B 
+    jp      spritle_toggle_all    ; * C16E 
+    jp      spritle_clear_all     ; * C16E 
+    jp      spritle_set_attrs     ; * C171
+    jp      spritle_get_attrs     ; * C16E
+    jp      sprite_set_tiles      ; * C174
+    jp      spritle_set_tile      ; * C177
+    jp      sprite_set_palettes   ; * C17A
+    jp      spritle_set_palette   ; * C17D
+    jp      just_ret              ; C180
+    jp      just_ret              ; C183
+    jp      just_ret              ; C186
 ; chrset.asm <<Character Set Manipulation>>
-    jp      just_ret              ; C171
+    jp      gfx_set_chrdef        ; * C189 
+    jp      gfx_get_chrdef        ; * C18C
+    jp      gfx_reset_chrdef      ; * C18F
+
 
 _end_jump_table:
 

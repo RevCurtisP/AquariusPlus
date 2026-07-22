@@ -85,7 +85,8 @@ clear_extension:
     ret
 
 end_extension:
-    call    reset_turbo_mode
+    ld      iy,reset_turbo_mode
+    call    aux_call
     call    clear_run_args
 _clear_stuff:
     call    esp_close_all         ; Close all files

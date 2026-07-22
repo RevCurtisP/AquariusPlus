@@ -1,4 +1,6 @@
 # plusBASIC Release History
+ - v0.71p (2026-07-22)
+    - In `RUN` in direct mode, implemented file search when unquoted filename contains wildcard characters
  - v0.71o (2026-06-30)
     - Added `EVAL$()`, implemented `ENDIF` and `REPEAT`/`LOOP`/`UNTIL`/`END REPEAT`
     - `LOAD` ignores lines beginning with apostrophe in ASCII format BASIC programs

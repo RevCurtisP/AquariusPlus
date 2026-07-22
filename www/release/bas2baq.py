@@ -270,7 +270,9 @@ xtokens = {
     0xBB: "DOM",
     0xBC: "EXT",
     0xBD: "SCROLL",
-    0xBE: "RECT"
+    0xBE: "RECT",
+    0xBF: "EXEC",
+    0xC0: "STACK"
 }
 
 def error(idx, message):

@@ -27,7 +27,7 @@ mouse_set_tile:
     call    spritle_set_tile      
     pop     af                    ; A = SprtNo; Stack = RtnAdr
     ld      c,SPR_PRIORITY
-    jp      spritle_set_attr      ; Set attributes and return
+    jp      spritle_set_attrs     ; Set attributes and return
     
 _def_mouse_tile:
     ld      bc,32

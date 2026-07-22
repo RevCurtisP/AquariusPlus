@@ -112,8 +112,7 @@ dos_get_cwd:
 
 ;-----------------------------------------------------------------------------
 ; dos_open_dir - Open Directory for Read
-; Input: BC: String Length
-;        DE: String Address
+; Input: HL: string descriptor
 ; Output:  A: Result
 ; Clobbered: BC, DE
 ;-----------------------------------------------------------------------------

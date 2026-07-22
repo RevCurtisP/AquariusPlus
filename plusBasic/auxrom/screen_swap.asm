@@ -249,7 +249,8 @@ screen_switch:
     out     (IO_VCTRL),a          ; Switch to new text mode
     call    screen_restore        ; Restore new screen
     call    set_linlen            ; Set Line Length and Graphics Mode
-    jp      bitmap_set_mode_nobuff
+    ld      iy,bitmap_set_mode_nobuff
+    jp      gfxrom_call
 
 .text_mode_table:
     byte    VCTRL_TEXT_OFF                  ; 0 = Text Off

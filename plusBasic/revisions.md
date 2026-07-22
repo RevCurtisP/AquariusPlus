@@ -1,9 +1,39 @@
 # plusBASIC Revision History
+ - v0.71p (2026-07-22)
+    - In `RUN` in direct mode, implemented file search when unquoted filename contains wildcard characters
+    - Moved _get_turbo_mode, _set_turbo_mode_, and _reset_turbo_mode from _aq_3plusbas.asm_ to _auxrom/misc.asm_
+    - Moved _gfx_get_mode_ from _gfxrom/gfx.asm_ to _gfxrom/gfxcommon.asm_
+    - Renamed _bitmap__set_mode_nobuff_ and _bitmap__set_mode_ to _bitmap_set_mode_nobuff_ and _bitmap_set_mode_
+    - Deleted _bitmap_set_mode_nobuff_, _bitmap_set_mode_, and _bitmap_move_ from _auxrom/auxbitmap.asm_, 
+    - Moved stub routines _bitmap_get_ and _bitmap_put_ from _auxrom/auxbitmap.asm_
+    - Renamed following routines in _gfxrom/gfxchar.asm_
+      - _gfx_get_char_def_ to _gfx_get_chrdef_
+      - _gfx_reset_char_def_ to _gfx_reset_chrdef_
+      - _gfx_redefine_char_ to _gfx_set_chrdef_
+    - Moved _bitmap_putchar_ from _auxrom/auxbitmap.asm_ to _bitmap_drawchr_ in _gfxrom/gfxbitmap_
+    - Renamed _spritle_set_attr_ to _spritle_set_attrs_ in _gfxrom/gfxsp_rites.asm_
+    - Moved _tile_offset_ from _basic/basfile.asm_ to _gfxrom/tile.asm_ 
+    - Moved _bas_put_chr_ from _auxrom/basicgfx.asm_ to _gfxrom/basgfx.asm_
+    - Replaced _bas_lookup_prog_ from _auxrom/fileaux.asm_ to _run_search_files_ in _auxrom/filerun.asm_
+    - Added _run_ext_list_ to _auxtables.asm_
+    - Modified _run_args_ in _basic/args.asm_ to use string descriptor in HL instead of string address and length in DE and BC
+    - Moved _aux_call_fcerr_ from _basic/graphics.asm_ to _basic/plus.asm_ and replaced `call _aux_call_fcerr_` in _basic/graphics.asm_ with `call gfxrom_call_fcerr`
+    - Routed call to _bitmap_fill_color_ in _basic/basbitmap.asm_ through new routine _bas_bmp_fill_color_ in _gfxrom/basgfx.asm_
+    - Added new routines _bas_check_bmp_mode_, _bas_index_offset_, and bitmap_get_mode to  _gfxrom/basgfx.asm_
+    - Deleted unused stub routine _bas_line_rect_ from _gfxrom/basgfx_
+    - Added routine `parchk_conint`, `skip_get_byte2`, and _get_byte2_ to _basic/shared.asm_
+    - Refactored _get_byte4_, _con_byte16_, _get_byte16_, _get_byte32_, _get_byte64_, and _get_byte200_ in _basic/shared.asm_
+    - Renamed _push_labbck_floatbc_ to _hl_labbck_floatbc_ and replaced `call get_comma;call _get_spritle` in _basic/graphics.asm_
+    - Replaced instances of `call FRMSTR; ld de,(FACLO)` to `call frmstr_de_faclo`
+    - Replaced instances of `rst CHRGET; call GETINT` with `call skip_get_int`
+    - Replaced instances of `rst CHRGET; call GETBYT` with `call skip_get_byte`
+    - Added hook for `SET EXTENDED PRINT` to _basic/plus.asm_
+    - Removed duplicate `EXT` token definition from _basic/tokens.asm_
  - v0.71o (2026-06-30)
     - Added `EVAL$()`, modified `EVAL()` to generate _Type mismatch error_ if result is not numeric
     - Implemented `ENDIF`
     - Implemented `REPEAT`/`LOOP`/`UNTIL`/`END REPEAT`
-    - Added `EXEC` token and _ST_EXEC_ stub.
+    - Added `EXEC` token and _ST_EXEC` to _ stub.
     - Modified `LOAD` to ignore lines beginning with apostrophe when loading program in ASCII format
     - Modified enhanced `INPUT` so that specified screen row matches _LOCATE_
     - Modified `VARPTR()` to allow string parameter containing name of variable

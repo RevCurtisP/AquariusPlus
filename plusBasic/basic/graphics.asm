@@ -3,7 +3,7 @@
 ;====================================================================
 
 ;-----------------------------------------------------------------------------
-; Set charcater in character RAM to default definition
+; Set character in character RAM to default definition
 ; RESET CHRDEF 127
 ;-----------------------------------------------------------------------------
 ; RESET CHRDEF 127
@@ -39,7 +39,8 @@ ST_SET_CHR:
 ; USE CHRSET - Change Character Set
 ; Syntax: USE CHRSET [0|1|filename$]
 ;-----------------------------------------------------------------------------
-; USE CHRSET "latin1d.chr"
+; USE CHRSET "/demos/charmaps/charmaps/bold.chr"
+;;; ToDo: debug USE CHRSET filename$
 ST_USECHR:
 ;.andmask = 255-SCRCHRSET
 ;.ormask = SCRCHRSET * 256
@@ -138,8 +139,7 @@ FN_GETCHRDEF:
     ld      a,(hl)
     cp      ','
     jr      nz,.nocomma
-    ld      c,2
-    call    skip_get_byte_capped  ; A, E = ChrSet
+    call    skip_get_byte2        ; A, E = ChrSet
 .nocomma
     SYNCHKC ')'                   ; Require )
     pop     bc                    ; B = ChrASC; Stack = RtnAdr
@@ -298,7 +298,6 @@ ST_SET_PALETTE:
     pop     hl                    ; HL = TxtPtr
     ret
 
-
 ;-----------------------------------------------------------------------------
 ; SCREEN function
 ; Returns: Bit   76    5      4        3       21     0
@@ -348,7 +347,7 @@ ST_SCREEN:
     ld      a,c
     out     (IO_VCTRL),a          ; Write back out
 
-    ld      iy,bitmap__set_mode_nobuff
+    ld      iy,bitmap_set_mode_nobuff
     jp      gfxrom_call           ; Set EXT_FLAGS and return
 
 .update_bit
@@ -651,10 +650,10 @@ _get_to_string:
 
 _parse_get_string:
     push    hl                    ; Stack = TxtPtr, RtnAdr
-    push    iy
-    ld      iy,gfxrom_rect_size
-    call    gfxrom_call           ; HL = Rectangle size
-    pop     iy
+    push    iy                    ; Stack = GetAdr, TxtPtr, RtnAdr
+    ld      iy,gfxrom_rect_size   ; HL = Rectangle size
+    call    gfxrom_call
+    pop     iy                    ; IY = GetAdr; Stack = TxtPtr, RtnAdr
     inc     hl
     add     hl,hl                 ; HL = HL * 2 + 2
     ld      a,h
@@ -675,9 +674,8 @@ _parse_get_string:
 ; SCREEN 0,2:CLEAR BITMAP 7,0:PUT CHR (0,0),"@":PAUSE
 ST_PUT_CHR:
     jp      GSERR
-    call    get_bitmap_mode       ; A = BmpMode
-    cp      2                     ; If BmpMode <> 2
-    jp      nz,IMERR              ;   Invalid mode error
+    ld      iy,bas_check_bmp_mode
+    call    gfxrom_call
     rst     CHRGET                ; Skip CHR
     call    SCAND                 ; BC = Col, DE = Row
     push    bc                    ; Stack = Col, RtnAdr
@@ -687,12 +685,8 @@ ST_PUT_CHR:
     pop     de                    ; DE = Row; Stack = Col, RtnAdr
     pop     bc                    ; BC = Col; Stack = RtnAdr
     ld      iy,bas_put_chr
-aux_call_fcerr:
-    push    hl                    ; Stack = TxtPtr, RtnAdr
-    call    aux_call
-    jp      c,FCERR               ; Error if illegal coordinate
-    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
-    ret
+    push    hl
+    jp      gfxrom_call_fcerr
 
 ;------------------------------------------------------------------------
 ; PUT SCREEN Statement
@@ -894,15 +888,11 @@ FN_TILE:
 ;-----------------------------------------------------------------------------
 FN_TILEOFFSET:
     cp      '('
-    jr      z,.param
-    call    tile_offset
-    jr      push_labbck_floatbc
-.param
-    call    PARCHK                ; Parse argument
-    call    CONINT
-    xor     a                     ; Default to 0
-    call    tile_offset_a         ; BC = Offset
-    jr      push_labbck_floatbc
+    ld      a,$FF
+    call    z,parchk_conint      
+    ld      iy,tile_offset
+    call    gfxrom_call           ; BC = BaseIdx
+    jr      hl_labbck_floatbc
 
 ;-----------------------------------------------------------------------------
 ; TILEMAPX, TILEMAPY, TILEMAP()
@@ -920,7 +910,7 @@ FN_TILEMAP:
     jr      z,push_labbck_floatde
     cp      'X'                   ;   If not TILEMAPX
     jp      nz,SNERR              ;     Return Error
-push_labbck_floatbc:
+hl_labbck_floatbc:
     ld      d,b                   ;   DE = X-Offset
     ld      e,c
 push_labbck_floatde:
@@ -1257,15 +1247,13 @@ ST_DEF_SPRITE:
 .loop
     call    _get_spritle          ; A,E = Spritle#
     call    _write_byte_strbuf    ; Write E to string buffer
-    call    get_comma
-    call    _get_spritle           ; A,E = Xoffset
+    call    _get_comma_spritle    ; A,E = Xoffset
     cp      c
     jr      c,.skipx              ; If Xoffset > MaxXoffset
     ld      c,a                   ;   MaxXoffset = Xoffset
 .skipx
     call    _write_byte_strbuf    ; Write E to string buffer
-    call    get_comma
-    call    _get_spritle           ; A,E Yoffset
+    call    _get_comma_spritle    ; A,E Yoffset
     cp      b
     jr      c,.skipy              ; If Xoffset > MaxXoffset
     ld      b,a                   ;   MaxXoffset = Xoffset
@@ -1294,6 +1282,8 @@ _sprite_done:
     pop     hl                    ; HL = TxtPtr; Stack = Datlen, BufPtr, VarPtr, RtnAdr
     jp      _finish_def          ;
 
+_get_comma_spritle:
+    call    get_comma
 _get_spritle:
     push    bc                    ; Stack = MaxOfs
     call    get_byte64            ; Get spritle#
@@ -1476,8 +1466,7 @@ ST_SET_SPRITE:
     jr      .do_gfx
 
 .pos
-    rst     CHRGET                ; Skip POS
-    call    GETINT                ; DE = X-pos
+    call    skip_get_int          ; DE = X-pos
     push    de                    ; Stack = X-pos, SprAdr, RtnAdr
     call    get_comma_int         ; DE = Y-pos
     pop     bc                    ; BC = X-pos; Stack = SprAdr, RtnAdr
@@ -1570,7 +1559,7 @@ _set_spritle:
     jr      nz,.notattr
     call    _skip_parse_attr
     ld      c,a
-    ld      iy,spritle_set_attr
+    ld      iy,spritle_set_attrs
     jr      .do_gfx_c
 .notattr
     cp      PALETK                 

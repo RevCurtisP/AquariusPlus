@@ -40,23 +40,19 @@ ST_FILL_BITMAP:
     SYNCHKC 'S'
     call    GETBYT                ;   A = FillByte
     ld      b,a                   ;   B = FillByte
-    push    hl                    ;   Stack = TxtPtr, RtnAdr
-    ld      iy,bitmap_fill_byte
-    call    gfxrom_call           ;   Do the fill
-    pop     hl                    ;   HL = TxtPtr; Stack = RtnAdr
+    ld      iy,bitmap_fill_byte   ;   Do the fill
+    call    gfxrom_call_preserve_hl
     call    CHRGT2                ;   Reget next character
     ret     z                     ;   Return if end of statement
 .fill_color
     call    parse_colors          ; Require COLOR, A = Color Byte
-_fill_color:
+    ld      iy,bas_bmp_fill_color
+    jp      gfxrom_call_preserve_hl
+
+;_fill_color:
     ld      b,a
-    call    get_bitmap_mode
-    push    hl                    ; Stack = TxtPtr, RtnAdr
     ld      iy,bitmap_fill_color
-    call    gfxrom_call           ; Do the fill
-    jp      c,TOERR
-    pop     hl                    ; HL = TxtPtr; Stack = NxtChr, RtnAdr
-    ret
+    jp      gfxrom_call           ; Do the fill
 
 ;-----------------------------------------------------------------------------
 ; COLOR fgcolor, bgcolor
@@ -318,7 +314,7 @@ skip_char:
 ;  Flags: Carry set if text screen, clear if bitmap screen
 ; Clobbered: C
 ;-----------------------------------------------------------------------------
-get_bitmap_mode:
+;get_bitmap_mode:
     in      a,(IO_VCTRL)
     ld      c,a
     rra                           ; A = 2: 1bpp, 3: 4bpp

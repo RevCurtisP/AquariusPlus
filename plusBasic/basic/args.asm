@@ -142,8 +142,7 @@ set_run_argcnt:
 ; Parse RUN arguments
 ; Currently only saves filename to ARGS buffer
 ; Input: HL: Filename StrDsc
-;        DE: Filename StrAdr
-;        BC: Filename StrLen
+; Clobbered: AF, BC, DE
 ; ARGS buffer is at offset RUNARGS in page BAS_BUFFR
 ; Buffer format:
 ;   0 - Arg Count (0 for now)
@@ -153,13 +152,14 @@ set_run_argcnt:
 ;-----------------------------------------------------------------------------
 run_args:
     push    hl                    ; Stack = StrDsc, RtnAdr
-    push    de                    ; Stack = TxtAdr, StrDsc, RtnAdr
+    call    string_addr_len       ; DE = StrAdr, BC = StrLen
+    push    de                    ; Stack = StrAdr, StrDsc, RtnAdr
     push    bc                    ; Stack = StrLen, TxtAdr, StrDsc, RtnAdr
     ld      bc,1                  ; ArgCnt = 1
     call    set_run_argcnt        ; DE = ArgBufAdr
-    pop     bc                    ; BC = StrLen; Stack = TxtAdr, StrDsc, RtnAdr
+    pop     bc                    ; BC = StrLen; Stack = StrAdr, StrDsc, RtnAdr
     call    basbuf_write_word     ; Write StrLen
-    pop     hl                    ; HL = TxtAdrl Stack = StrDsc, RtnAdr
+    pop     hl                    ; HL = StrAdr; Stack = StrDsc, RtnAdr
     call    basbuf_write_bytes    ; Write filename
     pop     hl                    ; HL = StrDsc; Stack = RtnAdr
     ret

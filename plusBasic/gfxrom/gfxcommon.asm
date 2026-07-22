@@ -3,6 +3,17 @@
 ;====================================================================
 
 ;-----------------------------------------------------------------------------
+; Get bitmap drawing mode
+; Output: A: Mode (0: bloxel, 2: 1bpp, 3: 4bpp)
+; Sets: Z if bloxel, NZ if bitmap
+;-----------------------------------------------------------------------------
+
+gfx_get_mode:
+    ld      a,(GFX_FLAGS)         ; A = Extended Flags
+    and     GFXM_MASK             ; Isolate mode bits
+    ret
+
+;-----------------------------------------------------------------------------
 ; Verify Rectangle Coordinate and Calculate Size
 ; Input: BC: Start X
 ;        DE: Start Y

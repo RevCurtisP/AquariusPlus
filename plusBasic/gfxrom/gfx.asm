@@ -29,16 +29,6 @@ gfx_set_mode:
     ret
 
 ;-----------------------------------------------------------------------------
-; Get bitmap drawing mode
-; Output: A: Mode (0: bloxel, 2: 1bpp, 3: 4bpp)
-; Sets: Z if bloxel, NZ if bitmap
-;-----------------------------------------------------------------------------
-gfx_get_mode:
-    ld      a,(GFX_FLAGS)         ; A = Extended Flags
-    and     GFXM_MASK             ; Isolate mode bits
-    ret
-
-;-----------------------------------------------------------------------------
 ; Convert rectangular coordinates to address, columns and row count
 ; Input: B: Start Column
 ;        C: End Column  

@@ -219,7 +219,6 @@ ST_MID: SYNCHKC '('               ; MUST HAVE (                                 
 NCPMID: pop     hl                ; GET DESC. POINTER                                                    Dsc1  TxtPtr
         ex      (sp),hl           ; GET TEXT POINTER TO [H,L] DESC. TO STACK                            TxtPtr  Dsc1
         call    get_comma_byte    ; GET ARG#2 (OFFSET INTO STRING)                 Arg2
-        or      a                 ; MAKE SURE NOT ZERO
         jp      z,FCERR           ; BLOW HIM UP IF ZERO
         push    af                ; SAVE ARG#2 ON STACK                                                        Arg2,Dsc1
         ld      a,(hl)            ; RESTORE CURRENT CHAR                         (TxtPtr)

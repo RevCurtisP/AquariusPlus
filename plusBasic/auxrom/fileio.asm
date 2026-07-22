@@ -79,6 +79,7 @@ file_read_dir:
     ld      a,(hl)                ; A = Attrs
     pop     hl                    ; HL = BufAdr; Stack = EntLen, NamAdr, RtnAdr
     pop     de                    ; DE = EntLen; Stack = NamAdr, RtnAdr
+    push    af                    ; Stack = Attrs, NamAdr, RtnAdr
     ld      d,0
     add     hl,de                 ; HL = TrmAdr
     and     1                     ; A = AttrDir
@@ -90,6 +91,7 @@ file_read_dir:
 .notdir
     ld      c,b                   ; EntLen = NamLen
     ld      b,0
+    pop     de                    ; D = Attrs; Stack = NamAdr, RtnAdr
     pop     hl                    ; HL = NamAdr; Stack = RtnAdr
     xor     a                     ; Return success
     ret

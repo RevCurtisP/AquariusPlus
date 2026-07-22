@@ -95,7 +95,7 @@ null_desc:
 plus_text:
     db "plusBASIC "
 plus_version:
-    db "v0.71o"
+    db "v0.71p"
     db 0
 plusver_len equ $ - plus_version
 plus_len   equ   $  - plus_text
@@ -459,7 +459,8 @@ incntc_hook:
     ret
 .turbo
     ld      a,b
-    call    set_turbo_mode
+    ld      iy,set_turbo_mode
+    call    aux_call
     jr      _buffchr
 .pause:
     call    read_key
@@ -486,45 +487,6 @@ _buffchr:
     ld      (CHARC),a             ; and buffer it
     ld      a,c
     or      a                     ; Return previously buffered key
-    ret
-
-reset_turbo_mode:
-    xor     a
-;-----------------------------------------------------------------------------
-; Enable/Disable Turbo mode
-; Input: A: 0 = 3 Mhz, 1 = 7 Mhz, 2 = undefined, 3 = unlimited
-; Returns: A = Turbo mode actually set
-;  speed: 0 = 3.88 Mhz
-;         1 = 7,16 Mhz
-;         2 = Undefined (returns Carry set)
-;         3 = Unlimited
-;-----------------------------------------------------------------------------
-;; ToDo: Move to AuxROM?
-set_turbo_mode:
-    cp      4                     ; If A > 4
-    ccf
-    ret     c                     ;   Return Carry Set
-    cp      2                     ; or A = 2
-    jr      z,ret_c               ;   Return Carry Set
-.turbo
-    rla
-    rla                           ; Rotate bits into place
-    and     SYSCTRL_TURBO         ; Isolate turbo bits
-    push    bc
-    ld      b,a                   ;   and copy to B
-    in      a,(IO_SYSCTRL)        ; Read SYSCTRL
-    and     ~SYSCTRL_TURBO & 127  ;   mask out Fast Mode bit
-    or      b                     ;   and copy the new Fast Mode bit in
-    out     (IO_SYSCTRL),a        ; Write back to SYSCTRL
-    pop     bc
-get_turbo_mode:
-    in      a,(IO_SYSCTRL)        ; Read SYSCTRL
-    and     SYSCTRL_TURBO         ;   mask out Fast Mode bit
-    rra
-    rra
-    ret
-ret_c:
-    scf
     ret
 
 ;-----------------------------------------------------------------------------
@@ -1155,6 +1117,7 @@ _sysfile_end:
     include "fileload.asm"        ; File LOAD I/O routines
     include "filemisc.asm"        ; BASIC File auxiliary routines
     include "fileplus.asm"        ; AQPLUS resource run/load routines
+    include "filerun.asm"         ; File RUN auxiliary routines
     include "filesave.asm"        ; File SAVE I/O routines
     include "filestr.asm"         ; File related string assembly routines
     include "joyaux.asm"          ; BASIC game controller auxiliary code
@@ -1202,6 +1165,7 @@ _sysfile_end:
     include "gfxchar.asm"         ; Character Set routines
     include "gfxcolor.asm"        ; Color and Palette routines
     include "gfxcolormap.asm"     ; Colormap routines
+    include "gfxgetput.asm"       ; Bitmap GET and PUT routines
     include "gfxline.asm"         ; Line drawing routines
     include "gfxpixel.asm"        ; Pixel drawing routines
     include "gfxrect.asm"         ; Rectangle drawing routines

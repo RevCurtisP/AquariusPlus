@@ -569,7 +569,7 @@ sprite_set_pos:
 ; Clobbered: A,BC,DE
 ;-----------------------------------------------------------------------------
 sprite_set_attrs:
-    ld      ix,spritle_set_attr
+    ld      ix,spritle_set_attrs
     jr      _sprite_attrs
 
 ;-----------------------------------------------------------------------------
@@ -610,7 +610,7 @@ _sprite_attrs:
 ;                       Bit 2: Vertical Flip
 ;                       Bit 1: Horizontal Flip
 ;-----------------------------------------------------------------------------
-spritle_set_attr:
+spritle_set_attrs:
     out   (IO_VSPRSEL),a          ; Select sprite
     ex    af,af'
     ld    a,c
@@ -819,5 +819,3 @@ spritle_toggle_a2z:
     dec     a
     ret     m 
     jr      spritle_toggle_a2z
-
-

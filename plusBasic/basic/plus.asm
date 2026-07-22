@@ -287,7 +287,9 @@ FN_GETSOUND:
 
 FN_GETSPEED:
     rst     CHRGET                ; Skip SPEED
-    call    get_turbo_mode
+    ld      iy,get_turbo_mode
+auxcall_hl_labbck_sngflt:
+    call    aux_call
 push_hl_labbck_sngflt:
     call    push_hl_labbck
     jp      SNGFLT
@@ -409,8 +411,7 @@ FN_INDEX:
 FN_INRECT:
     rst     CHRGET                ; Skip RECT
     SYNCHKC '('
-    call    FRMSTR  
-    ld      de,(FACLO)            ; DE = StrDsc
+    call    frmstr_de_faclo       ; DE = FilStd
     push    de                    ; Stack = StrDsc, RtnAdr
     call    get_comma_int         ; DE = X
     push    de                    ; Stack = X, StrDsc, RtnAdr
@@ -792,8 +793,7 @@ gosub_hook:
 ; CLEAR:DIM A$(5):SPLIT "Foo|Bar|Baz" INTO *A$ DEL '|'
 ST_SPLIT:
     rst     CHRGET                ; Skip SPLIT
-    call    FRMSTR                ; Parse SrcStr
-    ld      de,(FACLO)            ; DE = SrcDsc
+    call    frmstr_de_faclo       ; DE = SrcDsc
     ld      (SPLITDSC),de         ; SPLITDSC = SrcDsc
     SYNCHKT INTTK
     SYNCHKC 'O'                   ; Require INTO
@@ -1162,6 +1162,8 @@ ST_SET:
     jr      z,ST_SET_FAST
     cp      TRKTK                 ; $8C
     jp      z,ST_SET_TRACK
+    cp      EXTTK                 ; $91
+    jp      z,SNERR               ;  will be SET EXTENDED PRINT
     cp      BRKTK                 ; $9A
     jr      z,ST_SET_BREAK
     cp      CURTK                 ; $AA
@@ -1170,8 +1172,6 @@ ST_SET:
     jr      z,ST_SET_SPEED
     cp      BORDTK                ; $B6
     jp      z,ST_SET_BORDER
-    cp      EXTK                  ; $B7
-    jp      z,SNERR               ;  will be SET EXTENDED PRINT
     cp      SCROLTK               ; $BD
     jp      z,ST_SET_SCROLL
     jp      SNERR
@@ -1256,8 +1256,12 @@ ST_SET_FAST:
     call    get_on_off            ; A = $FF if ON, $00 if OFF
     and     1                     ; A = 1 if ON, 0 if OFF
 _turbo_mode:
-    call    set_turbo_mode
-    jp      c,FCERR               ; If illegal mode, Illlegal quantity
+    ld      iy,set_turbo_mode
+aux_call_fcerr:
+    push    hl                    ; Stack = TxtPtr, RtnAdr
+    call    aux_call
+    jp      c,FCERR               ; Error if illegal coordinate
+    pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     ret
 
 ;-----------------------------------------------------------------------------
@@ -1469,7 +1473,6 @@ ST_USE:
     cp      CHRTK
     jp      z,ST_USECHR           ; USE CHRSET
     jp      SNERR
-
 
 ;-----------------------------------------------------------------------------
 ; VARDEF Function

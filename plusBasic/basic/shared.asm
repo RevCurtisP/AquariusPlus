@@ -256,6 +256,9 @@ get_array_pointer:
     jp      nz,UDERR              ; If not found, Undimensioned array error
     ret
 
+parchk_conint:
+    call    PARCHK                ; Parse argument
+    jp      CONINT
 
 paren_coords:
     call    prn_coords
@@ -288,7 +291,7 @@ no_more:
 ;         DE = StrAdr
 ;         HL = StrDsc
 ; Clobbers: A
-; Returbs with TxtPtr on Stack
+; Returns with TxtPtr on Stack
 ;-----------------------------------------------------------------------------
 get_free_string:
     call    FRMSTR
@@ -380,6 +383,7 @@ get_comma_string:
     SYNCHKC ','
     cp      ','                   ; If empty argument
     ret     z                     ;   Return DE = 0
+frmstr_de_faclo:
     call    FRMSTR
     ld      de,(FACLO)
     ret
@@ -419,9 +423,9 @@ skip_get_int:
 ;-----------------------------------------------------------------------------
 get_page_arg:
     cp      '@'                   
-    jr      nz,_notat             ; If page prefix
-    rst     CHRGET                ;   Skip '@'
-    byte    $11                   ;   LD DE, over SYNCHK
+    jr      z,req_page_arg         ; If not @
+    or      a                      ;   Return Carry Clear
+    ret                            ; Else
 req_page_arg:
     SYNCHKC   '@'
     call    GETBYT                ;   Parse byte into E
@@ -429,11 +433,9 @@ req_page_arg:
 setcarry_ret:
     scf                           ;   Return Carry Set
     ret
-_notat:
-    or      a                     ; Else return Carry Clear
-    ret     
 
-
+get_comma_ext_addr:
+    call    get_comma
 require_ext_addr:
     cp      '!'
     jr      z,get_ext_addr
@@ -547,8 +549,7 @@ get_byte_range:
     ld      a,d                   ;   A = FrmOpd
     jr      nz,setcarry_ret       ;   Return Carry Set
     push    de                    ; Stack = FrmOpd, RtnAdr
-    rst     CHRGET                ; Skip TO
-    call    GETBYT                ; A = ToOpd
+    call    skip_get_byte         ; A = ToOpd
     pop     de                    ; D = FrmOpd; Stack = RtnAdr
     cp      d                     ; If ToOpd < FrmOpd
     jp      c,BRERR               ;   Bad range error
@@ -588,24 +589,56 @@ skip_get_byte:
     rst   CHRGET
     jp    GETBYT
 
-;-----------------------------------------------------------------------------
-; Parse Byte between 0 - 1
-; Output: A,E = Nybble
-; Clobbers: A,BC
-;-----------------------------------------------------------------------------
-;; ToDo: Make all these routines JR to a singlr JP NC,FCERR : RET
+;free_rom_ext = 1156
+
+skip_get_byte2:
+    rst     CHRGET
 get_byte2:
-    call    GETBYT                ; get foreground color in e
-    cp      2                     ; if > 15
-    jp      nc,FCERR              ;   FC Error
-    ret
+    ld      c,2
+    jr      get_byte_capped
+
+skip_get_byte4:
+    rst     CHRGET
+get_byte4:
+    ld      c,4
+    jr      get_byte_capped
+
+con_byte16:
+    call    CONINT
+    ld      c,16
+    jr      _check_byte_capped
+    
+get_comma_byte16:
+    call    get_comma             ; MO error if no comma
+get_byte16:
+    ld      c,16
+    jr      get_byte_capped
+
+;-----------------------------------------------------------------------------
+; Parse Byte 0 - 31
+; Output: A,E = Nybble
+; Clobbers: BC
+;-----------------------------------------------------------------------------
+get_byte32:
+    ld      c,32
+    jr      get_byte_capped
+
+skip_get_byte64:
+    rst     CHRGET
+get_byte64:
+    ld      c,64
+    jr      get_byte_capped
+
+get_byte200:
+    ld      c,200
+    jr      get_byte_capped
 
 get_comma_byte_capped:
     call    get_comma
 skip_get_byte_capped:
     rst     CHRGET
 ;-----------------------------------------------------------------------------
-; Parse Byte between 0 - 3
+; Parse Byte between less than value cap
 ; Input: C = Value Cap
 ;       HL = Text Pointer
 ; Output: A,DE = Byte Value
@@ -615,77 +648,10 @@ get_byte_capped:
     push    bc                    ; Stack = ValCap, RtnAdr
     call    GETBYT                ; get foreground color in e
     pop     bc                    ; C = ValCap, C = MaxVal
-    cp      c                     ; if > 15
+_check_byte_capped:
+    cp      c                     ; If > 15
     jp      nc,FCERR              ;   FC Error
-    ret
-
-skip_get_byte4:
-    rst     CHRGET
-;-----------------------------------------------------------------------------
-; Parse Byte between 0 - 3
-; Output: A,E = Nybble
-; Clobbers: A,BC
-;-----------------------------------------------------------------------------
-get_byte4:
-    call    GETBYT                ; get foreground color in e
-    cp      4                     ; if > 15
-    jp      nc,FCERR              ;   FC Error
-    ret
-
-
-con_byte16:
-    call    CONINT
-    jr      _check_byte_16
-    
-get_comma_byte16:
-    call    get_comma             ; MO error if no comma
-;-----------------------------------------------------------------------------
-; Parse Byte 0 - 15
-; Output: A,E = Nybble
-; Clobbers: A,BC
-;-----------------------------------------------------------------------------
-get_byte16:
-    call    GETBYT                ; get foreground color in e
-_check_byte_16:
-    cp      16                    ; if > 15
-    jp      nc,FCERR              ;   FC Error
-    or      a                     ; set flags
-    ret
-
-;-----------------------------------------------------------------------------
-; Parse Byte 0 - 31
-; Output: A,E = Nybble
-; Clobbers: BC
-;-----------------------------------------------------------------------------
-get_byte32:
-    call    GETBYT                ; get foreground color in e
-    cp      32                    ; if > 15
-    jp      nc,FCERR              ;   FC Error
-    or      a
-    ret
-
-skip_get_byte64:
-    rst     CHRGET
-;-----------------------------------------------------------------------------
-; Parse Byte 0 - 15
-; Output: A,E = Nybble
-; Clobbers: BC
-;-----------------------------------------------------------------------------
-get_byte64:
-    call    GETBYT                ; get foreground color in e
-    cp      64                    ; if > 15
-    jp      nc,FCERR              ;   FC Error
-    ret
-
-;-----------------------------------------------------------------------------
-; Parse Byte 0 - 199
-; Output: A,E = Byte
-; Clobbers: A,BC
-;-----------------------------------------------------------------------------
-get_byte200:
-    call    GETBYT                ; get foreground color in e
-    cp      200                   ; if > 1200
-    jp      nc,FCERR              ;   FC Error
+    or      a                     ; Set flags
     ret
 
 ;-----------------------------------------------------------------------------
@@ -705,6 +671,7 @@ parse_char:
 parse_delimiter:
     SYNCHKT DELTK                 ; Require DEL
     jr      get_char
+
 
 ;-----------------------------------------------------------------------------
 ; Parse Optional Character after comma as byte or string
@@ -729,6 +696,9 @@ get_char:
     ld      iy,bas_get_char
     jp      aux_call
 
+get_comma_int512:
+    call    get_comma
+    byte    $01                   ; LD BC, over CHRGET
 skip_get_int512:
     rst     CHRGET
 ;-----------------------------------------------------------------------------

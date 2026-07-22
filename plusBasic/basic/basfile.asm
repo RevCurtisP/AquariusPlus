@@ -523,8 +523,6 @@ _load_string:
 ;; load "/u/test/apos.bas"
 ;; run "/u/test/oneline.bas"
 ;;; ToDo: Check for Valid ASCII BASIC file (1st char is CR, LF, Space, 0-9, or ')
-;;; ToDo: Debug skip lines beginning with apostrophe
-
 _load_ascii:
     ld      hl,(TXTTAB)
     inc     hl
@@ -811,8 +809,7 @@ _do_palette:
     call    get_byte4             ; A = PalNum
     push    af                    ; Stack = PalNum, AuxAdr, RtnAdr
     call    get_comma             ; Require comma
-    call    FRMSTR                ; Parse FileSpec
-    ld      de,(FACLO)            ; HL = FilStd
+    call    frmstr_de_faclo       ; DE = FilStd
     push    de                    ; Stack = FilStd, PalNum, AuxAdr, RtnAdr
 .do_save_load:
     ex      (sp),hl               ; HL = FilStd; Stack = TxtPtr, PalNum, AuxAdr, RtnAdr
@@ -836,8 +833,7 @@ _load_pt3:
 _load_sample:
     call    chrget_strdesc_arg    ; HL = StrDsc; Stack = TxtPtr, RtnAdr
     ex      (sp),hl               ; HL = TxtPtr; Stack = StrDsc, RtnAdr
-    call    get_comma             ; Require comma
-    call    require_ext_addr      ; AF = PgFlg, DE = Addr
+    call    get_comma_ext_addr    ; AF = PgFlg, DE = Addr
     ex      (sp),hl               ; HL = StrDsc; Stack = TxtPtr, RtnAdr
     ld      iy,file_load_sample
     jp      _aux_call_bdf
@@ -859,12 +855,11 @@ _save_tile:
     jr      _aux_call             ; Else
 _save_tileset
     SYNCHKT SETTK                 ; Require SET
-    call    get_int512            ; DE = TileNo
-    call    get_comma             ; Require Comma
+    call    get_comma_int512      ; DE = TileNo
     push    de                    ; Stack = TileNo, RtnAdr
     call    get_int512            ; DE = TilCnt
-    call    get_comma             ; Require Comma
     push    de                    ; Stack = TilCnt, TileNo, RtnAdr
+    call    get_comma             ; Require Comma
     call    get_strdesc_arg       ; HL = StrDsc; Stack = TxtPtr, TilCnt, TileNo, RtnAdr
     pop     ix                    ; IX = TxtPtr; Stack = TilCnt, TileNo, RtnAdr
     pop     bc                    ; BC = TilCnt; Stack = TileNo, RtnAdr
@@ -875,8 +870,8 @@ _save_tileset
 
 ; LOAD TILEMAP "/u/tiles/savemap.tmap"
 ; LOAD TILESET "/u/tiles/savetiles.tile"
-; LOAD TILESET INDEX 128,"/au/assets/tiles.tset"
-; LOAD TILESET OFFSET 1,"/au/assets/tiles.tset"
+; LOAD TILESET INDEX 128,"/u/au/assets/tiles.tset"
+; LOAD TILESET OFFSET 1,"/u/au/assets/tiles.tset"
 ;; Proposed LOAD TILESET OFFSET 1,"/au/assets/tiles.tset",RGB
 _load_tile:
     rst     CHRGET                ; Skip TILE
@@ -886,23 +881,23 @@ _load_tile:
     jp      skip_strdesc_auxcall  ; Else
 _load_tileset:
     SYNCHKT SETTK                 ;   Require SET
-    ld      de,0                  ; Default TileNo to 0
-    call    _index_offset
-    jr      nz,.skip
-    push    bc
-    call    get_int512            ; DE = TileNo
-    call    get_comma             ; Require Comma
-    pop     bc
-    ex      de,hl
-    add     hl,bc
-    ex      de,hl                 ; DE = Index + Offset
+    ld      iy,bas_index_offset
+    call    gfxrom_call           ; BC = BaseIdx, DE = 0
+    jr      nz,.skip              ; If INDEX or OFFSET
+    push    bc                    ;   Stack = BaseIdx, RtnAdr
+    call    get_int512            ;   DE = TileNo
+    pop     bc                    ;   BC = BaseIdx; Stack = RtnAdr
+    call    get_comma             ;   Require Comma
+    ex      de,hl                 ;   HL = TileNo; DE = TxtPtr
+    add     hl,bc                 ;   HL = TileNo + BaseIdx
+    ex      de,hl                 ;   DE = TileIdx; HL = TxtPtr
 .skip
-    push    de                    ;   Stack = TileNo, RtnAdr
-    call    get_strdesc_arg       ;   HL = StrDsc; Stack = TxtPtr, TileNo, RtnAdr
-    pop     bc                    ;   BC = TxtPtr; Stack = TileNo, RtnAdr
-    pop     de                    ;   DE = TileNo; Stack = RtnAdr
-    push    bc                    ;   Stack = TxtPtr, RtnAdr
-    ld      iy,file_load_tileset  ;   Load tiles
+    push    de                    ; Stack = TileIdx, RtnAdr
+    call    get_strdesc_arg       ; HL = StrDsc; Stack = TxtPtr, TileIdx, RtnAdr
+    pop     bc                    ; BC = TxtPtr; Stack = TileNo, RtnAdr
+    pop     de                    ; DE = TileIdx; Stack = RtnAdr
+    push    bc                    ; Stack = TxtPtr, RtnAdr
+    ld      iy,file_load_tileset  ; Load tiles
     jp      _aux_call_bdf
 
 ;-----------------------------------------------------------------------------
@@ -1064,7 +1059,7 @@ st_play_sample_file:
     jp      _aux_call_bdf
 
 ;-----------------------------------------------------------------------------
-; RUN command - hook 24
+; RUN command
 ;-----------------------------------------------------------------------------
 run_cmd:
     push    af
@@ -1082,7 +1077,6 @@ run_cmd:
 
     ld      (SUBFLG),a            ; Stash FileSpec start character
     call    get_string_direct     ; HL = StrDsc, DE = StrAdr, BC = StrLen; Stack = TxtPtr
-    call    run_args              ; HL = StrDsc; A, BC, DE clobbered
     jr      run_file              ; Load and run file
 
 con_run:
@@ -1101,41 +1095,18 @@ run_file:
     ; Close any open files
     call    esp_close_all
 
-;    ld      a,(SUBFLG)            ; Restore FileSpec start character
-;    cp      '"'
-;    jr      z,.quoted             ; If not quoted
-;    call    in_direct             ; and in direct mode
-;    call    nc,_lookup_file       ;   Find matching file if no extensions
-.quoted
-    call    string_addr_len       ; DE = StrAdr, BC = StrLen
-
-;For (16k) cartridge binaries
-;the bytes at 0x2003...05...07...09...0B...0D...0F are consistent.
-;2A, 9C, B0, 6C, 64, A8, 70
-    ; Check for .ROM extension
-    ld      a, c                  ; A = String Length
-    cp      a, 5                  ; If less than 5
-    jr      c, .run_prog          ; Too short to have ROM extension
-    sub     a, 4                  ; Position of last four characters of String
-    ld      c, a
-    push    hl                    ; Save String Descriptor
-    ex      de,hl                 ; HL = String Address
-    add     hl,bc                 ; Point tho last four characters
-    ex      de,hl                 ; DE = String Address
-    ld      hl,.romext            ; HL = ".ROM"
-    ld      b,4                   ; Comparing 4 bytes
-    push    de
-    call    string_cmp_upper      ; Compare Them
-    pop     de
-    pop     hl
-    jr      z,.load_rom
-    push    hl
-    dec     de
-    ld      hl,.coreext
-    ld      b,5
-    call    string_cmp_upper      ; Compare Them
-    pop     hl
-    jr      z,.load_core
+    ld      a,(SUBFLG)            ; Restore FileSpec start character
+    ld      iy,run_search_files
+    call    aux_call              ; Look for file if no extension
+    jp      m,_pop_hl_doserror    ; If error, abort
+    call    run_args              ; HL = StrDsc; A, BC, DE clobbered
+    ld      iy,run_check_extension
+    call    aux_call
+    jr      c,.run_prog           ; If Carry Cleat
+    dec     a                     ;   If A = 1
+    jr      z,.load_rom           ;     Load/Run ROM file
+    dec     a                     ;   If A = 2
+    jr      z,.load_core          ;     Load/Run CORE file
 
 .run_prog
     push    hl                    ; Stack = StrDsc, TxtPtr, RtnAdr
@@ -1296,9 +1267,8 @@ ST_SAVE:
     call    GETINT                ;   DE = BinAdr
     push    de                    ;   Stack = BinAdr, Page, StrDsc, RtnAdr
 .get_len
-    call    get_comma             ; MO error if no comma
     ; Get second parameter: length
-    call    GETINT                ; DE = length
+    call    get_comma_int         ; MO error if no comma
     ld      b,d
     ld      c,e                   ; BC = BinLen
     pop     de                    ; DE = BinAdr; Stack
@@ -1484,10 +1454,13 @@ parse_ascx:
     rst     CHRGET                ; Skip comma
     SYNCHKT ASCTK                 ; Require ASC
     cp      'X'                   ; If Not ASCX
-    jp      nz,_xor_a_ret         ;   Return NZ, NC
+    jr      nz,_xor_a_ret         ;   Return NZ, NC
     rst     CHRGET                ; Skip X
     xor     a                     ; Set Zero,     
     scf                           ; Set Carry for ASCX
+    ret
+_xor_a_ret:
+    xor     a 
     ret
 
 ;-----------------------------------------------------------------------------
@@ -1898,55 +1871,6 @@ get_strdesc_arg:
     pop     de                    ; Stack = BC, TxtPtr
     pop     bc                    ; Stack = TxtPtr
     jp      (ix)                  ; Fast Return
-
-;;; ToDo: Move to fileaux.asm
-_index_offset:
-    ld      bc,0
-    push    hl
-    call    .index
-    call    nz,.offset
-    jp      nz,POPHRT
-    pop     de                    ; Discard Old TxtPtr
-    ret
-.index:
-    cp      INTK
-    ret     nz
-    rst     CHRGET
-    cp      XTOKEN
-    ret     nz
-    rst     CHRGET
-    cp      DEXTK
-    ret     nz
-    jr      .done
-.offset:
-    cp      XTOKEN
-    ret     nz
-    rst     CHRGET
-    cp      OFFTK
-    ret     nz
-    rst     CHRGET
-    cp      SETTK
-    ret     nz
-    call    tile_offset
-.done
-    rst     CHRGET
-_xor_a_ret:
-    xor     a
-    ret
-
-; ToDo: Move to tile.asm and call through bas_tile_offset and bas_tile_offset_a
-tile_offset:
-    ld      a,(GFX_FLAGS)
-tile_offset_a:
-    and     GFXM_MASK
-    ld      bc,288
-    sub     a,2
-    ret     z
-    ld      bc,500
-    dec     a
-    ret     z
-    ld      bc,128                  ; Tilemap mode
-    ret
 
 ; Open File with error handling
 _open_append:

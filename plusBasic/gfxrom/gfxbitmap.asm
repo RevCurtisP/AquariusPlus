@@ -1,5 +1,5 @@
 ;====================================================================
-; Graphics Bitmap Drawing Statements and Functions
+; Graphics Bitmap Common Routines
 ;====================================================================
 ;; Routines being moved from auxrom to gfxrom
 
@@ -72,9 +72,9 @@ bitmap_read_sysvars:
 ; Input: A: Use buffer: $FF = Yes, 0 = No
 ; Clobbered: A, B, C
 ;-----------------------------------------------------------------------------
-bitmap__set_mode_nobuff:
+bitmap_set_mode_nobuff:
     xor     a
-bitmap__set_mode:
+bitmap_set_mode:
     and     GFXBUFLAG
     ld      b,a                   ; B = BufFlg
     in      a,(IO_VCTRL)          
@@ -236,6 +236,28 @@ bitmap_set_color:
     out     (IO_BANK1),a          ; Restore Page
     ret
 
+;-----------------------------------------------------------------------------
+; Return current bitmap mode
+; Output: A: Mode (0: 40col, 1: 80col, 2: 1bpp, 3: 4bpp)
+;  Flags: Carry set if text screen, clear if bitmap screen
+; Clobbered: C
+;-----------------------------------------------------------------------------
+bitmap_get_mode:
+    in      a,(IO_VCTRL)
+    ld      c,a
+    rra                           ; A = 2: 1bpp, 3: 4bpp
+    and     GFXM_MASK             ; Isolate bits
+    cp      2                     ; If 1bpp or 2 bpp
+    ret     nc                    ;   Return
+    ld      a,c
+    and     a,VCRTL_80COL_EN      ; A = 0: 40col, 1: 80col
+    scf
+    ret     z                     ; If 40 col return 0
+    ld      a,1                   ; Else Return 1
+    ret
+
+
+
 ; In: A: GfxMode; Out: HL: VarBase
 get_varbase:
     ld      h,high(BANK1_BASE+GFXVBASE)
@@ -366,3 +388,52 @@ _check_coords2:
     cp      e                     ; If Y >= MaxY
     ret                           ;   Return carry set
 
+;------------------------------------------------------------------------------
+; Draw Character on 1bpp Bitmap Screen
+; Input: BC: X-coordinate (0-312)
+;        DE: Y-coordinate (0-192)
+;        HL: Character Data Address
+; Sets: Carry if coordinate out of range
+; Clobbered: A, B, DE, HL
+;------------------------------------------------------------------------------
+bitmap_drawchr:
+    push    hl                    ; Stack = ChrAdr, RtnAdr
+    call    _char_bounds          ; Set Carry if X,Y out of bounds
+    pop     hl                    ; HL = ChrAdr, Stack = RtnAdr
+    ret     c                     ; Return Carry Set if out of bounds
+    call    _char_offset          ; HL = Offset
+_put_char:    
+    ld      a,VIDEO_RAM           ; A = Bank
+    ld      b,8                   ; B = LinCnt
+    ld      c,40                  ; C = LinLen
+    jp      page_skip_write
+
+; In: C=Column, E=Line
+; Out: Carry set if out of bounds
+; Clobbered: HL
+_char_bounds:
+    or      a                     ; Clear Carry
+    ld      hl,312                ; 
+    sbc     hl,bc                 ; If X-Coord > 312
+    ret     c                     ;   Return Carry Set
+    ld      hl,192
+    sbc     hl,de                 ; If Y-Coord > 192
+    ret                           ;   Return Carry Set
+    
+; Input: BC = Column, DE = Line
+; Output: HL = VRAM Offset
+; Clobbered: DE
+_char_offset:
+    ex      de,hl                 ; HL = Row
+    add     hl,hl                 ; HL = Row * 2
+    add     hl,hl                 ; HL = Row * 4
+    add     hl,hl                 ; HL = Row * 8
+    ld      d,h
+    ld      e,l                   ; DE = Row * 8
+    add     hl,hl                 ; HL = Row * 16
+    add     hl,hl                 ; HL = Row * 32
+    add     hl,de                 ; HL = Row * 40
+    add     hl,bc                 ; HL = Row * 40 + Col
+_swap_de_hl:
+    ex      de,hl                 ; DE = Row * 40 + Col
+    ret

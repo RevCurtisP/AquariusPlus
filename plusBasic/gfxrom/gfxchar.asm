@@ -11,8 +11,8 @@
 ; Output:
 ; Flags: Carry Set if overflow
 ;-----------------------------------------------------------------------------
-gfx_get_char_def:
-    call    _get_chardef_address    ; A = MemPg, DE = ChrAdr, HL = BufAdr
+gfx_get_chrdef:
+    call    _get_chrdef_address     ; A = MemPg, DE = ChrAdr, HL = BufAdr
     ex      de,hl                   ; HL = ChrAdr, DE = BufAdr
     jp      page_read_bytes         ; Write to Character RAM and return
 
@@ -24,12 +24,12 @@ gfx_get_char_def:
 ; Flags: Carry Set if overflow
 ; Clobbered: A, BC, DE, HL
 ;-----------------------------------------------------------------------------
-gfx_reset_char_def:
+gfx_reset_chrdef:
     push    de                      ; Stack = BufAdr, RtnAdr
     push    bc                      ; Stack = DefLen, BufAdr, RtnAdr
     push    af                      ; Stack = ChrASC, DefLen, BufAdr, RtnAdr
     ld      l,0                     ; L = ChrSet (Default)
-    call    gfx_get_char_def        ; A = MemPg, DE = ChrAdr, HL = BufAdr
+    call    gfx_get_chrdef          ; A = MemPg, DE = ChrAdr, HL = BufAdr
     call    page_read_bytes         ; Read ChrDef to Buffer
     pop     af                      ; A = ChrASC; Stack = DefLen, BufAdr, RtnAdr
     pop     bc                      ; BC = DefLen; Stack = BufAdr, RtnAdr
@@ -43,14 +43,14 @@ gfx_reset_char_def:
 ; Flags: Carry Set if overflow
 ; Clobbered: A, BC, DE, HL
 ;-----------------------------------------------------------------------------
-gfx_redefine_char:
+gfx_set_chrdef:
     ld      l,255                   ; ChrSet = CharRAM
-    call    _get_chardef_address    ; A = MemPg, DE = ChrAdr, HL = BufAdr
+    call    _get_chrdef_address    ; A = MemPg, DE = ChrAdr, HL = BufAdr
     jp      page_write_bytes        ; Write to Character RAM and return
 
 ; Input: A: ASCIcode, DE: Buffer Address, L: reserved
 ; Output: A: Memory Page DE: address Offset, HL: Buffer Address
-_get_chardef_address:
+_get_chrdef_address:
     push    de                    ; Stack = BufAdr, RtnAdr
     ex      af,af'                ; A' = ASCcode
     inc     l

@@ -56,7 +56,7 @@ text_screen:
     and     a,~VCTRL_MODE_MC      ; Disable graphics screen
     or      a,VCTRL_TEXT_EN       ; Enable text screen
     out     (IO_VCTRL),a
-    ld      iy,bitmap__set_mode_nobuff
+    ld      iy,bitmap_set_mode_nobuff
     jp      gfxrom_call
 
 ;-----------------------------------------------------------------------------
