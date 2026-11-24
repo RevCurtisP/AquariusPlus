@@ -57,8 +57,7 @@ ST_SET_BORDER:
     call    parse_char            ;   A = Character
     ld      iy,border_set_chr     ;   Set border color and return
     call    gfxrom_call_preserve_hl
-    ld      a,(hl)
-    or      a                     ;   Return if end of statement
+    call    CHRGT2                ;   Return if end of statement
     ret     z
 .color
     call    parse_colors          ; A = Colors
