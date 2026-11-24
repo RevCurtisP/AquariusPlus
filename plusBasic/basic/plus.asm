@@ -515,8 +515,9 @@ ST_LOOP:
     rst     CHRGET                ; If no operands
     jr      z,loop_repeat         ;   Just LOOP
     SYNCHKT XTOKEN                ; Else
-    SYNCHKT TRKTK                 ;   Require TRACK
-    jp      ST_LOOP_TRACK         ;   and do LOOP TRACK
+    cp      TRKTK                 ;   If token is TRACK
+    jp      z,ST_LOOP_TRACK       ;     Do LOOP TRACK (which skips TRACK)
+    jp      SNERR                 ;   Else Syntax error
 
 ST_UNTIL:
     rst     CHRGET                ; Skip UNTIL
