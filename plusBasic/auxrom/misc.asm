@@ -521,27 +521,30 @@ scan_else_endif:
     inc     hl
     ld      a,(hl)                ; A = Next Character
     or      a                     ; If null terminator
-    ret     z                     ;   Return Z set
+    jr      z,.loop               ;   Return Zero and Carry Set
     cp      '"'                   ; If quote
     jr      z,.next               ;   Skip it and continue
     jr      .skip_string
-   
+
 .skip_escaped
+    inc     hl                    ; Skip backslash
+    ld      a,(hl)                ; A = Character after backslash
+    cp      '"'                   ; If not quote
+    jr      nz,.loop              ;   Not an escaped string, keep scanning
+.escaped_loop
     inc     hl
     ld      a,(hl)                ; A = Next Character
     or      a                     ; If null terminator
-    ret     z                     ;   Return Z set
-    cp      92                    
-    jr      z,.not_escape         ; If backslash
-    inc     (hl)
-    ld      a,(hl)                ;   Get following character
-    or      a                     ;   If null terminator
-    ret     z                     ;     Return Z set
-    jr      .skip_escaped         ;   Else skip and check next 
-.not_escape
-    cp      '"'                   ; Else If quote
-    jr      z,.next               ;   Skip and continue
-    jr      .skip_escaped         ; Else skip and check next
+    jr      z,.loop               ;   Return Zero and Carry Set
+    cp      '"'                   ; If closing quote
+    jr      z,.next               ;   Skip it and continue
+    cp      92                    ; If not backslash
+    jr      nz,.escaped_loop      ;   Check next character
+    inc     hl                    ; Else skip escaped character
+    ld      a,(hl)
+    or      a                     ; If null terminator
+    jr      z,.loop               ;   Return Zero and Carry Set
+    jr      .escaped_loop
 
 ;-----------------------------------------------------------------------------
 ; Disable Turbo Mode
