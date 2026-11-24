@@ -133,7 +133,7 @@ MSGUF:  byte    "Undefined user function",0     ; 18
 MSGMO:  byte    "Missing operand",0             ; 19
 ; Errors from CP/M BASIC                        
 MSGNR:  byte    "No RESUME",0                   ; 20
-MSGRE:  byte    "RESUME without GOSUB",0        ; 21
+MSGRE:  byte    "RESUME without error",0        ; 21
 MSGUE:  byte    "Unprintable",0                 ; 22
 MSGLBO: byte    "Line buffer overflow",0        ; 23      
 MSGGS:  byte    "Statement not implemented",0   ; 24
