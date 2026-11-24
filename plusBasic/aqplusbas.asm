@@ -870,9 +870,14 @@ ptrget_ext:
     jp      c,NOSEC               ;    Continue
 issec_ext:
     ld      b,a                   ; Make it the second character
+.eat_rest
     rst     CHRGET                ; Get following character
-    cp      '~'                   ; If not tilde
-    jp      nz,DEATEM             ;   Backup and reat rest of variable
+    jr      c,.eat_rest           ; Skip digits
+    cp      '~'                   ; If tilde
+    jr      z,_eat_suffix         ;   Eat suffix and continue
+    call    ISLETC                ; If letter
+    jr      nc,.eat_rest          ;   Skip it
+    jp      NOSEC                 ; Else continue
 _eat_suffix:
     ld      iy,aux_eat_suffix
     call    aux_call
