@@ -632,11 +632,11 @@ FN_GETLWR:
 _uprlwr_key:
     inc     hl                    ; 
     SYNCHKT KEYTK                 ; Require KEY
+    dec     hl                    ; Back up for CHRGET in _do_key
     pop     af                    ; AF = UprFlg; Stack = RtnAdr
     ld      bc,upr_key
     jr      z,_do_key
     ld      bc,lwr_key
-    byte    $B7                   ; OR A over CHRGET
 _do_key:
     push    bc
     pop     iy
