@@ -1509,6 +1509,7 @@ ST_SET_SPRITE:
 .notclip
     ex      (sp),hl               ; HL = SprAdr; Stack = TxtPtr, RtnAdr
     ld      iy,sprite_set_props
+    call    gfxrom_call           ; Set properties
     jp      nz,FCERR
     pop     hl                    ; HL = TxtPtr; Stack = RtnAdr
     ret
