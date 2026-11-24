@@ -513,7 +513,7 @@
  - **`18`** - Undefined user function
  - **`19`** - Missing operand
  - **`20`** - No RESUME
- - **`21`** - RESUME without GOSUB
+ - **`21`** - RESUME without error
  - **`22`** - Unprintable
  - **`23`** - Line buffer overflow
  - **`24`** - Statement not implemented
