@@ -1099,6 +1099,7 @@ ST_GET:
 ST_KEY:
     call    check_repeat
     jp      nz,SNERR
+    call    get_on_off            ; Skip REPEAT, A = $FF if ON, 0 if OFF
     jp      key_set_repeat
 
 check_repeat:
