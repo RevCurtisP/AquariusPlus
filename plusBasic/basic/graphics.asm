@@ -810,7 +810,7 @@ ST_SET_TILEMAP:
     call    gfxrom_call           ; DE = TilPrp
     jr      .set_tile             ;   Else
 .set_int
-    call    get_int512            ;     DE = TilDef
+    call    GET_POS_INT           ;     DE = TilDef (16-bit cell value)
 .set_tile
     pop     bc                    ;   C = Column; Stack = Row, RtnAdr
     ex      (sp),hl               ;   L = Row; Stack = TxtPtr, RtnAdr
