@@ -500,7 +500,7 @@ get_varptr:
     ret
 
 ;----------------------------------------------------------------------------
-; WAIT port, xor_mask, and_mask
+; WAIT port, and_mask {, xor_mask}
 ;----------------------------------------------------------------------------
 ST_WAIT:
         call    GETINT            ; get/evaluate port
@@ -508,6 +508,7 @@ ST_WAIT:
         call    get_comma_byte    ; get/evaluate data
         push    af                ; SAVE THE MASK
         call    CHRGT2            ; SEE IF THE STATEMENT ENDED
+        ld      a,0               ; Default XOR mask (flags unchanged)
         jr      z,NOTTHR          ; IF NO THIRD ARGUMENT SKIP THIS
         call    get_comma_byte    ; Get XOR mask into E
 NOTTHR: pop     de                ; REGET THE "AND" MASK in D
