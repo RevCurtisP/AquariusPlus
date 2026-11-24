@@ -13,7 +13,7 @@ FN_GETBORDER:
     rst     CHRGET                ; Skip BORDER
     ld      iy,border_get_chr
     cp      CHRSTK
-    jr      z,skip_aux_call_bufin
+    jr      z,skip_gfx_call_bufin
     cp      COLTK
     jr      z,.color              ; If Not COL
     SYNCHKT XTOKEN
@@ -26,11 +26,11 @@ FN_GETBORDER:
 .getborder
     cp      '$'
     jp      nz,gfxrom_call_sngflt
-skip_aux_call_bufin:
+skip_gfx_call_bufin:
     rst     CHRGET                ; Skip '$'
-aux_call_bufcin:
+gfx_call_bufcin:
     push    hl
-    call    aux_call
+    call    gfxrom_call
     jp      BUFCIN
 
 
